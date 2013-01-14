@@ -44,7 +44,7 @@ public:
         return data;
         //        push(output);TODO where to put
     };
-
+    
     Data* toData(Data&);
     Data* toData(bool);
     Data* toData(char);
@@ -53,13 +53,13 @@ public:
     Data* toData(long);
     Data* toData(float);
     Data* toData(double);
-    Data* toData(char*);
-    Data* toData(short*);
-    Data* toData(int*);
-    Data* toData(long*);
-    Data* toData(float*);
-    Data* toData(double*);
-    Data* toData(string);
+    Data* toData(CharArray&);
+    Data* toData(ShortArray&);
+    Data* toData(IntegerArray&);
+    Data* toData(LongArray&);
+    Data* toData(FloatArray&);
+    Data* toData(DoubleArray&);
+    Data* toData(string&);
     
     template<typename K>
     K toObject(Data* data){

@@ -110,16 +110,140 @@ int SerializationServiceImpl::indexForDefaultType(int const typeId) {
 };
 
 
+Data* SerializationServiceImpl::toData(bool object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    booleanSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(booleanSerializer->getTypeId(), output->toByteArray());
+    return data;
+};
+
+Data* SerializationServiceImpl::toData(char object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    charSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(charSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(short object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    shortSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(shortSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
 Data* SerializationServiceImpl::toData(int object){
     ContextAwareDataOutput* output = pop();
-    if(output == NULL){
-        
-    }
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     integerSerializer->write(dataOutput, object);
     
-    Data* data = new Data();
-    //        = new Data(serializer->getTypeId(), output->toByteArray());
+    Data* data = new Data(integerSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(long object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    longSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(longSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(float object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    floatSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(floatSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(double object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    doubleSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(doubleSerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(CharArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    charArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(charArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(ShortArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    shortArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(shortArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+
+};
+
+Data* SerializationServiceImpl::toData(IntegerArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    integerArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(integerArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+Data* SerializationServiceImpl::toData(LongArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    longArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(longArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(FloatArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    floatArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(floatArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(DoubleArray& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    doubleArraySerializer->write(dataOutput, object);
+    
+    Data* data = new Data(doubleArraySerializer->getTypeId(), output->toByteArray());
+    return data;
+    
+};
+
+Data* SerializationServiceImpl::toData(string& object){
+    ContextAwareDataOutput* output = pop();
+    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+    stringSerializer->write(dataOutput, object);
+    
+    Data* data = new Data(stringSerializer->getTypeId(), output->toByteArray());
     return data;
     
 };
