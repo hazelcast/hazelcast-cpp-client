@@ -12,7 +12,7 @@
 #include "DataInput.h"
 #include "DataOutput.h"
 
-typedef char byte;
+typedef unsigned char byte;
 
 class DataSerializable{
 public:

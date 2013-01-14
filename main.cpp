@@ -15,12 +15,12 @@
 #include <vector>
 #include <stdio.h>
 #include "ContextAwareDataOutput.h"
-#include "MyTestObject.h"
 #include "TypeSerializer.h"
 #include "SerializationService.h"
 #include "SerializationServiceImpl.h"
 #include "TestPortableFactory.h"
 #include "Data.h"
+#include "ByteArray.h"
 
 using namespace std;
 namespace hazelcast {
@@ -58,10 +58,12 @@ namespace hazelcast {
 int main(int argc, char* argv[])
 {
     SerializationServiceImpl* serializationService = static_cast<SerializationServiceImpl*>(new SerializationServiceImpl(1,new TestPortableFactory()));
-    Data data;
+    Data* data;
     int x = 3,y;
+    TestMainPortable test;
     
-    data = serializationService->toData<int>(x);
+    data = serializationService->toData<TestMainPortable>(test);
+    data = serializationService->toData(x);
     
     y =  serializationService->toObject<int>(data);
     
@@ -71,7 +73,8 @@ int main(int argc, char* argv[])
         cout << "FAIL" << endl;
     }
     
-    TypeSerializer* typeSerializer = serializationService->serializerFor(typeid(x).name());
+    
+    TypeSerializer* typeSerializer = serializationService->serializerFor(x);
     
     cout << typeSerializer->getTypeId() << endl;
     

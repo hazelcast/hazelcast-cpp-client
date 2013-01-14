@@ -11,7 +11,7 @@
 
 #include <string>
 
-typedef char byte;
+typedef unsigned char byte;
 
 class DataInput{
 public:

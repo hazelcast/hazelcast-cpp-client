@@ -15,7 +15,7 @@
 class Data :  public DataSerializable{
 public:
     Data();
-    Data(int type, byte* bytes);
+    Data(int type, ByteArray* bytes);
     
     int size();
     
@@ -33,12 +33,12 @@ public:
     
     static int const NO_CLASS_ID = -1;
     
+    ClassDefinitionImpl cd;
 private:
     int type = -1;
-    ClassDefinitionImpl cd;
-    byte* buffer;
+    ByteArray* buffer;
     int partitionHash;
-    
+    int len;
     
 };
 

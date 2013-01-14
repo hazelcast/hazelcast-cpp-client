@@ -7,17 +7,19 @@
 //
 
 #include "PortableSerializer.h"
-
+#include "SerializationConstants.h"
 PortableSerializer::PortableSerializer(SerializationContext*){};
 PortableSerializer::~PortableSerializer(){};
 
 ClassDefinitionImpl PortableSerializer::getClassDefinition(Portable) throw(std::ios_base::failure) {};
 
-int PortableSerializer::getTypeId(){};
+int PortableSerializer::getTypeId(){
+    return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+};
 
 SerializationContext PortableSerializer::getContext(){};//TODO propbaly unused check later
 
-int PortableSerializer::getVersion(){};
+int PortableSerializer::getVersion(){ };
 
 void PortableSerializer::write(DataOutput, Portable ) throw(std::ios_base::failure) {};
 

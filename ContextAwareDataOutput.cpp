@@ -8,39 +8,49 @@
 
 #include "ContextAwareDataOutput.h"
 #include <string>
-ContextAwareDataOutput::ContextAwareDataOutput(){
+
+ContextAwareDataOutput::ContextAwareDataOutput(SerializationService* service){
+    this->service = service;
 };
 
-void ContextAwareDataOutput::write(byte *bytes, int off, int len){
-    buffer.write(bytes + off , sizeof(byte) * len);
+ContextAwareDataOutput::ContextAwareDataOutput(int size,SerializationService* service){
+    //TODO think if necessary
 };
 
-void ContextAwareDataOutput::writeBoolean(bool i){
+ContextAwareDataOutput::ContextAwareDataOutput(ByteArray& buffer, int size,SerializationService* service){
+    //TODO think if necessary
+};
+
+void ContextAwareDataOutput::write(char *bytes, int off, int len) throw(std::ios_base::failure){
+    buffer.write(bytes + off , sizeof(char) * len);
+};
+
+void ContextAwareDataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
     writeByte(i);
 };
 
-void ContextAwareDataOutput::writeByte(int i){
+void ContextAwareDataOutput::writeByte(int i) throw(std::ios_base::failure){
     buffer.put(0xff & i);
 };
 
-void ContextAwareDataOutput::writeShort(int v){
+void ContextAwareDataOutput::writeShort(int v) throw(std::ios_base::failure){
     writeByte((v >> 8));
     writeByte(v);
 };
 
-void ContextAwareDataOutput::writeChar(int i){
+void ContextAwareDataOutput::writeChar(int i) throw(std::ios_base::failure){
     writeByte((i >> 8));
     writeByte(i);
 };
 
-void ContextAwareDataOutput::writeInt(int v){
+void ContextAwareDataOutput::writeInt(int v) throw(std::ios_base::failure){
     writeByte((v >> 24));
     writeByte((v >> 16));
     writeByte((v >> 8));
     writeByte(v);
 };
 
-void ContextAwareDataOutput::writeLong(long l){
+void ContextAwareDataOutput::writeLong(long l) throw(std::ios_base::failure){
     writeByte((l >> 56));
     writeByte((l >> 48));
     writeByte((l >> 40));
@@ -51,7 +61,7 @@ void ContextAwareDataOutput::writeLong(long l){
     writeByte((int)l);
 };
 
-void ContextAwareDataOutput::writeFloat(float x){
+void ContextAwareDataOutput::writeFloat(float x) throw(std::ios_base::failure){
     union {
         float f;
         int i;
@@ -60,7 +70,7 @@ void ContextAwareDataOutput::writeFloat(float x){
     writeInt(u.i);
 };
 
-void ContextAwareDataOutput::writeDouble(double v){
+void ContextAwareDataOutput::writeDouble(double v) throw(std::ios_base::failure){
     union {
         double d;
         long l;
@@ -69,7 +79,7 @@ void ContextAwareDataOutput::writeDouble(double v){
     writeLong(u.l);
 };
 
-void ContextAwareDataOutput::writeUTF(std::string str){
+void ContextAwareDataOutput::writeUTF(std::string str) throw(std::ios_base::failure){
     int stringLen = (int)str.length();
     int utfLength = 0;
     int count = 0;
@@ -89,7 +99,7 @@ void ContextAwareDataOutput::writeUTF(std::string str){
         error += " bytes";
         throw error;
     }
-    byte* byteArray = new byte[utfLength];
+    char* byteArray = new char[utfLength];
     int i;
     for (i = 0; i < stringLen; i++) {
         if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -113,6 +123,7 @@ void ContextAwareDataOutput::writeUTF(std::string str){
 
 };
 
-std::string ContextAwareDataOutput::toString(){
+
+std::string ContextAwareDataOutput::toString(){//TODO remove
     return buffer.str();
 };

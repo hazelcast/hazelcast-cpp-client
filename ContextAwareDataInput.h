@@ -11,7 +11,7 @@
 
 #include <string>
 #include "BufferObjectDataInput.h"
-typedef char byte;
+typedef unsigned char byte;
 
 class ContextAwareDataInput : public BufferObjectDataInput{
 public:

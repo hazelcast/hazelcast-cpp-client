@@ -11,10 +11,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include "MyTestObject.h"
 
 using namespace std;
-
+typedef unsigned char byte;
 namespace hazelcast {
     
     /// Downloads stock quote information from a server.
@@ -39,8 +38,8 @@ namespace hazelcast {
         void read(T& data){
             byte localBuffer[1024];
             boost::asio::read(mSocket, boost::asio::buffer(localBuffer,1024));
-            ContextAwareDataInput dataInput(localBuffer);
-            data.readData(dataInput);
+//            ContextAwareDataInput dataInput(localBuffer);
+//            data.readData(dataInput);
         }
         
     private:
@@ -50,7 +49,7 @@ namespace hazelcast {
     };
 }
 
-int main(int argc, char* argv[])
+int main2(int argc, char* argv[])
 {
     try
     {
@@ -64,11 +63,7 @@ int main(int argc, char* argv[])
         boost::asio::io_service io_service;
         hazelcast::client client(io_service, argv[1], argv[2]);
         io_service.run();
-        while (true) {
-            MyTestObject temp;
-            client.read(temp);
-            cout << temp << endl;
-        }
+        
     }
     catch (exception& e)
     {

@@ -12,12 +12,13 @@ Data::Data(){
     
 };
 
-Data::Data(int type, byte* bytes){
-    
+Data::Data(int type, ByteArray* buffer){
+    this->type = type;
+    this->buffer = buffer;
 };
 
 int Data::size(){
-    
+    return (buffer == NULL) ? 0 : len;
 };
 
 void Data::writeData(DataOutput&) const throw(std::ios_base::failure){

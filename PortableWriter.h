@@ -13,7 +13,7 @@
 #include <string>
 
 using namespace std;
-typedef char byte;
+typedef unsigned char byte;
 class PortableWriter{
 public:
     virtual void writeInt(string, int) throw(ios_base::failure) = 0;

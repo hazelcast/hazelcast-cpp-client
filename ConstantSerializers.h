@@ -13,350 +13,358 @@ using namespace std;
 #include "DataInput.h"
 #include "DataOutput.h"
 #include "SerializationConstants.h"
+#include "ByteArray.h"
+#include "IntegerArray.h"
+#include "FloatArray.h"
+#include "CharArray.h"
+#include "ShortArray.h"
+#include "LongArray.h"
+#include "DoubleArray.h"
+
 class ConstantSerializers {
 public:
     
     class ByteSerializer : public TypeSerializer {
+    public:
         
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_BYTE;
         };
         
-        byte read(DataInput input) throw(ios_base::failure){
-            return input.readByte();
+        byte read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readByte();
         };
         
-        void write(DataOutput output, byte const obj) throw(ios_base::failure){
-            output.writeByte(obj);
+        void write(DataOutput* dataOutput, byte const obj) throw(ios_base::failure){
+            dataOutput->writeByte(obj);
         };
     };
     
     class BooleanSerializer : public TypeSerializer {
+    public:
         
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
         };
         
-        void write(DataOutput output, bool obj) throw(ios_base::failure){
-//            output.write((obj ? 1 : 0));
+        void write(DataOutput* dataOutput, bool obj) throw(ios_base::failure){
+//            dataOutput->write((obj ? 1 : 0));
         };
         
-        bool read(DataInput input) throw(ios_base::failure){
-            return input.readByte() != 0;
+        bool read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readByte() != 0;
         }
     };
     
     class CharSerializer : public TypeSerializer {
+    public:
         
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_CHAR;
         }
         
-        char read(DataInput input) throw(ios_base::failure){
-            return input.readChar();
+        char read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readChar();
         }
         
-        void write(DataOutput output, const char obj) throw(ios_base::failure){
-            output.writeChar(obj);
+        void write(DataOutput* dataOutput, const char obj) throw(ios_base::failure){
+            dataOutput->writeChar(obj);
         }
     };
     
     class ShortSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_SHORT;
         }
         
-        short read(DataInput input) throw(ios_base::failure){
-            return input.readShort();
+        short read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readShort();
         }
         
-        void write(DataOutput output, const short obj) throw(ios_base::failure){
-            output.writeShort(obj);
+        void write(DataOutput* dataOutput, const short obj) throw(ios_base::failure){
+            dataOutput->writeShort(obj);
         }
     };
     
     class IntegerSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_INTEGER;
         }
         
-        int read(DataInput input) throw(ios_base::failure){
-            return input.readInt();
+        int read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readInt();
         }
         
-        void write(DataOutput output, const int obj) throw(ios_base::failure){
-            output.writeInt(obj);
+        void write(DataOutput* dataOutput, const int obj) throw(ios_base::failure){
+            dataOutput->writeInt(obj);
         }
     };
     
     class LongSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_LONG;
         }
         
-        long read(DataInput input) throw(ios_base::failure){
-            return input.readLong();
+        long read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readLong();
         }
         
-        void write(DataOutput output, const long obj) throw(ios_base::failure){
-            output.writeLong(obj);
+        void write(DataOutput* dataOutput, const long obj) throw(ios_base::failure){
+            dataOutput->writeLong(obj);
         }
     };
     
     class FloatSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_FLOAT;
         }
         
-        float read(DataInput input) throw(ios_base::failure){
-            return input.readFloat();
+        float read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readFloat();
         }
         
-        void write(DataOutput output, const float obj) throw(ios_base::failure){
-            output.writeFloat(obj);
+        void write(DataOutput* dataOutput, const float obj) throw(ios_base::failure){
+            dataOutput->writeFloat(obj);
         }
     };
     
     class DoubleSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_DOUBLE;
         }
         
-        double read(DataInput input) throw(ios_base::failure){
-            return input.readDouble();
+        double read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readDouble();
         }
         
-        void write(DataOutput output, const double obj) throw(ios_base::failure){
-            output.writeDouble(obj);
+        void write(DataOutput* dataOutput, const double obj) throw(ios_base::failure){
+            dataOutput->writeDouble(obj);
         }
     };
     
     class StringSerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_STRING;
         }
         
-        string read(DataInput input) throw(ios_base::failure){
-            return input.readUTF();
+        string read(DataInput dataInput) throw(ios_base::failure){
+            return dataInput.readUTF();
         }
         
-        void write(DataOutput output, const string obj) throw(ios_base::failure){
-            output.writeUTF(obj);
+        void write(DataOutput* dataOutput, const string obj) throw(ios_base::failure){
+            dataOutput->writeUTF(obj);
         }
     };
     
     class ByteArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
         }
         
-        byte* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        byte* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 byte* b = new byte[size];
-                input.readFully(b,0,size);
+                dataInput.readFully(b,0,size);
                 return b;
             }
         }
         
-        void write(DataOutput output, byte * const obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
-            output.writeInt(size);
+        void write(DataOutput* dataOutput, ByteArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                output.write(obj,0,size);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeByte(obj[i]);
+                }
             }
         }
     };
     
     class CharArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        char* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        char* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 char* c = new char[size];
                 for (int i = 0; i < size; i++) {
-                    c[i] = input.readChar();
+                    c[i] = dataInput.readChar();
                 }
                 return c;
             }
         }
         
-        void write(DataOutput output, char* obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
-
+        void write(DataOutput* dataOutput, CharArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeChar(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeChar(obj[i]);
                 }
             }
         }
     };
     
     class ShortArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
         }
         
-        short* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        short* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 short* s = new short[size];
                 for (int i = 0; i < size; i++) {
-                    s[i] = input.readShort();
+                    s[i] = dataInput.readShort();
                 }
                 return s;
             }
         }
         
-        void write(DataOutput output, const short* obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
+        void write(DataOutput* dataOutput, ShortArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeShort(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeShort(obj[i]);
                 }
             }
         }
     };
     
     class IntegerArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
         }
         
-        int* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        int* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 int* s = new int[size];
                 for (int i = 0; i < size; i++) {
-                    s[i] = input.readInt();
+                    s[i] = dataInput.readInt();
                 }
                 return s;
             }
         }
         
-        void write(DataOutput output, const int* obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
+        void write(DataOutput* dataOutput, IntegerArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeInt(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeInt(obj[i]);
                 }
             }
         }
     };
     
     class LongArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
         }
         
-        long* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        long* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 long* l = new long[size];
                 for (int i = 0; i < size; i++) {
-                    l[i] = input.readLong();
+                    l[i] = dataInput.readLong();
                 }
                 return l;
             }
         }
         
-        void write(DataOutput output, const long* obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
-            output.writeInt(size);
+        void write(DataOutput* dataOutput, LongArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeLong(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeLong(obj[i]);
                 }
             }
         }
     };
     
     class FloatArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
         }
         
-        float* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        float* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 float * f = new float[size];
                 for (int i = 0; i < size; i++) {
-                    f[i] = input.readFloat();
+                    f[i] = dataInput.readFloat();
                 }
                 return f;
             }
         }
         
-        void write(DataOutput output, const float* obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
-
+        void write(DataOutput* dataOutput, FloatArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeFloat(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeFloat(obj[i]);
                 }
             }
         }
     };
     
     class DoubleArraySerializer : public TypeSerializer {
-        
+    public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
         }
         
-        double* read(DataInput input) throw(ios_base::failure){
-            int size = input.readInt();
+        double* read(DataInput dataInput) throw(ios_base::failure){
+            int size = dataInput.readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 double * d = new double[size];
                 for (int i = 0; i < size; i++) {
-                    d[i] = input.readDouble();
+                    d[i] = dataInput.readDouble();
                 }
                 return d;
             }
         }
         
-        void write(DataOutput output, const double * obj) throw(ios_base::failure){
-//            int size = (obj == NULL) ? 0 : obj.length;
-            int size = 10;
-
+        void write(DataOutput* dataOutput, DoubleArray& obj) throw(ios_base::failure){
+            int size = obj.length();
+            dataOutput->writeInt(size);
             if (size > 0) {
-                for (int i = 0; i < size; i++) {
-                    output.writeDouble(obj[i]);
+                for(int i = 0; i < size ; i++){
+                    dataOutput->writeDouble(obj[i]);
                 }
             }
         }
@@ -365,7 +373,7 @@ public:
 private:
     
     
-    ConstantSerializers() {}
+        ConstantSerializers() {};
 };
 
 #endif

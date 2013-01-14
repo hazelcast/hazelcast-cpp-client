@@ -18,7 +18,7 @@ public:
     Data toData(K);//TODO virtual ?
     
     template<typename K>
-    K toObject(Data);//TODO virtual ?
+    K toObject(Data*);//TODO virtual ?
     
     virtual SerializationContext* getSerializationContext() = 0;
 };

@@ -12,7 +12,7 @@
 #include <iostream>
 #include "DataOutput.h"
 #include "Closeable.h"
-typedef char byte;
+typedef unsigned char byte;
 
 class BufferObjectDataOutput : public DataOutput , Closeable{
 public:

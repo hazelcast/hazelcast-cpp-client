@@ -21,94 +21,63 @@
 #include "ContextAwareDataOutput.h"
 #include "TypeSerializer.h"
 #include "PortableSerializer.h"
+#include "ConstantSerializers.h"
 
-class SerializationServiceImpl :public SerializationService{
+class SerializationServiceImpl : public SerializationService{
 public:
     
     SerializationServiceImpl(int,PortableFactory*);
     ~SerializationServiceImpl();
     
     template<typename K>
-    Data toData(K){
-        /*
-         ContextAwareDataOutput out = pop();
-         try {
-         final TypeSerializer serializer = serializerFor(obj.getClass());
-         if (serializer == NULL) {
-         throw new NotSerializableException("There is no suitable serializer for " + obj.getClass());
-         }
-         serializer.write(out, obj);
-         final Data data = new Data(serializer.getTypeId(), out.toByteArray());
-         if (obj instanceof Portable) {
-         data.cd = serializationContext.lookup(((Portable) obj).getClassId());
-         }
-         return data;
-         } catch (Throwable e) {
-         if (e instanceof HazelcastSerializationException) {
-         throw (HazelcastSerializationException) e;
-         }
-         throw new HazelcastSerializationException(e);
-         } finally {
-         push(out);
-         }
-         */
-        Data d;
-        return d;
+    Data* toData(K object){
+        ContextAwareDataOutput* output = pop();
+
+        Data* data = new Data(portableSerializer->getTypeId(), output->toByteArray());
+        
+        Portable* portable = dynamic_cast<Portable*>(&object);
+        if (portable != NULL) {
+//            data->cd = serializationContext->lookup(portable->getClassId());
+        }else{
+            throw "class is not portable";
+        }
+        return data;
+        //        push(output);TODO where to put
     };
+
+    Data* toData(Data&);
+    Data* toData(bool);
+    Data* toData(char);
+    Data* toData(short);
+    Data* toData(int);
+    Data* toData(long);
+    Data* toData(float);
+    Data* toData(double);
+    Data* toData(char*);
+    Data* toData(short*);
+    Data* toData(int*);
+    Data* toData(long*);
+    Data* toData(float*);
+    Data* toData(double*);
+    Data* toData(string);
     
     template<typename K>
-    K toObject(Data){
+    K toObject(Data* data){
         K b;
         return b;
-        /*
-         if ((data == NULL) || (data.buffer == NULL) || (data.buffer.length == 0)) {
-         return NULL;
-         }
-         ContextAwareDataInput in = NULL;
-         try {
-         final int typeId = data.type;
-         final TypeSerializer serializer = serializerFor(typeId);
-         if (serializer == NULL) {
-         throw new IllegalArgumentException("There is no suitable de-serializer for type " + typeId);
-         }
-         if (data.type == SerializationConstants.CONSTANT_TYPE_PORTABLE) {
-         serializationContext.registerClassDefinition(data.cd);
-         }
-         in = new ContextAwareDataInput(data, this);
-         Object obj = serializer.read(in);
-         return obj;
-         } catch (Throwable e) {
-         if (e instanceof HazelcastSerializationException) {
-         throw (HazelcastSerializationException) e;
-         }
-         throw new HazelcastSerializationException(e);
-         } finally {
-         if (in != NULL) {
-         in.close();
-         }
-         }
-         */
         
     };
     
-    void push(ContextAwareDataOutput);
+    void push(ContextAwareDataOutput*);
     
-    template <typename T>
-    TypeSerializer* serializerFor(){
-        
-    };
-    
-//    template <typename T>//TODO i added template
     TypeSerializer* serializerFor(int const);
     
     SerializationContext* getSerializationContext();
     
 private:
-    
-    ContextAwareDataOutput pop();
-    
-//    template <typename T>//TODO i added template
-    void registerDefault(std::string, TypeSerializer*);
+    ContextAwareDataOutput* pop();
+
+    void registerDefault(TypeSerializer*);
     
     int indexForDefaultType(int const);
     
@@ -117,12 +86,29 @@ private:
     
     static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;
     static int const CONSTANT_SERIALIZERS_SIZE = SerializationConstants::CONSTANT_SERIALIZERS_LENGTH;
-    
-    map<std::string, TypeSerializer*> constantsTypeMap;
+
     TypeSerializer** constantTypeIds ;
     
-//    queue<ContextAwareDataOutput> outputPool;
+    queue<ContextAwareDataOutput*> outputPool;
+    
     PortableSerializer* portableSerializer;
+    ConstantSerializers::ByteSerializer* byteSerializer;
+    ConstantSerializers::BooleanSerializer* booleanSerializer;
+    ConstantSerializers::CharSerializer* charSerializer;
+    ConstantSerializers::ShortSerializer* shortSerializer;
+    ConstantSerializers::IntegerSerializer* integerSerializer;
+    ConstantSerializers::LongSerializer* longSerializer;
+    ConstantSerializers::FloatSerializer* floatSerializer;
+    ConstantSerializers::DoubleSerializer* doubleSerializer;
+    ConstantSerializers::ByteArraySerializer* byteArraySerializer;
+    ConstantSerializers::CharArraySerializer* charArraySerializer;
+    ConstantSerializers::ShortArraySerializer* shortArraySerializer;
+    ConstantSerializers::IntegerArraySerializer* integerArraySerializer;
+    ConstantSerializers::LongArraySerializer* longArraySerializer;
+    ConstantSerializers::FloatArraySerializer* floatArraySerializer;
+    ConstantSerializers::DoubleArraySerializer* doubleArraySerializer;
+    ConstantSerializers::StringSerializer* stringSerializer;
+    
     SerializationContext* serializationContext;
     
 

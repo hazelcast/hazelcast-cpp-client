@@ -17,7 +17,7 @@ class TypeSerializer{
 public:
     virtual int getTypeId() = 0;
     template<typename T>
-    void write(DataOutput, T ) throw(std::ios_base::failure);
+    void write(DataOutput*, T ) throw(std::ios_base::failure);
     
     template<typename T>
     T read(DataInput) throw(std::ios_base::failure);

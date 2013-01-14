@@ -11,7 +11,7 @@
 
 #include "DataInput.h"
 #include "Closeable.h"
-typedef char byte;
+typedef unsigned char byte;
 
 class BufferObjectDataInput : public DataInput , Closeable{
     virtual int read(int index) throw (std::ios_base::failure)= 0 ;
