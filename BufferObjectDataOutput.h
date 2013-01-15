@@ -16,9 +16,9 @@ typedef unsigned char byte;
 
 class BufferObjectDataOutput : public DataOutput , Closeable{
 public:
-    virtual void write(int index, int b) = 0;
+    virtual void write(int index, int b) throw (std::ios_base::failure)= 0;
     
-    virtual void write(int index, byte b[], int off, int len) = 0;
+    virtual void write(int index, char* b, int off, int len) throw (std::ios_base::failure) = 0;
     
     virtual void writeInt(int index, int v) throw (std::ios_base::failure) = 0;
     
@@ -40,12 +40,12 @@ public:
     
     virtual void position(int newPos) = 0;
     
-    virtual byte* getBuffer() = 0;
+//    virtual byte* getBuffer() = 0;//TODO delete or implement
     
     virtual void reset() = 0;
     
-//    virtual BufferObjectDataOutput duplicate() = 0; TODO
+    virtual BufferObjectDataOutput* duplicate() = 0;
     
-//    virtual BufferObjectDataOutput slice() = 0; TODO
+    virtual BufferObjectDataOutput* slice() = 0;
 };
 #endif /* defined(__Server__BufferObjectDataOutput__) */

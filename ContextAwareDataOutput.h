@@ -20,15 +20,18 @@ class ContextAwareDataOutput : public BufferObjectDataOutput{
 public:
     ContextAwareDataOutput(SerializationService*);
     
-    ContextAwareDataOutput(int , SerializationService*);
+    ContextAwareDataOutput(int ,std::ostringstream*, SerializationService*);
     
-    ContextAwareDataOutput(ByteArray&,int,SerializationService*);
+    ContextAwareDataOutput(std::ostringstream*,SerializationService*);
     
-    ByteArray* toByteArray(){};
-    int getSize(){};
+    ByteArray* toByteArray();
+    
+    int getSize();
+    
+    SerializationContext& getSerializationContext();
     
     std::string toString(); //TODO remove
-   
+    
     //Inherited from DataOutput
     void write(char* bytes, int offset, int length)throw (std::ios_base::failure) ;
     
@@ -51,44 +54,52 @@ public:
     void writeUTF(std::string s)throw (std::ios_base::failure) ;
     
     //Inherited from BufferObjectDataOutput
-    void write(int index, int b){};
+    void write(int index, int b) throw (std::ios_base::failure);
     
-    void write(int index, byte b[], int off, int len){};
+    void write(int index, char* b, int off, int len) throw (std::ios_base::failure);
     
-    void writeInt(int index, int v) throw (std::ios_base::failure){};
+    void writeInt(int index, int v) throw (std::ios_base::failure);
     
-    void writeLong(int index, const long v) throw (std::ios_base::failure){};
+    void writeLong(int index, const long v) throw (std::ios_base::failure);
     
-    void writeBoolean(int index, const bool v) throw (std::ios_base::failure){};
+    void writeBoolean(int index, const bool v) throw (std::ios_base::failure);
     
-    void writeByte(int index, const int v) throw (std::ios_base::failure){};
+    void writeByte(int index, const int v) throw (std::ios_base::failure);
     
-    void writeChar(int index, const int v) throw (std::ios_base::failure){};
+    void writeChar(int index, const int v) throw (std::ios_base::failure);
     
-    void writeDouble(int index, const double v) throw (std::ios_base::failure){};
+    void writeDouble(int index, const double v) throw (std::ios_base::failure);
     
-    void writeFloat(int index, const float v) throw (std::ios_base::failure){};
+    void writeFloat(int index, const float v) throw (std::ios_base::failure);
     
-    void writeShort(int index, const int v) throw (std::ios_base::failure){};
+    void writeShort(int index, const int v) throw (std::ios_base::failure);
     
-    int position(){};
+    int position();
     
-    void position(int newPos){};
+    void position(int newPos);
     
-    byte* getBuffer(){};
+//    ByteArray* getBuffer();//TODO delete or implement
     
-    void reset(){};
+    virtual BufferObjectDataOutput* duplicate();
+    
+    virtual BufferObjectDataOutput* slice();
+    
+    void reset();
     
     //Inherited from Closable
-    void close() throw(std::ios_base::failure){};
+    void close() throw(std::ios_base::failure){};//TODO delete or implement
 private:
-    std::ostringstream buffer;
-    int const offset = 0;
+    std::ostringstream* buffer;
+//    int const offset = 0;
+
     SerializationService* service;
     
     static int const DEFAULT_SIZE = 1024 * 4;
     
     static int const STRING_CHUNK_SIZE = 16 * 1024;
+    
+    void writeShortUTF(std::string) throw(std::ios_base::failure);
+    
 };
 
 #endif

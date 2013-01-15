@@ -8,21 +8,49 @@
 
 #include "ContextAwareDataOutput.h"
 #include <string>
+#include <algorithm>
 
 ContextAwareDataOutput::ContextAwareDataOutput(SerializationService* service){
     this->service = service;
+    this->buffer = new std::ostringstream;
 };
 
-ContextAwareDataOutput::ContextAwareDataOutput(int size,SerializationService* service){
-    //TODO think if necessary
+ContextAwareDataOutput::ContextAwareDataOutput(int offset,std::ostringstream* buffer,SerializationService* service){
+    this->buffer = buffer;    
+    this->service = service;//TODO implement
 };
 
-ContextAwareDataOutput::ContextAwareDataOutput(ByteArray& buffer, int size,SerializationService* service){
-    //TODO think if necessary
+ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream* buffer,SerializationService* service){
+    this->buffer = buffer;
+    this->service = service;
 };
 
+ByteArray* ContextAwareDataOutput::toByteArray(){
+    int size = getSize();
+    ByteArray* byteArray = new ByteArray(size);
+    std::string str = buffer->str();
+    for(int i = 0; i < size ; i++){
+        byteArray[i] = str[i];
+    }
+    return byteArray;
+};
+
+int ContextAwareDataOutput::getSize(){
+    return (int)buffer->str().length();
+};
+
+SerializationContext& ContextAwareDataOutput::getSerializationContext(){
+    return *(service->getSerializationContext());
+};
+
+
+std::string ContextAwareDataOutput::toString(){//TODO remove
+    return buffer->str();
+};
+
+//Inherited from DataOutput
 void ContextAwareDataOutput::write(char *bytes, int off, int len) throw(std::ios_base::failure){
-    buffer.write(bytes + off , sizeof(char) * len);
+    buffer->write(bytes + off , sizeof(char) * len);
 };
 
 void ContextAwareDataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
@@ -30,7 +58,7 @@ void ContextAwareDataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
 };
 
 void ContextAwareDataOutput::writeByte(int i) throw(std::ios_base::failure){
-    buffer.put(0xff & i);
+    buffer->put(0xff & i);
 };
 
 void ContextAwareDataOutput::writeShort(int v) throw(std::ios_base::failure){
@@ -80,6 +108,112 @@ void ContextAwareDataOutput::writeDouble(double v) throw(std::ios_base::failure)
 };
 
 void ContextAwareDataOutput::writeUTF(std::string str) throw(std::ios_base::failure){
+    
+    int length = (int)str.length();
+    writeInt(length);
+    int chunkSize = length / STRING_CHUNK_SIZE + 1;
+    for (int i = 0; i < chunkSize; i++) {
+        int beginIndex = std::max(0, i * STRING_CHUNK_SIZE - 1);
+        int endIndex = std::max((i + 1) * STRING_CHUNK_SIZE - 1, length);
+        writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
+    }
+};
+//Inherited from BufferObjectDataOutput
+
+void ContextAwareDataOutput::write(int index, int b) throw(std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeByte(b);
+    position(pos);
+};
+
+
+void ContextAwareDataOutput::write(int index, char* b, int off, int len) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    write(b,off,len);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeInt(int index, int v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeInt(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeLong(int index, const long v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeLong(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeBoolean(int index, const bool v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeBoolean(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeByte(int index, const int v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeByte(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeChar(int index, const int v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeChar(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeDouble(int index, const double v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeDouble(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeFloat(int index, const float v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeFloat(v);
+    position(pos);
+};
+
+void ContextAwareDataOutput::writeShort(int index, const int v) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    writeShort(v);
+    position(pos);
+};
+
+int ContextAwareDataOutput::position(){
+    return (int)buffer->tellp();
+};
+
+void ContextAwareDataOutput::position(int newPos){
+    buffer->seekp(newPos);
+};
+
+BufferObjectDataOutput* ContextAwareDataOutput::duplicate(){
+    return dynamic_cast<BufferObjectDataOutput*>(new ContextAwareDataOutput(buffer,service));
+};
+
+BufferObjectDataOutput* ContextAwareDataOutput::slice(){
+    return dynamic_cast<BufferObjectDataOutput*>(new ContextAwareDataOutput(0,buffer,service));//TODO think on offset 0
+
+};
+
+void ContextAwareDataOutput::reset(){
+    position(0);
+};
+
+//private functions
+void ContextAwareDataOutput::writeShortUTF(std::string str) throw(std::ios_base::failure){
     int stringLen = (int)str.length();
     int utfLength = 0;
     int count = 0;
@@ -120,10 +254,4 @@ void ContextAwareDataOutput::writeUTF(std::string str) throw(std::ios_base::fail
     }
     writeShort(utfLength);
     write(byteArray, 0, utfLength);
-
-};
-
-
-std::string ContextAwareDataOutput::toString(){//TODO remove
-    return buffer.str();
 };

@@ -59,20 +59,14 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
 };
 
 SerializationServiceImpl::~SerializationServiceImpl(){
-    /*
-    for (ContextAwareDataOutput output : outputPool) {
-        output.close();
-    }
-     */
     while (!outputPool.empty())
     {
         outputPool.pop();
     }
-    
 };
 
 void SerializationServiceImpl::push(ContextAwareDataOutput* out) {
-//    out->reset();
+    out->reset();
     outputPool.push(out);
 };
 
@@ -94,8 +88,7 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
     ContextAwareDataOutput* out = outputPool.front();
     outputPool.pop();
     if (out == NULL) {
-        out = new ContextAwareDataOutput(this); //TODO change with the next line
-//        out = new ContextAwareDataOutput(OUTPUT_STREAM_BUFFER_SIZE, this);
+        out = new ContextAwareDataOutput(this); 
     }
     return out;
 

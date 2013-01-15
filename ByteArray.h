@@ -16,8 +16,25 @@ public:
         this->len = len;
         buffer = new byte[len];
     };
+    ByteArray(ByteArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new byte[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+    };
     ~ByteArray(){
         delete [] buffer;
+    };
+    ByteArray& operator=(const ByteArray& rhs){
+        len = rhs.len;
+//        delete [] buffer; TODO
+        buffer = new byte[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+        return *this;
     };
     byte& operator[](int i){
         return buffer[i];

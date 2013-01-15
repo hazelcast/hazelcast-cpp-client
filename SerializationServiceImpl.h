@@ -39,10 +39,11 @@ public:
         if (portable != NULL) {
 //            data->cd = serializationContext->lookup(portable->getClassId());
         }else{
+            push(output);
             throw "class is not portable";
         }
         return data;
-        //        push(output);TODO where to put
+
     };
     
     Data* toData(Data&);
