@@ -34,11 +34,10 @@ public:
     static int const NO_CLASS_ID = -1;
     
     ClassDefinitionImpl cd;
-private:
     int type = -1;
     ByteArray* buffer;
+private:
     int partitionHash;
-    int len;
     
 };
 

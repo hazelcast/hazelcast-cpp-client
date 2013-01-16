@@ -11,37 +11,89 @@
 
 #include <string>
 #include "BufferObjectDataInput.h"
+#include "ContextAwareDataOutput.h"
 typedef unsigned char byte;
-
+//TODO ask if necessary add offset
 class ContextAwareDataInput : public BufferObjectDataInput{
 public:
-    ContextAwareDataInput(byte*);
-    virtual void readFully(byte* bytes, int off, int len);
+    ContextAwareDataInput(byte*, SerializationService* service);
     
-    virtual int skipBytes(int i) ;
+    ContextAwareDataInput(Data&, SerializationService* service);
     
-    virtual bool readBoolean();
+    std::string readUTF() throw(std::string);
     
-    virtual byte readByte();
+    //Inherited from DataInoput
+    void readFully(byte* bytes, int off, int len);
+    
+    int skipBytes(int i) ;
+    
+    bool readBoolean();
+    
+    byte readByte();
   
-    virtual short readShort();
+    short readShort();
     
-    virtual char readChar();
+    char readChar();
     
-    virtual int readInt();
+    int readInt();
     
-    virtual long readLong();
+    long readLong();
     
-    virtual float readFloat();
+    float readFloat();
     
-    virtual double readDouble();
+    double readDouble();
     
-    virtual std::string readUTF() throw(std::string);
+    //Inherited from BufferObjectDataInput
+    int read(int index) throw (std::ios_base::failure) ;
     
+    int read(int index, byte* b, int off, int len) throw (std::ios_base::failure) ;
     
+    int readInt(int index) throw (std::ios_base::failure) ;
+    
+    long readLong(int index) throw (std::ios_base::failure) ;
+    
+    bool readBoolean(int index) throw (std::ios_base::failure) ;
+    
+    byte readByte(int index) throw (std::ios_base::failure) ;
+    
+    char readChar(int index) throw (std::ios_base::failure) ;
+    
+    double readDouble(int index) throw (std::ios_base::failure) ;
+    
+    float readFloat(int index) throw (std::ios_base::failure) ;
+    
+    short readShort(int index) throw (std::ios_base::failure) ;
+    
+    int position() ;
+    
+    void position(int newPos) ;
+    
+    void reset() ;
+    
+    BufferObjectDataInput* duplicate();
+    
+    BufferObjectDataInput* slice();
+    
+    //inherited from closable
+    void close() throw(std::ios_base::failure);
 private:
     byte* ptr;
+    byte* beg;
+    
     int size;
+    SerializationService* service;
+    int dataClassId;
+    
+    int dataVersion;
+    
+    static int const STRING_CHUNK_SIZE = ContextAwareDataOutput::STRING_CHUNK_SIZE;
+    
+    std::string readShortUTF() throw (std::ios_base::failure) ;
+    
+    
+//    int mark ;
+    
+    
 };
 
 #endif /* defined(__Server__DataInput__) */

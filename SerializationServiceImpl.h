@@ -19,6 +19,7 @@
 #include "PortableFactory.h"
 #include "SerializationConstants.h"
 #include "ContextAwareDataOutput.h"
+#include "ContextAwareDataInput.h"
 #include "TypeSerializer.h"
 #include "PortableSerializer.h"
 #include "ConstantSerializers.h"
@@ -33,7 +34,7 @@ public:
     Data* toData(K object){
         ContextAwareDataOutput* output = pop();
 
-        Data* data = new Data(portableSerializer->getTypeId(), output->toByteArray());
+        Data* data = new Data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
         
         Portable* portable = dynamic_cast<Portable*>(&object);
         if (portable != NULL) {
@@ -64,9 +65,24 @@ public:
     
     template<typename K>
     K toObject(Data* data){
-        K b;
-        return b;
+        if(data == NULL || data->size() == 0){
+            throw "Null pointer exception";
+        }
         
+        int const typeID = data->type;
+        TypeSerializer*  typeSerializer = serializerFor(typeID);
+        if(typeSerializer == NULL){
+            std::string error = "There is no suitable de-serializer for type ";
+            error += typeID;
+            throw error;
+        }
+        if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
+            serializationContext->registerClassDefinition(&(data->cd));
+        }
+        ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+        K obj = typeSerializer->read<K>(dynamic_cast<DataInput*>(dataInput));
+        
+        return obj;
     };
     
     void push(ContextAwareDataOutput*);
@@ -78,7 +94,7 @@ public:
 private:
     ContextAwareDataOutput* pop();
 
-    void registerDefault(TypeSerializer*);
+//    void registerDefault(TypeSerializer*);
     
     int indexForDefaultType(int const);
     
@@ -92,6 +108,24 @@ private:
     
     queue<ContextAwareDataOutput*> outputPool;
     
+    TypeSerializer* portableSerializer;
+    TypeSerializer* byteSerializer;
+    TypeSerializer* booleanSerializer;
+    TypeSerializer* charSerializer;
+    TypeSerializer* shortSerializer;
+    TypeSerializer* integerSerializer;
+    TypeSerializer* longSerializer;
+    TypeSerializer* floatSerializer;
+    TypeSerializer* doubleSerializer;
+    TypeSerializer* byteArraySerializer;
+    TypeSerializer* charArraySerializer;
+    TypeSerializer* shortArraySerializer;
+    TypeSerializer* integerArraySerializer;
+    TypeSerializer* longArraySerializer;
+    TypeSerializer* floatArraySerializer;
+    TypeSerializer* doubleArraySerializer;
+    TypeSerializer* stringSerializer;
+    /*
     PortableSerializer* portableSerializer;
     ConstantSerializers::ByteSerializer* byteSerializer;
     ConstantSerializers::BooleanSerializer* booleanSerializer;
@@ -109,7 +143,7 @@ private:
     ConstantSerializers::FloatArraySerializer* floatArraySerializer;
     ConstantSerializers::DoubleArraySerializer* doubleArraySerializer;
     ConstantSerializers::StringSerializer* stringSerializer;
-    
+    */
     SerializationContext* serializationContext;
     
 

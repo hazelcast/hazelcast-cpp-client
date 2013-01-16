@@ -11,13 +11,13 @@
 
 #include <string>
 #include "DataSerializable.h"
-#include "FieldDefinition.h"
+#include "FieldDefinitionImpl.h"
 
 class ClassDefinition : public DataSerializable{
 public:
-    virtual FieldDefinition get(std::string name) = 0;
+    virtual FieldDefinitionImpl* get(std::string name) = 0;
     
-    virtual FieldDefinition get(int fieldIndex) = 0;
+    virtual FieldDefinitionImpl* get(int fieldIndex) = 0;
     
     virtual int getFieldCount() = 0;
     

@@ -12,9 +12,9 @@
 typedef unsigned char byte;
 class ByteArray{
 public:
-    ByteArray(int len):len(0){
-        this->len = len;
-        buffer = new byte[len];
+    ByteArray(int size){
+        len = size;
+        buffer = new byte[size];
     };
     ByteArray(ByteArray& rhs){
         len = rhs.len;
@@ -27,17 +27,21 @@ public:
     ~ByteArray(){
         delete [] buffer;
     };
-    ByteArray& operator=(const ByteArray& rhs){
+  /*  ByteArray& operator=(const ByteArray& rhs){
         len = rhs.len;
-//        delete [] buffer; TODO
+        delete [] buffer; TODO
         buffer = new byte[len];
         for(int i = 0; i < len; i++){
             buffer[i] = rhs.buffer[i];
         }
         return *this;
     };
+*/
     byte& operator[](int i){
         return buffer[i];
+    };
+    byte* getBuffer(){
+        return buffer;
     };
     
     int length(){ return len; };

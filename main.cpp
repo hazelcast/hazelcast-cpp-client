@@ -2,14 +2,14 @@
 // server.cpp
 
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
+//#include <boost/asio.hpp>
+//#include <boost/bind.hpp>
+//#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <vector>
 #include <stdio.h>
 #include "ContextAwareDataOutput.h"
-#include "TypeSerializer.h"
+//#include "TypeSerializer.h"
 #include "SerializationService.h"
 #include "SerializationServiceImpl.h"
 #include "TestPortableFactory.h"
@@ -17,6 +17,7 @@
 #include "ByteArray.h"
 
 using namespace std;
+/*
 namespace hazelcast {
     
     /// Serves stock quote information to any client that connects to it.
@@ -48,7 +49,7 @@ namespace hazelcast {
     };
     
 } // namespace hazelcast
-
+*/
 int main(int argc, char* argv[])
 {
     SerializationServiceImpl* serializationService = static_cast<SerializationServiceImpl*>(new SerializationServiceImpl(1,new TestPortableFactory()));
@@ -56,7 +57,7 @@ int main(int argc, char* argv[])
     int x = 3,y;
     TestMainPortable test;
     
-    data = serializationService->toData<TestMainPortable>(test);
+//    data = serializationService->toData<TestMainPortable>(test);
     data = serializationService->toData(x);
     
     y =  serializationService->toObject<int>(data);
@@ -68,9 +69,9 @@ int main(int argc, char* argv[])
     }
     
     
-    TypeSerializer* typeSerializer = serializationService->serializerFor(x);
+//    TypeSerializer* typeSerializer = serializationService->serializerFor(x);
     
-    cout << typeSerializer->getTypeId() << endl;
+//    cout << typeSerializer->getTypeId() << endl;
     
 //    byte x = 138;
 //    printf("%x\n", 0xff & x);

@@ -15,7 +15,7 @@
 #include "BufferObjectDataOutput.h"
 #include "SerializationService.h"
 typedef unsigned char byte;
-
+//TODO ask if necessary add offset
 class ContextAwareDataOutput : public BufferObjectDataOutput{
 public:
     ContextAwareDataOutput(SerializationService*);
@@ -88,6 +88,9 @@ public:
     
     //Inherited from Closable
     void close() throw(std::ios_base::failure){};//TODO delete or implement
+    
+    static int const STRING_CHUNK_SIZE = 16 * 1024;//TODO move to private and Input class friend
+    
 private:
     std::ostringstream* buffer;
 //    int const offset = 0;
@@ -96,7 +99,6 @@ private:
     
     static int const DEFAULT_SIZE = 1024 * 4;
     
-    static int const STRING_CHUNK_SIZE = 16 * 1024;
     
     void writeShortUTF(std::string) throw(std::ios_base::failure);
     

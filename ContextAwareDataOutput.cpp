@@ -30,7 +30,7 @@ ByteArray* ContextAwareDataOutput::toByteArray(){
     ByteArray* byteArray = new ByteArray(size);
     std::string str = buffer->str();
     for(int i = 0; i < size ; i++){
-        byteArray[i] = str[i];
+        (*byteArray)[i] = str[i];
     }
     return byteArray;
 };
@@ -108,6 +108,10 @@ void ContextAwareDataOutput::writeDouble(double v) throw(std::ios_base::failure)
 };
 
 void ContextAwareDataOutput::writeUTF(std::string str) throw(std::ios_base::failure){
+    bool isNull = str.empty();
+    writeBoolean(isNull);
+    if (isNull)
+        return;
     
     int length = (int)str.length();
     writeInt(length);
@@ -118,8 +122,8 @@ void ContextAwareDataOutput::writeUTF(std::string str) throw(std::ios_base::fail
         writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
     }
 };
-//Inherited from BufferObjectDataOutput
 
+//Inherited from BufferObjectDataOutput
 void ContextAwareDataOutput::write(int index, int b) throw(std::ios_base::failure){
     int pos = position();
     position(index);

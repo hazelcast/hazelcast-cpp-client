@@ -8,7 +8,9 @@
 
 #include "DefaultPortableWriter.h"
 
-DefaultPortableWriter::DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd){};
+//DefaultPortableWriter::DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd){};
+
+DefaultPortableWriter::DefaultPortableWriter(TypeSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd){};
 
 void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base::failure){};
 

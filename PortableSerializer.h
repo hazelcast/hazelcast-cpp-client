@@ -10,16 +10,17 @@
 #define __Server__PortableSerializer__
 
 #include <iostream>
-#include "TypeSerializer.h"
 #include "Portable.h"
 #include "SerializationContextImpl.h"
 #include "ClassDefinitionImpl.h"
-class PortableSerializer : public TypeSerializer{
+/*
+//class PortableSerializer : public TypeSerializer{TODO may be deleted
+class PortableSerializer{
 public:
     PortableSerializer(SerializationContext*);
     ~PortableSerializer();
     
-    ClassDefinitionImpl getClassDefinition(Portable) throw(std::ios_base::failure) ;
+    ClassDefinitionImpl* getClassDefinition(Portable) throw(std::ios_base::failure) ;
     
     int getTypeId();
     
@@ -33,4 +34,5 @@ public:
 private:
     SerializationContext* context;//TODO think again
 };
+ */
 #endif /* defined(__Server__PortableSerializer__) */

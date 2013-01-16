@@ -19,12 +19,12 @@
 class SerializationContextImpl : public SerializationContext{
 public:
     SerializationContextImpl(PortableFactory*,int){};
-    ClassDefinitionImpl lookup(int){};
-    ClassDefinitionImpl lookup(int,int){};
+    ClassDefinitionImpl* lookup(int){};
+    ClassDefinitionImpl* lookup(int,int){};
     Portable createPortable(int classId){};
     ClassDefinitionImpl createClassDefinition(byte* compressedBinary) throw(std::ios_base::failure){};
-    void registerNestedDefinitions(ClassDefinitionImpl cd) throw(std::ios_base::failure);
-    void registerClassDefinition(ClassDefinition cd) throw(std::ios_base::failure){};
+    void registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure);
+    void registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure){};
     int getVersion(){};
     
 private:

@@ -8,10 +8,19 @@
 #include <iostream>
 #include "ContextAwareDataInput.h"
 
-ContextAwareDataInput::ContextAwareDataInput(byte* buffer){
+ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationService* service){
     this->ptr = buffer;
+    this->beg = buffer;
+    this->service = service;
 };
 
+ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationService* service){
+    this->ptr = data.buffer->getBuffer();
+    this->beg = data.buffer->getBuffer();
+    this->service = service;
+};
+
+//Inherited from DataInoput
 void ContextAwareDataInput::readFully(byte *bytes, int off, int len){
     memcpy(bytes + off, ptr, sizeof(byte) * len);
     ptr += sizeof(byte) * len;
@@ -94,7 +103,131 @@ double ContextAwareDataInput::readDouble(){
     return u.d;
 };
 
-std::string ContextAwareDataInput::readUTF() throw(std::string){
+std::string ContextAwareDataInput::readUTF() throw(std::string) {
+    bool isNull = readBoolean();
+    if (isNull)
+        return NULL;
+    int length = readInt();
+    std::string result;
+    int chunkSize = length / STRING_CHUNK_SIZE + 1;
+    while (chunkSize > 0) {
+        result.append(readShortUTF());
+        chunkSize--;
+    }
+    return result;
+};
+
+//Inherited from BufferObjectDataInput
+int ContextAwareDataInput::read(int index) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    int v = readByte();
+    position(pos);
+    return v;
+};
+
+int ContextAwareDataInput::read(int index, byte* b, int off, int len) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    readFully(b,off,len); 
+    position(pos);
+    return len;
+};
+
+int ContextAwareDataInput::readInt(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    int v = readInt();
+    position(pos);
+    return v;
+};
+
+long ContextAwareDataInput::readLong(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    long v = readLong();
+    position(pos);
+    return v;
+};
+
+bool ContextAwareDataInput::readBoolean(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    bool v = readBoolean();
+    position(pos);
+    return v;
+};
+
+byte ContextAwareDataInput::readByte(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    byte v = readByte();
+    position(pos);
+    return v;
+};
+
+char ContextAwareDataInput::readChar(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    char v = readChar();
+    position(pos);
+    return v;
+};
+
+double ContextAwareDataInput::readDouble(int index) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    double v = readDouble();
+    position(pos);
+    return v;
+};
+
+float ContextAwareDataInput::readFloat(int index) throw (std::ios_base::failure) {
+    int pos = position();
+    position(index);
+    int v = readFloat();
+    position(pos);
+    return v;
+};
+
+short ContextAwareDataInput::readShort(int index) throw (std::ios_base::failure){
+    int pos = position();
+    position(index);
+    int v = readShort();
+    position(pos);
+    return v;
+};
+
+int ContextAwareDataInput::position(){
+    return int(ptr - beg);
+};
+
+void ContextAwareDataInput::position(int newPos){
+    ptr = beg + newPos;
+};
+
+
+void ContextAwareDataInput::reset(){
+    
+};
+
+BufferObjectDataInput* ContextAwareDataInput::duplicate(){
+    
+};
+
+BufferObjectDataInput* ContextAwareDataInput::slice(){
+    
+};
+
+//Inherited from closeable
+
+void ContextAwareDataInput::close() throw(std::ios_base::failure){
+    
+};
+
+//private functions
+
+std::string ContextAwareDataInput::readShortUTF() throw(std::ios_base::failure){
     int utflen = readShort();
     byte* bytearr = new byte[utflen];
     char* chararr = new char[utflen];
@@ -158,4 +291,3 @@ std::string ContextAwareDataInput::readUTF() throw(std::string){
     chararr[chararr_count++] = '\0';
     return chararr;
 };
-

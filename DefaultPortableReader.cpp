@@ -8,7 +8,7 @@
 
 #include "DefaultPortableReader.h"
 
-DefaultPortableReader::DefaultPortableReader(PortableSerializer p, DataInput d, ClassDefinitionImpl c){
+DefaultPortableReader::DefaultPortableReader(TypeSerializer p, DataInput d, ClassDefinitionImpl c){
 };
 
 int DefaultPortableReader::readInt(string fieldName) throw(ios_base::failure){};

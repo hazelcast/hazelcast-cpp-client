@@ -16,12 +16,13 @@
 #include "ClassDefinitionImpl.h"
 #include "PortableSerializer.h"
 #include "DataInput.h"
-
+#include "TypeSerializer.h"
 using namespace std;
 
 class DefaultPortableReader : public PortableReader {
 public:
-    DefaultPortableReader(PortableSerializer, DataInput, ClassDefinitionImpl);
+    DefaultPortableReader(TypeSerializer, DataInput, ClassDefinitionImpl);
+//    DefaultPortableReader(PortableSerializer, DataInput, ClassDefinitionImpl);
     
     int readInt(string) throw(ios_base::failure);
     long readLong(string) throw(ios_base::failure);
@@ -67,7 +68,9 @@ protected:
 private:
     string readNullableString(DataInput in) throw(ios_base::failure) ;
     
-    PortableSerializer* serializer;
+//    PortableSerializer* serializer;//TODO
+    TypeSerializer* serializer;
+    
     ClassDefinitionImpl cd;
     DataInput* input;
     int offset;

@@ -40,9 +40,9 @@ class BufferObjectDataInput : public DataInput , Closeable{
     
     virtual void reset()= 0 ;
     
-//    virtual BufferObjectDataInput duplicate()= 0 TODO;
+    virtual BufferObjectDataInput* duplicate()= 0;
     
-//    virtual BufferObjectDataInput slice()= 0 TODO;
+    virtual BufferObjectDataInput* slice()= 0;
 };
 
 #endif /* defined(__Server__BufferObjectDataInput__) */

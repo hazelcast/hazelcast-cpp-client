@@ -18,7 +18,7 @@ Data::Data(int type, ByteArray* buffer){
 };
 
 int Data::size(){
-    return (buffer == NULL) ? 0 : len;
+    return (buffer == NULL) ? 0 : buffer->length();
 };
 
 void Data::writeData(DataOutput&) const throw(std::ios_base::failure){

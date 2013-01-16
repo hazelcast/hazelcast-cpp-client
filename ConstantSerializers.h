@@ -23,7 +23,7 @@ using namespace std;
 
 class ConstantSerializers {
 public:
-    
+    /*
     class ByteSerializer : public TypeSerializer {
     public:
         
@@ -31,8 +31,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_BYTE;
         };
         
-        byte read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readByte();
+        byte read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readByte();
         };
         
         void write(DataOutput* dataOutput, byte const obj) throw(ios_base::failure){
@@ -48,11 +48,11 @@ public:
         };
         
         void write(DataOutput* dataOutput, bool obj) throw(ios_base::failure){
-//            dataOutput->write((obj ? 1 : 0));
+            dataOutput->writeBoolean(obj);
         };
         
-        bool read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readByte() != 0;
+        bool read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readBoolean();
         }
     };
     
@@ -63,8 +63,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_CHAR;
         }
         
-        char read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readChar();
+        char read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readChar();
         }
         
         void write(DataOutput* dataOutput, const char obj) throw(ios_base::failure){
@@ -78,8 +78,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_SHORT;
         }
         
-        short read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readShort();
+        short read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readShort();
         }
         
         void write(DataOutput* dataOutput, const short obj) throw(ios_base::failure){
@@ -93,8 +93,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_INTEGER;
         }
         
-        int read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readInt();
+        int read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readInt();
         }
         
         void write(DataOutput* dataOutput, const int obj) throw(ios_base::failure){
@@ -108,8 +108,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_LONG;
         }
         
-        long read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readLong();
+        long read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readLong();
         }
         
         void write(DataOutput* dataOutput, const long obj) throw(ios_base::failure){
@@ -123,8 +123,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_FLOAT;
         }
         
-        float read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readFloat();
+        float read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readFloat();
         }
         
         void write(DataOutput* dataOutput, const float obj) throw(ios_base::failure){
@@ -138,8 +138,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_DOUBLE;
         }
         
-        double read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readDouble();
+        double read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readDouble();
         }
         
         void write(DataOutput* dataOutput, const double obj) throw(ios_base::failure){
@@ -153,8 +153,8 @@ public:
             return SerializationConstants::CONSTANT_TYPE_STRING;
         }
         
-        string read(DataInput dataInput) throw(ios_base::failure){
-            return dataInput.readUTF();
+        string read(DataInput* dataInput) throw(ios_base::failure){
+            return dataInput->readUTF();
         }
         
         void write(DataOutput* dataOutput, const string obj) throw(ios_base::failure){
@@ -168,13 +168,13 @@ public:
             return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
         }
         
-        byte* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        byte* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 byte* b = new byte[size];
-                dataInput.readFully(b,0,size);
+                dataInput->readFully(b,0,size);
                 return b;
             }
         }
@@ -196,14 +196,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        char* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        char* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 char* c = new char[size];
                 for (int i = 0; i < size; i++) {
-                    c[i] = dataInput.readChar();
+                    c[i] = dataInput->readChar();
                 }
                 return c;
             }
@@ -226,14 +226,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
         }
         
-        short* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        short* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 short* s = new short[size];
                 for (int i = 0; i < size; i++) {
-                    s[i] = dataInput.readShort();
+                    s[i] = dataInput->readShort();
                 }
                 return s;
             }
@@ -256,14 +256,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
         }
         
-        int* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        int* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 int* s = new int[size];
                 for (int i = 0; i < size; i++) {
-                    s[i] = dataInput.readInt();
+                    s[i] = dataInput->readInt();
                 }
                 return s;
             }
@@ -286,14 +286,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
         }
         
-        long* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        long* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 long* l = new long[size];
                 for (int i = 0; i < size; i++) {
-                    l[i] = dataInput.readLong();
+                    l[i] = dataInput->readLong();
                 }
                 return l;
             }
@@ -316,14 +316,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
         }
         
-        float* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        float* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 float * f = new float[size];
                 for (int i = 0; i < size; i++) {
-                    f[i] = dataInput.readFloat();
+                    f[i] = dataInput->readFloat();
                 }
                 return f;
             }
@@ -346,14 +346,14 @@ public:
             return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
         }
         
-        double* read(DataInput dataInput) throw(ios_base::failure){
-            int size = dataInput.readInt();
+        double* read(DataInput* dataInput) throw(ios_base::failure){
+            int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
                 double * d = new double[size];
                 for (int i = 0; i < size; i++) {
-                    d[i] = dataInput.readDouble();
+                    d[i] = dataInput->readDouble();
                 }
                 return d;
             }
@@ -369,7 +369,7 @@ public:
             }
         }
     };
-     
+     */
 private:
     
     

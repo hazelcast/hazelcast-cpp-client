@@ -20,7 +20,7 @@ using namespace std;
 
 class ClassDefinitionWriter : public PortableWriter{
 public:
-    ClassDefinitionWriter(int classId);
+    ClassDefinitionWriter(int classId,int version);
     
     void writeInt(string fieldName, int value) throw(ios_base::failure);
     
@@ -40,7 +40,11 @@ public:
     
     void writeShort(string fieldName, short value) throw(ios_base::failure) ;
     
-    void writePortable(string fieldName, Portable portable) throw(ios_base::failure) ;
+    template<typename T>
+    void writePortable(string fieldName, T portable) throw(ios_base::failure){
+        FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_PORTABLE, portable.getClassId());
+        addNestedField(&portable, fd);
+    };
     
     void writeByteArray(string fieldName, byte* bytes) throw(ios_base::failure) ;
     
@@ -56,13 +60,30 @@ public:
     
     void writeShortArray(string fieldName, short* values) throw(ios_base::failure) ;
     
-    void writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure) ;
+    template<typename T>
+    void writePortableArray(string fieldName, T* portables) throw(ios_base::failure){
+        if (portables == NULL) {
+            throw "Illegal Argument Exception";
+        }
+        T* p = portables;
+        int classId = p->getClassId();
+        //    for (int i = 1; i < portables.length; i++) {//TODO
+        for (int i = 1; i < 2; i++) {
+            if (portables[i].getClassId() != classId) {
+                throw "Illegal Argument Exception";
+            }
+        }
+        FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName,
+                                                          FieldDefinitionImpl::TYPE_PORTABLE_ARRAY, classId);
+        addNestedField(p, fd);
+    };
+    
+    ClassDefinitionImpl cd;
 private:
-    void addNestedField(Portable p, FieldDefinitionImpl fd) throw(ios_base::failure) ;
+    void addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) ;
 
     int index;
-    ClassDefinitionImpl cd;
-        
+    
     
 };
 

@@ -13,15 +13,19 @@
 #include <string>
 #include "ClassDefinition.h"
 #include "ClassDefinitionImpl.h"
-#include "PortableSerializer.h"
+//#include "PortableSerializer.h"
+#include "TypeSerializer.h"
 #include "DataInput.h"
 #include "BufferObjectDataOutput.h"
+#include "Portable.h"
 
 using namespace std;
 
 class DefaultPortableWriter{
-        
-    DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd);
+    
+    //    DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd);
+    DefaultPortableWriter(TypeSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd);
+    
     
     void writeInt(string fieldName, int value) throw(ios_base::failure);
     
@@ -63,7 +67,9 @@ class DefaultPortableWriter{
     
     static void writeNullablestring(DataOutput output, string obj);
 private:
-    PortableSerializer* serializer;
+//    PortableSerializer* serializer;
+    TypeSerializer* serializer;
+    
     ClassDefinitionImpl cd;
     BufferObjectDataOutput* output;
     int offset;

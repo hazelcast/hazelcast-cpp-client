@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+/*
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
@@ -72,3 +72,4 @@ int main2(int argc, char* argv[])
     
     return 0;
 }
+*/
