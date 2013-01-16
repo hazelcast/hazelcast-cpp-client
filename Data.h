@@ -34,7 +34,7 @@ public:
     
     static int const NO_CLASS_ID = -1;
     
-    ClassDefinitionImpl cd;
+    ClassDefinitionImpl* cd;
     int type = -1;
     ByteArray* buffer;
 private:

@@ -42,23 +42,23 @@ public:
     
     void writeShort(string fieldName, short value) throw(ios_base::failure);
     
-    void writePortable(string fieldName, Portable portable) throw(ios_base::failure);
+    void writePortable(string fieldName, Portable* portable) throw(ios_base::failure);
     
-    void writeByteArray(string fieldName, byte* values) throw(ios_base::failure);
+    void writeByteArray(string fieldName, byte* values, int len) throw(ios_base::failure);
     
-    void writeCharArray(string fieldName, char* values) throw(ios_base::failure);
+    void writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure);
     
-    void writeIntArray(string fieldName, int* values) throw(ios_base::failure);
+    void writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure);
     
-    void writeLongArray(string fieldName, long* values) throw(ios_base::failure);
+    void writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure);
     
-    void writeDoubleArray(string fieldName, double* values) throw(ios_base::failure);
+    void writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure);
     
-    void writeFloatArray(string fieldName, float* values) throw(ios_base::failure);
+    void writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure);
     
-    void writeShortArray(string fieldName, short* values) throw(ios_base::failure);
+    void writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure);
     
-    void writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure);
+    void writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure);
     
     void setPosition(string fieldName) throw(ios_base::failure);
     

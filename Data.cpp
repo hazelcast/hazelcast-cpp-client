@@ -9,12 +9,13 @@
 #include "Data.h"
 
 Data::Data(){
-    
+    this->cd = new ClassDefinitionImpl();
 };
 
 Data::Data(int type, ByteArray* buffer){
     this->type = type;
     this->buffer = buffer;
+    this->cd = new ClassDefinitionImpl();        
 };
 
 int Data::size(){

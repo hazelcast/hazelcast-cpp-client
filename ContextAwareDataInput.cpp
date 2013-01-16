@@ -25,6 +25,10 @@ int ContextAwareDataInput::getDataClassId(){
     return dataClassId;
 };
 
+void ContextAwareDataInput::setDataClassId(int id){
+    dataClassId = id;
+};
+
 int ContextAwareDataInput::getDataVersion(){
     return dataVersion;
 };

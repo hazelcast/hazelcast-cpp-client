@@ -60,7 +60,7 @@ public:
     
     short* readShortArray(string) throw(ios_base::failure);
     
-    Portable readPortable(string) throw(ios_base::failure) ;
+    Portable* readPortable(string) throw(ios_base::failure) ;
 
     Portable* readPortableArray(string) throw(ios_base::failure);
 

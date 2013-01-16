@@ -36,21 +36,21 @@ public:
     
     void writePortable(string, Portable& portable) throw(ios_base::failure);
     
-    virtual void writeByteArray(string, byte* bytes) throw(ios_base::failure) = 0;
+    virtual void writeByteArray(string, byte* bytes, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeCharArray(string, char* chars) throw(ios_base::failure) = 0;
+    virtual void writeCharArray(string, char* chars, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeIntArray(string, int* ints) throw(ios_base::failure) = 0;
+    virtual void writeIntArray(string, int* ints, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeLongArray(string, long* longs) throw(ios_base::failure) = 0;
+    virtual void writeLongArray(string, long* longs, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeDoubleArray(string, double*s) throw(ios_base::failure) = 0;
+    virtual void writeDoubleArray(string, double*s, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeFloatArray(string, float*s) throw(ios_base::failure) = 0;
+    virtual void writeFloatArray(string, float*s, int len) throw(ios_base::failure) = 0;
     
-    virtual void writeShortArray(string, short*s) throw(ios_base::failure) = 0;
+    virtual void writeShortArray(string, short*s, int len) throw(ios_base::failure) = 0;
     
-    void writePortableArray(string  , Portable* portables) throw(ios_base::failure);
+    void writePortableArray(string  , Portable* portables, int len) throw(ios_base::failure);
 };
 
 #endif

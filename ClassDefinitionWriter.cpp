@@ -8,9 +8,13 @@
 
 #include "ClassDefinitionWriter.h"
 #include "FieldDefinitionImpl.h"
-ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version){
+#include "Portable.h"
+#include "PortableSerializer.h"
+
+ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version, PortableSerializer* serializer){
     cd.classId = classId;
     cd.version = version;
+    this->serializer = serializer;
 };
 
 void ClassDefinitionWriter::writeInt(string fieldName, int value) throw(ios_base::failure){
@@ -54,43 +58,42 @@ void ClassDefinitionWriter::writeShort(string fieldName, short value) throw(ios_
  addNestedField(&portable, fd);
  };
 
-void ClassDefinitionWriter::writeByteArray(string fieldName, byte* bytes) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeByteArray(string fieldName, byte* bytes, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_BYTE_ARRAY));
 };
     
-void ClassDefinitionWriter::writeCharArray(string fieldName, char* chars) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeCharArray(string fieldName, char* chars, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_CHAR_ARRAY));
 };
     
-void ClassDefinitionWriter::writeIntArray(string fieldName, int* ints) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeIntArray(string fieldName, int* ints, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_INT_ARRAY));
 };
     
-void ClassDefinitionWriter::writeLongArray(string fieldName, long* longs) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeLongArray(string fieldName, long* longs, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_LONG_ARRAY));
 };
     
-void ClassDefinitionWriter::writeDoubleArray(string fieldName, double* values) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_DOUBLE_ARRAY));
 };
 
-void ClassDefinitionWriter::writeFloatArray(string fieldName, float* values) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_FLOAT_ARRAY));
 };
     
-void ClassDefinitionWriter::writeShortArray(string fieldName, short* values) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_SHORT_ARRAY));
 };
 
 
-void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure) {
+void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure) {
     if (portables == NULL) {
         throw "Illegal Argument Exception";
     }
     Portable* p = portables;
     int classId = p->getClassId();
-//    for (int i = 1; i < portables.length; i++) {//TODO
-    for (int i = 1; i < 2; i++) {
+    for (int i = 1; i < len; i++) {//TODO
         if (portables[i].getClassId() != classId) {
             throw "Illegal Argument Exception";
         }
@@ -103,8 +106,8 @@ void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* porta
 
 void ClassDefinitionWriter::addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) {
     cd.add(fd);
-//    ClassDefinitionImpl* nestedCd = getClassDefinition(p);
-    ClassDefinitionImpl nestedCd;
+    ClassDefinitionImpl* nestedCd =  serializer->getClassDefinition(p);
+
     cd.add(nestedCd);
 };
 

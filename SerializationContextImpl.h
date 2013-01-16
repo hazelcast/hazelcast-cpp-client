@@ -14,12 +14,13 @@
 class ClassDefinitionImpl;
 class PortableFactory;
 class Portable;
-
+class SerializationServiceImpl;
+class ContextAwareDataOutput;
 typedef unsigned char byte;
 
 class SerializationContextImpl {//: public SerializationContext{ //TODO
 public:
-    SerializationContextImpl(PortableFactory*,int);
+    SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
     
     ClassDefinitionImpl* lookup(int);
     
@@ -34,10 +35,11 @@ public:
     
 private:
     
-    void compress(byte*, std::ostream) throw(std::ios_base::failure);//TODO zip in c++
-    void decompress(byte*, std::ostream ) throw(std::ios_base::failure);//TODO unzip in c++
+    void compress(byte*, ContextAwareDataOutput*) throw(std::ios_base::failure);//TODO zip in c++
+    void decompress(byte*, ContextAwareDataOutput* ) throw(std::ios_base::failure);//TODO unzip in c++
         
     PortableFactory* portableFactory;//TODO think again
+    SerializationServiceImpl* service;
     int version;
     std::map<long,ClassDefinitionImpl*> versionedDefinitions;
     

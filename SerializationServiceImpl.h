@@ -37,14 +37,13 @@ public:
     Data* toData(K object){
         ContextAwareDataOutput* output = pop();
 
-        DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-        portableSerializer->write(dataOutput, &object);
+        portableSerializer->write(output, &object);
         
         Data* data = new Data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
         
         Portable* portable = dynamic_cast<Portable*>(&object);
         if (portable != NULL) {
-//            data->cd = serializationContext->lookup(portable->getClassId());
+            data->cd = serializationContext->lookup(portable->getClassId());
         }else{
             push(output);
             throw "class is not portable";
@@ -75,7 +74,7 @@ public:
             throw "Null pointer exception";
         int typeID = data->type;
         if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
-            serializationContext->registerClassDefinition(&(data->cd));
+            serializationContext->registerClassDefinition(data->cd);
         }else{
             std::string error = "There is no suitable de-serializer for type ";
             error += typeID;
@@ -83,7 +82,7 @@ public:
         }
         
         ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
-        K* obj = (K*)portableSerializer->read(dynamic_cast<DataInput*>(dataInput));
+        K* obj = (K*)portableSerializer->read(dataInput);
         
         return *obj;
     };
@@ -96,8 +95,8 @@ public:
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
     
-private:
     ContextAwareDataOutput* pop();
+private:
 
 //    void registerDefault(TypeSerializer*);
     

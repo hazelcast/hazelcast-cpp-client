@@ -26,6 +26,9 @@ public:
     std::string readUTF() throw(std::string);
     
     int getDataClassId();
+    
+    void setDataClassId(int);
+    
     int getDataVersion();
     
     //Inherited from DataInoput

@@ -18,7 +18,7 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
     
     constantTypeIds = new TypeSerializer*[SerializationConstants::CONSTANT_SERIALIZERS_LENGTH];
     
-    serializationContext = new SerializationContextImpl(portableFactory, version);
+    serializationContext = new SerializationContextImpl(portableFactory, version,this);
     /*
     portableSerializer = new TypeSerializer();
     byteSerializer = new TypeSerializer();

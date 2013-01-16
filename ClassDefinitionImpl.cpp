@@ -18,8 +18,8 @@ void ClassDefinitionImpl::add(FieldDefinitionImpl* fd){
     fieldDefinitionsMap[fd->fieldName] = fd;
 };
 
-void ClassDefinitionImpl::add(ClassDefinitionImpl & cd){
-    nestedClassDefinitions.insert(&cd);
+void ClassDefinitionImpl::add(ClassDefinitionImpl* cd){
+    nestedClassDefinitions.insert(cd);
 };
 
 FieldDefinitionImpl* ClassDefinitionImpl::get(std::string name){
@@ -59,7 +59,7 @@ void ClassDefinitionImpl::readData(DataInput & in) throw(std::ios_base::failure)
     for (int i = 0; i < size; i++) {
         ClassDefinitionImpl* classDefinition = new ClassDefinitionImpl();
         classDefinition->readData(in);
-        add(*classDefinition);
+        add(classDefinition);
     }
 };
 

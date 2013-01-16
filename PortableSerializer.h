@@ -13,7 +13,8 @@
 #include "SerializationContextImpl.h"
 #include "ClassDefinitionImpl.h"
 #include "ClassDefinitionWriter.h"
-
+class ContextAwareDataInput;
+class ContextAwareDataOutput;
 
 class PortableSerializer{
 public:
@@ -29,9 +30,9 @@ public:
     
     int getVersion();
     
-    void write(DataOutput* output, Portable* p) throw(std::ios_base::failure);
+    void write(ContextAwareDataOutput* output, Portable* p) throw(std::ios_base::failure);
     
-    Portable* read(DataInput* dataInput) throw(std::ios_base::failure);
+    Portable* read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure);
     
 private:
     SerializationContextImpl* context;//TODO think again

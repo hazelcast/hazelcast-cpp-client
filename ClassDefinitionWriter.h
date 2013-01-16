@@ -11,16 +11,18 @@
 
 #include <iostream>
 #include <string>
+
 #include "PortableWriter.h"
-#include "FieldDefinitionImpl.h"
 #include "ClassDefinitionImpl.h"
-#include "Portable.h"
+class FieldDefinitionImpl;
+class Portable;
+class PortableSerializer;
 
 using namespace std;
 
 class ClassDefinitionWriter : public PortableWriter{
 public:
-    ClassDefinitionWriter(int classId,int version);
+    ClassDefinitionWriter(int classId,int version, PortableSerializer* serializer);
     
     void writeInt(string fieldName, int value) throw(ios_base::failure);
     
@@ -42,29 +44,29 @@ public:
     
     void writePortable(string fieldName, Portable& portable) throw(ios_base::failure);
     
-    void writeByteArray(string fieldName, byte* bytes) throw(ios_base::failure) ;
+    void writeByteArray(string fieldName, byte* bytes, int len) throw(ios_base::failure) ;
     
-    void writeCharArray(string fieldName, char* chars) throw(ios_base::failure) ;
+    void writeCharArray(string fieldName, char* chars, int len) throw(ios_base::failure) ;
     
-    void writeIntArray(string fieldName, int* ints) throw(ios_base::failure) ;
+    void writeIntArray(string fieldName, int* ints, int len) throw(ios_base::failure) ;
     
-    void writeLongArray(string fieldName, long* longs) throw(ios_base::failure) ;
+    void writeLongArray(string fieldName, long* longs, int len) throw(ios_base::failure) ;
     
-    void writeDoubleArray(string fieldName, double* values) throw(ios_base::failure) ;
+    void writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure) ;
     
-    void writeFloatArray(string fieldName, float* values) throw(ios_base::failure) ;
+    void writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure) ;
     
-    void writeShortArray(string fieldName, short* values) throw(ios_base::failure) ;
+    void writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure) ;
     
     
-    void writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure);
+    void writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure);
     
     ClassDefinitionImpl cd;
 private:
     void addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) ;
 
     int index;
-    
+    PortableSerializer* serializer;
     
 };
 

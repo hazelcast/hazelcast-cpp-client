@@ -26,7 +26,7 @@ public:
     ClassDefinitionImpl();
     
     void add(FieldDefinitionImpl*);
-    void add(ClassDefinitionImpl&);
+    void add(ClassDefinitionImpl*);
     
     FieldDefinitionImpl* get(std::string);
     FieldDefinitionImpl* get(int);
