@@ -12,15 +12,21 @@
 #include <string>
 #include "BufferObjectDataInput.h"
 #include "ContextAwareDataOutput.h"
+#include "Data.h"
+class SerializationServiceImpl;
+
 typedef unsigned char byte;
 //TODO ask if necessary add offset
 class ContextAwareDataInput : public BufferObjectDataInput{
 public:
-    ContextAwareDataInput(byte*, SerializationService* service);
+    ContextAwareDataInput(byte*, SerializationServiceImpl* service);
     
-    ContextAwareDataInput(Data&, SerializationService* service);
+    ContextAwareDataInput(Data&, SerializationServiceImpl* service);
     
     std::string readUTF() throw(std::string);
+    
+    int getDataClassId();
+    int getDataVersion();
     
     //Inherited from DataInoput
     void readFully(byte* bytes, int off, int len);
@@ -81,7 +87,7 @@ private:
     byte* beg;
     
     int size;
-    SerializationService* service;
+    SerializationServiceImpl* service;
     int dataClassId;
     
     int dataVersion;

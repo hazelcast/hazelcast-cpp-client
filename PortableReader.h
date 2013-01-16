@@ -12,6 +12,8 @@
 #include <iostream>
 #include <string>
 
+class Portable;
+
 using namespace std;
 typedef unsigned char byte;
 
@@ -36,7 +38,7 @@ public:
     
     virtual short readShort(string) throw(ios_base::failure) = 0;
     
-//    Portable readPortable(string) throw(ios_base::failure);
+    Portable readPortable(string) throw(ios_base::failure);
     
     virtual byte* readByteArray(string) throw(ios_base::failure) = 0;
     
@@ -52,7 +54,7 @@ public:
     
     virtual short* readShortArray(string) throw(ios_base::failure) = 0;
     
-//    virtual Portable* readPortableArray(string) throw(ios_base::failure) = 0;
+    virtual Portable* readPortableArray(string) throw(ios_base::failure) = 0;
 };
 
 #endif

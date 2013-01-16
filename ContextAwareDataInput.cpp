@@ -7,17 +7,26 @@
 //
 #include <iostream>
 #include "ContextAwareDataInput.h"
+class SerializationServiceImpl;
 
-ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationService* service){
+ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationServiceImpl* service){
     this->ptr = buffer;
     this->beg = buffer;
     this->service = service;
 };
 
-ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationService* service){
+ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
     this->ptr = data.buffer->getBuffer();
     this->beg = data.buffer->getBuffer();
     this->service = service;
+};
+
+int ContextAwareDataInput::getDataClassId(){
+    return dataClassId;
+};
+
+int ContextAwareDataInput::getDataVersion(){
+    return dataVersion;
 };
 
 //Inherited from DataInoput

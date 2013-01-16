@@ -11,20 +11,17 @@
 
 #include <iostream>
 #include <string>
-#include "ClassDefinition.h"
 #include "ClassDefinitionImpl.h"
-//#include "PortableSerializer.h"
-#include "TypeSerializer.h"
+#include "PortableSerializer.h"
 #include "DataInput.h"
-#include "BufferObjectDataOutput.h"
+#include "ContextAwareDataOutput.h"
 #include "Portable.h"
 
 using namespace std;
 
-class DefaultPortableWriter{
-    
-    //    DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd);
-    DefaultPortableWriter(TypeSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd);
+class DefaultPortableWriter : public PortableWriter{
+public:
+    DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd);
     
     
     void writeInt(string fieldName, int value) throw(ios_base::failure);
@@ -45,7 +42,7 @@ class DefaultPortableWriter{
     
     void writeShort(string fieldName, short value) throw(ios_base::failure);
     
-//    void writePortable(string fieldName, Portable portable) throw(ios_base::failure);
+    void writePortable(string fieldName, Portable portable) throw(ios_base::failure);
     
     void writeByteArray(string fieldName, byte* values) throw(ios_base::failure);
     
@@ -67,11 +64,10 @@ class DefaultPortableWriter{
     
     static void writeNullablestring(DataOutput output, string obj);
 private:
-//    PortableSerializer* serializer;
-    TypeSerializer* serializer;
-    
-    ClassDefinitionImpl cd;
-    BufferObjectDataOutput* output;
+    PortableSerializer* serializer;
+
+    ClassDefinitionImpl* cd;
+    ContextAwareDataOutput* output;
     int offset;
     //    int fieldIndex = 0;
 

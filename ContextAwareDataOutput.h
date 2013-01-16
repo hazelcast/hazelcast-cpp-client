@@ -13,22 +13,24 @@
 #include <iostream>
 #include <sstream>
 #include "BufferObjectDataOutput.h"
-#include "SerializationService.h"
+class SerializationServiceImpl;
+class SerializationContextImpl;
+
 typedef unsigned char byte;
 //TODO ask if necessary add offset
 class ContextAwareDataOutput : public BufferObjectDataOutput{
 public:
-    ContextAwareDataOutput(SerializationService*);
+    ContextAwareDataOutput(SerializationServiceImpl*);
     
-    ContextAwareDataOutput(int ,std::ostringstream*, SerializationService*);
+    ContextAwareDataOutput(int ,std::ostringstream*, SerializationServiceImpl*);
     
-    ContextAwareDataOutput(std::ostringstream*,SerializationService*);
+    ContextAwareDataOutput(std::ostringstream*,SerializationServiceImpl*);
     
     ByteArray* toByteArray();
     
     int getSize();
     
-    SerializationContext& getSerializationContext();
+    SerializationContextImpl* getSerializationContext();
     
     std::string toString(); //TODO remove
     
@@ -95,7 +97,7 @@ private:
     std::ostringstream* buffer;
 //    int const offset = 0;
 
-    SerializationService* service;
+    SerializationServiceImpl* service;
     
     static int const DEFAULT_SIZE = 1024 * 4;
     

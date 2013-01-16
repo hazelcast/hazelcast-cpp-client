@@ -6,12 +6,22 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include "Portable.h"
 #include "DefaultPortableReader.h"
+#include "ContextAwareDataInput.h"
 
-DefaultPortableReader::DefaultPortableReader(TypeSerializer p, DataInput d, ClassDefinitionImpl c){
+
+DefaultPortableReader::DefaultPortableReader(PortableSerializer* serializer, ContextAwareDataInput* input, ClassDefinitionImpl* cd){
+    this->serializer = serializer;
+    this->input = input;
+    this->cd = cd;
 };
 
-int DefaultPortableReader::readInt(string fieldName) throw(ios_base::failure){};
+int DefaultPortableReader::readInt(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    return input->readInt(pos);
+};
+
 long DefaultPortableReader::readLong(string fieldName) throw(ios_base::failure){};
 
 string DefaultPortableReader::readUTF(string fieldName) throw(ios_base::failure){};
@@ -24,7 +34,10 @@ char DefaultPortableReader::readChar(string fieldName) throw(ios_base::failure){
 
 double DefaultPortableReader::readDouble(string fieldName) throw(ios_base::failure){};
 
-float DefaultPortableReader::readFloat(string fieldName) throw(ios_base::failure){};
+float DefaultPortableReader::readFloat(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    return input->readFloat(pos);
+};
 
 short DefaultPortableReader::readShort(string fieldName) throw(ios_base::failure){};
 
@@ -43,12 +56,13 @@ float* DefaultPortableReader::readFloatArray(string fieldName) throw(ios_base::f
 short* DefaultPortableReader::readShortArray(string fieldName) throw(ios_base::failure){};
 
 Portable DefaultPortableReader::readPortable(string fieldName) throw(ios_base::failure) {};
-//    private HazelcastSerializationException throwUnknownFieldException(string fieldName) {
 
 Portable* DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){};
 
-int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure){};
+int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure){
+    return 0;
+};
 
-int DefaultPortableReader::getPosition(FieldDefinition fd) throw(ios_base::failure){};
+int DefaultPortableReader::getPosition(FieldDefinitionImpl* fd) throw(ios_base::failure){};
 
-string DefaultPortableReader::readNullableString(DataInput input) throw(ios_base::failure) {};
+string DefaultPortableReader::readNullableString(DataInput* input) throw(ios_base::failure) {};

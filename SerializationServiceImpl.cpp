@@ -19,7 +19,7 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
     constantTypeIds = new TypeSerializer*[SerializationConstants::CONSTANT_SERIALIZERS_LENGTH];
     
     serializationContext = new SerializationContextImpl(portableFactory, version);
-    
+    /*
     portableSerializer = new TypeSerializer();
     byteSerializer = new TypeSerializer();
     booleanSerializer = new TypeSerializer();
@@ -37,11 +37,11 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
     floatArraySerializer = new TypeSerializer();
     doubleArraySerializer = new TypeSerializer();
     stringSerializer = new TypeSerializer();
+    */
     
     
+     portableSerializer = new PortableSerializer(serializationContext);
     
-//     portableSerializer = new PortableSerializer(serializationContext);
-    /*
      byteSerializer = new ConstantSerializers::ByteSerializer();
      booleanSerializer = new ConstantSerializers::BooleanSerializer();
      charSerializer = new ConstantSerializers::CharSerializer();
@@ -58,9 +58,9 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
      floatArraySerializer = new ConstantSerializers::FloatArraySerializer();
      doubleArraySerializer = new ConstantSerializers::DoubleArraySerializer();
      stringSerializer = new ConstantSerializers::StringSerializer();
-     */
     
-//    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_PORTABLE)] = portableSerializer;
+    /*
+    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_PORTABLE)] = portableSerializer;
     constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_BYTE)] = byteSerializer;
     constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_BOOLEAN)] = booleanSerializer;
     constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_CHAR)] = charArraySerializer;
@@ -79,7 +79,7 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
     constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY)] = doubleArraySerializer;
     
     constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_STRING)] = stringSerializer;
-    
+*/
 
     /*
      registerDefault(portableSerializer);
@@ -114,7 +114,7 @@ void SerializationServiceImpl::push(ContextAwareDataOutput* out) {
     out->reset();
     outputPool.push(out);
 };
-
+/*
 TypeSerializer* SerializationServiceImpl::serializerFor(int const typeId) {
     if (typeId < 0) {
         int index = indexForDefaultType(typeId);
@@ -124,8 +124,8 @@ TypeSerializer* SerializationServiceImpl::serializerFor(int const typeId) {
     }
     return NULL;
 };
-
-SerializationContext* SerializationServiceImpl::getSerializationContext() {
+*/
+SerializationContextImpl* SerializationServiceImpl::getSerializationContext() {
     return serializationContext;
 };
 
@@ -293,4 +293,11 @@ Data* SerializationServiceImpl::toData(Data& data){
     return &data;
 };
 
+long SerializationServiceImpl::combineToLong(int x, int y) {
+    return ((long) x << 32) | ((long) y & 0xFFFFFFFL);
+}
+
+int SerializationServiceImpl::extractInt(long value, bool lowerBits) {
+    return (lowerBits) ? (int) value : (int) (value >> 32);
+}
 

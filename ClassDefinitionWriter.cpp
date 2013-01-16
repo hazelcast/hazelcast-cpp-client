@@ -48,12 +48,12 @@ void ClassDefinitionWriter::writeFloat(string fieldName, float value) throw(ios_
 void ClassDefinitionWriter::writeShort(string fieldName, short value) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_SHORT));
 };
-/*
-void ClassDefinitionWriter::writePortable(string fieldName, Portable portable) throw(ios_base::failure) {
-    FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_PORTABLE, portable.getClassId());
-    addNestedField(&portable, fd);
-};
-*/
+
+ void ClassDefinitionWriter::writePortable(string fieldName, Portable& portable) throw(ios_base::failure) {
+ FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_PORTABLE, portable.getClassId());
+ addNestedField(&portable, fd);
+ };
+
 void ClassDefinitionWriter::writeByteArray(string fieldName, byte* bytes) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_BYTE_ARRAY));
 };
@@ -82,7 +82,7 @@ void ClassDefinitionWriter::writeShortArray(string fieldName, short* values) thr
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_SHORT_ARRAY));
 };
 
-/*
+
 void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure) {
     if (portables == NULL) {
         throw "Illegal Argument Exception";
@@ -99,7 +99,7 @@ void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* porta
                                                       FieldDefinitionImpl::TYPE_PORTABLE_ARRAY, classId);
     addNestedField(p, fd);
 };
-*/
+
 
 void ClassDefinitionWriter::addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) {
     cd.add(fd);

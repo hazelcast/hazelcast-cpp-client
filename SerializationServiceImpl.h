@@ -14,17 +14,20 @@
 #include <map>
 #include <queue>
 #include <typeinfo>
-#include "SerializationService.h"
-#include "SerializationContext.h"
+#include "Data.h"
 #include "PortableFactory.h"
-#include "SerializationConstants.h"
+#include "ShortArray.h"
+#include "CharArray.h"
+#include "IntegerArray.h"
+#include "LongArray.h"
+#include "FloatArray.h"
+#include "DoubleArray.h"
+#include "ConstantSerializers.h"
+#include "PortableSerializer.h"
 #include "ContextAwareDataOutput.h"
 #include "ContextAwareDataInput.h"
-#include "TypeSerializer.h"
-#include "PortableSerializer.h"
-#include "ConstantSerializers.h"
 
-class SerializationServiceImpl : public SerializationService{
+class SerializationServiceImpl{// : public SerializationService{
 public:
     
     SerializationServiceImpl(int,PortableFactory*);
@@ -34,6 +37,9 @@ public:
     Data* toData(K object){
         ContextAwareDataOutput* output = pop();
 
+        DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
+        portableSerializer->write(dataOutput, &object);
+        
         Data* data = new Data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
         
         Portable* portable = dynamic_cast<Portable*>(&object);
@@ -64,32 +70,31 @@ public:
     Data* toData(string&);
     
     template<typename K>
-    K toObject(Data* data){
-        if(data == NULL || data->size() == 0){
+    inline K toObject(Data* data){
+        if(data == NULL || data->size() == 0)
             throw "Null pointer exception";
-        }
-        
-        int const typeID = data->type;
-        TypeSerializer*  typeSerializer = serializerFor(typeID);
-        if(typeSerializer == NULL){
+        int typeID = data->type;
+        if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
+            serializationContext->registerClassDefinition(&(data->cd));
+        }else{
             std::string error = "There is no suitable de-serializer for type ";
             error += typeID;
             throw error;
         }
-        if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
-            serializationContext->registerClassDefinition(&(data->cd));
-        }
-        ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
-        K obj = typeSerializer->read<K>(dynamic_cast<DataInput*>(dataInput));
         
-        return obj;
+        ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+        K* obj = (K*)portableSerializer->read(dynamic_cast<DataInput*>(dataInput));
+        
+        return *obj;
     };
     
     void push(ContextAwareDataOutput*);
     
-    TypeSerializer* serializerFor(int const);
+//    TypeSerializer* serializerFor(int const);
     
-    SerializationContext* getSerializationContext();
+    SerializationContextImpl* getSerializationContext();
+    static long combineToLong(int x, int y);
+    static int extractInt(long value, bool lowerBits);
     
 private:
     ContextAwareDataOutput* pop();
@@ -98,8 +103,6 @@ private:
     
     int indexForDefaultType(int const);
     
-//    static long combineToLong(int x, int y);
-//    static int extractInt(long value, bool lowerBits);
     
     static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;
     static int const CONSTANT_SERIALIZERS_SIZE = SerializationConstants::CONSTANT_SERIALIZERS_LENGTH;
@@ -107,7 +110,7 @@ private:
     TypeSerializer** constantTypeIds ;
     
     queue<ContextAwareDataOutput*> outputPool;
-    
+    /*
     TypeSerializer* portableSerializer;
     TypeSerializer* byteSerializer;
     TypeSerializer* booleanSerializer;
@@ -125,7 +128,8 @@ private:
     TypeSerializer* floatArraySerializer;
     TypeSerializer* doubleArraySerializer;
     TypeSerializer* stringSerializer;
-    /*
+     */
+    
     PortableSerializer* portableSerializer;
     ConstantSerializers::ByteSerializer* byteSerializer;
     ConstantSerializers::BooleanSerializer* booleanSerializer;
@@ -143,9 +147,27 @@ private:
     ConstantSerializers::FloatArraySerializer* floatArraySerializer;
     ConstantSerializers::DoubleArraySerializer* doubleArraySerializer;
     ConstantSerializers::StringSerializer* stringSerializer;
-    */
-    SerializationContext* serializationContext;
+    
+    SerializationContextImpl* serializationContext;
     
 
 };
+
+template<>
+inline int SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return integerSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline float SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return floatSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+
 #endif /* defined(__Server__SerializationServiceImpl__) */

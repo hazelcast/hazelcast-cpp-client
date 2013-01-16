@@ -13,6 +13,7 @@ using namespace std;
 #include "DataInput.h"
 #include "DataOutput.h"
 #include "SerializationConstants.h"
+#include "TypeSerializer.h"
 #include "ByteArray.h"
 #include "IntegerArray.h"
 #include "FloatArray.h"
@@ -23,7 +24,7 @@ using namespace std;
 
 class ConstantSerializers {
 public:
-    /*
+    
     class ByteSerializer : public TypeSerializer {
     public:
         
@@ -369,11 +370,11 @@ public:
             }
         }
     };
-     */
+     
 private:
     
     
-        ConstantSerializers() {};
+//        ConstantSerializers() {};
 };
 
 #endif

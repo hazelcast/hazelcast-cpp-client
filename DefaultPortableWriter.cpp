@@ -8,11 +8,17 @@
 
 #include "DefaultPortableWriter.h"
 
-//DefaultPortableWriter::DefaultPortableWriter(PortableSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd){};
 
-DefaultPortableWriter::DefaultPortableWriter(TypeSerializer serializer, BufferObjectDataOutput out, ClassDefinitionImpl cd){};
+DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd){
+    this->serializer = serializer;
+    this->output = output;
+    this->cd = cd;
+};
 
-void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeInt(value);
+};
 
 void DefaultPortableWriter::writeLong(string fieldName, long value) throw(ios_base::failure){};
 
@@ -26,11 +32,14 @@ void DefaultPortableWriter::writeChar(string fieldName, int value) throw(ios_bas
 
 void DefaultPortableWriter::writeDouble(string fieldName, double value) throw(ios_base::failure){};
 
-void DefaultPortableWriter::writeFloat(string fieldName, float value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeFloat(string fieldName, float value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeFloat(value);
+};
 
 void DefaultPortableWriter::writeShort(string fieldName, short value) throw(ios_base::failure){};
 
-//void DefaultPortableWriter::writePortable(string fieldName, Portable portable) throw(ios_base::failure){};
+void DefaultPortableWriter::writePortable(string fieldName, Portable portable) throw(ios_base::failure){};
 
 void DefaultPortableWriter::writeByteArray(string fieldName, byte* values) throw(ios_base::failure){};
 
@@ -48,6 +57,8 @@ void DefaultPortableWriter::writeShortArray(string fieldName, short* values) thr
 
 void DefaultPortableWriter::writePortableArray(string fieldName, Portable* portables) throw(ios_base::failure){};
 
-void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){};
+void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
+    output->writeInt(0);
+};
 
 void DefaultPortableWriter::writeNullablestring(DataOutput out, string obj){};

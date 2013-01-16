@@ -17,27 +17,32 @@
 
 class TestMainPortable : public Portable{
 public:
-        int i;
+    int i;
     
         
-        TestMainPortable() {
-        };
+    TestMainPortable() {
+    };
         
-        TestMainPortable(int i) {
-            this->i = i;
-        };
+    TestMainPortable(int i) {
+        this->i = i;
+    };
         
-        int getClassId() {
-            return 0;
-        };
+    int getClassId() {
+        return 50;
+    };
         
-        void writePortable(PortableWriter writer) throw(std::ios_base::failure){
-//            writer.writeInt("i",i);
-        };
+    void writePortable(PortableWriter* writer) throw(std::ios_base::failure){
+        writer->writeInt("i",i);
+    };
         
-        void readPortable(PortableReader reader)throw(std::ios_base::failure) {
-//            i = reader.readInt("i");
-        };
-       
+    void readPortable(PortableReader* reader)throw(std::ios_base::failure) {
+        i = reader->readInt("i");
+    };
+    
+    int getType(){
+        return 50;
+    };
+    
+    
 };
 #endif

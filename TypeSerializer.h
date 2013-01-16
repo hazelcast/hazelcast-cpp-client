@@ -9,16 +9,8 @@
 #ifndef Server_TypeSerializer_h
 #define Server_TypeSerializer_h
 
-#include "DataInput.h"
-#include "DataOutput.h"
-#include "ShortArray.h"
-#include "DoubleArray.h"
-#include "FloatArray.h"
-#include "IntegerArray.h"
-#include "LongArray.h"
-#include "CharArray.h"
-#include "ByteArray.h"
-#include "Portable.h"
+class DataInput;
+class DataOutput;
 
 class TypeSerializer{
 public:
@@ -33,7 +25,7 @@ public:
     };
     
 };
-
+/*
 template<>
 inline void TypeSerializer::write(DataOutput* dataOutput, byte obj ) throw(std::ios_base::failure){
     dataOutput->writeByte(obj);
@@ -297,6 +289,7 @@ inline double* TypeSerializer::read(DataInput* dataInput) throw(std::ios_base::f
         return d;
     }
 };
+*/
 
 /* May implement for portable
 template<>

@@ -10,15 +10,15 @@
 #define Server_SerializationContext_h
 
 #include<iostream>
-#include "ClassDefinitionImpl.h"
 #include "Portable.h"
+#include "ClassDefinitionImpl.h"
 class SerializationContext{
 public:
     virtual ClassDefinitionImpl* lookup(int) = 0;
     
     virtual ClassDefinitionImpl* lookup(int, int) = 0;
     
-    virtual Portable createPortable(int) = 0;
+    virtual Portable* createPortable(int) = 0;
     
     virtual ClassDefinitionImpl createClassDefinition(byte*) throw(std::ios_base::failure) = 0;
     

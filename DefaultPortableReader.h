@@ -11,20 +11,25 @@
 
 #include <iostream>
 #include <string>
-#include "PortableReader.h"
-#include "ClassDefinition.h"
+
+class Portable;
+class PortableSerializer;
+class BufferObjectDataInput;
+class FieldDefinitionImpl;
+class ContextAwareDataInput;
+
 #include "ClassDefinitionImpl.h"
-#include "PortableSerializer.h"
-#include "DataInput.h"
-#include "TypeSerializer.h"
+#include "PortableReader.h"
+typedef unsigned char byte;
+
 using namespace std;
 
 class DefaultPortableReader : public PortableReader {
 public:
-    DefaultPortableReader(TypeSerializer, DataInput, ClassDefinitionImpl);
-//    DefaultPortableReader(PortableSerializer, DataInput, ClassDefinitionImpl);
+    DefaultPortableReader(PortableSerializer*, ContextAwareDataInput*, ClassDefinitionImpl*);
     
     int readInt(string) throw(ios_base::failure);
+    
     long readLong(string) throw(ios_base::failure);
     
     string readUTF(string) throw(ios_base::failure);
@@ -56,23 +61,21 @@ public:
     short* readShortArray(string) throw(ios_base::failure);
     
     Portable readPortable(string) throw(ios_base::failure) ;
-//    private HazelcastSerializationException throwUnknownFieldException(string) {
 
     Portable* readPortableArray(string) throw(ios_base::failure);
 
 protected:
     int getPosition(string) throw(ios_base::failure);
     
-    int getPosition(FieldDefinition) throw(ios_base::failure);
+    int getPosition(FieldDefinitionImpl*) throw(ios_base::failure);
     
 private:
-    string readNullableString(DataInput in) throw(ios_base::failure) ;
+    string readNullableString(DataInput* in) throw(ios_base::failure) ;
     
-//    PortableSerializer* serializer;//TODO
-    TypeSerializer* serializer;
+    PortableSerializer* serializer;//TODO
     
-    ClassDefinitionImpl cd;
-    DataInput* input;
+    ClassDefinitionImpl* cd;
+    ContextAwareDataInput* input;
     int offset;
     
 };

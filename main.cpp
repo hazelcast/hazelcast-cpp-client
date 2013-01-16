@@ -54,25 +54,28 @@ int main(int argc, char* argv[])
 {
     SerializationServiceImpl* serializationService = static_cast<SerializationServiceImpl*>(new SerializationServiceImpl(1,new TestPortableFactory()));
     Data* data;
+    
     int x = 3,y;
-    TestMainPortable test;
-    
-//    data = serializationService->toData<TestMainPortable>(test);
     data = serializationService->toData(x);
-    
     y =  serializationService->toObject<int>(data);
-    
     if(x == y){
         cout << "OK" << endl;
     }else{
         cout << "FAIL" << endl;
     }
     
+    TestMainPortable portableX, portableY;
+    portableX.i = 10;
+    data = serializationService->toData(portableX);
+    portableY =  serializationService-> toObject<TestMainPortable>(data);
     
-//    TypeSerializer* typeSerializer = serializationService->serializerFor(x);
-    
-//    cout << typeSerializer->getTypeId() << endl;
-    
+    if(portableX.i == portableY.i){
+        cout << "OK" << endl;
+    }else{
+        cout << "FAIL" << endl;
+        cout << "x:" << portableX.i << "=!" << "y:"<< portableY.i << endl;
+    }
+
 //    byte x = 138;
 //    printf("%x\n", 0xff & x);
 //    printf("%x\n", 0x0f & (x >> 4));

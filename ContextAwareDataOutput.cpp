@@ -7,20 +7,21 @@
 //
 
 #include "ContextAwareDataOutput.h"
+#include "SerializationServiceImpl.h"
 #include <string>
 #include <algorithm>
 
-ContextAwareDataOutput::ContextAwareDataOutput(SerializationService* service){
+ContextAwareDataOutput::ContextAwareDataOutput(SerializationServiceImpl* service){
     this->service = service;
     this->buffer = new std::ostringstream;
 };
 
-ContextAwareDataOutput::ContextAwareDataOutput(int offset,std::ostringstream* buffer,SerializationService* service){
+ContextAwareDataOutput::ContextAwareDataOutput(int offset,std::ostringstream* buffer,SerializationServiceImpl* service){
     this->buffer = buffer;    
     this->service = service;//TODO implement
 };
 
-ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream* buffer,SerializationService* service){
+ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream* buffer,SerializationServiceImpl* service){
     this->buffer = buffer;
     this->service = service;
 };
@@ -39,8 +40,8 @@ int ContextAwareDataOutput::getSize(){
     return (int)buffer->str().length();
 };
 
-SerializationContext& ContextAwareDataOutput::getSerializationContext(){
-    return *(service->getSerializationContext());
+SerializationContextImpl* ContextAwareDataOutput::getSerializationContext(){
+    return service->getSerializationContext();
 };
 
 

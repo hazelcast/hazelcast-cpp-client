@@ -12,6 +12,7 @@
 #include <iostream>
 #include "DataSerializable.h"
 #include "ClassDefinitionImpl.h"
+
 class Data :  public DataSerializable{
 public:
     Data();

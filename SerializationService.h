@@ -9,8 +9,8 @@
 #ifndef Server_SerializationService_h
 #define Server_SerializationService_h
 
-#include "Data.h"
-#include "SerializationContext.h"
+class Data;
+class SerializationContext;
 
 class SerializationService{
 public:
