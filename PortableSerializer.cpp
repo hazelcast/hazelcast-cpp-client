@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+#include <cassert>
 #include "PortableSerializer.h"
 #include "SerializationConstants.h"
 #include "ContextAwareDataInput.h"
@@ -32,10 +32,12 @@ ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable* p) throw(s
     ClassDefinitionImpl* cd = context->lookup(classId);
     if (cd == NULL) {
         ClassDefinitionWriter* classDefinitionWriter = new ClassDefinitionWriter(classId,context->getVersion(),this);
+        assert(classDefinitionWriter != NULL);
         p->writePortable(classDefinitionWriter);
         cd = &classDefinitionWriter->cd;
         context->registerClassDefinition(cd);
     }
+    assert(cd != NULL);
     return cd;
 };
 
@@ -48,29 +50,31 @@ int PortableSerializer::getVersion(){
 };
 
 void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable* p) throw(std::ios_base::failure) {
-    
+    assert(p != NULL);
     ClassDefinitionImpl* cd = getClassDefinition(p);
+    assert(cd != NULL);
     DefaultPortableWriter* writer = new DefaultPortableWriter(this, dataOutput, cd);
     p->writePortable(writer);
     
 };
 
 Portable* PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
-    
-    ContextAwareDataInput* ctxIn = (ContextAwareDataInput*) dataInput;
-    int dataClassId = ctxIn->getDataClassId();
-    int dataVersion = ctxIn->getDataVersion();
+    assert(dataInput != NULL);
+    int dataClassId = dataInput->getDataClassId();
+    int dataVersion = dataInput->getDataVersion();
     Portable* p = context->createPortable(dataClassId);
+    assert(p != NULL);
     DefaultPortableReader* reader;
     ClassDefinitionImpl* cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
-        reader = new DefaultPortableReader(this, (ContextAwareDataInput*) dataInput, cd);
+        assert(cd != NULL);
+        reader = new DefaultPortableReader(this, dataInput, cd);
     } else {
         cd = context->lookup(dataClassId, dataVersion); // registered during read
 //        reader = new MorphingPortableReader(this, (BufferObjectDataInput) dataInput, cd);
     }
-    p->readPortable((PortableReader*)reader);
+    p->readPortable(reader);
     return p;
     
 };

@@ -10,7 +10,7 @@
 #include "SerializationServiceImpl.h"
 #include <string>
 #include <algorithm>
-
+#include <cassert>
 ContextAwareDataOutput::ContextAwareDataOutput(SerializationServiceImpl* service){
     this->service = service;
     this->buffer = new std::ostringstream;
@@ -197,11 +197,17 @@ void ContextAwareDataOutput::writeShort(int index, const int v) throw (std::ios_
 };
 
 int ContextAwareDataOutput::position(){
+    assert(buffer->tellp() != -1);
     return (int)buffer->tellp();
 };
 
 void ContextAwareDataOutput::position(int newPos){
     buffer->seekp(newPos);
+    assert(buffer->tellp() != -1);
+    assert(buffer->eofbit);
+    assert(buffer->failbit); 
+    assert(buffer->badbit );
+    
 };
 
 BufferObjectDataOutput* ContextAwareDataOutput::duplicate(){

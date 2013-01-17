@@ -46,9 +46,9 @@ public:
         if (portable != NULL) {
             data->cd = serializationContext->lookup(portable->getClassId());
         }else{
-            push(output);
             throw "class is not portable";
         }
+        push(output);
         return data;
 
     };
@@ -90,8 +90,6 @@ public:
     
     void push(ContextAwareDataOutput*);
     
-//    TypeSerializer* serializerFor(int const);
-    
     SerializationContextImpl* getSerializationContext();
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
@@ -110,25 +108,6 @@ private:
     TypeSerializer** constantTypeIds ;
     
     queue<ContextAwareDataOutput*> outputPool;
-    /*
-    TypeSerializer* portableSerializer;
-    TypeSerializer* byteSerializer;
-    TypeSerializer* booleanSerializer;
-    TypeSerializer* charSerializer;
-    TypeSerializer* shortSerializer;
-    TypeSerializer* integerSerializer;
-    TypeSerializer* longSerializer;
-    TypeSerializer* floatSerializer;
-    TypeSerializer* doubleSerializer;
-    TypeSerializer* byteArraySerializer;
-    TypeSerializer* charArraySerializer;
-    TypeSerializer* shortArraySerializer;
-    TypeSerializer* integerArraySerializer;
-    TypeSerializer* longArraySerializer;
-    TypeSerializer* floatArraySerializer;
-    TypeSerializer* doubleArraySerializer;
-    TypeSerializer* stringSerializer;
-     */
     
     PortableSerializer* portableSerializer;
     ConstantSerializers::ByteSerializer* byteSerializer;

@@ -14,7 +14,10 @@ DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, Con
     this->output = output;
     this->offset = output->position();
     this->cd = cd;
-    this->output->position(offset + cd->getFieldCount() * 4);
+    //this->output->position(offset + cd->getFieldCount() * 4);
+    char* zeros = new  char[offset + cd->getFieldCount() * 4]; 
+    this->output->write(zeros,0,offset + cd->getFieldCount() * 4);
+    delete [] zeros;
 };
 
 void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base::failure){

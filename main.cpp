@@ -1,15 +1,10 @@
 //
 // server.cpp
 
-
-//#include <boost/asio.hpp>
-//#include <boost/bind.hpp>
-//#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <vector>
 #include <stdio.h>
 #include "ContextAwareDataOutput.h"
-//#include "TypeSerializer.h"
 #include "SerializationService.h"
 #include "SerializationServiceImpl.h"
 #include "TestPortableFactory.h"
@@ -20,7 +15,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    SerializationServiceImpl* serializationService = static_cast<SerializationServiceImpl*>(new SerializationServiceImpl(1,new TestPortableFactory()));
+    SerializationServiceImpl* serializationService = new SerializationServiceImpl(1,new TestPortableFactory());
     Data* data;
     
     int x = 3,y;
@@ -32,16 +27,18 @@ int main(int argc, char* argv[])
         cout << "FAIL" << endl;
     }
     
-    TestMainPortable portableX, portableY;
-    portableX.i = 10;
-    data = serializationService->toData(portableX);
-    portableY =  serializationService-> toObject<TestMainPortable>(data);
+    TestMainPortable portableX(34,4.32), portableY;
     
-    if(portableX.i == portableY.i){
+    data = serializationService->toData(portableX);
+    cout << "Data size " << data->size() << endl;
+    portableY =  serializationService->toObject<TestMainPortable>(data);
+    
+    if(portableX == portableY ){
         cout << "OK" << endl;
     }else{
         cout << "FAIL" << endl;
-        cout << "x:" << portableX.i << "=!" << "y:"<< portableY.i << endl;
+        cout << "x:i:" << portableX.i << "=!" << "y:i:"<< portableY.i << endl;
+        cout << "x:f:" << portableX.f << "=!" << "y:f:"<< portableY.f << endl;
     }
 
     return 0;

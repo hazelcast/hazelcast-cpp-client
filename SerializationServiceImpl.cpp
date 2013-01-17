@@ -19,26 +19,6 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
     constantTypeIds = new TypeSerializer*[SerializationConstants::CONSTANT_SERIALIZERS_LENGTH];
     
     serializationContext = new SerializationContextImpl(portableFactory, version,this);
-    /*
-    portableSerializer = new TypeSerializer();
-    byteSerializer = new TypeSerializer();
-    booleanSerializer = new TypeSerializer();
-    charSerializer = new TypeSerializer();
-    shortSerializer = new TypeSerializer();
-    integerSerializer = new TypeSerializer();
-    longSerializer = new TypeSerializer();
-    floatSerializer = new TypeSerializer();
-    doubleSerializer = new TypeSerializer();
-    byteArraySerializer = new TypeSerializer();
-    charArraySerializer = new TypeSerializer();
-    shortArraySerializer = new TypeSerializer();
-    integerArraySerializer = new TypeSerializer();
-    longArraySerializer = new TypeSerializer();
-    floatArraySerializer = new TypeSerializer();
-    doubleArraySerializer = new TypeSerializer();
-    stringSerializer = new TypeSerializer();
-    */
-    
     
      portableSerializer = new PortableSerializer(serializationContext);
     
@@ -59,47 +39,6 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
      doubleArraySerializer = new ConstantSerializers::DoubleArraySerializer();
      stringSerializer = new ConstantSerializers::StringSerializer();
     
-    /*
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_PORTABLE)] = portableSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_BYTE)] = byteSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_BOOLEAN)] = booleanSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_CHAR)] = charArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_SHORT)] = shortSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_INTEGER)] = integerSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_LONG)] = longSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_FLOAT)] = floatSerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_DOUBLE)] = doubleSerializer;
-    
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY)] = byteArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY)] = charArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY)] = shortArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY)] = integerArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY)] = longArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY)] = floatArraySerializer;
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY)] = doubleArraySerializer;
-    
-    constantTypeIds[indexForDefaultType(SerializationConstants::CONSTANT_TYPE_STRING)] = stringSerializer;
-*/
-
-    /*
-     registerDefault(portableSerializer);
-     registerDefault(byteSerializer);
-     registerDefault(booleanSerializer);
-     registerDefault(charSerializer);
-     registerDefault(shortSerializer);
-     registerDefault(integerSerializer);
-     registerDefault(longSerializer);
-     registerDefault(floatSerializer);
-     registerDefault(doubleSerializer);
-     registerDefault(byteArraySerializer);
-     registerDefault(charArraySerializer);
-     registerDefault(shortArraySerializer);
-     registerDefault(integerArraySerializer);
-     registerDefault(longArraySerializer);
-     registerDefault(floatArraySerializer);
-     registerDefault(doubleArraySerializer);
-     registerDefault(stringSerializer);
-     */
     
 };
 
@@ -114,17 +53,7 @@ void SerializationServiceImpl::push(ContextAwareDataOutput* out) {
     out->reset();
     outputPool.push(out);
 };
-/*
-TypeSerializer* SerializationServiceImpl::serializerFor(int const typeId) {
-    if (typeId < 0) {
-        int index = indexForDefaultType(typeId);
-        if (index < CONSTANT_SERIALIZERS_SIZE) {
-            return constantTypeIds[index];
-        }
-    }
-    return NULL;
-};
-*/
+
 SerializationContextImpl* SerializationServiceImpl::getSerializationContext() {
     return serializationContext;
 };
@@ -141,9 +70,6 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
     
 };
 
-//void SerializationServiceImpl::registerDefault(TypeSerializer* serializer) {
-//    constantTypeIds[indexForDefaultType(serializer->getTypeId())] = serializer;
-//};
 
 int SerializationServiceImpl::indexForDefaultType(int const typeId) {
     return -typeId - 1;

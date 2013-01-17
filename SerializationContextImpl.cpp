@@ -51,15 +51,31 @@ ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(byte *compr
 };
 
 void SerializationContextImpl::registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
-    
+    //TODO
 };
 
 void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
-    
+     if (cd == NULL) 
+         return;
+        long versionedClassId = service->combineToLong(cd->getClassId(), cd->getVersion());
+        ClassDefinitionImpl* prevCd = versionedDefinitions[versionedClassId];
+        versionedDefinitions[versionedClassId] = cd;
+        if (prevCd == NULL) {
+            if (cd->getBinary() == NULL) {
+                ContextAwareDataOutput* output = service->pop();                
+                cd->writeData(*output);
+                ByteArray* binary = output->toByteArray();
+                output->reset();
+                compress(binary->getBuffer(), output);
+                cd->setBinary(output->toByteArray()->getBuffer());
+                service->push(output);
+                
+            }
+        }
 };
 
 int SerializationContextImpl::getVersion(){
-    
+    return version;
 };
 
 void SerializationContextImpl::compress(byte*, ContextAwareDataOutput*) throw(std::ios_base::failure){

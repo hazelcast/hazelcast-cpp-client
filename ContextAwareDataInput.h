@@ -31,7 +31,7 @@ public:
     
     int getDataVersion();
     
-    //Inherited from DataInoput
+    //Inherited from DataInput
     void readFully(byte* bytes, int off, int len);
     
     int skipBytes(int i) ;

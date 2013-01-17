@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+#include <cassert>
 #include "ClassDefinitionImpl.h"
 #include "FieldDefinitionImpl.h"
 
@@ -14,11 +14,13 @@ ClassDefinitionImpl::ClassDefinitionImpl(){
 };
 
 void ClassDefinitionImpl::add(FieldDefinitionImpl* fd){
+    assert(fd != NULL);
     fieldDefinitions.push_back(fd);
     fieldDefinitionsMap[fd->fieldName] = fd;
 };
 
 void ClassDefinitionImpl::add(ClassDefinitionImpl* cd){
+    assert(cd != NULL);
     nestedClassDefinitions.insert(cd);
 };
 

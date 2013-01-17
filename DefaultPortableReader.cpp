@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+#include <string>
 #include "Portable.h"
 #include "DefaultPortableReader.h"
 #include "ContextAwareDataInput.h"
@@ -78,9 +78,16 @@ short* DefaultPortableReader::readShortArray(string fieldName) throw(ios_base::f
 Portable* DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){};
 
 int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure){
-    return 0;
+     FieldDefinitionImpl* fd = cd->get(fieldName);
+     if (fd == NULL) {
+         std::string error = "UnknownFieldException" ;
+         error += fieldName;  
+     }
+    return getPosition(fd);
 };
 
-int DefaultPortableReader::getPosition(FieldDefinitionImpl* fd) throw(ios_base::failure){};
+int DefaultPortableReader::getPosition(FieldDefinitionImpl* fd) throw(ios_base::failure){
+    return input->readInt(offset + fd->getIndex() * 4);
+};
 
 string DefaultPortableReader::readNullableString(DataInput* input) throw(ios_base::failure) {};

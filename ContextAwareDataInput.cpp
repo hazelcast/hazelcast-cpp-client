@@ -7,6 +7,7 @@
 //
 #include <iostream>
 #include "ContextAwareDataInput.h"
+#include "ClassDefinitionImpl.h"
 class SerializationServiceImpl;
 
 ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationServiceImpl* service){
@@ -16,6 +17,9 @@ ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationServiceI
 };
 
 ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
+    ClassDefinitionImpl* cd = data.cd;
+    this->dataClassId = cd != NULL ? cd->getClassId() : -1;
+    this->dataVersion = cd != NULL ? cd->getVersion() : -1;
     this->ptr = data.buffer->getBuffer();
     this->beg = data.buffer->getBuffer();
     this->service = service;
@@ -198,7 +202,7 @@ double ContextAwareDataInput::readDouble(int index) throw (std::ios_base::failur
 float ContextAwareDataInput::readFloat(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
-    int v = readFloat();
+    float v = readFloat();
     position(pos);
     return v;
 };
@@ -206,7 +210,7 @@ float ContextAwareDataInput::readFloat(int index) throw (std::ios_base::failure)
 short ContextAwareDataInput::readShort(int index) throw (std::ios_base::failure){
     int pos = position();
     position(index);
-    int v = readShort();
+    short v = readShort();
     position(pos);
     return v;
 };
