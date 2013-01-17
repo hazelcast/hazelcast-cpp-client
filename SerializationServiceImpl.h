@@ -15,17 +15,18 @@
 #include <queue>
 #include <typeinfo>
 #include "Data.h"
-#include "PortableFactory.h"
-#include "ShortArray.h"
-#include "CharArray.h"
-#include "IntegerArray.h"
-#include "LongArray.h"
-#include "FloatArray.h"
-#include "DoubleArray.h"
 #include "ConstantSerializers.h"
 #include "PortableSerializer.h"
 #include "ContextAwareDataOutput.h"
 #include "ContextAwareDataInput.h"
+#include "PortableFactory.h"
+
+class ShortArray;
+class CharArray;
+class IntegerArray;
+class LongArray;
+class FloatArray;
+class DoubleArray;
 
 class SerializationServiceImpl{// : public SerializationService{
 public:

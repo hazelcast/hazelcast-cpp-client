@@ -35,7 +35,7 @@ public:
     static int const NO_CLASS_ID = -1;
     
     ClassDefinitionImpl* cd;
-    int type = -1;
+    int type;
     ByteArray* buffer;
 private:
     int partitionHash;

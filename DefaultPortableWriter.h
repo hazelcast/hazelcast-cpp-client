@@ -62,7 +62,7 @@ public:
     
     void setPosition(string fieldName) throw(ios_base::failure);
     
-    static void writeNullablestring(DataOutput output, string obj);
+    static void writeNullablestring(ContextAwareDataOutput* output, string obj);
 private:
     PortableSerializer* serializer;
 

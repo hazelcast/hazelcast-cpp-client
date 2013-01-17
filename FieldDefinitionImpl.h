@@ -38,7 +38,7 @@ public:
 private:
     int index;
     byte type;
-    int classId = -1;
+    int classId;
 };
 
 #endif /* defined(__Server__FieldDefinitionImpl__) */

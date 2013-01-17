@@ -86,6 +86,6 @@ void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failur
     
 };
 
-void DefaultPortableWriter::writeNullablestring(DataOutput out, string obj){
-
+void DefaultPortableWriter::writeNullablestring(ContextAwareDataOutput* output, string obj){
+    
 };
