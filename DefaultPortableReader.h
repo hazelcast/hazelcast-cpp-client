@@ -32,8 +32,6 @@ public:
     
     long readLong(string) throw(ios_base::failure);
     
-    string readUTF(string) throw(ios_base::failure);
-    
     bool readBoolean(string) throw(ios_base::failure);
     
     byte readByte(string) throw(ios_base::failure);
@@ -46,7 +44,11 @@ public:
     
     short readShort(string) throw(ios_base::failure);
     
-    byte* readByteArray(string) throw(ios_base::failure);
+    string readUTF(string) throw(ios_base::failure);
+    
+    Portable* readPortable(string) throw(ios_base::failure) ;
+    
+    ByteArray& readByteArray(string) throw(ios_base::failure);
     
     char* readCharArray(string) throw(ios_base::failure);
     
@@ -60,8 +62,6 @@ public:
     
     short* readShortArray(string) throw(ios_base::failure);
     
-    Portable* readPortable(string) throw(ios_base::failure) ;
-
     Portable* readPortableArray(string) throw(ios_base::failure);
 
 protected:

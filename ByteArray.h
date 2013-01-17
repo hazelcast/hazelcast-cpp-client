@@ -16,7 +16,7 @@ public:
         len = size;
         buffer = new byte[size];
     };
-    ByteArray(ByteArray& rhs){
+    ByteArray(const ByteArray& rhs){
         len = rhs.len;
         delete [] buffer;
         buffer = new byte[len];
@@ -27,16 +27,16 @@ public:
     ~ByteArray(){
         delete [] buffer;
     };
-  /*  ByteArray& operator=(const ByteArray& rhs){
-        len = rhs.len;
-        delete [] buffer; TODO
-        buffer = new byte[len];
-        for(int i = 0; i < len; i++){
-            buffer[i] = rhs.buffer[i];
+    bool operator==(ByteArray& m){
+        if(len != m.len)
+            return false;
+        for(int i = 0; i < len ; i++){
+            if(m[i] != buffer[i])
+                return false;
         }
-        return *this;
+        return true;
     };
-*/
+    
     byte& operator[](int i){
         return buffer[i];
     };

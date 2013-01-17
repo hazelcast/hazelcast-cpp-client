@@ -97,11 +97,6 @@ public:
     ContextAwareDataOutput* pop();
 private:
 
-//    void registerDefault(TypeSerializer*);
-    
-    int indexForDefaultType(int const);
-    
-    
     static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;
     static int const CONSTANT_SERIALIZERS_SIZE = SerializationConstants::CONSTANT_SERIALIZERS_LENGTH;
 
@@ -148,5 +143,11 @@ inline float SerializationServiceImpl::toObject(Data* data){
     return floatSerializer->read(dynamic_cast<DataInput*>(dataInput));
 };
 
-
+template<>
+inline CharArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return charArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
 #endif /* defined(__Server__SerializationServiceImpl__) */

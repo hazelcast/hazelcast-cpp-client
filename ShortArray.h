@@ -15,6 +15,14 @@ public:
         this->len = len;
         buffer = new short[len];
     };
+    ShortArray(const ShortArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new short[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+    };
     ~ShortArray(){
         delete [] buffer;
     };

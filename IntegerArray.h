@@ -15,6 +15,14 @@ public:
         this->len = len;
         buffer = new int[len];
     };
+    IntegerArray(const IntegerArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new int[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+    };
     ~IntegerArray(){
         delete [] buffer;
     };

@@ -70,12 +70,6 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
     
 };
 
-
-int SerializationServiceImpl::indexForDefaultType(int const typeId) {
-    return -typeId - 1;
-};
-
-
 Data* SerializationServiceImpl::toData(bool object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);

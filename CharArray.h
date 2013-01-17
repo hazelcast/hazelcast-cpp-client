@@ -11,9 +11,20 @@
 
 class CharArray{
 public:
-    CharArray(int len):len(0){
+    CharArray(){
+        
+    };
+    CharArray(int len){
         this->len = len;
         buffer = new char[len];
+    };
+    CharArray(const CharArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new char[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
     };
     ~CharArray(){
         delete [] buffer;
@@ -21,7 +32,15 @@ public:
     char& operator[](int i){
         return buffer[i];
     };
-    
+    bool operator==(CharArray& m){
+        if(len != m.len)
+            return false;
+        for(int i = 0; i < len ; i++){
+            if(m[i] != buffer[i])
+                return false;
+        }
+        return true;
+    };
     int length(){ return len; };
 private:
     int len;

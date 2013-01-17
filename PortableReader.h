@@ -40,7 +40,7 @@ public:
     
     Portable* readPortable(string) throw(ios_base::failure);
     
-    virtual byte* readByteArray(string) throw(ios_base::failure) = 0;
+    virtual ByteArray& readByteArray(string) throw(ios_base::failure) = 0;
     
     virtual char* readCharArray(string) throw(ios_base::failure) = 0;
     

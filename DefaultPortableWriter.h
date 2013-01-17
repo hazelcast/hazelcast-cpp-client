@@ -28,8 +28,6 @@ public:
     
     void writeLong(string fieldName, long value) throw(ios_base::failure);
     
-    void writeUTF(string fieldName, string str) throw(ios_base::failure);
-    
     void writeBoolean(string fieldName, bool value) throw(ios_base::failure);
     
     void writeByte(string fieldName, byte value) throw(ios_base::failure);
@@ -42,9 +40,11 @@ public:
     
     void writeShort(string fieldName, short value) throw(ios_base::failure);
     
+    void writeUTF(string fieldName, string str) throw(ios_base::failure);
+    
     void writePortable(string fieldName, Portable* portable) throw(ios_base::failure);
     
-    void writeByteArray(string fieldName, byte* values, int len) throw(ios_base::failure);
+    void writeByteArray(string fieldName, ByteArray&) throw(ios_base::failure);
     
     void writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure);
     

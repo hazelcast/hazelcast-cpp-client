@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
+#include <cassert>
 #include "ContextAwareDataOutput.h"
 #include "SerializationService.h"
 #include "SerializationServiceImpl.h"
@@ -21,25 +22,23 @@ int main(int argc, char* argv[])
     int x = 3,y;
     data = serializationService->toData(x);
     y =  serializationService->toObject<int>(data);
-    if(x == y){
-        cout << "OK" << endl;
-    }else{
-        cout << "FAIL" << endl;
-    }
+    assert(x == y);
+    
+    CharArray bx(20),by;
+    bx[2] = 5 + 'a';
+    data = serializationService->toData(bx);
+    by = serializationService->toObject<CharArray&>(data);
+    cout << by[2] << endl;
+    assert(bx == by);
+    
     
     TestMainPortable portableX(34,4.32), portableY;
-    
     data = serializationService->toData(portableX);
     cout << "Data size " << data->size() << endl;
     portableY =  serializationService->toObject<TestMainPortable>(data);
     
-    if(portableX == portableY ){
-        cout << "OK" << endl;
-    }else{
-        cout << "FAIL" << endl;
-        cout << "x:i:" << portableX.i << "=!" << "y:i:"<< portableY.i << endl;
-        cout << "x:f:" << portableX.f << "=!" << "y:f:"<< portableY.f << endl;
-    }
-
+    assert(portableX == portableY );
+    
+    cout << "All tests are passed" << endl;
     return 0;
 }

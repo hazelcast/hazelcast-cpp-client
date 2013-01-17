@@ -15,6 +15,14 @@ public:
         this->len = len;
         buffer = new float[len];
     };
+    FloatArray(const FloatArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new float[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+    };
     ~FloatArray(){
         delete [] buffer;
     };

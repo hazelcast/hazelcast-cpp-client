@@ -58,7 +58,7 @@ void ClassDefinitionWriter::writeShort(string fieldName, short value) throw(ios_
  addNestedField(&portable, fd);
  };
 
-void ClassDefinitionWriter::writeByteArray(string fieldName, byte* bytes, int len) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeByteArray(string fieldName, ByteArray& bytes) throw(ios_base::failure) {
     cd.add(new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_BYTE_ARRAY));
 };
     

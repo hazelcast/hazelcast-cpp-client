@@ -197,16 +197,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        char* read(DataInput* dataInput) throw(ios_base::failure){
+        CharArray& read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
-                return NULL;
+                return *new CharArray();;
             } else {
-                char* c = new char[size];
+                CharArray* c = new CharArray(size);
                 for (int i = 0; i < size; i++) {
-                    c[i] = dataInput->readChar();
+                    (*c)[i] = dataInput->readChar();
                 }
-                return c;
+                return *c;
             }
         }
         

@@ -15,6 +15,14 @@ public:
         this->len = len;
         buffer = new double[len];
     };
+    DoubleArray(const DoubleArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new double[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
+    };
     ~DoubleArray(){
         delete [] buffer;
     };

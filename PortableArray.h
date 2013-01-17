@@ -8,12 +8,20 @@
 
 #ifndef cppClient_PortableArray_h
 #define cppClient_PortableArray_h
-
+#include "Portable.h"
 class PortableArray{
 public:
     PortableArray(int len):len(0){
         this->len = len;
         buffer = new char[len];
+    };
+    PortableArray(const PortableArray& rhs){
+        len = rhs.len;
+        delete [] buffer;
+        buffer = new Portable[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs.buffer[i];
+        }
     };
     ~PortableArray(){
         delete [] buffer;
@@ -25,7 +33,7 @@ public:
     int length(){ return len; };
 private:
     int len;
-    char* buffer;
+    Portable* buffer;
 };
 
 

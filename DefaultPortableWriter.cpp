@@ -14,7 +14,6 @@ DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, Con
     this->output = output;
     this->offset = output->position();
     this->cd = cd;
-    //this->output->position(offset + cd->getFieldCount() * 4);
     char* zeros = new  char[offset + cd->getFieldCount() * 4]; 
     this->output->write(zeros,0,offset + cd->getFieldCount() * 4);
     delete [] zeros;
@@ -25,24 +24,45 @@ void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base
     output->writeInt(value);
 };
 
-void DefaultPortableWriter::writeLong(string fieldName, long value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeLong(string fieldName, long value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeLong(value);
+};
 
-void DefaultPortableWriter::writeUTF(string fieldName, string str) throw(ios_base::failure){};
+void DefaultPortableWriter::writeBoolean(string fieldName, bool value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeBoolean(value);
+};
 
-void DefaultPortableWriter::writeBoolean(string fieldName, bool value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeByte(string fieldName, byte value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeByte(value);
+};
 
-void DefaultPortableWriter::writeByte(string fieldName, byte value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeChar(string fieldName, int value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeChar(value);
+};
 
-void DefaultPortableWriter::writeChar(string fieldName, int value) throw(ios_base::failure){};
-
-void DefaultPortableWriter::writeDouble(string fieldName, double value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeDouble(string fieldName, double value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeDouble(value);
+};
 
 void DefaultPortableWriter::writeFloat(string fieldName, float value) throw(ios_base::failure){
     setPosition(fieldName);
     output->writeFloat(value);
 };
 
-void DefaultPortableWriter::writeShort(string fieldName, short value) throw(ios_base::failure){};
+void DefaultPortableWriter::writeShort(string fieldName, short value) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeShort(value);
+};
+
+void DefaultPortableWriter::writeUTF(string fieldName, string str) throw(ios_base::failure){
+    setPosition(fieldName);
+    output->writeUTF(str);
+};
 
 void DefaultPortableWriter::writePortable(string fieldName, Portable* portable) throw(ios_base::failure){
     setPosition(fieldName);
@@ -53,21 +73,44 @@ void DefaultPortableWriter::writePortable(string fieldName, Portable* portable) 
     }
 };
 
-void DefaultPortableWriter::writeByteArray(string fieldName, byte* values, int len) throw(ios_base::failure){};
+void DefaultPortableWriter::writeByteArray(string fieldName, ByteArray& values) throw(ios_base::failure){
+    setPosition(fieldName);
+    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeByte(values[i]);
+        }
+    }
+};
 
-void DefaultPortableWriter::writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure){};
+void DefaultPortableWriter::writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure){
 
-void DefaultPortableWriter::writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure){};
+};
 
-void DefaultPortableWriter::writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure){};
+void DefaultPortableWriter::writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure){
 
-void DefaultPortableWriter::writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure){};
+};
 
-void DefaultPortableWriter::writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure){};
+void DefaultPortableWriter::writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure){
 
-void DefaultPortableWriter::writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure){};
+};
 
-void DefaultPortableWriter::writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure){};
+void DefaultPortableWriter::writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure){
+
+};
+
+void DefaultPortableWriter::writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure){
+
+};
+
+void DefaultPortableWriter::writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure){
+
+};
+
+void DefaultPortableWriter::writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure){
+
+};
 
 void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
     FieldDefinitionImpl* fd = cd->get(fieldName);

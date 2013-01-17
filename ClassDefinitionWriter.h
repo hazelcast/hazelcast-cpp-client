@@ -44,7 +44,7 @@ public:
     
     void writePortable(string fieldName, Portable& portable) throw(ios_base::failure);
     
-    void writeByteArray(string fieldName, byte* bytes, int len) throw(ios_base::failure) ;
+    void writeByteArray(string fieldName, ByteArray&) throw(ios_base::failure) ;
     
     void writeCharArray(string fieldName, char* chars, int len) throw(ios_base::failure) ;
     

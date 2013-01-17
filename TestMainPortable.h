@@ -47,7 +47,11 @@ public:
     
     bool operator==(TestMainPortable& m){
         return (i == m.i) && (f == m.f );
-    }
+    };
+    
+    bool operator!=(TestMainPortable& m){
+        return !(*this == m );  
+    };
     
 };
 #endif
