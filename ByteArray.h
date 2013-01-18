@@ -16,6 +16,10 @@ public:
         len = size;
         buffer = new byte[size];
     };
+    ByteArray(int size, byte* b){
+        len = size;
+        buffer = b;
+    };
     ByteArray(const ByteArray& rhs){
         len = rhs.len;
         delete [] buffer;
@@ -27,6 +31,10 @@ public:
     ~ByteArray(){
         delete [] buffer;
     };
+    byte& operator[](int i){
+        return buffer[i];
+    };
+    
     bool operator==(ByteArray& m){
         if(len != m.len)
             return false;
@@ -36,10 +44,7 @@ public:
         }
         return true;
     };
-    
-    byte& operator[](int i){
-        return buffer[i];
-    };
+
     byte* getBuffer(){
         return buffer;
     };

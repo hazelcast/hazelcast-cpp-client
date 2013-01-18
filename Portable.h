@@ -15,13 +15,13 @@ class PortableReader;
 
 class Portable{
 public:
-    virtual int getClassId() = 0; //TODO
+    virtual int getClassId() = 0; 
     
-    virtual void writePortable(PortableWriter* writer) throw(std::ios_base::failure) = 0; //TODO
+    virtual void writePortable(PortableWriter* writer) throw(std::ios_base::failure) = 0; 
     
-    virtual void readPortable(PortableReader* reader) throw(std::ios_base::failure) = 0; //TODO
+    virtual void readPortable(PortableReader* reader) throw(std::ios_base::failure) = 0; 
     
-//    virtual int getType() = 0; //TODO
+//    virtual bool operator==(Portable& m); TODO
 };
 
 #endif

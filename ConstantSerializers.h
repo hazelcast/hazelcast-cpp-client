@@ -169,14 +169,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
         }
         
-        byte* read(DataInput* dataInput) throw(ios_base::failure){
+        ByteArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                byte* b = new byte[size];
-                dataInput->readFully(b,0,size);
-                return b;
+                ByteArray* c = new ByteArray(size);
+                for (int i = 0; i < size; i++) {
+                    (*c)[i] = dataInput->readByte();
+                }
+                return c;
             }
         }
         
@@ -197,16 +199,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        CharArray& read(DataInput* dataInput) throw(ios_base::failure){
+        CharArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
-                return *new CharArray();;
+                return NULL;
             } else {
                 CharArray* c = new CharArray(size);
                 for (int i = 0; i < size; i++) {
                     (*c)[i] = dataInput->readChar();
                 }
-                return *c;
+                return c;
             }
         }
         
@@ -227,16 +229,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
         }
         
-        short* read(DataInput* dataInput) throw(ios_base::failure){
+        ShortArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                short* s = new short[size];
+                ShortArray* c = new ShortArray(size);
                 for (int i = 0; i < size; i++) {
-                    s[i] = dataInput->readShort();
+                    (*c)[i] = dataInput->readShort();
                 }
-                return s;
+                return c;
             }
         }
         
@@ -257,16 +259,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
         }
         
-        int* read(DataInput* dataInput) throw(ios_base::failure){
+        IntegerArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                int* s = new int[size];
+                IntegerArray* c = new IntegerArray(size);
                 for (int i = 0; i < size; i++) {
-                    s[i] = dataInput->readInt();
+                    (*c)[i] = dataInput->readInt();
                 }
-                return s;
+                return c;
             }
         }
         
@@ -287,16 +289,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
         }
         
-        long* read(DataInput* dataInput) throw(ios_base::failure){
+        LongArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                long* l = new long[size];
+                LongArray* c = new LongArray(size);
                 for (int i = 0; i < size; i++) {
-                    l[i] = dataInput->readLong();
+                    (*c)[i] = dataInput->readLong();
                 }
-                return l;
+                return c;
             }
         }
         
@@ -317,16 +319,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
         }
         
-        float* read(DataInput* dataInput) throw(ios_base::failure){
+        FloatArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                float * f = new float[size];
+                FloatArray* c = new FloatArray(size);
                 for (int i = 0; i < size; i++) {
-                    f[i] = dataInput->readFloat();
+                    (*c)[i] = dataInput->readFloat();
                 }
-                return f;
+                return c;
             }
         }
         
@@ -347,16 +349,16 @@ public:
             return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
         }
         
-        double* read(DataInput* dataInput) throw(ios_base::failure){
+        DoubleArray* read(DataInput* dataInput) throw(ios_base::failure){
             int size = dataInput->readInt();
             if (size == 0) {
                 return NULL;
             } else {
-                double * d = new double[size];
+                DoubleArray* c = new DoubleArray(size);
                 for (int i = 0; i < size; i++) {
-                    d[i] = dataInput->readDouble();
+                    (*c)[i] = dataInput->readDouble();
                 }
-                return d;
+                return c;
             }
         }
         

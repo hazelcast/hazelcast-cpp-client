@@ -12,12 +12,23 @@
 #include <iostream>
 #include "PortableFactory.h"
 #include "Portable.h"
-#include "TestMainPortable.h"
+#include "TestMainPortable.h";
+#include "TestInnerPortable.h";
+#include "TestNamedPortable.h";
+
 class TestPortableFactory : public PortableFactory{
     
 public:
     Portable* create(int classId) {
-        return new TestMainPortable();
+        switch (classId) {
+                case 0:
+                    return new TestMainPortable();
+                case 1:
+                    return new TestInnerPortable();
+                case 2:
+                    return new TestNamedPortable();
+            }
+            return NULL;
             
     };
     

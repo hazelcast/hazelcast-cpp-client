@@ -51,17 +51,17 @@ public:
     
     ByteArray* readByteArray(string) throw(ios_base::failure);
     
-    CharArray* readCharArray(string) throw(ios_base::failure);
+    char* readCharArray(string, int&) throw(ios_base::failure);
     
-    IntegerArray* readIntArray(string) throw(ios_base::failure);
+    int* readIntArray(string, int&) throw(ios_base::failure);
     
-    LongArray* readLongArray(string) throw(ios_base::failure);
+    long* readLongArray(string, int&) throw(ios_base::failure);
     
-    DoubleArray* readDoubleArray(string) throw(ios_base::failure);
+    double* readDoubleArray(string, int&) throw(ios_base::failure);
     
-    FloatArray* readFloatArray(string) throw(ios_base::failure);
+    float* readFloatArray(string, int&) throw(ios_base::failure);
     
-    ShortArray* readShortArray(string) throw(ios_base::failure);
+    short* readShortArray(string, int&) throw(ios_base::failure);
     
     PortablePointerArray* readPortableArray(string) throw(ios_base::failure);
 

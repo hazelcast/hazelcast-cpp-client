@@ -101,68 +101,68 @@ ByteArray* DefaultPortableReader::readByteArray(string fieldName) throw(ios_base
     return values;
 };
 
-CharArray* DefaultPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
+char* DefaultPortableReader::readCharArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    CharArray* values = new CharArray(len);
+    len = input->readInt();
+    char* values = new char[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readChar();
     }
     return values;
 };
 
-IntegerArray* DefaultPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
+int* DefaultPortableReader::readIntArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    IntegerArray* values = new IntegerArray(len);
+    len = input->readInt();
+    int* values = new int[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readInt();
     }
     return values;
 };
 
-LongArray* DefaultPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
+long* DefaultPortableReader::readLongArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    LongArray* values = new LongArray(len);
+    len = input->readInt();
+    long* values = new long[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readLong();
     }
     return values;
 };
 
-DoubleArray* DefaultPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
+double* DefaultPortableReader::readDoubleArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    DoubleArray* values = new DoubleArray(len);
+    len = input->readInt();
+    double* values = new double[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readDouble();
     }
     return values;
 };
 
-FloatArray* DefaultPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
+float* DefaultPortableReader::readFloatArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    FloatArray* values = new FloatArray(len);
+    len = input->readInt();
+    float* values = new float[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readFloat();
     }
     return values;
 };
 
-ShortArray* DefaultPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
+short* DefaultPortableReader::readShortArray(string fieldName, int& len) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
-    int len = input->readInt();
-    ShortArray* values = new ShortArray(len);
+    len = input->readInt();
+    short* values = new short[len];
     for (int i = 0; i < len; i++) {
-        (*values)[i] = input->readByte();
+        values[i] = input->readShort();
     }
     return values;
 };

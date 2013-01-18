@@ -21,6 +21,7 @@
 #include "ContextAwareDataInput.h"
 #include "PortableFactory.h"
 
+class ByteArray;
 class ShortArray;
 class CharArray;
 class IntegerArray;
@@ -28,14 +29,14 @@ class LongArray;
 class FloatArray;
 class DoubleArray;
 
-class SerializationServiceImpl{// : public SerializationService{
+class SerializationServiceImpl {//: public SerializationService{ TODO
 public:
     
     SerializationServiceImpl(int,PortableFactory*);
     ~SerializationServiceImpl();
     
     template<typename K>
-    Data* toData(K object){
+    Data* toData(K& object){
         ContextAwareDataOutput* output = pop();
 
         portableSerializer->write(output, object);
@@ -69,6 +70,9 @@ public:
     Data* toData(DoubleArray&);
     Data* toData(string&);
     
+//    template<typename K>
+//    inline K toObject(Data* data);
+     
     template<typename K>
     inline K toObject(Data* data){
         if(data == NULL || data->size() == 0)
@@ -85,8 +89,11 @@ public:
         ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
         K* obj = (K*)portableSerializer->read(dataInput);
         
-        return *obj;
+        return obj;
     };
+    
+//    template<typename K>
+//    inline K toObject(Data* data);
     
     void push(ContextAwareDataOutput*);
     
@@ -128,11 +135,52 @@ private:
 };
 
 template<>
+inline byte SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return byteSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline bool SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return booleanSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+
+template<>
+inline char SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return charSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline short SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return shortSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
 inline int SerializationServiceImpl::toObject(Data* data){
     if(data == NULL || data->size() == 0)
         throw "Null pointer exception";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
     return integerSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline long SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return longSerializer->read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -144,10 +192,74 @@ inline float SerializationServiceImpl::toObject(Data* data){
 };
 
 template<>
+inline double SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return doubleSerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline ByteArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *(byteArraySerializer->read(dynamic_cast<DataInput*>(dataInput)));
+};
+
+template<>
 inline CharArray& SerializationServiceImpl::toObject(Data* data){
     if(data == NULL || data->size() == 0)
         throw "Null pointer exception";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
-    return charArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return *charArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline ShortArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *shortArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline IntegerArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *integerArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline LongArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *longArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline FloatArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *floatArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline DoubleArray& SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return *doubleArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+};
+
+template<>
+inline std::string SerializationServiceImpl::toObject(Data* data){
+    if(data == NULL || data->size() == 0)
+        throw "Null pointer exception";
+    ContextAwareDataInput* dataInput = new ContextAwareDataInput(*data,this);
+    return stringSerializer->read(dynamic_cast<DataInput*>(dataInput));
 };
 #endif /* defined(__Server__SerializationServiceImpl__) */

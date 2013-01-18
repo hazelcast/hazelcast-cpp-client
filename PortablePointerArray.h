@@ -16,6 +16,10 @@ public:
         this->len = len;
         buffer = new Portable*[len];
     };
+    PortablePointerArray(int size, Portable** b){
+        len = size;
+        buffer = b;
+    };
     PortablePointerArray(const PortablePointerArray& rhs){
         len = rhs.len;
         delete [] buffer;
@@ -29,6 +33,15 @@ public:
     };
     Portable*& operator[](int i){
         return buffer[i];
+    };
+    bool operator==(PortablePointerArray& m){
+        if(len != m.len)
+            return false;
+//        for(int i = 0; i < len ; i++)
+//            if(!(*(m[i]) == *(buffer[i]) ))
+//                return false;
+        
+        return true;
     };
     
     int length(){ return len; };

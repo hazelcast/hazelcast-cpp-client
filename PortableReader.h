@@ -50,17 +50,17 @@ public:
     
     virtual ByteArray* readByteArray(string) throw(ios_base::failure) = 0;
     
-    virtual CharArray* readCharArray(string) throw(ios_base::failure) = 0;
+    virtual char* readCharArray(string, int&) throw(ios_base::failure) = 0;
     
-    virtual IntegerArray* readIntArray(string) throw(ios_base::failure) = 0;
+    virtual int* readIntArray(string, int&) throw(ios_base::failure) = 0;
     
-    virtual LongArray* readLongArray(string) throw(ios_base::failure) = 0;
+    virtual long* readLongArray(string, int&) throw(ios_base::failure) = 0;
     
-    virtual DoubleArray* readDoubleArray(string) throw(ios_base::failure) = 0;
+    virtual double* readDoubleArray(string, int&) throw(ios_base::failure) = 0;
     
-    virtual FloatArray* readFloatArray(string) throw(ios_base::failure) = 0;
+    virtual float* readFloatArray(string, int&) throw(ios_base::failure) = 0;
     
-    virtual ShortArray* readShortArray(string) throw(ios_base::failure) = 0;
+    virtual short* readShortArray(string, int&) throw(ios_base::failure) = 0;
     
     virtual PortablePointerArray* readPortableArray(string) throw(ios_base::failure) = 0;
 };
