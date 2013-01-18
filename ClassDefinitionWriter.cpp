@@ -10,6 +10,7 @@
 #include "FieldDefinitionImpl.h"
 #include "Portable.h"
 #include "PortableSerializer.h"
+#include "PortablePointerArray.h"
 
 ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version, PortableSerializer* serializer){
     cd.classId = classId;
@@ -55,7 +56,7 @@ void ClassDefinitionWriter::writeShort(string fieldName, short value) throw(ios_
 
  void ClassDefinitionWriter::writePortable(string fieldName, Portable& portable) throw(ios_base::failure) {
  FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName, FieldDefinitionImpl::TYPE_PORTABLE, portable.getClassId());
- addNestedField(&portable, fd);
+ addNestedField(portable, fd);
  };
 
 void ClassDefinitionWriter::writeByteArray(string fieldName, ByteArray& bytes) throw(ios_base::failure) {
@@ -87,24 +88,22 @@ void ClassDefinitionWriter::writeShortArray(string fieldName, short* values, int
 };
 
 
-void ClassDefinitionWriter::writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure) {
-    if (portables == NULL) {
-        throw "Illegal Argument Exception";
-    }
-    Portable* p = portables;
+void ClassDefinitionWriter::writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure) {
+    
+    Portable* p = portables[0];
     int classId = p->getClassId();
-    for (int i = 1; i < len; i++) {//TODO
-        if (portables[i].getClassId() != classId) {
+    for (int i = 1; i < portables.length(); i++) {
+        if (portables[i]->getClassId() != classId) {
             throw "Illegal Argument Exception";
         }
     }
     FieldDefinitionImpl* fd = new FieldDefinitionImpl(index++, fieldName,
                                                       FieldDefinitionImpl::TYPE_PORTABLE_ARRAY, classId);
-    addNestedField(p, fd);
+    addNestedField(*p, fd);
 };
 
 
-void ClassDefinitionWriter::addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) {
+void ClassDefinitionWriter::addNestedField(Portable& p, FieldDefinitionImpl* fd) throw(ios_base::failure) {
     cd.add(fd);
     ClassDefinitionImpl* nestedCd =  serializer->getClassDefinition(p);
 

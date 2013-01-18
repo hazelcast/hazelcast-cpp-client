@@ -10,6 +10,14 @@
 #include "DefaultPortableReader.h"
 #include "ContextAwareDataInput.h"
 #include "PortableSerializer.h"
+#include "ByteArray.h"
+#include "CharArray.h"
+#include "DoubleArray.h"
+#include "FloatArray.h"
+#include "IntegerArray.h"
+#include "LongArray.h"
+#include "PortablePointerArray.h"
+#include "ShortArray.h"
 
 DefaultPortableReader::DefaultPortableReader(PortableSerializer* serializer, ContextAwareDataInput* input, ClassDefinitionImpl* cd){
     this->serializer = serializer;
@@ -82,7 +90,7 @@ Portable* DefaultPortableReader::readPortable(string fieldName) throw(ios_base::
     return NULL;
 };
 
-ByteArray& DefaultPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
+ByteArray* DefaultPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -90,35 +98,89 @@ ByteArray& DefaultPortableReader::readByteArray(string fieldName) throw(ios_base
     for (int i = 0; i < len; i++) {
         (*values)[i] = input->readByte();
     }
-    return *values;
+    return values;
 };
 
-char* DefaultPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
-
+CharArray* DefaultPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    CharArray* values = new CharArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-int* DefaultPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
-
+IntegerArray* DefaultPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    IntegerArray* values = new IntegerArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-long* DefaultPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
-
+LongArray* DefaultPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    LongArray* values = new LongArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-double* DefaultPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
-
+DoubleArray* DefaultPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    DoubleArray* values = new DoubleArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-float* DefaultPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
-
+FloatArray* DefaultPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    FloatArray* values = new FloatArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-short* DefaultPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
-
+ShortArray* DefaultPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    ShortArray* values = new ShortArray(len);
+    for (int i = 0; i < len; i++) {
+        (*values)[i] = input->readByte();
+    }
+    return values;
 };
 
-Portable* DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){
-
+PortablePointerArray* DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){
+    FieldDefinitionImpl* fd = cd->get(fieldName);
+    if(fd != NULL){
+        throw "unknown field exception " + fieldName;
+    }
+    int pos = getPosition(fieldName);
+    input->position(pos);
+    int len = input->readInt();
+    PortablePointerArray* portables = new PortablePointerArray(len);
+    input->setDataClassId(fd->getClassId());
+    for (int i = 0; i < len; i++) {
+        (*portables)[i] = serializer->read(input);
+    }
+    return portables;
 };
 
 int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure){
@@ -132,8 +194,4 @@ int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure
 
 int DefaultPortableReader::getPosition(FieldDefinitionImpl* fd) throw(ios_base::failure){
     return input->readInt(offset + fd->getIndex() * 4);
-};
-
-string DefaultPortableReader::readNullableString(DataInput* input) throw(ios_base::failure) {
-
 };

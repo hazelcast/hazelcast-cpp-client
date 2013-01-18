@@ -6,35 +6,35 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef cppClient_PortableArray_h
-#define cppClient_PortableArray_h
+#ifndef cppClient_PortablePointerArray_h
+#define cppClient_PortablePointerArray_h
 #include "Portable.h"
-class PortableArray{
+
+class PortablePointerArray{
 public:
-    PortableArray(int len):len(0){
+    PortablePointerArray(int len){
         this->len = len;
-        buffer = new char[len];
+        buffer = new Portable*[len];
     };
-    PortableArray(const PortableArray& rhs){
+    PortablePointerArray(const PortablePointerArray& rhs){
         len = rhs.len;
         delete [] buffer;
-        buffer = new Portable[len];
+        buffer = new Portable*[len];
         for(int i = 0; i < len; i++){
             buffer[i] = rhs.buffer[i];
         }
     };
-    ~PortableArray(){
+    ~PortablePointerArray(){
         delete [] buffer;
     };
-    char& operator[](int i){
+    Portable*& operator[](int i){
         return buffer[i];
     };
     
     int length(){ return len; };
 private:
     int len;
-    Portable* buffer;
+    Portable** buffer;
 };
-
 
 #endif

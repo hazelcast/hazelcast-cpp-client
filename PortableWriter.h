@@ -13,6 +13,8 @@
 #include <string>
 class Portable;
 class ByteArray;
+class PortablePointerArray;
+
 using namespace std;
 typedef unsigned char byte;
 class PortableWriter{
@@ -35,7 +37,7 @@ public:
     
     virtual void writeShort(string, const short) throw(ios_base::failure) = 0;
     
-    void writePortable(string, Portable& portable) throw(ios_base::failure);
+    virtual void writePortable(string, Portable& portable) throw(ios_base::failure) = 0;
     
     virtual void writeByteArray(string, ByteArray&) throw(ios_base::failure) = 0;
     
@@ -51,7 +53,7 @@ public:
     
     virtual void writeShortArray(string, short*s, int len) throw(ios_base::failure) = 0;
     
-    void writePortableArray(string  , Portable* portables, int len) throw(ios_base::failure);
+    virtual void writePortableArray(string  , PortablePointerArray&) throw(ios_base::failure) = 0;
 };
 
 #endif

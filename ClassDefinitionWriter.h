@@ -59,11 +59,11 @@ public:
     void writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure) ;
     
     
-    void writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure);
+    void writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure);
     
     ClassDefinitionImpl cd;
 private:
-    void addNestedField(Portable* p, FieldDefinitionImpl* fd) throw(ios_base::failure) ;
+    void addNestedField(Portable& p, FieldDefinitionImpl* fd) throw(ios_base::failure) ;
 
     int index;
     PortableSerializer* serializer;

@@ -22,7 +22,7 @@ public:
     ~PortableSerializer();
     
     
-    ClassDefinitionImpl* getClassDefinition(Portable* p) throw(std::ios_base::failure);
+    ClassDefinitionImpl* getClassDefinition(Portable& p) throw(std::ios_base::failure);
     
     int getTypeId();
     
@@ -30,7 +30,7 @@ public:
     
     int getVersion();
     
-    void write(ContextAwareDataOutput* output, Portable* p) throw(std::ios_base::failure);
+    void write(ContextAwareDataOutput* output, Portable& p) throw(std::ios_base::failure);
     
     Portable* read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure);
     

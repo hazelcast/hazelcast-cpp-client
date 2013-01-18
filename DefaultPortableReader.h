@@ -17,9 +17,10 @@ class PortableSerializer;
 class BufferObjectDataInput;
 class FieldDefinitionImpl;
 class ContextAwareDataInput;
+class ClassDefinitionImpl;
 
-#include "ClassDefinitionImpl.h"
 #include "PortableReader.h"
+
 typedef unsigned char byte;
 
 using namespace std;
@@ -48,21 +49,21 @@ public:
     
     Portable* readPortable(string) throw(ios_base::failure) ;
     
-    ByteArray& readByteArray(string) throw(ios_base::failure);
+    ByteArray* readByteArray(string) throw(ios_base::failure);
     
-    char* readCharArray(string) throw(ios_base::failure);
+    CharArray* readCharArray(string) throw(ios_base::failure);
     
-    int* readIntArray(string) throw(ios_base::failure);
+    IntegerArray* readIntArray(string) throw(ios_base::failure);
     
-    long* readLongArray(string) throw(ios_base::failure);
+    LongArray* readLongArray(string) throw(ios_base::failure);
     
-    double* readDoubleArray(string) throw(ios_base::failure);
+    DoubleArray* readDoubleArray(string) throw(ios_base::failure);
     
-    float* readFloatArray(string) throw(ios_base::failure);
+    FloatArray* readFloatArray(string) throw(ios_base::failure);
     
-    short* readShortArray(string) throw(ios_base::failure);
+    ShortArray* readShortArray(string) throw(ios_base::failure);
     
-    Portable* readPortableArray(string) throw(ios_base::failure);
+    PortablePointerArray* readPortableArray(string) throw(ios_base::failure);
 
 protected:
     int getPosition(string) throw(ios_base::failure);
@@ -70,7 +71,7 @@ protected:
     int getPosition(FieldDefinitionImpl*) throw(ios_base::failure);
     
 private:
-    string readNullableString(DataInput* in) throw(ios_base::failure) ;
+//    string readNullableString(DataInput* in) throw(ios_base::failure) ;TODO no need in c++ because there cannot be null strings
     
     PortableSerializer* serializer;//TODO
     

@@ -27,13 +27,13 @@ PortableSerializer::~PortableSerializer(){
 };
 
 
-ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable* p) throw(std::ios_base::failure) {
-    int classId = p->getClassId();
+ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
+    int classId = p.getClassId();
     ClassDefinitionImpl* cd = context->lookup(classId);
     if (cd == NULL) {
         ClassDefinitionWriter* classDefinitionWriter = new ClassDefinitionWriter(classId,context->getVersion(),this);
         assert(classDefinitionWriter != NULL);
-        p->writePortable(classDefinitionWriter);
+        p.writePortable(classDefinitionWriter);
         cd = &classDefinitionWriter->cd;
         context->registerClassDefinition(cd);
     }
@@ -49,12 +49,12 @@ int PortableSerializer::getVersion(){
     return context->getVersion();
 };
 
-void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable* p) throw(std::ios_base::failure) {
-    assert(p != NULL);
+void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
+    
     ClassDefinitionImpl* cd = getClassDefinition(p);
     assert(cd != NULL);
     DefaultPortableWriter* writer = new DefaultPortableWriter(this, dataOutput, cd);
-    p->writePortable(writer);
+    p.writePortable(writer);
     
 };
 

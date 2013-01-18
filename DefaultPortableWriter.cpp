@@ -7,7 +7,7 @@
 //
 
 #include "DefaultPortableWriter.h"
-
+#include "PortablePointerArray.h"
 
 DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd){
     this->serializer = serializer;
@@ -64,9 +64,9 @@ void DefaultPortableWriter::writeUTF(string fieldName, string str) throw(ios_bas
     output->writeUTF(str);
 };
 
-void DefaultPortableWriter::writePortable(string fieldName, Portable* portable) throw(ios_base::failure){
+void DefaultPortableWriter::writePortable(string fieldName, Portable& portable) throw(ios_base::failure){
     setPosition(fieldName);
-    bool isNull = portable == NULL;
+    bool isNull = &portable == NULL;
     output->writeBoolean(isNull);
     if (!isNull) {
         serializer->write(output, portable);
@@ -85,31 +85,80 @@ void DefaultPortableWriter::writeByteArray(string fieldName, ByteArray& values) 
 };
 
 void DefaultPortableWriter::writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeChar(values[i]);
+        }
+    }
 };
 
 void DefaultPortableWriter::writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeInt(values[i]);
+        }
+    }
 };
 
 void DefaultPortableWriter::writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeLong(values[i]);
+        }
+    }
 };
 
 void DefaultPortableWriter::writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeDouble(values[i]);
+        }
+    }
 };
 
 void DefaultPortableWriter::writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeFloat(values[i]);
+        }
+    }
 };
 
 void DefaultPortableWriter::writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure){
-
+    setPosition(fieldName);
+//    int len = values.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            output->writeShort(values[i]);
+        }
+    }
 };
 
-void DefaultPortableWriter::writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure){
-
+void DefaultPortableWriter::writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure){
+    setPosition(fieldName);
+    int len = portables.length();
+    output->writeInt(len);
+    if (len > 0) {
+        for (int i = 0; i < len; i++) {
+            serializer->write(output, *(portables[i]) );
+        }
+    }
 };
 
 void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
@@ -132,6 +181,3 @@ void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failur
     
 };
 
-void DefaultPortableWriter::writeNullablestring(ContextAwareDataOutput* output, string obj){
-    
-};

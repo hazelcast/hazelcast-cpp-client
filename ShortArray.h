@@ -11,7 +11,7 @@
 
 class ShortArray{
 public:
-    ShortArray(int len):len(0){
+    ShortArray(int len){
         this->len = len;
         buffer = new short[len];
     };

@@ -38,7 +38,7 @@ public:
     Data* toData(K object){
         ContextAwareDataOutput* output = pop();
 
-        portableSerializer->write(output, &object);
+        portableSerializer->write(output, object);
         
         Data* data = new Data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
         

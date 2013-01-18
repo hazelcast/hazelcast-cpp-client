@@ -16,6 +16,7 @@
 #include "DataInput.h"
 #include "ContextAwareDataOutput.h"
 #include "Portable.h"
+class PortablePointerArray;
 
 using namespace std;
 
@@ -42,7 +43,7 @@ public:
     
     void writeUTF(string fieldName, string str) throw(ios_base::failure);
     
-    void writePortable(string fieldName, Portable* portable) throw(ios_base::failure);
+    void writePortable(string fieldName, Portable& portable) throw(ios_base::failure);
     
     void writeByteArray(string fieldName, ByteArray&) throw(ios_base::failure);
     
@@ -58,11 +59,11 @@ public:
     
     void writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure);
     
-    void writePortableArray(string fieldName, Portable* portables, int len) throw(ios_base::failure);
+    void writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure);
     
     void setPosition(string fieldName) throw(ios_base::failure);
     
-    static void writeNullablestring(ContextAwareDataOutput* output, string obj);
+//    static void writeNullablestring(ContextAwareDataOutput* output, string obj); TODO no need in c++ because there cannot be null strings
 private:
     PortableSerializer* serializer;
 
