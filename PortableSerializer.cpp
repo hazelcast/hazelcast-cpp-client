@@ -58,11 +58,11 @@ void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) 
     
 };
 
-Portable* PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
+Portable PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
     assert(dataInput != NULL);
     int dataClassId = dataInput->getDataClassId();
     int dataVersion = dataInput->getDataVersion();
-    Portable* p = context->createPortable(dataClassId);
+    Portable p = context->createPortable(dataClassId);
     assert(p != NULL);
     DefaultPortableReader* reader;
     ClassDefinitionImpl* cd;
@@ -74,7 +74,9 @@ Portable* PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::
         cd = context->lookup(dataClassId, dataVersion); // registered during read
 //        reader = new MorphingPortableReader(this, (BufferObjectDataInput) dataInput, cd);
     }
-    p->readPortable(reader);
+    p.readPortable(reader);
+    
+    delete reader;
     return p;
     
 };

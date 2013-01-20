@@ -12,17 +12,13 @@
 class DataInput;
 class DataOutput;
 
+template<typename T>
 class TypeSerializer{
 public:
-    template<typename T>
-    inline void write(DataOutput*, T ) throw(std::ios_base::failure){
-        
-    };
+    void write(DataOutput*, T ) throw(std::ios_base::failure);
     
-    template<typename T>
-    inline T read(DataInput*) throw(std::ios_base::failure){
-        
-    };
+    T read(DataInput*) throw(std::ios_base::failure);
+
     
 };
 

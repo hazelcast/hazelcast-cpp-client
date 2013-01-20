@@ -14,6 +14,6 @@
 
 class PortableFactory{
 public:
-    virtual Portable* create(int) = 0;
+    virtual Portable create(int) = 0;
 };
 #endif /* defined(__Server__PortableFactory__) */

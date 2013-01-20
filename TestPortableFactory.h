@@ -19,16 +19,16 @@
 class TestPortableFactory : public PortableFactory{
     
 public:
-    Portable* create(int classId) {
+    Portable create(int classId) {
         switch (classId) {
                 case 0:
-                    return new TestMainPortable();
+                    return TestMainPortable();
                 case 1:
-                    return new TestInnerPortable();
+                    return TestInnerPortable();
                 case 2:
-                    return new TestNamedPortable();
+                    return TestNamedPortable();
             }
-            return NULL;
+            return Portable();
             
     };
     

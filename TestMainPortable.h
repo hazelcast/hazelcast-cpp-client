@@ -23,7 +23,7 @@ public:
     TestMainPortable() {
     };
         
-    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable* p) {
+    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable p) {
         this->b = b;
         this->boolean = boolean;
         this->c = c;
@@ -50,7 +50,7 @@ public:
         writer->writeFloat("f", f);
         writer->writeDouble("d", d);
         writer->writeUTF("str", str);
-        writer->writePortable("p", *p);
+        writer->writePortable("p", p);
         
     };
         
@@ -64,7 +64,7 @@ public:
         f = reader->readFloat("f");
         d = reader->readDouble("d");
         str = reader->readUTF("str");
-        p = (TestInnerPortable*)reader->readPortable("p");
+        p = reader->readPortable("p");
     };
     
     bool operator==(TestMainPortable& m){
@@ -79,7 +79,7 @@ public:
         if(f != m.f ) return false;
         if(d != m.d ) return false;
         if(str != m.str ) return false;
-        if(!(*p == *(m.p)) ) return false;
+        if(p != m.p ) return false;
     };
     
     bool operator!=(TestMainPortable& m){
@@ -95,6 +95,6 @@ private:
     float f;
     double d;
     string str;
-    TestInnerPortable* p;
+    TestInnerPortable p;
 };
 #endif

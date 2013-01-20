@@ -22,8 +22,8 @@ public:
     TestNamedPortable() {
     };
         
-    TestNamedPortable(string name) {
-        this->name = name;
+    TestNamedPortable(string name):name(name) {
+        
     };
         
     int getClassId() {

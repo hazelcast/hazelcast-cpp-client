@@ -11,9 +11,8 @@
 
 #include <iostream>
 #include <string>
+#include "Array.h"
 class Portable;
-class ByteArray;
-class PortablePointerArray;
 
 using namespace std;
 typedef unsigned char byte;
@@ -39,21 +38,21 @@ public:
     
     virtual void writePortable(string, Portable& portable) throw(ios_base::failure) = 0;
     
-    virtual void writeByteArray(string, ByteArray&) throw(ios_base::failure) = 0;
+    virtual void writeByteArray(string, Array<byte>&) throw(ios_base::failure) = 0;
     
-    virtual void writeCharArray(string, char* chars, int len) throw(ios_base::failure) = 0;
+    virtual void writeCharArray(string, Array<char>&) throw(ios_base::failure) = 0;
     
-    virtual void writeIntArray(string, int* ints, int len) throw(ios_base::failure) = 0;
+    virtual void writeIntArray(string, Array<int>&) throw(ios_base::failure) = 0;
     
-    virtual void writeLongArray(string, long* longs, int len) throw(ios_base::failure) = 0;
+    virtual void writeLongArray(string, Array<long>&) throw(ios_base::failure) = 0;
     
-    virtual void writeDoubleArray(string, double*s, int len) throw(ios_base::failure) = 0;
+    virtual void writeDoubleArray(string, Array<double>&) throw(ios_base::failure) = 0;
     
-    virtual void writeFloatArray(string, float*s, int len) throw(ios_base::failure) = 0;
+    virtual void writeFloatArray(string, Array<float>&) throw(ios_base::failure) = 0;
     
-    virtual void writeShortArray(string, short*s, int len) throw(ios_base::failure) = 0;
+    virtual void writeShortArray(string, Array<short>&) throw(ios_base::failure) = 0;
     
-    virtual void writePortableArray(string  , PortablePointerArray&) throw(ios_base::failure) = 0;
+    virtual void writePortableArray(string  , Array<Portable>&) throw(ios_base::failure) = 0;
 };
 
 #endif

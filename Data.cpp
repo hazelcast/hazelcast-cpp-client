@@ -5,49 +5,53 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+#include "Array.h"
 #include "Data.h"
 
-Data::Data(){
-    this->cd = new ClassDefinitionImpl();
+Data::Data():partitionHash(-1),buffer(0),type(-1){
+    this->cd = NULL;
 };
 
-Data::Data(int type, ByteArray* buffer){
+Data::Data(const Data& rhs){
+    (*this) = rhs;    
+};
+
+Data::Data(const int type, Array<byte> buffer):partitionHash(-1){
     this->type = type;
     this->buffer = buffer;
-    this->cd = new ClassDefinitionImpl();        
+    this->cd = NULL;       
 };
 
+Data& Data::operator=(const Data& rhs){
+    type = rhs.type;
+    buffer = rhs.buffer;
+    cd = rhs.cd;
+    partitionHash = rhs.partitionHash;
+};
+
+bool Data::operator==(const Data& rhs) const{
+    if(type != rhs.type) return false;
+    if(cd != rhs.cd) return false; //TODO check this again
+    if(partitionHash != rhs.partitionHash) return false;
+    if(buffer != rhs.buffer) return false;
+    return true;
+};
+
+bool Data::operator!=(const Data& rhs) const{
+    return !((*this) == rhs);
+};
+    
 int Data::size(){
-    return (buffer == NULL) ? 0 : buffer->length();
+    return buffer.length();
 };
 
-void Data::writeData(DataOutput&) const throw(std::ios_base::failure){
-    
-};
-
-void Data::readData(DataInput&) throw(std::ios_base::failure){
-    
-};
 
 int Data::getPartitionHash(){
     return partitionHash;
 };
 
 void Data::setPartitionHash(int partitionHash){
-    
+    this->partitionHash = partitionHash;
 };
 
 
-//bool Data::operator==(const FieldDefinitionImpl&) const{
-
-//};
-
-//bool Data::operator!=(const FieldDefinitionImpl&) const{
-
-//};
-
-// Same as Arrays.equals(byte[] a, byte[] a2) but loop order is reversed.
- bool Data::equals(byte const * const data1, byte const * const data2){
-    
-};

@@ -7,8 +7,10 @@
 //
 
 #include "DefaultPortableWriter.h"
-#include "PortablePointerArray.h"
-
+#include "ContextAwareDataOutput.h"
+#include "ClassDefinitionImpl.h"
+#include "PortableSerializer.h"
+#include "Array.h"
 DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd){
     this->serializer = serializer;
     this->output = output;
@@ -73,7 +75,7 @@ void DefaultPortableWriter::writePortable(string fieldName, Portable& portable) 
     }
 };
 
-void DefaultPortableWriter::writeByteArray(string fieldName, ByteArray& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeByteArray(string fieldName, Array<byte>& values) throw(ios_base::failure){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -84,9 +86,9 @@ void DefaultPortableWriter::writeByteArray(string fieldName, ByteArray& values) 
     }
 };
 
-void DefaultPortableWriter::writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeCharArray(string fieldName, Array<char>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -95,9 +97,9 @@ void DefaultPortableWriter::writeCharArray(string fieldName, char* values, int l
     }
 };
 
-void DefaultPortableWriter::writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeIntArray(string fieldName, Array<int>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -106,9 +108,9 @@ void DefaultPortableWriter::writeIntArray(string fieldName, int* values, int len
     }
 };
 
-void DefaultPortableWriter::writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeLongArray(string fieldName, Array<long>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -117,9 +119,9 @@ void DefaultPortableWriter::writeLongArray(string fieldName, long* values, int l
     }
 };
 
-void DefaultPortableWriter::writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeDoubleArray(string fieldName, Array<double>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -128,9 +130,9 @@ void DefaultPortableWriter::writeDoubleArray(string fieldName, double* values, i
     }
 };
 
-void DefaultPortableWriter::writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeFloatArray(string fieldName, Array<float>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -139,9 +141,9 @@ void DefaultPortableWriter::writeFloatArray(string fieldName, float* values, int
     }
 };
 
-void DefaultPortableWriter::writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure){
+void DefaultPortableWriter::writeShortArray(string fieldName, Array<short>& values) throw(ios_base::failure){
     setPosition(fieldName);
-//    int len = values.length();
+    int len = values.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
@@ -150,13 +152,13 @@ void DefaultPortableWriter::writeShortArray(string fieldName, short* values, int
     }
 };
 
-void DefaultPortableWriter::writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure){
+void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable>& portables) throw(ios_base::failure){
     setPosition(fieldName);
     int len = portables.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
-            serializer->write(output, *(portables[i]) );
+            serializer->write(output, portables[i] );
         }
     }
 };

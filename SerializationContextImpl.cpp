@@ -24,13 +24,13 @@ ClassDefinitionImpl* SerializationContextImpl::lookup(int classId, int version){
     return versionedDefinitions[SerializationServiceImpl::combineToLong(classId, version)];
 };
 
-Portable* SerializationContextImpl::createPortable(int classId){
+Portable SerializationContextImpl::createPortable(int classId){
     return portableFactory->create(classId);
 };
 
 ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(byte *compressedBinary) throw(std::ios_base::failure){
     ContextAwareDataOutput* output = service->pop();
-    ByteArray* binary;
+    Array<byte> binary;
 //    try {
         decompress(compressedBinary, output);
         binary = output->toByteArray();
@@ -38,8 +38,9 @@ ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(byte *compr
         service->push(output);
 //    }
     ClassDefinitionImpl* cd = new ClassDefinitionImpl();
-    cd->readData(*dynamic_cast<DataInput*>(new ContextAwareDataInput(binary->getBuffer(), service)) );
-    cd->setBinary(binary->getBuffer());
+    ContextAwareDataInput dataInput = ContextAwareDataInput(binary.getBuffer(), service);
+    cd->readData(dataInput);
+    cd->setBinary(binary.getBuffer());
     //TODO below was putIfAbsent
     ClassDefinitionImpl* currentCD = versionedDefinitions[service->combineToLong(cd->classId, version)] = cd;
     if (currentCD == NULL) {
@@ -64,10 +65,10 @@ void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl* cd) 
             if (cd->getBinary() == NULL) {
                 ContextAwareDataOutput* output = service->pop();                
                 cd->writeData(*output);
-                ByteArray* binary = output->toByteArray();
+                Array<byte> binary = output->toByteArray();
                 output->reset();
-                compress(binary->getBuffer(), output);
-                cd->setBinary(output->toByteArray()->getBuffer());
+                compress(binary.getBuffer(), output);
+                cd->setBinary(output->toByteArray().getBuffer());
                 service->push(output);
                 
             }

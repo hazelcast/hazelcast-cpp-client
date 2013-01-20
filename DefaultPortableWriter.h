@@ -11,13 +11,13 @@
 
 #include <iostream>
 #include <string>
-#include "ClassDefinitionImpl.h"
-#include "PortableSerializer.h"
-#include "DataInput.h"
-#include "ContextAwareDataOutput.h"
-#include "Portable.h"
-class PortablePointerArray;
-
+#include "PortableWriter.h"
+#include "Array.h"
+class ClassDefinitionImpl;
+class PortableSerializer;
+class DataInput;
+class ContextAwareDataOutput;
+class Portable;
 using namespace std;
 
 class DefaultPortableWriter : public PortableWriter{
@@ -45,21 +45,21 @@ public:
     
     void writePortable(string fieldName, Portable& portable) throw(ios_base::failure);
     
-    void writeByteArray(string fieldName, ByteArray&) throw(ios_base::failure);
+    void writeByteArray(string fieldName, Array<byte>&) throw(ios_base::failure);
     
-    void writeCharArray(string fieldName, char* values, int len) throw(ios_base::failure);
+    void writeCharArray(string fieldName, Array<char>&) throw(ios_base::failure);
     
-    void writeIntArray(string fieldName, int* values, int len) throw(ios_base::failure);
+    void writeIntArray(string fieldName, Array<int>&) throw(ios_base::failure);
     
-    void writeLongArray(string fieldName, long* values, int len) throw(ios_base::failure);
+    void writeLongArray(string fieldName, Array<long>&) throw(ios_base::failure);
     
-    void writeDoubleArray(string fieldName, double* values, int len) throw(ios_base::failure);
+    void writeDoubleArray(string fieldName, Array<double>&) throw(ios_base::failure);
     
-    void writeFloatArray(string fieldName, float* values, int len) throw(ios_base::failure);
+    void writeFloatArray(string fieldName, Array<float>&) throw(ios_base::failure);
     
-    void writeShortArray(string fieldName, short* values, int len) throw(ios_base::failure);
+    void writeShortArray(string fieldName, Array<short>&) throw(ios_base::failure);
     
-    void writePortableArray(string fieldName, PortablePointerArray& portables) throw(ios_base::failure);
+    void writePortableArray(string fieldName, Array<Portable>& portables) throw(ios_base::failure);
     
     void setPosition(string fieldName) throw(ios_base::failure);
     

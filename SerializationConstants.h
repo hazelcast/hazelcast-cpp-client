@@ -11,7 +11,6 @@
 
 class SerializationConstants{
 public:
-    SerializationConstants() {};
     static int ID ;
     
     // !!! NEVER CHANGE THE ORDER OF SERIALIZERS !!!
@@ -65,7 +64,8 @@ public:
     static int const DEFAULT_TYPE_OBJECT = -23;
     
     static int const DEFAULT_TYPE_EXTERNALIZABLE = -24;
-    
+private:
+    SerializationConstants() {};
 };
 
 

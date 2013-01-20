@@ -6,11 +6,13 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "ContextAwareDataOutput.h"
-#include "SerializationServiceImpl.h"
 #include <string>
 #include <algorithm>
 #include <cassert>
+#include "ContextAwareDataOutput.h"
+#include "SerializationServiceImpl.h"
+#include "Array.h"
+
 ContextAwareDataOutput::ContextAwareDataOutput(SerializationServiceImpl* service){
     this->service = service;
     this->buffer = new std::ostringstream;
@@ -26,14 +28,18 @@ ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream* buffer,Serial
     this->service = service;
 };
 
-ByteArray* ContextAwareDataOutput::toByteArray(){
+Array<byte> ContextAwareDataOutput::toByteArray(){
     int size = getSize();
-    ByteArray* byteArray = new ByteArray(size);
+    Array<byte> byteArray(size);
     std::string str = buffer->str();
     for(int i = 0; i < size ; i++){
-        (*byteArray)[i] = str[i];
+        byteArray[i] = str[i];
     }
     return byteArray;
+};
+
+string ContextAwareDataOutput::getBuffer(){
+    return buffer->str();
 };
 
 int ContextAwareDataOutput::getSize(){
@@ -265,4 +271,5 @@ void ContextAwareDataOutput::writeShortUTF(std::string str) throw(std::ios_base:
     }
     writeShort(utfLength);
     write(byteArray, 0, utfLength);
+    delete [] byteArray;
 };

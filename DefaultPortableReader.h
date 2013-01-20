@@ -12,14 +12,14 @@
 #include <iostream>
 #include <string>
 
+#include "Array.h"
+#include "PortableReader.h"
 class Portable;
 class PortableSerializer;
 class BufferObjectDataInput;
 class FieldDefinitionImpl;
 class ContextAwareDataInput;
 class ClassDefinitionImpl;
-
-#include "PortableReader.h"
 
 typedef unsigned char byte;
 
@@ -47,23 +47,23 @@ public:
     
     string readUTF(string) throw(ios_base::failure);
     
-    Portable* readPortable(string) throw(ios_base::failure) ;
+    Portable readPortable(string) throw(ios_base::failure) ;
     
-    ByteArray* readByteArray(string) throw(ios_base::failure);
+    Array<byte> readByteArray(string) throw(ios_base::failure);
     
-    char* readCharArray(string, int&) throw(ios_base::failure);
+    Array<char> readCharArray(string) throw(ios_base::failure);
     
-    int* readIntArray(string, int&) throw(ios_base::failure);
+    Array<int> readIntArray(string) throw(ios_base::failure);
     
-    long* readLongArray(string, int&) throw(ios_base::failure);
+    Array<long> readLongArray(string) throw(ios_base::failure);
     
-    double* readDoubleArray(string, int&) throw(ios_base::failure);
+    Array<double> readDoubleArray(string) throw(ios_base::failure);
     
-    float* readFloatArray(string, int&) throw(ios_base::failure);
+    Array<float> readFloatArray(string) throw(ios_base::failure);
     
-    short* readShortArray(string, int&) throw(ios_base::failure);
+    Array<short> readShortArray(string) throw(ios_base::failure);
     
-    PortablePointerArray* readPortableArray(string) throw(ios_base::failure);
+    Array<Portable> readPortableArray(string) throw(ios_base::failure);
 
 protected:
     int getPosition(string) throw(ios_base::failure);

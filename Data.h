@@ -12,31 +12,26 @@
 #include <iostream>
 #include "DataSerializable.h"
 #include "ClassDefinitionImpl.h"
-
-class Data :  public DataSerializable{
+#include "Array.h"
+class Data{ //:  public DataSerializable{ //TODO skipped probaly not used
 public:
     Data();
-    Data(int type, ByteArray* bytes);
-    
+    Data(const Data&);
+    Data(const int type, Array<byte> bytes);
+    Data& operator=(const Data&);
     int size();
-    
-    void writeData(DataOutput&) const throw(std::ios_base::failure);
-    void readData(DataInput&) throw(std::ios_base::failure);
     
     int getPartitionHash();
     void setPartitionHash(int partitionHash);
     
-//    bool operator==(const FieldDefinitionImpl&) const;
-//    bool operator!=(const FieldDefinitionImpl&) const;
+    bool operator==(const Data&) const;
+    bool operator!=(const Data&) const;
     
-    // Same as Arrays.equals(byte[] a, byte[] a2) but loop order is reversed.
-    static bool equals(byte const * const data1, byte const * const data2);
-    
-    static int const NO_CLASS_ID = -1;
+//    static int const NO_CLASS_ID = -1;
     
     ClassDefinitionImpl* cd;
     int type;
-    ByteArray* buffer;
+    Array<byte> buffer;
 private:
     int partitionHash;
     

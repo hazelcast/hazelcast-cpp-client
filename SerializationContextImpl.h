@@ -26,7 +26,7 @@ public:
     
     ClassDefinitionImpl* lookup(int,int);
     
-    Portable* createPortable(int classId);
+    Portable createPortable(int classId);
     
     ClassDefinitionImpl* createClassDefinition(byte* compressedBinary) throw(std::ios_base::failure);
     void registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure);

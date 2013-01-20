@@ -10,7 +10,6 @@
 #define Server_DataOutput_h
 
 #include <string>
-#include "ByteArray.h"
 
 typedef unsigned char byte;
 

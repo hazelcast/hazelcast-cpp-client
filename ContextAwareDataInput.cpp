@@ -20,8 +20,8 @@ ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImp
     ClassDefinitionImpl* cd = data.cd;
     this->dataClassId = cd != NULL ? cd->getClassId() : -1;
     this->dataVersion = cd != NULL ? cd->getVersion() : -1;
-    this->ptr = data.buffer->getBuffer();
-    this->beg = data.buffer->getBuffer();
+    this->ptr = data.buffer.getBuffer();
+    this->beg = data.buffer.getBuffer();
     this->service = service;
 };
 
@@ -126,7 +126,7 @@ std::string ContextAwareDataInput::readUTF() throw(std::string) {
         return NULL;
     int length = readInt();
     std::string result;
-    int chunkSize = length / STRING_CHUNK_SIZE + 1;
+    int chunkSize = (length / STRING_CHUNK_SIZE) + 1;
     while (chunkSize > 0) {
         result.append(readShortUTF());
         chunkSize--;
@@ -225,27 +225,27 @@ void ContextAwareDataInput::position(int newPos){
 
 
 void ContextAwareDataInput::reset(){
-    
+    //TODO
 };
 
 BufferObjectDataInput* ContextAwareDataInput::duplicate(){
-    
+    //TODO
 };
 
 BufferObjectDataInput* ContextAwareDataInput::slice(){
-    
+    //TODO
 };
 
 //Inherited from closeable
 
 void ContextAwareDataInput::close() throw(std::ios_base::failure){
-    
+    //TODO
 };
 
 //private functions
 
 std::string ContextAwareDataInput::readShortUTF() throw(std::ios_base::failure){
-    int utflen = readShort();
+    short utflen = readShort();
     byte* bytearr = new byte[utflen];
     char* chararr = new char[utflen];
     int c, char2, char3;

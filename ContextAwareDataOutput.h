@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include "BufferObjectDataOutput.h"
+#include "Array.h"
 class SerializationServiceImpl;
 class SerializationContextImpl;
 
@@ -26,7 +27,9 @@ public:
     
     ContextAwareDataOutput(std::ostringstream*,SerializationServiceImpl*);
     
-    ByteArray* toByteArray();
+    Array<byte> toByteArray();
+    
+    std::string getBuffer();
     
     int getSize();
     

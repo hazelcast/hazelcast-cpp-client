@@ -11,16 +11,8 @@
 
 #include <iostream>
 #include <string>
-
+#include "Array.h"
 class Portable;
-class ByteArray;
-class CharArray;
-class IntegerArray;
-class LongArray;
-class DoubleArray;
-class FloatArray;
-class ShortArray;
-class PortablePointerArray;
 
 using namespace std;
 typedef unsigned char byte;
@@ -46,23 +38,23 @@ public:
     
     virtual short readShort(string) throw(ios_base::failure) = 0;
     
-    virtual Portable* readPortable(string) throw(ios_base::failure) = 0;
+    virtual Portable readPortable(string) throw(ios_base::failure) = 0;
     
-    virtual ByteArray* readByteArray(string) throw(ios_base::failure) = 0;
+    virtual Array<byte> readByteArray(string) throw(ios_base::failure) = 0;
     
-    virtual char* readCharArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<char> readCharArray(string) throw(ios_base::failure) = 0;
     
-    virtual int* readIntArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<int> readIntArray(string) throw(ios_base::failure) = 0;
     
-    virtual long* readLongArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<long> readLongArray(string) throw(ios_base::failure) = 0;
     
-    virtual double* readDoubleArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<double> readDoubleArray(string) throw(ios_base::failure) = 0;
     
-    virtual float* readFloatArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<float> readFloatArray(string) throw(ios_base::failure) = 0;
     
-    virtual short* readShortArray(string, int&) throw(ios_base::failure) = 0;
+    virtual Array<short> readShortArray(string) throw(ios_base::failure) = 0;
     
-    virtual PortablePointerArray* readPortableArray(string) throw(ios_base::failure) = 0;
+    virtual Array<Portable> readPortableArray(string) throw(ios_base::failure) = 0;
 };
 
 #endif

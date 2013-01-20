@@ -15,10 +15,8 @@
 using namespace std;
 
 SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory* portableFactory) {
-    
-    constantTypeIds = new TypeSerializer*[SerializationConstants::CONSTANT_SERIALIZERS_LENGTH];
-    
-    serializationContext = new SerializationContextImpl(portableFactory, version,this);
+   
+     serializationContext = new SerializationContextImpl(portableFactory, version,this);
     
      portableSerializer = new PortableSerializer(serializationContext);
     
@@ -70,147 +68,147 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
     
 };
 
-Data* SerializationServiceImpl::toData(bool object){
+Data SerializationServiceImpl::toData(bool object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     booleanSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_BOOLEAN, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_BOOLEAN, output->toByteArray());
     return data;
 };
 
-Data* SerializationServiceImpl::toData(char object){
+Data SerializationServiceImpl::toData(char object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     charSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_CHAR, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_CHAR, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(short object){
+Data SerializationServiceImpl::toData(short object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     shortSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_SHORT, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_SHORT, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(int object){
+Data SerializationServiceImpl::toData(int object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     integerSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_INTEGER, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_INTEGER, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(long object){
+Data SerializationServiceImpl::toData(long object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     longSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_LONG, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_LONG, output->toByteArray());
     return data;
     
 };
 
 
-Data* SerializationServiceImpl::toData(float object){
+Data SerializationServiceImpl::toData(float object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     floatSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_FLOAT, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_FLOAT, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(double object){
+Data SerializationServiceImpl::toData(double object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     doubleSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_DOUBLE, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(CharArray& object){
+Data SerializationServiceImpl::toData(Array<char>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     charArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(ShortArray& object){
+Data SerializationServiceImpl::toData(Array<short>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     shortArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(IntegerArray& object){
+Data SerializationServiceImpl::toData(Array<int>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     integerArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
     return data;
     
 };
-Data* SerializationServiceImpl::toData(LongArray& object){
+Data SerializationServiceImpl::toData(Array<long>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     longArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(FloatArray& object){
+Data SerializationServiceImpl::toData(Array<float>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     floatArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(DoubleArray& object){
+Data SerializationServiceImpl::toData(Array<double>& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     doubleArraySerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(string& object){
+Data SerializationServiceImpl::toData(string& object){
     ContextAwareDataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     stringSerializer->write(dataOutput, object);
     
-    Data* data = new Data(SerializationConstants::CONSTANT_TYPE_STRING, output->toByteArray());
+    Data data(SerializationConstants::CONSTANT_TYPE_STRING, output->toByteArray());
     return data;
     
 };
 
-Data* SerializationServiceImpl::toData(Data& data){
-    return &data;
+Data SerializationServiceImpl::toData(Data& data){
+    return data;
 };
 
 long SerializationServiceImpl::combineToLong(int x, int y) {
