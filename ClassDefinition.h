@@ -8,7 +8,7 @@
 
 #ifndef Server_ClassDefinition_h
 #define Server_ClassDefinition_h
-
+#include <iostream>
 #include <string>
 #include "DataSerializable.h"
 #include "FieldDefinitionImpl.h"

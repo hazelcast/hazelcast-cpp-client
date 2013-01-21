@@ -8,7 +8,7 @@
 
 #ifndef __Server__BufferObjectDataInput__
 #define __Server__BufferObjectDataInput__
-
+#include <iostream>
 #include "DataInput.h"
 #include "Closeable.h"
 typedef unsigned char byte;

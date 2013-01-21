@@ -77,6 +77,7 @@ public:
        if( ff != m.ff ) return false;
        if( dd != m.dd ) return false;
        if( nn != m.nn ) return false;
+       return true;
     };
     
     bool operator!=(TestInnerPortable& m){

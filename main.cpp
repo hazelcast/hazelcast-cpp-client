@@ -17,7 +17,7 @@
 #include "TestMainPortable.h"
 using namespace std;
 
-int main(int argc, char* argv){
+int main(int argc, char** argv){
     TestPortableFactory tpf1,tpf2;
     SerializationServiceImpl serializationService(1, &tpf1);
     SerializationServiceImpl serializationService2(2, &tpf2);

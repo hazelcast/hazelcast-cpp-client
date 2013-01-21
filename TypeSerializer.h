@@ -8,7 +8,7 @@
 
 #ifndef Server_TypeSerializer_h
 #define Server_TypeSerializer_h
-
+#include <iostream>
 class DataInput;
 class DataOutput;
 

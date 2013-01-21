@@ -8,7 +8,7 @@
 
 #ifndef __Server__DataSerializable__
 #define __Server__DataSerializable__
-
+#include <iostream>
 #include "DataInput.h"
 #include "DataOutput.h"
 

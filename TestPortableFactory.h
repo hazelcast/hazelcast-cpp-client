@@ -13,9 +13,9 @@
 #include <memory>
 #include "PortableFactory.h"
 #include "Portable.h"
-#include "TestMainPortable.h";
-#include "TestInnerPortable.h";
-#include "TestNamedPortable.h";
+#include "TestMainPortable.h"
+#include "TestInnerPortable.h"
+#include "TestNamedPortable.h"
 
 class TestPortableFactory : public PortableFactory{
     

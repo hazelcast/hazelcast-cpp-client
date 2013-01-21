@@ -8,7 +8,7 @@
 
 #ifndef Server_Closeable_h
 #define Server_Closeable_h
-
+#include <iostream>
 class Closeable{
 public:
     virtual void close() throw(std::ios_base::failure)= 0;

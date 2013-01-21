@@ -8,7 +8,7 @@
 
 #ifndef Server_ConstantSerializers_h
 #define Server_ConstantSerializers_h
-
+#include <iostream>
 using namespace std;
 #include "DataInput.h"
 #include "DataOutput.h"

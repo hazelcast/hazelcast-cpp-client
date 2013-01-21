@@ -80,6 +80,7 @@ public:
         if(d != m.d ) return false;
         if(str != m.str ) return false;
 //        if(p != m.p ) return false;
+        return true;
     };
     
     bool operator!=(TestMainPortable& m){
