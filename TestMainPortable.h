@@ -23,7 +23,7 @@ public:
     TestMainPortable() {
     };
         
-    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable p) {
+    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable* p) {
         this->b = b;
         this->boolean = boolean;
         this->c = c;
@@ -33,38 +33,38 @@ public:
         this->f = f;
         this->d = d;
         this->str = str;
-        this->p = p;
+//        this->p = p;
     };
         
     int getClassId() {
         return 0;
     };
         
-    void writePortable(PortableWriter* writer) throw(std::ios_base::failure){
-        writer->writeByte("b", b);
-        writer->writeBoolean("bool", boolean);
-        writer->writeChar("c", c);
-        writer->writeShort("s", s);
-        writer->writeInt("i", i);
-        writer->writeLong("l", l);
-        writer->writeFloat("f", f);
-        writer->writeDouble("d", d);
-        writer->writeUTF("str", str);
-        writer->writePortable("p", p);
+    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+        writer.writeByte("b", b);
+        writer.writeBoolean("bool", boolean);
+        writer.writeChar("c", c);
+        writer.writeShort("s", s);
+        writer.writeInt("i", i);
+        writer.writeLong("l", l);
+        writer.writeFloat("f", f);
+        writer.writeDouble("d", d);
+        writer.writeUTF("str", str);
+//        writer.writePortable("p", *p);
         
     };
         
-    void readPortable(PortableReader* reader)throw(std::ios_base::failure) {
-        b = reader->readByte("b");
-        boolean = reader->readBoolean("bool");
-        c = reader->readChar("c");
-        s = reader->readShort("s");
-        i = reader->readInt("i");
-        l = reader->readLong("l");
-        f = reader->readFloat("f");
-        d = reader->readDouble("d");
-        str = reader->readUTF("str");
-        p = reader->readPortable("p");
+    void readPortable(PortableReader& reader)throw(std::ios_base::failure) {
+        b = reader.readByte("b");
+        boolean = reader.readBoolean("bool");
+        c = reader.readChar("c");
+        s = reader.readShort("s");
+        i = reader.readInt("i");
+        l = reader.readLong("l");
+        f = reader.readFloat("f");
+        d = reader.readDouble("d");
+        str = reader.readUTF("str");
+//        p = reader.readPortable("p");
     };
     
     bool operator==(TestMainPortable& m){
@@ -79,7 +79,7 @@ public:
         if(f != m.f ) return false;
         if(d != m.d ) return false;
         if(str != m.str ) return false;
-        if(p != m.p ) return false;
+//        if(p != m.p ) return false;
     };
     
     bool operator!=(TestMainPortable& m){
@@ -95,6 +95,6 @@ private:
     float f;
     double d;
     string str;
-    TestInnerPortable p;
+//    TestInnerPortable* p;
 };
 #endif

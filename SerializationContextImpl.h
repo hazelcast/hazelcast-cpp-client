@@ -10,7 +10,9 @@
 #define __Server__SerializationContextImpl__
 
 #include <iostream>
+#include <memory>
 #include <map>
+#include <memory>
 class ClassDefinitionImpl;
 class PortableFactory;
 class Portable;
@@ -22,15 +24,15 @@ class SerializationContextImpl {//: public SerializationContext{ //TODO
 public:
     SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
     
-    ClassDefinitionImpl* lookup(int);
+    ClassDefinitionImpl lookup(int);
     
-    ClassDefinitionImpl* lookup(int,int);
+    ClassDefinitionImpl lookup(int,int);
     
-    Portable createPortable(int classId);
+    std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinitionImpl* createClassDefinition(byte* compressedBinary) throw(std::ios_base::failure);
-    void registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure);
-    void registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure);
+    ClassDefinitionImpl createClassDefinition(byte* compressedBinary) throw(std::ios_base::failure);
+    void registerNestedDefinitions(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
+    void registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
     int getVersion();
     
 private:
@@ -41,7 +43,7 @@ private:
     PortableFactory* portableFactory;//TODO think again
     SerializationServiceImpl* service;
     int version;
-    std::map<long,ClassDefinitionImpl*> versionedDefinitions;
+    std::map<long,ClassDefinitionImpl> versionedDefinitions;
     
 };
 

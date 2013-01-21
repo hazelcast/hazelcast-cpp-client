@@ -63,14 +63,13 @@ public:
     
     void setPosition(string fieldName) throw(ios_base::failure);
     
-//    static void writeNullablestring(ContextAwareDataOutput* output, string obj); TODO no need in c++ because there cannot be null strings
 private:
     PortableSerializer* serializer;
 
     ClassDefinitionImpl* cd;
     ContextAwareDataOutput* output;
     int offset;
-    //    int fieldIndex = 0;
+    
 
 };
 #endif /* defined(__Server__DefaultPortableWriter__) */

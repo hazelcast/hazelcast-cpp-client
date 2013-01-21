@@ -63,7 +63,7 @@ public:
     
     ClassDefinitionImpl cd;
 private:
-    void addNestedField(Portable& p, FieldDefinitionImpl* fd) throw(ios_base::failure) ;
+    void addNestedField(Portable& p, FieldDefinitionImpl& fd) throw(ios_base::failure) ;
 
     int index;
     PortableSerializer* serializer;

@@ -9,6 +9,7 @@
 #ifndef __Server__PortableSerializer__
 #define __Server__PortableSerializer__
 
+#include <memory>
 #include "Portable.h"
 #include "SerializationContextImpl.h"
 #include "ClassDefinitionImpl.h"
@@ -21,8 +22,7 @@ public:
     PortableSerializer(SerializationContextImpl*);
     ~PortableSerializer();
     
-    
-    ClassDefinitionImpl* getClassDefinition(Portable& p) throw(std::ios_base::failure);
+    ClassDefinitionImpl getClassDefinition(Portable& p) throw(std::ios_base::failure);
     
     int getTypeId();
     
@@ -32,7 +32,7 @@ public:
     
     void write(ContextAwareDataOutput* output, Portable& p) throw(std::ios_base::failure);
     
-    Portable read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure);
+    auto_ptr<Portable> read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure);
     
 private:
     SerializationContextImpl* context;//TODO think again

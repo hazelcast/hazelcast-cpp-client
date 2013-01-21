@@ -164,20 +164,10 @@ void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable>
 };
 
 void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
-    FieldDefinitionImpl* fd = cd->get(fieldName);
-    if (fd == NULL) {
-        string error = "Invalid field name: '";
-        error += fieldName;
-        error += "' for ClassDefinition {id: ";
-        error += cd->getClassId();
-        error += ", version: ";
-        error += cd->getVersion();
-        error += "}";
-        throw error;
-    }
+    FieldDefinitionImpl fd = cd->get(fieldName);
     
     int pos = output->position();
-    int index = fd->getIndex();
+    int index = fd.getIndex();
     // index = fieldIndex++; // if class versions are the same.
     output->writeInt(offset + index * 4, pos);
     

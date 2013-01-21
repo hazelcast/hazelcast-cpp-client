@@ -14,8 +14,8 @@
 #include "DefaultPortableReader.h"
 #include "PortableReader.h"
 
-PortableSerializer::PortableSerializer(SerializationContextImpl* context){
-    this->context = context;
+PortableSerializer::PortableSerializer(SerializationContextImpl* context):context(context){
+
 };
 
 int PortableSerializer::getTypeId(){
@@ -23,21 +23,21 @@ int PortableSerializer::getTypeId(){
 };
 
 PortableSerializer::~PortableSerializer(){
-    //TODO sda 
+
 };
 
 
-ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
+ClassDefinitionImpl PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
     int classId = p.getClassId();
-    ClassDefinitionImpl* cd = context->lookup(classId);
-    if (cd == NULL) {
-        ClassDefinitionWriter* classDefinitionWriter = new ClassDefinitionWriter(classId,context->getVersion(),this);
-        assert(classDefinitionWriter != NULL);
+    ClassDefinitionImpl cd = context->lookup(classId);
+    
+    if (cd.classId == -1 ) {//Means cd is not set yet
+        ClassDefinitionWriter classDefinitionWriter(classId,context->getVersion(),this);
         p.writePortable(classDefinitionWriter);
-        cd = &classDefinitionWriter->cd;
+        cd = classDefinitionWriter.cd;
         context->registerClassDefinition(cd);
     }
-    assert(cd != NULL);
+    
     return cd;
 };
 
@@ -51,32 +51,29 @@ int PortableSerializer::getVersion(){
 
 void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
     
-    ClassDefinitionImpl* cd = getClassDefinition(p);
-    assert(cd != NULL);
-    DefaultPortableWriter* writer = new DefaultPortableWriter(this, dataOutput, cd);
+    ClassDefinitionImpl cd = getClassDefinition(p);
+    DefaultPortableWriter writer(this, dataOutput, &cd);
     p.writePortable(writer);
     
 };
 
-Portable PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
+auto_ptr<Portable> PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
     assert(dataInput != NULL);
     int dataClassId = dataInput->getDataClassId();
     int dataVersion = dataInput->getDataVersion();
-    Portable p = context->createPortable(dataClassId);
-    assert(p != NULL);
-    DefaultPortableReader* reader;
-    ClassDefinitionImpl* cd;
+    auto_ptr<Portable> p = context->createPortable(dataClassId);
+    
+    ClassDefinitionImpl cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
-        assert(cd != NULL);
-        reader = new DefaultPortableReader(this, dataInput, cd);
+//        assert(cd != NULL);
+        DefaultPortableReader reader(this, dataInput, &cd);
+        p->readPortable(reader);
     } else {
         cd = context->lookup(dataClassId, dataVersion); // registered during read
-//        reader = new MorphingPortableReader(this, (BufferObjectDataInput) dataInput, cd);
+//      MorphingPortableReader reader(this, dataInput, &cd);
+//        p->readPortable(reader);
     }
-    p.readPortable(reader);
-    
-    delete reader;
     return p;
     
 };

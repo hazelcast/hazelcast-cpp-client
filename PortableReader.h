@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 #include "Array.h"
 class Portable;
 
@@ -38,7 +39,7 @@ public:
     
     virtual short readShort(string) throw(ios_base::failure) = 0;
     
-    virtual Portable readPortable(string) throw(ios_base::failure) = 0;
+    virtual auto_ptr<Portable> readPortable(string) throw(ios_base::failure) = 0;
     
     virtual Array<byte> readByteArray(string) throw(ios_base::failure) = 0;
     
@@ -54,7 +55,7 @@ public:
     
     virtual Array<short> readShortArray(string) throw(ios_base::failure) = 0;
     
-    virtual Array<Portable> readPortableArray(string) throw(ios_base::failure) = 0;
+    virtual Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure) = 0;
 };
 
 #endif

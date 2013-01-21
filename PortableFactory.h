@@ -10,10 +10,12 @@
 #define __Server__PortableFactory__
 
 #include <iostream>
+#include <memory>
 #include "Portable.h"
+
 
 class PortableFactory{
 public:
-    virtual Portable create(int) = 0;
+    virtual std::auto_ptr<Portable> create(int) = 0;
 };
 #endif /* defined(__Server__PortableFactory__) */

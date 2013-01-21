@@ -29,7 +29,7 @@ public:
     
 //    static int const NO_CLASS_ID = -1;
     
-    ClassDefinitionImpl* cd;
+    ClassDefinitionImpl cd;
     int type;
     Array<byte> buffer;
 private:

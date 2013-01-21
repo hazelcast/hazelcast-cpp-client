@@ -10,6 +10,7 @@
 #define __Server__TestPortableFactory__
 
 #include <iostream>
+#include <memory>
 #include "PortableFactory.h"
 #include "Portable.h"
 #include "TestMainPortable.h";
@@ -19,16 +20,17 @@
 class TestPortableFactory : public PortableFactory{
     
 public:
-    Portable create(int classId) {
+    auto_ptr<Portable> create(int classId) {
         switch (classId) {
-                case 0:
-                    return TestMainPortable();
-                case 1:
-                    return TestInnerPortable();
-                case 2:
-                    return TestNamedPortable();
+            case 0:
+                return auto_ptr<Portable>(new TestMainPortable());
+            case 1:
+                return auto_ptr<Portable>(new TestInnerPortable());
+            case 2:
+                return auto_ptr<Portable>(new TestNamedPortable());
+            default:
+                throw "Illegal Statement Exception";
             }
-            return Portable();
             
     };
     

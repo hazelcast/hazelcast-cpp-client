@@ -65,22 +65,23 @@ string DefaultPortableReader::readUTF(string fieldName) throw(ios_base::failure)
     return input->readUTF();
 };
 
-Portable DefaultPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
-    FieldDefinitionImpl* fd = cd->get(fieldName);
-    if (fd == NULL) {
-        throw "UnknownFieldException" + fieldName;
-    }
-    int pos = getPosition(fd);
+auto_ptr<Portable> DefaultPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
+    FieldDefinitionImpl fd = cd->get(fieldName);
+//    if (fd == NULL) {
+//        throw "UnknownFieldException" + fieldName;
+//    }
+    int pos = getPosition(&fd);
     input->position(pos);
     bool isNull = input->readBoolean();
     if (!isNull) {
- 
-        input->setDataClassId(fd->getClassId());
+        input->setDataClassId(fd.getClassId());
         input->setDataClassId(cd->classId);
         return serializer->read(input);
         
     }
-    return Portable();
+    //TODO
+//    auto_ptr<Portable> p(new Portable);
+//    return p;
 };
 
 Array<byte> DefaultPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
@@ -160,16 +161,16 @@ Array<short> DefaultPortableReader::readShortArray(string fieldName) throw(ios_b
     return values;
 };
 
-Array<Portable> DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){
-    FieldDefinitionImpl* fd = cd->get(fieldName);
-    if(fd != NULL){
-        throw "unknown field exception " + fieldName;
-    }
+Array< auto_ptr<Portable> > DefaultPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){//TODO
+    FieldDefinitionImpl fd = cd->get(fieldName);
+//    if(fd != NULL){
+//        throw "unknown field exception " + fieldName;
+//    }
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<Portable> portables(len);
-    input->setDataClassId(fd->getClassId());
+    Array<auto_ptr<Portable> > portables(len);
+    input->setDataClassId(fd.getClassId());
     for (int i = 0; i < len; i++) {
         portables[i] = serializer->read(input);
     }
@@ -177,12 +178,12 @@ Array<Portable> DefaultPortableReader::readPortableArray(string fieldName) throw
 };
 
 int DefaultPortableReader::getPosition(string fieldName) throw(ios_base::failure){
-     FieldDefinitionImpl* fd = cd->get(fieldName);
-     if (fd == NULL) {
-         std::string error = "UnknownFieldException" ;
-         error += fieldName;  
-     }
-    return getPosition(fd);
+     FieldDefinitionImpl fd = cd->get(fieldName);
+//     if (fd == NULL) {
+//         std::string error = "UnknownFieldException" ;
+//         error += fieldName;  
+//     }
+    return getPosition(&fd);
 };
 
 int DefaultPortableReader::getPosition(FieldDefinitionImpl* fd) throw(ios_base::failure){

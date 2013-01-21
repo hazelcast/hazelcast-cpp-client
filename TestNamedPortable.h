@@ -30,13 +30,13 @@ public:
         return 2;
     };
         
-    void writePortable(PortableWriter* writer) throw(std::ios_base::failure){
-        writer->writeUTF("name",name);
+    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+        writer.writeUTF("name",name);
         
     };
         
-    void readPortable(PortableReader* reader) throw(std::ios_base::failure) {
-        name = reader->readUTF("name");
+    void readPortable(PortableReader& reader) throw(std::ios_base::failure) {
+        name = reader.readUTF("name");
     };
     
     bool operator==(TestNamedPortable& m){

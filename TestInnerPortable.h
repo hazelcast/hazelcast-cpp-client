@@ -30,7 +30,7 @@ public:
                         Array<long> l, 
                         Array<float> f, 
                         Array<double> d,
-                        Array<Portable> n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
+                        Array< Portable* > n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
         
         
     };
@@ -44,27 +44,27 @@ public:
     ~TestInnerPortable(){
         
     }    
-    void writePortable(PortableWriter* writer) throw(std::ios_base::failure){
-        writer->writeByteArray("b", bb);
-        writer->writeCharArray("c", cc);
-        writer->writeShortArray("s", ss);
-        writer->writeIntArray("i", ii);
-        writer->writeLongArray("l", ll);
-        writer->writeFloatArray("f", ff);
-        writer->writeDoubleArray("d", dd);
-        writer->writePortableArray("n", nn);
+    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+        writer.writeByteArray("b", bb);
+        writer.writeCharArray("c", cc);
+        writer.writeShortArray("s", ss);
+        writer.writeIntArray("i", ii);
+        writer.writeLongArray("l", ll);
+        writer.writeFloatArray("f", ff);
+        writer.writeDoubleArray("d", dd);
+//        writer.writePortableArray("n", nn);
         
     };
         
-    void readPortable(PortableReader* reader)throw(std::ios_base::failure) {
-        bb = reader->readByteArray("b");
-        cc = reader->readCharArray("c");
-        ss = reader->readShortArray("s");
-        ii = reader->readIntArray("i");
-        ll = reader->readLongArray("l");
-        ff = reader->readFloatArray("f");
-        dd = reader->readDoubleArray("d");
-        nn = reader->readPortableArray("n");
+    void readPortable(PortableReader& reader)throw(std::ios_base::failure) {
+        bb = reader.readByteArray("b");
+        cc = reader.readCharArray("c");
+        ss = reader.readShortArray("s");
+        ii = reader.readIntArray("i");
+        ll = reader.readLongArray("l");
+        ff = reader.readFloatArray("f");
+        dd = reader.readDoubleArray("d");
+//        nn = reader.readPortableArray("n");
         
     };
     
@@ -90,7 +90,7 @@ private:
     Array<long> ll;
     Array<float> ff;
     Array<double> dd;
-    Array<Portable> nn;
+    Array< Portable* > nn;
     
 };
 #endif

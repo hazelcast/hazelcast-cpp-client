@@ -31,13 +31,13 @@ public:
     Data toData(K& object){
         ContextAwareDataOutput* output = pop();
 
-        portableSerializer->write(output, object);
+        portableSerializer.write(output, object);
         
         Data data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
         
         Portable* portable = dynamic_cast<Portable*>(&object);
         if (portable != NULL) {
-            data.cd = serializationContext->lookup(portable->getClassId());
+            data.cd = serializationContext.lookup(portable->getClassId());
         }else{
             throw "class is not portable";
         }
@@ -71,7 +71,7 @@ public:
             throw "Empty Data";
         int typeID = data.type;
         if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
-            serializationContext->registerClassDefinition(data.cd);
+            serializationContext.registerClassDefinition(data.cd);
         }else{
             std::string error = "There is no suitable de-serializer for type ";
             error += typeID;
@@ -79,9 +79,9 @@ public:
         }
         
         ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-        K obj = portableSerializer->read(dataInput);
+        K* obj = dynamic_cast<K*>(portableSerializer.read(dataInput).get());
         
-        return obj;
+        return *obj;
     };
     
 //    template<typename K>
@@ -89,7 +89,7 @@ public:
     
     void push(ContextAwareDataOutput*);
     
-    SerializationContextImpl* getSerializationContext();
+//    SerializationContextImpl* getSerializationContext();
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
     
@@ -101,25 +101,25 @@ private:
 
     queue<ContextAwareDataOutput*> outputPool;
     
-    PortableSerializer* portableSerializer;
-    ConstantSerializers::ByteSerializer* byteSerializer;
-    ConstantSerializers::BooleanSerializer* booleanSerializer;
-    ConstantSerializers::CharSerializer* charSerializer;
-    ConstantSerializers::ShortSerializer* shortSerializer;
-    ConstantSerializers::IntegerSerializer* integerSerializer;
-    ConstantSerializers::LongSerializer* longSerializer;
-    ConstantSerializers::FloatSerializer* floatSerializer;
-    ConstantSerializers::DoubleSerializer* doubleSerializer;
-    ConstantSerializers::ByteArraySerializer* byteArraySerializer;
-    ConstantSerializers::CharArraySerializer* charArraySerializer;
-    ConstantSerializers::ShortArraySerializer* shortArraySerializer;
-    ConstantSerializers::IntegerArraySerializer* integerArraySerializer;
-    ConstantSerializers::LongArraySerializer* longArraySerializer;
-    ConstantSerializers::FloatArraySerializer* floatArraySerializer;
-    ConstantSerializers::DoubleArraySerializer* doubleArraySerializer;
-    ConstantSerializers::StringSerializer* stringSerializer;
+    PortableSerializer portableSerializer;
+    ConstantSerializers::ByteSerializer byteSerializer;
+    ConstantSerializers::BooleanSerializer booleanSerializer;
+    ConstantSerializers::CharSerializer charSerializer;
+    ConstantSerializers::ShortSerializer shortSerializer;
+    ConstantSerializers::IntegerSerializer integerSerializer;
+    ConstantSerializers::LongSerializer longSerializer;
+    ConstantSerializers::FloatSerializer floatSerializer;
+    ConstantSerializers::DoubleSerializer doubleSerializer;
+    ConstantSerializers::ByteArraySerializer byteArraySerializer;
+    ConstantSerializers::CharArraySerializer charArraySerializer;
+    ConstantSerializers::ShortArraySerializer shortArraySerializer;
+    ConstantSerializers::IntegerArraySerializer integerArraySerializer;
+    ConstantSerializers::LongArraySerializer longArraySerializer;
+    ConstantSerializers::FloatArraySerializer floatArraySerializer;
+    ConstantSerializers::DoubleArraySerializer doubleArraySerializer;
+    ConstantSerializers::StringSerializer stringSerializer;
     
-    SerializationContextImpl* serializationContext;
+    SerializationContextImpl serializationContext;
     
 
 };
@@ -129,7 +129,7 @@ inline byte SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return byteSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return byteSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -137,7 +137,7 @@ inline bool SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return booleanSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return booleanSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 
@@ -146,7 +146,7 @@ inline char SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return charSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return charSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -154,7 +154,7 @@ inline short SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return shortSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return shortSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -162,7 +162,7 @@ inline int SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return integerSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return integerSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -170,7 +170,7 @@ inline long SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return longSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return longSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -178,7 +178,7 @@ inline float SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return floatSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return floatSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -186,7 +186,7 @@ inline double SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return doubleSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return doubleSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -194,7 +194,7 @@ inline Array<byte> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return byteArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return byteArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -202,7 +202,7 @@ inline Array<char> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return charArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return charArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -210,7 +210,7 @@ inline Array<short> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return shortArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return shortArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -218,7 +218,7 @@ inline Array<int> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return integerArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return integerArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -226,7 +226,7 @@ inline Array<long> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return longArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return longArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -234,7 +234,7 @@ inline Array<float> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return floatArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return floatArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -242,7 +242,7 @@ inline Array<double> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return doubleArraySerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return doubleArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 
 template<>
@@ -250,6 +250,6 @@ inline std::string SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
     ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return stringSerializer->read(dynamic_cast<DataInput*>(dataInput));
+    return stringSerializer.read(dynamic_cast<DataInput*>(dataInput));
 };
 #endif /* defined(__Server__SerializationServiceImpl__) */

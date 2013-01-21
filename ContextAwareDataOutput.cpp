@@ -46,9 +46,9 @@ int ContextAwareDataOutput::getSize(){
     return (int)buffer->str().length();
 };
 
-SerializationContextImpl* ContextAwareDataOutput::getSerializationContext(){
-    return service->getSerializationContext();
-};
+//SerializationContextImpl* ContextAwareDataOutput::getSerializationContext(){
+//    return service->getSerializationContext();
+//};
 
 
 std::string ContextAwareDataOutput::toString(){//TODO remove

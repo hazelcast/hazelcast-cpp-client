@@ -9,7 +9,7 @@
 #include "Data.h"
 
 Data::Data():partitionHash(-1),buffer(0),type(-1){
-    this->cd = NULL;
+    
 };
 
 Data::Data(const Data& rhs){
@@ -18,8 +18,7 @@ Data::Data(const Data& rhs){
 
 Data::Data(const int type, Array<byte> buffer):partitionHash(-1){
     this->type = type;
-    this->buffer = buffer;
-    this->cd = NULL;       
+    this->buffer = buffer;       
 };
 
 Data& Data::operator=(const Data& rhs){

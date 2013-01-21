@@ -24,14 +24,17 @@ using namespace std;
 class ClassDefinitionImpl : public ClassDefinition{
 public:
     ClassDefinitionImpl();
+    ClassDefinitionImpl(const ClassDefinitionImpl&);
     
-    void add(FieldDefinitionImpl*);
-    void add(ClassDefinitionImpl*);
+    ClassDefinitionImpl& operator=(const ClassDefinitionImpl& rhs);
     
-    FieldDefinitionImpl* get(std::string);
-    FieldDefinitionImpl* get(int);
+    void add(FieldDefinitionImpl&);
+    void add(ClassDefinitionImpl&);
     
-    set<ClassDefinitionImpl*>& getNestedClassDefinitions();
+    const FieldDefinitionImpl& get(std::string);
+    const FieldDefinitionImpl& get(int);
+    
+    const vector<ClassDefinitionImpl>& getNestedClassDefinitions();
     
     void writeData(DataOutput&) const throw(std::ios_base::failure);
     void readData(DataInput&)throw(std::ios_base::failure);
@@ -39,12 +42,12 @@ public:
     int getFieldCount();
     int getClassId();
     int getVersion();
-    byte* getBinary();
+    Array<byte> getBinary();
     
-    void setBinary(byte* binary);
+    void setBinary(Array<byte>);
     
-//    bool operator==(const ClassDefinitionImpl&) const;
-//    bool operator!=(const ClassDefinitionImpl&) const;
+    bool operator==(const ClassDefinitionImpl&) const;
+    bool operator!=(const ClassDefinitionImpl&) const;
     
 //    friend std::ostream& operator<<(std::ostream&, const FieldDefinition&);
     int classId;
@@ -52,11 +55,11 @@ public:
 private:
     
     
-    vector<FieldDefinitionImpl*> fieldDefinitions;
-    map<std::string, FieldDefinitionImpl*> fieldDefinitionsMap;
-    set<ClassDefinitionImpl*> nestedClassDefinitions;//TODO ask if equaliy is important
+    vector<FieldDefinitionImpl> fieldDefinitions;
+    map<std::string, FieldDefinitionImpl> fieldDefinitionsMap;
+    vector<ClassDefinitionImpl> nestedClassDefinitions;//TODO ask if equaliy is important
     
-    byte* binary;
+    Array<byte> binary;
     
 };
 #endif /* defined(__Server__ClassDefinitionImpl__) */

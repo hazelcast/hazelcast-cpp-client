@@ -12,12 +12,13 @@
 #include <string>
 #include "DataSerializable.h"
 #include "FieldDefinitionImpl.h"
+#include "Array.h"
 
 class ClassDefinition : public DataSerializable{
 public:
-    virtual FieldDefinitionImpl* get(std::string name) = 0;
+    virtual const FieldDefinitionImpl& get(std::string name) = 0;
     
-    virtual FieldDefinitionImpl* get(int fieldIndex) = 0;
+    virtual const FieldDefinitionImpl& get(int fieldIndex) = 0;
     
     virtual int getFieldCount() = 0;
     
@@ -25,7 +26,7 @@ public:
     
     virtual int getVersion() = 0;
     
-    virtual byte* getBinary() = 0;
+    virtual Array<byte> getBinary() = 0;
 };
 
 #endif

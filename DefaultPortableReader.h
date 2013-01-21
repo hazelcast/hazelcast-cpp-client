@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <memory>
 #include "Array.h"
 #include "PortableReader.h"
 class Portable;
@@ -47,7 +47,7 @@ public:
     
     string readUTF(string) throw(ios_base::failure);
     
-    Portable readPortable(string) throw(ios_base::failure) ;
+    auto_ptr<Portable> readPortable(string) throw(ios_base::failure) ;
     
     Array<byte> readByteArray(string) throw(ios_base::failure);
     
@@ -63,7 +63,7 @@ public:
     
     Array<short> readShortArray(string) throw(ios_base::failure);
     
-    Array<Portable> readPortableArray(string) throw(ios_base::failure);
+    Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure);
 
 protected:
     int getPosition(string) throw(ios_base::failure);

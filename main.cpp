@@ -18,9 +18,9 @@
 using namespace std;
 
 int main(int argc, char* argv){
-    
-    SerializationServiceImpl serializationService(1, new TestPortableFactory());
-    SerializationServiceImpl serializationService2(2, new TestPortableFactory());
+    TestPortableFactory tpf1,tpf2;
+    SerializationServiceImpl serializationService(1, &tpf1);
+    SerializationServiceImpl serializationService2(2, &tpf2);
     Data data;
     
     int x = 3;
@@ -36,7 +36,7 @@ int main(int argc, char* argv){
     
     assert(np == tnp1);
     assert(np == tnp2);
-
+/*
     TestNamedPortable* nn = new TestNamedPortable[5];
     for (int i = 0; i < 5; i++) {
         nn[i] = TestNamedPortable("named-portable-" + i);
@@ -86,7 +86,7 @@ int main(int argc, char* argv){
     
     delete [] nn;
     
-    
+    */
     cout << "All tests are passed" << endl;
     return 0;
 }
