@@ -57,7 +57,7 @@ float DefaultPortableReader::readFloat(string fieldName) throw(ios_base::failure
 
 short DefaultPortableReader::readShort(string fieldName) throw(ios_base::failure){
     int pos = getPosition(fieldName);
-    return input->readInt(pos);
+    return input->readShort(pos);
 };
 
 string DefaultPortableReader::readUTF(string fieldName) throw(ios_base::failure){

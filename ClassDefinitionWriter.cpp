@@ -11,7 +11,7 @@
 #include "Portable.h"
 #include "PortableSerializer.h"
 
-ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version, PortableSerializer* serializer){
+ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version, PortableSerializer* serializer):index(0){
     cd.classId = classId;
     cd.version = version;
     this->serializer = serializer;

@@ -22,7 +22,11 @@ public:
         
     TestMainPortable() {
     };
-        
+    
+    TestMainPortable(const TestMainPortable& rhs){
+        *this = rhs;
+    }
+    
     TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable* p) {
         this->b = b;
         this->boolean = boolean;
@@ -33,9 +37,24 @@ public:
         this->f = f;
         this->d = d;
         this->str = str;
-//        this->p = p;
+        this->p = p;
     };
-        
+    
+    const TestMainPortable& operator=(const TestMainPortable& rhs){
+        this->b = rhs.b;
+        this->boolean = rhs.boolean;
+        this->c = rhs.c;
+        this->s = rhs.s;
+        this->i = rhs.i;
+        this->l = rhs.l;
+        this->f = rhs.f;
+        this->d = rhs.d;
+        this->str = rhs.str;
+        this->p = rhs.p;
+        return (*this);
+    };
+    
+    
     int getClassId() {
         return 0;
     };
@@ -78,7 +97,7 @@ public:
         if(l != m.l ) return false;
         if(f != m.f ) return false;
         if(d != m.d ) return false;
-        if(str != m.str ) return false;
+        if( str.compare(m.str) ) return false;
 //        if(p != m.p ) return false;
         return true;
     };
@@ -96,6 +115,6 @@ private:
     float f;
     double d;
     string str;
-//    TestInnerPortable* p;
+    TestInnerPortable* p;
 };
 #endif

@@ -164,6 +164,18 @@ void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable>
 };
 
 void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
+    if(!cd->isFieldDefinitionExists(fieldName)){
+       std::string error;
+       error +=  "HazelcastSerializationException( Invalid field name: '";
+       error += fieldName;
+       error += "' for ClassDefinition {id: "; 
+       error += cd->getClassId();
+       error += ", version: ";
+       error += cd->getVersion();
+       error += "}";
+        
+       throw error;
+    }
     FieldDefinitionImpl fd = cd->get(fieldName);
     
     int pos = output->position();

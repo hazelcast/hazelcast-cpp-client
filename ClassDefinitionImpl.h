@@ -20,7 +20,7 @@
 #include "FieldDefinitionImpl.h"
 
 using namespace std;
-//TODO ask fieldDefinitions Map needed
+//TODO ask fieldDefinitions vector needed
 class ClassDefinitionImpl : public ClassDefinition{
 public:
     ClassDefinitionImpl();

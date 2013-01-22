@@ -27,13 +27,13 @@ int main(int argc, char** argv){
     data = serializationService.toData(x);
     assert( x == serializationService.toObject<int>(data) );
     
-    float f = 3.2;
+    short f = 3.2;
     data = serializationService.toData(f);
-    assert( f == serializationService.toObject<float>(data) );
+    assert( f == serializationService.toObject<short>(data) );
 
-    TestNamedPortable np("sancar");
+    TestNamedPortable np("name",short(-32),16);
     data = serializationService.toData(np);
- 
+    
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
     tnp2 = serializationService2.toObject<TestNamedPortable>(data);
@@ -76,11 +76,10 @@ int main(int argc, char** argv){
     assert(inner == tip2);
 
     
+    */
     
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
-            -897543.3678909, "this is main portable object created for testing!", &inner);
-
-   
+            -897543.3678909, "this is main portable object created for testing!", NULL);
     
     data = serializationService.toData(main);
     TestMainPortable tmp1,tmp2;
@@ -88,7 +87,8 @@ int main(int argc, char** argv){
     tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
     assert(main == tmp2);
-    
+     
+    /*
     delete [] nn;
     
     */
