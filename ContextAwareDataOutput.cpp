@@ -13,51 +13,37 @@
 #include "SerializationServiceImpl.h"
 #include "Array.h"
 
-ContextAwareDataOutput::ContextAwareDataOutput(SerializationServiceImpl* service){
+ContextAwareDataOutput::ContextAwareDataOutput(SerializationServiceImpl* service):offset(0){
     this->service = service;
-    this->buffer = new std::ostringstream;
 };
-
-ContextAwareDataOutput::ContextAwareDataOutput(int offset,std::ostringstream* buffer,SerializationServiceImpl* service){
-    this->buffer = buffer;    
-    this->service = service;//TODO implement
-};
-
-ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream* buffer,SerializationServiceImpl* service){
-    this->buffer = buffer;
+/*
+ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream buffer, int offset ,SerializationServiceImpl* service):offset(offset){
+    this->buffer << buffer.rdbuf();    
     this->service = service;
 };
 
+ContextAwareDataOutput::ContextAwareDataOutput(std::ostringstream buffer,SerializationServiceImpl* service):offset(0){
+    this->buffer << buffer.rdbuf();
+    this->service = service;
+};
+*/
 Array<byte> ContextAwareDataOutput::toByteArray(){
     int size = getSize();
     Array<byte> byteArray(size);
-    std::string str = buffer->str();
+    std::string str = buffer.str();
     for(int i = 0; i < size ; i++){
         byteArray[i] = str[i];
     }
     return byteArray;
 };
 
-string ContextAwareDataOutput::getBuffer(){
-    return buffer->str();
-};
-
 int ContextAwareDataOutput::getSize(){
-    return (int)buffer->str().length();
-};
-
-//SerializationContextImpl* ContextAwareDataOutput::getSerializationContext(){
-//    return service->getSerializationContext();
-//};
-
-
-std::string ContextAwareDataOutput::toString(){//TODO remove
-    return buffer->str();
+    return (int)buffer.str().length();
 };
 
 //Inherited from DataOutput
 void ContextAwareDataOutput::write(char *bytes, int off, int len) throw(std::ios_base::failure){
-    buffer->write(bytes + off , sizeof(char) * len);
+    buffer.write(bytes + off , sizeof(char) * len);
 };
 
 void ContextAwareDataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
@@ -65,7 +51,7 @@ void ContextAwareDataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
 };
 
 void ContextAwareDataOutput::writeByte(int i) throw(std::ios_base::failure){
-    buffer->put(0xff & i);
+    buffer.put(0xff & i);
 };
 
 void ContextAwareDataOutput::writeShort(int v) throw(std::ios_base::failure){
@@ -203,26 +189,17 @@ void ContextAwareDataOutput::writeShort(int index, const int v) throw (std::ios_
 };
 
 int ContextAwareDataOutput::position(){
-    assert(buffer->tellp() != -1);
-    return (int)buffer->tellp();
+    assert(buffer.tellp() != -1);
+    return (int)buffer.tellp();
 };
 
 void ContextAwareDataOutput::position(int newPos){
-    buffer->seekp(newPos);
-    assert(buffer->tellp() != -1);
-    assert(buffer->eofbit);
-    assert(buffer->failbit); 
-    assert(buffer->badbit );
+    buffer.seekp(newPos);
+    assert(buffer.tellp() != -1);
+    assert(buffer.eofbit);
+    assert(buffer.failbit); 
+    assert(buffer.badbit );
     
-};
-
-BufferObjectDataOutput* ContextAwareDataOutput::duplicate(){
-    return dynamic_cast<BufferObjectDataOutput*>(new ContextAwareDataOutput(buffer,service));
-};
-
-BufferObjectDataOutput* ContextAwareDataOutput::slice(){
-    return dynamic_cast<BufferObjectDataOutput*>(new ContextAwareDataOutput(0,buffer,service));//TODO think on offset 0
-
 };
 
 void ContextAwareDataOutput::reset(){

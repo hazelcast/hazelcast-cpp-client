@@ -32,18 +32,17 @@ bool Data::operator==(const Data& rhs) const{
     if(type != rhs.type) return false;
     if(cd != rhs.cd) return false; //TODO check this again
     if(partitionHash != rhs.partitionHash) return false;
-    if(buffer != rhs.buffer) return false;
+    if(buffer != rhs.buffer) return false;//TODO check again
     return true;
 };
 
 bool Data::operator!=(const Data& rhs) const{
     return !((*this) == rhs);
 };
-    
+
 int Data::size(){
     return buffer.length();
 };
-
 
 int Data::getPartitionHash(){
     return partitionHash;

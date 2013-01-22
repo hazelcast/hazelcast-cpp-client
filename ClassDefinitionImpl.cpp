@@ -107,7 +107,7 @@ Array<byte> ClassDefinitionImpl::getBinary(){
     return binary;
 };
 
-void ClassDefinitionImpl::setBinary(Array<byte> binary){
+void ClassDefinitionImpl::setBinary(Array<byte>& binary){
     this->binary = binary;
 };
 

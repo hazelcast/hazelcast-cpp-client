@@ -10,6 +10,7 @@
 #define __Server__Data__
 
 #include <iostream>
+#include <memory>
 #include "DataSerializable.h"
 #include "ClassDefinitionImpl.h"
 #include "Array.h"
@@ -27,7 +28,6 @@ public:
     bool operator==(const Data&) const;
     bool operator!=(const Data&) const;
     
-//    static int const NO_CLASS_ID = -1;
     
     ClassDefinitionImpl cd;
     int type;

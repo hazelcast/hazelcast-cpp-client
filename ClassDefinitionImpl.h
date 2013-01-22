@@ -44,7 +44,7 @@ public:
     int getVersion();
     Array<byte> getBinary();
     
-    void setBinary(Array<byte>);
+    void setBinary(Array<byte>&);
     
     bool operator==(const ClassDefinitionImpl&) const;
     bool operator!=(const ClassDefinitionImpl&) const;

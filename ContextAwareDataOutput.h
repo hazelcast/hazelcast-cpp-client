@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <memory>
 #include "BufferObjectDataOutput.h"
 #include "Array.h"
 class SerializationServiceImpl;
@@ -23,19 +24,16 @@ class ContextAwareDataOutput : public BufferObjectDataOutput{
 public:
     ContextAwareDataOutput(SerializationServiceImpl*);
     
-    ContextAwareDataOutput(int ,std::ostringstream*, SerializationServiceImpl*);
+//    ContextAwareDataOutput(std::ostringstream,int, SerializationServiceImpl*);
     
-    ContextAwareDataOutput(std::ostringstream*,SerializationServiceImpl*);
+//    ContextAwareDataOutput(std::ostringstream,SerializationServiceImpl*);
     
     Array<byte> toByteArray();
-    
-    std::string getBuffer();
     
     int getSize();
     
     SerializationContextImpl* getSerializationContext();
     
-    std::string toString(); //TODO remove
     
     //Inherited from DataOutput
     void write(char* bytes, int offset, int length)throw (std::ios_base::failure) ;
@@ -83,12 +81,6 @@ public:
     
     void position(int newPos);
     
-//    ByteArray* getBuffer();//TODO delete or implement
-    
-    virtual BufferObjectDataOutput* duplicate();
-    
-    virtual BufferObjectDataOutput* slice();
-    
     void reset();
     
     //Inherited from Closable
@@ -97,8 +89,8 @@ public:
     static int const STRING_CHUNK_SIZE = 16 * 1024;//TODO move to private and Input class friend
     
 private:
-    std::ostringstream* buffer;
-//    int const offset = 0;
+    std::ostringstream buffer;
+    int const offset;
 
     SerializationServiceImpl* service;
     

@@ -39,6 +39,7 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
         out = new ContextAwareDataOutput(this);
     }else{
         out = outputPool.front();
+        out->reset();
         outputPool.pop();
     }
     return out;

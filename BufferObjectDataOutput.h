@@ -10,6 +10,7 @@
 #define __Server__BufferObjectDataOutput__
 
 #include <iostream>
+#include <memory>
 #include "DataOutput.h"
 #include "Closeable.h"
 typedef unsigned char byte;
@@ -40,12 +41,6 @@ public:
     
     virtual void position(int newPos) = 0;
     
-//    virtual byte* getBuffer() = 0;//TODO delete or implement
-    
     virtual void reset() = 0;
-    
-    virtual BufferObjectDataOutput* duplicate() = 0;
-    
-    virtual BufferObjectDataOutput* slice() = 0;
 };
 #endif /* defined(__Server__BufferObjectDataOutput__) */

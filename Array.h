@@ -14,6 +14,7 @@
 template <typename T>
 class Array{
 public:
+    friend class ContextAwareDataInput;
     Array(){
         len = 0;
         buffer = NULL;
@@ -67,9 +68,9 @@ public:
     };
     int length() const{ return len; };
     
-    T* getBuffer(){//TODO not nice should delete
-        return buffer;
-    };
+    //T* getBuffer(){//TODO not nice should delete
+    //    return buffer;
+    //};
 private:
     void init(int size, T* b){
         len = size;

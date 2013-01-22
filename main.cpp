@@ -26,7 +26,7 @@ int main(int argc, char** argv){
     int x = 3;
     data = serializationService.toData(x);
     assert( x == serializationService.toObject<int>(data) );
-
+/*
     TestNamedPortable np("sancar");
     data = serializationService.toData(np);
     
@@ -36,6 +36,7 @@ int main(int argc, char** argv){
     
     assert(np == tnp1);
     assert(np == tnp2);
+*/
 /*
     TestNamedPortable* nn = new TestNamedPortable[5];
     for (int i = 0; i < 5; i++) {

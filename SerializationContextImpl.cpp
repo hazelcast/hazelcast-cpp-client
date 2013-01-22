@@ -32,7 +32,7 @@ auto_ptr<Portable> SerializationContextImpl::createPortable(int classId){
     return portableFactory->create(classId);
 };
 
-ClassDefinitionImpl SerializationContextImpl::createClassDefinition(byte *compressedBinary) throw(std::ios_base::failure){
+ClassDefinitionImpl SerializationContextImpl::createClassDefinition(Array<byte>& compressedBinary) throw(std::ios_base::failure){
     ContextAwareDataOutput* output = service->pop();
     Array<byte> binary;
 
@@ -42,7 +42,7 @@ ClassDefinitionImpl SerializationContextImpl::createClassDefinition(byte *compre
     service->push(output);
 
     
-    ContextAwareDataInput dataInput = ContextAwareDataInput(binary.getBuffer(), service);
+    ContextAwareDataInput dataInput = ContextAwareDataInput(binary, service);
     ClassDefinitionImpl cd;
     cd.readData(dataInput);
     cd.setBinary(binary);
@@ -85,10 +85,10 @@ void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl& cd) 
             if (cd.getBinary().length() == 0) {
                 ContextAwareDataOutput* output = service->pop();                
                 cd.writeData(*output);
-                Array<byte> binary = output->toByteArray();
-                output->reset();
-                compress(binary.getBuffer(), output);
-                cd.setBinary(output->toByteArray());
+                Array<byte> uncompressed = output->toByteArray();
+                compress(uncompressed, output);
+                Array<byte> compressed = output->toByteArray();
+                cd.setBinary(compressed);
                 service->push(output);
                 
             }
@@ -99,10 +99,18 @@ int SerializationContextImpl::getVersion(){
     return version;
 };
 
-void SerializationContextImpl::compress(byte*, ContextAwareDataOutput*) throw(std::ios_base::failure){
-    
+void SerializationContextImpl::compress(Array<byte>& binary, ContextAwareDataOutput* output) throw(std::ios_base::failure){
+    output->reset();
+    int size = binary.length();
+    for(int i = 0; i < size; i++){
+        output->writeByte(binary[i]);
+    }
 };//TODO zip in c++
 
-void SerializationContextImpl::decompress(byte*, ContextAwareDataOutput* ) throw(std::ios_base::failure){
-    
+void SerializationContextImpl::decompress(Array<byte>& binary, ContextAwareDataOutput* output) throw(std::ios_base::failure){
+    output->reset();
+    int size = binary.length();
+    for(int i = 0; i < size; i++){
+        output->writeByte(binary[i]);
+    }
 };//TODO unzip in c++

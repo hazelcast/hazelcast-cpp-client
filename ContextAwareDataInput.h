@@ -19,7 +19,7 @@ typedef unsigned char byte;
 //TODO ask if necessary add offset
 class ContextAwareDataInput : public BufferObjectDataInput{
 public:
-    ContextAwareDataInput(byte*, SerializationServiceImpl* service);
+    ContextAwareDataInput(Array<byte>&, SerializationServiceImpl* service);
     
     ContextAwareDataInput(Data&, SerializationServiceImpl* service);
     
@@ -88,7 +88,7 @@ public:
 private:
     byte* ptr;
     byte* beg;
-    
+    Array<byte> buffer;
     int size;
     SerializationServiceImpl* service;
     int dataClassId;

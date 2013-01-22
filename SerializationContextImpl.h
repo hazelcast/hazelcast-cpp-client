@@ -13,6 +13,7 @@
 #include <memory>
 #include <map>
 #include <memory>
+#include "Array.h"
 class ClassDefinitionImpl;
 class PortableFactory;
 class Portable;
@@ -30,15 +31,15 @@ public:
     
     std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinitionImpl createClassDefinition(byte* compressedBinary) throw(std::ios_base::failure);
+    ClassDefinitionImpl createClassDefinition(Array<byte>& compressedBinary) throw(std::ios_base::failure);
     void registerNestedDefinitions(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
     void registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
     int getVersion();
     
 private:
     
-    void compress(byte*, ContextAwareDataOutput*) throw(std::ios_base::failure);//TODO zip in c++
-    void decompress(byte*, ContextAwareDataOutput* ) throw(std::ios_base::failure);//TODO unzip in c++
+    void compress(Array<byte>&, ContextAwareDataOutput*) throw(std::ios_base::failure);//TODO zip in c++
+    void decompress(Array<byte>&, ContextAwareDataOutput* ) throw(std::ios_base::failure);//TODO unzip in c++
         
     PortableFactory* portableFactory;//TODO think again
     SerializationServiceImpl* service;

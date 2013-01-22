@@ -10,17 +10,19 @@
 #include "ClassDefinitionImpl.h"
 class SerializationServiceImpl;
 
-ContextAwareDataInput::ContextAwareDataInput(byte* buffer, SerializationServiceImpl* service){
-    this->ptr = buffer;
-    this->beg = buffer;
+ContextAwareDataInput::ContextAwareDataInput(Array<byte>& buffer, SerializationServiceImpl* service){
+    this->buffer = buffer;
+    this->ptr = this->buffer.buffer;
+    this->beg = this->buffer.buffer;
     this->service = service;
 };
 
 ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
     this->dataClassId = data.cd.getClassId();
     this->dataVersion = data.cd.getVersion();
-    this->ptr = data.buffer.getBuffer();
-    this->beg = data.buffer.getBuffer();
+    this->buffer = data.buffer;
+    this->ptr = buffer.buffer;
+    this->beg = ptr;
     this->service = service;
 };
 
