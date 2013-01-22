@@ -20,14 +20,14 @@
 class TestPortableFactory : public PortableFactory{
     
 public:
-    auto_ptr<Portable> create(int classId) {
+    Portable* create(int classId) {
         switch (classId) {
             case 0:
-                return auto_ptr<Portable>(new TestMainPortable());
+                return new TestMainPortable();
             case 1:
-                return auto_ptr<Portable>(new TestInnerPortable());
+                return new TestInnerPortable();
             case 2:
-                return auto_ptr<Portable>(new TestNamedPortable());
+                return new TestNamedPortable();
             default:
                 throw "Illegal Statement Exception";
             }

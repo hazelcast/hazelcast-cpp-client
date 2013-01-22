@@ -16,6 +16,6 @@
 
 class PortableFactory{
 public:
-    virtual std::auto_ptr<Portable> create(int) = 0;
+    virtual Portable* create(int) = 0;
 };
 #endif /* defined(__Server__PortableFactory__) */

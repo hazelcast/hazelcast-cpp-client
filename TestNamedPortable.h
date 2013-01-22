@@ -31,24 +31,26 @@ public:
     };
         
     void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+//        writer.writeInt("name",1);
         writer.writeUTF("name",name);
         
     };
         
     void readPortable(PortableReader& reader) throw(std::ios_base::failure) {
+//        name = reader.readInt("name")
         name = reader.readUTF("name");
     };
     
     bool operator==(TestNamedPortable& m){
         if(this == &m)
             return true;
-        return (name == m.name);
+        return !(name.compare(m.name));
     };
     
     bool operator!=(TestNamedPortable& m){
         return !(*this == m );  
     };
-private:
     std::string name;
+private:
 };
 #endif

@@ -24,7 +24,9 @@ SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory*
 SerializationServiceImpl::~SerializationServiceImpl(){
     while (!outputPool.empty())
     {
+        ContextAwareDataOutput* out = outputPool.front();
         outputPool.pop();
+        delete out;
     }
 };
 
@@ -39,7 +41,6 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
         out = new ContextAwareDataOutput(this);
     }else{
         out = outputPool.front();
-        out->reset();
         outputPool.pop();
     }
     return out;
@@ -52,6 +53,7 @@ Data SerializationServiceImpl::toData(bool object){
     booleanSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_BOOLEAN, output->toByteArray());
+    push(output);    
     return data;
 };
 
@@ -61,6 +63,7 @@ Data SerializationServiceImpl::toData(char object){
     charSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_CHAR, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -71,6 +74,7 @@ Data SerializationServiceImpl::toData(short object){
     shortSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_SHORT, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -81,6 +85,7 @@ Data SerializationServiceImpl::toData(int object){
     integerSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_INTEGER, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -91,6 +96,7 @@ Data SerializationServiceImpl::toData(long object){
     longSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_LONG, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -102,6 +108,7 @@ Data SerializationServiceImpl::toData(float object){
     floatSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_FLOAT, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -112,6 +119,7 @@ Data SerializationServiceImpl::toData(double object){
     doubleSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE, output->toByteArray());
+    push(output);   
     return data;
     
 };
@@ -122,6 +130,7 @@ Data SerializationServiceImpl::toData(Array<char>& object){
     charArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -132,6 +141,7 @@ Data SerializationServiceImpl::toData(Array<short>& object){
     shortArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -142,6 +152,7 @@ Data SerializationServiceImpl::toData(Array<int>& object){
     integerArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -151,6 +162,7 @@ Data SerializationServiceImpl::toData(Array<long>& object){
     longArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -161,6 +173,7 @@ Data SerializationServiceImpl::toData(Array<float>& object){
     floatArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -171,6 +184,7 @@ Data SerializationServiceImpl::toData(Array<double>& object){
     doubleArraySerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());
+    push(output);    
     return data;
     
 };
@@ -181,6 +195,7 @@ Data SerializationServiceImpl::toData(string& object){
     stringSerializer.write(dataOutput, object);
     
     Data data(SerializationConstants::CONSTANT_TYPE_STRING, output->toByteArray());
+    push(output);    
     return data;
     
 };

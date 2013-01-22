@@ -26,17 +26,21 @@ int main(int argc, char** argv){
     int x = 3;
     data = serializationService.toData(x);
     assert( x == serializationService.toObject<int>(data) );
-/*
+    
+    float f = 3.2;
+    data = serializationService.toData(f);
+    assert( f == serializationService.toObject<float>(data) );
+
     TestNamedPortable np("sancar");
     data = serializationService.toData(np);
-    
+ 
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
     tnp2 = serializationService2.toObject<TestNamedPortable>(data);
     
     assert(np == tnp1);
     assert(np == tnp2);
-*/
+
 /*
     TestNamedPortable* nn = new TestNamedPortable[5];
     for (int i = 0; i < 5; i++) {

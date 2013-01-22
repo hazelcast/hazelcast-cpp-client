@@ -13,6 +13,7 @@
 #include "DefaultPortableWriter.h"
 #include "DefaultPortableReader.h"
 #include "PortableReader.h"
+#include "MorphingPortableReader.h"
 
 PortableSerializer::PortableSerializer(SerializationContextImpl* context):context(context){
 
@@ -29,9 +30,11 @@ PortableSerializer::~PortableSerializer(){
 
 ClassDefinitionImpl PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
     int classId = p.getClassId();
-    ClassDefinitionImpl cd = context->lookup(classId);
+    ClassDefinitionImpl cd;
     
-    if (cd.classId == -1 ) {//Means cd is not set yet
+    if (context->isClassDefinitionExists(classId)) {
+        cd =  context->lookup(classId);
+    }else{
         ClassDefinitionWriter classDefinitionWriter(classId,context->getVersion(),this);
         p.writePortable(classDefinitionWriter);
         cd = classDefinitionWriter.cd;
@@ -57,22 +60,21 @@ void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) 
     
 };
 
-auto_ptr<Portable> PortableSerializer::read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure){
-    assert(dataInput != NULL);
-    int dataClassId = dataInput->getDataClassId();
-    int dataVersion = dataInput->getDataVersion();
+auto_ptr<Portable> PortableSerializer::read(ContextAwareDataInput& dataInput) throw(std::ios_base::failure){
+    
+    int dataClassId = dataInput.getDataClassId();
+    int dataVersion = dataInput.getDataVersion();
     auto_ptr<Portable> p = context->createPortable(dataClassId);
     
     ClassDefinitionImpl cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
-//        assert(cd != NULL);
         DefaultPortableReader reader(this, dataInput, &cd);
         p->readPortable(reader);
     } else {
         cd = context->lookup(dataClassId, dataVersion); // registered during read
-//      MorphingPortableReader reader(this, dataInput, &cd);
-//        p->readPortable(reader);
+        MorphingPortableReader reader(this, dataInput, &cd);
+        p->readPortable(reader);
     }
     return p;
     

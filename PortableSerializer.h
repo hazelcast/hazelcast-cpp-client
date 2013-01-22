@@ -32,7 +32,7 @@ public:
     
     void write(ContextAwareDataOutput* output, Portable& p) throw(std::ios_base::failure);
     
-    auto_ptr<Portable> read(ContextAwareDataInput* dataInput) throw(std::ios_base::failure);
+    auto_ptr<Portable> read(ContextAwareDataInput& dataInput) throw(std::ios_base::failure);
     
 private:
     SerializationContextImpl* context;//TODO think again

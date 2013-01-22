@@ -20,7 +20,7 @@
 #include "FieldDefinitionImpl.h"
 
 using namespace std;
-
+//TODO ask fieldDefinitions Map needed
 class ClassDefinitionImpl : public ClassDefinition{
 public:
     ClassDefinitionImpl();
@@ -31,6 +31,7 @@ public:
     void add(FieldDefinitionImpl&);
     void add(ClassDefinitionImpl&);
     
+    bool isFieldDefinitionExists(std::string);
     const FieldDefinitionImpl& get(std::string);
     const FieldDefinitionImpl& get(int);
     

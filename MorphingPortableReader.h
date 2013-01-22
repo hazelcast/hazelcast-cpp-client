@@ -1,33 +1,17 @@
-//
-//  DefaultPortableReader.h
-//  Server
-//
-//  Created by sancar koyunlu on 1/10/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+/* 
+ * File:   MorphingPortableReader.h
+ * Author: msk
+ *
+ * Created on January 22, 2013, 2:34 PM
+ */
 
-#ifndef __Server__DefaultPortableReader__
-#define __Server__DefaultPortableReader__
-
-#include <iostream>
-#include <string>
-#include <memory>
-#include "Array.h"
-#include "PortableReader.h"
-class Portable;
-class PortableSerializer;
-class BufferObjectDataInput;
-class FieldDefinitionImpl;
-class ContextAwareDataInput;
-class ClassDefinitionImpl;
-
-typedef unsigned char byte;
-
-using namespace std;
-
-class DefaultPortableReader : public PortableReader {
+#ifndef MORPHINGPORTABLEREADER_H
+#define	MORPHINGPORTABLEREADER_H
+#include "DefaultPortableReader.h"
+//TODO ask no morphing for array ! why not?
+class MorphingPortableReader : public DefaultPortableReader {
 public:
-    DefaultPortableReader(PortableSerializer*, ContextAwareDataInput&, ClassDefinitionImpl*);
+    MorphingPortableReader(PortableSerializer*, ContextAwareDataInput&, ClassDefinitionImpl*);
     
     int readInt(string) throw(ios_base::failure);
     
@@ -64,18 +48,8 @@ public:
     Array<short> readShortArray(string) throw(ios_base::failure);
     
     Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure);
-
-protected:
-    int getPosition(string) throw(ios_base::failure);
-
-    int getPosition(FieldDefinitionImpl*) throw(ios_base::failure);
-    
-    PortableSerializer* serializer;//TODO
-    ClassDefinitionImpl* cd;
-    ContextAwareDataInput* input;
-    int offset;
     
 };
 
+#endif	/* MORPHINGPORTABLEREADER_H */
 
-#endif /* defined(__Server__DefaultPortableReader__) */

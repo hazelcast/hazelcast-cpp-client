@@ -41,17 +41,11 @@ void ClassDefinitionImpl::add(ClassDefinitionImpl& cd){
     nestedClassDefinitions.push_back(cd);
 };
 
+bool ClassDefinitionImpl::isFieldDefinitionExists(std::string name){
+    return (fieldDefinitionsMap.count(name) > 0); 
+}
+
 const FieldDefinitionImpl& ClassDefinitionImpl::get(std::string name){
-    if(fieldDefinitionsMap.count(name) == 0){
-        string error = "Invalid field name: '";
-        error += name;
-        error += "' for ClassDefinition {id: ";
-        error += getClassId();
-        error += ", version: ";
-        error += getVersion();
-        error += "}";
-        throw error;
-    }
     return fieldDefinitionsMap[name];
 };
 

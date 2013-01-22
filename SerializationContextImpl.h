@@ -25,8 +25,10 @@ class SerializationContextImpl {//: public SerializationContext{ //TODO
 public:
     SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
     
+    bool isClassDefinitionExists(int);
     ClassDefinitionImpl lookup(int);
     
+    bool isClassDefinitionExists(int,int);
     ClassDefinitionImpl lookup(int,int);
     
     std::auto_ptr<Portable> createPortable(int classId);

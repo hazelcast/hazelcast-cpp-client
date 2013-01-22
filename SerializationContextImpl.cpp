@@ -16,20 +16,28 @@ SerializationContextImpl::SerializationContextImpl(PortableFactory* portableFact
     this->service = service;
 };
 
+bool SerializationContextImpl::isClassDefinitionExists(int classId){
+    return isClassDefinitionExists(classId,version);
+};
+
 ClassDefinitionImpl SerializationContextImpl::lookup(int classId){
-    return lookup(classId,version);
+     long key = SerializationServiceImpl::combineToLong(classId, version);
+     return versionedDefinitions[key];
+};
+
+bool SerializationContextImpl::isClassDefinitionExists(int classId, int version){
+    long key = SerializationServiceImpl::combineToLong(classId, version);
+    return (versionedDefinitions.count(key) > 0);
 };
 
 ClassDefinitionImpl SerializationContextImpl::lookup(int classId, int version){
     long key = SerializationServiceImpl::combineToLong(classId, version);
-//    if(versionedDefinitions.count(key) > 0)
      return versionedDefinitions[key];
-//    else
-//        return auto_ptr<ClassDefinitionImpl>;
+
 };
 
 auto_ptr<Portable> SerializationContextImpl::createPortable(int classId){
-    return portableFactory->create(classId);
+    return auto_ptr<Portable>(portableFactory->create(classId));
 };
 
 ClassDefinitionImpl SerializationContextImpl::createClassDefinition(Array<byte>& compressedBinary) throw(std::ios_base::failure){
@@ -74,14 +82,7 @@ void SerializationContextImpl::registerNestedDefinitions(ClassDefinitionImpl& cd
 
 void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure){
      
-        long versionedClassId = service->combineToLong(cd.getClassId(), cd.getVersion());
-        
-        bool exists = false;
-        if(versionedDefinitions.count(versionedClassId) > 0)
-            exists = true;
-        versionedDefinitions[versionedClassId] = cd;
-        
-        if (exists == false) {
+        if(!isClassDefinitionExists(cd.getClassId() , cd.getVersion())){
             if (cd.getBinary().length() == 0) {
                 ContextAwareDataOutput* output = service->pop();                
                 cd.writeData(*output);
@@ -90,8 +91,9 @@ void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl& cd) 
                 Array<byte> compressed = output->toByteArray();
                 cd.setBinary(compressed);
                 service->push(output);
-                
             }
+            long versionedClassId = service->combineToLong(cd.getClassId(), cd.getVersion());
+            versionedDefinitions[versionedClassId] = cd;
         }
 };
 

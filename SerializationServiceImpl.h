@@ -61,9 +61,6 @@ public:
     Data toData(Array<float>&);
     Data toData(Array<double>&);
     Data toData(string&);
-    
-//    template<typename K>
-//    inline K toObject(Data& data);
      
     template<typename K>
     inline K toObject(Data& data){
@@ -78,18 +75,14 @@ public:
             throw error;
         }
         
-        ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
+        ContextAwareDataInput dataInput(data,this);
         K* obj = dynamic_cast<K*>(portableSerializer.read(dataInput).get());
         
         return *obj;
     };
     
-//    template<typename K>
-//    inline K toObject(Data& data);
-    
     void push(ContextAwareDataOutput*);
     
-//    SerializationContextImpl* getSerializationContext();
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
     
