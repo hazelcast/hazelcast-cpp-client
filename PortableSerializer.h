@@ -25,9 +25,6 @@ public:
     ClassDefinitionImpl getClassDefinition(Portable& p) throw(std::ios_base::failure);
     
     int getTypeId();
-    
-    SerializationContextImpl* getContext();//TODO propbaly unused check later
-    
     int getVersion();
     
     void write(ContextAwareDataOutput* output, Portable& p) throw(std::ios_base::failure);

@@ -13,7 +13,7 @@ FieldDefinitionImpl::FieldDefinitionImpl(){
     
 };
 
-FieldDefinitionImpl::FieldDefinitionImpl(int index,std::string fieldName, byte type){
+FieldDefinitionImpl::FieldDefinitionImpl(int index,std::string fieldName, byte type):classId(-1){
     this->index = index;
     this->fieldName = fieldName;
     this->type = type;
@@ -62,7 +62,7 @@ bool FieldDefinitionImpl::operator==(const FieldDefinitionImpl & other)const{
     if (classId != other.classId) return false;
     if (index != other.index) return false;
     if (type != other.type) return false;
-    if (!fieldName.compare(other.fieldName)) return false;
+    if (fieldName.compare(other.fieldName)) return false;
     
     return true;
 };

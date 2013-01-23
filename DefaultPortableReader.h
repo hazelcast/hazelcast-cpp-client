@@ -70,7 +70,7 @@ protected:
 
     int getPosition(FieldDefinitionImpl*) throw(ios_base::failure);
     
-    PortableSerializer* serializer;//TODO
+    PortableSerializer* serializer;
     ClassDefinitionImpl* cd;
     ContextAwareDataInput* input;
     int offset;

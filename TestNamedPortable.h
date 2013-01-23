@@ -22,7 +22,7 @@ public:
     TestNamedPortable() {
     };
         
-    TestNamedPortable(string name,short x, int y):name(name),x(x),y(y) {
+    TestNamedPortable(string name):name(name) {
         
     };
     
@@ -31,9 +31,7 @@ public:
     }
     
     const TestNamedPortable& operator=(const TestNamedPortable& rhs){
-        x = rhs.x;
         name = rhs.name;
-        y = rhs.y;
     };
     
     int getClassId() {
@@ -41,32 +39,23 @@ public:
     };
         
     void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
-        writer.writeInt("myInt",y);
-        writer.writeUTF("name",name);
-        writer.writeShort("myShort",x);
-        
+        writer.writeUTF("name",name); 
     };
         
-    void readPortable(PortableReader& reader) throw(std::ios_base::failure) {
-        y = reader.readInt("myInt");
+    void readPortable(PortableReader& reader) throw(std::ios_base::failure) {      
         name = reader.readUTF("name");
-        x = reader.readShort("myShort");
     };
     
     bool operator==(TestNamedPortable& m){
         if(this == &m)
             return true;
         if (name.compare(m.name)) return false;
-        if ( x != m.x) return false ;
-        if ( y != m.y) return false;;
+        return true;
     };
     
     bool operator!=(TestNamedPortable& m){
         return !(*this == m );  
     };
     std::string name;
-    short x;
-    int y;
-private:
 };
 #endif

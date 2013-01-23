@@ -20,29 +20,38 @@ using namespace std;
 
 class TestInnerPortable : public Portable{
 public:
-    TestInnerPortable() : bb(0),cc(0),ss(0),ii(0),ll(0),ff(0),dd(0){
+    TestInnerPortable(){
     };
-        
+    TestInnerPortable(const TestInnerPortable& rhs){    
+        *this = rhs;
+    }
     TestInnerPortable(Array<byte> b,  
                         Array<char> c , 
                         Array<short> s, 
                         Array<int>  i , 
                         Array<long> l, 
                         Array<float> f, 
-                        Array<double> d,
-                        Array< Portable* > n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
+                        Array<double> d
+                        ):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d){
         
         
     };
+    
     TestInnerPortable& operator=(const TestInnerPortable& rhs){
-        //TODO
+        bb = rhs.bb;
+        cc = rhs.cc;
+        ss = rhs.ss;
+        ii = rhs.ii;
+        ll = rhs.ll;
+        ff = rhs.ff;
+        dd = rhs.dd;
+//        nn = rhs.nn;
         return (*this);
     }    
     int getClassId() {
         return 1;
     };
     ~TestInnerPortable(){
-        
     }    
     void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
         writer.writeByteArray("b", bb);
@@ -76,14 +85,13 @@ public:
        if( ll != m.ll ) return false;
        if( ff != m.ff ) return false;
        if( dd != m.dd ) return false;
-       if( nn != m.nn ) return false;
+//       if( nn != m.nn ) return false;
        return true;
     };
     
     bool operator!=(TestInnerPortable& m){
         return !(*this == m );  
     };
-private:
     Array<byte> bb;
     Array<char> cc;
     Array<short> ss;
@@ -91,7 +99,8 @@ private:
     Array<long> ll;
     Array<float> ff;
     Array<double> dd;
-    Array< Portable* > nn;
+private:
+//    Array< Portable* > nn;
     
 };
 #endif

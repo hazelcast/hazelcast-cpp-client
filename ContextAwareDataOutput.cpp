@@ -204,6 +204,7 @@ void ContextAwareDataOutput::position(int newPos){
 
 void ContextAwareDataOutput::reset(){
     position(0);
+    buffer.str("");
 };
 
 //private functions

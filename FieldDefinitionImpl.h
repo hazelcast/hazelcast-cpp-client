@@ -31,9 +31,6 @@ public:
     bool operator==(const FieldDefinitionImpl&) const;
     bool operator!=(const FieldDefinitionImpl&) const;
     
-//    friend std::ostream& operator<<(std::ostream&, const FieldDefinition&);
-    
-    //TODO hascode
     std::string fieldName;
 private:
     int index;

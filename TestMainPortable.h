@@ -20,13 +20,15 @@ using namespace std;
 class TestMainPortable : public Portable{
 public:
         
-    TestMainPortable() {
+    TestMainPortable() :p(NULL){
     };
     
     TestMainPortable(const TestMainPortable& rhs){
         *this = rhs;
     }
-    
+    ~TestMainPortable(){
+        delete p;
+    }
     TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable* p) {
         this->b = b;
         this->boolean = boolean;
@@ -37,20 +39,20 @@ public:
         this->f = f;
         this->d = d;
         this->str = str;
-        this->p = p;
+        this->p = new TestInnerPortable(*p);
     };
     
     const TestMainPortable& operator=(const TestMainPortable& rhs){
-        this->b = rhs.b;
-        this->boolean = rhs.boolean;
-        this->c = rhs.c;
-        this->s = rhs.s;
-        this->i = rhs.i;
-        this->l = rhs.l;
-        this->f = rhs.f;
-        this->d = rhs.d;
-        this->str = rhs.str;
-        this->p = rhs.p;
+        b = rhs.b;
+        boolean = rhs.boolean;
+        c = rhs.c;
+        s = rhs.s;
+        i = rhs.i;
+        l = rhs.l;
+        f = rhs.f;
+        d = rhs.d;
+        str = rhs.str;
+        p = new TestInnerPortable(*rhs.p);
         return (*this);
     };
     
@@ -61,6 +63,7 @@ public:
         
     void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
         writer.writeByte("b", b);
+        
         writer.writeBoolean("bool", boolean);
         writer.writeChar("c", c);
         writer.writeShort("s", s);
@@ -69,7 +72,7 @@ public:
         writer.writeFloat("f", f);
         writer.writeDouble("d", d);
         writer.writeUTF("str", str);
-//        writer.writePortable("p", *p);
+        writer.writePortable("p", *p);
         
     };
         
@@ -83,7 +86,8 @@ public:
         f = reader.readFloat("f");
         d = reader.readDouble("d");
         str = reader.readUTF("str");
-//        p = reader.readPortable("p");
+        auto_ptr<Portable> p_ptr = reader.readPortable("p");
+        p = (TestInnerPortable*)p_ptr.release();
     };
     
     bool operator==(TestMainPortable& m){
@@ -98,13 +102,14 @@ public:
         if(f != m.f ) return false;
         if(d != m.d ) return false;
         if( str.compare(m.str) ) return false;
-//        if(p != m.p ) return false;
+        if(*p != *(m.p) ) return false;
         return true;
     };
     
     bool operator!=(TestMainPortable& m){
         return !(*this == m );  
     };
+    TestInnerPortable* p;
 private:
     byte b;
     bool boolean;
@@ -115,6 +120,5 @@ private:
     float f;
     double d;
     string str;
-    TestInnerPortable* p;
 };
 #endif

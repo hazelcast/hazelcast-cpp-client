@@ -20,8 +20,9 @@
 #include "ContextAwareDataOutput.h"
 #include "ContextAwareDataInput.h"
 #include "PortableFactory.h"
-
-class SerializationServiceImpl {//: public SerializationService{ TODO
+#include "SerializationService.h"
+#include "TestMainPortable.h"
+class SerializationServiceImpl : public SerializationService{ 
 public:
     
     SerializationServiceImpl(int,PortableFactory*);
@@ -76,9 +77,11 @@ public:
         }
         
         ContextAwareDataInput dataInput(data,this);
-        K* obj = dynamic_cast<K*>(portableSerializer.read(dataInput).get());
-        
-        return *obj;
+        auto_ptr<Portable> autoPtr = portableSerializer.read(dataInput);
+        //TODO return auto_ptr
+        K* ptr = dynamic_cast<K*>(autoPtr.get());
+       
+        return (*ptr);
     };
     
     void push(ContextAwareDataOutput*);

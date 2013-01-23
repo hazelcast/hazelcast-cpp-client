@@ -15,12 +15,10 @@ class SerializationContextImpl;//TODO change into SerializationContext
 class SerializationService{
 public:
     template<typename K>
-    Data* toData(K&);//TODO virtual ?
+    Data* toData(K&);
     
     template<typename K>
-    K toObject(Data*);//TODO virtual ?
-    
-    virtual SerializationContextImpl* getSerializationContext() = 0;
+    K toObject(Data*);
 };
 
 #endif

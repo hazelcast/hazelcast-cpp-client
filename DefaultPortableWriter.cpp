@@ -17,7 +17,7 @@ DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, Con
     this->offset = output->position();
     this->cd = cd;
     char* zeros = new  char[offset + cd->getFieldCount() * 4]; 
-    this->output->write(zeros,0,offset + cd->getFieldCount() * 4);
+    this->output->write(zeros,offset, cd->getFieldCount() * 4);
     delete [] zeros;
 };
 

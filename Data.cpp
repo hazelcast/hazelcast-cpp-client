@@ -30,9 +30,9 @@ Data& Data::operator=(const Data& rhs){
 
 bool Data::operator==(const Data& rhs) const{
     if(type != rhs.type) return false;
-    if(cd != rhs.cd) return false; //TODO check this again
+    if(cd != rhs.cd) return false; 
     if(partitionHash != rhs.partitionHash) return false;
-    if(buffer != rhs.buffer) return false;//TODO check again
+    if(buffer != rhs.buffer) return false;
     return true;
 };
 

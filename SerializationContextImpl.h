@@ -14,6 +14,7 @@
 #include <map>
 #include <memory>
 #include "Array.h"
+#include "SerializationContext.h"
 class ClassDefinitionImpl;
 class PortableFactory;
 class Portable;
@@ -21,7 +22,7 @@ class SerializationServiceImpl;
 class ContextAwareDataOutput;
 typedef unsigned char byte;
 
-class SerializationContextImpl {//: public SerializationContext{ //TODO
+class SerializationContextImpl : public SerializationContext{
 public:
     SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
     
@@ -33,7 +34,7 @@ public:
     
     std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinitionImpl createClassDefinition(Array<byte>& compressedBinary) throw(std::ios_base::failure);
+    ClassDefinitionImpl createClassDefinition(Array<byte>&) throw(std::ios_base::failure);
     void registerNestedDefinitions(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
     void registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
     int getVersion();

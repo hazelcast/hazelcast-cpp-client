@@ -44,10 +44,6 @@ ClassDefinitionImpl PortableSerializer::getClassDefinition(Portable& p) throw(st
     return cd;
 };
 
-SerializationContextImpl* PortableSerializer::getContext(){
-    return context;
-};//TODO propbaly unused check later
-
 int PortableSerializer::getVersion(){
     return context->getVersion();
 };
