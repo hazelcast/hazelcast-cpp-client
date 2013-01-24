@@ -152,13 +152,13 @@ void DefaultPortableWriter::writeShortArray(string fieldName, Array<short>& valu
     }
 };
 
-void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable>& portables) throw(ios_base::failure){
+void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure){
     setPosition(fieldName);
     int len = portables.length();
     output->writeInt(len);
     if (len > 0) {
         for (int i = 0; i < len; i++) {
-            serializer->write(output, portables[i] );
+            serializer->write(output, *(portables[i]) );
         }
     }
 };

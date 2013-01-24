@@ -7,7 +7,7 @@
 
 #ifndef ARRAY_H
 #define	ARRAY_H
-
+#include <memory>
 #include "iostream"
 
 
@@ -30,6 +30,15 @@ public:
     Array(const Array<T>& rhs){
         init(rhs.len, rhs.buffer );
     };
+    /*
+    Array(const Array< std::auto_ptr<*T> >& rhs){
+        len = rhs.len;
+        buffer = new T[len];
+        for(int i = 0; i < len; i++){
+            buffer[i] = rhs[i].release();
+        }
+    };
+     * */
     ~Array(){
         delete [] buffer;
     };

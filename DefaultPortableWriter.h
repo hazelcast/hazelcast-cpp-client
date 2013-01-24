@@ -59,7 +59,7 @@ public:
     
     void writeShortArray(string fieldName, Array<short>&) throw(ios_base::failure);
     
-    void writePortableArray(string fieldName, Array<Portable>& portables) throw(ios_base::failure);
+    void writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure);
     
     void setPosition(string fieldName) throw(ios_base::failure);
     

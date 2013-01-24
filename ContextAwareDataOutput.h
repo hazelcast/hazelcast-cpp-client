@@ -24,10 +24,6 @@ class ContextAwareDataOutput : public BufferObjectDataOutput{
 public:
     ContextAwareDataOutput(SerializationServiceImpl*);
     
-//    ContextAwareDataOutput(std::ostringstream,int, SerializationServiceImpl*);
-    
-//    ContextAwareDataOutput(std::ostringstream,SerializationServiceImpl*);
-    
     Array<byte> toByteArray();
     
     int getSize();
@@ -82,9 +78,6 @@ public:
     void position(int newPos);
     
     void reset();
-    
-    //Inherited from Closable
-    void close() throw(std::ios_base::failure){};//TODO delete or implement
     
     static int const STRING_CHUNK_SIZE = 16 * 1024;//TODO move to private and Input class friend
     

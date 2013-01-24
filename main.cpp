@@ -40,15 +40,7 @@ int main(int argc, char** argv){
     
     assert(np == tnp1);
     assert(np == tnp2);
-
-
-//    TestNamedPortable* nn = new TestNamedPortable[5];
-//    for (int i = 0; i < 5; i++) {
-//        nn[i] = TestNamedPortable("named-portable-" + i);
-//    }
     
-//    Array<Portable> portablePointerArray(5,(Portable*)nn);
-   
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
     char charArray[]={'c', 'h', 'a', 'r'};
@@ -61,10 +53,17 @@ int main(int argc, char** argv){
     Array<long> ll(6, longArray);
     float floatArray[] = {0.6543f, -3.56f, 45.67f};
     Array<float> ff(3, floatArray);
-    double doubleArray[] = {456.456, 789.789, 321.321};
+    double doubleArray[] = {456.456231, 789.789, 321.321};
     Array<double> dd(3, doubleArray);
+    TestNamedPortable** portablePointerArray = new TestNamedPortable*[5];
+    for (int i = 0; i < 5; i++) {
+        string x = "named-portable-";
+        x.push_back('0' + i);
+        portablePointerArray[i] = new TestNamedPortable(x);
+    }
+    Array<Portable*> nn(5,(Portable**)portablePointerArray);
     
-    TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd );
+    TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd, nn);
 
     
     data = serializationService.toData(inner);
@@ -88,7 +87,22 @@ int main(int argc, char** argv){
     assert(main == tmp1);
     assert(main == tmp2);
      
+    for(int i = 0 ; i < 5 ; i++)
+        delete portablePointerArray[i];
+    delete [] portablePointerArray;
     
     cout << "All tests are passed" << endl;
+   /* 
+    boost::asio::io_service io_service;
+    hazelcast::server server(io_service, port);
+    io_service.run();
+    cout << "Sending " << temp << endl;
+     
+    server.send(temp);
+     
+     boost::asio::io_service io_service;
+    hazelcast::client client(io_service, host, port
+    io_service.run();
+    */ 
     return 0;
 }

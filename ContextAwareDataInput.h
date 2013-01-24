@@ -79,12 +79,6 @@ public:
     
     void reset() ;
     
-    BufferObjectDataInput* duplicate();
-    
-    BufferObjectDataInput* slice();
-    
-    //inherited from closable
-    void close() throw(std::ios_base::failure);
 private:
     byte* ptr;
     byte* beg;
@@ -98,9 +92,6 @@ private:
     static int const STRING_CHUNK_SIZE = ContextAwareDataOutput::STRING_CHUNK_SIZE;
     
     std::string readShortUTF() throw (std::ios_base::failure) ;
-    
-    
-//    int mark ;
     
     
 };

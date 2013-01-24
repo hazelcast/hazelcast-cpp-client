@@ -103,16 +103,16 @@ void ClassDefinitionWriter::writeShortArray(string fieldName, Array<short>& v) t
 };
 
 
-void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable>& portables) throw(ios_base::failure) {
+void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure) {
     
-    int classId = portables[0].getClassId();
+    int classId = portables[0]->getClassId();
     for (int i = 1; i < portables.length(); i++) {
-        if (portables[i].getClassId() != classId) {
+        if (portables[i]->getClassId() != classId) {
             throw "Illegal Argument Exception";
         }
     }
     FieldDefinitionImpl fd(index++, fieldName, FieldDefinitionImpl::TYPE_PORTABLE_ARRAY, classId);
-    addNestedField(portables[0], fd);
+    addNestedField(*(portables[0]), fd);
 };
 
 

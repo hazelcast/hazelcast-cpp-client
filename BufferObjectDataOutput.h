@@ -12,10 +12,10 @@
 #include <iostream>
 #include <memory>
 #include "DataOutput.h"
-#include "Closeable.h"
+
 typedef unsigned char byte;
 
-class BufferObjectDataOutput : public DataOutput , Closeable{
+class BufferObjectDataOutput : public DataOutput{
 public:
     virtual void write(int index, int b) throw (std::ios_base::failure)= 0;
     

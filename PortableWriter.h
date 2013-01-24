@@ -52,7 +52,7 @@ public:
     
     virtual void writeShortArray(string, Array<short>&) throw(ios_base::failure) = 0;
     
-    virtual void writePortableArray(string  , Array<Portable>&) throw(ios_base::failure) = 0;
+    virtual void writePortableArray(string  , Array<Portable*>&) throw(ios_base::failure) = 0;
 };
 
 #endif

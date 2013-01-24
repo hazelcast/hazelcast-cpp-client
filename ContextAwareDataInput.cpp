@@ -223,26 +223,6 @@ int ContextAwareDataInput::position(){
 void ContextAwareDataInput::position(int newPos){
     ptr = beg + newPos;
 };
-
-
-void ContextAwareDataInput::reset(){
-    //TODO
-};
-
-BufferObjectDataInput* ContextAwareDataInput::duplicate(){
-    //TODO
-};
-
-BufferObjectDataInput* ContextAwareDataInput::slice(){
-    //TODO
-};
-
-//Inherited from closeable
-
-void ContextAwareDataInput::close() throw(std::ios_base::failure){
-    //TODO
-};
-
 //private functions
 
 std::string ContextAwareDataInput::readShortUTF() throw(std::ios_base::failure){

@@ -31,8 +31,8 @@ public:
                         Array<int>  i , 
                         Array<long> l, 
                         Array<float> f, 
-                        Array<double> d
-                        ):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d){
+                        Array<double> d,
+                        Array<Portable*> n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
         
         
     };
@@ -45,7 +45,7 @@ public:
         ll = rhs.ll;
         ff = rhs.ff;
         dd = rhs.dd;
-//        nn = rhs.nn;
+        nn = rhs.nn;
         return (*this);
     }    
     int getClassId() {
@@ -61,7 +61,7 @@ public:
         writer.writeLongArray("l", ll);
         writer.writeFloatArray("f", ff);
         writer.writeDoubleArray("d", dd);
-//        writer.writePortableArray("n", nn);
+        writer.writePortableArray("n", nn);
         
     };
         
@@ -73,8 +73,12 @@ public:
         ll = reader.readLongArray("l");
         ff = reader.readFloatArray("f");
         dd = reader.readDoubleArray("d");
-//        nn = reader.readPortableArray("n");
-        
+        Array< auto_ptr<Portable> > temp;
+        temp = reader.readPortableArray("n");
+        Array<Portable*> tempNN(temp.length());
+        for(int i = 0; i < temp.length() ; i++)
+            tempNN[i] = temp[i].release();
+        nn = tempNN;
     };
     
     bool operator==(TestInnerPortable& m){
@@ -85,13 +89,19 @@ public:
        if( ll != m.ll ) return false;
        if( ff != m.ff ) return false;
        if( dd != m.dd ) return false;
-//       if( nn != m.nn ) return false;
+       for(int i = 0; i < nn.length() ; i++)
+           
+           if( *((TestNamedPortable*)(nn[i])) 
+                   != 
+                   *((TestNamedPortable*)(m.nn[i]))  ) 
+                   return false;
        return true;
     };
     
     bool operator!=(TestInnerPortable& m){
         return !(*this == m );  
     };
+private:
     Array<byte> bb;
     Array<char> cc;
     Array<short> ss;
@@ -99,8 +109,7 @@ public:
     Array<long> ll;
     Array<float> ff;
     Array<double> dd;
-private:
-//    Array< Portable* > nn;
+    Array< Portable* > nn;
     
 };
 #endif

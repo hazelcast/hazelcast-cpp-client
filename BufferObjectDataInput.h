@@ -10,10 +10,10 @@
 #define __Server__BufferObjectDataInput__
 #include <iostream>
 #include "DataInput.h"
-#include "Closeable.h"
+
 typedef unsigned char byte;
 
-class BufferObjectDataInput : public DataInput , Closeable{
+class BufferObjectDataInput : public DataInput {
     virtual int read(int index) throw (std::ios_base::failure)= 0 ;
     
     virtual int read(int index, byte* b, int off, int len) throw (std::ios_base::failure)= 0 ;
@@ -38,11 +38,6 @@ class BufferObjectDataInput : public DataInput , Closeable{
     
     virtual void position(int newPos)= 0 ;
     
-    virtual void reset()= 0 ;
-    
-    virtual BufferObjectDataInput* duplicate()= 0;
-    
-    virtual BufferObjectDataInput* slice()= 0;
 };
 
 #endif /* defined(__Server__BufferObjectDataInput__) */
