@@ -86,10 +86,14 @@ public:
     
     void push(ContextAwareDataOutput*);
     
+    ContextAwareDataOutput* pop();
+    
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
     
-    ContextAwareDataOutput* pop();
+    SerializationContextImpl getSerializationContext(){
+        return serializationContext;
+    }
 private:
 
     static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;

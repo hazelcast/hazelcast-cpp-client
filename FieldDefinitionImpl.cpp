@@ -52,7 +52,7 @@ void FieldDefinitionImpl::writeData(DataOutput& out) const throw(std::ios_base::
 void FieldDefinitionImpl::readData(DataInput& in) throw(std::ios_base::failure){
     index = in.readInt();
     fieldName = in.readUTF();
-    type = in.readChar();
+    type = in.readByte();
     classId = in.readInt();
 };
 

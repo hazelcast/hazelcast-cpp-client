@@ -31,7 +31,12 @@ public:
     
     int getDataVersion();
     
+    SerializationContextImpl getSerializationContext();
+    
+    
     //Inherited from DataInput
+    void readFully(Array<byte>&);
+    
     void readFully(byte* bytes, int off, int len);
     
     int skipBytes(int i) ;

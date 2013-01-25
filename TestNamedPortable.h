@@ -49,7 +49,8 @@ public:
     bool operator==(TestNamedPortable& m){
         if(this == &m)
             return true;
-        if (name.compare(m.name)) return false;
+        if (name.compare(m.name)) 
+            return false;
         return true;
     };
     

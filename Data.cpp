@@ -7,7 +7,9 @@
 //
 #include "Array.h"
 #include "Data.h"
-
+#include "ContextAwareDataInput.h"
+#include "ContextAwareDataOutput.h"
+#include "SerializationContextImpl.h"
 Data::Data():partitionHash(-1),buffer(0),type(-1){
     
 };
@@ -40,7 +42,7 @@ bool Data::operator!=(const Data& rhs) const{
     return !((*this) == rhs);
 };
 
-int Data::size(){
+int Data::size() const{
     return buffer.length();
 };
 
@@ -51,5 +53,51 @@ int Data::getPartitionHash(){
 void Data::setPartitionHash(int partitionHash){
     this->partitionHash = partitionHash;
 };
+
+void Data::readData(ContextAwareDataInput& in) throw(std::ios_base::failure){
+    type = in.readInt();
+    int classId = in.readInt();
+    if (classId != NO_CLASS_ID) {
+        int version = in.readInt();
+        SerializationContextImpl context = in.getSerializationContext();
+        
+        int classDefSize = in.readInt();
+
+        if(context.isClassDefinitionExists(classId,version)){
+            cd = context.lookup(classId, version);
+            in.skipBytes(classDefSize);
+        } else {
+            Array<byte>  classDefBytes(classDefSize);
+            in.readFully(classDefBytes);
+            cd = context.createClassDefinition(classDefBytes);
+        }
+    }
+    int size = in.readInt();
+    if (size > 0) {
+        Array<byte>  buffer(size);
+        in.readFully(buffer);
+        this->buffer = buffer;
+    }
+    partitionHash = in.readInt();
+}
+
+void Data::writeData(ContextAwareDataOutput& out) const throw(std::ios_base::failure){
+    out.writeInt(type);
+//    if (cd != null) {//TODO
+        out.writeInt(cd.getClassId());
+        out.writeInt(cd.getVersion());
+        Array<byte>  classDefBytes = cd.getBinary();
+        out.writeInt(classDefBytes.length());
+        out.write(classDefBytes);
+//    } else {
+//        out.writeInt(NO_CLASS_ID);
+//    }
+    int len = size();
+    out.writeInt(len);
+    if (len > 0) {
+        out.write(buffer);
+    }
+    out.writeInt(partitionHash);
+}
 
 

@@ -8,7 +8,8 @@
 #include <vector>
 #include <stdio.h>
 #include "ContextAwareDataOutput.h"
-
+#include "Data.h"
+#include "SerializationServiceImpl.h"
 using namespace std;
 
 namespace hazelcast {
@@ -19,24 +20,27 @@ namespace hazelcast {
  public:
     /// Constructor opens the acceptor and starts waiting for the first incoming
     /// connection.
-    server(boost::asio::io_service& io_service, unsigned short port)
+    server(boost::asio::io_service& io_service, unsigned short port, SerializationServiceImpl* service)
     : mAcceptor(io_service,boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
-    , mSocket(io_service)
+    , mSocket(io_service), service(service)
     {
         cout << "waiting for socket to accept" << endl;
         mAcceptor.accept(mSocket);
         cout << "connection accepted" << endl;
     }
-    template <typename T>
-    void send(const T& data){
-        ContextAwareDataOutput *dataOutput;
-        data.writeData(*dataOutput);
-        boost::asio::write(mSocket, boost::asio::buffer(dataOutput->toString().c_str() , 1024));
+    
+    void send(Data& data){
+        ContextAwareDataOutput out(service);
+        data.writeData(out);
+        Array<byte> buffer = out.toByteArray();
+        cout << buffer.length() << endl;
+        boost::asio::write(mSocket, boost::asio::buffer(buffer.buffer,1024));
     }
     private:
         /// The acceptor object used to accept incoming socket connections.
         boost::asio::ip::tcp::acceptor mAcceptor;
         boost::asio::ip::tcp::socket mSocket;
+        SerializationServiceImpl* service;
  };
  
  } // namespace hazelcast

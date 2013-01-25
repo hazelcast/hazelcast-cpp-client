@@ -89,15 +89,15 @@ int ClassDefinitionImpl::getFieldCount(){
     return (int)fieldDefinitions.size();
 };
 
-int ClassDefinitionImpl::getClassId(){
+int ClassDefinitionImpl::getClassId() const{
     return classId;
 };
 
-int ClassDefinitionImpl::getVersion(){
+int ClassDefinitionImpl::getVersion() const{
     return version;
 };
 
-Array<byte> ClassDefinitionImpl::getBinary(){
+Array<byte> ClassDefinitionImpl::getBinary() const{
     return binary;
 };
 

@@ -61,7 +61,7 @@ public:
         writer.writeLongArray("l", ll);
         writer.writeFloatArray("f", ff);
         writer.writeDoubleArray("d", dd);
-        writer.writePortableArray("n", nn);
+        writer.writePortableArray("nn", nn);
         
     };
         
@@ -74,7 +74,7 @@ public:
         ff = reader.readFloatArray("f");
         dd = reader.readDoubleArray("d");
         Array< auto_ptr<Portable> > temp;
-        temp = reader.readPortableArray("n");
+        temp = reader.readPortableArray("nn");
         Array<Portable*> tempNN(temp.length());
         for(int i = 0; i < temp.length() ; i++)
             tempNN[i] = temp[i].release();

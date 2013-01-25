@@ -26,6 +26,9 @@ class SerializationContextImpl : public SerializationContext{
 public:
     SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
     
+    SerializationContextImpl(const SerializationContextImpl&  );
+    void operator=(const SerializationContextImpl&);
+    
     bool isClassDefinitionExists(int);
     ClassDefinitionImpl lookup(int);
     
@@ -41,8 +44,8 @@ public:
     
 private:
     
-    void compress(Array<byte>&, ContextAwareDataOutput*) throw(std::ios_base::failure);//TODO zip in c++
-    void decompress(Array<byte>&, ContextAwareDataOutput* ) throw(std::ios_base::failure);//TODO unzip in c++
+    void compress(Array<byte>&) throw(std::ios_base::failure);
+    void decompress(Array<byte>&) throw(std::ios_base::failure);
         
     PortableFactory* portableFactory;//TODO think again
     SerializationServiceImpl* service;

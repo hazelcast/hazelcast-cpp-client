@@ -8,13 +8,17 @@
 #ifndef ARRAY_H
 #define	ARRAY_H
 #include <memory>
-#include "iostream"
+#include <iostream>
 
 
 template <typename T>
 class Array{
 public:
     friend class ContextAwareDataInput;
+    friend class ContextAwareDataOutput;
+    friend class SerializationContextImpl;
+    
+//    friend class Data;
     Array():buffer(NULL),len(0){
     };
     Array(int size){
@@ -76,6 +80,7 @@ public:
     int length() const{ return len; };
     
     
+    T* buffer;
 private:
     void init(int size, T* b){
         len = size;
@@ -85,7 +90,6 @@ private:
         }
     };
     int len;
-    T* buffer;
 };
 
 

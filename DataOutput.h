@@ -10,11 +10,13 @@
 #define Server_DataOutput_h
 
 #include <string>
-
+#include "Array.h"
 typedef unsigned char byte;
 
 class DataOutput{
 public:
+    virtual void write(const Array<byte>& bytes) = 0;
+    
     virtual void write(char* bytes, int offset, int length) = 0;
     
     virtual void writeBoolean(bool b) = 0;

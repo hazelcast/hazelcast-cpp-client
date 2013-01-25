@@ -42,6 +42,10 @@ int ContextAwareDataOutput::getSize(){
 };
 
 //Inherited from DataOutput
+void ContextAwareDataOutput::write(const Array<byte>& bytes)throw (std::ios_base::failure){
+    write((char*)bytes.buffer , 0 , bytes.len);
+};
+
 void ContextAwareDataOutput::write(char *bytes, int off, int len) throw(std::ios_base::failure){
     buffer.write(bytes + off , sizeof(char) * len);
 };

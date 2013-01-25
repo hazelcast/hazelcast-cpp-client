@@ -8,7 +8,8 @@
 #include <iostream>
 #include "ContextAwareDataInput.h"
 #include "ClassDefinitionImpl.h"
-class SerializationServiceImpl;
+#include "SerializationServiceImpl.h"
+#include "SerializationContextImpl.h"
 
 ContextAwareDataInput::ContextAwareDataInput(Array<byte>& buffer, SerializationServiceImpl* service){
     this->buffer = buffer;
@@ -38,7 +39,14 @@ int ContextAwareDataInput::getDataVersion(){
     return dataVersion;
 };
 
+SerializationContextImpl ContextAwareDataInput::getSerializationContext(){
+    return service->getSerializationContext();
+}
 //Inherited from DataInoput
+void ContextAwareDataInput::readFully(Array<byte>& bytes){
+    readFully(bytes.buffer,0,bytes.length());
+};
+
 void ContextAwareDataInput::readFully(byte *bytes, int off, int len){
     memcpy(bytes + off, ptr, sizeof(byte) * len);
     ptr += sizeof(byte) * len;
@@ -227,8 +235,8 @@ void ContextAwareDataInput::position(int newPos){
 
 std::string ContextAwareDataInput::readShortUTF() throw(std::ios_base::failure){
     short utflen = readShort();
-    byte* bytearr = new byte[utflen];
-    char* chararr = new char[utflen];
+    byte bytearr[utflen];
+    char chararr[utflen];
     int c, char2, char3;
     int count = 0;
     int chararr_count = 0;

@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <vector>
 
+#include "Data.h"
+
 using namespace std;
 typedef unsigned char byte;
 namespace hazelcast {
@@ -17,8 +19,8 @@ namespace hazelcast {
     public:
         /// Constructor starts the asynchronous connect operation.
         client(boost::asio::io_service& io_service,
-               const string& host, const string& port)
-        : mSocket(io_service)
+               const string& host, const string& port,SerializationServiceImpl* service)
+        : mSocket(io_service),service(service)
         {
             // Resolve the host name into an IP address.
             boost::asio::ip::tcp::resolver resolver(io_service);
@@ -29,18 +31,18 @@ namespace hazelcast {
             cout << "Connection established" << endl;
 
         }
-        template<typename T>
-        void read(T& data){
-            byte localBuffer[1024];
-            boost::asio::read(mSocket, boost::asio::buffer(localBuffer,1024));
-//            ContextAwareDataInput dataInput(localBuffer);
-//            data.readData(dataInput);
+        void read(Data& data){
+            
+            Array<byte> buffer(1024);
+            boost::asio::read(mSocket, boost::asio::buffer(buffer.buffer,1024));
+            ContextAwareDataInput input(buffer,service);
+            data.readData(input);
         }
         
     private:
         /// The connection to the server.
         boost::asio::ip::tcp::socket mSocket;
-        
+        SerializationServiceImpl* service;
     };
 }
 

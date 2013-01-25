@@ -22,11 +22,11 @@ public:
     
     virtual int getFieldCount() = 0;
     
-    virtual int getClassId() = 0;
+    virtual int getClassId() const = 0;
     
-    virtual int getVersion() = 0;
+    virtual int getVersion() const = 0;
     
-    virtual Array<byte> getBinary() = 0;
+    virtual Array<byte> getBinary() const = 0;
 };
 
 #endif

@@ -41,9 +41,9 @@ public:
     void readData(DataInput&)throw(std::ios_base::failure);
     
     int getFieldCount();
-    int getClassId();
-    int getVersion();
-    Array<byte> getBinary();
+    int getClassId() const;
+    int getVersion() const;
+    Array<byte> getBinary() const;
     
     void setBinary(Array<byte>&);
     

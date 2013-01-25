@@ -10,11 +10,12 @@
 #define __Server__DataInput__
 
 #include <string>
-
+#include "Array.h"
 typedef unsigned char byte;
 
 class DataInput{
 public:
+    virtual void readFully(Array<byte>&) = 0;
     
     virtual void readFully(byte* bytes, int off, int len)= 0;
     

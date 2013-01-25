@@ -2,11 +2,8 @@
 // server.cpp
 
 #include <iostream>
-#include <vector>
-#include <stdio.h>
+#include <fstream>
 #include <cassert>
-#include "ContextAwareDataOutput.h"
-#include "SerializationService.h"
 #include "SerializationServiceImpl.h"
 #include "Data.h"
 #include "Array.h"
@@ -15,6 +12,9 @@
 #include "TestNamedPortable.h"
 #include "TestInnerPortable.h"
 #include "TestMainPortable.h"
+
+#include "Server.h"
+
 using namespace std;
 
 int main(int argc, char** argv){
@@ -53,7 +53,7 @@ int main(int argc, char** argv){
     Array<long> ll(6, longArray);
     float floatArray[] = {0.6543f, -3.56f, 45.67f};
     Array<float> ff(3, floatArray);
-    double doubleArray[] = {456.456231, 789.789, 321.321};
+    double doubleArray[] = {456.456, 789.789, 321.321};
     Array<double> dd(3, doubleArray);
     TestNamedPortable** portablePointerArray = new TestNamedPortable*[5];
     for (int i = 0; i < 5; i++) {
@@ -87,22 +87,28 @@ int main(int argc, char** argv){
     assert(main == tmp1);
     assert(main == tmp2);
      
+    cout << "All tests are passed" << endl;
+    
+//    cout << data.size() << endl;
+    ContextAwareDataOutput* out = serializationService.pop();
+    data.writeData(*out);
+    Array<byte> outBuffer =  out->toByteArray();
+//    cout << outBuffer.length() << endl;
+    ofstream outfile ("/Users/msk/Desktop/text.txt");
+    for(int i = 0; i < outBuffer.length() ; i++)
+        outfile.put(outBuffer[i]);
+    serializationService.push(out);
+    outfile.close();
+//    boost::asio::io_service server_service;
+//    hazelcast::server server(server_service, 8083,&serializationService);
+//    server_service.run();
+    
+//    server.send(data);
+    
+   
     for(int i = 0 ; i < 5 ; i++)
         delete portablePointerArray[i];
     delete [] portablePointerArray;
     
-    cout << "All tests are passed" << endl;
-   /* 
-    boost::asio::io_service io_service;
-    hazelcast::server server(io_service, port);
-    io_service.run();
-    cout << "Sending " << temp << endl;
-     
-    server.send(temp);
-     
-     boost::asio::io_service io_service;
-    hazelcast::client client(io_service, host, port
-    io_service.run();
-    */ 
     return 0;
 }
