@@ -29,13 +29,13 @@ public:
     ClassDefinitionImpl& operator=(const ClassDefinitionImpl& rhs);
     
     void add(FieldDefinitionImpl&);
-    void add(ClassDefinitionImpl&);
+    void add(ClassDefinitionImpl*);
     
     bool isFieldDefinitionExists(std::string);
     const FieldDefinitionImpl& get(std::string);
     const FieldDefinitionImpl& get(int);
     
-    const vector<ClassDefinitionImpl>& getNestedClassDefinitions();
+    const vector<ClassDefinitionImpl*>& getNestedClassDefinitions();
     
     void writeData(DataOutput&) const throw(std::ios_base::failure);
     void readData(DataInput&)throw(std::ios_base::failure);
@@ -50,7 +50,6 @@ public:
     bool operator==(const ClassDefinitionImpl&) const;
     bool operator!=(const ClassDefinitionImpl&) const;
     
-//    friend std::ostream& operator<<(std::ostream&, const FieldDefinition&);
     int classId;
     int version;
 private:
@@ -58,7 +57,7 @@ private:
     
     vector<FieldDefinitionImpl> fieldDefinitions;
     map<std::string, FieldDefinitionImpl> fieldDefinitionsMap;
-    vector<ClassDefinitionImpl> nestedClassDefinitions;//TODO ask if equaliy is important
+    vector<ClassDefinitionImpl*> nestedClassDefinitions;//TODO ask if equaliy is important
     
     Array<byte> binary;
     

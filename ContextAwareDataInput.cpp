@@ -19,8 +19,8 @@ ContextAwareDataInput::ContextAwareDataInput(Array<byte>& buffer, SerializationS
 };
 
 ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
-    this->dataClassId = data.cd.getClassId();
-    this->dataVersion = data.cd.getVersion();
+    this->dataClassId = data.cd->getClassId();
+    this->dataVersion = data.cd->getVersion();
     this->buffer = data.buffer;
     this->ptr = buffer.buffer;
     this->beg = ptr;
@@ -39,7 +39,7 @@ int ContextAwareDataInput::getDataVersion(){
     return dataVersion;
 };
 
-SerializationContextImpl ContextAwareDataInput::getSerializationContext(){
+SerializationContextImpl* ContextAwareDataInput::getSerializationContext(){
     return service->getSerializationContext();
 }
 //Inherited from DataInoput

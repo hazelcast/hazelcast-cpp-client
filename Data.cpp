@@ -59,17 +59,17 @@ void Data::readData(ContextAwareDataInput& in) throw(std::ios_base::failure){
     int classId = in.readInt();
     if (classId != NO_CLASS_ID) {
         int version = in.readInt();
-        SerializationContextImpl context = in.getSerializationContext();
+        SerializationContextImpl* context = in.getSerializationContext();
         
         int classDefSize = in.readInt();
 
-        if(context.isClassDefinitionExists(classId,version)){
-            cd = context.lookup(classId, version);
+        if(context->isClassDefinitionExists(classId,version)){
+            cd = context->lookup(classId, version);
             in.skipBytes(classDefSize);
         } else {
             Array<byte>  classDefBytes(classDefSize);
             in.readFully(classDefBytes);
-            cd = context.createClassDefinition(classDefBytes);
+            cd = context->createClassDefinition(classDefBytes);
         }
     }
     int size = in.readInt();
@@ -84,9 +84,9 @@ void Data::readData(ContextAwareDataInput& in) throw(std::ios_base::failure){
 void Data::writeData(ContextAwareDataOutput& out) const throw(std::ios_base::failure){
     out.writeInt(type);
 //    if (cd != null) {//TODO
-        out.writeInt(cd.getClassId());
-        out.writeInt(cd.getVersion());
-        Array<byte>  classDefBytes = cd.getBinary();
+        out.writeInt(cd->getClassId());
+        out.writeInt(cd->getVersion());
+        Array<byte>  classDefBytes = cd->getBinary();
         out.writeInt(classDefBytes.length());
         out.write(classDefBytes);
 //    } else {

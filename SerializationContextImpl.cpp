@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-
+#include <cassert>
 #include "SerializationContextImpl.h"
 #include "SerializationServiceImpl.h"
 #include "ContextAwareDataOutput.h"
@@ -15,21 +15,23 @@ SerializationContextImpl::SerializationContextImpl(PortableFactory* portableFact
     this->version = version;
     this->service = service;
 };
-
+SerializationContextImpl::~SerializationContextImpl(){
+    for(map<long,ClassDefinitionImpl*>::const_iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
+        delete (*it).second;
+    }
+};
 SerializationContextImpl::SerializationContextImpl(const SerializationContextImpl&  rhs){
-    version = rhs.version;
-    versionedDefinitions = rhs.versionedDefinitions;
+    assert(0);
 };
 void SerializationContextImpl::operator=(const SerializationContextImpl& rhs) {
-    version = rhs.version;
-    versionedDefinitions = rhs.versionedDefinitions;    
+    assert(0);
 };
 
 bool SerializationContextImpl::isClassDefinitionExists(int classId){
     return isClassDefinitionExists(classId,version);
 };
 
-ClassDefinitionImpl SerializationContextImpl::lookup(int classId){
+ClassDefinitionImpl* SerializationContextImpl::lookup(int classId){
      long key = SerializationServiceImpl::combineToLong(classId, version);
      return versionedDefinitions[key];
 };
@@ -39,7 +41,7 @@ bool SerializationContextImpl::isClassDefinitionExists(int classId, int version)
     return (versionedDefinitions.count(key) > 0);
 };
 
-ClassDefinitionImpl SerializationContextImpl::lookup(int classId, int version){
+ClassDefinitionImpl* SerializationContextImpl::lookup(int classId, int version){
     long key = SerializationServiceImpl::combineToLong(classId, version);
      return versionedDefinitions[key];
 
@@ -49,16 +51,16 @@ auto_ptr<Portable> SerializationContextImpl::createPortable(int classId){
     return auto_ptr<Portable>(portableFactory->create(classId));
 };
 
-ClassDefinitionImpl SerializationContextImpl::createClassDefinition(Array<byte>& binary) throw(std::ios_base::failure){
+ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(Array<byte>& binary) throw(std::ios_base::failure){
     
     decompress(binary);
     
     ContextAwareDataInput dataInput = ContextAwareDataInput(binary, service);
-    ClassDefinitionImpl cd;
-    cd.readData(dataInput);
-    cd.setBinary(binary);
+    ClassDefinitionImpl* cd = new ClassDefinitionImpl;
+    cd->readData(dataInput);
+    cd->setBinary(binary);
             
-    long key = service->combineToLong(cd.classId, version);
+    long key = service->combineToLong(cd->classId, version);
 //    bool exists = false;
 //    ClassDefinitionImpl currentCD;
 //    if(versionedDefinitions.count(key) > 0){
@@ -75,26 +77,28 @@ ClassDefinitionImpl SerializationContextImpl::createClassDefinition(Array<byte>&
 //    }
 };
 
-void SerializationContextImpl::registerNestedDefinitions(ClassDefinitionImpl& cd) throw(std::ios_base::failure){
-    vector<ClassDefinitionImpl> nestedDefinitions = cd.getNestedClassDefinitions();
-    for(vector<ClassDefinitionImpl>::iterator it = nestedDefinitions.begin() ; it < nestedDefinitions.end() ; it++){
+void SerializationContextImpl::registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
+    vector<ClassDefinitionImpl*> nestedDefinitions = cd->getNestedClassDefinitions();
+    for(vector<ClassDefinitionImpl*>::iterator it = nestedDefinitions.begin() ; it < nestedDefinitions.end() ; it++){
         registerClassDefinition(*it);
         registerNestedDefinitions(*it);
     }
 };
 
-void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure){
+void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
      
-        if(!isClassDefinitionExists(cd.getClassId() , cd.getVersion())){
-            if (cd.getBinary().length() == 0) {
-                ContextAwareDataOutput* output = service->pop();                
-                cd.writeData(*output);
+        if(!isClassDefinitionExists(cd->getClassId() , cd->getVersion())){
+            if (cd->getBinary().length() == 0) {
+                
+                ContextAwareDataOutput* output = service->pop();
+                assert(output != NULL);
+                cd->writeData(*output);
                 Array<byte> binary = output->toByteArray();
                 compress(binary);
-                cd.setBinary(binary);
+                cd->setBinary(binary);
                 service->push(output);
             }
-            long versionedClassId = service->combineToLong(cd.getClassId(), cd.getVersion());
+            long versionedClassId = service->combineToLong(cd->getClassId(), cd->getVersion());
             versionedDefinitions[versionedClassId] = cd;
         }
 };

@@ -31,7 +31,7 @@ public:
     
     int getDataVersion();
     
-    SerializationContextImpl getSerializationContext();
+    SerializationContextImpl* getSerializationContext();
     
     
     //Inherited from DataInput

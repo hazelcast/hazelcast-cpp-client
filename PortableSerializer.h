@@ -22,7 +22,7 @@ public:
     PortableSerializer(SerializationContextImpl*);
     ~PortableSerializer();
     
-    ClassDefinitionImpl getClassDefinition(Portable& p) throw(std::ios_base::failure);
+    ClassDefinitionImpl* getClassDefinition(Portable& p) throw(std::ios_base::failure);
     
     int getTypeId();
     int getVersion();

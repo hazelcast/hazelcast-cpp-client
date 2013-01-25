@@ -61,7 +61,7 @@ public:
     
     void writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure);
     
-    ClassDefinitionImpl cd;
+    ClassDefinitionImpl* cd;
 private:
     void addNestedField(Portable& p, FieldDefinitionImpl& fd) throw(ios_base::failure) ;
 

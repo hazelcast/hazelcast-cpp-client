@@ -28,15 +28,16 @@ PortableSerializer::~PortableSerializer(){
 };
 
 
-ClassDefinitionImpl PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
+ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
     int classId = p.getClassId();
-    ClassDefinitionImpl cd;
+    ClassDefinitionImpl* cd;
     
     if (context->isClassDefinitionExists(classId)) {
         cd =  context->lookup(classId);
     }else{
         ClassDefinitionWriter classDefinitionWriter(classId,context->getVersion(),this);
         p.writePortable(classDefinitionWriter);
+        
         cd = classDefinitionWriter.cd;
         context->registerClassDefinition(cd);
     }
@@ -50,8 +51,8 @@ int PortableSerializer::getVersion(){
 
 void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
     
-    ClassDefinitionImpl cd = getClassDefinition(p);
-    DefaultPortableWriter writer(this, dataOutput, &cd);
+    ClassDefinitionImpl* cd = getClassDefinition(p);
+    DefaultPortableWriter writer(this, dataOutput, cd);
     p.writePortable(writer);
     
 };
@@ -62,14 +63,14 @@ auto_ptr<Portable> PortableSerializer::read(ContextAwareDataInput& dataInput) th
     int dataVersion = dataInput.getDataVersion();
     auto_ptr<Portable> p = context->createPortable(dataClassId);
     
-    ClassDefinitionImpl cd;
+    ClassDefinitionImpl* cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
-        DefaultPortableReader reader(this, dataInput, &cd);
+        DefaultPortableReader reader(this, dataInput, cd);
         p->readPortable(reader);
     } else {
         cd = context->lookup(dataClassId, dataVersion); // registered during read
-        MorphingPortableReader reader(this, dataInput, &cd);
+        MorphingPortableReader reader(this, dataInput, cd);
         p->readPortable(reader);
     }
     return p;

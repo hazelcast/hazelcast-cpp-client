@@ -37,7 +37,7 @@ void ClassDefinitionImpl::add(FieldDefinitionImpl& fd){
     fieldDefinitionsMap[fd.fieldName] = fd;
 };
 
-void ClassDefinitionImpl::add(ClassDefinitionImpl& cd){
+void ClassDefinitionImpl::add(ClassDefinitionImpl* cd){
     nestedClassDefinitions.push_back(cd);
 };
 
@@ -53,7 +53,7 @@ const FieldDefinitionImpl& ClassDefinitionImpl::get(int fieldIndex){
     return fieldDefinitions[fieldIndex];
 };
 
-const vector<ClassDefinitionImpl>& ClassDefinitionImpl::getNestedClassDefinitions(){
+const vector<ClassDefinitionImpl*>& ClassDefinitionImpl::getNestedClassDefinitions(){
     return nestedClassDefinitions;
 };
 
@@ -64,8 +64,8 @@ void ClassDefinitionImpl::writeData(DataOutput & out) const throw(std::ios_base:
     for (vector<FieldDefinitionImpl>::const_iterator it = fieldDefinitions.begin() ;  it != fieldDefinitions.end(); it++)
         (*it).writeData(out);
     out.writeInt((int)nestedClassDefinitions.size());
-    for (vector<ClassDefinitionImpl>::const_iterator it = nestedClassDefinitions.begin() ; it != nestedClassDefinitions.end(); it++)
-        (*it).writeData(out);
+    for (vector<ClassDefinitionImpl*>::const_iterator it = nestedClassDefinitions.begin() ; it != nestedClassDefinitions.end(); it++)
+        (*it)->writeData(out);
 };
 
 void ClassDefinitionImpl::readData(DataInput & in) throw(std::ios_base::failure){
@@ -79,8 +79,8 @@ void ClassDefinitionImpl::readData(DataInput & in) throw(std::ios_base::failure)
     }
     size = in.readInt();
     for (int i = 0; i < size; i++) {
-        ClassDefinitionImpl classDefinition;
-        classDefinition.readData(in);
+        ClassDefinitionImpl* classDefinition = new ClassDefinitionImpl;
+        classDefinition->readData(in);
         add(classDefinition);
     }
 };

@@ -25,21 +25,21 @@ typedef unsigned char byte;
 class SerializationContextImpl : public SerializationContext{
 public:
     SerializationContextImpl(PortableFactory*,int,SerializationServiceImpl*);
-    
+    ~SerializationContextImpl();
     SerializationContextImpl(const SerializationContextImpl&  );
     void operator=(const SerializationContextImpl&);
     
     bool isClassDefinitionExists(int);
-    ClassDefinitionImpl lookup(int);
+    ClassDefinitionImpl* lookup(int);
     
     bool isClassDefinitionExists(int,int);
-    ClassDefinitionImpl lookup(int,int);
+    ClassDefinitionImpl* lookup(int,int);
     
     std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinitionImpl createClassDefinition(Array<byte>&) throw(std::ios_base::failure);
-    void registerNestedDefinitions(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
-    void registerClassDefinition(ClassDefinitionImpl& cd) throw(std::ios_base::failure);
+    ClassDefinitionImpl* createClassDefinition(Array<byte>&) throw(std::ios_base::failure);
+    void registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure);
+    void registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure);
     int getVersion();
     
 private:
@@ -50,7 +50,7 @@ private:
     PortableFactory* portableFactory;//TODO think again
     SerializationServiceImpl* service;
     int version;
-    std::map<long,ClassDefinitionImpl> versionedDefinitions;
+    std::map<long,ClassDefinitionImpl*> versionedDefinitions;
     
 };
 

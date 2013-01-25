@@ -34,7 +34,7 @@ public:
     void writeData(ContextAwareDataOutput&) const throw(std::ios_base::failure);
     void readData(ContextAwareDataInput&) throw(std::ios_base::failure);
     
-    ClassDefinitionImpl cd;
+    ClassDefinitionImpl* cd;
     int type;
     Array<byte> buffer;
 private:

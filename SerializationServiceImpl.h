@@ -91,8 +91,8 @@ public:
     static long combineToLong(int x, int y);
     static int extractInt(long value, bool lowerBits);
     
-    SerializationContextImpl getSerializationContext(){
-        return serializationContext;
+    SerializationContextImpl* getSerializationContext(){
+        return &serializationContext;
     }
 private:
 
