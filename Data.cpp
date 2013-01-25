@@ -10,7 +10,7 @@
 #include "ContextAwareDataInput.h"
 #include "ContextAwareDataOutput.h"
 #include "SerializationContextImpl.h"
-Data::Data():partitionHash(-1),buffer(0),type(-1){
+Data::Data():partitionHash(-1),buffer(0),type(-1),cd(NULL){
     
 };
 
@@ -18,7 +18,7 @@ Data::Data(const Data& rhs){
     (*this) = rhs;    
 };
 
-Data::Data(const int type, Array<byte> buffer):partitionHash(-1){
+Data::Data(const int type, Array<byte> buffer):partitionHash(-1),cd(NULL){
     this->type = type;
     this->buffer = buffer;       
 };

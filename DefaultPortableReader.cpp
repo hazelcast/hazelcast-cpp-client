@@ -82,7 +82,7 @@ auto_ptr<Portable> DefaultPortableReader::readPortable(string fieldName) throw(i
     input->setDataClassId(fd.getClassId());
     auto_ptr<Portable> p =  serializer->read(*input);
     
-    input->setDataClassId(cd->classId);
+    input->setDataClassId(cd->getClassId());
     return p;
 };
 

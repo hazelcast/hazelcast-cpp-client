@@ -128,16 +128,16 @@ template<>
 inline byte SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return byteSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return byteSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline bool SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return booleanSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return booleanSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 
@@ -145,111 +145,111 @@ template<>
 inline char SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return charSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return charSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline short SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return shortSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return shortSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline int SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return integerSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return integerSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline long SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return longSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return longSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline float SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return floatSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return floatSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline double SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return doubleSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return doubleSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<byte> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return byteArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return byteArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<char> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return charArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return charArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<short> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return shortArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return shortArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<int> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return integerArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return integerArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<long> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return longArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return longArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<float> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return floatArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return floatArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline Array<double> SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return doubleArraySerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return doubleArraySerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 
 template<>
 inline std::string SerializationServiceImpl::toObject(Data& data){
     if(data.size() == 0)
         throw "Empty Data";
-    ContextAwareDataInput* dataInput = new ContextAwareDataInput(data,this);
-    return stringSerializer.read(dynamic_cast<DataInput*>(dataInput));
+    ContextAwareDataInput dataInput(data,this);
+    return stringSerializer.read(dynamic_cast<DataInput*>(&dataInput));
 };
 #endif /* defined(__Server__SerializationServiceImpl__) */

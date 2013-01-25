@@ -9,6 +9,7 @@
 #ifndef __Server__ClassDefinitionImpl__
 #define __Server__ClassDefinitionImpl__
 
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <map>

@@ -21,8 +21,8 @@ void write();
 void read();
 
 int main(int argc, char** argv){
-//    write();
-    read();
+    write();
+//    read();
     return 0;
 }
 

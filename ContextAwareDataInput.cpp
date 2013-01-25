@@ -19,8 +19,9 @@ ContextAwareDataInput::ContextAwareDataInput(Array<byte>& buffer, SerializationS
 };
 
 ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
-    this->dataClassId = data.cd->getClassId();
-    this->dataVersion = data.cd->getVersion();
+    const ClassDefinitionImpl* cd = data.cd;
+    this->dataClassId = cd != NULL ? cd->getClassId() : -1;
+    this->dataVersion = cd != NULL ? cd->getVersion() : -1;
     this->buffer = data.buffer;
     this->ptr = buffer.buffer;
     this->beg = ptr;

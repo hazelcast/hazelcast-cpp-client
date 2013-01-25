@@ -16,8 +16,12 @@ SerializationContextImpl::SerializationContextImpl(PortableFactory* portableFact
     this->service = service;
 };
 SerializationContextImpl::~SerializationContextImpl(){
-    for(map<long,ClassDefinitionImpl*>::const_iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
-        delete (*it).second;
+    for(map<long,ClassDefinitionImpl*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
+//        try{
+//                delete (*it).second; TODO
+//        }catch(exception e){
+//            std::cout << ":( "<< e.what() << std::endl;
+//        }
     }
 };
 SerializationContextImpl::SerializationContextImpl(const SerializationContextImpl&  rhs){
@@ -60,13 +64,14 @@ ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(Array<byte>
     cd->readData(dataInput);
     cd->setBinary(binary);
             
-    long key = service->combineToLong(cd->classId, version);
+    long key = service->combineToLong(cd->getClassId(), version);
 //    bool exists = false;
 //    ClassDefinitionImpl currentCD;
-//    if(versionedDefinitions.count(key) > 0){
+    if(versionedDefinitions.count(key) > 0){
 //        exists = true;
 //        currentCD = versionedDefinitions[key];
-//    }
+        cout << "sdsdfljfhfkdjfkl" << endl;
+    }
     versionedDefinitions[key] = cd;
     
 //    if (!exists) {
