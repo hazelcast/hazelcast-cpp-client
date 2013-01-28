@@ -11,7 +11,7 @@
 #include "DataInput.h"
 #include "DataOutput.h"
 #include "DefaultPortableWriter.h"
-#include "DefaultPortableReader.h"
+#include "PortableReader.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
 
@@ -66,7 +66,7 @@ auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) throw(std::ios
     ClassDefinition* cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
-        DefaultPortableReader reader(this, dataInput, cd);
+        PortableReader reader(this, dataInput, cd);
         p->readPortable(reader);
     } else {
         cd = context->lookup(dataClassId, dataVersion); // registered during read

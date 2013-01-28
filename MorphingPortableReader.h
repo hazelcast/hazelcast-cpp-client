@@ -7,9 +7,9 @@
 
 #ifndef MORPHINGPORTABLEREADER_H
 #define	MORPHINGPORTABLEREADER_H
-#include "DefaultPortableReader.h"
+#include "PortableReader.h"
 //TODO ask no morphing for array ! why not?
-class MorphingPortableReader : public DefaultPortableReader {
+class MorphingPortableReader : public PortableReader {
 public:
     MorphingPortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
     
@@ -30,8 +30,18 @@ public:
     short readShort(string) throw(ios_base::failure);
     
     string readUTF(string) throw(ios_base::failure);
-    
-    auto_ptr<Portable> readPortable(string) throw(ios_base::failure) ;
+        
+    template<typename T>
+    auto_ptr<T> readPortable(string fieldName) throw(ios_base::failure) {
+        if(!cd->isFieldDefinitionExists(fieldName))
+            return auto_ptr<T>();
+        FieldDefinition fd = cd->get(fieldName);
+
+        if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
+            throw "IncompatibleClassChangeError";
+        }
+        return PortableReader::readPortable<T>(fieldName);
+    };
     
     Array<byte> readByteArray(string) throw(ios_base::failure);
     
@@ -47,7 +57,17 @@ public:
     
     Array<short> readShortArray(string) throw(ios_base::failure);
     
-    Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure);
+    template<typename T>
+    Array< auto_ptr<T> > readPortableArray(string fieldName) throw(ios_base::failure){//TODO
+        if(!cd->isFieldDefinitionExists(fieldName))
+            return NULL;
+        FieldDefinition fd = cd->get(fieldName);
+
+        if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
+            throw "IncompatibleClassChangeError";
+        }
+        return PortableReader::readPortableArray<T>(fieldName);
+    };
     
 };
 

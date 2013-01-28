@@ -77,9 +77,9 @@ public:
         }
         
         DataInput dataInput(data,this);
-        auto_ptr<Portable> autoPtr = portableSerializer.read(dataInput);
+        auto_ptr<K> autoPtr((K*)portableSerializer.read(dataInput).release());
         //TODO return auto_ptr
-        K* ptr = dynamic_cast<K*>(autoPtr.get());
+        K* ptr = autoPtr.get();
        
         return (*ptr);
     };

@@ -18,7 +18,7 @@ SerializationContext::SerializationContext(PortableFactory* portableFactory, int
 SerializationContext::~SerializationContext(){
     for(map<long,ClassDefinition*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
 //        try{
-//                delete (*it).second; TODO
+//                delete (*it).second; 
 //        }catch(exception e){
 //            std::cout << ":( "<< e.what() << std::endl;
 //        }

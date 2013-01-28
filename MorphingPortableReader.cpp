@@ -6,14 +6,14 @@
  */
 #include <string>
 #include "Portable.h"
-#include "DefaultPortableReader.h"
+#include "PortableReader.h"
 #include "DataInput.h"
 #include "PortableSerializer.h"
 #include "Array.h"
 #include "MorphingPortableReader.h"
 #include "FieldDefinition.h"
 
-MorphingPortableReader::MorphingPortableReader(PortableSerializer* p, DataInput& cad, ClassDefinition* cd):DefaultPortableReader(p,cad,cd) {
+MorphingPortableReader::MorphingPortableReader(PortableSerializer* p, DataInput& cad, ClassDefinition* cd):PortableReader(p,cad,cd) {
 }
 
 int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
@@ -23,13 +23,13 @@ int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_INT:
-            return DefaultPortableReader::readInt(fieldName);
+            return PortableReader::readInt(fieldName);
         case FieldDefinition::TYPE_BYTE:
-            return DefaultPortableReader::readByte(fieldName);
+            return PortableReader::readByte(fieldName);
         case FieldDefinition::TYPE_CHAR:
-            return DefaultPortableReader::readChar(fieldName);
+            return PortableReader::readChar(fieldName);
         case FieldDefinition::TYPE_SHORT:
-            return DefaultPortableReader::readShort(fieldName);
+            return PortableReader::readShort(fieldName);
         default:
             throw "IncompatibleClassChangeError";
     }
@@ -42,15 +42,15 @@ long MorphingPortableReader::readLong(string fieldName) throw(ios_base::failure)
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_LONG:
-            return DefaultPortableReader::readLong(fieldName);
+            return PortableReader::readLong(fieldName);
         case FieldDefinition::TYPE_INT:
-            return DefaultPortableReader::readInt(fieldName);
+            return PortableReader::readInt(fieldName);
         case FieldDefinition::TYPE_BYTE:
-            return DefaultPortableReader::readByte(fieldName);
+            return PortableReader::readByte(fieldName);
         case FieldDefinition::TYPE_CHAR:
-            return DefaultPortableReader::readChar(fieldName);
+            return PortableReader::readChar(fieldName);
         case FieldDefinition::TYPE_SHORT:
-            return DefaultPortableReader::readShort(fieldName);
+            return PortableReader::readShort(fieldName);
         default:
             throw "IncompatibleClassChangeError";
     }
@@ -64,7 +64,7 @@ bool MorphingPortableReader::readBoolean(string fieldName) throw(ios_base::failu
     if(fd.getType() != FieldDefinition::TYPE_BOOLEAN)
             throw "IncompatibleClassChangeError";
     
-    return DefaultPortableReader::readBoolean(fieldName);     
+    return PortableReader::readBoolean(fieldName);     
 };
 
 byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure){
@@ -75,7 +75,7 @@ byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure)
     if(fd.getType() != FieldDefinition::TYPE_BYTE)
             throw "IncompatibleClassChangeError";
     
-    return DefaultPortableReader::readByte(fieldName);  
+    return PortableReader::readByte(fieldName);  
 };
 
 char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure){
@@ -86,7 +86,7 @@ char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure)
     if(fd.getType() != FieldDefinition::TYPE_CHAR)
             throw "IncompatibleClassChangeError";
     
-    return DefaultPortableReader::readChar(fieldName);
+    return PortableReader::readChar(fieldName);
 };
 
 double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::failure){
@@ -96,19 +96,19 @@ double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::fail
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_FLOAT:
-            return DefaultPortableReader::readFloat(fieldName);
+            return PortableReader::readFloat(fieldName);
         case FieldDefinition::TYPE_DOUBLE:
-            return DefaultPortableReader::readDouble(fieldName);    
+            return PortableReader::readDouble(fieldName);    
         case FieldDefinition::TYPE_LONG:
-            return DefaultPortableReader::readLong(fieldName);
+            return PortableReader::readLong(fieldName);
         case FieldDefinition::TYPE_INT:
-            return DefaultPortableReader::readInt(fieldName);
+            return PortableReader::readInt(fieldName);
         case FieldDefinition::TYPE_BYTE:
-            return DefaultPortableReader::readByte(fieldName);
+            return PortableReader::readByte(fieldName);
         case FieldDefinition::TYPE_CHAR:
-            return DefaultPortableReader::readChar(fieldName);
+            return PortableReader::readChar(fieldName);
         case FieldDefinition::TYPE_SHORT:
-            return DefaultPortableReader::readShort(fieldName);
+            return PortableReader::readShort(fieldName);
         default:
             throw "IncompatibleClassChangeError";
     }
@@ -121,15 +121,15 @@ float MorphingPortableReader::readFloat(string fieldName) throw(ios_base::failur
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_FLOAT:
-            return DefaultPortableReader::readFloat(fieldName);
+            return PortableReader::readFloat(fieldName);
         case FieldDefinition::TYPE_INT:
-            return DefaultPortableReader::readInt(fieldName);
+            return PortableReader::readInt(fieldName);
         case FieldDefinition::TYPE_BYTE:
-            return DefaultPortableReader::readByte(fieldName);
+            return PortableReader::readByte(fieldName);
         case FieldDefinition::TYPE_CHAR:
-            return DefaultPortableReader::readChar(fieldName);
+            return PortableReader::readChar(fieldName);
         case FieldDefinition::TYPE_SHORT:
-            return DefaultPortableReader::readShort(fieldName);
+            return PortableReader::readShort(fieldName);
         default:
             throw "IncompatibleClassChangeError";
     }
@@ -143,9 +143,9 @@ short MorphingPortableReader::readShort(string fieldName) throw(ios_base::failur
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_BYTE:
-            return DefaultPortableReader::readByte(fieldName);
+            return PortableReader::readByte(fieldName);
         case FieldDefinition::TYPE_SHORT:
-            return DefaultPortableReader::readShort(fieldName);
+            return PortableReader::readShort(fieldName);
         default:
             throw "IncompatibleClassChangeError";
     }
@@ -159,18 +159,7 @@ string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure
     if (fd.getType() != FieldDefinition::TYPE_UTF) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readUTF(fieldName);
-};
-
-auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
-    if(!cd->isFieldDefinitionExists(fieldName))
-        return auto_ptr<Portable>();
-    FieldDefinition fd = cd->get(fieldName);
-    
-    if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
-        throw "IncompatibleClassChangeError";
-    }
-    return DefaultPortableReader::readPortable(fieldName);
+    return PortableReader::readUTF(fieldName);
 };
 
 Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
@@ -181,7 +170,7 @@ Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_ba
     if (fd.getType() != FieldDefinition::TYPE_BYTE_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readByteArray(fieldName);
+    return PortableReader::readByteArray(fieldName);
 };
 
 Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
@@ -192,7 +181,7 @@ Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_ba
     if (fd.getType() != FieldDefinition::TYPE_CHAR_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readCharArray(fieldName);
+    return PortableReader::readCharArray(fieldName);
 };
 
 Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
@@ -203,7 +192,7 @@ Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base
     if (fd.getType() != FieldDefinition::TYPE_INT_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readIntArray(fieldName);
+    return PortableReader::readIntArray(fieldName);
 };
 
 Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
@@ -214,7 +203,7 @@ Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_ba
     if (fd.getType() != FieldDefinition::TYPE_LONG_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readLongArray(fieldName);
+    return PortableReader::readLongArray(fieldName);
 };
 
 Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
@@ -225,7 +214,7 @@ Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(io
     if (fd.getType() != FieldDefinition::TYPE_DOUBLE_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readDoubleArray(fieldName);
+    return PortableReader::readDoubleArray(fieldName);
 };
 
 Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
@@ -236,7 +225,7 @@ Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_
     if (fd.getType() != FieldDefinition::TYPE_FLOAT_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readFloatArray(fieldName);
+    return PortableReader::readFloatArray(fieldName);
 };
 
 Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
@@ -247,19 +236,7 @@ Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_
     if (fd.getType() != FieldDefinition::TYPE_SHORT_ARRAY) {
         throw "IncompatibleClassChangeError";
     }
-    return DefaultPortableReader::readShortArray(fieldName);
+    return PortableReader::readShortArray(fieldName);
 };
-
-Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){//TODO
-    if(!cd->isFieldDefinitionExists(fieldName))
-        return NULL;
-    FieldDefinition fd = cd->get(fieldName);
-    
-    if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
-        throw "IncompatibleClassChangeError";
-    }
-    return DefaultPortableReader::readPortableArray(fieldName);
-};
-
 
 

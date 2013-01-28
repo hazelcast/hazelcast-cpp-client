@@ -86,8 +86,8 @@ public:
         f = reader.readFloat("f");
         d = reader.readDouble("d");
         str = reader.readUTF("str");
-        auto_ptr<Portable> p_ptr = reader.readPortable("p");
-        p = (TestInnerPortable*)p_ptr.release();
+        auto_ptr<TestInnerPortable> p_ptr = reader.readPortable<TestInnerPortable>("p");
+        p = p_ptr.release();
     };
     
     bool operator==(TestMainPortable& m){

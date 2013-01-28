@@ -6,56 +6,111 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_PortableReader_h
-#define Server_PortableReader_h
+#ifndef __Server__PortableReader__
+#define __Server__PortableReader__
 
 #include <iostream>
 #include <string>
 #include <memory>
 #include "Array.h"
+#include "ClassDefinition.h"
+#include "DataInput.h"
+#include "FieldDefinition.h"
+#include "PortableSerializer.h"
 class Portable;
+//class PortableSerializer;
+class BufferObjectDataInput;
+//class FieldDefinition;
 
-using namespace std;
 typedef unsigned char byte;
 
+using namespace std;
+
 class PortableReader{
-    
 public:
-    virtual int readInt(string) throw(ios_base::failure) = 0;
+    PortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
     
-    virtual long readLong(string) throw(ios_base::failure) = 0;
+    int readInt(string) throw(ios_base::failure);
     
-    virtual string readUTF(string) throw(ios_base::failure) = 0;
+    long readLong(string) throw(ios_base::failure);
     
-    virtual bool readBoolean(string) throw(ios_base::failure) = 0;
+    bool readBoolean(string) throw(ios_base::failure);
     
-    virtual byte readByte(string) throw(ios_base::failure) = 0;
+    byte readByte(string) throw(ios_base::failure);
     
-    virtual char readChar(string) throw(ios_base::failure) = 0;
+    char readChar(string) throw(ios_base::failure);
     
-    virtual double readDouble(string) throw(ios_base::failure) = 0;
+    double readDouble(string) throw(ios_base::failure);
     
-    virtual float readFloat(string) throw(ios_base::failure) = 0;
+    float readFloat(string) throw(ios_base::failure);
     
-    virtual short readShort(string) throw(ios_base::failure) = 0;
+    short readShort(string) throw(ios_base::failure);
     
-    virtual auto_ptr<Portable> readPortable(string) throw(ios_base::failure) = 0;
+    string readUTF(string) throw(ios_base::failure);
     
-    virtual Array<byte> readByteArray(string) throw(ios_base::failure) = 0;
+    template<typename T>
+    auto_ptr<T> readPortable(string fieldName) throw(ios_base::failure) {
+        if(!cd->isFieldDefinitionExists(fieldName))
+           throw "throwUnknownFieldException" + fieldName;
+
+        FieldDefinition fd = cd->get(fieldName);
+
+        int pos = getPosition(&fd);
+        input->position(pos);
+        bool isNull = input->readBoolean();
+        if (isNull) {//TODO search for return NULL
+            auto_ptr<T> x;
+            return x;
+        }
+        input->setDataClassId(fd.getClassId());
+        auto_ptr<T> p ((T*)serializer->read(*input).release() );
+
+        input->setDataClassId(cd->getClassId());
+        return p;
+    };
     
-    virtual Array<char> readCharArray(string) throw(ios_base::failure) = 0;
+    Array<byte> readByteArray(string) throw(ios_base::failure);
     
-    virtual Array<int> readIntArray(string) throw(ios_base::failure) = 0;
+    Array<char> readCharArray(string) throw(ios_base::failure);
     
-    virtual Array<long> readLongArray(string) throw(ios_base::failure) = 0;
+    Array<int> readIntArray(string) throw(ios_base::failure);
     
-    virtual Array<double> readDoubleArray(string) throw(ios_base::failure) = 0;
+    Array<long> readLongArray(string) throw(ios_base::failure);
     
-    virtual Array<float> readFloatArray(string) throw(ios_base::failure) = 0;
+    Array<double> readDoubleArray(string) throw(ios_base::failure);
     
-    virtual Array<short> readShortArray(string) throw(ios_base::failure) = 0;
+    Array<float> readFloatArray(string) throw(ios_base::failure);
     
-    virtual Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure) = 0;
+    Array<short> readShortArray(string) throw(ios_base::failure);
+    
+    template<typename T>
+    Array< auto_ptr<T> > readPortableArray(string fieldName) throw(ios_base::failure){//TODO
+        if(!cd->isFieldDefinitionExists(fieldName))
+            throw "throwUnknownFieldException" + fieldName;
+        FieldDefinition fd = cd->get(fieldName);
+
+        int pos = getPosition(fieldName);
+        input->position(pos);
+        int len = input->readInt();
+        Array< auto_ptr<T> > portables(len);
+        input->setDataClassId(fd.getClassId());
+        for (int i = 0; i < len; i++) {
+            portables[i] = auto_ptr<T>((T*)serializer->read(*input).release());
+        }
+        return portables;
+    };
+
+protected:
+    int getPosition(string) throw(ios_base::failure);
+
+    int getPosition(FieldDefinition*) throw(ios_base::failure);
+    
+    PortableSerializer* serializer;
+    ClassDefinition* cd;
+    DataInput* input;
+    int offset;
+    
 };
 
-#endif
+
+#endif /* defined(__Server__PortableReader__) */

@@ -18,11 +18,12 @@ public:
     friend class DataOutput;
     friend class SerializationContext;
     
-//    friend class Data;
     Array():buffer(NULL),len(0){
     };
     Array(int size){
         len = size;
+        if(size < 0)
+            throw "illegal argument";
         if(size == 0)
             buffer = NULL;
         else
@@ -34,15 +35,7 @@ public:
     Array(const Array<T>& rhs){
         init(rhs.len, rhs.buffer );
     };
-    /*
-    Array(const Array< std::auto_ptr<*T> >& rhs){
-        len = rhs.len;
-        buffer = new T[len];
-        for(int i = 0; i < len; i++){
-            buffer[i] = rhs[i].release();
-        }
-    };
-     * */
+    
     ~Array(){
         delete [] buffer;
     };

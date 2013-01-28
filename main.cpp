@@ -12,7 +12,7 @@
 #include "TestNamedPortable.h"
 #include "TestInnerPortable.h"
 #include "TestMainPortable.h"
-
+#include "Portable.h"
 #include "Server.h"
 
 using namespace std;
@@ -78,7 +78,7 @@ void read(){
     tmp1 = serializationService.toObject<TestMainPortable>(data);
     assert(main == tmp1);
     
-    cout << "Read test is passed" << endl;
+//    cout << "Read test is passed" << endl;
 //    boost::asio::io_service client_service;
 //    hazelcast::client client(client_service, "192.168.2.6", "8083",&serializationService);
 //    client_service.run();
@@ -89,6 +89,9 @@ void read(){
 //    TestMainPortable tmp1;
 //    tmp1 = serializationService.toObject<TestMainPortable>(data);
 
+    for(int i = 0 ; i < 5 ; i++)
+        delete portablePointerArray[i];
+    delete [] portablePointerArray;
 }
 
 void write(){
@@ -160,17 +163,17 @@ void write(){
     tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
     assert(main == tmp2);
-     
+    
     cout << "All tests are passed" << endl;
     
-//    cout << data.size() << endl;
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
     Array<byte> outBuffer =  out->toByteArray();
-//    cout << outBuffer.length() << endl;
+
     ofstream outfile ("/Users/msk/Desktop/text.txt");
     for(int i = 0; i < outBuffer.length() ; i++)
         outfile.put(outBuffer[i]);
+    
     serializationService.push(out);
     outfile.close();
 //    boost::asio::io_service server_service;
