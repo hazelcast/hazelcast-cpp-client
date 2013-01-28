@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
-#include "SerializationServiceImpl.h"
+#include "SerializationService.h"
 #include "Data.h"
 #include "Array.h"
 
@@ -22,14 +22,14 @@ void read();
 
 int main(int argc, char** argv){
     write();
-//    read();
+    read();
     return 0;
 }
 
 void read(){
     
     TestPortableFactory tpf1,tpf2;
-    SerializationServiceImpl serializationService(1, &tpf1);
+    SerializationService serializationService(1, &tpf1);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -69,7 +69,7 @@ void read(){
     is.close();
     
     Array<byte> buffer(607,(byte*)bytes);
-    ContextAwareDataInput dataInput(buffer,&serializationService);
+    DataInput dataInput(buffer,&serializationService);
     
     Data data;
     data.readData(dataInput);
@@ -93,8 +93,8 @@ void read(){
 
 void write(){
     TestPortableFactory tpf1,tpf2;
-    SerializationServiceImpl serializationService(1, &tpf1);
-    SerializationServiceImpl serializationService2(2, &tpf2);
+    SerializationService serializationService(1, &tpf1);
+    SerializationService serializationService2(2, &tpf2);
     Data data;
     
     int x = 3;
@@ -164,7 +164,7 @@ void write(){
     cout << "All tests are passed" << endl;
     
 //    cout << data.size() << endl;
-    ContextAwareDataOutput* out = serializationService.pop();
+    DataOutput* out = serializationService.pop();
     data.writeData(*out);
     Array<byte> outBuffer =  out->toByteArray();
 //    cout << outBuffer.length() << endl;

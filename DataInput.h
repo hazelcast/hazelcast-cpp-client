@@ -10,37 +10,95 @@
 #define __Server__DataInput__
 
 #include <string>
-#include "Array.h"
-typedef unsigned char byte;
 
+#include "DataOutput.h"
+#include "Data.h"
+class SerializationService;
+class SerialiaztionContext;
+typedef unsigned char byte;
+//TODO ask if necessary add offset
 class DataInput{
 public:
-    virtual void readFully(Array<byte>&) = 0;
+    DataInput(Array<byte>&, SerializationService* service);
     
-    virtual void readFully(byte* bytes, int off, int len)= 0;
+    DataInput(Data&, SerializationService* service);
     
-    virtual int skipBytes(int i)= 0;
+    std::string readUTF() throw(std::string);
     
-    virtual bool readBoolean()= 0;
+    int getDataClassId();
     
-    virtual byte readByte()= 0;
+    void setDataClassId(int);
     
-    virtual short readShort()= 0;
+    int getDataVersion();
     
-    virtual char readChar()= 0;
+    SerializationContext* getSerializationContext();
     
-    virtual int readInt()= 0;
     
-    virtual long readLong()= 0;
+    //Inherited from DataInput
+    void readFully(Array<byte>&);
     
-    virtual float readFloat()= 0;
+    void readFully(byte* bytes, int off, int len);
     
-    virtual double readDouble()= 0;
+    int skipBytes(int i) ;
     
-    virtual std::string readUTF() throw(std::string) = 0;
+    bool readBoolean();
     
+    byte readByte();
+  
+    short readShort();
+    
+    char readChar();
+    
+    int readInt();
+    
+    long readLong();
+    
+    float readFloat();
+    
+    double readDouble();
+    
+    //Inherited from BufferObjectDataInput
+    int read(int index) throw (std::ios_base::failure) ;
+    
+    int read(int index, byte* b, int off, int len) throw (std::ios_base::failure) ;
+    
+    int readInt(int index) throw (std::ios_base::failure) ;
+    
+    long readLong(int index) throw (std::ios_base::failure) ;
+    
+    bool readBoolean(int index) throw (std::ios_base::failure) ;
+    
+    byte readByte(int index) throw (std::ios_base::failure) ;
+    
+    char readChar(int index) throw (std::ios_base::failure) ;
+    
+    double readDouble(int index) throw (std::ios_base::failure) ;
+    
+    float readFloat(int index) throw (std::ios_base::failure) ;
+    
+    short readShort(int index) throw (std::ios_base::failure) ;
+    
+    int position() ;
+    
+    void position(int newPos) ;
+    
+    void reset() ;
     
 private:
+    byte* ptr;
+    byte* beg;
+    Array<byte> buffer;
+    int size;
+    SerializationService* service;
+    int dataClassId;
+    
+    int dataVersion;
+    
+    static int const STRING_CHUNK_SIZE = DataOutput::STRING_CHUNK_SIZE;
+    
+    std::string readShortUTF() throw (std::ios_base::failure) ;
+    
+    
 };
 
 #endif /* defined(__Server__DataInput__) */

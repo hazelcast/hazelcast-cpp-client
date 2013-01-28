@@ -11,28 +11,28 @@
 
 #include <memory>
 #include "Portable.h"
-#include "SerializationContextImpl.h"
-#include "ClassDefinitionImpl.h"
+#include "SerializationContext.h"
+#include "ClassDefinition.h"
 #include "ClassDefinitionWriter.h"
-class ContextAwareDataInput;
-class ContextAwareDataOutput;
+class DataInput;
+class DataOutput;
 
 class PortableSerializer{
 public:
-    PortableSerializer(SerializationContextImpl*);
+    PortableSerializer(SerializationContext*);
     ~PortableSerializer();
     
-    ClassDefinitionImpl* getClassDefinition(Portable& p) throw(std::ios_base::failure);
+    ClassDefinition* getClassDefinition(Portable& p) throw(std::ios_base::failure);
     
     int getTypeId();
     int getVersion();
     
-    void write(ContextAwareDataOutput* output, Portable& p) throw(std::ios_base::failure);
+    void write(DataOutput* output, Portable& p) throw(std::ios_base::failure);
     
-    auto_ptr<Portable> read(ContextAwareDataInput& dataInput) throw(std::ios_base::failure);
+    auto_ptr<Portable> read(DataInput& dataInput) throw(std::ios_base::failure);
     
 private:
-    SerializationContextImpl* context;//TODO think again
+    SerializationContext* context;
 };
  
 #endif /* defined(__Server__PortableSerializer__) */

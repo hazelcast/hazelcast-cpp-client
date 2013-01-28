@@ -8,14 +8,14 @@
 #include <cassert>
 #include "PortableSerializer.h"
 #include "SerializationConstants.h"
-#include "ContextAwareDataInput.h"
-#include "ContextAwareDataOutput.h"
+#include "DataInput.h"
+#include "DataOutput.h"
 #include "DefaultPortableWriter.h"
 #include "DefaultPortableReader.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
 
-PortableSerializer::PortableSerializer(SerializationContextImpl* context):context(context){
+PortableSerializer::PortableSerializer(SerializationContext* context):context(context){
 
 };
 
@@ -28,9 +28,9 @@ PortableSerializer::~PortableSerializer(){
 };
 
 
-ClassDefinitionImpl* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
+ClassDefinition* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
     int classId = p.getClassId();
-    ClassDefinitionImpl* cd;
+    ClassDefinition* cd;
     
     if (context->isClassDefinitionExists(classId)) {
         cd =  context->lookup(classId);
@@ -49,21 +49,21 @@ int PortableSerializer::getVersion(){
     return context->getVersion();
 };
 
-void PortableSerializer::write(ContextAwareDataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
+void PortableSerializer::write(DataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
     
-    ClassDefinitionImpl* cd = getClassDefinition(p);
+    ClassDefinition* cd = getClassDefinition(p);
     DefaultPortableWriter writer(this, dataOutput, cd);
     p.writePortable(writer);
     
 };
 
-auto_ptr<Portable> PortableSerializer::read(ContextAwareDataInput& dataInput) throw(std::ios_base::failure){
+auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) throw(std::ios_base::failure){
     
     int dataClassId = dataInput.getDataClassId();
     int dataVersion = dataInput.getDataVersion();
     auto_ptr<Portable> p = context->createPortable(dataClassId);
     
-    ClassDefinitionImpl* cd;
+    ClassDefinition* cd;
     if (context->getVersion() == dataVersion) {
         cd = context->lookup(dataClassId); // using context.version
         DefaultPortableReader reader(this, dataInput, cd);

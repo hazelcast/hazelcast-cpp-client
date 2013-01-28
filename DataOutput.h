@@ -10,32 +10,88 @@
 #define Server_DataOutput_h
 
 #include <string>
+#include <iostream>
+#include <sstream>
+#include <memory>
 #include "Array.h"
-typedef unsigned char byte;
+class SerializationService;
+class SerializationContext;
 
+typedef unsigned char byte;
+//TODO ask if necessary add offset
 class DataOutput{
 public:
-    virtual void write(const Array<byte>& bytes) = 0;
+    DataOutput(SerializationService*);
     
-    virtual void write(char* bytes, int offset, int length) = 0;
+    Array<byte> toByteArray();
     
-    virtual void writeBoolean(bool b) = 0;
+    int getSize();
     
-    virtual void writeByte(int i) = 0;
+    SerializationContext* getSerializationContext();
     
-    virtual void writeShort(int i) = 0;
     
-    virtual void writeChar(int i) = 0;
+    //Inherited from DataOutput
+    void write(const Array<byte>& bytes)throw (std::ios_base::failure) ;
     
-    virtual void writeInt(int i) = 0;
+    void write(char* bytes, int offset, int length)throw (std::ios_base::failure) ;
     
-    virtual void writeLong(long l) = 0;
+    void writeBoolean(bool b) throw (std::ios_base::failure) ;
     
-    virtual void writeFloat(float v) = 0;
+    void writeByte(int i) throw (std::ios_base::failure) ;
     
-    virtual void writeDouble(double v) = 0;
+    void writeShort(int i)throw (std::ios_base::failure) ;
     
-    virtual void writeUTF(std::string s) = 0;
+    void writeChar(int i)throw (std::ios_base::failure) ;
+    
+    void writeInt(int i)throw (std::ios_base::failure) ;
+    
+    void writeLong(long l)throw (std::ios_base::failure) ;
+    
+    void writeFloat(float v)throw (std::ios_base::failure);
+    
+    void writeDouble(double v)throw (std::ios_base::failure) ;
+    
+    void writeUTF(std::string s)throw (std::ios_base::failure) ;
+    
+    //Inherited from BufferObjectDataOutput
+    void write(int index, int b) throw (std::ios_base::failure);
+    
+    void write(int index, char* b, int off, int len) throw (std::ios_base::failure);
+    
+    void writeInt(int index, int v) throw (std::ios_base::failure);
+    
+    void writeLong(int index, const long v) throw (std::ios_base::failure);
+    
+    void writeBoolean(int index, const bool v) throw (std::ios_base::failure);
+    
+    void writeByte(int index, const int v) throw (std::ios_base::failure);
+    
+    void writeChar(int index, const int v) throw (std::ios_base::failure);
+    
+    void writeDouble(int index, const double v) throw (std::ios_base::failure);
+    
+    void writeFloat(int index, const float v) throw (std::ios_base::failure);
+    
+    void writeShort(int index, const int v) throw (std::ios_base::failure);
+    
+    int position();
+    
+    void position(int newPos);
+    
+    void reset();
+    
+    static int const STRING_CHUNK_SIZE = 16 * 1024;//TODO move to private and Input class friend
+    
+private:
+    std::ostringstream buffer;
+    int const offset;
+
+    SerializationService* service;
+    
+    static int const DEFAULT_SIZE = 1024 * 4;
+    
+    
+    void writeShortUTF(std::string) throw(std::ios_base::failure);
     
 };
 

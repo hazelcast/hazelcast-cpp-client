@@ -6,13 +6,32 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_FieldDefinition_h
-#define Server_FieldDefinition_h
+#ifndef __Server__FieldDefinition__
+#define __Server__FieldDefinition__
 
+#include <iostream>
+#include <string>
 #include "DataSerializable.h"
-
+typedef unsigned char byte;
 class FieldDefinition : public DataSerializable{
 public:
+    FieldDefinition();
+    FieldDefinition(int,std::string,byte);
+    FieldDefinition(int,std::string,byte,int);
+    
+    byte getType();
+    std::string getName();
+    int getIndex();
+    int getClassId();
+    
+    void writeData(DataOutput&) const throw(std::ios_base::failure);
+    void readData(DataInput&) throw(std::ios_base::failure);
+    
+    bool operator==(const FieldDefinition&) const;
+    bool operator!=(const FieldDefinition&) const;
+    
+    std::string fieldName;
+    
     static const byte TYPE_PORTABLE = 0;
     static const byte TYPE_BYTE = 1;
     static const byte TYPE_BOOLEAN = 2;
@@ -31,14 +50,10 @@ public:
     static const byte TYPE_LONG_ARRAY = 15;
     static const byte TYPE_FLOAT_ARRAY = 16;
     static const byte TYPE_DOUBLE_ARRAY = 17;
-    
-    virtual byte getType() = 0;
-    
-    virtual std::string getName() = 0;
-    
-    virtual int getIndex() = 0;
-    
-    virtual int getClassId() = 0;
+private:
+    int index;
+    byte type;
+    int classId;
 };
 
-#endif
+#endif /* defined(__Server__FieldDefinition__) */

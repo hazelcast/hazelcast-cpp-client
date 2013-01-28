@@ -1,22 +1,22 @@
 //
-//  SerializationContextImpl.cpp
+//  SerializationContext.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include <cassert>
-#include "SerializationContextImpl.h"
-#include "SerializationServiceImpl.h"
-#include "ContextAwareDataOutput.h"
+#include "SerializationContext.h"
+#include "SerializationService.h"
+#include "DataOutput.h"
 #include "zlib.h"
-SerializationContextImpl::SerializationContextImpl(PortableFactory* portableFactory, int version, SerializationServiceImpl* service){
+SerializationContext::SerializationContext(PortableFactory* portableFactory, int version, SerializationService* service){
     this->portableFactory = portableFactory;
     this->version = version;
     this->service = service;
 };
-SerializationContextImpl::~SerializationContextImpl(){
-    for(map<long,ClassDefinitionImpl*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
+SerializationContext::~SerializationContext(){
+    for(map<long,ClassDefinition*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
 //        try{
 //                delete (*it).second; TODO
 //        }catch(exception e){
@@ -24,78 +24,68 @@ SerializationContextImpl::~SerializationContextImpl(){
 //        }
     }
 };
-SerializationContextImpl::SerializationContextImpl(const SerializationContextImpl&  rhs){
+SerializationContext::SerializationContext(const SerializationContext&  rhs){
     assert(0);
 };
-void SerializationContextImpl::operator=(const SerializationContextImpl& rhs) {
+void SerializationContext::operator=(const SerializationContext& rhs) {
     assert(0);
 };
 
-bool SerializationContextImpl::isClassDefinitionExists(int classId){
+bool SerializationContext::isClassDefinitionExists(int classId){
     return isClassDefinitionExists(classId,version);
 };
 
-ClassDefinitionImpl* SerializationContextImpl::lookup(int classId){
-     long key = SerializationServiceImpl::combineToLong(classId, version);
+ClassDefinition* SerializationContext::lookup(int classId){
+     long key = SerializationService::combineToLong(classId, version);
      return versionedDefinitions[key];
 };
 
-bool SerializationContextImpl::isClassDefinitionExists(int classId, int version){
-    long key = SerializationServiceImpl::combineToLong(classId, version);
+bool SerializationContext::isClassDefinitionExists(int classId, int version){
+    long key = SerializationService::combineToLong(classId, version);
     return (versionedDefinitions.count(key) > 0);
 };
 
-ClassDefinitionImpl* SerializationContextImpl::lookup(int classId, int version){
-    long key = SerializationServiceImpl::combineToLong(classId, version);
+ClassDefinition* SerializationContext::lookup(int classId, int version){
+    long key = SerializationService::combineToLong(classId, version);
      return versionedDefinitions[key];
 
 };
 
-auto_ptr<Portable> SerializationContextImpl::createPortable(int classId){
+auto_ptr<Portable> SerializationContext::createPortable(int classId){
     return auto_ptr<Portable>(portableFactory->create(classId));
 };
 
-ClassDefinitionImpl* SerializationContextImpl::createClassDefinition(Array<byte>& binary) throw(std::ios_base::failure){
+ClassDefinition* SerializationContext::createClassDefinition(Array<byte>& binary) throw(std::ios_base::failure){
     
     decompress(binary);
     
-    ContextAwareDataInput dataInput = ContextAwareDataInput(binary, service);
-    ClassDefinitionImpl* cd = new ClassDefinitionImpl;
+    DataInput dataInput = DataInput(binary, service);
+    ClassDefinition* cd = new ClassDefinition;
     cd->readData(dataInput);
     cd->setBinary(binary);
             
     long key = service->combineToLong(cd->getClassId(), version);
-//    bool exists = false;
-//    ClassDefinitionImpl currentCD;
-    if(versionedDefinitions.count(key) > 0){
-//        exists = true;
-//        currentCD = versionedDefinitions[key];
-        cout << "sdsdfljfhfkdjfkl" << endl;
-    }
+
     versionedDefinitions[key] = cd;
     
-//    if (!exists) {
-        registerNestedDefinitions(cd);
-        return cd;
-//    } else {
-//        return currentCD;
-//    }
+    registerNestedDefinitions(cd);
+    return cd;
 };
 
-void SerializationContextImpl::registerNestedDefinitions(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
-    vector<ClassDefinitionImpl*> nestedDefinitions = cd->getNestedClassDefinitions();
-    for(vector<ClassDefinitionImpl*>::iterator it = nestedDefinitions.begin() ; it < nestedDefinitions.end() ; it++){
+void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) throw(std::ios_base::failure){
+    vector<ClassDefinition*> nestedDefinitions = cd->getNestedClassDefinitions();
+    for(vector<ClassDefinition*>::iterator it = nestedDefinitions.begin() ; it < nestedDefinitions.end() ; it++){
         registerClassDefinition(*it);
         registerNestedDefinitions(*it);
     }
 };
 
-void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl* cd) throw(std::ios_base::failure){
+void SerializationContext::registerClassDefinition(ClassDefinition* cd) throw(std::ios_base::failure){
      
         if(!isClassDefinitionExists(cd->getClassId() , cd->getVersion())){
             if (cd->getBinary().length() == 0) {
                 
-                ContextAwareDataOutput* output = service->pop();
+                DataOutput* output = service->pop();
                 assert(output != NULL);
                 cd->writeData(*output);
                 Array<byte> binary = output->toByteArray();
@@ -108,11 +98,11 @@ void SerializationContextImpl::registerClassDefinition(ClassDefinitionImpl* cd) 
         }
 };
 
-int SerializationContextImpl::getVersion(){
+int SerializationContext::getVersion(){
     return version;
 };
 
-void SerializationContextImpl::compress(Array<byte>& binary) throw(std::ios_base::failure){
+void SerializationContext::compress(Array<byte>& binary) throw(std::ios_base::failure){
     uLong ucompSize = binary.length(); 
     uLong compSize = compressBound(ucompSize);
     byte temp[compSize];
@@ -129,7 +119,7 @@ void SerializationContextImpl::compress(Array<byte>& binary) throw(std::ios_base
     binary.init(compSize,temp);
 };
 
-void SerializationContextImpl::decompress(Array<byte>& binary) throw(std::ios_base::failure){
+void SerializationContext::decompress(Array<byte>& binary) throw(std::ios_base::failure){
     uLong compSize = binary.length();
     
     uLong ucompSize = 512;

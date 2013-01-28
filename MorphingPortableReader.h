@@ -11,7 +11,7 @@
 //TODO ask no morphing for array ! why not?
 class MorphingPortableReader : public DefaultPortableReader {
 public:
-    MorphingPortableReader(PortableSerializer*, ContextAwareDataInput&, ClassDefinitionImpl*);
+    MorphingPortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
     
     int readInt(string) throw(ios_base::failure);
     

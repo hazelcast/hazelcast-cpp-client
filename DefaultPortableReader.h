@@ -17,9 +17,9 @@
 class Portable;
 class PortableSerializer;
 class BufferObjectDataInput;
-class FieldDefinitionImpl;
-class ContextAwareDataInput;
-class ClassDefinitionImpl;
+class FieldDefinition;
+class DataInput;
+class ClassDefinition;
 
 typedef unsigned char byte;
 
@@ -27,7 +27,7 @@ using namespace std;
 
 class DefaultPortableReader : public PortableReader {
 public:
-    DefaultPortableReader(PortableSerializer*, ContextAwareDataInput&, ClassDefinitionImpl*);
+    DefaultPortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
     
     int readInt(string) throw(ios_base::failure);
     
@@ -68,11 +68,11 @@ public:
 protected:
     int getPosition(string) throw(ios_base::failure);
 
-    int getPosition(FieldDefinitionImpl*) throw(ios_base::failure);
+    int getPosition(FieldDefinition*) throw(ios_base::failure);
     
     PortableSerializer* serializer;
-    ClassDefinitionImpl* cd;
-    ContextAwareDataInput* input;
+    ClassDefinition* cd;
+    DataInput* input;
     int offset;
     
 };

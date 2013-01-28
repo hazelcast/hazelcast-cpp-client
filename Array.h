@@ -14,9 +14,9 @@
 template <typename T>
 class Array{
 public:
-    friend class ContextAwareDataInput;
-    friend class ContextAwareDataOutput;
-    friend class SerializationContextImpl;
+    friend class DataInput;
+    friend class DataOutput;
+    friend class SerializationContext;
     
 //    friend class Data;
     Array():buffer(NULL),len(0){

@@ -7,18 +7,19 @@
 #include <string>
 #include "Portable.h"
 #include "DefaultPortableReader.h"
-#include "ContextAwareDataInput.h"
+#include "DataInput.h"
 #include "PortableSerializer.h"
 #include "Array.h"
 #include "MorphingPortableReader.h"
+#include "FieldDefinition.h"
 
-MorphingPortableReader::MorphingPortableReader(PortableSerializer* p, ContextAwareDataInput& cad, ClassDefinitionImpl* cd):DefaultPortableReader(p,cad,cd) {
+MorphingPortableReader::MorphingPortableReader(PortableSerializer* p, DataInput& cad, ClassDefinition* cd):DefaultPortableReader(p,cad,cd) {
 }
 
 int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_INT:
@@ -37,7 +38,7 @@ int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
 long MorphingPortableReader::readLong(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_LONG:
@@ -58,7 +59,7 @@ long MorphingPortableReader::readLong(string fieldName) throw(ios_base::failure)
 bool MorphingPortableReader::readBoolean(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if(fd.getType() != FieldDefinition::TYPE_BOOLEAN)
             throw "IncompatibleClassChangeError";
@@ -69,7 +70,7 @@ bool MorphingPortableReader::readBoolean(string fieldName) throw(ios_base::failu
 byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if(fd.getType() != FieldDefinition::TYPE_BYTE)
             throw "IncompatibleClassChangeError";
@@ -80,7 +81,7 @@ byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure)
 char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if(fd.getType() != FieldDefinition::TYPE_CHAR)
             throw "IncompatibleClassChangeError";
@@ -91,7 +92,7 @@ char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure)
 double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_FLOAT:
@@ -116,7 +117,7 @@ double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::fail
 float MorphingPortableReader::readFloat(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_FLOAT:
@@ -138,7 +139,7 @@ float MorphingPortableReader::readFloat(string fieldName) throw(ios_base::failur
 short MorphingPortableReader::readShort(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     switch (fd.getType()) {
         case FieldDefinition::TYPE_BYTE:
@@ -153,7 +154,7 @@ short MorphingPortableReader::readShort(string fieldName) throw(ios_base::failur
 string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_UTF) {
         throw "IncompatibleClassChangeError";
@@ -164,7 +165,7 @@ string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure
 auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
     if(!cd->isFieldDefinitionExists(fieldName))
         return auto_ptr<Portable>();
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
         throw "IncompatibleClassChangeError";
@@ -175,7 +176,7 @@ auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(
 Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_BYTE_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -186,7 +187,7 @@ Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_ba
 Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_CHAR_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -197,7 +198,7 @@ Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_ba
 Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
    if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_INT_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -208,7 +209,7 @@ Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base
 Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_LONG_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -219,7 +220,7 @@ Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_ba
 Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_DOUBLE_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -230,7 +231,7 @@ Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(io
 Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_FLOAT_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -241,7 +242,7 @@ Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_
 Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_SHORT_ARRAY) {
         throw "IncompatibleClassChangeError";
@@ -252,7 +253,7 @@ Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_
 Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){//TODO
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
         throw "IncompatibleClassChangeError";

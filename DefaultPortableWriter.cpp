@@ -7,11 +7,13 @@
 //
 
 #include "DefaultPortableWriter.h"
-#include "ContextAwareDataOutput.h"
-#include "ClassDefinitionImpl.h"
+#include "DataOutput.h"
+#include "ClassDefinition.h"
 #include "PortableSerializer.h"
 #include "Array.h"
-DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd){
+#include "FieldDefinition.h"
+
+DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd){
     this->serializer = serializer;
     this->output = output;
     this->offset = output->position();
@@ -176,7 +178,7 @@ void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failur
         
        throw error;
     }
-    FieldDefinitionImpl fd = cd->get(fieldName);
+    FieldDefinition fd = cd->get(fieldName);
     
     int pos = output->position();
     int index = fd.getIndex();

@@ -13,16 +13,16 @@
 #include <string>
 #include "PortableWriter.h"
 #include "Array.h"
-class ClassDefinitionImpl;
+class ClassDefinition;
 class PortableSerializer;
 class DataInput;
-class ContextAwareDataOutput;
+class DataOutput;
 class Portable;
 using namespace std;
 
 class DefaultPortableWriter : public PortableWriter{
 public:
-    DefaultPortableWriter(PortableSerializer* serializer, ContextAwareDataOutput* output, ClassDefinitionImpl* cd);
+    DefaultPortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd);
     
     
     void writeInt(string fieldName, int value) throw(ios_base::failure);
@@ -66,8 +66,8 @@ public:
 private:
     PortableSerializer* serializer;
 
-    ClassDefinitionImpl* cd;
-    ContextAwareDataOutput* output;
+    ClassDefinition* cd;
+    DataOutput* output;
     int offset;
     
 

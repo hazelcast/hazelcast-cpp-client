@@ -12,12 +12,12 @@
 #include <iostream>
 #include <memory>
 #include "DataSerializable.h"
-#include "ClassDefinitionImpl.h"
 #include "Array.h"
-class ContextAwareDataOutput;
-class ContextAwareDataInput;
-
-class Data {//: public DataSerializable{ //TODO skipped probaly not used
+class DataOutput;
+class DataInput;
+class ClassDefinition;
+typedef unsigned char byte;
+class Data : public DataSerializable{ 
 public:
     Data();
     Data(const Data&);
@@ -31,10 +31,10 @@ public:
     bool operator==(const Data&) const;
     bool operator!=(const Data&) const;
     
-    void writeData(ContextAwareDataOutput&) const throw(std::ios_base::failure);
-    void readData(ContextAwareDataInput&) throw(std::ios_base::failure);
+    void writeData(DataOutput&) const throw(std::ios_base::failure);
+    void readData(DataInput&) throw(std::ios_base::failure);
     
-    ClassDefinitionImpl* cd;
+    ClassDefinition* cd;
     int type;
     Array<byte> buffer;
 private:

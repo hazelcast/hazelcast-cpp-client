@@ -6,27 +6,63 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_ClassDefinition_h
-#define Server_ClassDefinition_h
+#ifndef __Server__ClassDefinition__
+#define __Server__ClassDefinition__
+
+#include <cassert>
 #include <iostream>
 #include <string>
+#include <map>
+#include <vector>
+#include <set>
+#include "ClassDefinition.h"
 #include "DataSerializable.h"
-#include "FieldDefinitionImpl.h"
 #include "Array.h"
-
+class FieldDefinition;
+class DataInput;
+class DataOutput;
+typedef unsigned char byte;
+using namespace std;
+//TODO ask fieldDefinitions vector needed
 class ClassDefinition : public DataSerializable{
 public:
-    virtual const FieldDefinitionImpl& get(std::string name) = 0;
+    ClassDefinition();
+    ClassDefinition(const ClassDefinition&);
     
-    virtual const FieldDefinitionImpl& get(int fieldIndex) = 0;
+    ClassDefinition& operator=(const ClassDefinition& rhs);
     
-    virtual int getFieldCount() = 0;
+    void add(FieldDefinition&);
+    void add(ClassDefinition*);
     
-    virtual int getClassId() const = 0;
+    bool isFieldDefinitionExists(std::string);
+    const FieldDefinition& get(std::string);
+    const FieldDefinition& get(int);
     
-    virtual int getVersion() const = 0;
+    const vector<ClassDefinition*>& getNestedClassDefinitions();
     
-    virtual Array<byte> getBinary() const = 0;
+    void writeData(DataOutput&) const throw(std::ios_base::failure);
+    void readData(DataInput&)throw(std::ios_base::failure);
+    
+    int getFieldCount();
+    int getClassId() const;
+    int getVersion() const;
+    Array<byte> getBinary() const;
+    
+    void setBinary(Array<byte>&);
+    
+    bool operator==(const ClassDefinition&) const;
+    bool operator!=(const ClassDefinition&) const;
+    
+    int classId;
+    int version;
+private:
+    
+    
+    vector<FieldDefinition> fieldDefinitions;
+    map<std::string, FieldDefinition> fieldDefinitionsMap;
+    vector<ClassDefinition*> nestedClassDefinitions;//TODO ask if equaliy is important
+    
+    Array<byte> binary;
+    
 };
-
-#endif
+#endif /* defined(__Server__ClassDefinition__) */

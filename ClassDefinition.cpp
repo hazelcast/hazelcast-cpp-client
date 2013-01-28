@@ -1,19 +1,20 @@
 //
-//  ClassDefinitionImpl.cpp
+//  ClassDefinition.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include <cassert>
-#include "ClassDefinitionImpl.h"
-#include "FieldDefinitionImpl.h"
-
-ClassDefinitionImpl::ClassDefinitionImpl():classId(-1),version(-1){
+#include "ClassDefinition.h"
+#include "FieldDefinition.h"
+#include "DataInput.h"
+#include "DataOutput.h"
+ClassDefinition::ClassDefinition():classId(-1),version(-1){
     
 };
 
-ClassDefinitionImpl::ClassDefinitionImpl(const ClassDefinitionImpl& rhs){
+ClassDefinition::ClassDefinition(const ClassDefinition& rhs){
     classId = rhs.classId;
     version = rhs.version;
     fieldDefinitions = rhs.fieldDefinitions;
@@ -22,7 +23,7 @@ ClassDefinitionImpl::ClassDefinitionImpl(const ClassDefinitionImpl& rhs){
     binary = rhs.binary;
 };
 
-ClassDefinitionImpl& ClassDefinitionImpl::operator=(const ClassDefinitionImpl& rhs){
+ClassDefinition& ClassDefinition::operator=(const ClassDefinition& rhs){
     classId = rhs.classId;
     version = rhs.version;
     fieldDefinitions = rhs.fieldDefinitions;
@@ -32,80 +33,80 @@ ClassDefinitionImpl& ClassDefinitionImpl::operator=(const ClassDefinitionImpl& r
     return (*this);
 };
 
-void ClassDefinitionImpl::add(FieldDefinitionImpl& fd){
+void ClassDefinition::add(FieldDefinition& fd){
     fieldDefinitions.push_back(fd);
     fieldDefinitionsMap[fd.fieldName] = fd;
 };
 
-void ClassDefinitionImpl::add(ClassDefinitionImpl* cd){
+void ClassDefinition::add(ClassDefinition* cd){
     nestedClassDefinitions.push_back(cd);
 };
 
-bool ClassDefinitionImpl::isFieldDefinitionExists(std::string name){
+bool ClassDefinition::isFieldDefinitionExists(std::string name){
     return (fieldDefinitionsMap.count(name) > 0); 
 }
 
-const FieldDefinitionImpl& ClassDefinitionImpl::get(std::string name){
+const FieldDefinition& ClassDefinition::get(std::string name){
     return fieldDefinitionsMap[name];
 };
 
-const FieldDefinitionImpl& ClassDefinitionImpl::get(int fieldIndex){
+const FieldDefinition& ClassDefinition::get(int fieldIndex){
     return fieldDefinitions[fieldIndex];
 };
 
-const vector<ClassDefinitionImpl*>& ClassDefinitionImpl::getNestedClassDefinitions(){
+const vector<ClassDefinition*>& ClassDefinition::getNestedClassDefinitions(){
     return nestedClassDefinitions;
 };
 
-void ClassDefinitionImpl::writeData(DataOutput & out) const throw(std::ios_base::failure){
+void ClassDefinition::writeData(DataOutput & out) const throw(std::ios_base::failure){
     out.writeInt(classId);
     out.writeInt(version);
     out.writeInt((int)fieldDefinitions.size());
-    for (vector<FieldDefinitionImpl>::const_iterator it = fieldDefinitions.begin() ;  it != fieldDefinitions.end(); it++)
+    for (vector<FieldDefinition>::const_iterator it = fieldDefinitions.begin() ;  it != fieldDefinitions.end(); it++)
         (*it).writeData(out);
     out.writeInt((int)nestedClassDefinitions.size());
-    for (vector<ClassDefinitionImpl*>::const_iterator it = nestedClassDefinitions.begin() ; it != nestedClassDefinitions.end(); it++)
+    for (vector<ClassDefinition*>::const_iterator it = nestedClassDefinitions.begin() ; it != nestedClassDefinitions.end(); it++)
         (*it)->writeData(out);
 };
 
-void ClassDefinitionImpl::readData(DataInput & in) throw(std::ios_base::failure){
+void ClassDefinition::readData(DataInput & in) throw(std::ios_base::failure){
     classId = in.readInt();
     version = in.readInt();
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
-        FieldDefinitionImpl fieldDefinition;
+        FieldDefinition fieldDefinition;
         fieldDefinition.readData(in);
         add(fieldDefinition);
     }
     size = in.readInt();
     for (int i = 0; i < size; i++) {
-        ClassDefinitionImpl* classDefinition = new ClassDefinitionImpl;
+        ClassDefinition* classDefinition = new ClassDefinition;
         classDefinition->readData(in);
         add(classDefinition);
     }
 };
 
-int ClassDefinitionImpl::getFieldCount(){
+int ClassDefinition::getFieldCount(){
     return (int)fieldDefinitions.size();
 };
 
-int ClassDefinitionImpl::getClassId() const{
+int ClassDefinition::getClassId() const{
     return classId;
 };
 
-int ClassDefinitionImpl::getVersion() const{
+int ClassDefinition::getVersion() const{
     return version;
 };
 
-Array<byte> ClassDefinitionImpl::getBinary() const{
+Array<byte> ClassDefinition::getBinary() const{
     return binary;
 };
 
-void ClassDefinitionImpl::setBinary(Array<byte>& binary){
+void ClassDefinition::setBinary(Array<byte>& binary){
     this->binary = binary;
 };
 
-bool ClassDefinitionImpl::operator ==(const ClassDefinitionImpl& rhs) const{
+bool ClassDefinition::operator ==(const ClassDefinition& rhs) const{
     if(this == &rhs) return true;
     if(classId != rhs.classId) return false;
     if(version != rhs.version) return false;
@@ -116,6 +117,6 @@ bool ClassDefinitionImpl::operator ==(const ClassDefinitionImpl& rhs) const{
     return true;
 };
 
-bool ClassDefinitionImpl::operator !=(const ClassDefinitionImpl& rhs) const{
+bool ClassDefinition::operator !=(const ClassDefinition& rhs) const{
     return !(*this == rhs);
 };

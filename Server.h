@@ -7,9 +7,9 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
-#include "ContextAwareDataOutput.h"
+#include "DataOutput.h"
 #include "Data.h"
-#include "SerializationServiceImpl.h"
+#include "SerializationService.h"
 using namespace std;
 
 namespace hazelcast {
@@ -20,7 +20,7 @@ namespace hazelcast {
  public:
     /// Constructor opens the acceptor and starts waiting for the first incoming
     /// connection.
-    server(boost::asio::io_service& io_service, unsigned short port, SerializationServiceImpl* service)
+    server(boost::asio::io_service& io_service, unsigned short port, SerializationService* service)
     : mAcceptor(io_service,boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
     , mSocket(io_service), service(service)
     {
@@ -30,7 +30,7 @@ namespace hazelcast {
     }
     
     void send(Data& data){
-        ContextAwareDataOutput out(service);
+        DataOutput out(service);
         data.writeData(out);
         Array<byte> buffer = out.toByteArray();
         cout << buffer.length() << endl;
@@ -40,7 +40,7 @@ namespace hazelcast {
         /// The acceptor object used to accept incoming socket connections.
         boost::asio::ip::tcp::acceptor mAcceptor;
         boost::asio::ip::tcp::socket mSocket;
-        SerializationServiceImpl* service;
+        SerializationService* service;
  };
  
  } // namespace hazelcast

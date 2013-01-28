@@ -21,7 +21,6 @@ public:
     
     virtual void readPortable(PortableReader& reader) throw(std::ios_base::failure) = 0; 
     
-//    virtual bool operator==(Portable& m); TODO
 };
 
 #endif

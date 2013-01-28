@@ -13,8 +13,8 @@
 #include <string>
 #include "Array.h"
 #include "PortableWriter.h"
-#include "ClassDefinitionImpl.h"
-class FieldDefinitionImpl;
+#include "ClassDefinition.h"
+class FieldDefinition;
 class Portable;
 class PortableSerializer;
 
@@ -61,9 +61,9 @@ public:
     
     void writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure);
     
-    ClassDefinitionImpl* cd;
+    ClassDefinition* cd;
 private:
-    void addNestedField(Portable& p, FieldDefinitionImpl& fd) throw(ios_base::failure) ;
+    void addNestedField(Portable& p, FieldDefinition& fd) throw(ios_base::failure) ;
 
     int index;
     PortableSerializer* serializer;

@@ -6,27 +6,52 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_SerializationContext_h
-#define Server_SerializationContext_h
+#ifndef __Server__SerializationContext__
+#define __Server__SerializationContext__
 
-#include<iostream>
-#include "Portable.h"
-#include "ClassDefinitionImpl.h"
+#include <iostream>
+#include <memory>
+#include <map>
+#include <memory>
+#include "Array.h"
+#include "SerializationContext.h"
+class ClassDefinition;
+class PortableFactory;
+class Portable;
+class SerializationService;
+class DataOutput;
+typedef unsigned char byte;
+
 class SerializationContext{
 public:
-    virtual bool isClassDefinitionExists(int) = 0;
-    virtual ClassDefinitionImpl* lookup(int) = 0;
+    SerializationContext(PortableFactory*,int,SerializationService*);
+    ~SerializationContext();
+    SerializationContext(const SerializationContext&  );
+    void operator=(const SerializationContext&);
     
-    virtual bool isClassDefinitionExists(int,int) = 0;
-    virtual ClassDefinitionImpl* lookup(int,int) = 0;
+    bool isClassDefinitionExists(int);
+    ClassDefinition* lookup(int);
     
-    virtual std::auto_ptr<Portable> createPortable(int classId) = 0;
+    bool isClassDefinitionExists(int,int);
+    ClassDefinition* lookup(int,int);
     
-    virtual ClassDefinitionImpl* createClassDefinition(Array<byte>&) throw(std::ios_base::failure)= 0;
+    std::auto_ptr<Portable> createPortable(int classId);
     
-    virtual void registerClassDefinition(ClassDefinitionImpl*) throw(std::ios_base::failure) = 0;
+    ClassDefinition* createClassDefinition(Array<byte>&) throw(std::ios_base::failure);
+    void registerNestedDefinitions(ClassDefinition* cd) throw(std::ios_base::failure);
+    void registerClassDefinition(ClassDefinition* cd) throw(std::ios_base::failure);
+    int getVersion();
     
-    virtual int getVersion() = 0;
+private:
+    
+    void compress(Array<byte>&) throw(std::ios_base::failure);
+    void decompress(Array<byte>&) throw(std::ios_base::failure);
+        
+    PortableFactory* portableFactory;
+    SerializationService* service;
+    int version;
+    std::map<long,ClassDefinition*> versionedDefinitions;
+    
 };
 
-#endif
+#endif /* defined(__Server__SerializationContext__) */

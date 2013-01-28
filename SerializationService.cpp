@@ -1,44 +1,44 @@
 //
-//  SerializationServiceImpl.cpp
+//  SerializationService.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "SerializationServiceImpl.h"
+#include "SerializationService.h"
 #include "TypeSerializer.h"
-#include "SerializationContextImpl.h"
+#include "SerializationContext.h"
 #include "ConstantSerializers.h"
 #include "Portable.h"
 #include "SerializationConstants.h"
 using namespace std;
 
-SerializationServiceImpl::SerializationServiceImpl(int version, PortableFactory* portableFactory)
+SerializationService::SerializationService(int version, PortableFactory* portableFactory)
                                                         : serializationContext(portableFactory,version,this)
                                                         , portableSerializer(&serializationContext)
 {
     
 };
 
-SerializationServiceImpl::~SerializationServiceImpl(){
+SerializationService::~SerializationService(){
     while (!outputPool.empty())
     {
-        ContextAwareDataOutput* out = outputPool.front();
+        DataOutput* out = outputPool.front();
         outputPool.pop();
         delete out;
     }
 };
 
-void SerializationServiceImpl::push(ContextAwareDataOutput* out) {
+void SerializationService::push(DataOutput* out) {
     out->reset();
     outputPool.push(out);
 };
 
-ContextAwareDataOutput* SerializationServiceImpl::pop() {
-    ContextAwareDataOutput* out ;
+DataOutput* SerializationService::pop() {
+    DataOutput* out ;
     if (outputPool.empty()) {
-        out = new ContextAwareDataOutput(this);
+        out = new DataOutput(this);
     }else{
         out = outputPool.front();
         outputPool.pop();
@@ -47,8 +47,8 @@ ContextAwareDataOutput* SerializationServiceImpl::pop() {
     
 };
 
-Data SerializationServiceImpl::toData(bool object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(bool object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     booleanSerializer.write(dataOutput, object);
     
@@ -57,8 +57,8 @@ Data SerializationServiceImpl::toData(bool object){
     return data;
 };
 
-Data SerializationServiceImpl::toData(char object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(char object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     charSerializer.write(dataOutput, object);
     
@@ -68,8 +68,8 @@ Data SerializationServiceImpl::toData(char object){
     
 };
 
-Data SerializationServiceImpl::toData(short object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(short object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     shortSerializer.write(dataOutput, object);
     
@@ -79,8 +79,8 @@ Data SerializationServiceImpl::toData(short object){
     
 };
 
-Data SerializationServiceImpl::toData(int object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(int object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     integerSerializer.write(dataOutput, object);
     
@@ -90,8 +90,8 @@ Data SerializationServiceImpl::toData(int object){
     
 };
 
-Data SerializationServiceImpl::toData(long object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(long object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     longSerializer.write(dataOutput, object);
     
@@ -102,8 +102,8 @@ Data SerializationServiceImpl::toData(long object){
 };
 
 
-Data SerializationServiceImpl::toData(float object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(float object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     floatSerializer.write(dataOutput, object);
     
@@ -113,8 +113,8 @@ Data SerializationServiceImpl::toData(float object){
     
 };
 
-Data SerializationServiceImpl::toData(double object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(double object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     doubleSerializer.write(dataOutput, object);
     
@@ -124,8 +124,8 @@ Data SerializationServiceImpl::toData(double object){
     
 };
 
-Data SerializationServiceImpl::toData(Array<char>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<char>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     charArraySerializer.write(dataOutput, object);
     
@@ -135,8 +135,8 @@ Data SerializationServiceImpl::toData(Array<char>& object){
     
 };
 
-Data SerializationServiceImpl::toData(Array<short>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<short>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     shortArraySerializer.write(dataOutput, object);
     
@@ -146,8 +146,8 @@ Data SerializationServiceImpl::toData(Array<short>& object){
     
 };
 
-Data SerializationServiceImpl::toData(Array<int>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<int>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     integerArraySerializer.write(dataOutput, object);
     
@@ -156,8 +156,8 @@ Data SerializationServiceImpl::toData(Array<int>& object){
     return data;
     
 };
-Data SerializationServiceImpl::toData(Array<long>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<long>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     longArraySerializer.write(dataOutput, object);
     
@@ -167,8 +167,8 @@ Data SerializationServiceImpl::toData(Array<long>& object){
     
 };
 
-Data SerializationServiceImpl::toData(Array<float>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<float>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     floatArraySerializer.write(dataOutput, object);
     
@@ -178,8 +178,8 @@ Data SerializationServiceImpl::toData(Array<float>& object){
     
 };
 
-Data SerializationServiceImpl::toData(Array<double>& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(Array<double>& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     doubleArraySerializer.write(dataOutput, object);
     
@@ -189,8 +189,8 @@ Data SerializationServiceImpl::toData(Array<double>& object){
     
 };
 
-Data SerializationServiceImpl::toData(string& object){
-    ContextAwareDataOutput* output = pop();
+Data SerializationService::toData(string& object){
+    DataOutput* output = pop();
     DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
     stringSerializer.write(dataOutput, object);
     
@@ -200,15 +200,15 @@ Data SerializationServiceImpl::toData(string& object){
     
 };
 
-Data SerializationServiceImpl::toData(Data& data){
+Data SerializationService::toData(Data& data){
     return data;
 };
 
-long SerializationServiceImpl::combineToLong(int x, int y) {
+long SerializationService::combineToLong(int x, int y) {
     return ((long) x << 32) | ((long) y & 0xFFFFFFFL);
-}
+};
 
-int SerializationServiceImpl::extractInt(long value, bool lowerBits) {
+int SerializationService::extractInt(long value, bool lowerBits) {
     return (lowerBits) ? (int) value : (int) (value >> 32);
-}
+};
 

@@ -7,9 +7,11 @@
 //
 #include "Array.h"
 #include "Data.h"
-#include "ContextAwareDataInput.h"
-#include "ContextAwareDataOutput.h"
-#include "SerializationContextImpl.h"
+#include "DataInput.h"
+#include "DataOutput.h"
+#include "SerializationContext.h"
+#include "ClassDefinition.h"
+
 Data::Data():partitionHash(-1),buffer(0),type(-1),cd(NULL){
     
 };
@@ -54,12 +56,12 @@ void Data::setPartitionHash(int partitionHash){
     this->partitionHash = partitionHash;
 };
 
-void Data::readData(ContextAwareDataInput& in) throw(std::ios_base::failure){
+void Data::readData(DataInput& in) throw(std::ios_base::failure){
     type = in.readInt();
     int classId = in.readInt();
     if (classId != NO_CLASS_ID) {
         int version = in.readInt();
-        SerializationContextImpl* context = in.getSerializationContext();
+        SerializationContext* context = in.getSerializationContext();
         
         int classDefSize = in.readInt();
 
@@ -79,9 +81,9 @@ void Data::readData(ContextAwareDataInput& in) throw(std::ios_base::failure){
         this->buffer = buffer;
     }
     partitionHash = in.readInt();
-}
+};
 
-void Data::writeData(ContextAwareDataOutput& out) const throw(std::ios_base::failure){
+void Data::writeData(DataOutput& out) const throw(std::ios_base::failure){
     out.writeInt(type);
 //    if (cd != null) {//TODO
         out.writeInt(cd->getClassId());
@@ -98,6 +100,6 @@ void Data::writeData(ContextAwareDataOutput& out) const throw(std::ios_base::fai
         out.write(buffer);
     }
     out.writeInt(partitionHash);
-}
+};
 
 

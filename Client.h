@@ -19,7 +19,7 @@ namespace hazelcast {
     public:
         /// Constructor starts the asynchronous connect operation.
         client(boost::asio::io_service& io_service,
-               const string& host, const string& port,SerializationServiceImpl* service)
+               const string& host, const string& port,SerializationService* service)
         : mSocket(io_service),service(service)
         {
             // Resolve the host name into an IP address.
@@ -35,14 +35,14 @@ namespace hazelcast {
             
             Array<byte> buffer(1024);
             boost::asio::read(mSocket, boost::asio::buffer(buffer.buffer,1024));
-            ContextAwareDataInput input(buffer,service);
+            DataInput input(buffer,service);
             data.readData(input);
         }
         
     private:
         /// The connection to the server.
         boost::asio::ip::tcp::socket mSocket;
-        SerializationServiceImpl* service;
+        SerializationService* service;
     };
 }
 

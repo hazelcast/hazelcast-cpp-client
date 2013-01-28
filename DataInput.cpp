@@ -6,20 +6,20 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include <iostream>
-#include "ContextAwareDataInput.h"
-#include "ClassDefinitionImpl.h"
-#include "SerializationServiceImpl.h"
-#include "SerializationContextImpl.h"
+#include "DataInput.h"
+#include "ClassDefinition.h"
+#include "SerializationService.h"
+#include "SerializationContext.h"
 
-ContextAwareDataInput::ContextAwareDataInput(Array<byte>& buffer, SerializationServiceImpl* service){
+DataInput::DataInput(Array<byte>& buffer, SerializationService* service){
     this->buffer = buffer;
     this->ptr = this->buffer.buffer;
     this->beg = this->buffer.buffer;
     this->service = service;
 };
 
-ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImpl* service){
-    const ClassDefinitionImpl* cd = data.cd;
+DataInput::DataInput(Data& data, SerializationService* service){
+    const ClassDefinition* cd = data.cd;
     this->dataClassId = cd != NULL ? cd->getClassId() : -1;
     this->dataVersion = cd != NULL ? cd->getVersion() : -1;
     this->buffer = data.buffer;
@@ -28,61 +28,61 @@ ContextAwareDataInput::ContextAwareDataInput(Data& data, SerializationServiceImp
     this->service = service;
 };
 
-int ContextAwareDataInput::getDataClassId(){
+int DataInput::getDataClassId(){
     return dataClassId;
 };
 
-void ContextAwareDataInput::setDataClassId(int id){
+void DataInput::setDataClassId(int id){
     dataClassId = id;
 };
 
-int ContextAwareDataInput::getDataVersion(){
+int DataInput::getDataVersion(){
     return dataVersion;
 };
 
-SerializationContextImpl* ContextAwareDataInput::getSerializationContext(){
+SerializationContext* DataInput::getSerializationContext(){
     return service->getSerializationContext();
 }
 //Inherited from DataInoput
-void ContextAwareDataInput::readFully(Array<byte>& bytes){
+void DataInput::readFully(Array<byte>& bytes){
     readFully(bytes.buffer,0,bytes.length());
 };
 
-void ContextAwareDataInput::readFully(byte *bytes, int off, int len){
+void DataInput::readFully(byte *bytes, int off, int len){
     memcpy(bytes + off, ptr, sizeof(byte) * len);
     ptr += sizeof(byte) * len;
 };
 
-int ContextAwareDataInput::skipBytes(int i){
+int DataInput::skipBytes(int i){
     ptr += i;
     return i;
 };
 
-bool ContextAwareDataInput::readBoolean(){
+bool DataInput::readBoolean(){
     return readByte();
 };
 
-byte ContextAwareDataInput::readByte(){
+byte DataInput::readByte(){
     byte b;
     memcpy(&b, ptr, sizeof(byte));
     ptr += sizeof(byte);
     return b;
 };
 
-short ContextAwareDataInput::readShort(){
+short DataInput::readShort(){
     byte a = readByte();
     byte b = readByte();
     return (0xff00 & (a << 8 )) |
            (0x00ff &  b);
 };
 
-char ContextAwareDataInput::readChar(){
+char DataInput::readChar(){
     readByte();
     byte b = readByte();
     return b;
 };
 
-int ContextAwareDataInput::readInt(){
+int DataInput::readInt(){
     byte a = readByte();
     byte b = readByte();
     byte c = readByte();
@@ -93,7 +93,7 @@ int ContextAwareDataInput::readInt(){
            (0x000000ff &  d);
 };
 
-long ContextAwareDataInput::readLong(){
+long DataInput::readLong(){
     byte a = readByte();
     byte b = readByte();
     byte c = readByte();
@@ -112,7 +112,7 @@ long ContextAwareDataInput::readLong(){
            (0x00000000000000ff &  h);
 };
 
-float ContextAwareDataInput::readFloat(){
+float DataInput::readFloat(){
     union {
         int i;
         float f;
@@ -121,7 +121,7 @@ float ContextAwareDataInput::readFloat(){
     return u.f;
 };
 
-double ContextAwareDataInput::readDouble(){
+double DataInput::readDouble(){
     union {
         double d;
         long l;
@@ -130,7 +130,7 @@ double ContextAwareDataInput::readDouble(){
     return u.d;
 };
 
-std::string ContextAwareDataInput::readUTF() throw(std::string) {
+std::string DataInput::readUTF() throw(std::string) {
     bool isNull = readBoolean();
     if (isNull)
         return NULL;
@@ -145,7 +145,7 @@ std::string ContextAwareDataInput::readUTF() throw(std::string) {
 };
 
 //Inherited from BufferObjectDataInput
-int ContextAwareDataInput::read(int index) throw (std::ios_base::failure){
+int DataInput::read(int index) throw (std::ios_base::failure){
     int pos = position();
     position(index);
     int v = readByte();
@@ -153,7 +153,7 @@ int ContextAwareDataInput::read(int index) throw (std::ios_base::failure){
     return v;
 };
 
-int ContextAwareDataInput::read(int index, byte* b, int off, int len) throw (std::ios_base::failure) {
+int DataInput::read(int index, byte* b, int off, int len) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     readFully(b,off,len); 
@@ -161,7 +161,7 @@ int ContextAwareDataInput::read(int index, byte* b, int off, int len) throw (std
     return len;
 };
 
-int ContextAwareDataInput::readInt(int index) throw (std::ios_base::failure) {
+int DataInput::readInt(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     int v = readInt();
@@ -169,7 +169,7 @@ int ContextAwareDataInput::readInt(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-long ContextAwareDataInput::readLong(int index) throw (std::ios_base::failure) {
+long DataInput::readLong(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     long v = readLong();
@@ -177,7 +177,7 @@ long ContextAwareDataInput::readLong(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-bool ContextAwareDataInput::readBoolean(int index) throw (std::ios_base::failure) {
+bool DataInput::readBoolean(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     bool v = readBoolean();
@@ -185,7 +185,7 @@ bool ContextAwareDataInput::readBoolean(int index) throw (std::ios_base::failure
     return v;
 };
 
-byte ContextAwareDataInput::readByte(int index) throw (std::ios_base::failure) {
+byte DataInput::readByte(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     byte v = readByte();
@@ -193,7 +193,7 @@ byte ContextAwareDataInput::readByte(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-char ContextAwareDataInput::readChar(int index) throw (std::ios_base::failure) {
+char DataInput::readChar(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     char v = readChar();
@@ -201,7 +201,7 @@ char ContextAwareDataInput::readChar(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-double ContextAwareDataInput::readDouble(int index) throw (std::ios_base::failure){
+double DataInput::readDouble(int index) throw (std::ios_base::failure){
     int pos = position();
     position(index);
     double v = readDouble();
@@ -209,7 +209,7 @@ double ContextAwareDataInput::readDouble(int index) throw (std::ios_base::failur
     return v;
 };
 
-float ContextAwareDataInput::readFloat(int index) throw (std::ios_base::failure) {
+float DataInput::readFloat(int index) throw (std::ios_base::failure) {
     int pos = position();
     position(index);
     float v = readFloat();
@@ -217,7 +217,7 @@ float ContextAwareDataInput::readFloat(int index) throw (std::ios_base::failure)
     return v;
 };
 
-short ContextAwareDataInput::readShort(int index) throw (std::ios_base::failure){
+short DataInput::readShort(int index) throw (std::ios_base::failure){
     int pos = position();
     position(index);
     short v = readShort();
@@ -225,16 +225,16 @@ short ContextAwareDataInput::readShort(int index) throw (std::ios_base::failure)
     return v;
 };
 
-int ContextAwareDataInput::position(){
+int DataInput::position(){
     return int(ptr - beg);
 };
 
-void ContextAwareDataInput::position(int newPos){
+void DataInput::position(int newPos){
     ptr = beg + newPos;
 };
 //private functions
 
-std::string ContextAwareDataInput::readShortUTF() throw(std::ios_base::failure){
+std::string DataInput::readShortUTF() throw(std::ios_base::failure){
     short utflen = readShort();
     byte bytearr[utflen];
     char chararr[utflen];
