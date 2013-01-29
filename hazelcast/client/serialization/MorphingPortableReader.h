@@ -36,18 +36,8 @@ public:
     
     string readUTF(string) throw(ios_base::failure);
         
-    template<typename T>
-    auto_ptr<T> readPortable(string fieldName) throw(ios_base::failure) {
-        if(!cd->isFieldDefinitionExists(fieldName))
-            return auto_ptr<T>();
-        FieldDefinition fd = cd->get(fieldName);
+    auto_ptr<Portable> readPortable(string) throw(ios_base::failure) ;
 
-        if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
-            throw "IncompatibleClassChangeError";
-        }
-        return PortableReader::readPortable<T>(fieldName);
-    };
-    
     Array<byte> readByteArray(string) throw(ios_base::failure);
     
     Array<char> readCharArray(string) throw(ios_base::failure);
@@ -62,17 +52,7 @@ public:
     
     Array<short> readShortArray(string) throw(ios_base::failure);
     
-    template<typename T>
-    Array< auto_ptr<T> > readPortableArray(string fieldName) throw(ios_base::failure){//TODO
-        if(!cd->isFieldDefinitionExists(fieldName))
-            return NULL;
-        FieldDefinition fd = cd->get(fieldName);
-
-        if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
-            throw "IncompatibleClassChangeError";
-        }
-        return PortableReader::readPortableArray<T>(fieldName);
-    };
+    Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure);
     
 };
 

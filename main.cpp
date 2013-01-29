@@ -27,9 +27,9 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-//    write();
-//    read();
-    client();
+    write();
+    read();
+//    client();
     return 0;
 };
 
@@ -112,7 +112,7 @@ void read(){
 void write(){
     TestPortableFactory tpf1,tpf2;
     serialization::SerializationService serializationService(1, &tpf1);
-    serialization::SerializationService serializationService2(2, &tpf2);
+//    serialization::SerializationService serializationService2(2, &tpf2);
     serialization::Data data;
     
     int x = 3;
@@ -128,10 +128,10 @@ void write(){
     
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
-    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
+//    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
     
     assert(np == tnp1);
-    assert(np == tnp2);
+//    assert(np == tnp2);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -162,11 +162,11 @@ void write(){
     
     TestInnerPortable tip1,tip2;
     tip1 = serializationService.toObject<TestInnerPortable>(data);
-    tip2 = serializationService2.toObject<TestInnerPortable>(data);
+//    tip2 = serializationService2.toObject<TestInnerPortable>(data);
     
     
     assert(inner == tip1);
-    assert(inner == tip2);
+//    assert(inner == tip2);
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
@@ -175,11 +175,11 @@ void write(){
     
     TestMainPortable tmp1,tmp2;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
-    tmp2 = serializationService2.toObject<TestMainPortable>(data);
+//    tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
-    assert(main == tmp2);
+//    assert(main == tmp2);
     
-    std::cout << "All tests are passed" << std::endl;
+//    std::cout << "All tests are passed" << std::endl;
 /*    
     DataOutput* out = serializationService.pop();
     data.writeData(*out);

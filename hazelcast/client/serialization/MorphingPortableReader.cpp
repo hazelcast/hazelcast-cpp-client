@@ -166,6 +166,17 @@ string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure
     return PortableReader::readUTF(fieldName);
 };
 
+auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
+    if(!cd->isFieldDefinitionExists(fieldName))
+        return auto_ptr<Portable>();
+    FieldDefinition fd = cd->get(fieldName);
+    
+    if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
+        throw "IncompatibleClassChangeError";
+    }
+    return PortableReader::readPortable(fieldName);
+};
+
 Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
@@ -241,6 +252,17 @@ Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_
         throw "IncompatibleClassChangeError";
     }
     return PortableReader::readShortArray(fieldName);
+};
+
+Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){//TODO
+    if(!cd->isFieldDefinitionExists(fieldName))
+        return NULL;
+    FieldDefinition fd = cd->get(fieldName);
+
+    if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
+        throw "IncompatibleClassChangeError";
+    }
+    return PortableReader::readPortableArray(fieldName);
 };
 
 }}}

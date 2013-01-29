@@ -80,9 +80,9 @@ public:
         }
         
         DataInput dataInput(data,this);
-        auto_ptr<K> autoPtr((K*)portableSerializer.read(dataInput).release());
+        auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
         //TODO return auto_ptr
-        K* ptr = autoPtr.get();
+        K* ptr = dynamic_cast<K*>( autoPtr.get() );
        
         return (*ptr);
     };

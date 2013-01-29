@@ -51,26 +51,7 @@ public:
     
     string readUTF(string) throw(ios_base::failure);
     
-    template<typename T>
-    auto_ptr<T> readPortable(string fieldName) throw(ios_base::failure) {
-        if(!cd->isFieldDefinitionExists(fieldName))
-           throw "throwUnknownFieldException" + fieldName;
-
-        FieldDefinition fd = cd->get(fieldName);
-
-        int pos = getPosition(&fd);
-        input->position(pos);
-        bool isNull = input->readBoolean();
-        if (isNull) {//TODO search for return NULL
-            auto_ptr<T> x;
-            return x;
-        }
-        input->setDataClassId(fd.getClassId());
-        auto_ptr<T> p ((T*)serializer->read(*input).release() );
-
-        input->setDataClassId(cd->getClassId());
-        return p;
-    };
+    auto_ptr<Portable> readPortable(string fieldName) throw(ios_base::failure);
     
     Array<byte> readByteArray(string) throw(ios_base::failure);
     
@@ -86,22 +67,8 @@ public:
     
     Array<short> readShortArray(string) throw(ios_base::failure);
     
-    template<typename T>
-    Array< auto_ptr<T> > readPortableArray(string fieldName) throw(ios_base::failure){//TODO
-        if(!cd->isFieldDefinitionExists(fieldName))
-            throw "throwUnknownFieldException" + fieldName;
-        FieldDefinition fd = cd->get(fieldName);
-
-        int pos = getPosition(fieldName);
-        input->position(pos);
-        int len = input->readInt();
-        Array< auto_ptr<T> > portables(len);
-        input->setDataClassId(fd.getClassId());
-        for (int i = 0; i < len; i++) {
-            portables[i] = auto_ptr<T>((T*)serializer->read(*input).release());
-        }
-        return portables;
-    };
+    Array< auto_ptr<Portable> > readPortableArray(string fieldName) throw(ios_base::failure);
+    
 
 protected:
     int getPosition(string) throw(ios_base::failure);

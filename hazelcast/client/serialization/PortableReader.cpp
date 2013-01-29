@@ -71,6 +71,26 @@ string PortableReader::readUTF(string fieldName) throw(ios_base::failure){
     return input->readUTF();
 };
 
+auto_ptr<Portable> PortableReader::readPortable(string fieldName) throw(ios_base::failure) {
+    if(!cd->isFieldDefinitionExists(fieldName))
+       throw "throwUnknownFieldException" + fieldName;
+
+    FieldDefinition fd = cd->get(fieldName);
+
+    int pos = getPosition(&fd);
+    input->position(pos);
+    bool isNull = input->readBoolean();
+    if (isNull) {//TODO search for return NULL
+        auto_ptr<Portable> x;
+        return x;
+    }
+    input->setDataClassId(fd.getClassId());
+    auto_ptr<Portable> p (serializer->read(*input) );
+
+    input->setDataClassId(cd->getClassId());
+    return p;
+};
+
 Array<byte> PortableReader::readByteArray(string fieldName) throw(ios_base::failure){
     int pos = getPosition(fieldName);
     input->position(pos);
@@ -146,6 +166,23 @@ Array<short> PortableReader::readShortArray(string fieldName) throw(ios_base::fa
         values[i] = input->readShort();
     }
     return values;
+};
+
+Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName) throw(ios_base::failure){
+    if(!cd->isFieldDefinitionExists(fieldName))
+          throw "throwUnknownFieldException" + fieldName;
+      FieldDefinition fd = cd->get(fieldName);
+
+      int pos = getPosition(fieldName);
+      input->position(pos);
+      int len = input->readInt();
+      Array< auto_ptr<Portable> > portables(len);
+      input->setDataClassId(fd.getClassId());
+      for (int i = 0; i < len; i++) {
+          portables[i] = serializer->read(*input);
+      }
+      return portables;
+
 };
 
 int PortableReader::getPosition(string fieldName) throw(ios_base::failure){

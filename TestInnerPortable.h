@@ -73,8 +73,8 @@ public:
         ll = reader.readLongArray("l");
         ff = reader.readFloatArray("f");
         dd = reader.readDoubleArray("d");
-        Array< auto_ptr<TestInnerPortable> > temp;
-        temp = reader.readPortableArray<TestInnerPortable>("nn");
+        Array< auto_ptr<Portable> > temp;
+        temp = reader.readPortableArray("nn");
         Array<Portable*> tempNN(temp.length());
         for(int i = 0; i < temp.length() ; i++)
             tempNN[i] = temp[i].release();
