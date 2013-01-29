@@ -18,9 +18,6 @@ namespace serialization{
 template <typename T>
 class Array{
 public:
-    friend class DataInput;
-    friend class DataOutput;
-    friend class SerializationContext;
     
     Array():buffer(NULL),len(0){
     };

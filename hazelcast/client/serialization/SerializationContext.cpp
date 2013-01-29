@@ -120,8 +120,8 @@ void SerializationContext::compress(Array<byte>& binary) throw(std::ios_base::fa
         case Z_MEM_ERROR:
             throw "if there was not  enough memory";
     }
-    delete [] binary.buffer;
-    binary.init(compSize,temp);
+    Array<byte> compressed(compSize,temp);
+    binary = compressed;
 };
 
 void SerializationContext::decompress(Array<byte>& binary) throw(std::ios_base::failure){
@@ -142,8 +142,8 @@ void SerializationContext::decompress(Array<byte>& binary) throw(std::ios_base::
                 throw "if there was not  enough memory";
         }
     }while(err == Z_BUF_ERROR);
-    delete [] binary.buffer;
-    binary.init(ucompSize,temp);
+    Array<byte> decompressed(ucompSize,temp);
+    binary = decompressed;
     delete [] temp;
 };
 

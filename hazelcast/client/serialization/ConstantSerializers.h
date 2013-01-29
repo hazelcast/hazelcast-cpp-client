@@ -22,8 +22,7 @@ namespace hazelcast{
 namespace client{
 namespace serialization{
 
-class ConstantSerializers {
-public:
+namespace ConstantSerializers{
     
     class ByteSerializer : public TypeSerializer<byte> {
     public:
@@ -344,12 +343,8 @@ public:
             }
         }
     };
-     
-private:
-    
-    
-        ConstantSerializers();
-};
+
+}
 
 }}}
 #endif /* HAZELCAST_CONSTANT_SERIALIZERS */
