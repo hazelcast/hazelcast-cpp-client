@@ -10,7 +10,11 @@
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/Array.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/GroupConfig.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "Server.h"
+#include "Client.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,20 +22,24 @@
 
 using namespace hazelcast::client;
 
-void write(serialization::SerializationService& s);
+void write();
 void read();
+void client();
 
 int main(int argc, char** argv){
-    TestPortableFactory tpf1;
-    serialization::SerializationService serializationService(1, &tpf1);
-//    for(int i = 0 ; i < 50000;i++){
-        write(serializationService);
-//        read();
-//    }
-    std::string s;
-    std::cin >> s;
+//    write();
+//    read();
+    client();
     return 0;
-}
+};
+
+void client(){
+    ClientConfig clientConfig;
+    clientConfig.getGroupConfig().setName("myCluster").setPassword("sancar");
+    clientConfig.setAddress("192.168.2.2:5701");
+    
+    auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
+};
 
 void read(){
     
@@ -101,10 +109,10 @@ void read(){
     delete [] portablePointerArray;
 }
 
-void write(SerializationService& serializationService){
-//    TestPortableFactory tpf1,tpf2;
-//    serialization::SerializationService serializationService(1, &tpf1);
-//    serialization::SerializationService serializationService2(2, &tpf2);
+void write(){
+    TestPortableFactory tpf1,tpf2;
+    serialization::SerializationService serializationService(1, &tpf1);
+    serialization::SerializationService serializationService2(2, &tpf2);
     serialization::Data data;
     
     int x = 3;
@@ -120,10 +128,10 @@ void write(SerializationService& serializationService){
     
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
-//    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
+    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
     
     assert(np == tnp1);
-//    assert(np == tnp2);
+    assert(np == tnp2);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -154,11 +162,11 @@ void write(SerializationService& serializationService){
     
     TestInnerPortable tip1,tip2;
     tip1 = serializationService.toObject<TestInnerPortable>(data);
-//    tip2 = serializationService2.toObject<TestInnerPortable>(data);
+    tip2 = serializationService2.toObject<TestInnerPortable>(data);
     
     
     assert(inner == tip1);
-//    assert(inner == tip2);
+    assert(inner == tip2);
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
@@ -167,9 +175,9 @@ void write(SerializationService& serializationService){
     
     TestMainPortable tmp1,tmp2;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
-//    tmp2 = serializationService2.toObject<TestMainPortable>(data);
+    tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
-//    assert(main == tmp2);
+    assert(main == tmp2);
     
     std::cout << "All tests are passed" << std::endl;
 /*    
