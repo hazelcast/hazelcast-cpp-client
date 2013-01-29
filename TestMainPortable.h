@@ -11,11 +11,12 @@
 
 
 #include <iostream>
-#include "PortableReader.h"
-#include "PortableWriter.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include "TestInnerPortable.h"
-using namespace std;
+
+using namespace hazelcast::client::serialization;
 
 class TestMainPortable : public Portable{
 public:

@@ -1,19 +1,17 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <vector>
 #include <stdio.h>
-#include "DataOutput.h"
-#include "Data.h"
-#include "SerializationService.h"
-using namespace std;
 
-namespace hazelcast {
- 
+using namespace hazelcast::client::serialization;
  /// Serves stock quote information to any client that connects to it.
  class server
  {
@@ -24,7 +22,7 @@ namespace hazelcast {
     : mAcceptor(io_service,boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
     , mSocket(io_service), service(service)
     {
-        cout << "waiting for socket to accept" << endl;
+        std::cout << "waiting for socket to accept" << std::endl;
         mAcceptor.accept(mSocket);
         cout << "connection accepted" << endl;
     }
@@ -33,7 +31,7 @@ namespace hazelcast {
         DataOutput out(service);
         data.writeData(out);
         Array<byte> buffer = out.toByteArray();
-        cout << buffer.length() << endl;
+        std::cout << buffer.length() << std::endl;
         boost::asio::write(mSocket, boost::asio::buffer(buffer.buffer,1024));
     }
     private:
@@ -43,5 +41,5 @@ namespace hazelcast {
         SerializationService* service;
  };
  
- } // namespace hazelcast
+
 #endif

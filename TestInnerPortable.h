@@ -10,13 +10,13 @@
 #define Server_TestInnerPortable_h
 
 
-#include <iostream>
-#include "PortableReader.h"
-#include "PortableWriter.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/Array.h"
 #include "TestNamedPortable.h"
-#include "Array.h"
-using namespace std;
+#include <iostream>
+using namespace hazelcast::client::serialization;
 
 class TestInnerPortable : public Portable{
 public:

@@ -9,13 +9,15 @@
 #ifndef __Server__TestPortableFactory__
 #define __Server__TestPortableFactory__
 
-#include <iostream>
-#include <memory>
-#include "PortableFactory.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/PortableFactory.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include "TestMainPortable.h"
 #include "TestInnerPortable.h"
 #include "TestNamedPortable.h"
+#include <iostream>
+#include <memory>
+
+using namespace hazelcast::client::serialization;
 
 class TestPortableFactory : public PortableFactory{
     

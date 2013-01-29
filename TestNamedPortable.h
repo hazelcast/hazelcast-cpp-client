@@ -11,18 +11,18 @@
 
 
 #include <iostream>
-#include "PortableReader.h"
-#include "PortableWriter.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Portable.h"
 
-using namespace std;
+using namespace hazelcast::client::serialization;
 
 class TestNamedPortable : public Portable{
 public:
     TestNamedPortable() {
     };
         
-    TestNamedPortable(string name):name(name) {
+    TestNamedPortable(std::string name):name(name) {
         
     };
     

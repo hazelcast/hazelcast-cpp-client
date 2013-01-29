@@ -1,35 +1,42 @@
 //
 // server.cpp
 
-#include <iostream>
-#include <fstream>
-#include <cassert>
-#include "SerializationService.h"
-#include "Data.h"
-#include "Array.h"
-
 #include "TestPortableFactory.h"
 #include "TestNamedPortable.h"
 #include "TestInnerPortable.h"
 #include "TestMainPortable.h"
-#include "Portable.h"
+
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/Array.h"
 #include "Server.h"
 
-using namespace std;
+#include <iostream>
+#include <fstream>
+#include <cassert>
 
-void write();
+using namespace hazelcast::client;
+
+void write(serialization::SerializationService& s);
 void read();
 
 int main(int argc, char** argv){
-    write();
-    read();
+    TestPortableFactory tpf1;
+    serialization::SerializationService serializationService(1, &tpf1);
+//    for(int i = 0 ; i < 50000;i++){
+        write(serializationService);
+//        read();
+//    }
+    std::string s;
+    std::cin >> s;
     return 0;
 }
 
 void read(){
     
     TestPortableFactory tpf1,tpf2;
-    SerializationService serializationService(1, &tpf1);
+    serialization::SerializationService serializationService(1, &tpf1);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -62,16 +69,16 @@ void read(){
     
     
     
-    ifstream is;
-    is.open ("/Users/msk/Desktop/text.txt", ios::binary );
+    std::ifstream is;
+    is.open ("/Users/msk/Desktop/text.txt", std::ios::binary );
     char bytes[607];
     is.read(bytes,607);
     is.close();
     
     Array<byte> buffer(607,(byte*)bytes);
-    DataInput dataInput(buffer,&serializationService);
+    serialization::DataInput dataInput(buffer,&serializationService);
     
-    Data data;
+    serialization::Data data;
     data.readData(dataInput);
     
     TestMainPortable tmp1;
@@ -94,11 +101,11 @@ void read(){
     delete [] portablePointerArray;
 }
 
-void write(){
-    TestPortableFactory tpf1,tpf2;
-    SerializationService serializationService(1, &tpf1);
-    SerializationService serializationService2(2, &tpf2);
-    Data data;
+void write(SerializationService& serializationService){
+//    TestPortableFactory tpf1,tpf2;
+//    serialization::SerializationService serializationService(1, &tpf1);
+//    serialization::SerializationService serializationService2(2, &tpf2);
+    serialization::Data data;
     
     int x = 3;
     data = serializationService.toData(x);
@@ -113,10 +120,10 @@ void write(){
     
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
-    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
+//    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
     
     assert(np == tnp1);
-    assert(np == tnp2);
+//    assert(np == tnp2);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -147,11 +154,11 @@ void write(){
     
     TestInnerPortable tip1,tip2;
     tip1 = serializationService.toObject<TestInnerPortable>(data);
-    tip2 = serializationService2.toObject<TestInnerPortable>(data);
+//    tip2 = serializationService2.toObject<TestInnerPortable>(data);
     
     
     assert(inner == tip1);
-    assert(inner == tip2);
+//    assert(inner == tip2);
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
@@ -160,12 +167,12 @@ void write(){
     
     TestMainPortable tmp1,tmp2;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
-    tmp2 = serializationService2.toObject<TestMainPortable>(data);
+//    tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
-    assert(main == tmp2);
+//    assert(main == tmp2);
     
-    cout << "All tests are passed" << endl;
-    
+    std::cout << "All tests are passed" << std::endl;
+/*    
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
     Array<byte> outBuffer =  out->toByteArray();
@@ -181,7 +188,7 @@ void write(){
 //    server_service.run();
     
 //    server.send(data);
-    
+*/    
    
     for(int i = 0 ; i < 5 ; i++)
         delete portablePointerArray[i];
