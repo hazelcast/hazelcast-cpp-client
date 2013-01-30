@@ -56,7 +56,7 @@ auto_ptr<Portable> SerializationContext::createPortable(int classId){
     return auto_ptr<Portable>(portableFactory->create(classId));
 };
 
-ClassDefinition* SerializationContext::createClassDefinition(Array<byte>& binary) throw(std::ios_base::failure){
+ClassDefinition* SerializationContext::createClassDefinition(Array<byte>& binary) {
     
     decompress(binary);
     
@@ -73,7 +73,7 @@ ClassDefinition* SerializationContext::createClassDefinition(Array<byte>& binary
     return cd;
 };
 
-void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) throw(std::ios_base::failure){
+void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) {
     vector<ClassDefinition*> nestedDefinitions = cd->getNestedClassDefinitions();
     for(vector<ClassDefinition*>::iterator it = nestedDefinitions.begin() ; it < nestedDefinitions.end() ; it++){
         registerClassDefinition(*it);
@@ -81,7 +81,7 @@ void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) throw(
     }
 };
 
-void SerializationContext::registerClassDefinition(ClassDefinition* cd) throw(std::ios_base::failure){
+void SerializationContext::registerClassDefinition(ClassDefinition* cd) {
      
         if(!isClassDefinitionExists(cd->getClassId() , cd->getVersion())){
             if (cd->getBinary().length() == 0) {
@@ -103,7 +103,7 @@ int SerializationContext::getVersion(){
     return version;
 };
 
-void SerializationContext::compress(Array<byte>& binary) throw(std::ios_base::failure){
+void SerializationContext::compress(Array<byte>& binary) {
     uLong ucompSize = binary.length(); 
     uLong compSize = compressBound(ucompSize);
     byte temp[compSize];
@@ -120,7 +120,7 @@ void SerializationContext::compress(Array<byte>& binary) throw(std::ios_base::fa
     binary = compressed;
 };
 
-void SerializationContext::decompress(Array<byte>& binary) throw(std::ios_base::failure){
+void SerializationContext::decompress(Array<byte>& binary) {
     uLong compSize = binary.length();
     
     uLong ucompSize = 512;

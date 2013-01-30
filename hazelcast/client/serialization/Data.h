@@ -29,8 +29,7 @@ public:
     Data();
     Data(const Data&);
     Data(const int type, Array<byte> bytes);
-    Data& operator=(Data&);
-    const Data& operator=(const Data&);
+    Data& operator=(const Data&);
     int size() const;
     
     int getPartitionHash();
@@ -39,8 +38,8 @@ public:
     bool operator==(const Data&) const;
     bool operator!=(const Data&) const;
     
-    void writeData(DataOutput&) const throw(std::ios_base::failure);
-    void readData(DataInput&) throw(std::ios_base::failure);
+    void writeData(DataOutput&) const;
+    void readData(DataInput&);
     
     ClassDefinition* cd;
     int type;

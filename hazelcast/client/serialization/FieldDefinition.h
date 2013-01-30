@@ -29,8 +29,8 @@ public:
     int getIndex();
     int getClassId();
     
-    void writeData(DataOutput&) const throw(std::ios_base::failure);
-    void readData(DataInput&) throw(std::ios_base::failure);
+    void writeData(DataOutput&) const;
+    void readData(DataInput&);
     
     bool operator==(const FieldDefinition&) const;
     bool operator!=(const FieldDefinition&) const;

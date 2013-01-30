@@ -48,14 +48,14 @@ int FieldDefinition::getClassId(){
     return classId;
 };
 
-void FieldDefinition::writeData(DataOutput& out) const throw(std::ios_base::failure){
+void FieldDefinition::writeData(DataOutput& out) const {
     out.writeInt(index);
     out.writeUTF(fieldName);
     out.writeByte(type);
     out.writeInt(classId);
 };
 
-void FieldDefinition::readData(DataInput& in) throw(std::ios_base::failure){
+void FieldDefinition::readData(DataInput& in) {
     index = in.readInt();
     fieldName = in.readUTF();
     type = in.readByte();

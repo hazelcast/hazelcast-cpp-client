@@ -50,6 +50,10 @@ DataInput::DataInput(Data& data, SerializationService* service){
     this->service = service;
 };
 
+DataInput& DataInput::operator=(const DataInput&){
+    
+};
+
 int DataInput::getDataClassId(){
     return dataClassId;
 };
@@ -169,7 +173,7 @@ std::string DataInput::readUTF() throw(std::string) {
 };
 
 //Inherited from BufferObjectDataInput
-int DataInput::read(int index) throw (std::ios_base::failure){
+int DataInput::read(int index) {
     int pos = position();
     position(index);
     int v = readByte();
@@ -177,7 +181,7 @@ int DataInput::read(int index) throw (std::ios_base::failure){
     return v;
 };
 
-int DataInput::read(int index, byte* b, int off, int len) throw (std::ios_base::failure) {
+int DataInput::read(int index, byte* b, int off, int len)  {
     int pos = position();
     position(index);
     readFully(b,off,len); 
@@ -185,7 +189,7 @@ int DataInput::read(int index, byte* b, int off, int len) throw (std::ios_base::
     return len;
 };
 
-int DataInput::readInt(int index) throw (std::ios_base::failure) {
+int DataInput::readInt(int index)  {
     int pos = position();
     position(index);
     int v = readInt();
@@ -193,7 +197,7 @@ int DataInput::readInt(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-long DataInput::readLong(int index) throw (std::ios_base::failure) {
+long DataInput::readLong(int index)  {
     int pos = position();
     position(index);
     long v = readLong();
@@ -201,7 +205,7 @@ long DataInput::readLong(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-bool DataInput::readBoolean(int index) throw (std::ios_base::failure) {
+bool DataInput::readBoolean(int index)  {
     int pos = position();
     position(index);
     bool v = readBoolean();
@@ -209,7 +213,7 @@ bool DataInput::readBoolean(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-byte DataInput::readByte(int index) throw (std::ios_base::failure) {
+byte DataInput::readByte(int index)  {
     int pos = position();
     position(index);
     byte v = readByte();
@@ -217,7 +221,7 @@ byte DataInput::readByte(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-char DataInput::readChar(int index) throw (std::ios_base::failure) {
+char DataInput::readChar(int index)  {
     int pos = position();
     position(index);
     char v = readChar();
@@ -225,7 +229,7 @@ char DataInput::readChar(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-double DataInput::readDouble(int index) throw (std::ios_base::failure){
+double DataInput::readDouble(int index) {
     int pos = position();
     position(index);
     double v = readDouble();
@@ -233,7 +237,7 @@ double DataInput::readDouble(int index) throw (std::ios_base::failure){
     return v;
 };
 
-float DataInput::readFloat(int index) throw (std::ios_base::failure) {
+float DataInput::readFloat(int index)  {
     int pos = position();
     position(index);
     float v = readFloat();
@@ -241,7 +245,7 @@ float DataInput::readFloat(int index) throw (std::ios_base::failure) {
     return v;
 };
 
-short DataInput::readShort(int index) throw (std::ios_base::failure){
+short DataInput::readShort(int index) {
     int pos = position();
     position(index);
     short v = readShort();
@@ -258,7 +262,7 @@ void DataInput::position(int newPos){
 };
 //private functions
 
-std::string DataInput::readShortUTF() throw(std::ios_base::failure){
+std::string DataInput::readShortUTF() {
     short utflen = readShort();
     byte bytearr[utflen];
     char chararr[utflen];
@@ -290,7 +294,7 @@ std::string DataInput::readShortUTF() throw(std::ios_base::failure){
                     throw "malformed input: partial character at end";
                 char2 = bytearr[count - 1];
                 if ((char2 & 0xC0) != 0x80){
-                    std::string error = "malformed input around byte" ;
+                    std::string error = "malformed input around byte";
                     error += count;
                     throw error;
                 }
@@ -304,7 +308,7 @@ std::string DataInput::readShortUTF() throw(std::ios_base::failure){
                 char2 = bytearr[count - 2];
                 char3 = bytearr[count - 1];
                 if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)){
-                    std::string error = "malformed input around byte" ;
+                    std::string error = "malformed input around byte";
                     error += count - 1;
                     throw error;
                 }
@@ -313,7 +317,7 @@ std::string DataInput::readShortUTF() throw(std::ios_base::failure){
             default:
                 /* 10xx xxxx, 1111 xxxx */
                 
-                std::string error = "malformed input around byte" ;
+                std::string error = "malformed input around byte";
                 error += count;
                 throw error;
                 

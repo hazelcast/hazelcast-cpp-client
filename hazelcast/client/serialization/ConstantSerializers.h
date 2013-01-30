@@ -31,11 +31,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_BYTE;
         };
         
-        byte read(DataInput* dataInput) throw(ios_base::failure){
+        byte read(DataInput* dataInput){
             return dataInput->readByte();
         };
         
-        void write(DataOutput* dataOutput, byte const obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, byte const obj){
             dataOutput->writeByte(obj);
         };
     };
@@ -47,11 +47,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
         };
         
-        void write(DataOutput* dataOutput, bool obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, bool obj){
             dataOutput->writeBoolean(obj);
         };
         
-        bool read(DataInput* dataInput) throw(ios_base::failure){
+        bool read(DataInput* dataInput){
             return dataInput->readBoolean();
         }
     };
@@ -63,11 +63,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_CHAR;
         }
         
-        char read(DataInput* dataInput) throw(ios_base::failure){
+        char read(DataInput* dataInput){
             return dataInput->readChar();
         }
         
-        void write(DataOutput* dataOutput, const char obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const char obj){
             dataOutput->writeChar(obj);
         }
     };
@@ -78,11 +78,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_SHORT;
         }
         
-        short read(DataInput* dataInput) throw(ios_base::failure){
+        short read(DataInput* dataInput){
             return dataInput->readShort();
         }
         
-        void write(DataOutput* dataOutput, const short obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const short obj){
             dataOutput->writeShort(obj);
         }
     };
@@ -93,11 +93,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_INTEGER;
         }
         
-        int read(DataInput* dataInput) throw(ios_base::failure){
+        int read(DataInput* dataInput){
             return dataInput->readInt();
         }
         
-        void write(DataOutput* dataOutput, const int obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const int obj){
             dataOutput->writeInt(obj);
         }
     };
@@ -108,11 +108,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_LONG;
         }
         
-        long read(DataInput* dataInput) throw(ios_base::failure){
+        long read(DataInput* dataInput){
             return dataInput->readLong();
         }
         
-        void write(DataOutput* dataOutput, const long obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const long obj){
             dataOutput->writeLong(obj);
         }
     };
@@ -123,11 +123,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_FLOAT;
         }
         
-        float read(DataInput* dataInput) throw(ios_base::failure){
+        float read(DataInput* dataInput){
             return dataInput->readFloat();
         }
         
-        void write(DataOutput* dataOutput, const float obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const float obj){
             dataOutput->writeFloat(obj);
         }
     };
@@ -138,11 +138,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_DOUBLE;
         }
         
-        double read(DataInput* dataInput) throw(ios_base::failure){
+        double read(DataInput* dataInput){
             return dataInput->readDouble();
         }
         
-        void write(DataOutput* dataOutput, const double obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const double obj){
             dataOutput->writeDouble(obj);
         }
     };
@@ -153,11 +153,11 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_STRING;
         }
         
-        string read(DataInput* dataInput) throw(ios_base::failure){
+        string read(DataInput* dataInput){
             return dataInput->readUTF();
         }
         
-        void write(DataOutput* dataOutput, const string obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, const string obj){
             dataOutput->writeUTF(obj);
         }
     };
@@ -168,7 +168,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
         }
         
-        Array<byte> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<byte> read(DataInput* dataInput){
             int size = dataInput->readInt();
             Array<byte> c(size);
             for (int i = 0; i < size; i++) {
@@ -177,7 +177,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<byte>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<byte>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -194,7 +194,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        Array<char> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<char> read(DataInput* dataInput){
             int size = dataInput->readInt();
             Array<char> c(size);
             for (int i = 0; i < size; i++) {
@@ -203,7 +203,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<char>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<char>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -220,7 +220,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
         }
         
-        Array<short> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<short> read(DataInput* dataInput){
             int size = dataInput->readInt();
             Array<short> c(size);
             for (int i = 0; i < size; i++) {
@@ -229,7 +229,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<short>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<short>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -246,7 +246,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
         }
         
-        Array<int> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<int> read(DataInput* dataInput){
              int size = dataInput->readInt();
             Array<int> c(size);
             for (int i = 0; i < size; i++) {
@@ -255,7 +255,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<int>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<int>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -272,7 +272,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
         }
         
-        Array<long> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<long> read(DataInput* dataInput){
              int size = dataInput->readInt();
             Array<long> c(size);
             for (int i = 0; i < size; i++) {
@@ -281,7 +281,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<long>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<long>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -298,7 +298,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
         }
         
-        Array<float> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<float> read(DataInput* dataInput){
              int size = dataInput->readInt();
             Array<float> c(size);
             for (int i = 0; i < size; i++) {
@@ -307,7 +307,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<float>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<float>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {
@@ -324,7 +324,7 @@ namespace ConstantSerializers{
             return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
         }
         
-        Array<double> read(DataInput* dataInput) throw(ios_base::failure){
+        Array<double> read(DataInput* dataInput){
              int size = dataInput->readInt();
             Array<double> c(size);
             for (int i = 0; i < size; i++) {
@@ -333,7 +333,7 @@ namespace ConstantSerializers{
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<double>& obj) throw(ios_base::failure){
+        void write(DataOutput* dataOutput, Array<double>& obj){
             int size = obj.length();
             dataOutput->writeInt(size);
             if (size > 0) {

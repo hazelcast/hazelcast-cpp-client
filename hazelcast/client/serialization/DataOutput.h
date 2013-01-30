@@ -36,48 +36,48 @@ public:
     
     
     //Inherited from DataOutput
-    void write(const Array<byte>& bytes)throw (std::ios_base::failure) ;
+    void write(const Array<byte>& bytes);
     
-    void write(const char* bytes, int offset, int length)throw (std::ios_base::failure) ;
+    void write(const char* bytes, int offset, int length);
     
-    void writeBoolean(bool b) throw (std::ios_base::failure) ;
+    void writeBoolean(bool b) ;
     
-    void writeByte(int i) throw (std::ios_base::failure) ;
+    void writeByte(int i) ;
     
-    void writeShort(int i)throw (std::ios_base::failure) ;
+    void writeShort(int i);
     
-    void writeChar(int i)throw (std::ios_base::failure) ;
+    void writeChar(int i);
     
-    void writeInt(int i)throw (std::ios_base::failure) ;
+    void writeInt(int i);
     
-    void writeLong(long l)throw (std::ios_base::failure) ;
+    void writeLong(long l);
     
-    void writeFloat(float v)throw (std::ios_base::failure);
+    void writeFloat(float v);
     
-    void writeDouble(double v)throw (std::ios_base::failure) ;
+    void writeDouble(double v);
     
-    void writeUTF(std::string s)throw (std::ios_base::failure) ;
+    void writeUTF(std::string s);
     
     //Inherited from BufferObjectDataOutput
-    void write(int index, int b) throw (std::ios_base::failure);
+    void write(int index, int b);
     
-    void write(int index, char* b, int off, int len) throw (std::ios_base::failure);
+    void write(int index, char* b, int off, int len);
     
-    void writeInt(int index, int v) throw (std::ios_base::failure);
+    void writeInt(int index, int v);
     
-    void writeLong(int index, const long v) throw (std::ios_base::failure);
+    void writeLong(int index, const long v);
     
-    void writeBoolean(int index, const bool v) throw (std::ios_base::failure);
+    void writeBoolean(int index, const bool v);
     
-    void writeByte(int index, const int v) throw (std::ios_base::failure);
+    void writeByte(int index, const int v);
     
-    void writeChar(int index, const int v) throw (std::ios_base::failure);
+    void writeChar(int index, const int v);
     
-    void writeDouble(int index, const double v) throw (std::ios_base::failure);
+    void writeDouble(int index, const double v);
     
-    void writeFloat(int index, const float v) throw (std::ios_base::failure);
+    void writeFloat(int index, const float v);
     
-    void writeShort(int index, const int v) throw (std::ios_base::failure);
+    void writeShort(int index, const int v);
     
     int position();
     
@@ -95,7 +95,7 @@ private:
     
     static int const DEFAULT_SIZE = 1024 * 4;
     
-    void writeShortUTF(std::string) throw(std::ios_base::failure);
+    void writeShortUTF(std::string);
     
 };
 

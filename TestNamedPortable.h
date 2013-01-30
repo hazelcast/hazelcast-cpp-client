@@ -38,11 +38,11 @@ public:
         return 2;
     };
         
-    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+    void writePortable(PortableWriter& writer) {
         writer.writeUTF("name",name); 
     };
         
-    void readPortable(PortableReader& reader) throw(std::ios_base::failure) {      
+    void readPortable(PortableReader& reader)  {      
         name = reader.readUTF("name");
     };
     

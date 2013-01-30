@@ -23,93 +23,93 @@ ClassDefinitionWriter::ClassDefinitionWriter(int classId, int version, PortableS
     this->serializer = serializer;
 };
 
-void ClassDefinitionWriter::writeInt(string fieldName, int value) throw(ios_base::failure){
+void ClassDefinitionWriter::writeInt(string fieldName, int value){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_INT);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeLong(string fieldName, long value) throw(ios_base::failure){
+void ClassDefinitionWriter::writeLong(string fieldName, long value){
     FieldDefinition fd(index++, fieldName,FieldDefinition::TYPE_LONG);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeUTF(string fieldName, string str) throw(ios_base::failure){
+void ClassDefinitionWriter::writeUTF(string fieldName, string str){
     FieldDefinition fd(index++, fieldName,FieldDefinition::TYPE_UTF);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeBoolean(string fieldName, bool value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeBoolean(string fieldName, bool value){
     FieldDefinition fd(index++, fieldName,FieldDefinition::TYPE_BOOLEAN);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeByte(string fieldName, byte value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeByte(string fieldName, byte value){
     FieldDefinition fd(index++, fieldName,FieldDefinition::TYPE_BYTE);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeChar(string fieldName, int value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeChar(string fieldName, int value){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_CHAR);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeDouble(string fieldName, double value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeDouble(string fieldName, double value){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_DOUBLE);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeFloat(string fieldName, float value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeFloat(string fieldName, float value){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_FLOAT);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeShort(string fieldName, short value) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeShort(string fieldName, short value){
     FieldDefinition fd(index++, fieldName,FieldDefinition::TYPE_SHORT);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writePortable(string fieldName, Portable& portable) throw(ios_base::failure) {
+void ClassDefinitionWriter::writePortable(string fieldName, Portable& portable){
     FieldDefinition fd = FieldDefinition(index++, fieldName, FieldDefinition::TYPE_PORTABLE, portable.getClassId() );
     addNestedField(portable, fd);
 };
 
-void ClassDefinitionWriter::writeByteArray(string fieldName, Array<byte>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeByteArray(string fieldName, Array<byte>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_BYTE_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeCharArray(string fieldName, Array<char>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeCharArray(string fieldName, Array<char>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_CHAR_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeIntArray(string fieldName, Array<int>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeIntArray(string fieldName, Array<int>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_INT_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeLongArray(string fieldName, Array<long>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeLongArray(string fieldName, Array<long>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_LONG_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeDoubleArray(string fieldName, Array<double>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeDoubleArray(string fieldName, Array<double>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_DOUBLE_ARRAY);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeFloatArray(string fieldName, Array<float>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeFloatArray(string fieldName, Array<float>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_FLOAT_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeShortArray(string fieldName, Array<short>& v) throw(ios_base::failure) {
+void ClassDefinitionWriter::writeShortArray(string fieldName, Array<short>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_SHORT_ARRAY);
     cd->add(fd);
 };
 
 
-void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure) {
+void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable*>& portables){
     
     int classId = portables[0]->getClassId();
     for (int i = 1; i < portables.length(); i++) {
@@ -122,7 +122,7 @@ void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable*
 };
 
 
-void ClassDefinitionWriter::addNestedField(Portable& p, FieldDefinition& fd) throw(ios_base::failure) {
+void ClassDefinitionWriter::addNestedField(Portable& p, FieldDefinition& fd){
     cd->add(fd);
     ClassDefinition* nestedCd =  serializer->getClassDefinition(p);
 

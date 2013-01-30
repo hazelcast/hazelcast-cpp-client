@@ -27,52 +27,52 @@ DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, Dat
     delete [] zeros;
 };
 
-void DefaultPortableWriter::writeInt(string fieldName, int value) throw(ios_base::failure){
+void DefaultPortableWriter::writeInt(string fieldName, int value){
     setPosition(fieldName);
     output->writeInt(value);
 };
 
-void DefaultPortableWriter::writeLong(string fieldName, long value) throw(ios_base::failure){
+void DefaultPortableWriter::writeLong(string fieldName, long value){
     setPosition(fieldName);
     output->writeLong(value);
 };
 
-void DefaultPortableWriter::writeBoolean(string fieldName, bool value) throw(ios_base::failure){
+void DefaultPortableWriter::writeBoolean(string fieldName, bool value){
     setPosition(fieldName);
     output->writeBoolean(value);
 };
 
-void DefaultPortableWriter::writeByte(string fieldName, byte value) throw(ios_base::failure){
+void DefaultPortableWriter::writeByte(string fieldName, byte value){
     setPosition(fieldName);
     output->writeByte(value);
 };
 
-void DefaultPortableWriter::writeChar(string fieldName, int value) throw(ios_base::failure){
+void DefaultPortableWriter::writeChar(string fieldName, int value){
     setPosition(fieldName);
     output->writeChar(value);
 };
 
-void DefaultPortableWriter::writeDouble(string fieldName, double value) throw(ios_base::failure){
+void DefaultPortableWriter::writeDouble(string fieldName, double value){
     setPosition(fieldName);
     output->writeDouble(value);
 };
 
-void DefaultPortableWriter::writeFloat(string fieldName, float value) throw(ios_base::failure){
+void DefaultPortableWriter::writeFloat(string fieldName, float value){
     setPosition(fieldName);
     output->writeFloat(value);
 };
 
-void DefaultPortableWriter::writeShort(string fieldName, short value) throw(ios_base::failure){
+void DefaultPortableWriter::writeShort(string fieldName, short value){
     setPosition(fieldName);
     output->writeShort(value);
 };
 
-void DefaultPortableWriter::writeUTF(string fieldName, string str) throw(ios_base::failure){
+void DefaultPortableWriter::writeUTF(string fieldName, string str){
     setPosition(fieldName);
     output->writeUTF(str);
 };
 
-void DefaultPortableWriter::writePortable(string fieldName, Portable& portable) throw(ios_base::failure){
+void DefaultPortableWriter::writePortable(string fieldName, Portable& portable){
     setPosition(fieldName);
     bool isNull = &portable == NULL;
     output->writeBoolean(isNull);
@@ -81,7 +81,7 @@ void DefaultPortableWriter::writePortable(string fieldName, Portable& portable) 
     }
 };
 
-void DefaultPortableWriter::writeByteArray(string fieldName, Array<byte>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeByteArray(string fieldName, Array<byte>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -92,7 +92,7 @@ void DefaultPortableWriter::writeByteArray(string fieldName, Array<byte>& values
     }
 };
 
-void DefaultPortableWriter::writeCharArray(string fieldName, Array<char>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeCharArray(string fieldName, Array<char>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -103,7 +103,7 @@ void DefaultPortableWriter::writeCharArray(string fieldName, Array<char>& values
     }
 };
 
-void DefaultPortableWriter::writeIntArray(string fieldName, Array<int>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeIntArray(string fieldName, Array<int>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -114,7 +114,7 @@ void DefaultPortableWriter::writeIntArray(string fieldName, Array<int>& values) 
     }
 };
 
-void DefaultPortableWriter::writeLongArray(string fieldName, Array<long>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeLongArray(string fieldName, Array<long>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -125,7 +125,7 @@ void DefaultPortableWriter::writeLongArray(string fieldName, Array<long>& values
     }
 };
 
-void DefaultPortableWriter::writeDoubleArray(string fieldName, Array<double>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeDoubleArray(string fieldName, Array<double>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -136,7 +136,7 @@ void DefaultPortableWriter::writeDoubleArray(string fieldName, Array<double>& va
     }
 };
 
-void DefaultPortableWriter::writeFloatArray(string fieldName, Array<float>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeFloatArray(string fieldName, Array<float>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -147,7 +147,7 @@ void DefaultPortableWriter::writeFloatArray(string fieldName, Array<float>& valu
     }
 };
 
-void DefaultPortableWriter::writeShortArray(string fieldName, Array<short>& values) throw(ios_base::failure){
+void DefaultPortableWriter::writeShortArray(string fieldName, Array<short>& values){
     setPosition(fieldName);
     int len = values.length();
     output->writeInt(len);
@@ -158,7 +158,7 @@ void DefaultPortableWriter::writeShortArray(string fieldName, Array<short>& valu
     }
 };
 
-void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable*>& portables) throw(ios_base::failure){
+void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable*>& portables){
     setPosition(fieldName);
     int len = portables.length();
     output->writeInt(len);
@@ -169,7 +169,7 @@ void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable*
     }
 };
 
-void DefaultPortableWriter::setPosition(string fieldName) throw(ios_base::failure){
+void DefaultPortableWriter::setPosition(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName)){
        std::string error;
        error +=  "HazelcastSerializationException( Invalid field name: '";

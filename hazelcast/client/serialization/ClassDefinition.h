@@ -48,8 +48,8 @@ public:
     
     const vector<ClassDefinition*>& getNestedClassDefinitions();
     
-    void writeData(DataOutput&) const throw(std::ios_base::failure);
-    void readData(DataInput&)throw(std::ios_base::failure);
+    void writeData(DataOutput&) const;
+    void readData(DataInput&);
     
     int getFieldCount();
     int getClassId() const;

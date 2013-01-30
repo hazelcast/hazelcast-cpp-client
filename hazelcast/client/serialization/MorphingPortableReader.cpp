@@ -20,7 +20,7 @@ namespace serialization{
 MorphingPortableReader::MorphingPortableReader(PortableSerializer* p, DataInput& cad, ClassDefinition* cd):PortableReader(p,cad,cd) {
 }
 
-int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
+int MorphingPortableReader::readInt(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -39,7 +39,7 @@ int MorphingPortableReader::readInt(string fieldName) throw(ios_base::failure){
     }
 };
 
-long MorphingPortableReader::readLong(string fieldName) throw(ios_base::failure){
+long MorphingPortableReader::readLong(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -60,7 +60,7 @@ long MorphingPortableReader::readLong(string fieldName) throw(ios_base::failure)
     }
 };
 
-bool MorphingPortableReader::readBoolean(string fieldName) throw(ios_base::failure){
+bool MorphingPortableReader::readBoolean(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -71,7 +71,7 @@ bool MorphingPortableReader::readBoolean(string fieldName) throw(ios_base::failu
     return PortableReader::readBoolean(fieldName);     
 };
 
-byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure){
+byte MorphingPortableReader::readByte(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -82,7 +82,7 @@ byte MorphingPortableReader::readByte(string fieldName) throw(ios_base::failure)
     return PortableReader::readByte(fieldName);  
 };
 
-char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure){
+char MorphingPortableReader::readChar(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -93,7 +93,7 @@ char MorphingPortableReader::readChar(string fieldName) throw(ios_base::failure)
     return PortableReader::readChar(fieldName);
 };
 
-double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::failure){
+double MorphingPortableReader::readDouble(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -118,7 +118,7 @@ double MorphingPortableReader::readDouble(string fieldName) throw(ios_base::fail
     }
 };
 
-float MorphingPortableReader::readFloat(string fieldName) throw(ios_base::failure){
+float MorphingPortableReader::readFloat(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -140,7 +140,7 @@ float MorphingPortableReader::readFloat(string fieldName) throw(ios_base::failur
 };
 
 
-short MorphingPortableReader::readShort(string fieldName) throw(ios_base::failure){
+short MorphingPortableReader::readShort(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return 0;
     FieldDefinition fd = cd->get(fieldName);
@@ -155,7 +155,7 @@ short MorphingPortableReader::readShort(string fieldName) throw(ios_base::failur
     }
 };
 
-string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure){
+string MorphingPortableReader::readUTF(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -166,7 +166,7 @@ string MorphingPortableReader::readUTF(string fieldName) throw(ios_base::failure
     return PortableReader::readUTF(fieldName);
 };
 
-auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(ios_base::failure) {
+auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) {
     if(!cd->isFieldDefinitionExists(fieldName))
         return auto_ptr<Portable>();
     FieldDefinition fd = cd->get(fieldName);
@@ -177,7 +177,7 @@ auto_ptr<Portable> MorphingPortableReader::readPortable(string fieldName) throw(
     return PortableReader::readPortable(fieldName);
 };
 
-Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_base::failure){
+Array<byte> MorphingPortableReader::readByteArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -188,7 +188,7 @@ Array<byte> MorphingPortableReader::readByteArray(string fieldName) throw(ios_ba
     return PortableReader::readByteArray(fieldName);
 };
 
-Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_base::failure){
+Array<char> MorphingPortableReader::readCharArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -199,7 +199,7 @@ Array<char> MorphingPortableReader::readCharArray(string fieldName) throw(ios_ba
     return PortableReader::readCharArray(fieldName);
 };
 
-Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base::failure){
+Array<int> MorphingPortableReader::readIntArray(string fieldName){
    if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -210,7 +210,7 @@ Array<int> MorphingPortableReader::readIntArray(string fieldName) throw(ios_base
     return PortableReader::readIntArray(fieldName);
 };
 
-Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_base::failure){
+Array<long> MorphingPortableReader::readLongArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -221,7 +221,7 @@ Array<long> MorphingPortableReader::readLongArray(string fieldName) throw(ios_ba
     return PortableReader::readLongArray(fieldName);
 };
 
-Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
+Array<double> MorphingPortableReader::readDoubleArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -232,7 +232,7 @@ Array<double> MorphingPortableReader::readDoubleArray(string fieldName) throw(io
     return PortableReader::readDoubleArray(fieldName);
 };
 
-Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
+Array<float> MorphingPortableReader::readFloatArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -243,7 +243,7 @@ Array<float> MorphingPortableReader::readFloatArray(string fieldName) throw(ios_
     return PortableReader::readFloatArray(fieldName);
 };
 
-Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_base::failure){
+Array<short> MorphingPortableReader::readShortArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);
@@ -254,7 +254,7 @@ Array<short> MorphingPortableReader::readShortArray(string fieldName) throw(ios_
     return PortableReader::readShortArray(fieldName);
 };
 
-Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName) throw(ios_base::failure){//TODO
+Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName){//TODO
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);

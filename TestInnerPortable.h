@@ -16,7 +16,7 @@
 #include "hazelcast/client/Array.h"
 #include "TestNamedPortable.h"
 #include <iostream>
-using namespace hazelcast::client::serialization;
+using namespace hazelcast::client;
 
 class TestInnerPortable : public Portable{
 public:
@@ -53,7 +53,7 @@ public:
     };
     ~TestInnerPortable(){
     }    
-    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+    void writePortable(serialization::PortableWriter& writer) {
         writer.writeByteArray("b", bb);
         writer.writeCharArray("c", cc);
         writer.writeShortArray("s", ss);
@@ -65,7 +65,7 @@ public:
         
     };
         
-    void readPortable(PortableReader& reader)throw(std::ios_base::failure) {
+    void readPortable(serialization::PortableReader& reader) {
         bb = reader.readByteArray("b");
         cc = reader.readCharArray("c");
         ss = reader.readShortArray("s");

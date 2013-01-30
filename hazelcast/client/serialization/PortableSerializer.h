@@ -26,14 +26,14 @@ public:
     PortableSerializer(SerializationContext*);
     ~PortableSerializer();
     
-    ClassDefinition* getClassDefinition(Portable& p) throw(std::ios_base::failure);
+    ClassDefinition* getClassDefinition(Portable& p);
     
     int getTypeId();
     int getVersion();
     
-    void write(DataOutput* output, Portable& p) throw(std::ios_base::failure);
+    void write(DataOutput* output, Portable& p);
     
-    auto_ptr<Portable> read(DataInput& dataInput) throw(std::ios_base::failure);
+    auto_ptr<Portable> read(DataInput& dataInput);
     
 private:
     SerializationContext* context;

@@ -33,15 +33,7 @@ Data::Data(const int type, Array<byte> buffer):partitionHash(-1),cd(NULL){
     this->buffer = buffer;       
 };
 
-Data& Data::operator=(Data& rhs){
-    type = rhs.type;
-    buffer = rhs.buffer;
-    cd = rhs.cd;
-    partitionHash = rhs.partitionHash;
-    return (*this);
-};
-
-const Data& Data::operator=(const Data& rhs){
+Data& Data::operator=(const Data& rhs){
     type = rhs.type;
     buffer = rhs.buffer;
     cd = rhs.cd;
@@ -73,7 +65,7 @@ void Data::setPartitionHash(int partitionHash){
     this->partitionHash = partitionHash;
 };
 
-void Data::readData(DataInput& in) throw(std::ios_base::failure){
+void Data::readData(DataInput& in) {
     type = in.readInt();
     int classId = in.readInt();
     if (classId != NO_CLASS_ID) {
@@ -100,7 +92,7 @@ void Data::readData(DataInput& in) throw(std::ios_base::failure){
     partitionHash = in.readInt();
 };
 
-void Data::writeData(DataOutput& out) const throw(std::ios_base::failure){
+void Data::writeData(DataOutput& out) const {
     out.writeInt(type);
     if (cd != NULL) {
         out.writeInt(cd->getClassId());

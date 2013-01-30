@@ -63,7 +63,7 @@ const vector<ClassDefinition*>& ClassDefinition::getNestedClassDefinitions(){
     return nestedClassDefinitions;
 };
 
-void ClassDefinition::writeData(DataOutput & out) const throw(std::ios_base::failure){
+void ClassDefinition::writeData(DataOutput & out) const {
     out.writeInt(classId);
     out.writeInt(version);
     out.writeInt((int)fieldDefinitions.size());
@@ -74,7 +74,7 @@ void ClassDefinition::writeData(DataOutput & out) const throw(std::ios_base::fai
         (*it)->writeData(out);
 };
 
-void ClassDefinition::readData(DataInput & in) throw(std::ios_base::failure){
+void ClassDefinition::readData(DataInput & in) {
     classId = in.readInt();
     version = in.readInt();
     int size = in.readInt();

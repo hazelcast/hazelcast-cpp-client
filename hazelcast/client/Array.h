@@ -13,14 +13,10 @@
 
 namespace hazelcast{ 
 namespace client{
-namespace serialization{
     
 template <typename T>
 class Array{
 public:
-//    friend class DataInput;
-//    friend class DataOutput;
-
     Array():buffer(NULL),len(0){
     };
     Array(int size){
@@ -95,6 +91,6 @@ private:
     int len;
 };
 
-}}}
+}}
 #endif	/* HAZELCAST_ARRAY */
 

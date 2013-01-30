@@ -32,7 +32,7 @@ PortableSerializer::~PortableSerializer(){
 };
 
 
-ClassDefinition* PortableSerializer::getClassDefinition(Portable& p) throw(std::ios_base::failure) {
+ClassDefinition* PortableSerializer::getClassDefinition(Portable& p)  {
     int classId = p.getClassId();
     ClassDefinition* cd;
     
@@ -53,7 +53,7 @@ int PortableSerializer::getVersion(){
     return context->getVersion();
 };
 
-void PortableSerializer::write(DataOutput* dataOutput, Portable& p) throw(std::ios_base::failure) {
+void PortableSerializer::write(DataOutput* dataOutput, Portable& p)  {
     
     ClassDefinition* cd = getClassDefinition(p);
     DefaultPortableWriter writer(this, dataOutput, cd);
@@ -61,7 +61,7 @@ void PortableSerializer::write(DataOutput* dataOutput, Portable& p) throw(std::i
     
 };
 
-auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) throw(std::ios_base::failure){
+auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
     
     int dataClassId = dataInput.getDataClassId();
     int dataVersion = dataInput.getDataVersion();

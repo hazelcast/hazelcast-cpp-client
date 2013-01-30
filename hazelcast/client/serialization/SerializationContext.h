@@ -40,17 +40,17 @@ public:
     
     std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinition* createClassDefinition( Array<byte>&) throw(std::ios_base::failure);
-    void registerNestedDefinitions(ClassDefinition* cd) throw(std::ios_base::failure);
-    void registerClassDefinition(ClassDefinition* cd) throw(std::ios_base::failure);
+    ClassDefinition* createClassDefinition( Array<byte>&);
+    void registerNestedDefinitions(ClassDefinition* cd);
+    void registerClassDefinition(ClassDefinition* cd);
     int getVersion();
     
 private:
     SerializationContext(const SerializationContext&  );
     void operator=(const SerializationContext&);
     
-    void compress(Array<byte>&) throw(std::ios_base::failure);
-    void decompress(Array<byte>&) throw(std::ios_base::failure);
+    void compress(Array<byte>&);
+    void decompress(Array<byte>&);
         
     PortableFactory* portableFactory;
     SerializationService* service;

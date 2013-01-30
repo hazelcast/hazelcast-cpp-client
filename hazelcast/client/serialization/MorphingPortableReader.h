@@ -18,41 +18,41 @@ class MorphingPortableReader : public PortableReader {
 public:
     MorphingPortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
     
-    int readInt(string) throw(ios_base::failure);
+    int readInt(string);
     
-    long readLong(string) throw(ios_base::failure);
+    long readLong(string);
     
-    bool readBoolean(string) throw(ios_base::failure);
+    bool readBoolean(string);
     
-    byte readByte(string) throw(ios_base::failure);
+    byte readByte(string);
     
-    char readChar(string) throw(ios_base::failure);
+    char readChar(string);
     
-    double readDouble(string) throw(ios_base::failure);
+    double readDouble(string);
     
-    float readFloat(string) throw(ios_base::failure);
+    float readFloat(string);
     
-    short readShort(string) throw(ios_base::failure);
+    short readShort(string);
     
-    string readUTF(string) throw(ios_base::failure);
+    string readUTF(string);
         
-    auto_ptr<Portable> readPortable(string) throw(ios_base::failure) ;
+    auto_ptr<Portable> readPortable(string);
 
-    Array<byte> readByteArray(string) throw(ios_base::failure);
+    Array<byte> readByteArray(string);
     
-    Array<char> readCharArray(string) throw(ios_base::failure);
+    Array<char> readCharArray(string);
     
-    Array<int> readIntArray(string) throw(ios_base::failure);
+    Array<int> readIntArray(string);
     
-    Array<long> readLongArray(string) throw(ios_base::failure);
+    Array<long> readLongArray(string);
     
-    Array<double> readDoubleArray(string) throw(ios_base::failure);
+    Array<double> readDoubleArray(string);
     
-    Array<float> readFloatArray(string) throw(ios_base::failure);
+    Array<float> readFloatArray(string);
     
-    Array<short> readShortArray(string) throw(ios_base::failure);
+    Array<short> readShortArray(string);
     
-    Array< auto_ptr<Portable> > readPortableArray(string) throw(ios_base::failure);
+    Array< auto_ptr<Portable> > readPortableArray(string);
     
 };
 

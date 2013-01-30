@@ -62,7 +62,7 @@ public:
         return 0;
     };
         
-    void writePortable(PortableWriter& writer) throw(std::ios_base::failure){
+    void writePortable(PortableWriter& writer) {
         writer.writeByte("b", b);
         
         writer.writeBoolean("bool", boolean);
@@ -77,7 +77,7 @@ public:
         
     };
         
-    void readPortable(PortableReader& reader)throw(std::ios_base::failure) {
+    void readPortable(PortableReader& reader) {
         b = reader.readByte("b");
         boolean = reader.readBoolean("bool");
         c = reader.readChar("c");

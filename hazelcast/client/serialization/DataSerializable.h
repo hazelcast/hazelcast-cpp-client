@@ -20,8 +20,8 @@ class DataOutput;
 
 class DataSerializable{
 public:
-    virtual void writeData(DataOutput&) const throw(std::ios_base::failure) = 0;
-    virtual void readData(DataInput&) throw(std::ios_base::failure) = 0;
+    virtual void writeData(DataOutput&) const  = 0;
+    virtual void readData(DataInput&)  = 0;
 
 };
 

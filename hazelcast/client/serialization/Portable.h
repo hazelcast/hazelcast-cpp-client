@@ -9,8 +9,6 @@
 #ifndef HAZELCAST_PORTABLE
 #define HAZELCAST_PORTABLE
 
-#include <iostream>
-
 namespace hazelcast{ 
 namespace client{
 namespace serialization{
@@ -21,10 +19,8 @@ class PortableReader;
 class Portable{
 public:
     virtual int getClassId() = 0; 
-    
-    virtual void writePortable(PortableWriter& writer) throw(std::ios_base::failure) = 0; 
-    
-    virtual void readPortable(PortableReader& reader) throw(std::ios_base::failure) = 0; 
+    virtual void writePortable(PortableWriter& writer)  = 0; 
+    virtual void readPortable(PortableReader& reader)  = 0; 
     
 };
 

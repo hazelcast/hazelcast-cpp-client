@@ -21,8 +21,8 @@ class DataOutput;
 template<typename T>
 class TypeSerializer{
 public:
-    void write(DataOutput*, T ) throw(std::ios_base::failure);
-    T read(DataInput*) throw(std::ios_base::failure);
+    void write(DataOutput*, T );
+    T read(DataInput*);
 };
 
 }}}

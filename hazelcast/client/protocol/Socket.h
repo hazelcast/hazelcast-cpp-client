@@ -19,7 +19,7 @@ public:
     ~Socket();
     void sendData(const void* buffer, int len);
     void recvData(void* buffer, int len);
-    hazelcast::client::serialization::Array<byte> readLine();
+    hazelcast::client::Array<byte> readLine();
 private:
     Socket(const Socket& rhs);
     void getInfo();

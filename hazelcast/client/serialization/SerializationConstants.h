@@ -15,7 +15,7 @@ namespace serialization{
 
 class SerializationConstants{
 public:
-    static int ID ;
+    static int ID;
     
     static int const CONSTANT_TYPE_PORTABLE = -1;
     

@@ -38,7 +38,7 @@ void Socket::sendData(const void* buffer, int len){
          throw "Error at sending";
 };
 
-hazelcast::client::serialization::Array<byte> Socket::readLine(){
+hazelcast::client::Array<byte> Socket::readLine(){
     std::string line;
     while(true){
         char current;
@@ -52,7 +52,7 @@ hazelcast::client::serialization::Array<byte> Socket::readLine(){
         }
         line.push_back(current);
     }
-    return hazelcast::client::serialization::Array<byte>(line.length(),(byte*)line.c_str());
+    return hazelcast::client::Array<byte>(line.length(),(byte*)line.c_str());
 };
 
 void Socket::recvData(void* buffer, int len){

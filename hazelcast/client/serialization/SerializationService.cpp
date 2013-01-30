@@ -40,7 +40,7 @@ void SerializationService::push(DataOutput* out) {
 };
 
 DataOutput* SerializationService::pop() {
-    DataOutput* out ;
+    DataOutput* out;
     if (outputPool.empty()) {
         out = new DataOutput(this);
     }else{

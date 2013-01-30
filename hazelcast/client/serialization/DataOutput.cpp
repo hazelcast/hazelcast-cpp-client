@@ -37,41 +37,41 @@ int DataOutput::getSize(){
 };
 
 //Inherited from DataOutput
-void DataOutput::write(const Array<byte>& bytes)throw (std::ios_base::failure){
+void DataOutput::write(const Array<byte>& bytes){
     
     write((char*)bytes.getBuffer() , 0 , bytes.length());
 };
 
-void DataOutput::write(const char *bytes, int off, int len) throw(std::ios_base::failure){
+void DataOutput::write(const char *bytes, int off, int len) {
     buffer.write(bytes + off , sizeof(char) * len);
 };
 
-void DataOutput::writeBoolean(bool i) throw(std::ios_base::failure){
+void DataOutput::writeBoolean(bool i) {
     writeByte(i);
 };
 
-void DataOutput::writeByte(int i) throw(std::ios_base::failure){
+void DataOutput::writeByte(int i) {
     buffer.put(0xff & i);
 };
 
-void DataOutput::writeShort(int v) throw(std::ios_base::failure){
+void DataOutput::writeShort(int v) {
     writeByte((v >> 8));
     writeByte(v);
 };
 
-void DataOutput::writeChar(int i) throw(std::ios_base::failure){
+void DataOutput::writeChar(int i) {
     writeByte((i >> 8));
     writeByte(i);
 };
 
-void DataOutput::writeInt(int v) throw(std::ios_base::failure){
+void DataOutput::writeInt(int v) {
     writeByte((v >> 24));
     writeByte((v >> 16));
     writeByte((v >> 8));
     writeByte(v);
 };
 
-void DataOutput::writeLong(long l) throw(std::ios_base::failure){
+void DataOutput::writeLong(long l) {
     writeByte((l >> 56));
     writeByte((l >> 48));
     writeByte((l >> 40));
@@ -82,7 +82,7 @@ void DataOutput::writeLong(long l) throw(std::ios_base::failure){
     writeByte((int)l);
 };
 
-void DataOutput::writeFloat(float x) throw(std::ios_base::failure){
+void DataOutput::writeFloat(float x) {
     union {
         float f;
         int i;
@@ -91,7 +91,7 @@ void DataOutput::writeFloat(float x) throw(std::ios_base::failure){
     writeInt(u.i);
 };
 
-void DataOutput::writeDouble(double v) throw(std::ios_base::failure){
+void DataOutput::writeDouble(double v) {
     union {
         double d;
         long l;
@@ -100,7 +100,7 @@ void DataOutput::writeDouble(double v) throw(std::ios_base::failure){
     writeLong(u.l);
 };
 
-void DataOutput::writeUTF(std::string str) throw(std::ios_base::failure){
+void DataOutput::writeUTF(std::string str) {
     bool isNull = str.empty();
     writeBoolean(isNull);
     if (isNull)
@@ -117,7 +117,7 @@ void DataOutput::writeUTF(std::string str) throw(std::ios_base::failure){
 };
 
 //Inherited from BufferObjectDataOutput
-void DataOutput::write(int index, int b) throw(std::ios_base::failure){
+void DataOutput::write(int index, int b) {
     int pos = position();
     position(index);
     writeByte(b);
@@ -125,63 +125,63 @@ void DataOutput::write(int index, int b) throw(std::ios_base::failure){
 };
 
 
-void DataOutput::write(int index, char* b, int off, int len) throw (std::ios_base::failure){
+void DataOutput::write(int index, char* b, int off, int len) {
     int pos = position();
     position(index);
     write(b,off,len);
     position(pos);
 };
 
-void DataOutput::writeInt(int index, int v) throw (std::ios_base::failure){
+void DataOutput::writeInt(int index, int v) {
     int pos = position();
     position(index);
     writeInt(v);
     position(pos);
 };
 
-void DataOutput::writeLong(int index, const long v) throw (std::ios_base::failure){
+void DataOutput::writeLong(int index, const long v) {
     int pos = position();
     position(index);
     writeLong(v);
     position(pos);
 };
 
-void DataOutput::writeBoolean(int index, const bool v) throw (std::ios_base::failure){
+void DataOutput::writeBoolean(int index, const bool v) {
     int pos = position();
     position(index);
     writeBoolean(v);
     position(pos);
 };
 
-void DataOutput::writeByte(int index, const int v) throw (std::ios_base::failure){
+void DataOutput::writeByte(int index, const int v) {
     int pos = position();
     position(index);
     writeByte(v);
     position(pos);
 };
 
-void DataOutput::writeChar(int index, const int v) throw (std::ios_base::failure){
+void DataOutput::writeChar(int index, const int v) {
     int pos = position();
     position(index);
     writeChar(v);
     position(pos);
 };
 
-void DataOutput::writeDouble(int index, const double v) throw (std::ios_base::failure){
+void DataOutput::writeDouble(int index, const double v) {
     int pos = position();
     position(index);
     writeDouble(v);
     position(pos);
 };
 
-void DataOutput::writeFloat(int index, const float v) throw (std::ios_base::failure){
+void DataOutput::writeFloat(int index, const float v) {
     int pos = position();
     position(index);
     writeFloat(v);
     position(pos);
 };
 
-void DataOutput::writeShort(int index, const int v) throw (std::ios_base::failure){
+void DataOutput::writeShort(int index, const int v) {
     int pos = position();
     position(index);
     writeShort(v);
@@ -208,7 +208,7 @@ void DataOutput::reset(){
 };
 
 //private functions
-void DataOutput::writeShortUTF(std::string str) throw(std::ios_base::failure){
+void DataOutput::writeShortUTF(std::string str) {
     int stringLen = (int)str.length();
     int utfLength = 0;
     int count = 0;
@@ -223,7 +223,7 @@ void DataOutput::writeShortUTF(std::string str) throw(std::ios_base::failure){
         }
     }
     if (utfLength > 65535) {
-        std::string error = "encoded string too long:" ;
+        std::string error = "encoded string too long:";
         error += utfLength;
         error += " bytes";
         throw error;

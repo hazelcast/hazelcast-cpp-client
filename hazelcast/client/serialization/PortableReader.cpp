@@ -24,54 +24,54 @@ PortableReader::PortableReader(PortableSerializer* serializer, DataInput& input,
     this->offset = input.position();
 };
 
-int PortableReader::readInt(string fieldName) throw(ios_base::failure){
+int PortableReader::readInt(string fieldName){
     int pos = getPosition(fieldName);
     return input->readInt(pos);
 };
 
-long PortableReader::readLong(string fieldName) throw(ios_base::failure){
+long PortableReader::readLong(string fieldName){
     int pos = getPosition(fieldName);
     return input->readLong(pos);
 };
 
-bool PortableReader::readBoolean(string fieldName) throw(ios_base::failure){
+bool PortableReader::readBoolean(string fieldName){
     int pos = getPosition(fieldName);
     return input->readBoolean(pos);
 };
 
-byte PortableReader::readByte(string fieldName) throw(ios_base::failure){
+byte PortableReader::readByte(string fieldName){
     int pos = getPosition(fieldName);
     return input->readByte(pos);
 };
 
-char PortableReader::readChar(string fieldName) throw(ios_base::failure){
+char PortableReader::readChar(string fieldName){
     int pos = getPosition(fieldName);
     return input->readChar(pos);
 };
 
-double PortableReader::readDouble(string fieldName) throw(ios_base::failure){
+double PortableReader::readDouble(string fieldName){
     int pos = getPosition(fieldName);
     return input->readDouble(pos);
 };
 
-float PortableReader::readFloat(string fieldName) throw(ios_base::failure){
+float PortableReader::readFloat(string fieldName){
     int pos = getPosition(fieldName);
     return input->readFloat(pos);
 };
 
 
-short PortableReader::readShort(string fieldName) throw(ios_base::failure){
+short PortableReader::readShort(string fieldName){
     int pos = getPosition(fieldName);
     return input->readShort(pos);
 };
 
-string PortableReader::readUTF(string fieldName) throw(ios_base::failure){
+string PortableReader::readUTF(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     return input->readUTF();
 };
 
-auto_ptr<Portable> PortableReader::readPortable(string fieldName) throw(ios_base::failure) {
+auto_ptr<Portable> PortableReader::readPortable(string fieldName) {
     if(!cd->isFieldDefinitionExists(fieldName))
        throw "throwUnknownFieldException" + fieldName;
 
@@ -91,7 +91,7 @@ auto_ptr<Portable> PortableReader::readPortable(string fieldName) throw(ios_base
     return p;
 };
 
-Array<byte> PortableReader::readByteArray(string fieldName) throw(ios_base::failure){
+Array<byte> PortableReader::readByteArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -102,7 +102,7 @@ Array<byte> PortableReader::readByteArray(string fieldName) throw(ios_base::fail
     return values;
 };
 
-Array<char> PortableReader::readCharArray(string fieldName) throw(ios_base::failure){
+Array<char> PortableReader::readCharArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -113,7 +113,7 @@ Array<char> PortableReader::readCharArray(string fieldName) throw(ios_base::fail
     return values;
 };
 
-Array<int> PortableReader::readIntArray(string fieldName) throw(ios_base::failure){
+Array<int> PortableReader::readIntArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -124,7 +124,7 @@ Array<int> PortableReader::readIntArray(string fieldName) throw(ios_base::failur
     return values;
 };
 
-Array<long> PortableReader::readLongArray(string fieldName) throw(ios_base::failure){
+Array<long> PortableReader::readLongArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -135,7 +135,7 @@ Array<long> PortableReader::readLongArray(string fieldName) throw(ios_base::fail
     return values;
 };
 
-Array<double> PortableReader::readDoubleArray(string fieldName) throw(ios_base::failure){
+Array<double> PortableReader::readDoubleArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -146,7 +146,7 @@ Array<double> PortableReader::readDoubleArray(string fieldName) throw(ios_base::
     return values;
 };
 
-Array<float> PortableReader::readFloatArray(string fieldName) throw(ios_base::failure){
+Array<float> PortableReader::readFloatArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -157,7 +157,7 @@ Array<float> PortableReader::readFloatArray(string fieldName) throw(ios_base::fa
     return values;
 };
 
-Array<short> PortableReader::readShortArray(string fieldName) throw(ios_base::failure){
+Array<short> PortableReader::readShortArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
@@ -168,7 +168,7 @@ Array<short> PortableReader::readShortArray(string fieldName) throw(ios_base::fa
     return values;
 };
 
-Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName) throw(ios_base::failure){
+Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
           throw "throwUnknownFieldException" + fieldName;
       FieldDefinition fd = cd->get(fieldName);
@@ -185,14 +185,14 @@ Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName) 
 
 };
 
-int PortableReader::getPosition(string fieldName) throw(ios_base::failure){
+int PortableReader::getPosition(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         throw "throwUnknownFieldException" + fieldName;
     FieldDefinition fd = cd->get(fieldName);
     return getPosition(&fd);
 };
 
-int PortableReader::getPosition(FieldDefinition* fd) throw(ios_base::failure){
+int PortableReader::getPosition(FieldDefinition* fd){
     return input->readInt(offset + fd->getIndex() * 4);
 };
 

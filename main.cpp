@@ -27,9 +27,9 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-//    write();
-//    read();
-    client();
+    write();
+    read();
+//    client();
     return 0;
 };
 
@@ -40,6 +40,8 @@ void client(){
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
+//        auto_ptr< IMap<int,int> > map = hazelcastClient.getMap<int,int>("sancar");
+//        map->put(1,2);
         
         std::cout << "Press a key to end" << std::endl;
         std::string x;

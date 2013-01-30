@@ -44,7 +44,7 @@ public:
     
     void readFully(byte* bytes, int off, int len);
     
-    int skipBytes(int i) ;
+    int skipBytes(int i);
     
     bool readBoolean();
     
@@ -63,31 +63,31 @@ public:
     double readDouble();
     
     //Inherited from BufferObjectDataInput
-    int read(int index) throw (std::ios_base::failure) ;
+    int read(int index) ;
     
-    int read(int index, byte* b, int off, int len) throw (std::ios_base::failure) ;
+    int read(int index, byte* b, int off, int len) ;
     
-    int readInt(int index) throw (std::ios_base::failure) ;
+    int readInt(int index) ;
     
-    long readLong(int index) throw (std::ios_base::failure) ;
+    long readLong(int index) ;
     
-    bool readBoolean(int index) throw (std::ios_base::failure) ;
+    bool readBoolean(int index) ;
     
-    byte readByte(int index) throw (std::ios_base::failure) ;
+    byte readByte(int index) ;
     
-    char readChar(int index) throw (std::ios_base::failure) ;
+    char readChar(int index) ;
     
-    double readDouble(int index) throw (std::ios_base::failure) ;
+    double readDouble(int index) ;
     
-    float readFloat(int index) throw (std::ios_base::failure) ;
+    float readFloat(int index) ;
     
-    short readShort(int index) throw (std::ios_base::failure) ;
+    short readShort(int index) ;
     
-    int position() ;
+    int position();
     
-    void position(int newPos) ;
+    void position(int newPos);
     
-    void reset() ;
+    void reset();
     
 private:
     byte* ptr;
@@ -99,8 +99,8 @@ private:
     int dataVersion;
     
     static int const STRING_CHUNK_SIZE = DataOutput::STRING_CHUNK_SIZE;
-    std::string readShortUTF() throw (std::ios_base::failure) ;
-     
+    std::string readShortUTF() ;
+    DataInput& operator=(const DataInput&); 
 };
 
 }}}
