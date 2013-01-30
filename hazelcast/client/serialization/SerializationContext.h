@@ -31,8 +31,6 @@ class SerializationContext{
 public:
     SerializationContext(PortableFactory*,int,SerializationService*);
     ~SerializationContext();
-    SerializationContext(const SerializationContext&  );
-    void operator=(const SerializationContext&);
     
     bool isClassDefinitionExists(int);
     ClassDefinition* lookup(int);
@@ -48,6 +46,8 @@ public:
     int getVersion();
     
 private:
+    SerializationContext(const SerializationContext&  );
+    void operator=(const SerializationContext&);
     
     void compress(Array<byte>&) throw(std::ios_base::failure);
     void decompress(Array<byte>&) throw(std::ios_base::failure);

@@ -5,7 +5,7 @@
 namespace hazelcast{ 
 namespace client{
 
-Address::Address():address(NULL),port(NULL){
+Address::Address():address(""),port(""){
     
 };
 

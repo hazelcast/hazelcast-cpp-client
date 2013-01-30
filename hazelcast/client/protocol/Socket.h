@@ -1,7 +1,7 @@
 #ifndef HAZELCAST_SOCKET
 #define HAZELCAST_SOCKET
 
-
+#include "../Array.h"
 #include "../Address.h"
 #include <netdb.h>
 
@@ -17,8 +17,9 @@ class Socket{
 public:
     Socket(Address& address);
     ~Socket();
-    void sendData(byte* buffer, int size);
-    void recvData(byte* buffer, int size);
+    void sendData(const void* buffer, int len);
+    void recvData(void* buffer, int len);
+    hazelcast::client::serialization::Array<byte> readLine();
 private:
     Socket(const Socket& rhs);
     void getInfo();

@@ -15,11 +15,28 @@
 namespace hazelcast{ 
 namespace client{
 namespace serialization{
-
+//TODO uncomment code below !!!!! main test fails
+// DataInput::DataInput(Array<byte>& rhsBuffer, SerializationService* service):buffer(rhsBuffer)
+//                                                                            ,service(service)
+//                                                                            ,ptr(const_cast<byte*>(buffer.getBuffer()))
+//                                                                            ,beg(ptr)
+//{   
+//};
+//
+//DataInput::DataInput(Data& data, SerializationService* service):buffer(data.buffer)
+//                                                               ,service(service)
+//                                                               ,ptr(const_cast<byte*>(buffer.getBuffer()))
+//                                                               ,beg(ptr)
+//                                                               ,dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
+//                                                               ,dataVersion(data.cd != NULL ? data.cd->getVersion() : -1)
+//{   
+//};
+ 
+   
 DataInput::DataInput(Array<byte>& buffer, SerializationService* service){
     this->buffer = buffer;
-    this->ptr = this->buffer.buffer;
-    this->beg = this->buffer.buffer;
+    this->ptr = const_cast<byte*>(this->buffer.getBuffer());
+    this->beg = this->ptr;
     this->service = service;
 };
 
@@ -28,7 +45,7 @@ DataInput::DataInput(Data& data, SerializationService* service){
     this->dataClassId = cd != NULL ? cd->getClassId() : -1;
     this->dataVersion = cd != NULL ? cd->getVersion() : -1;
     this->buffer = data.buffer;
-    this->ptr = buffer.buffer;
+    this->ptr =  const_cast<byte*>(this->buffer.getBuffer());
     this->beg = ptr;
     this->service = service;
 };
@@ -50,7 +67,9 @@ SerializationContext* DataInput::getSerializationContext(){
 }
 //Inherited from DataInoput
 void DataInput::readFully(Array<byte>& bytes){
-    readFully(bytes.buffer,0,bytes.length());
+    byte temp[bytes.length()];
+    readFully(temp,0,bytes.length());
+    bytes = Array<byte>(bytes.length(),temp);
 };
 
 void DataInput::readFully(byte *bytes, int off, int len){

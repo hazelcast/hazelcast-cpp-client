@@ -38,10 +38,11 @@ int DataOutput::getSize(){
 
 //Inherited from DataOutput
 void DataOutput::write(const Array<byte>& bytes)throw (std::ios_base::failure){
-    write((char*)bytes.buffer , 0 , bytes.length());
+    
+    write((char*)bytes.getBuffer() , 0 , bytes.length());
 };
 
-void DataOutput::write(char *bytes, int off, int len) throw(std::ios_base::failure){
+void DataOutput::write(const char *bytes, int off, int len) throw(std::ios_base::failure){
     buffer.write(bytes + off , sizeof(char) * len);
 };
 

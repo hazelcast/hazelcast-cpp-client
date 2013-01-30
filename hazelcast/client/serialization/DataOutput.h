@@ -38,7 +38,7 @@ public:
     //Inherited from DataOutput
     void write(const Array<byte>& bytes)throw (std::ios_base::failure) ;
     
-    void write(char* bytes, int offset, int length)throw (std::ios_base::failure) ;
+    void write(const char* bytes, int offset, int length)throw (std::ios_base::failure) ;
     
     void writeBoolean(bool b) throw (std::ios_base::failure) ;
     

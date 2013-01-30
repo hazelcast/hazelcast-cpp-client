@@ -22,11 +22,7 @@ SerializationContext::SerializationContext(PortableFactory* portableFactory, int
 };
 SerializationContext::~SerializationContext(){
     for(map<long,ClassDefinition*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
-//        try{
-                delete (*it).second; 
-//        }catch(exception e){
-//            std::cout << ":( "<< e.what() << std::endl;
-//        }
+        delete (*it).second; 
     }
 };
 SerializationContext::SerializationContext(const SerializationContext&  rhs){
@@ -111,7 +107,7 @@ void SerializationContext::compress(Array<byte>& binary) throw(std::ios_base::fa
     uLong ucompSize = binary.length(); 
     uLong compSize = compressBound(ucompSize);
     byte temp[compSize];
-    int err = compress2((Bytef *)temp, &compSize, (Bytef *)binary.buffer, ucompSize,Z_BEST_COMPRESSION);
+    int err = compress2((Bytef *)temp, &compSize, (Bytef *)binary.getBuffer(), ucompSize,Z_BEST_COMPRESSION);
     switch (err) {
         case Z_BUF_ERROR:
             throw "not enough room in the output buffer";
@@ -134,7 +130,7 @@ void SerializationContext::decompress(Array<byte>& binary) throw(std::ios_base::
         ucompSize *= 2;
         delete [] temp;
         temp = new byte[ucompSize];
-        err = uncompress((Bytef *)temp, &ucompSize, (Bytef *)binary.buffer, compSize);
+        err = uncompress((Bytef *)temp, &ucompSize, (Bytef *)binary.getBuffer(), compSize);
         switch (err) {
             case Z_DATA_ERROR:
                 throw "data is corrupted";

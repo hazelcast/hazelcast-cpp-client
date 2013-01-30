@@ -29,7 +29,8 @@ public:
     Data();
     Data(const Data&);
     Data(const int type, Array<byte> bytes);
-    Data& operator=(const Data&);
+    Data& operator=(Data&);
+    const Data& operator=(const Data&);
     int size() const;
     
     int getPartitionHash();

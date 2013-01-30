@@ -27,9 +27,9 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-    write();
-    read();
-//    client();
+//    write();
+//    read();
+    client();
     return 0;
 };
 
@@ -38,7 +38,15 @@ void client(){
     clientConfig.getGroupConfig().setName("myCluster").setPassword("sancar");
     clientConfig.setAddress("192.168.2.2:5701");
     
-    auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
+    try{
+        auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
+        
+        std::cout << "Press a key to end" << std::endl;
+        std::string x;
+        std::cin >> x;
+    }catch(std::exception& e){
+        std::cout << e.what() << std::endl;
+    }
 };
 
 void read(){

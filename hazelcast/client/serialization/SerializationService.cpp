@@ -48,14 +48,11 @@ DataOutput* SerializationService::pop() {
         outputPool.pop();
     }
     return out;
-    
 };
 
 Data SerializationService::toData(bool object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    booleanSerializer.write(dataOutput, object);
-    
+    booleanSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_BOOLEAN, output->toByteArray());
     push(output);    
     return data;
@@ -63,145 +60,106 @@ Data SerializationService::toData(bool object){
 
 Data SerializationService::toData(char object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    charSerializer.write(dataOutput, object);
-    
+    charSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_CHAR, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(short object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    shortSerializer.write(dataOutput, object);
-    
+    shortSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_SHORT, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(int object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    integerSerializer.write(dataOutput, object);
-    
+    integerSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_INTEGER, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(long object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    longSerializer.write(dataOutput, object);
-    
+    longSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_LONG, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 
 Data SerializationService::toData(float object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    floatSerializer.write(dataOutput, object);
-    
+    floatSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_FLOAT, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(double object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    doubleSerializer.write(dataOutput, object);
-    
+    doubleSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE, output->toByteArray());
     push(output);   
     return data;
-    
 };
 
 Data SerializationService::toData(Array<char>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    charArraySerializer.write(dataOutput, object);
-    
+    charArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(Array<short>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    shortArraySerializer.write(dataOutput, object);
-    
+    shortArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(Array<int>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    integerArraySerializer.write(dataOutput, object);
-    
+    integerArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 Data SerializationService::toData(Array<long>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    longArraySerializer.write(dataOutput, object);
-    
+    longArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(Array<float>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    floatArraySerializer.write(dataOutput, object);
-    
+    floatArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(Array<double>& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    doubleArraySerializer.write(dataOutput, object);
-    
+    doubleArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());
     push(output);    
     return data;
-    
 };
 
 Data SerializationService::toData(string& object){
     DataOutput* output = pop();
-    DataOutput* dataOutput = dynamic_cast<DataOutput*>(output);
-    stringSerializer.write(dataOutput, object);
-    
+    stringSerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_STRING, output->toByteArray());
     push(output);    
-    return data;
-    
+    return data;   
 };
 
 Data SerializationService::toData(Data& data){

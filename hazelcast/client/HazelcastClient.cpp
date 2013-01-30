@@ -1,5 +1,5 @@
 #include "HazelcastClient.h"
-#include "protocol/ConstantCommands.h"
+#include "protocol/GeneralCommands.h"
 #include "protocol/CommandHandler.h"
 #include "ClientConfig.h"
 #include <memory>
@@ -9,21 +9,29 @@
 namespace hazelcast{
 namespace client{
     
-HazelcastClient::HazelcastClient(ClientConfig& config):commandHandler(config.getAddress()){
-    protocol::ConstantCommands::BeginCommand* beginCommand = new protocol::ConstantCommands::BeginCommand;
-    commandHandler.sendCommand(beginCommand);
-    delete beginCommand;
-    protocol::ConstantCommands::AuthCommand* authCommand = new protocol::ConstantCommands::AuthCommand(config.getGroupConfig().getName(), config.getGroupConfig().getPassword() );
-    commandHandler.sendCommand(authCommand);
-    delete authCommand;
+HazelcastClient::HazelcastClient(ClientConfig& config):serializationService(0,NULL)
+                                                      ,clientConfig(config)
+                                                      ,commandHandler(config.getAddress(),&serializationService)
+{
+    std::cout << "trying to connect  to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;
+    setupInitialConnection();
+    std::cout << "connected  to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;    
 };
 
+
 HazelcastClient::~HazelcastClient(){
-    //intentionally left empty
+    
 };
   
 std::auto_ptr<HazelcastClient> HazelcastClient::newHazelcastClient(ClientConfig& config){
     return std::auto_ptr<HazelcastClient>(new HazelcastClient(config) );
+};
+
+void HazelcastClient::setupInitialConnection(){
+    commandHandler.start();
+    protocol::GeneralCommands::AuthCommand authCommand(clientConfig.getGroupConfig().getName(), clientConfig.getGroupConfig().getPassword() );
+    commandHandler.sendCommand(&authCommand);   
+    
 };
 
 }}

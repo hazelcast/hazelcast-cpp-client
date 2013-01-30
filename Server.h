@@ -32,7 +32,7 @@ using namespace hazelcast::client::serialization;
         data.writeData(out);
         Array<byte> buffer = out.toByteArray();
         std::cout << buffer.length() << std::endl;
-        boost::asio::write(mSocket, boost::asio::buffer(buffer.buffer,1024));
+//        boost::asio::write(mSocket, boost::asio::buffer(buffer.buffer,1024));
     }
     private:
         /// The acceptor object used to accept incoming socket connections.

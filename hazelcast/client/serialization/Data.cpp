@@ -17,7 +17,10 @@ namespace hazelcast{
 namespace client{
 namespace serialization{
 
-Data::Data():partitionHash(-1),buffer(0),type(-1),cd(NULL){
+Data::Data():partitionHash(-1)
+            ,buffer(0)
+            ,type(-1)
+            ,cd(NULL){
     
 };
 
@@ -30,11 +33,20 @@ Data::Data(const int type, Array<byte> buffer):partitionHash(-1),cd(NULL){
     this->buffer = buffer;       
 };
 
-Data& Data::operator=(const Data& rhs){
+Data& Data::operator=(Data& rhs){
     type = rhs.type;
     buffer = rhs.buffer;
     cd = rhs.cd;
     partitionHash = rhs.partitionHash;
+    return (*this);
+};
+
+const Data& Data::operator=(const Data& rhs){
+    type = rhs.type;
+    buffer = rhs.buffer;
+    cd = rhs.cd;
+    partitionHash = rhs.partitionHash;
+    return (*this);
 };
 
 bool Data::operator==(const Data& rhs) const{
@@ -90,15 +102,15 @@ void Data::readData(DataInput& in) throw(std::ios_base::failure){
 
 void Data::writeData(DataOutput& out) const throw(std::ios_base::failure){
     out.writeInt(type);
-//    if (cd != null) {//TODO
+    if (cd != NULL) {
         out.writeInt(cd->getClassId());
         out.writeInt(cd->getVersion());
         Array<byte>  classDefBytes = cd->getBinary();
         out.writeInt(classDefBytes.length());
         out.write(classDefBytes);
-//    } else {
-//        out.writeInt(NO_CLASS_ID);
-//    }
+    } else {
+        out.writeInt(NO_CLASS_ID);
+    }
     int len = size();
     out.writeInt(len);
     if (len > 0) {

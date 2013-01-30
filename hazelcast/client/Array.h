@@ -18,7 +18,9 @@ namespace serialization{
 template <typename T>
 class Array{
 public:
-    
+//    friend class DataInput;
+//    friend class DataOutput;
+
     Array():buffer(NULL),len(0){
     };
     Array(int size){
@@ -48,7 +50,11 @@ public:
         init(rhs.len, rhs.buffer);
         return *this;
     };
-    
+    Array<T>& operator=(Array<T>& rhs){
+        delete [] buffer;
+        init(rhs.len, rhs.buffer);
+        return *this;
+    };
     bool operator==(const Array<T>& m) const{
         if(this == &m)
             return true;
@@ -73,9 +79,12 @@ public:
     };
     int length() const{ return len; };
     
+    const T* getBuffer() const{
+        return buffer;
+    };
     
-    T* buffer;
 private:
+    T* buffer;
     void init(int size, T* b){
         len = size;
         buffer = new T[len];

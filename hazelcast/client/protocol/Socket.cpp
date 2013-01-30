@@ -1,8 +1,10 @@
 #include "Socket.h"
+#include "../Array.h"
 #include "../Address.h"
 
 #include <string>
 #include <iostream>
+#include <memory>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -13,10 +15,9 @@ namespace hazelcast{
 namespace client{
 namespace protocol{
    
-Socket::Socket(Address& address){
+Socket::Socket(Address& address):address(address){
     getInfo();
     socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-    std::cout << "trying to connect  to " << address.getAddress() << ":" << address.getPort() << std::endl;
     if(connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
         std::cout << "connection error" << std::endl;
 };
@@ -28,15 +29,39 @@ Socket::Socket(const Socket& rhs){
 };
 
 Socket::~Socket(){
-   freeaddrinfo(server_info);      
+   freeaddrinfo(server_info); 
+   close(socketId);
 };
 
-void Socket::sendData(byte* buffer, int size){
-    
+void Socket::sendData(const void* buffer, int len){
+     if(send(socketId,buffer,len,0) == -1)
+         throw "Error at sending";
 };
 
-void Socket::recvData(byte* buffer, int size){
-    
+hazelcast::client::serialization::Array<byte> Socket::readLine(){
+    std::string line;
+    while(true){
+        char current;
+        recvData(&current,sizeof(char));
+        if(current == '\r'){
+            recvData(&current,sizeof(char));
+            if(current != '\n'){
+                throw "unexpected character";
+            }
+            break;
+        }
+        line.push_back(current);
+    }
+    return hazelcast::client::serialization::Array<byte>(line.length(),(byte*)line.c_str());
+};
+
+void Socket::recvData(void* buffer, int len){
+    int size = recv(socketId, (void *)buffer, len, 0);
+    if(size  == -1 )
+        throw "Error at reading";
+    else if(size == 0){
+        throw "Connection closed by remote";
+    }
 };
 
 void Socket::getInfo(){
@@ -46,7 +71,6 @@ void Socket::getInfo(){
     char ipstr[INET6_ADDRSTRLEN];
     hints.ai_socktype = SOCK_STREAM; 
     hints.ai_flags = AI_PASSIVE;     
-    
     if (getaddrinfo(address.getAddress().c_str(), address.getPort().c_str(), &hints, &server_info) != 0) {
         std::string error = "error "; //TODO
         throw error;
