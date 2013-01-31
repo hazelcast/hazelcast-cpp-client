@@ -1,5 +1,5 @@
-#ifndef HAZELCAST_CONSTANT_COMMANDS
-#define HAZELCAST_CONSTANT_COMMANDS
+#ifndef HAZELCAST_GENERAL_COMMANDS
+#define HAZELCAST_GENERAL_COMMANDS
 
 #include "Command.h"
 #include "../serialization/DataInput.h"
@@ -43,6 +43,10 @@ public:
     bool expectsResult(){
        return false;  
     };
+    
+    hazelcast::client::serialization::Data returnResult(){
+        
+    };
 private:
     std::string name;
     std::string password;
@@ -50,4 +54,4 @@ private:
     
 }}}}
 
-#endif /* */
+#endif /* HAZELCAST_GENERAL_COMMANDS */

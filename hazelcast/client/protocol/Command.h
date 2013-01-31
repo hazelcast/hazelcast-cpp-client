@@ -42,6 +42,7 @@ public:
     virtual void readSizeLine(hazelcast::client::serialization::DataInput& dataInput) = 0;
     virtual void readResultLine(hazelcast::client::serialization::DataInput& dataInput) = 0;
     virtual bool expectsResult() = 0;
+    virtual hazelcast::client::serialization::Data returnResult() = 0;
     
 };
 

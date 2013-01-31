@@ -46,7 +46,7 @@ public:
     Array<byte> buffer;
 private:
     int partitionHash;
-    static const int NO_CLASS_ID = -1;
+    static const int NO_CLASS_ID = 0;
     
 };
 

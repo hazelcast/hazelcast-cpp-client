@@ -15,6 +15,8 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "Server.h"
 #include "Client.h"
+#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/IMap.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -27,9 +29,9 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-    write();
-    read();
-//    client();
+//    write();
+//    read();
+    client();
     return 0;
 };
 
@@ -40,8 +42,8 @@ void client(){
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-//        auto_ptr< IMap<int,int> > map = hazelcastClient.getMap<int,int>("sancar");
-//        map->put(1,2);
+        IMap<int,int> map = hazelcastClient->getMap<int,int>("sancar");
+        std::cout << map.put(5,5) << std::endl;
         
         std::cout << "Press a key to end" << std::endl;
         std::string x;
@@ -102,17 +104,6 @@ void read(){
     TestMainPortable tmp1;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
     assert(main == tmp1);
-    
-//    cout << "Read test is passed" << endl;
-//    boost::asio::io_service client_service;
-//    hazelcast::client client(client_service, "192.168.2.6", "8083",&serializationService);
-//    client_service.run();
-//    Data data;
-//    client.read(data);
-//    cout << data.size() << endl;
-     
-//    TestMainPortable tmp1;
-//    tmp1 = serializationService.toObject<TestMainPortable>(data);
 
     for(int i = 0 ; i < 5 ; i++)
         delete portablePointerArray[i];
@@ -200,11 +191,7 @@ void write(){
     serializationService.push(out);
     outfile.close();
 */    
-//    boost::asio::io_service server_service;
-//    hazelcast::server server(server_service, 8083,&serializationService);
-//    server_service.run();
-//    server.send(data);
-  
+
    
     for(int i = 0 ; i < 5 ; i++)
         delete portablePointerArray[i];

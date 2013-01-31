@@ -12,7 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <cassert>
-
+#include <ios>
 
 namespace hazelcast{ 
 namespace client{
@@ -52,6 +52,7 @@ void DataOutput::writeBoolean(bool i) {
 
 void DataOutput::writeByte(int i) {
     buffer.put(0xff & i);
+    assert(!buffer.bad());
 };
 
 void DataOutput::writeShort(int v) {

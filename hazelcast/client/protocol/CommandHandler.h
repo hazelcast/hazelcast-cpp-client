@@ -15,7 +15,7 @@ class CommandHandler{
 public:
     CommandHandler(Address address,hazelcast::client::serialization::SerializationService* serializationService);
     void start();
-    void sendCommand(Command* const  command);
+    hazelcast::client::serialization::Data sendCommand(Command* const  command);
     ~CommandHandler();
     
 private:

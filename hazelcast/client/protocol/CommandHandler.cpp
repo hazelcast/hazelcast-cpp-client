@@ -26,7 +26,7 @@ void CommandHandler::start(){
      socket.sendData(command.c_str(),command.length());
 };
 
-void CommandHandler::sendCommand(Command* const  command){
+hazelcast::client::serialization::Data CommandHandler::sendCommand(Command* const  command){
     using namespace hazelcast::client::serialization;
     DataOutput* dataOutput = serializationService->pop();
     command->writeCommand(*dataOutput);
@@ -45,7 +45,10 @@ void CommandHandler::sendCommand(Command* const  command){
         Array<byte> resultLine = socket.readLine();
         DataInput resultInput(resultLine,serializationService);
         command->readResultLine(resultInput);
+        
+        return command->returnResult();
     }
+    return Data();
     
 };
 
