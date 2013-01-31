@@ -22,14 +22,14 @@ SerializationContext::SerializationContext(PortableFactory* portableFactory, int
 };
 SerializationContext::~SerializationContext(){
     for(map<long,ClassDefinition*>::iterator it = versionedDefinitions.begin() ; it != versionedDefinitions.end() ; it++){
-        delete (*it).second; 
+//        delete (*it).second; 
     }
 };
 SerializationContext::SerializationContext(const SerializationContext&  rhs){
-    assert(0);
+    
 };
 void SerializationContext::operator=(const SerializationContext& rhs) {
-    assert(0);
+    
 };
 
 bool SerializationContext::isClassDefinitionExists(int classId){

@@ -85,7 +85,7 @@ public:
     
     void reset();
     
-    static int const STRING_CHUNK_SIZE = 16 * 1024;//TODO move to private and Input class friend
+    static int const STRING_CHUNK_SIZE = 16 * 1024;
     
 private:
     std::ostringstream buffer;

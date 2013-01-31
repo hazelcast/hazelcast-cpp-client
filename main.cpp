@@ -74,7 +74,7 @@ void read(){
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
-        portablePointerArray[i] = new TestNamedPortable(x);
+        portablePointerArray[i] = new TestNamedPortable(x,i);
     }
     Array<Portable*> nn(5,(Portable**)portablePointerArray);
     
@@ -89,11 +89,11 @@ void read(){
     
     std::ifstream is;
     is.open ("/Users/msk/Desktop/text.txt", std::ios::binary );
-    char bytes[607];
-    is.read(bytes,607);
+    char bytes[673];
+    is.read(bytes,673);
     is.close();
     
-    Array<byte> buffer(607,(byte*)bytes);
+    Array<byte> buffer(673,(byte*)bytes);
     serialization::DataInput dataInput(buffer,&serializationService);
     
     serialization::Data data;
@@ -122,7 +122,7 @@ void read(){
 void write(){
     TestPortableFactory tpf1,tpf2;
     serialization::SerializationService serializationService(1, &tpf1);
-//    serialization::SerializationService serializationService2(2, &tpf2);
+    serialization::SerializationService serializationService2(2, &tpf2);
     serialization::Data data;
     
     int x = 3;
@@ -133,15 +133,15 @@ void write(){
     data = serializationService.toData(f);
     assert( f == serializationService.toObject<short>(data) );
 
-    TestNamedPortable np("name");
+    TestNamedPortable np("name",5);
     data = serializationService.toData(np);
     
     TestNamedPortable tnp1,tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable>(data);
-//    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
+    tnp2 = serializationService2.toObject<TestNamedPortable>(data);
     
     assert(np == tnp1);
-//    assert(np == tnp2);
+    assert(np == tnp2);
     
     byte byteArray[]= {0, 1, 2};
     Array<byte> bb(3,byteArray);
@@ -161,7 +161,7 @@ void write(){
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
-        portablePointerArray[i] = new TestNamedPortable(x);
+        portablePointerArray[i] = new TestNamedPortable(x,i);
     }
     Array<Portable*> nn(5,(Portable**)portablePointerArray);
     
@@ -172,11 +172,11 @@ void write(){
     
     TestInnerPortable tip1,tip2;
     tip1 = serializationService.toObject<TestInnerPortable>(data);
-//    tip2 = serializationService2.toObject<TestInnerPortable>(data);
+    tip2 = serializationService2.toObject<TestInnerPortable>(data);
     
     
     assert(inner == tip1);
-//    assert(inner == tip2);
+    assert(inner == tip2);
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
@@ -185,11 +185,9 @@ void write(){
     
     TestMainPortable tmp1,tmp2;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
-//    tmp2 = serializationService2.toObject<TestMainPortable>(data);
+    tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
-//    assert(main == tmp2);
-    
-//    std::cout << "All tests are passed" << std::endl;
+    assert(main == tmp2);
 /*    
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
@@ -201,12 +199,12 @@ void write(){
     
     serializationService.push(out);
     outfile.close();
+*/    
 //    boost::asio::io_service server_service;
 //    hazelcast::server server(server_service, 8083,&serializationService);
 //    server_service.run();
-    
 //    server.send(data);
-*/    
+  
    
     for(int i = 0 ; i < 5 ; i++)
         delete portablePointerArray[i];

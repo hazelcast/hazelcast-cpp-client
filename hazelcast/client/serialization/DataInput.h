@@ -27,9 +27,7 @@ public:
     DataInput(Array<byte>&, SerializationService* service);
     
     DataInput(Data&, SerializationService* service);
-    
-    std::string readUTF() throw(std::string);
-    
+  
     int getDataClassId();
     
     void setDataClassId(int);
@@ -37,7 +35,6 @@ public:
     int getDataVersion();
     
     SerializationContext* getSerializationContext();
-    
     
     //Inherited from DataInput
     void readFully(Array<byte>&);
@@ -62,6 +59,7 @@ public:
     
     double readDouble();
     
+    std::string readUTF();
     //Inherited from BufferObjectDataInput
     int read(int index) ;
     
@@ -83,6 +81,8 @@ public:
     
     short readShort(int index) ;
     
+    std::string readUTF(int);
+    
     int position();
     
     void position(int newPos);
@@ -90,11 +90,10 @@ public:
     void reset();
     
 private:
+    Array<byte> buffer;
+    SerializationService* service;
     byte* ptr;
     byte* beg;
-    Array<byte> buffer;
-    int size;
-    SerializationService* service;
     int dataClassId;
     int dataVersion;
     

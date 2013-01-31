@@ -31,7 +31,6 @@ class DataOutput;
 
 typedef unsigned char byte;
 
-//TODO ask fieldDefinitions vector needed
 class ClassDefinition : public DataSerializable{
 public:
     ClassDefinition();

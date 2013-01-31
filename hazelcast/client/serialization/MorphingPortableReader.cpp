@@ -254,7 +254,7 @@ Array<short> MorphingPortableReader::readShortArray(string fieldName){
     return PortableReader::readShortArray(fieldName);
 };
 
-Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName){//TODO
+Array< auto_ptr<Portable> > MorphingPortableReader::readPortableArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
         return NULL;
     FieldDefinition fd = cd->get(fieldName);

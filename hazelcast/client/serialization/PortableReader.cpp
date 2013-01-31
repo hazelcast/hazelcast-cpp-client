@@ -67,8 +67,7 @@ short PortableReader::readShort(string fieldName){
 
 string PortableReader::readUTF(string fieldName){
     int pos = getPosition(fieldName);
-    input->position(pos);
-    return input->readUTF();
+    return input->readUTF(pos);
 };
 
 auto_ptr<Portable> PortableReader::readPortable(string fieldName) {
@@ -80,9 +79,8 @@ auto_ptr<Portable> PortableReader::readPortable(string fieldName) {
     int pos = getPosition(&fd);
     input->position(pos);
     bool isNull = input->readBoolean();
-    if (isNull) {//TODO search for return NULL
-        auto_ptr<Portable> x;
-        return x;
+    if (isNull) {
+        return auto_ptr<Portable>(0);
     }
     input->setDataClassId(fd.getClassId());
     auto_ptr<Portable> p (serializer->read(*input) );
@@ -172,15 +170,22 @@ Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName){
     if(!cd->isFieldDefinitionExists(fieldName))
           throw "throwUnknownFieldException" + fieldName;
       FieldDefinition fd = cd->get(fieldName);
-
+      int currentPos = input->position();
       int pos = getPosition(fieldName);
       input->position(pos);
       int len = input->readInt();
       Array< auto_ptr<Portable> > portables(len);
-      input->setDataClassId(fd.getClassId());
-      for (int i = 0; i < len; i++) {
-          portables[i] = serializer->read(*input);
+      if(len > 0 ){
+        int offset = input->position();
+        input->setDataClassId(fd.getClassId());
+        int start;
+        for (int i = 0; i < len; i++) {
+            start = input->readInt(offset + i * sizeof(int));
+            input->position(start);
+            portables[i] = serializer->read(*input);
+        }
       }
+      input->position(currentPos);
       return portables;
 
 };
@@ -193,7 +198,7 @@ int PortableReader::getPosition(string fieldName){
 };
 
 int PortableReader::getPosition(FieldDefinition* fd){
-    return input->readInt(offset + fd->getIndex() * 4);
+    return input->readInt(offset + fd->getIndex() * sizeof(int));
 };
 
 }}}

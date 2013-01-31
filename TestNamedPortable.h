@@ -22,7 +22,7 @@ public:
     TestNamedPortable() {
     };
         
-    TestNamedPortable(std::string name):name(name) {
+    TestNamedPortable(std::string name , int k ):name(name),k(k) {
         
     };
     
@@ -32,6 +32,7 @@ public:
     
     const TestNamedPortable& operator=(const TestNamedPortable& rhs){
         name = rhs.name;
+        k = rhs.k;
     };
     
     int getClassId() {
@@ -40,15 +41,19 @@ public:
         
     void writePortable(PortableWriter& writer) {
         writer.writeUTF("name",name); 
+        writer.writeInt("myint", k);
     };
         
     void readPortable(PortableReader& reader)  {      
         name = reader.readUTF("name");
+        k = reader.readInt("myint");
     };
     
     bool operator==(TestNamedPortable& m){
         if(this == &m)
             return true;
+        if(k != m.k) 
+            return false;
         if (name.compare(m.name)) 
             return false;
         return true;
@@ -58,5 +63,6 @@ public:
         return !(*this == m );  
     };
     std::string name;
+    int k;
 };
 #endif

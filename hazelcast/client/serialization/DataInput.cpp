@@ -16,38 +16,20 @@ namespace hazelcast{
 namespace client{
 namespace serialization{
 //TODO uncomment code below !!!!! main test fails
-// DataInput::DataInput(Array<byte>& rhsBuffer, SerializationService* service):buffer(rhsBuffer)
-//                                                                            ,service(service)
-//                                                                            ,ptr(const_cast<byte*>(buffer.getBuffer()))
-//                                                                            ,beg(ptr)
-//{   
-//};
-//
-//DataInput::DataInput(Data& data, SerializationService* service):buffer(data.buffer)
-//                                                               ,service(service)
-//                                                               ,ptr(const_cast<byte*>(buffer.getBuffer()))
-//                                                               ,beg(ptr)
-//                                                               ,dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
-//                                                               ,dataVersion(data.cd != NULL ? data.cd->getVersion() : -1)
-//{   
-//};
- 
-   
-DataInput::DataInput(Array<byte>& buffer, SerializationService* service){
-    this->buffer = buffer;
-    this->ptr = const_cast<byte*>(this->buffer.getBuffer());
-    this->beg = this->ptr;
-    this->service = service;
+ DataInput::DataInput(Array<byte>& rhsBuffer, SerializationService* service):buffer(rhsBuffer)
+                                                                            ,service(service)
+                                                                            ,ptr(const_cast<byte*>(buffer.getBuffer()))
+                                                                            ,beg(ptr)
+{   
 };
 
-DataInput::DataInput(Data& data, SerializationService* service){
-    const ClassDefinition* cd = data.cd;
-    this->dataClassId = cd != NULL ? cd->getClassId() : -1;
-    this->dataVersion = cd != NULL ? cd->getVersion() : -1;
-    this->buffer = data.buffer;
-    this->ptr =  const_cast<byte*>(this->buffer.getBuffer());
-    this->beg = ptr;
-    this->service = service;
+DataInput::DataInput(Data& data, SerializationService* service):buffer(data.buffer)
+                                                               ,service(service)
+                                                               ,ptr(const_cast<byte*>(buffer.getBuffer()))
+                                                               ,beg(ptr)
+                                                               ,dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
+                                                               ,dataVersion(data.cd != NULL ? data.cd->getVersion() : -1)
+{   
 };
 
 DataInput& DataInput::operator=(const DataInput&){
@@ -158,10 +140,10 @@ double DataInput::readDouble(){
     return u.d;
 };
 
-std::string DataInput::readUTF() throw(std::string) {
+std::string DataInput::readUTF(){
     bool isNull = readBoolean();
     if (isNull)
-        return NULL;
+        return "";
     int length = readInt();
     std::string result;
     int chunkSize = (length / STRING_CHUNK_SIZE) + 1;
@@ -249,6 +231,14 @@ short DataInput::readShort(int index) {
     int pos = position();
     position(index);
     short v = readShort();
+    position(pos);
+    return v;
+};
+
+std::string DataInput::readUTF(int index) {
+    int pos = position();
+    position(index);
+    std::string v = readUTF();
     position(pos);
     return v;
 };

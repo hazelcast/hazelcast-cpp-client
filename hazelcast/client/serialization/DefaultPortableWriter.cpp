@@ -22,9 +22,9 @@ DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, Dat
     this->output = output;
     this->offset = output->position();
     this->cd = cd;
-    char* zeros = new  char[offset + cd->getFieldCount() * 4]; 
-    this->output->write(zeros,offset, cd->getFieldCount() * 4);
-    delete [] zeros;
+    char zeros[ cd->getFieldCount() * sizeof(int)]; 
+    this->output->write(zeros,0, cd->getFieldCount() * sizeof(int));
+    
 };
 
 void DefaultPortableWriter::writeInt(string fieldName, int value){
@@ -163,7 +163,11 @@ void DefaultPortableWriter::writePortableArray(string fieldName, Array<Portable*
     int len = portables.length();
     output->writeInt(len);
     if (len > 0) {
+        int offset = output->position();
+        char zeros[len * sizeof(int)]; 
+        output->write(zeros,0, len * sizeof(int));
         for (int i = 0; i < len; i++) {
+            output->writeInt(offset + i * sizeof(int), output->position());
             serializer->write(output, *(portables[i]) );
         }
     }
@@ -187,7 +191,7 @@ void DefaultPortableWriter::setPosition(string fieldName){
     int pos = output->position();
     int index = fd.getIndex();
     // index = fieldIndex++; // if class versions are the same.
-    output->writeInt(offset + index * 4, pos);
+    output->writeInt(offset + index * sizeof(int), pos);
     
 };
 
