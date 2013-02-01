@@ -68,7 +68,7 @@ public:
      
     template<typename K>
     inline K toObject(Data& data){
-        if(data.size() == 0)
+        if(data.bufferSize() == 0)
             throw "Empty Data";
         int typeID = data.type;
         if(typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE){
@@ -129,7 +129,7 @@ private:
 
 template<>
 inline byte SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return byteSerializer.read(&dataInput);
@@ -137,7 +137,7 @@ inline byte SerializationService::toObject(Data& data){
 
 template<>
 inline bool SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return booleanSerializer.read(&dataInput);
@@ -146,7 +146,7 @@ inline bool SerializationService::toObject(Data& data){
 
 template<>
 inline char SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return charSerializer.read(&dataInput);
@@ -154,7 +154,7 @@ inline char SerializationService::toObject(Data& data){
 
 template<>
 inline short SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return shortSerializer.read(&dataInput);
@@ -162,7 +162,7 @@ inline short SerializationService::toObject(Data& data){
 
 template<>
 inline int SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return integerSerializer.read(&dataInput);
@@ -170,7 +170,7 @@ inline int SerializationService::toObject(Data& data){
 
 template<>
 inline long SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return longSerializer.read(&dataInput);
@@ -178,7 +178,7 @@ inline long SerializationService::toObject(Data& data){
 
 template<>
 inline float SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return floatSerializer.read(&dataInput);
@@ -186,7 +186,7 @@ inline float SerializationService::toObject(Data& data){
 
 template<>
 inline double SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return doubleSerializer.read(&dataInput);
@@ -194,7 +194,7 @@ inline double SerializationService::toObject(Data& data){
 
 template<>
 inline Array<byte> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return byteArraySerializer.read(&dataInput);
@@ -202,7 +202,7 @@ inline Array<byte> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<char> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return charArraySerializer.read(&dataInput);
@@ -210,7 +210,7 @@ inline Array<char> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<short> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return shortArraySerializer.read(&dataInput);
@@ -218,7 +218,7 @@ inline Array<short> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<int> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return integerArraySerializer.read(&dataInput);
@@ -226,7 +226,7 @@ inline Array<int> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<long> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return longArraySerializer.read(&dataInput);
@@ -234,7 +234,7 @@ inline Array<long> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<float> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return floatArraySerializer.read(&dataInput);
@@ -242,7 +242,7 @@ inline Array<float> SerializationService::toObject(Data& data){
 
 template<>
 inline Array<double> SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return doubleArraySerializer.read(&dataInput);
@@ -250,7 +250,7 @@ inline Array<double> SerializationService::toObject(Data& data){
 
 template<>
 inline std::string SerializationService::toObject(Data& data){
-    if(data.size() == 0)
+    if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
     return stringSerializer.read(&dataInput);

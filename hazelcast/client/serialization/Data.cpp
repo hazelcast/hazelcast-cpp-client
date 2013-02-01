@@ -53,8 +53,31 @@ bool Data::operator!=(const Data& rhs) const{
     return !((*this) == rhs);
 };
 
-int Data::size() const{
+int Data::bufferSize() const{
     return buffer.length();
+};
+/**
+* Calculates the size of the binary after the Data is serialized.
+*
+* WARNING:
+*
+* Should be in sync with {@link #writeData(com.hazelcast.nio.ObjectDataOutput)}
+*/
+int Data::totalSize() const{
+    int total = 0;
+    total += 4; // type
+    if (cd != NULL) {
+        total += 4; // cd-classId
+        total += 4; // cd-version
+        total += 4; // cd-binary-length
+        total += cd->getBinary().length(); // cd-binary
+    } else {
+        total += 4; // no-classId
+    }
+    total += 4; // buffer-size
+    total += bufferSize(); // buffer
+    total += 4; // partition-hash
+    return total;  
 };
 
 int Data::getPartitionHash(){
@@ -67,7 +90,9 @@ void Data::setPartitionHash(int partitionHash){
 
 void Data::readData(DataInput& in) {
     type = in.readInt();
+    std::cout << "type " << type << std::endl;
     int classId = in.readInt();
+    std::cout << "classId " << classId << std::endl;
     if (classId != NO_CLASS_ID) {
         int version = in.readInt();
         SerializationContext* context = in.getSerializationContext();
@@ -84,12 +109,19 @@ void Data::readData(DataInput& in) {
         }
     }
     int size = in.readInt();
+    std::cout << "size " << size << std::endl;
     if (size > 0) {
         Array<byte>  buffer(size);
         in.readFully(buffer);
         this->buffer = buffer;
+        std::cout << "data => ";
+        for(int i = 0 ; i < size ; i++){
+            std::cout << (int)this->buffer[i];
+        }
+        std::cout << std::endl;
     }
     partitionHash = in.readInt();
+    std::cout << "partitionHash  " << partitionHash << std::endl;
 };
 
 void Data::writeData(DataOutput& out) const {
@@ -103,7 +135,7 @@ void Data::writeData(DataOutput& out) const {
     } else {
         out.writeInt(NO_CLASS_ID);
     }
-    int len = size();
+    int len = bufferSize();
     out.writeInt(len);
     if (len > 0) {
         out.write(buffer);

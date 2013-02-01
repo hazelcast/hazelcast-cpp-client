@@ -34,7 +34,7 @@ public:
         }
         
     };
-    void readSizeLine(hazelcast::client::serialization::DataInput& dataInput) {
+    void readSizeLine(hazelcast::client::Array<byte>& sizeInBytes) {
         
     };
     void readResultLine(hazelcast::client::serialization::DataInput& dataInput){

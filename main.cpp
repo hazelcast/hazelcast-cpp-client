@@ -37,13 +37,17 @@ int main(int argc, char** argv){
 
 void client(){
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("myCluster").setPassword("sancar");
+    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
     clientConfig.setAddress("192.168.2.2:5701");
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
         IMap<int,int> map = hazelcastClient->getMap<int,int>("sancar");
-        std::cout << map.put(5,5) << std::endl;
+        for(int i = 0 ; i < 10 ; i++)
+             std::cout << "oldValue => "<< map.put(i,i*10) << std::endl;
+        
+        for(int i = 0 ; i < 10 ; i++)
+             std::cout << "oldValue => " <<  map.put(i,i) << std::endl;
         
         std::cout << "Press a key to end" << std::endl;
         std::string x;

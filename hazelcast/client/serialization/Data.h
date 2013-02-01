@@ -30,7 +30,8 @@ public:
     Data(const Data&);
     Data(const int type, Array<byte> bytes);
     Data& operator=(const Data&);
-    int size() const;
+    int bufferSize() const;
+    int totalSize() const;
     
     int getPartitionHash();
     void setPartitionHash(int partitionHash);

@@ -39,10 +39,14 @@ hazelcast::client::serialization::Data CommandHandler::sendCommand(Command* cons
     
     if(command->expectsResult()){
         Array<byte> sizeLine = socket.readLine();
-        DataInput sizeInput(sizeLine,serializationService);
-        command->readSizeLine(sizeInput);
+        command->readSizeLine(sizeLine);
         
         Array<byte> resultLine = socket.readLine();
+        std::cout << "resultLine => ";
+        for(int i = 0; i < resultLine.length(); i++){
+            std::cout << (int)resultLine[i] ;
+        }
+        std::cout << std::endl;
         DataInput resultInput(resultLine,serializationService);
         command->readResultLine(resultInput);
         

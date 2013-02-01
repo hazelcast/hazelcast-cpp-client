@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <vector>
 
 namespace hazelcast{
 namespace client{
@@ -39,20 +40,23 @@ void Socket::sendData(const void* buffer, int len){
 };
 
 hazelcast::client::Array<byte> Socket::readLine(){
-    std::string line;
-    while(true){
+    std::vector<byte> line;
+    bool lineIsRead = false;
+    while(!lineIsRead){
         char current;
         recvData(&current,sizeof(char));
-        if(current == '\r'){
-            recvData(&current,sizeof(char));
-            if(current != '\n'){
-                throw "unexpected character";
-            }
-            break;
+        if(current == '\n'){
+            lineIsRead = true;
+        }else if(current != '\r'){
+            line.push_back(current);
         }
-        line.push_back(current);
+        
     }
-    return hazelcast::client::Array<byte>(line.length(),(byte*)line.c_str());
+    Array<byte> buffer(line.size());
+    for(int i = 0; i < buffer.length(); i++){
+        buffer[i] = line[i];
+    }
+    return buffer;
 };
 
 void Socket::recvData(void* buffer, int len){

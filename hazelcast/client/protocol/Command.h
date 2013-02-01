@@ -39,7 +39,7 @@ class Command{
 public:
     virtual void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) = 0;
     virtual void readHeaderLine(hazelcast::client::serialization::DataInput& dataInput) = 0;
-    virtual void readSizeLine(hazelcast::client::serialization::DataInput& dataInput) = 0;
+    virtual void readSizeLine(hazelcast::client::Array<byte>& sizeInBytes) = 0;
     virtual void readResultLine(hazelcast::client::serialization::DataInput& dataInput) = 0;
     virtual bool expectsResult() = 0;
     virtual hazelcast::client::serialization::Data returnResult() = 0;
