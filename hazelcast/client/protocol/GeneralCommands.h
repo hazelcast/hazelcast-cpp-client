@@ -37,14 +37,13 @@ public:
     void readSizeLine(hazelcast::client::Array<byte>& sizeInBytes) {
         
     };
-    void readResultLine(hazelcast::client::serialization::DataInput& dataInput){
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
         
     };
-    bool expectsResult(){
-       return false;  
+    int nResults(){
+       return 0;  
     };
-    
-    hazelcast::client::serialization::Data returnResult(){
+    int resultSize(int i){
         
     };
 private:

@@ -5,6 +5,7 @@
 #include "../serialization/DataOutput.h"
 
 #include <cassert>
+#include <memory>
 
 namespace hazelcast{
 namespace client{
@@ -26,7 +27,7 @@ void CommandHandler::start(){
      socket.sendData(command.c_str(),command.length());
 };
 
-hazelcast::client::serialization::Data CommandHandler::sendCommand(Command* const  command){
+void CommandHandler::sendCommand(Command* const  command){
     using namespace hazelcast::client::serialization;
     DataOutput* dataOutput = serializationService->pop();
     command->writeCommand(*dataOutput);
@@ -37,22 +38,25 @@ hazelcast::client::serialization::Data CommandHandler::sendCommand(Command* cons
     DataInput headerInput(headerLine,serializationService);
     command->readHeaderLine(headerInput);
     
-    if(command->expectsResult()){
-        Array<byte> sizeLine = socket.readLine();
-        command->readSizeLine(sizeLine);
+    if(!command->nResults())
+        return;
+    
+    
+    Array<byte> sizeLine = socket.readLine();
+    command->readSizeLine(sizeLine);
+    
+    
+    for(int i = 0 ; i < command->nResults() ; i++){
+        int size = command->resultSize(i);
+        byte tempBuffer[size];
+        socket.recvData(tempBuffer,size);
+        Array<byte> element(size,tempBuffer);
+
+        DataInput resultInput(element,serializationService);
+        command->readResult(resultInput);
         
-        Array<byte> resultLine = socket.readLine();
-        std::cout << "resultLine => ";
-        for(int i = 0; i < resultLine.length(); i++){
-            std::cout << (int)resultLine[i] ;
-        }
-        std::cout << std::endl;
-        DataInput resultInput(resultLine,serializationService);
-        command->readResultLine(resultInput);
-        
-        return command->returnResult();
     }
-    return Data();
+    socket.readLine();
     
 };
 

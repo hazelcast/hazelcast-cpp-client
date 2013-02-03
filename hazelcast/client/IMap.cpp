@@ -27,13 +27,17 @@ V IMap<K,V>::put(K key, V value){
     serialization::Data keyInBytes = hazelcastClient.serializationService.toData(key);
     serialization::Data valueInBytes = hazelcastClient.serializationService.toData(value);
     protocol::MapCommands::PutCommand command(instanceName,keyInBytes,valueInBytes);
-    serialization::Data result = hazelcastClient.commandHandler.sendCommand(&command);
-    return hazelcastClient.serializationService.toObject<V>(result);
+    hazelcastClient.commandHandler.sendCommand(&command);
+    return hazelcastClient.serializationService.toObject<V>(command.get());
 };
 
 template<typename K,typename V>   
 V IMap<K,V>::get(K key){
-    
+    serialization::Data keyInBytes = hazelcastClient.serializationService.toData(key);
+    protocol::MapCommands::GetCommand command(instanceName,keyInBytes);
+    hazelcastClient.commandHandler.sendCommand(&command);
+    serialization::Data valueInBytes = command.get();
+    return hazelcastClient.serializationService.toObject<V>(valueInBytes);
 };
 
 }}

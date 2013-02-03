@@ -3,7 +3,7 @@
 
 #include "Socket.h"
 #include "../serialization/SerializationService.h"
-
+#include <memory>
 namespace hazelcast{
 namespace client{
 namespace protocol{
@@ -15,7 +15,7 @@ class CommandHandler{
 public:
     CommandHandler(Address address,hazelcast::client::serialization::SerializationService* serializationService);
     void start();
-    hazelcast::client::serialization::Data sendCommand(Command* const  command);
+    void sendCommand(Command* const  command);
     ~CommandHandler();
     
 private:
