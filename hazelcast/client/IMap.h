@@ -22,8 +22,14 @@ public:
     V get(K key);
     void put(K key, V value);
     void remove(K key);
+    void flush();
     std::string getName() const;
     std::map< K , V > getAll(std::set<K> keys);
+    bool tryRemove(K key, long timeoutInMillis);
+    bool tryPut(K key, V value, long timeoutInMillis);
+    void put(K key, V value, long ttl);
+    void putTransient(K key, V value, long ttl);
+    
 private:
     std::string instanceName;    
     HazelcastClient& hazelcastClient;

@@ -53,7 +53,13 @@ template<typename K,typename V>
 void IMap<K,V>::put(K key, V value){
     serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
     serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
-    protocol::MapCommands::PutCommand command(instanceName,keyInBytes,valueInBytes);
+    protocol::MapCommands::PutCommand command(instanceName,keyInBytes,valueInBytes,0);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+};
+
+template<typename K,typename V>   
+void IMap<K,V>::flush(){
+    protocol::MapCommands::FlushCommand command(instanceName);
     hazelcastClient.getCommandHandler().sendCommand(&command);
 };
 
@@ -94,6 +100,45 @@ std::map<K,V> IMap<K,V>::getAll(std::set<K> keys){
         result[key] = value;
     }
     return result;
+};
+/**
+ * 
+ * @param key
+ * @param timeoutInMillis
+ * @return true if key is removed from map in specified time (timeoutInMillis).
+ */
+template<typename K,typename V>
+bool IMap<K,V>::tryRemove(K key, long timeoutInMillis){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::TryRemoveCommand command(instanceName,keyInBytes,timeoutInMillis);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return command.get(); 
+};
+
+template<typename K,typename V>
+bool IMap<K,V>::tryPut(K key, V value, long timeoutInMillis){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
+    protocol::MapCommands::TryPutCommand command(instanceName,keyInBytes,valueInBytes, timeoutInMillis);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return command.get();
+};
+
+template<typename K,typename V>
+void IMap<K,V>::put(K key, V value, long ttl){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
+    protocol::MapCommands::PutCommand command(instanceName,keyInBytes,valueInBytes, ttl);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+};
+
+template<typename K,typename V>
+void IMap<K,V>::putTransient(K key, V value, long ttl){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
+    protocol::MapCommands::PutTransientCommand command(instanceName,keyInBytes,valueInBytes, ttl);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+
 };
 
 }}

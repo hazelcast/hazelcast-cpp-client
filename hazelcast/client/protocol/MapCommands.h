@@ -104,26 +104,38 @@ private:
 
 class PutCommand : public Command{
 public:
-    PutCommand(std::string instanceName, hazelcast::client::serialization::Data key , hazelcast::client::serialization::Data value):instanceName(instanceName)
-                                                                                                                    ,key(key)
-                                                                                                                    ,value(value)
+    PutCommand(std::string instanceName,
+               hazelcast::client::serialization::Data key , 
+               hazelcast::client::serialization::Data value,
+               long ttl)
+                         :instanceName(instanceName)
+                         ,key(key)
+                         ,value(value)
+                         ,ttl(ttl)
     {    
     };
     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
         std::string command = "MPUT";
-        command += SPACE + instanceName + SPACE + "#2" + NEWLINE;
-        dataOutput.write(command.c_str(),0,command.length());
-
+        command += SPACE + instanceName + SPACE;
         char integerBuffer[10];
-        int integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
-        dataOutput.write(integerBuffer, 0,integerBufferSize);
+        int integerBufferSize;
+        
+        integerBufferSize = sprintf(integerBuffer,"%li",ttl);
+        command.append(integerBuffer,integerBufferSize);
+        command += SPACE;
+            
+        command += "#2" + NEWLINE;    
 
-        dataOutput.write(SPACE.c_str(),0,SPACE.length());
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer,integerBufferSize);
+        command += SPACE;
 
         integerBufferSize = sprintf(integerBuffer,"%d",value.totalSize());
-        dataOutput.write(integerBuffer, 0,integerBufferSize);
+        command.append(integerBuffer,integerBufferSize);
+        
+        command += NEWLINE;
 
-        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+        dataOutput.write(command.c_str(),0,command.length());
 
         key.writeData(dataOutput);
         value.writeData(dataOutput);
@@ -149,6 +161,7 @@ private:
     std::string instanceName;
     hazelcast::client::serialization::Data key;
     hazelcast::client::serialization::Data value;
+    long ttl;
     int returnSize;
 }; 
 
@@ -161,14 +174,14 @@ public:
     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
         std::string command = "MGET";
         command += SPACE + instanceName + SPACE + "#1" + NEWLINE;
-        dataOutput.write(command.c_str(),0,command.length());
 
         char integerBuffer[5];
         int integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
-        dataOutput.write(integerBuffer, 0,integerBufferSize);
-
-        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
-
+        command.append(integerBuffer,integerBufferSize);
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+        
         key.writeData(dataOutput);
         
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
@@ -209,14 +222,14 @@ public:
     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
         std::string command = "MREMOVE";
         command += SPACE + instanceName + SPACE + "#1" + NEWLINE;
-        dataOutput.write(command.c_str(),0,command.length());
 
         char integerBuffer[5];
         int integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
-        dataOutput.write(integerBuffer, 0,integerBufferSize);
-
-        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
-
+        command.append(integerBuffer,integerBufferSize);
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+        
         key.writeData(dataOutput);
         
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
@@ -240,6 +253,34 @@ public:
 private:
     std::string instanceName;
     hazelcast::client::serialization::Data key;
+}; 
+
+class FlushCommand : public Command{
+public:
+    FlushCommand(std::string instanceName):instanceName(instanceName)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        std::string command = "MFLUSH";
+        command += SPACE + instanceName + NEWLINE;
+        dataOutput.write(command.c_str(),0,command.length());
+    };
+    void readHeaderLine(std::string line){
+       if(line.compare("OK "))
+            throw std::domain_error("unexpected header of containsKey return");
+            
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+private:
+    std::string instanceName;
 }; 
 
 class GetAllCommand : public Command{
@@ -337,7 +378,180 @@ private:
     DataSet keys;
     DataSet values;
 };
-    
+
+class TryRemoveCommand : public Command{
+public:
+    TryRemoveCommand(std::string instanceName, hazelcast::client::serialization::Data key, long timeoutInMillis )
+                                                                        :instanceName(instanceName)
+                                                                        ,key(key)
+                                                                        ,timeoutInMillis(timeoutInMillis)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        std::string command = "MTRYREMOVE";
+        command += SPACE + instanceName + SPACE;
+
+        char integerBuffer[5];
+        int integerBufferSize = sprintf(integerBuffer,"%li",timeoutInMillis);
+        command.append(integerBuffer,integerBufferSize);
+        
+        command += SPACE + "#1" + NEWLINE;
+        
+        integerBuffer[5];
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer,integerBufferSize);
+
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+       if(!line.compare("OK #1"))
+           success = true;
+       else if(!line.compare("OK timeout"))
+           success = false;
+       else
+            throw std::domain_error("unexpected header of containsKey return");
+            
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+    bool get(){
+        return success;
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+    long timeoutInMillis;
+    bool success;
+}; 
+
+class TryPutCommand : public Command{
+public:
+    TryPutCommand(std::string instanceName, 
+                  hazelcast::client::serialization::Data key , 
+                  hazelcast::client::serialization::Data value,
+                  long timeoutInMillis)
+                                :instanceName(instanceName)
+                                ,key(key)
+                                ,value(value)
+                                ,timeoutInMillis(timeoutInMillis)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        std::string command = "MTRYPUT";
+        command += SPACE + instanceName + SPACE + "#2" + NEWLINE;
+        dataOutput.write(command.c_str(),0,command.length());
+
+        char integerBuffer[10];
+        int integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        dataOutput.write(integerBuffer, 0,integerBufferSize);
+
+        dataOutput.write(SPACE.c_str(),0,SPACE.length());
+
+        integerBufferSize = sprintf(integerBuffer,"%d",value.totalSize());
+        dataOutput.write(integerBuffer, 0,integerBufferSize);
+
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+
+        key.writeData(dataOutput);
+        value.writeData(dataOutput);
+
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        success = line.compare("OK true") ? false  : true;
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+    bool get(){
+      return success;  
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+    hazelcast::client::serialization::Data value;
+    bool success;
+    long timeoutInMillis;
+}; 
+
+class PutTransientCommand : public Command{
+public:
+    PutTransientCommand(std::string instanceName,
+               hazelcast::client::serialization::Data key , 
+               hazelcast::client::serialization::Data value,
+               long ttl)
+                         :instanceName(instanceName)
+                         ,key(key)
+                         ,value(value)
+                         ,ttl(ttl)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        std::string command = "MPUTTRANSIENT";
+        command += SPACE + instanceName + SPACE;
+        char integerBuffer[10];
+        int integerBufferSize;
+        
+        integerBufferSize = sprintf(integerBuffer,"%li",ttl);
+        command.append(integerBuffer,integerBufferSize);
+        command += SPACE;
+            
+        command += "#2" + NEWLINE;    
+
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer,integerBufferSize);
+        command += SPACE;
+
+        integerBufferSize = sprintf(integerBuffer,"%d",value.totalSize());
+        command.append(integerBuffer,integerBufferSize);
+        
+        command += NEWLINE;
+
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        value.writeData(dataOutput);
+
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        if(line.compare("OK"))
+            throw std::domain_error("unexpected header of putTransient return");
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+    hazelcast::client::serialization::Data value;
+    long ttl;
+}; 
 }}}}
 
 #endif /* HAZELCAST_MAP_COMMANDS */

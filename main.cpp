@@ -44,31 +44,40 @@ void client(){
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int,TestMainPortable> map = hazelcastClient->getMap<int,TestMainPortable>("sancar");
+        IMap<int,TestMainPortable> imap = hazelcastClient->getMap<int,TestMainPortable>("sancar");
+        std::cout << imap.getName() << std::endl;
         for(int i = 0 ; i < 10 ; i++){
-            TestMainPortable x = map.get(i);
+            TestMainPortable x = imap.get(i);
             x.i += 1;
-            map.put(i,x);
+            imap.put(i,x);
         }
         
         for(int i = 0 ; i < 10 ; i++){
-            TestMainPortable x = map.get(i);
+            TestMainPortable x = imap.get(i);
              std::cout << "(" << i << " " << x.i << ")" ;
         }
         std::cout << std::endl;  
         
-        std::cout << map.containsKey(2) << std::endl;
-        std::cout << map.containsKey(20) << std::endl;
+        std::cout << "imap contains key 2 " <<imap.containsKey(2) << std::endl;
+        std::cout << "imap contains key 20 " << imap.containsKey(20) << std::endl;
         
         int myints[] = {0,2,4,6};
         std::set<int> keySet (myints, myints + sizeof(myints) / sizeof(int) );
         
-        std::map<int,TestMainPortable> stdMap = map.getAll(keySet);
+        std::map<int,TestMainPortable> stdMap = imap.getAll(keySet);
         for(int i = 0 ; i < 8 ; i+=2 ){
             TestMainPortable x = stdMap[i];
             std::cout << "(" << i << " " << x.i << ")" ;
         }
         std::cout << std::endl;  
+        
+        imap.flush();
+        imap.remove(9);
+        std::cout << "remove 8 is successful " << imap.tryRemove(8,1000) << std::endl;
+        TestMainPortable z = imap.get(0);
+        std::cout << "put 1 is successful"  << imap.tryPut(1,z,1000) << std::endl;
+        imap.put(2,z,2000);
+        imap.putTransient(3,z,2000);
         
         std::cout << "Press a key to end" << std::endl;
         std::string x;
