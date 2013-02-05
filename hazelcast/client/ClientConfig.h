@@ -3,6 +3,7 @@
 
 #include "Address.h"
 #include "GroupConfig.h"
+#include "serialization/PortableFactory.h"
 #include <list>
 #include <string>
 
@@ -17,9 +18,12 @@ public:
     GroupConfig& getGroupConfig();
     void setAddress(std::string);
     Address getAddress() const;
+    void setPortableFactory(serialization::PortableFactory*);
+    serialization::PortableFactory const * getPortableFactory() const;
 private:
     GroupConfig groupConfig;
     Address address;
+    serialization::PortableFactory* portableFactory;
 };
 
 }}

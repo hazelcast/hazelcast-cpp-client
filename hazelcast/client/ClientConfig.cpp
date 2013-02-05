@@ -12,6 +12,7 @@ ClientConfig::ClientConfig(){
 ClientConfig::ClientConfig(const ClientConfig& rhs){
     groupConfig = rhs.groupConfig;
     address = rhs.address;
+    portableFactory = rhs.portableFactory;
 };
     
 ClientConfig::~ClientConfig(){
@@ -28,10 +29,18 @@ void ClientConfig::setAddress(std::string addressStr){//TODO if address is not s
     std::string port = addressStr.substr(middle+1,addressStr.length() - middle);
     this->address.setAddress(address);
     this->address.setPort(port);
-}
+};
 
 Address ClientConfig::getAddress() const {
     return address;
 };
-        
+
+serialization::PortableFactory const * ClientConfig::getPortableFactory() const{
+    return portableFactory;
+};
+  
+void ClientConfig::setPortableFactory(serialization::PortableFactory* portableFactory){
+    this->portableFactory = portableFactory;   
+};
+
 }}

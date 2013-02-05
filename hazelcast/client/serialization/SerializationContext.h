@@ -29,7 +29,7 @@ typedef unsigned char byte;
 
 class SerializationContext{
 public:
-    SerializationContext(PortableFactory*,int,SerializationService*);
+    SerializationContext(PortableFactory const *,int,SerializationService*);
     ~SerializationContext();
     
     bool isClassDefinitionExists(int);
@@ -52,7 +52,7 @@ private:
     void compress(Array<byte>&);
     void decompress(Array<byte>&);
         
-    PortableFactory* portableFactory;
+    PortableFactory const * portableFactory;
     SerializationService* service;
     int version;
     std::map<long,ClassDefinition*> versionedDefinitions;

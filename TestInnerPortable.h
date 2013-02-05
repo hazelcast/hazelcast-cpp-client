@@ -49,7 +49,7 @@ public:
         return (*this);
     }    
     int getClassId() {
-        return 1;
+        return 2;
     };
     ~TestInnerPortable(){
     }    

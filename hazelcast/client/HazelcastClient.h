@@ -23,15 +23,19 @@ public:
     };
     
     ~HazelcastClient();
-//protected: TODO add a factory impl for Hazelcast Client
-    ClientConfig clientConfig;
-    protocol::CommandHandler commandHandler;
-    serialization::SerializationService serializationService;
+    serialization::SerializationService& getSerializationService();
+    protocol::CommandHandler& getCommandHandler();
+    ClientConfig& getClientConfig();
+
 private:    
     void setupInitialConnection();
     
     HazelcastClient(ClientConfig&);
     HazelcastClient(const HazelcastClient&);
+
+    ClientConfig clientConfig;
+    protocol::CommandHandler commandHandler;
+    serialization::SerializationService serializationService;
 };
 
 }}

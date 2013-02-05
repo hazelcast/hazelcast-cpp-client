@@ -36,15 +36,39 @@ int main(int argc, char** argv){
 };
 
 void client(){
+    TestPortableFactory tpf1;
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-    clientConfig.setAddress("127.0.0.1:5701");
+    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+    clientConfig.setAddress("192.168.2.125:5701");
+    clientConfig.setPortableFactory(&tpf1);
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int,int> map = hazelcastClient->getMap<int,int>("sancar");
-        for(int i = 0 ; i < 10 ; i++)
-             std::cout << map.get(i) << std::endl;
+        IMap<int,TestMainPortable> map = hazelcastClient->getMap<int,TestMainPortable>("sancar");
+        for(int i = 0 ; i < 10 ; i++){
+            TestMainPortable x = map.get(i);
+            x.i += 1;
+            map.put(i,x);
+        }
+        
+        for(int i = 0 ; i < 10 ; i++){
+            TestMainPortable x = map.get(i);
+             std::cout << "(" << i << " " << x.i << ")" ;
+        }
+        std::cout << std::endl;  
+        
+        std::cout << map.containsKey(2) << std::endl;
+        std::cout << map.containsKey(20) << std::endl;
+        
+        int myints[] = {0,2,4,6};
+        std::set<int> keySet (myints, myints + sizeof(myints) / sizeof(int) );
+        
+        std::map<int,TestMainPortable> stdMap = map.getAll(keySet);
+        for(int i = 0 ; i < 8 ; i+=2 ){
+            TestMainPortable x = stdMap[i];
+            std::cout << "(" << i << " " << x.i << ")" ;
+        }
+        std::cout << std::endl;  
         
         std::cout << "Press a key to end" << std::endl;
         std::string x;
@@ -86,7 +110,7 @@ void read(){
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
-            -897543.3678909, "this is main portable object created for testing!", &inner);
+            -897543.3678909, "this is main portable object created for testing!", inner);
     
     
     
@@ -172,7 +196,7 @@ void write(){
     
 
     TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
-            -897543.3678909, "this is main portable object created for testing!", &inner);
+            -897543.3678909, "this is main portable object created for testing!", inner);
     data = serializationService.toData(main);
     
     TestMainPortable tmp1,tmp2;
@@ -180,7 +204,7 @@ void write(){
     tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
     assert(main == tmp2);
-/*    
+/* 
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
     Array<byte> outBuffer =  out->toByteArray();

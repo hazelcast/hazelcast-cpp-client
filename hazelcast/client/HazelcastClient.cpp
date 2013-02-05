@@ -9,8 +9,8 @@
 namespace hazelcast{
 namespace client{
     
-HazelcastClient::HazelcastClient(ClientConfig& config):serializationService(0,NULL)
-                                                      ,clientConfig(config)
+HazelcastClient::HazelcastClient(ClientConfig& config):clientConfig(config)
+                                                      ,serializationService(0,clientConfig.getPortableFactory())
                                                       ,commandHandler(config.getAddress(),&serializationService)
 {
     std::cout << "trying to connect  to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;
@@ -21,6 +21,18 @@ HazelcastClient::HazelcastClient(ClientConfig& config):serializationService(0,NU
 
 HazelcastClient::~HazelcastClient(){
     
+}
+
+serialization::SerializationService& HazelcastClient::getSerializationService(){
+    return serializationService;
+}
+
+protocol::CommandHandler& HazelcastClient::getCommandHandler(){
+    return commandHandler;
+}
+
+ClientConfig& HazelcastClient::getClientConfig(){
+    return clientConfig;
 };
   
 std::auto_ptr<HazelcastClient> HazelcastClient::newHazelcastClient(ClientConfig& config){

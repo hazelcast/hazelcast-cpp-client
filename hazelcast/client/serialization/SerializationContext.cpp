@@ -15,7 +15,7 @@ namespace hazelcast{
 namespace client{
 namespace serialization{
 
-SerializationContext::SerializationContext(PortableFactory* portableFactory, int version, SerializationService* service){
+SerializationContext::SerializationContext(PortableFactory const * portableFactory, int version, SerializationService* service){
     this->portableFactory = portableFactory;
     this->version = version;
     this->service = service;

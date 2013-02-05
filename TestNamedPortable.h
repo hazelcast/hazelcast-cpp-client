@@ -36,7 +36,7 @@ public:
     };
     
     int getClassId() {
-        return 2;
+        return 3;
     };
         
     void writePortable(PortableWriter& writer) {

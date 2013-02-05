@@ -21,16 +21,15 @@ using namespace hazelcast::client::serialization;
 class TestMainPortable : public Portable{
 public:
         
-    TestMainPortable() :p(NULL){
+    TestMainPortable(){
     };
     
     TestMainPortable(const TestMainPortable& rhs){
         *this = rhs;
     }
     ~TestMainPortable(){
-        delete p;
     }
-    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable* p) {
+    TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable p) {
         this->b = b;
         this->boolean = boolean;
         this->c = c;
@@ -40,7 +39,7 @@ public:
         this->f = f;
         this->d = d;
         this->str = str;
-        this->p = new TestInnerPortable(*p);
+        this->p = p;
     };
     
     const TestMainPortable& operator=(const TestMainPortable& rhs){
@@ -53,13 +52,13 @@ public:
         f = rhs.f;
         d = rhs.d;
         str = rhs.str;
-        p = new TestInnerPortable(*rhs.p);
+        p = rhs.p;
         return (*this);
     };
     
     
     int getClassId() {
-        return 0;
+        return 1;
     };
         
     void writePortable(PortableWriter& writer) {
@@ -73,7 +72,7 @@ public:
         writer.writeFloat("f", f);
         writer.writeDouble("d", d);
         writer.writeUTF("str", str);
-        writer.writePortable("p", *p);
+        writer.writePortable("p", p);
         
     };
         
@@ -88,7 +87,7 @@ public:
         d = reader.readDouble("d");
         str = reader.readUTF("str");
         auto_ptr<Portable> p_ptr = reader.readPortable("p");
-        p = dynamic_cast<TestInnerPortable*>( p_ptr.release());
+        p = *dynamic_cast<TestInnerPortable*>( p_ptr.release());
     };
     
     bool operator==(TestMainPortable& m){
@@ -103,20 +102,20 @@ public:
         if(f != m.f ) return false;
         if(d != m.d ) return false;
         if( str.compare(m.str) ) return false;
-        if(*p != *(m.p) ) return false;
+        if(p != m.p) return false;
         return true;
     };
     
     bool operator!=(TestMainPortable& m){
         return !(*this == m );  
     };
-    TestInnerPortable* p;
+    TestInnerPortable p;
+    int i;
 private:
     byte b;
     bool boolean;
     char c;
     short s;
-    int i;
     long l;
     float f;
     double d;

@@ -26,7 +26,7 @@ class DataInput{
 public:
     DataInput(Array<byte>&, SerializationService* service);
     
-    DataInput(Data&, SerializationService* service);
+    DataInput(const Data&, SerializationService* service);
   
     int getDataClassId();
     

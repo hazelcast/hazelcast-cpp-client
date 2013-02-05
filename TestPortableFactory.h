@@ -22,13 +22,13 @@ using namespace hazelcast::client::serialization;
 class TestPortableFactory : public PortableFactory{
     
 public:
-    Portable* create(int classId) {
+    Portable* create(int classId) const{
         switch (classId) {
-            case 0:
-                return new TestMainPortable();
             case 1:
-                return new TestInnerPortable();
+                return new TestMainPortable();
             case 2:
+                return new TestInnerPortable();
+            case 3:
                 return new TestNamedPortable();
             default:
                 throw "Illegal Statement Exception";

@@ -25,16 +25,13 @@ public:
         command += SPACE + name + SPACE + password + NEWLINE;
         dataOutput.write(command.c_str(),0,command.length());
     };
-    void readHeaderLine(hazelcast::client::serialization::DataInput& dataInput){
-        std::string ok; 
-        ok.push_back(dataInput.readByte());    
-        ok.push_back(dataInput.readByte());
-        if(ok.compare("OK")){
+    void readHeaderLine(std::string line){
+        if(line.compare("OK")){
             throw std::domain_error("wrong name or password");
         }
         
     };
-    void readSizeLine(hazelcast::client::Array<byte>& sizeInBytes) {
+    void readSizeLine(std::string sizeInBytes) {
         
     };
     void readResult(hazelcast::client::serialization::DataInput& dataInput){

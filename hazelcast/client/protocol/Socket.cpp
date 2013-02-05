@@ -39,8 +39,8 @@ void Socket::sendData(const void* buffer, int len){
          throw "Error at sending";
 };
 
-hazelcast::client::Array<byte> Socket::readLine(){
-    std::vector<byte> line;
+std::string Socket::readLine(){
+    std::string line;
     bool lineIsRead = false;
     while(!lineIsRead){
         char current;
@@ -52,11 +52,7 @@ hazelcast::client::Array<byte> Socket::readLine(){
         }
         
     }
-    Array<byte> buffer(line.size());
-    for(int i = 0; i < buffer.length(); i++){
-        buffer[i] = line[i];
-    }
-    return buffer;
+    return line;
 };
 
 void Socket::recvData(void* buffer, int len){
@@ -76,8 +72,8 @@ void Socket::getInfo(){
     hints.ai_socktype = SOCK_STREAM; 
     hints.ai_flags = AI_PASSIVE;     
     if (getaddrinfo(address.getAddress().c_str(), address.getPort().c_str(), &hints, &server_info) != 0) {
-        std::string error = "error "; //TODO
-        throw error;
+//        std::string error = "error "; //TODO
+//        throw error;
     }
 };
     

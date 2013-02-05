@@ -23,7 +23,7 @@ namespace serialization{
 {   
 };
 
-DataInput::DataInput(Data& data, SerializationService* service):buffer(data.buffer)
+DataInput::DataInput(const Data& data, SerializationService* service):buffer(data.buffer)
                                                                ,service(service)
                                                                ,ptr(const_cast<byte*>(buffer.getBuffer()))
                                                                ,beg(ptr)

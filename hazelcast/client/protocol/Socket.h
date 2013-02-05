@@ -4,6 +4,7 @@
 #include "../Array.h"
 #include "../Address.h"
 #include <netdb.h>
+#include <string>
 
 namespace hazelcast{
 
@@ -19,7 +20,7 @@ public:
     ~Socket();
     void sendData(const void* buffer, int len);
     void recvData(void* buffer, int len);
-    hazelcast::client::Array<byte> readLine();
+    std::string readLine();
 private:
     Socket(const Socket& rhs);
     void getInfo();

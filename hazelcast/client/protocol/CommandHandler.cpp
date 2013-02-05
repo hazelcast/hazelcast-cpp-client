@@ -34,15 +34,13 @@ void CommandHandler::sendCommand(Command* const  command){
     Array<byte> temp = dataOutput->toByteArray();
     socket.sendData(temp.getBuffer(),temp.length());
 
-    Array<byte> headerLine = socket.readLine();
-    DataInput headerInput(headerLine,serializationService);
-    command->readHeaderLine(headerInput);
+    std::string headerLine = socket.readLine();
+    command->readHeaderLine(headerLine);
     
     if(!command->nResults())
         return;
     
-    
-    Array<byte> sizeLine = socket.readLine();
+    std::string sizeLine = socket.readLine();
     command->readSizeLine(sizeLine);
     
     

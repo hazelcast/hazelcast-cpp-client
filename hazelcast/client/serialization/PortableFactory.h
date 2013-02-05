@@ -19,7 +19,7 @@ namespace serialization{
 
 class PortableFactory{
 public:
-    virtual Portable* create(int) = 0;
+    virtual Portable* create(int) const = 0;
 };
 
 }}}
