@@ -140,5 +140,90 @@ void IMap<K,V>::putTransient(K key, V value, long ttl){
     hazelcastClient.getCommandHandler().sendCommand(&command);
 
 };
+/*
+template<typename K, typename V>
+V IMap<K,V>::putIfAbsent(K key, V value){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
+    protocol::MapCommands::PutIfAbsentCommand command(instanceName,keyInBytes,valueInBytes, 0);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return hazelcastClient.getSerializationService().toObject<K>(command.get());
+};
+
+template<typename K, typename V>
+V IMap<K,V>::putIfAbsent(K key, V value, long ttl){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data valueInBytes = hazelcastClient.getSerializationService().toData(value);
+    protocol::MapCommands::PutIfAbsentCommand command(instanceName,keyInBytes,valueInBytes, ttl);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return hazelcastClient.getSerializationService().toObject<K>(command.get());
+};*/
+
+template<typename K, typename V>
+bool IMap<K,V>::replace(K key, V oldValue, V newValue){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    serialization::Data oldValueInBytes = hazelcastClient.getSerializationService().toData(oldValue);
+    serialization::Data newValueInBytes = hazelcastClient.getSerializationService().toData(newValue);
+    protocol::MapCommands::ReplaceIfSameCommand command(instanceName,keyInBytes,oldValueInBytes, newValueInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return command.get();
+};
+
+template<typename K,typename V>   
+bool IMap<K,V>::evict(K key){
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::EvictCommand command(instanceName,keyInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command);
+    return command.get();
+};
+
+template<typename K,typename V> 
+std::set<K> IMap<K,V>::keySet(){
+   protocol::MapCommands::KeySetCommand command(instanceName);  
+   hazelcastClient.getCommandHandler().sendCommand(&command);
+   std::set<K> resultSet;
+   std::vector<hazelcast::client::serialization::Data> resultDataVector = command.get();
+   int size = resultDataVector.size();
+   for(int i = 0 ; i < size; i++){
+       K key = hazelcastClient.getSerializationService().toObject<K>(resultDataVector[i]);
+       resultSet.insert(key);
+   }
+   return resultSet;
+};
+
+template<typename K,typename V> 
+std::vector<V> IMap<K,V>::values(){
+   std::set<K> allKeys = keySet();
+   std::map<K,V> allMap = getAll(allKeys);
+   std::vector<V> values;
+   for(typename std::map<K,V>::iterator it = allMap.begin(); it != allMap.end() ; it++)
+       values.push_back(it->second);
+   return values;
+};
+
+template<typename K,typename V>
+void IMap<K,V>::lock(K key) throw(std::domain_error){
+    
+};
+
+template<typename K,typename V>   
+bool IMap<K,V>::isLocked(K key){
+    
+};
+
+template<typename K,typename V>   
+bool IMap<K,V>::tryLock(K key, long timeoutInMillis){
+    
+};
+
+template<typename K,typename V>
+void IMap<K,V>::unlock(K key){
+    
+};
+
+template<typename K,typename V>
+void IMap<K,V>::forceunlock(K key){
+    
+};
 
 }}

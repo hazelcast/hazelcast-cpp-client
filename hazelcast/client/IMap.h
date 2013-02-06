@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <vector>
+#include <stdexcept>
 
 namespace hazelcast{ 
 namespace client{
@@ -29,7 +31,22 @@ public:
     bool tryPut(K key, V value, long timeoutInMillis);
     void put(K key, V value, long ttl);
     void putTransient(K key, V value, long ttl);
-    
+//    V putIfAbsent(K key ,V value);
+//    V putIfAbsent(K key ,V value,long ttl);
+    bool replace(K key, V oldValue, V newValue);
+    //TODO V replace(K,V)
+    //TODO set
+    //TODO locks and listeners
+    //getEntry TODO
+    //predicates ? no support on protocol TODO
+    bool evict(K key);
+    std::set<K> keySet();
+    std::vector<V> values();
+    void lock(K key) throw(std::domain_error);
+    bool isLocked(K key);
+    bool tryLock(K key, long timeoutInMillis);
+    void unlock(K key);
+    void forceunlock(K key);
 private:
     std::string instanceName;    
     HazelcastClient& hazelcastClient;

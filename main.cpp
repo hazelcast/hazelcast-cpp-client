@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <vector>
+#include <set>
 
 using namespace hazelcast::client;
 
@@ -79,6 +81,13 @@ void client(){
         imap.put(2,z,2000);
         imap.putTransient(3,z,2000);
         
+        std::cout << "replaceIfSame 3 is successful"  << imap.replace(3,z,z) << std::endl;
+        std::cout << "replaceIfSame 4 is successful"  << imap.replace(6,z,z) << std::endl;
+        
+        imap.evict(9);
+        
+        set<int> keys = imap.keySet();
+        vector<TestMainPortable> value = imap.values();
         std::cout << "Press a key to end" << std::endl;
         std::string x;
         std::cin >> x;
