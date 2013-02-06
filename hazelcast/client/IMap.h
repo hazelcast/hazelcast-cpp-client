@@ -37,11 +37,12 @@ public:
     //TODO V replace(K,V)
     //TODO set
     //TODO locks and listeners
-    //getEntry TODO
+    std::pair<K,V> getEntry(K key);
     //predicates ? no support on protocol TODO
     bool evict(K key);
     std::set<K> keySet();
     std::vector<V> values();
+    std::vector< std::pair<K, V> > entrySet();
     void lock(K key) throw(std::domain_error);
     bool isLocked(K key);
     bool tryLock(K key, long timeoutInMillis);

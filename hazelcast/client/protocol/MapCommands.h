@@ -813,6 +813,262 @@ private:
     std::vector<int> keySizes;
 }; 
 
+class LockCommand : public Command{
+public:
+    LockCommand(std::string instanceName, 
+                hazelcast::client::serialization::Data key ):
+                                instanceName(instanceName)
+                               ,key(key)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        char integerBuffer[5];
+        int integerBufferSize;
+        
+        std::string command;
+//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
+//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        
+        command += "MLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
+        
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer, integerBufferSize);
+        
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        if(line.compare("OK"))
+            throw std::domain_error("unexpected header of lock return");      
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+}; 
+
+class IsLockedCommand : public Command{
+public:
+    IsLockedCommand(std::string instanceName, 
+                hazelcast::client::serialization::Data key ):
+                                instanceName(instanceName)
+                               ,key(key)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        char integerBuffer[5];
+        int integerBufferSize;
+        
+        std::string command;
+        command += "MISLOCKED" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
+        
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer, integerBufferSize);
+        
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        int pos = line.find_first_of(' ');
+        std::string ok = line.substr(0,pos);
+        if(ok.compare("OK "))
+            throw std::domain_error("unexpected header of isLocked return");
+       
+        isLocked = line.compare("OK true") ? false  : true;
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+    bool get(){
+        return isLocked;
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+    bool isLocked;
+}; 
+
+class TryLockCommand : public Command{
+public:
+    TryLockCommand(std::string instanceName, 
+                   hazelcast::client::serialization::Data key,
+                   long timeoutInMillis):
+                                instanceName(instanceName)
+                               ,key(key)
+                               ,timeoutInMillis(timeoutInMillis)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        char integerBuffer[5];
+        int integerBufferSize;
+        
+        std::string command;
+//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
+//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        
+        command += "MTRYLOCK" + SPACE + instanceName + SPACE;
+        
+        integerBufferSize = sprintf(integerBuffer,"%li",timeoutInMillis);
+        command.append(integerBuffer, integerBufferSize);
+        
+        command +=  "#1" + NEWLINE;       
+        
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer, integerBufferSize);
+        
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        int pos = line.find_first_of(' ');
+        std::string ok = line.substr(0,pos);
+        if(ok.compare("OK "))
+            throw std::domain_error("unexpected header of tryLock return");
+       
+        isAcquired = line.compare("OK true") ? false  : true; 
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+    bool get(){
+      return isAcquired;  
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+    long timeoutInMillis;
+    bool isAcquired;
+};
+
+class UnlockCommand : public Command{
+public:
+    UnlockCommand(std::string instanceName, 
+                hazelcast::client::serialization::Data key ):
+                                instanceName(instanceName)
+                               ,key(key)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        char integerBuffer[5];
+        int integerBufferSize;
+        
+        std::string command;
+//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
+//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        
+        command += "MUNLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
+        
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer, integerBufferSize);
+        
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        if(line.compare("OK"))
+            throw std::domain_error("unexpected header of unlock return");      
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+};
+
+class ForceUnlockCommand : public Command{
+public:
+    ForceUnlockCommand(std::string instanceName, 
+                hazelcast::client::serialization::Data key ):
+                                instanceName(instanceName)
+                               ,key(key)
+    {    
+    };
+    void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
+        char integerBuffer[5];
+        int integerBufferSize;
+        
+        std::string command;
+//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
+//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        
+        command += "MFORCEUNLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
+        
+        integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        command.append(integerBuffer, integerBufferSize);
+        
+        command += NEWLINE;
+        
+        dataOutput.write(command.c_str(),0,command.length());
+
+        key.writeData(dataOutput);
+        
+        dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
+    };
+    void readHeaderLine(std::string line){
+        if(line.compare("OK"))
+            throw std::domain_error("unexpected header of force unlock return");      
+    };
+    void readSizeLine(std::string line) {
+    };
+    void readResult(hazelcast::client::serialization::DataInput& dataInput){
+    };
+    int nResults(){
+       return 0;  
+    };
+    int resultSize(int i){
+    };
+private:
+    std::string instanceName;
+    hazelcast::client::serialization::Data key;
+};
+
 }}}}
 
 #endif /* HAZELCAST_MAP_COMMANDS */

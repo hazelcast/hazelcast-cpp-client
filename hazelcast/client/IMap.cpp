@@ -169,6 +169,15 @@ bool IMap<K,V>::replace(K key, V oldValue, V newValue){
     return command.get();
 };
 
+template<typename K, typename V>
+std::pair<K,V> IMap<K,V>::getEntry(K key){
+    V value = get(key);
+    std::pair<K,V> mapEntry;
+    mapEntry.first = key;
+    mapEntry.second = value;
+    return mapEntry;
+};
+
 template<typename K,typename V>   
 bool IMap<K,V>::evict(K key){
     serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
@@ -201,29 +210,51 @@ std::vector<V> IMap<K,V>::values(){
    return values;
 };
 
+template<typename K,typename V> 
+std::vector< std::pair < K , V > > IMap<K,V>::entrySet(){
+   std::set<K> allKeys = keySet();
+   std::map<K,V> allMap = getAll(allKeys);
+   std::vector< std::pair < K , V > > mapEntries;
+    for(typename std::map<K,V>::iterator it = allMap.begin(); it != allMap.end() ; it++)
+       mapEntries.push_back( pair< K , V > (it->first, it->second) );
+    return mapEntries;  
+};
+
 template<typename K,typename V>
 void IMap<K,V>::lock(K key) throw(std::domain_error){
-    
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::LockCommand command(instanceName, keyInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command); 
 };
 
 template<typename K,typename V>   
 bool IMap<K,V>::isLocked(K key){
-    
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::IsLockedCommand command(instanceName, keyInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command); 
+    return command.get();
 };
 
 template<typename K,typename V>   
 bool IMap<K,V>::tryLock(K key, long timeoutInMillis){
-    
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::TryLockCommand command(instanceName, keyInBytes, timeoutInMillis);
+    hazelcastClient.getCommandHandler().sendCommand(&command); 
+    return command.get();
 };
 
 template<typename K,typename V>
 void IMap<K,V>::unlock(K key){
-    
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::UnlockCommand command(instanceName, keyInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command); 
 };
 
 template<typename K,typename V>
 void IMap<K,V>::forceunlock(K key){
-    
+    serialization::Data keyInBytes = hazelcastClient.getSerializationService().toData(key);
+    protocol::MapCommands::ForceUnlockCommand command(instanceName, keyInBytes);
+    hazelcastClient.getCommandHandler().sendCommand(&command); 
 };
 
 }}

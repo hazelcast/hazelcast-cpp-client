@@ -88,6 +88,16 @@ void client(){
         
         set<int> keys = imap.keySet();
         vector<TestMainPortable> value = imap.values();
+        
+        std::pair<int,TestMainPortable> entry = imap.getEntry(3);
+        std::vector< std::pair<int,TestMainPortable> > entrySet = imap.entrySet();
+        
+        imap.lock(1);
+        imap.unlock(5);
+        imap.isLocked(4);
+        imap.forceunlock(3);
+        imap.tryLock(3,1000);
+        
         std::cout << "Press a key to end" << std::endl;
         std::string x;
         std::cin >> x;
