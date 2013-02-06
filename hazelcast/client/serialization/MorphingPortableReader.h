@@ -34,25 +34,45 @@ public:
     
     short readShort(string);
     
-    string readUTF(string);
-        
-    auto_ptr<Portable> readPortable(string);
+    string readUTF(string); 
 
-    Array<byte> readByteArray(string);
+    std::vector<byte> readByteArray(string);
     
-    Array<char> readCharArray(string);
+    std::vector<char> readCharArray(string);
     
-    Array<int> readIntArray(string);
+    std::vector<int> readIntArray(string);
     
-    Array<long> readLongArray(string);
+    std::vector<long> readLongArray(string);
     
-    Array<double> readDoubleArray(string);
+    std::vector<double> readDoubleArray(string);
     
-    Array<float> readFloatArray(string);
+    std::vector<float> readFloatArray(string);
     
-    Array<short> readShortArray(string);
+    std::vector<short> readShortArray(string);
     
-    Array< auto_ptr<Portable> > readPortableArray(string);
+    template <typename T>
+    T readPortable(string fieldName) {
+        if(!cd->isFieldDefinitionExists(fieldName))
+           throw "throwUnknownFieldException" + fieldName;
+        FieldDefinition fd = cd->get(fieldName);
+
+        if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
+            throw "IncompatibleClassChangeError";
+        }
+        return PortableReader::readPortable<T>(fieldName);
+    };
+    
+    template <typename T>
+    std::vector< T > readPortableArray(string fieldName) {
+        if (!cd->isFieldDefinitionExists(fieldName))
+            throw "throwUnknownFieldException" + fieldName;
+        FieldDefinition fd = cd->get(fieldName);
+
+        if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
+            throw "IncompatibleClassChangeError";
+        }
+        return PortableReader::readPortableArray<T>(fieldName);
+    };
     
 };
 

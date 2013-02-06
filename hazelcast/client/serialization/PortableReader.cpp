@@ -10,7 +10,7 @@
 #include "DataInput.h"
 #include "PortableSerializer.h"
 #include "FieldDefinition.h"
-#include "../Array.h"
+
 #include <string>
 
 namespace hazelcast{ 
@@ -70,124 +70,81 @@ string PortableReader::readUTF(string fieldName){
     return input->readUTF(pos);
 };
 
-auto_ptr<Portable> PortableReader::readPortable(string fieldName) {
-    if(!cd->isFieldDefinitionExists(fieldName))
-       throw "throwUnknownFieldException" + fieldName;
-
-    FieldDefinition fd = cd->get(fieldName);
-
-    int pos = getPosition(&fd);
-    input->position(pos);
-    bool isNull = input->readBoolean();
-    if (isNull) {
-        return auto_ptr<Portable>(0);
-    }
-    input->setDataClassId(fd.getClassId());
-    auto_ptr<Portable> p (serializer->read(*input) );
-
-    input->setDataClassId(cd->getClassId());
-    return p;
-};
-
-Array<byte> PortableReader::readByteArray(string fieldName){
+std::vector<byte> PortableReader::readByteArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<byte> values(len);
+    std::vector<byte> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readByte();
     }
     return values;
 };
 
-Array<char> PortableReader::readCharArray(string fieldName){
+std::vector<char> PortableReader::readCharArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<char> values(len);
+    std::vector<char> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readChar();
     }
     return values;
 };
 
-Array<int> PortableReader::readIntArray(string fieldName){
+std::vector<int> PortableReader::readIntArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<int> values(len);
+    std::vector<int> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readInt();
     }
     return values;
 };
 
-Array<long> PortableReader::readLongArray(string fieldName){
+std::vector<long> PortableReader::readLongArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<long> values(len);
+    std::vector<long> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readLong();
     }
     return values;
 };
 
-Array<double> PortableReader::readDoubleArray(string fieldName){
+std::vector<double> PortableReader::readDoubleArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<double> values(len);
+    std::vector<double> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readDouble();
     }
     return values;
 };
 
-Array<float> PortableReader::readFloatArray(string fieldName){
+std::vector<float> PortableReader::readFloatArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<float> values(len);
+    std::vector<float> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readFloat();
     }
     return values;
 };
 
-Array<short> PortableReader::readShortArray(string fieldName){
+std::vector<short> PortableReader::readShortArray(string fieldName){
     int pos = getPosition(fieldName);
     input->position(pos);
     int len = input->readInt();
-    Array<short> values(len);
+    std::vector<short> values(len);
     for (int i = 0; i < len; i++) {
         values[i] = input->readShort();
     }
     return values;
-};
-
-Array< auto_ptr<Portable> > PortableReader::readPortableArray(string fieldName){
-    if(!cd->isFieldDefinitionExists(fieldName))
-          throw "throwUnknownFieldException" + fieldName;
-      FieldDefinition fd = cd->get(fieldName);
-      int currentPos = input->position();
-      int pos = getPosition(fieldName);
-      input->position(pos);
-      int len = input->readInt();
-      Array< auto_ptr<Portable> > portables(len);
-      if(len > 0 ){
-        int offset = input->position();
-        input->setDataClassId(fd.getClassId());
-        int start;
-        for (int i = 0; i < len; i++) {
-            start = input->readInt(offset + i * sizeof(int));
-            input->position(start);
-            portables[i] = serializer->read(*input);
-        }
-      }
-      input->position(currentPos);
-      return portables;
-
 };
 
 int PortableReader::getPosition(string fieldName){

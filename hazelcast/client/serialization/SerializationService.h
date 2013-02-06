@@ -16,6 +16,7 @@
 #include "DataInput.h"
 #include "PortableFactory.h"
 #include "SerializationService.h"
+#include "SerializationContext.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -58,12 +59,12 @@ public:
     Data toData(long);
     Data toData(float);
     Data toData(double);
-    Data toData(Array<char>&);
-    Data toData(Array<short>&);
-    Data toData(Array<int>&);
-    Data toData(Array<long>&);
-    Data toData(Array<float>&);
-    Data toData(Array<double>&);
+    Data toData(std::vector<char>&);
+    Data toData(std::vector<short>&);
+    Data toData(std::vector<int>&);
+    Data toData(std::vector<long>&);
+    Data toData(std::vector<float>&);
+    Data toData(std::vector<double>&);
     Data toData(string&);
      
     template<typename K>
@@ -80,7 +81,7 @@ public:
         }
         
         DataInput dataInput(data,this);
-        auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
+        std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
         
         K* ptr = dynamic_cast<K*>( autoPtr.get() );
        
@@ -193,7 +194,7 @@ inline double SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<byte> SerializationService::toObject(const Data& data){
+inline std::vector<byte> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -201,7 +202,7 @@ inline Array<byte> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<char> SerializationService::toObject(const Data& data){
+inline std::vector<char> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -209,7 +210,7 @@ inline Array<char> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<short> SerializationService::toObject(const Data& data){
+inline std::vector<short> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -217,7 +218,7 @@ inline Array<short> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<int> SerializationService::toObject(const Data& data){
+inline std::vector<int> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -225,7 +226,7 @@ inline Array<int> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<long> SerializationService::toObject(const Data& data){
+inline std::vector<long> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -233,7 +234,7 @@ inline Array<long> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<float> SerializationService::toObject(const Data& data){
+inline std::vector<float> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);
@@ -241,7 +242,7 @@ inline Array<float> SerializationService::toObject(const Data& data){
 };
 
 template<>
-inline Array<double> SerializationService::toObject(const Data& data){
+inline std::vector<double> SerializationService::toObject(const Data& data){
     if(data.bufferSize() == 0)
         throw "Empty Data";
     DataInput dataInput(data,this);

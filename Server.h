@@ -30,8 +30,8 @@ using namespace hazelcast::client::serialization;
     void send(Data& data){
         DataOutput out(service);
         data.writeData(out);
-        Array<byte> buffer = out.toByteArray();
-        std::cout << buffer.length() << std::endl;
+        std::vector<byte> buffer = out.toByteArray();
+//        std::cout << buffer.length() << std::endl;
 //        boost::asio::write(mSocket, boost::asio::buffer(buffer.buffer,1024));
     }
     private:

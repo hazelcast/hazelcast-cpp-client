@@ -1,7 +1,7 @@
 #ifndef HAZELCAST_MAP_COMMANDS
 #define HAZELCAST_MAP_COMMANDS
 
-#include "../Array.h"
+
 #include "Command.h"
 #include "../serialization/DataInput.h"
 #include "../serialization/DataOutput.h"
@@ -407,7 +407,6 @@ public:
         
         command += SPACE + "#1" + NEWLINE;
         
-        integerBuffer[5];
         integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
         command.append(integerBuffer,integerBufferSize);
 

@@ -24,7 +24,7 @@ typedef unsigned char byte;
 //TODO ask if necessary add offset
 class DataInput{
 public:
-    DataInput(Array<byte>&, SerializationService* service);
+    DataInput(std::vector<byte>&, SerializationService* service);
     
     DataInput(const Data&, SerializationService* service);
   
@@ -37,7 +37,7 @@ public:
     SerializationContext* getSerializationContext();
     
     //Inherited from DataInput
-    void readFully(Array<byte>&);
+    void readFully(std::vector<byte>&);
     
     void readFully(byte* bytes, int off, int len);
     
@@ -90,10 +90,10 @@ public:
     void reset();
     
 private:
-    Array<byte> buffer;
+    std::vector<byte> buffer;
     SerializationService* service;
-    byte* ptr;
-    byte* beg;
+    std::vector<byte>::iterator ptr;
+    std::vector<byte>::iterator beg;
     int dataClassId;
     int dataVersion;
     

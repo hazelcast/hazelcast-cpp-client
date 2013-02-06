@@ -10,7 +10,7 @@
 #include "DataOutput.h"
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
-#include "../Array.h"
+
 
 
 namespace hazelcast{ 
@@ -28,7 +28,7 @@ Data::Data(const Data& rhs){
     (*this) = rhs;    
 };
 
-Data::Data(const int type, Array<byte> buffer):partitionHash(-1),cd(NULL){
+Data::Data(const int type, std::vector<byte> buffer):partitionHash(-1),cd(NULL){
     this->type = type;
     this->buffer = buffer;       
 };
@@ -54,7 +54,7 @@ bool Data::operator!=(const Data& rhs) const{
 };
 
 int Data::bufferSize() const{
-    return buffer.length();
+    return buffer.size();
 };
 /**
 * Calculates the size of the binary after the Data is serialized.
@@ -70,7 +70,7 @@ int Data::totalSize() const{
         total += 4; // cd-classId
         total += 4; // cd-version
         total += 4; // cd-binary-length
-        total += cd->getBinary().length(); // cd-binary
+        total += cd->getBinary().size(); // cd-binary
     } else {
         total += 4; // no-classId
     }
@@ -101,14 +101,14 @@ void Data::readData(DataInput& in) {
             cd = context->lookup(classId, version);
             in.skipBytes(classDefSize);
         } else {
-            Array<byte>  classDefBytes(classDefSize);
+            std::vector<byte>  classDefBytes(classDefSize);
             in.readFully(classDefBytes);
             cd = context->createClassDefinition(classDefBytes);
         }
     }
     int size = in.readInt();
     if (size > 0) {
-        Array<byte>  buffer(size);
+        std::vector<byte>  buffer(size);
         in.readFully(buffer);
         this->buffer = buffer;
     }
@@ -120,8 +120,8 @@ void Data::writeData(DataOutput& out) const {
     if (cd != NULL) {
         out.writeInt(cd->getClassId());
         out.writeInt(cd->getVersion());
-        Array<byte>  classDefBytes = cd->getBinary();
-        out.writeInt(classDefBytes.length());
+        std::vector<byte>  classDefBytes = cd->getBinary();
+        out.writeInt(classDefBytes.size());
         out.write(classDefBytes);
     } else {
         out.writeInt(NO_CLASS_ID);

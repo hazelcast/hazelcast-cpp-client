@@ -9,10 +9,11 @@
 #include "SerializationConstants.h"
 #include "DataInput.h"
 #include "DataOutput.h"
-#include "DefaultPortableWriter.h"
-#include "PortableReader.h"
+#include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
+#include "SerializationContext.h"
+#include "ClassDefinitionWriter.h"
 #include <cassert>
 
 namespace hazelcast{ 
@@ -56,16 +57,16 @@ int PortableSerializer::getVersion(){
 void PortableSerializer::write(DataOutput* dataOutput, Portable& p)  {
     
     ClassDefinition* cd = getClassDefinition(p);
-    DefaultPortableWriter writer(this, dataOutput, cd);
+    PortableWriter writer(this, dataOutput, cd);
     p.writePortable(writer);
     
 };
 
-auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
+std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
     
     int dataClassId = dataInput.getDataClassId();
     int dataVersion = dataInput.getDataVersion();
-    auto_ptr<Portable> p = context->createPortable(dataClassId);
+    std::auto_ptr<Portable> p = context->createPortable(dataClassId);
     
     ClassDefinition* cd;
     if (context->getVersion() == dataVersion) {

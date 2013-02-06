@@ -9,12 +9,12 @@ namespace client{
   
 template<typename K,typename V>       
 IMap<K,V>::IMap(std::string instanceName, HazelcastClient& hazelcastClient):instanceName(instanceName)
-                                                                                 ,hazelcastClient(hazelcastClient){
+                                                                           ,hazelcastClient(hazelcastClient){
     
 };    
 
 template<typename K,typename V>   
-IMap<K,V>::IMap(const IMap<K,V>& rhs):instanceName(instanceName)
+IMap<K,V>::IMap(const IMap<K,V>& rhs):instanceName(rhs.instanceName)
                                      ,hazelcastClient(rhs.hazelcastClient)
 {   
 };

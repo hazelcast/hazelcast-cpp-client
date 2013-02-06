@@ -13,7 +13,7 @@
 #include "DataInput.h"
 #include "FieldDefinition.h"
 #include "PortableSerializer.h"
-#include "../Array.h"
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -51,23 +51,64 @@ public:
     
     string readUTF(string);
     
-    auto_ptr<Portable> readPortable(string fieldName);
+    std::vector<byte> readByteArray(string);
     
-    Array<byte> readByteArray(string);
+    std::vector<char> readCharArray(string);
     
-    Array<char> readCharArray(string);
+    std::vector<int> readIntArray(string);
     
-    Array<int> readIntArray(string);
+    std::vector<long> readLongArray(string);
     
-    Array<long> readLongArray(string);
+    std::vector<double> readDoubleArray(string);
     
-    Array<double> readDoubleArray(string);
+    std::vector<float> readFloatArray(string);
     
-    Array<float> readFloatArray(string);
+    std::vector<short> readShortArray(string);
     
-    Array<short> readShortArray(string);
+    template<typename T>
+    T readPortable(string fieldName){
+        if(!cd->isFieldDefinitionExists(fieldName))
+           throw "throwUnknownFieldException" + fieldName;
+
+        FieldDefinition fd = cd->get(fieldName);
+
+        int pos = getPosition(&fd);
+        input->position(pos);
+        bool isNull = input->readBoolean();
+        if (isNull) {
+            return T();
+        }
+        input->setDataClassId(fd.getClassId());
+        std::auto_ptr<Portable> p (serializer->read(*input) );
+
+        input->setDataClassId(cd->getClassId());
+        T portable = *dynamic_cast<T*>(p.get());
+        return portable;
+    };
     
-    Array< auto_ptr<Portable> > readPortableArray(string fieldName);
+    template<typename T>
+    std::vector< T > readPortableArray(string fieldName){
+        if(!cd->isFieldDefinitionExists(fieldName))
+              throw "throwUnknownFieldException" + fieldName;
+          FieldDefinition fd = cd->get(fieldName);
+          int currentPos = input->position();
+          int pos = getPosition(fieldName);
+          input->position(pos);
+          int len = input->readInt();
+          std::vector< T > portables(len);
+          if(len > 0 ){
+            int offset = input->position();
+            input->setDataClassId(fd.getClassId());
+            int start;
+            for (int i = 0; i < len; i++) {
+                start = input->readInt(offset + i * sizeof(int));
+                input->position(start);
+                portables[i] = *dynamic_cast<T*>(serializer->read(*input).get());
+            }
+          }
+          input->position(currentPos);
+          return portables;
+    };
     
 
 protected:

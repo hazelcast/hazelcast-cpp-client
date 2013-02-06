@@ -73,54 +73,40 @@ void ClassDefinitionWriter::writePortable(string fieldName, Portable& portable){
     addNestedField(portable, fd);
 };
 
-void ClassDefinitionWriter::writeByteArray(string fieldName, Array<byte>& v){
+void ClassDefinitionWriter::writeByteArray(string fieldName, std::vector<byte>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_BYTE_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeCharArray(string fieldName, Array<char>& v){
+void ClassDefinitionWriter::writeCharArray(string fieldName, std::vector<char>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_CHAR_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeIntArray(string fieldName, Array<int>& v){
+void ClassDefinitionWriter::writeIntArray(string fieldName, std::vector<int>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_INT_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeLongArray(string fieldName, Array<long>& v){
+void ClassDefinitionWriter::writeLongArray(string fieldName, std::vector<long>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_LONG_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeDoubleArray(string fieldName, Array<double>& v){
+void ClassDefinitionWriter::writeDoubleArray(string fieldName, std::vector<double>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_DOUBLE_ARRAY);
     cd->add(fd);
 };
 
-void ClassDefinitionWriter::writeFloatArray(string fieldName, Array<float>& v){
+void ClassDefinitionWriter::writeFloatArray(string fieldName, std::vector<float>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_FLOAT_ARRAY);
     cd->add(fd);
 };
     
-void ClassDefinitionWriter::writeShortArray(string fieldName, Array<short>& v){
+void ClassDefinitionWriter::writeShortArray(string fieldName, std::vector<short>& v){
     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_SHORT_ARRAY);
     cd->add(fd);
 };
-
-
-void ClassDefinitionWriter::writePortableArray(string fieldName, Array<Portable*>& portables){
-    
-    int classId = portables[0]->getClassId();
-    for (int i = 1; i < portables.length(); i++) {
-        if (portables[i]->getClassId() != classId) {
-            throw "Illegal Argument Exception";
-        }
-    }
-    FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
-    addNestedField(*(portables[0]), fd);
-};
-
 
 void ClassDefinitionWriter::addNestedField(Portable& p, FieldDefinition& fd){
     cd->add(fd);

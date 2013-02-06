@@ -32,7 +32,7 @@ public:
     }
     void read(Data& data){
 
-        Array<byte> buffer(1024);
+        std::vector<byte> buffer(1024);
 //        boost::asio::read(mSocket, boost::asio::buffer(buffer.buffer,1024));
         DataInput input(buffer,service);
         data.readData(input);

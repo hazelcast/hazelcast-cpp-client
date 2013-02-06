@@ -103,11 +103,11 @@ int ClassDefinition::getVersion() const{
     return version;
 };
 
-Array<byte> ClassDefinition::getBinary() const{
+std::vector<byte> ClassDefinition::getBinary() const{
     return binary;
 };
 
-void ClassDefinition::setBinary(Array<byte>& binary){
+void ClassDefinition::setBinary(std::vector<byte>& binary){
     this->binary = binary;
 };
 

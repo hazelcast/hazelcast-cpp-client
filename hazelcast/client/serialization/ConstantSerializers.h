@@ -13,7 +13,7 @@
 #include "DataOutput.h"
 #include "SerializationConstants.h"
 #include "TypeSerializer.h"
-#include "../Array.h"
+
 #include <iostream>
 
 using namespace std;
@@ -162,23 +162,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class ByteArraySerializer : public TypeSerializer<Array<byte> > {
+    class ByteArraySerializer : public TypeSerializer<std::vector<byte> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
         }
         
-        Array<byte> read(DataInput* dataInput){
+        std::vector<byte> read(DataInput* dataInput){
             int size = dataInput->readInt();
-            Array<byte> c(size);
+            std::vector<byte> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readByte();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<byte>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<byte>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -188,23 +188,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class CharArraySerializer : public TypeSerializer<Array<char> > {
+    class CharArraySerializer : public TypeSerializer<std::vector<char> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
         }
         
-        Array<char> read(DataInput* dataInput){
+        std::vector<char> read(DataInput* dataInput){
             int size = dataInput->readInt();
-            Array<char> c(size);
+            std::vector<char> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readChar();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<char>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<char>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -214,23 +214,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class ShortArraySerializer : public TypeSerializer<Array<short> > {
+    class ShortArraySerializer : public TypeSerializer<std::vector<short> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
         }
         
-        Array<short> read(DataInput* dataInput){
+        std::vector<short> read(DataInput* dataInput){
             int size = dataInput->readInt();
-            Array<short> c(size);
+            std::vector<short> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readShort();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<short>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<short>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -240,23 +240,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class IntegerArraySerializer : public TypeSerializer<Array<int> > {
+    class IntegerArraySerializer : public TypeSerializer<std::vector<int> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
         }
         
-        Array<int> read(DataInput* dataInput){
+        std::vector<int> read(DataInput* dataInput){
              int size = dataInput->readInt();
-            Array<int> c(size);
+            std::vector<int> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readInt();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<int>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<int>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -266,23 +266,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class LongArraySerializer : public TypeSerializer<Array<long> > {
+    class LongArraySerializer : public TypeSerializer<std::vector<long> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
         }
         
-        Array<long> read(DataInput* dataInput){
+        std::vector<long> read(DataInput* dataInput){
              int size = dataInput->readInt();
-            Array<long> c(size);
+            std::vector<long> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readLong();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<long>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<long>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -292,23 +292,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class FloatArraySerializer : public TypeSerializer<Array<float> > {
+    class FloatArraySerializer : public TypeSerializer<std::vector<float> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
         }
         
-        Array<float> read(DataInput* dataInput){
+        std::vector<float> read(DataInput* dataInput){
              int size = dataInput->readInt();
-            Array<float> c(size);
+            std::vector<float> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readShort();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<float>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<float>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){
@@ -318,23 +318,23 @@ namespace ConstantSerializers{
         }
     };
     
-    class DoubleArraySerializer : public TypeSerializer<Array<double> > {
+    class DoubleArraySerializer : public TypeSerializer<std::vector<double> > {
     public:
         int getTypeId() {
             return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
         }
         
-        Array<double> read(DataInput* dataInput){
+        std::vector<double> read(DataInput* dataInput){
              int size = dataInput->readInt();
-            Array<double> c(size);
+            std::vector<double> c(size);
             for (int i = 0; i < size; i++) {
                 c[i] = dataInput->readShort();
             }
             return c;
         }
         
-        void write(DataOutput* dataOutput, Array<double>& obj){
-            int size = obj.length();
+        void write(DataOutput* dataOutput, std::vector<double>& obj){
+            int size = obj.size();
             dataOutput->writeInt(size);
             if (size > 0) {
                 for(int i = 0; i < size ; i++){

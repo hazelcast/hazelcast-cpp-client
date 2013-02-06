@@ -107,7 +107,7 @@ Data SerializationService::toData(double object){
     return data;
 };
 
-Data SerializationService::toData(Array<char>& object){
+Data SerializationService::toData(std::vector<char>& object){
     DataOutput* output = pop();
     charArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
@@ -115,7 +115,7 @@ Data SerializationService::toData(Array<char>& object){
     return data;
 };
 
-Data SerializationService::toData(Array<short>& object){
+Data SerializationService::toData(std::vector<short>& object){
     DataOutput* output = pop();
     shortArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
@@ -123,14 +123,14 @@ Data SerializationService::toData(Array<short>& object){
     return data;
 };
 
-Data SerializationService::toData(Array<int>& object){
+Data SerializationService::toData(std::vector<int>& object){
     DataOutput* output = pop();
     integerArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
     push(output);    
     return data;
 };
-Data SerializationService::toData(Array<long>& object){
+Data SerializationService::toData(std::vector<long>& object){
     DataOutput* output = pop();
     longArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
@@ -138,7 +138,7 @@ Data SerializationService::toData(Array<long>& object){
     return data;
 };
 
-Data SerializationService::toData(Array<float>& object){
+Data SerializationService::toData(std::vector<float>& object){
     DataOutput* output = pop();
     floatArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
@@ -146,7 +146,7 @@ Data SerializationService::toData(Array<float>& object){
     return data;
 };
 
-Data SerializationService::toData(Array<double>& object){
+Data SerializationService::toData(std::vector<double>& object){
     DataOutput* output = pop();
     doubleArraySerializer.write(output, object);
     Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());

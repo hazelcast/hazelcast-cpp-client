@@ -1,7 +1,7 @@
 #ifndef HAZELCAST_SOCKET
 #define HAZELCAST_SOCKET
 
-#include "../Array.h"
+
 #include "../Address.h"
 #include <netdb.h>
 #include <string>

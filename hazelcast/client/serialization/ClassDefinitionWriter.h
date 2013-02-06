@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_WRITER
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
-#include "../Array.h"
+
 #include "PortableWriter.h"
 #include "ClassDefinition.h"
 #include <iostream>
@@ -48,22 +48,31 @@ public:
     
     void writePortable(string fieldName, Portable& portable);
     
-    void writeByteArray(string fieldName, Array<byte>&);
+    void writeByteArray(string fieldName, std::vector<byte>&);
     
-    void writeCharArray(string fieldName, Array<char>&);
+    void writeCharArray(string fieldName, std::vector<char>&);
     
-    void writeIntArray(string fieldName, Array<int>&);
+    void writeIntArray(string fieldName, std::vector<int>&);
     
-    void writeLongArray(string fieldName, Array<long>&);
+    void writeLongArray(string fieldName, std::vector<long>&);
     
-    void writeDoubleArray(string fieldName, Array<double>&);
+    void writeDoubleArray(string fieldName, std::vector<double>&);
     
-    void writeFloatArray(string fieldName, Array<float>&);
+    void writeFloatArray(string fieldName, std::vector<float>&);
     
-    void writeShortArray(string fieldName, Array<short>&);
+    void writeShortArray(string fieldName, std::vector<short>&);
     
-    
-    void writePortableArray(string fieldName, Array<Portable*>& portables);
+    template<typename T>
+    void writePortableArray(string fieldName, std::vector<T>& portables){
+        int classId = portables[0].getClassId();
+        for (int i = 1; i < portables.size(); i++) {
+            if (portables[i].getClassId() != classId) {
+                throw "Illegal Argument Exception";
+            }
+        }
+        FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
+        addNestedField(portables[0], fd);
+    };
     
     ClassDefinition* cd;
 private:

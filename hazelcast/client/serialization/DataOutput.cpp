@@ -8,7 +8,7 @@
 
 #include "DataOutput.h"
 #include "SerializationService.h"
-#include "../Array.h"
+
 #include <string>
 #include <algorithm>
 #include <cassert>
@@ -22,9 +22,9 @@ DataOutput::DataOutput(SerializationService* service):offset(0){
     this->service = service;
 };
 
-Array<byte> DataOutput::toByteArray(){
+std::vector<byte> DataOutput::toByteArray(){
     int size = getSize();
-    Array<byte> byteArray(size);
+    std::vector<byte> byteArray(size);
     std::string str = buffer.str();
     for(int i = 0; i < size ; i++){
         byteArray[i] = str[i];
@@ -32,14 +32,19 @@ Array<byte> DataOutput::toByteArray(){
     return byteArray;
 };
 
+std::string DataOutput::toString(){
+  return buffer.str();  
+};
+
 int DataOutput::getSize(){
     return (int)buffer.str().length();
 };
 
 //Inherited from DataOutput
-void DataOutput::write(const Array<byte>& bytes){
-    
-    write((char*)bytes.getBuffer() , 0 , bytes.length());
+void DataOutput::write(const std::vector<byte>& bytes){
+    for(int i = 0 ; i < bytes[i] ; i++)
+        buffer.put(bytes[i]);
+//    write((char*)bytes.getBuffer() , 0 , bytes.length());
 };
 
 void DataOutput::write(const char *bytes, int off, int len) {
@@ -213,7 +218,7 @@ void DataOutput::writeShortUTF(std::string str) {
     int stringLen = (int)str.length();
     int utfLength = 0;
     int count = 0;
-    /* use charAt instead of copying String to char array */
+    /* use charAt instead of copying String to char std::vector */
     for (int i = 0; i < stringLen; i++) {
         if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
             utfLength++;

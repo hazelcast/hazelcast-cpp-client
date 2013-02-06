@@ -1,4 +1,4 @@
-//
+ //
 //  PortableWriter.h
 //  Server
 //
@@ -9,56 +9,83 @@
 #ifndef HAZELCAST_PORTABLE_WRITER
 #define HAZELCAST_PORTABLE_WRITER
 
-#include "../Array.h"
+#include "DataOutput.h"
+#include "PortableSerializer.h"
 #include <iostream>
 #include <string>
-
 using namespace std;
 
 namespace hazelcast{ 
 namespace client{
 namespace serialization{
     
+class ClassDefinition;
+class DataInput;
 class Portable;
 
-typedef unsigned char byte;
 class PortableWriter{
 public:
-    virtual void writeInt(string, int) = 0;
+    PortableWriter();
     
-    virtual void writeLong(string, long) = 0;
+    PortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd);
+        
+    void writeInt(string fieldName, int value);
     
-    virtual void writeUTF(string, string) = 0;
+    void writeLong(string fieldName, long value);
     
-    virtual void writeBoolean(string, const bool) = 0;
+    void writeBoolean(string fieldName, bool value);
     
-    virtual void writeByte(string, const byte) = 0;
+    void writeByte(string fieldName, byte value);
     
-    virtual void writeChar(string, const int) = 0;
+    void writeChar(string fieldName, int value);
     
-    virtual void writeDouble(string, const double) = 0;
+    void writeDouble(string fieldName, double value);
     
-    virtual void writeFloat(string, const float) = 0;
+    void writeFloat(string fieldName, float value);
     
-    virtual void writeShort(string, const short) = 0;
+    void writeShort(string fieldName, short value);
     
-    virtual void writePortable(string, Portable& portable) = 0;
+    void writeUTF(string fieldName, string str);
     
-    virtual void writeByteArray(string, Array<byte>&) = 0;
+    void writePortable(string fieldName, Portable& portable);
     
-    virtual void writeCharArray(string, Array<char>&) = 0;
+    void writeByteArray(string fieldName, std::vector<byte>&);
     
-    virtual void writeIntArray(string, Array<int>&) = 0;
+    void writeCharArray(string fieldName, std::vector<char>&);
     
-    virtual void writeLongArray(string, Array<long>&) = 0;
+    void writeIntArray(string fieldName, std::vector<int>&);
     
-    virtual void writeDoubleArray(string, Array<double>&) = 0;
+    void writeLongArray(string fieldName, std::vector<long>&);
     
-    virtual void writeFloatArray(string, Array<float>&) = 0;
+    void writeDoubleArray(string fieldName, std::vector<double>&);
     
-    virtual void writeShortArray(string, Array<short>&) = 0;
+    void writeFloatArray(string fieldName, std::vector<float>&);
     
-    virtual void writePortableArray(string  , Array<Portable*>&) = 0;
+    void writeShortArray(string fieldName, std::vector<short>&);
+    
+    template<typename T>
+    void writePortableArray(string fieldName, std::vector<T>& portables) {
+        setPosition(fieldName);
+        int len = portables.size();
+        output->writeInt(len);
+        if (len > 0) {
+            int offset = output->position();
+            char zeros[len * sizeof (int) ];
+            output->write(zeros, 0, len * sizeof (int));
+            for (int i = 0; i < len; i++) {
+                output->writeInt(offset + i * sizeof (int), output->position());
+                serializer->write(output, portables[i]);
+            }
+        }
+    };
+    void setPosition(string fieldName);
+    
+private:
+    PortableSerializer* serializer;
+
+    ClassDefinition* cd;
+    DataOutput* output;
+    int offset;
 };
 
 }}}

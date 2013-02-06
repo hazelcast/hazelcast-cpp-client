@@ -9,7 +9,6 @@
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/Array.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -18,12 +17,13 @@
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/IMap.cpp"
 
+
 #include <iostream>
 #include <fstream>
 #include <cassert>
 #include <vector>
 #include <set>
-
+#include <memory>
 using namespace hazelcast::client;
 
 void write();
@@ -31,9 +31,9 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-//    write();
+    write();
 //    read();
-    client();
+//    client();
     return 0;
 };
 
@@ -112,26 +112,26 @@ void read(){
     serialization::SerializationService serializationService(1, &tpf1);
     
     byte byteArray[]= {0, 1, 2};
-    Array<byte> bb(3,byteArray);
+    std::vector<byte> bb(byteArray,byteArray+3);
     char charArray[]={'c', 'h', 'a', 'r'};
-    Array<char> cc(4,charArray);
+    std::vector<char> cc(charArray,charArray+4);
     short shortArray[] =  {3, 4, 5};
-    Array<short> ss(3, shortArray);
+    std::vector<short> ss(shortArray, shortArray + 3);
     int integerArray[] = {9, 8, 7, 6};
-    Array<int> ii(4, integerArray);
+    std::vector<int> ii(integerArray, integerArray + 4);
     long longArray[] = {0, 1, 5, 7, 9, 11};
-    Array<long> ll(6, longArray);
+    std::vector<long> ll(longArray, longArray + 6);
     float floatArray[] = {0.6543f, -3.56f, 45.67f};
-    Array<float> ff(3, floatArray);
+    std::vector<float> ff(floatArray, floatArray + 3);
     double doubleArray[] = {456.456, 789.789, 321.321};
-    Array<double> dd(3, doubleArray);
-    TestNamedPortable** portablePointerArray = new TestNamedPortable*[5];
+    std::vector<double> dd(doubleArray, doubleArray + 3);
+    TestNamedPortable* portableArray = new TestNamedPortable[5];
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
-        portablePointerArray[i] = new TestNamedPortable(x,i);
+        portableArray[i] = TestNamedPortable(x,i);
     }
-    Array<Portable*> nn(5,(Portable**)portablePointerArray);
+    std::vector<TestNamedPortable> nn(portableArray,portableArray + 5);
     
     TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd, nn);
 
@@ -148,7 +148,8 @@ void read(){
     is.read(bytes,673);
     is.close();
     
-    Array<byte> buffer(673,(byte*)bytes);
+    byte* tempPtr = (byte*)bytes;
+    std::vector<byte> buffer(tempPtr,tempPtr + 673);
     serialization::DataInput dataInput(buffer,&serializationService);
     
     serialization::Data data;
@@ -158,9 +159,7 @@ void read(){
     tmp1 = serializationService.toObject<TestMainPortable>(data);
     assert(main == tmp1);
 
-    for(int i = 0 ; i < 5 ; i++)
-        delete portablePointerArray[i];
-    delete [] portablePointerArray;
+    delete [] portableArray;
 }
 
 void write(){
@@ -188,30 +187,29 @@ void write(){
     assert(np == tnp2);
     
     byte byteArray[]= {0, 1, 2};
-    Array<byte> bb(3,byteArray);
+    std::vector<byte> bb(byteArray,byteArray+3);
     char charArray[]={'c', 'h', 'a', 'r'};
-    Array<char> cc(4,charArray);
+    std::vector<char> cc(charArray,charArray+4);
     short shortArray[] =  {3, 4, 5};
-    Array<short> ss(3, shortArray);
+    std::vector<short> ss(shortArray, shortArray + 3);
     int integerArray[] = {9, 8, 7, 6};
-    Array<int> ii(4, integerArray);
+    std::vector<int> ii(integerArray, integerArray + 4);
     long longArray[] = {0, 1, 5, 7, 9, 11};
-    Array<long> ll(6, longArray);
+    std::vector<long> ll(longArray, longArray + 6);
     float floatArray[] = {0.6543f, -3.56f, 45.67f};
-    Array<float> ff(3, floatArray);
+    std::vector<float> ff(floatArray, floatArray + 3);
     double doubleArray[] = {456.456, 789.789, 321.321};
-    Array<double> dd(3, doubleArray);
-    TestNamedPortable** portablePointerArray = new TestNamedPortable*[5];
+    std::vector<double> dd(doubleArray, doubleArray + 3);
+    TestNamedPortable* portableArray = new TestNamedPortable[5];
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
-        portablePointerArray[i] = new TestNamedPortable(x,i);
+        portableArray[i] = TestNamedPortable(x,i);
     }
-    Array<Portable*> nn(5,(Portable**)portablePointerArray);
+    std::vector<TestNamedPortable> nn(portableArray,portableArray + 5);
     
     TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd, nn);
 
-    
     data = serializationService.toData(inner);
     
     TestInnerPortable tip1,tip2;
@@ -235,7 +233,7 @@ void write(){
 /* 
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
-    Array<byte> outBuffer =  out->toByteArray();
+    std::vector<byte> outBuffer =  out->toByteArray();
 
     ofstream outfile ("/Users/msk/Desktop/text.txt");
     for(int i = 0; i < outBuffer.length() ; i++)
@@ -244,9 +242,5 @@ void write(){
     serializationService.push(out);
     outfile.close();
 */    
-
-   
-    for(int i = 0 ; i < 5 ; i++)
-        delete portablePointerArray[i];
-    delete [] portablePointerArray;
+    delete [] portableArray;
 }

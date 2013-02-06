@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA_OUTPUT
 #define HAZELCAST_DATA_OUTPUT
 
-#include "../Array.h"
+#include <vector>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -28,15 +28,16 @@ class DataOutput{
 public:
     DataOutput(SerializationService*);
     
-    Array<byte> toByteArray();
+    std::vector<byte> toByteArray();
+    
+    std::string toString();
     
     int getSize();
     
     SerializationContext* getSerializationContext();
     
-    
     //Inherited from DataOutput
-    void write(const Array<byte>& bytes);
+    void write(const std::vector<byte>& bytes);
     
     void write(const char* bytes, int offset, int length);
     

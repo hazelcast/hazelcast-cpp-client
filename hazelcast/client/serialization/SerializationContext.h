@@ -9,7 +9,8 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-#include "../Array.h"
+
+#include <vector>
 #include <iostream>
 #include <memory>
 #include <map>
@@ -40,7 +41,7 @@ public:
     
     std::auto_ptr<Portable> createPortable(int classId);
     
-    ClassDefinition* createClassDefinition( Array<byte>&);
+    ClassDefinition* createClassDefinition( std::vector<byte>&);
     void registerNestedDefinitions(ClassDefinition* cd);
     void registerClassDefinition(ClassDefinition* cd);
     int getVersion();
@@ -49,8 +50,8 @@ private:
     SerializationContext(const SerializationContext&  );
     void operator=(const SerializationContext&);
     
-    void compress(Array<byte>&);
-    void decompress(Array<byte>&);
+    void compress(std::vector<byte>&);
+    void decompress(std::vector<byte>&);
         
     PortableFactory const * portableFactory;
     SerializationService* service;

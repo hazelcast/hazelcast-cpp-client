@@ -5,6 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "SerializationService.h"
 #include "DataOutput.h"
@@ -52,11 +53,11 @@ ClassDefinition* SerializationContext::lookup(int classId, int version){
 
 };
 
-auto_ptr<Portable> SerializationContext::createPortable(int classId){
-    return auto_ptr<Portable>(portableFactory->create(classId));
+std::auto_ptr<Portable> SerializationContext::createPortable(int classId){
+    return std::auto_ptr<Portable>(portableFactory->create(classId));
 };
 
-ClassDefinition* SerializationContext::createClassDefinition(Array<byte>& binary) {
+ClassDefinition* SerializationContext::createClassDefinition(std::vector<byte>& binary) {
     
     decompress(binary);
     
@@ -84,12 +85,12 @@ void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) {
 void SerializationContext::registerClassDefinition(ClassDefinition* cd) {
      
         if(!isClassDefinitionExists(cd->getClassId() , cd->getVersion())){
-            if (cd->getBinary().length() == 0) {
+            if (cd->getBinary().size() == 0) {
                 
                 DataOutput* output = service->pop();
                 assert(output != NULL);
                 cd->writeData(*output);
-                Array<byte> binary = output->toByteArray();
+                std::vector<byte> binary = output->toByteArray();
                 compress(binary);
                 cd->setBinary(binary);
                 service->push(output);
@@ -103,11 +104,15 @@ int SerializationContext::getVersion(){
     return version;
 };
 
-void SerializationContext::compress(Array<byte>& binary) {
-    uLong ucompSize = binary.length(); 
+void SerializationContext::compress(std::vector<byte>& binary) {
+    uLong ucompSize = binary.size(); 
     uLong compSize = compressBound(ucompSize);
-    byte temp[compSize];
-    int err = compress2((Bytef *)temp, &compSize, (Bytef *)binary.getBuffer(), ucompSize,Z_BEST_COMPRESSION);
+    byte uncompressedTemp[binary.size()];
+    for(int i = 0 ; i < binary.size(); i++)
+        uncompressedTemp[i] = binary[i];
+    
+    byte compressedTemp[compSize];
+    int err = compress2((Bytef *)compressedTemp, &compSize, (Bytef *)uncompressedTemp, ucompSize,Z_BEST_COMPRESSION);
     switch (err) {
         case Z_BUF_ERROR:
             throw "not enough room in the output buffer";
@@ -116,21 +121,24 @@ void SerializationContext::compress(Array<byte>& binary) {
         case Z_MEM_ERROR:
             throw "if there was not  enough memory";
     }
-    Array<byte> compressed(compSize,temp);
+    std::vector<byte> compressed(compressedTemp , compressedTemp + compSize);
     binary = compressed;
 };
 
-void SerializationContext::decompress(Array<byte>& binary) {
-    uLong compSize = binary.length();
+void SerializationContext::decompress(std::vector<byte>& binary) {
+    uLong compSize = binary.size();
     
     uLong ucompSize = 512;
     byte* temp = NULL;
+    byte compressedTemp[binary.size()];
+    for(int i = 0 ; i < binary.size(); i++)
+        compressedTemp[i] = binary[i];
     int err = Z_OK;
     do{
         ucompSize *= 2;
         delete [] temp;
         temp = new byte[ucompSize];
-        err = uncompress((Bytef *)temp, &ucompSize, (Bytef *)binary.getBuffer(), compSize);
+        err = uncompress((Bytef *)temp, &ucompSize, (Bytef *)compressedTemp, compSize);
         switch (err) {
             case Z_DATA_ERROR:
                 throw "data is corrupted";
@@ -138,7 +146,7 @@ void SerializationContext::decompress(Array<byte>& binary) {
                 throw "if there was not  enough memory";
         }
     }while(err == Z_BUF_ERROR);
-    Array<byte> decompressed(ucompSize,temp);
+    std::vector<byte> decompressed(temp,temp + ucompSize);
     binary = decompressed;
     delete [] temp;
 };

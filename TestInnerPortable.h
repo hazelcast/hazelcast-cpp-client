@@ -13,7 +13,7 @@
 #include "hazelcast/client/serialization/PortableReader.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/Array.h"
+
 #include "TestNamedPortable.h"
 #include <iostream>
 using namespace hazelcast::client;
@@ -25,14 +25,14 @@ public:
     TestInnerPortable(const TestInnerPortable& rhs){    
         *this = rhs;
     }
-    TestInnerPortable(Array<byte> b,  
-                        Array<char> c , 
-                        Array<short> s, 
-                        Array<int>  i , 
-                        Array<long> l, 
-                        Array<float> f, 
-                        Array<double> d,
-                        Array<Portable*> n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
+    TestInnerPortable(std::vector<byte> b,  
+                        std::vector<char> c , 
+                        std::vector<short> s, 
+                        std::vector<int>  i , 
+                        std::vector<long> l, 
+                        std::vector<float> f, 
+                        std::vector<double> d,
+                        std::vector<TestNamedPortable> n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
         
         
     };
@@ -73,12 +73,7 @@ public:
         ll = reader.readLongArray("l");
         ff = reader.readFloatArray("f");
         dd = reader.readDoubleArray("d");
-        Array< auto_ptr<Portable> > temp;
-        temp = reader.readPortableArray("nn");
-        Array<Portable*> tempNN(temp.length());
-        for(int i = 0; i < temp.length() ; i++)
-            tempNN[i] = temp[i].release();
-        nn = tempNN;
+        nn = reader.readPortableArray<TestNamedPortable>("nn");
     };
     
     bool operator==(TestInnerPortable& m){
@@ -89,12 +84,9 @@ public:
        if( ll != m.ll ) return false;
        if( ff != m.ff ) return false;
        if( dd != m.dd ) return false;
-       for(int i = 0; i < nn.length() ; i++)
-           
-           if( *((TestNamedPortable*)(nn[i])) 
-                   != 
-                   *((TestNamedPortable*)(m.nn[i]))  ) 
-                   return false;
+       for(int i = 0; i < nn.size() ; i++)
+           if( nn[i] != m.nn[i]  ) 
+                return false;
        return true;
     };
     
@@ -102,14 +94,14 @@ public:
         return !(*this == m );  
     };
 private:
-    Array<byte> bb;
-    Array<char> cc;
-    Array<short> ss;
-    Array<int> ii;
-    Array<long> ll;
-    Array<float> ff;
-    Array<double> dd;
-    Array< Portable* > nn;
+    std::vector<byte> bb;
+    std::vector<char> cc;
+    std::vector<short> ss;
+    std::vector<int> ii;
+    std::vector<long> ll;
+    std::vector<float> ff;
+    std::vector<double> dd;
+    std::vector< TestNamedPortable > nn;
     
 };
 #endif

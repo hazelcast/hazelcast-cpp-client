@@ -10,7 +10,7 @@
 #define HAZELCAST_DATA
 
 #include "DataSerializable.h"
-#include "../Array.h"
+#include <vector>
 #include <iostream>
 #include <memory>
 
@@ -28,7 +28,7 @@ class Data : public DataSerializable{
 public:
     Data();
     Data(const Data&);
-    Data(const int type, Array<byte> bytes);
+    Data(const int type, std::vector<byte> bytes);
     Data& operator=(const Data&);
     int bufferSize() const;
     int totalSize() const;
@@ -44,7 +44,7 @@ public:
     
     ClassDefinition* cd;
     int type;
-    Array<byte> buffer;
+    std::vector<byte> buffer;
 private:
     int partitionHash;
     static const int NO_CLASS_ID = 0;

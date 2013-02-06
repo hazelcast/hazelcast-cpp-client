@@ -12,7 +12,7 @@
 #include "ClassDefinition.h"
 #include "DataSerializable.h"
 #include "FieldDefinition.h"
-#include "../Array.h"
+
 #include <iostream>
 #include <string>
 #include <map>
@@ -53,9 +53,9 @@ public:
     int getFieldCount();
     int getClassId() const;
     int getVersion() const;
-    Array<byte> getBinary() const;
+    std::vector<byte> getBinary() const;
     
-    void setBinary(Array<byte>&);
+    void setBinary(std::vector<byte>&);
     
     bool operator==(const ClassDefinition&) const;
     bool operator!=(const ClassDefinition&) const;
@@ -69,7 +69,7 @@ private:
     map<std::string, FieldDefinition> fieldDefinitionsMap;
     vector<ClassDefinition*> nestedClassDefinitions;//TODO ask if equaliy is important
     
-    Array<byte> binary;
+    std::vector<byte> binary;
     
 };
 

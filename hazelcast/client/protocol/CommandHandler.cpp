@@ -31,8 +31,8 @@ void CommandHandler::sendCommand(Command* const  command){
     using namespace hazelcast::client::serialization;
     DataOutput* dataOutput = serializationService->pop();
     command->writeCommand(*dataOutput);
-    Array<byte> temp = dataOutput->toByteArray();
-    socket.sendData(temp.getBuffer(),temp.length());
+    std::string sendBuffer = dataOutput->toString();
+    socket.sendData(sendBuffer.c_str(),sendBuffer.length());
 
     std::string headerLine = socket.readLine();
     command->readHeaderLine(headerLine);
@@ -48,7 +48,7 @@ void CommandHandler::sendCommand(Command* const  command){
         int size = command->resultSize(i);
         byte tempBuffer[size];
         socket.recvData(tempBuffer,size);
-        Array<byte> element(size,tempBuffer);
+        std::vector<byte> element(tempBuffer , tempBuffer + size);
 
         DataInput resultInput(element,serializationService);
         command->readResult(resultInput);
