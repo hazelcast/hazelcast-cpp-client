@@ -28,6 +28,8 @@ public:
     
     DataInput(const Data&, SerializationService* service);
   
+    ~DataInput();
+    
     int getDataClassId();
     
     void setDataClassId(int);
@@ -90,10 +92,9 @@ public:
     void reset();
     
 private:
-    std::vector<byte> buffer;
     SerializationService* service;
-    std::vector<byte>::iterator ptr;
-    std::vector<byte>::iterator beg;
+    byte* ptr;
+    byte* beg;
     int dataClassId;
     int dataVersion;
     

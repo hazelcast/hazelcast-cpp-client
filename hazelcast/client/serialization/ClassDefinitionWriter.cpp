@@ -108,6 +108,17 @@ void ClassDefinitionWriter::writeShortArray(string fieldName, std::vector<short>
     cd->add(fd);
 };
 
+void ClassDefinitionWriter::writePortableArray(string fieldName, std::vector<Portable*>& portables){
+    int classId = portables[0]->getClassId();
+    for (int i = 1; i < portables.size(); i++) {
+        if (portables[i]->getClassId() != classId) {
+            throw "Illegal Argument Exception";
+        }
+    }
+    FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
+    addNestedField(*(portables[0]), fd);
+};
+
 void ClassDefinitionWriter::addNestedField(Portable& p, FieldDefinition& fd){
     cd->add(fd);
     ClassDefinition* nestedCd =  serializer->getClassDefinition(p);

@@ -1,38 +1,38 @@
-//
-//  ClassDefinitionWriter.h
+ //
+//  PortableWriter.h
 //  Server
 //
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_CLASS_DEFINITION_WRITER
-#define HAZELCAST_CLASS_DEFINITION_WRITER
+#ifndef HAZELCAST_DEFAULT_PORTABLE_WRITER
+#define HAZELCAST_DEFAULT_PORTABLE_WRITER
 
-
+#include "DataOutput.h"
+#include "PortableSerializer.h"
 #include "PortableWriter.h"
-#include "ClassDefinition.h"
 #include <iostream>
 #include <string>
-
 using namespace std;
+
 namespace hazelcast{ 
 namespace client{
 namespace serialization{
     
-class FieldDefinition;
+class ClassDefinition;
+class DataInput;
 class Portable;
-class PortableSerializer;
 
-class ClassDefinitionWriter : public PortableWriter{
+class DefaultPortableWriter : public PortableWriter{
 public:
-    ClassDefinitionWriter(int classId,int version, PortableSerializer* serializer);
+    DefaultPortableWriter();
     
+    DefaultPortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd);
+        
     void writeInt(string fieldName, int value);
     
     void writeLong(string fieldName, long value);
-    
-    void writeUTF(string fieldName, string str);
     
     void writeBoolean(string fieldName, bool value);
     
@@ -45,6 +45,8 @@ public:
     void writeFloat(string fieldName, float value);
     
     void writeShort(string fieldName, short value);
+    
+    void writeUTF(string fieldName, string str);
     
     void writePortable(string fieldName, Portable& portable);
     
@@ -64,14 +66,15 @@ public:
     
     void writePortableArray(string fieldName, std::vector<Portable*>& portables);
     
-    ClassDefinition* cd;
-private:
-    void addNestedField(Portable& p, FieldDefinition& fd);
-
-    int index;
-    PortableSerializer* serializer;
+    void setPosition(string fieldName);
     
+private:
+    PortableSerializer* serializer;
+
+    ClassDefinition* cd;
+    DataOutput* output;
+    int offset;
 };
 
 }}}
-#endif /* HAZELCAST_CLASS_DEFINITION_WRITER */
+#endif /* HAZELCAST_DEFAULT_PORTABLE_WRITER */

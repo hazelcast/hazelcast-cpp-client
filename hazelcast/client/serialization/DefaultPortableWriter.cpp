@@ -1,12 +1,12 @@
 //
-//  PortableWriter.cpp
+//  DefaultPortableWriter.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "PortableWriter.h"
+#include "DefaultPortableWriter.h"
 #include "DataOutput.h"
 #include "ClassDefinition.h"
 #include "PortableSerializer.h"
@@ -16,11 +16,11 @@ namespace hazelcast {
 namespace client {
 namespace serialization {
 
-PortableWriter::PortableWriter(){
+DefaultPortableWriter::DefaultPortableWriter(){
 
 };
 
-PortableWriter::PortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd) {
+DefaultPortableWriter::DefaultPortableWriter(PortableSerializer* serializer, DataOutput* output, ClassDefinition* cd) {
     this->serializer = serializer;
     this->output = output;
     this->offset = output->position();
@@ -30,52 +30,52 @@ PortableWriter::PortableWriter(PortableSerializer* serializer, DataOutput* outpu
 
 };
 
-void PortableWriter::writeInt(string fieldName, int value) {
+void DefaultPortableWriter::writeInt(string fieldName, int value) {
     setPosition(fieldName);
     output->writeInt(value);
 };
 
-void PortableWriter::writeLong(string fieldName, long value) {
+void DefaultPortableWriter::writeLong(string fieldName, long value) {
     setPosition(fieldName);
     output->writeLong(value);
 };
 
-void PortableWriter::writeBoolean(string fieldName, bool value) {
+void DefaultPortableWriter::writeBoolean(string fieldName, bool value) {
     setPosition(fieldName);
     output->writeBoolean(value);
 };
 
-void PortableWriter::writeByte(string fieldName, byte value) {
+void DefaultPortableWriter::writeByte(string fieldName, byte value) {
     setPosition(fieldName);
     output->writeByte(value);
 };
 
-void PortableWriter::writeChar(string fieldName, int value) {
+void DefaultPortableWriter::writeChar(string fieldName, int value) {
     setPosition(fieldName);
     output->writeChar(value);
 };
 
-void PortableWriter::writeDouble(string fieldName, double value) {
+void DefaultPortableWriter::writeDouble(string fieldName, double value) {
     setPosition(fieldName);
     output->writeDouble(value);
 };
 
-void PortableWriter::writeFloat(string fieldName, float value) {
+void DefaultPortableWriter::writeFloat(string fieldName, float value) {
     setPosition(fieldName);
     output->writeFloat(value);
 };
 
-void PortableWriter::writeShort(string fieldName, short value) {
+void DefaultPortableWriter::writeShort(string fieldName, short value) {
     setPosition(fieldName);
     output->writeShort(value);
 };
 
-void PortableWriter::writeUTF(string fieldName, string str) {
+void DefaultPortableWriter::writeUTF(string fieldName, string str) {
     setPosition(fieldName);
     output->writeUTF(str);
 };
 
-void PortableWriter::writePortable(string fieldName, Portable& portable) {
+void DefaultPortableWriter::writePortable(string fieldName, Portable& portable) {
     setPosition(fieldName);
     bool isNull = &portable == NULL;
     output->writeBoolean(isNull);
@@ -84,7 +84,7 @@ void PortableWriter::writePortable(string fieldName, Portable& portable) {
     }
 };
 
-void PortableWriter::writeByteArray(string fieldName, std::vector<byte>& values) {
+void DefaultPortableWriter::writeByteArray(string fieldName, std::vector<byte>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -95,7 +95,7 @@ void PortableWriter::writeByteArray(string fieldName, std::vector<byte>& values)
     }
 };
 
-void PortableWriter::writeCharArray(string fieldName, std::vector<char>& values) {
+void DefaultPortableWriter::writeCharArray(string fieldName, std::vector<char>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -106,7 +106,7 @@ void PortableWriter::writeCharArray(string fieldName, std::vector<char>& values)
     }
 };
 
-void PortableWriter::writeIntArray(string fieldName, std::vector<int>& values) {
+void DefaultPortableWriter::writeIntArray(string fieldName, std::vector<int>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -117,7 +117,7 @@ void PortableWriter::writeIntArray(string fieldName, std::vector<int>& values) {
     }
 };
 
-void PortableWriter::writeLongArray(string fieldName, std::vector<long>& values) {
+void DefaultPortableWriter::writeLongArray(string fieldName, std::vector<long>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -128,7 +128,7 @@ void PortableWriter::writeLongArray(string fieldName, std::vector<long>& values)
     }
 };
 
-void PortableWriter::writeDoubleArray(string fieldName, std::vector<double>& values) {
+void DefaultPortableWriter::writeDoubleArray(string fieldName, std::vector<double>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -139,7 +139,7 @@ void PortableWriter::writeDoubleArray(string fieldName, std::vector<double>& val
     }
 };
 
-void PortableWriter::writeFloatArray(string fieldName, std::vector<float>& values) {
+void DefaultPortableWriter::writeFloatArray(string fieldName, std::vector<float>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -150,7 +150,7 @@ void PortableWriter::writeFloatArray(string fieldName, std::vector<float>& value
     }
 };
 
-void PortableWriter::writeShortArray(string fieldName, std::vector<short>& values) {
+void DefaultPortableWriter::writeShortArray(string fieldName, std::vector<short>& values) {
     setPosition(fieldName);
     int len = values.size();
     output->writeInt(len);
@@ -161,7 +161,22 @@ void PortableWriter::writeShortArray(string fieldName, std::vector<short>& value
     }
 };
 
-void PortableWriter::setPosition(string fieldName) {
+void DefaultPortableWriter::writePortableArray(string fieldName, std::vector<Portable*>& portables) {
+    setPosition(fieldName);
+    int len = portables.size();
+    output->writeInt(len);
+    if (len > 0) {
+        int offset = output->position();
+        char zeros[len * sizeof (int) ];
+        output->write(zeros, 0, len * sizeof (int));
+        for (int i = 0; i < len; i++) {
+            output->writeInt(offset + i * sizeof (int), output->position());
+            serializer->write(output, *(portables[i]));
+        }
+    }
+};
+
+void DefaultPortableWriter::setPosition(string fieldName) {
     if (!cd->isFieldDefinitionExists(fieldName)) {
         std::string error;
         error += "HazelcastSerializationException( Invalid field name: '";

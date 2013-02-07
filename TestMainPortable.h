@@ -63,7 +63,6 @@ public:
         
     void writePortable(PortableWriter& writer) {
         writer.writeByte("b", b);
-        
         writer.writeBoolean("bool", boolean);
         writer.writeChar("c", c);
         writer.writeShort("s", s);

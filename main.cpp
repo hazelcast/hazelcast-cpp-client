@@ -31,7 +31,7 @@ void read();
 void client();
 
 int main(int argc, char** argv){
-    write();
+//    write();
 //    read();
 //    client();
     return 0;
@@ -230,17 +230,18 @@ void write(){
     tmp2 = serializationService2.toObject<TestMainPortable>(data);
     assert(main == tmp1);
     assert(main == tmp2);
-/* 
+ 
     DataOutput* out = serializationService.pop();
     data.writeData(*out);
     std::vector<byte> outBuffer =  out->toByteArray();
-
+    std::cout << outBuffer.size() << std::endl;
+    std::cout << data.totalSize() << std::endl;
     ofstream outfile ("/Users/msk/Desktop/text.txt");
-    for(int i = 0; i < outBuffer.length() ; i++)
+    for(int i = 0; i < outBuffer.size() ; i++)
         outfile.put(outBuffer[i]);
     
     serializationService.push(out);
     outfile.close();
-*/    
+    
     delete [] portableArray;
 }

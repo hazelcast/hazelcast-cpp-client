@@ -61,7 +61,10 @@ public:
         writer.writeLongArray("l", ll);
         writer.writeFloatArray("f", ff);
         writer.writeDoubleArray("d", dd);
-        writer.writePortableArray("nn", nn);
+        std::vector<Portable*> p(nn.size());
+        for(int i = 0 ; i < nn.size() ; i++)
+            p[i] = &(nn[i]);
+        writer.writePortableArray("nn", p);
         
     };
         

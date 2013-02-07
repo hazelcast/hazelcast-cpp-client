@@ -9,7 +9,7 @@
 #include "SerializationConstants.h"
 #include "DataInput.h"
 #include "DataOutput.h"
-#include "PortableWriter.h"
+#include "DefaultPortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
 #include "SerializationContext.h"
@@ -57,7 +57,7 @@ int PortableSerializer::getVersion(){
 void PortableSerializer::write(DataOutput* dataOutput, Portable& p)  {
     
     ClassDefinition* cd = getClassDefinition(p);
-    PortableWriter writer(this, dataOutput, cd);
+    DefaultPortableWriter writer(this, dataOutput, cd);
     p.writePortable(writer);
     
 };

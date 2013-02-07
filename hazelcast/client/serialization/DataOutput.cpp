@@ -42,9 +42,8 @@ int DataOutput::getSize(){
 
 //Inherited from DataOutput
 void DataOutput::write(const std::vector<byte>& bytes){
-    for(int i = 0 ; i < bytes[i] ; i++)
+    for(int i = 0 ; i < bytes.size() ; i++)
         buffer.put(bytes[i]);
-//    write((char*)bytes.getBuffer() , 0 , bytes.length());
 };
 
 void DataOutput::write(const char *bytes, int off, int len) {
@@ -234,7 +233,7 @@ void DataOutput::writeShortUTF(std::string str) {
         error += " bytes";
         throw error;
     }
-    char* byteArray = new char[utfLength];
+    char byteArray[utfLength];
     int i;
     for (i = 0; i < stringLen; i++) {
         if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -255,7 +254,6 @@ void DataOutput::writeShortUTF(std::string str) {
     }
     writeShort(utfLength);
     write(byteArray, 0, utfLength);
-    delete [] byteArray;
 };
 
 }}}

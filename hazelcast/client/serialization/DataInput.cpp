@@ -16,22 +16,38 @@ namespace hazelcast{
 namespace client{
 namespace serialization{
 //TODO uncomment code below !!!!! main test fails
- DataInput::DataInput(std::vector<byte>& rhsBuffer, SerializationService* service):buffer(rhsBuffer)
-                                                                            ,service(service)
-                                                                            ,ptr(buffer.begin())
-                                                                            ,beg(ptr)
+ DataInput::DataInput(std::vector<byte>& rhsBuffer, SerializationService* service):service(service)
+                                                                            
 {   
+     int size = rhsBuffer.size();
+     try {
+        beg = new byte[size];
+        ptr = beg;
+        for(int i = 0 ; i < size ; i++)
+            beg[i] = rhsBuffer[i];
+     }catch(std::exception& e){
+        delete [] beg; 
+     };
 };
 
-DataInput::DataInput(const Data& data, SerializationService* service):buffer(data.buffer)
-                                                               ,service(service)
-                                                               ,ptr(buffer.begin())
-                                                               ,beg(ptr)
+DataInput::DataInput(const Data& data, SerializationService* service):service(service)
                                                                ,dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
                                                                ,dataVersion(data.cd != NULL ? data.cd->getVersion() : -1)
 {   
+    int size = data.bufferSize();
+    try {
+        beg = new byte[size];
+        ptr = beg;
+        for(int i = 0 ; i < size ; i++)
+            beg[i] = data.buffer[i];
+     }catch(std::exception& e){
+        delete [] beg; 
+     };
 };
 
+DataInput::~DataInput(){
+    delete [] beg;
+};
 DataInput& DataInput::operator=(const DataInput&){
     
 };
@@ -59,11 +75,8 @@ void DataInput::readFully(std::vector<byte>& bytes){
 };
 
 void DataInput::readFully(byte *bytes, int off, int len){
-    for(int i = 0 ; i < len ; i++){
-        bytes[off + i] = *ptr;
-        ptr += sizeof(byte) * len;
-        
-    }
+    memcpy(bytes + off, ptr, sizeof(byte) * len);
+    ptr += sizeof(byte) * len;
 };
 
 int DataInput::skipBytes(int i){
@@ -76,7 +89,8 @@ bool DataInput::readBoolean(){
 };
 
 byte DataInput::readByte(){
-    byte b = *ptr;
+    byte b;
+    memcpy(&b, ptr, sizeof(byte));
     ptr += sizeof(byte);
     return b;
 };
