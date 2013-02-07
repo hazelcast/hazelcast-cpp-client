@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h>
 #include <vector>
 
 namespace hazelcast{
@@ -31,7 +32,7 @@ Socket::Socket(const Socket& rhs){
 
 Socket::~Socket(){
    freeaddrinfo(server_info); 
-   close(socketId);
+   ::close(socketId);
 };
 
 void Socket::sendData(const void* buffer, int len){

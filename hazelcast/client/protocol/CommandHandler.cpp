@@ -48,8 +48,7 @@ void CommandHandler::sendCommand(Command* const  command){
         int size = command->resultSize(i);
         byte tempBuffer[size];
         socket.recvData(tempBuffer,size);
-        std::vector<byte> element(tempBuffer , tempBuffer + size);
-
+        std::vector<unsigned char> element(tempBuffer , tempBuffer + size);
         DataInput resultInput(element,serializationService);
         command->readResult(resultInput);
         

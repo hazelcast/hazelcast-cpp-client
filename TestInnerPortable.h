@@ -96,11 +96,11 @@ public:
     bool operator!=(TestInnerPortable& m){
         return !(*this == m );  
     };
+    std::vector<int> ii;
 private:
     std::vector<byte> bb;
     std::vector<char> cc;
     std::vector<short> ss;
-    std::vector<int> ii;
     std::vector<long> ll;
     std::vector<float> ff;
     std::vector<double> dd;

@@ -46,7 +46,7 @@ V IMap<K,V>::get(K key){
     protocol::MapCommands::GetCommand command(instanceName,keyInBytes);
     hazelcastClient.getCommandHandler().sendCommand(&command);
     serialization::Data valueInBytes = command.get();
-    return hazelcastClient.getSerializationService().toObject<V>(valueInBytes);
+    return hazelcastClient.getSerializationService().template toObject<V>(valueInBytes);
 };
 
 template<typename K,typename V>   
@@ -78,7 +78,6 @@ std::string IMap<K,V>::getName() const{
 
 template<typename K,typename V>
 std::map<K,V> IMap<K,V>::getAll(std::set<K> keys){
-    typedef std::vector< std::pair < serialization::Data , serialization::Data > >  MapEntrySet;
     typedef std::vector<hazelcast::client::serialization::Data> DataSet;
     int size = keys.size();
     DataSet keysInBytes(size);
@@ -95,8 +94,8 @@ std::map<K,V> IMap<K,V>::getAll(std::set<K> keys){
     std::map<K,V> result;
     size = resultKeys.size();
     for(int i = 0 ; i < size ; i++){
-        K key = hazelcastClient.getSerializationService().toObject<K>(resultKeys[i]);
-        V value = hazelcastClient.getSerializationService().toObject<V>(resultValues[i]);
+        K key = hazelcastClient.getSerializationService().template toObject<K>(resultKeys[i]);
+        V value = hazelcastClient.getSerializationService().template toObject<V>(resultValues[i]);
         result[key] = value;
     }
     return result;
@@ -194,7 +193,7 @@ std::set<K> IMap<K,V>::keySet(){
    std::vector<hazelcast::client::serialization::Data> resultDataVector = command.get();
    int size = resultDataVector.size();
    for(int i = 0 ; i < size; i++){
-       K key = hazelcastClient.getSerializationService().toObject<K>(resultDataVector[i]);
+       K key = hazelcastClient.getSerializationService().template toObject<K>(resultDataVector[i]);
        resultSet.insert(key);
    }
    return resultSet;

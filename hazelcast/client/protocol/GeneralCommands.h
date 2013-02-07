@@ -41,7 +41,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
-        
+       return 0; 
     };
 private:
     std::string name;

@@ -49,7 +49,7 @@ DataInput::~DataInput(){
     delete [] beg;
 };
 DataInput& DataInput::operator=(const DataInput&){
-    
+    return *this;    
 };
 
 int DataInput::getDataClassId(){

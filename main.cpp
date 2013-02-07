@@ -12,8 +12,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "Server.h"
-#include "Client.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/IMap.cpp"
 
@@ -29,11 +27,12 @@ using namespace hazelcast::client;
 void write();
 void read();
 void client();
+TestMainPortable getTestMainPortable();
 
 int main(int argc, char** argv){
 //    write();
 //    read();
-//    client();
+    client();
     return 0;
 };
 
@@ -41,27 +40,34 @@ void client(){
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.125:5701");
+    clientConfig.setAddress("192.168.2.2:5701");
     clientConfig.setPortableFactory(&tpf1);
     
     try{
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int,TestMainPortable> imap = hazelcastClient->getMap<int,TestMainPortable>("sancar");
+        IMap<int,TestMainPortable> imap = hazelcastClient->getMap<int,TestMainPortable>("ali");
         std::cout << imap.getName() << std::endl;
-        for(int i = 0 ; i < 10 ; i++){
-            TestMainPortable x = imap.get(i);
-            x.i += 1;
+        TestMainPortable mainPortable = getTestMainPortable();
+        for(int i = 0 ; i < 100 ; i++){
+            TestMainPortable x = mainPortable;
+            x.i = i * 10;
+            x.p.ii.push_back(i*100); 
             imap.put(i,x);
         }
         
-        for(int i = 0 ; i < 10 ; i++){
+        for(int i = 0 ; i < 100 ; i++){
             TestMainPortable x = imap.get(i);
-             std::cout << "(" << i << " " << x.i << ")" ;
+             assert(x.i == i*10);
+             assert(x.p.ii.at(x.p.ii.size() -1 ) == i*100);
         }
-        std::cout << std::endl;  
+        assert(imap.containsKey(2) == true);
+        assert(imap.containsKey(120) == false);
         
-        std::cout << "imap contains key 2 " <<imap.containsKey(2) << std::endl;
-        std::cout << "imap contains key 20 " << imap.containsKey(20) << std::endl;
+        TestMainPortable temp = imap.get(5);
+        assert(imap.containsValue(temp) == true);
+        temp.i = 2;
+        assert(imap.containsValue(temp) == false);
+        
         
         int myints[] = {0,2,4,6};
         std::set<int> keySet (myints, myints + sizeof(myints) / sizeof(int) );
@@ -69,38 +75,43 @@ void client(){
         std::map<int,TestMainPortable> stdMap = imap.getAll(keySet);
         for(int i = 0 ; i < 8 ; i+=2 ){
             TestMainPortable x = stdMap[i];
-            std::cout << "(" << i << " " << x.i << ")" ;
+            assert(x.i == i*10);
+            assert(x.p.ii.at(x.p.ii.size()-1) == i*100);
         }
-        std::cout << std::endl;  
-        
-        imap.flush();
         imap.remove(9);
-        std::cout << "remove 8 is successful " << imap.tryRemove(8,1000) << std::endl;
-        TestMainPortable z = imap.get(0);
-        std::cout << "put 1 is successful"  << imap.tryPut(1,z,1000) << std::endl;
-        imap.put(2,z,2000);
-        imap.putTransient(3,z,2000);
+        assert(imap.containsKey(9) == false);
+        assert(imap.tryRemove(8,1000) == true);
+        assert(imap.containsKey(8) == false);
         
-        std::cout << "replaceIfSame 3 is successful"  << imap.replace(3,z,z) << std::endl;
-        std::cout << "replaceIfSame 4 is successful"  << imap.replace(6,z,z) << std::endl;
+//        imap.flush(); TODO
+        assert(imap.evict(8) == false);
+        assert(imap.evict(7) == true);
+        assert(imap.containsKey(7) == false);
         
-        imap.evict(9);
+//        TestMainPortable z = imap.get(0);
+//        std::cout << "put 1 is successful"  << imap.tryPut(1,z,1000) << std::endl;
+//        imap.put(2,z,2000);
+//        imap.putTransient(3,z,2000);
+//        
+//        std::cout << "replaceIfSame 3 is successful"  << imap.replace(3,z,z) << std::endl;
+//        std::cout << "replaceIfSame 4 is successful"  << imap.replace(6,z,z) << std::endl;
+//        
+//        
+//        set<int> keys = imap.keySet();
+//        vector<TestMainPortable> value = imap.values();
+//        
+//        std::pair<int,TestMainPortable> entry = imap.getEntry(3);
+//        std::vector< std::pair<int,TestMainPortable> > entrySet = imap.entrySet();
+//        
+//        imap.lock(1);
+//        imap.unlock(5);
+//        imap.isLocked(4);
+//        imap.forceunlock(3);
+//        imap.tryLock(3,1000);
         
-        set<int> keys = imap.keySet();
-        vector<TestMainPortable> value = imap.values();
-        
-        std::pair<int,TestMainPortable> entry = imap.getEntry(3);
-        std::vector< std::pair<int,TestMainPortable> > entrySet = imap.entrySet();
-        
-        imap.lock(1);
-        imap.unlock(5);
-        imap.isLocked(4);
-        imap.forceunlock(3);
-        imap.tryLock(3,1000);
-        
-        std::cout << "Press a key to end" << std::endl;
-        std::string x;
-        std::cin >> x;
+//        std::cout << "Press a key to end" << std::endl;
+//        std::string x;
+//        std::cin >> x;
     }catch(std::exception& e){
         std::cout << e.what() << std::endl;
     }
@@ -108,40 +119,9 @@ void client(){
 
 void read(){
     
-    TestPortableFactory tpf1,tpf2;
+    TestPortableFactory tpf1;
     serialization::SerializationService serializationService(1, &tpf1);
-    
-    byte byteArray[]= {0, 1, 2};
-    std::vector<byte> bb(byteArray,byteArray+3);
-    char charArray[]={'c', 'h', 'a', 'r'};
-    std::vector<char> cc(charArray,charArray+4);
-    short shortArray[] =  {3, 4, 5};
-    std::vector<short> ss(shortArray, shortArray + 3);
-    int integerArray[] = {9, 8, 7, 6};
-    std::vector<int> ii(integerArray, integerArray + 4);
-    long longArray[] = {0, 1, 5, 7, 9, 11};
-    std::vector<long> ll(longArray, longArray + 6);
-    float floatArray[] = {0.6543f, -3.56f, 45.67f};
-    std::vector<float> ff(floatArray, floatArray + 3);
-    double doubleArray[] = {456.456, 789.789, 321.321};
-    std::vector<double> dd(doubleArray, doubleArray + 3);
-    TestNamedPortable* portableArray = new TestNamedPortable[5];
-    for (int i = 0; i < 5; i++) {
-        string x = "named-portable-";
-        x.push_back('0' + i);
-        portableArray[i] = TestNamedPortable(x,i);
-    }
-    std::vector<TestNamedPortable> nn(portableArray,portableArray + 5);
-    
-    TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd, nn);
 
-    
-
-    TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
-            -897543.3678909, "this is main portable object created for testing!", inner);
-    
-    
-    
     std::ifstream is;
     is.open ("/Users/msk/Desktop/text.txt", std::ios::binary );
     char bytes[673];
@@ -157,10 +137,10 @@ void read(){
     
     TestMainPortable tmp1;
     tmp1 = serializationService.toObject<TestMainPortable>(data);
-    assert(main == tmp1);
-
-    delete [] portableArray;
-}
+    
+    TestMainPortable mainPortable = getTestMainPortable();
+    assert(mainPortable == tmp1);
+};
 
 void write(){
     TestPortableFactory tpf1,tpf2;
@@ -200,7 +180,7 @@ void write(){
     std::vector<float> ff(floatArray, floatArray + 3);
     double doubleArray[] = {456.456, 789.789, 321.321};
     std::vector<double> dd(doubleArray, doubleArray + 3);
-    TestNamedPortable* portableArray = new TestNamedPortable[5];
+    TestNamedPortable portableArray[5];
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
@@ -242,6 +222,34 @@ void write(){
     
     serializationService.push(out);
     outfile.close();
+   
+};
+
+TestMainPortable getTestMainPortable(){
+    byte byteArray[]= {0, 1, 2};
+    std::vector<byte> bb(byteArray,byteArray+3);
+    char charArray[]={'c', 'h', 'a', 'r'};
+    std::vector<char> cc(charArray,charArray+4);
+    short shortArray[] =  {3, 4, 5};
+    std::vector<short> ss(shortArray, shortArray + 3);
+    int integerArray[] = {9, 8, 7, 6};
+    std::vector<int> ii(integerArray, integerArray + 4);
+    long longArray[] = {0, 1, 5, 7, 9, 11};
+    std::vector<long> ll(longArray, longArray + 6);
+    float floatArray[] = {0.6543f, -3.56f, 45.67f};
+    std::vector<float> ff(floatArray, floatArray + 3);
+    double doubleArray[] = {456.456, 789.789, 321.321};
+    std::vector<double> dd(doubleArray, doubleArray + 3);
+    TestNamedPortable portableArray[5];
+    for (int i = 0; i < 5; i++) {
+        string x = "named-portable-";
+        x.push_back('0' + i);
+        portableArray[i] = TestNamedPortable(x,i);
+    }
+    std::vector<TestNamedPortable> nn(portableArray,portableArray + 5);
     
-    delete [] portableArray;
-}
+    TestInnerPortable inner(bb,cc,ss,ii,ll,ff,dd, nn);
+  TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
+            -897543.3678909, "this is main portable object created for testing!", inner);
+    return main;
+};

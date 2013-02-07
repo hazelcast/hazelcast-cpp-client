@@ -33,6 +33,7 @@ public:
     const TestNamedPortable& operator=(const TestNamedPortable& rhs){
         name = rhs.name;
         k = rhs.k;
+        return *this;
     };
     
     int getClassId() {

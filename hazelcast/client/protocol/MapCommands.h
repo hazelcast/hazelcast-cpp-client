@@ -42,7 +42,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of containsKey return");
        
         containsKey = line.compare("OK true") ? false  : true;
@@ -55,6 +55,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
         return containsKey;
@@ -67,8 +68,8 @@ private:
 
 class ContainsValueCommand : public Command{
 public:
-    ContainsValueCommand(std::string instanceName, hazelcast::client::serialization::Data key ):instanceName(instanceName)
-                                                                                     ,key(key)
+    ContainsValueCommand(std::string instanceName, hazelcast::client::serialization::Data value ):instanceName(instanceName)
+                                                                                     ,value(value)
     {    
     };
     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
@@ -77,19 +78,19 @@ public:
         dataOutput.write(command.c_str(),0,command.length());
 
         char integerBuffer[5];
-        int integerBufferSize = sprintf(integerBuffer,"%d",key.totalSize());
+        int integerBufferSize = sprintf(integerBuffer,"%d",value.totalSize());
         dataOutput.write(integerBuffer, 0,integerBufferSize);
 
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
 
-        key.writeData(dataOutput);
+        value.writeData(dataOutput);
         
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of containsValue return");
        
         containsValue = line.compare("OK true") ? false  : true;
@@ -102,13 +103,14 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
         return containsValue;
     };
 private:
     std::string instanceName;
-    hazelcast::client::serialization::Data key;
+    hazelcast::client::serialization::Data value;
     bool containsValue;
 };
 
@@ -153,7 +155,11 @@ public:
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
-        if(line.compare("OK #1"))
+        if(!line.compare("OK"))
+            numResults = 0;    
+        else if(!line.compare("OK #1"))
+            numResults = 1;
+        else
             throw std::domain_error("unexpected header of put return");
     };
     void readSizeLine(std::string line) {
@@ -162,7 +168,7 @@ public:
     void readResult(hazelcast::client::serialization::DataInput& dataInput){
     };
     int nResults(){
-       return 1;  
+       return numResults;  
     };
     int resultSize(int i){
         return returnSize;
@@ -173,6 +179,7 @@ private:
     hazelcast::client::serialization::Data value;
     long ttl;
     int returnSize;
+    int numResults;
 }; 
 
 class GetCommand : public Command{
@@ -249,20 +256,20 @@ public:
             throw std::domain_error("unexpected header of remove return");
     };
     void readSizeLine(std::string line) {
+        returnSize = atoi(line.c_str());
     };
     void readResult(hazelcast::client::serialization::DataInput& dataInput){
     };
     int nResults(){
-       return 0;  
+       return 1;  
     };
     int resultSize(int i){
-        return 0;
-    };
-    hazelcast::client::serialization::Data get(){
+        return returnSize;
     };
 private:
     std::string instanceName;
     hazelcast::client::serialization::Data key;
+    int returnSize;
 }; 
 
 class FlushCommand : public Command{
@@ -288,6 +295,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
 private:
     std::string instanceName;
@@ -419,22 +427,28 @@ public:
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
-       if(!line.compare("OK #1"))
+       if(!line.compare("OK #1")){
            success = true;
-       else if(!line.compare("OK timeout"))
+           numResults = 1;
+       }else if(!line.compare("OK")){
+           success = true;
+           numResults = 0;
+       }else if(!line.compare("OK timeout"))
            success = false;
        else
             throw std::domain_error("unexpected header of tryRemove return");
             
     };
     void readSizeLine(std::string line) {
+        returnSize = atoi(line.c_str());
     };
     void readResult(hazelcast::client::serialization::DataInput& dataInput){
     };
     int nResults(){
-       return 0;  
+       return numResults;  
     };
     int resultSize(int i){
+        return returnSize;
     };
     bool get(){
         return success;
@@ -444,6 +458,8 @@ private:
     hazelcast::client::serialization::Data key;
     long timeoutInMillis;
     bool success;
+    int returnSize;
+    int numResults;
 }; 
 
 class TryPutCommand : public Command{
@@ -482,7 +498,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of tryPut return");
        
         success = line.compare("OK true") ? false  : true;
@@ -495,6 +511,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
       return success;  
@@ -559,6 +576,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
 private:
     std::string instanceName;
@@ -681,7 +699,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of containsValue return");
        
         success = line.compare("OK true") ? false  : true;
@@ -694,6 +712,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
       return success;  
@@ -732,7 +751,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of evict return");
        
         success = line.compare("OK true") ? false  : true;
@@ -745,6 +764,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
         return success;
@@ -853,6 +873,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
 private:
     std::string instanceName;
@@ -888,7 +909,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of isLocked return");
        
         isLocked = line.compare("OK true") ? false  : true;
@@ -901,6 +922,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
         return isLocked;
@@ -950,7 +972,7 @@ public:
     void readHeaderLine(std::string line){
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
-        if(ok.compare("OK "))
+        if(ok.compare("OK"))
             throw std::domain_error("unexpected header of tryLock return");
        
         isAcquired = line.compare("OK true") ? false  : true; 
@@ -963,6 +985,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
     bool get(){
       return isAcquired;  
@@ -1015,6 +1038,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
 private:
     std::string instanceName;
@@ -1062,6 +1086,7 @@ public:
        return 0;  
     };
     int resultSize(int i){
+        return 0;
     };
 private:
     std::string instanceName;
