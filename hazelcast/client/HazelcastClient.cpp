@@ -13,7 +13,7 @@ HazelcastClient::HazelcastClient(ClientConfig& config):clientConfig(config)
                                                       ,serializationService(0,clientConfig.getPortableFactory())
                                                       ,commandHandler(config.getAddress(),&serializationService)
 {
-    std::cout << "trying to connect  to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;
+    std::cout << "trying to connect to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;
     setupInitialConnection();
     std::cout << "connected  to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;    
 };

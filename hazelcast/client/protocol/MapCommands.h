@@ -204,7 +204,11 @@ public:
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
-        if(line.compare("OK #1"))
+        if(!line.compare("OK"))
+            numResults = 0;    
+        else if(!line.compare("OK #1"))
+            numResults = 1;
+        else
             throw std::domain_error("unexpected header of get return");
     };
     void readSizeLine(std::string line) {
@@ -215,7 +219,7 @@ public:
         oldValue.readData(dataInput);
     };
     int nResults(){
-       return 1;  
+       return numResults;  
     };
     int resultSize(int i){
         return resultSizes[i];
@@ -227,6 +231,7 @@ private:
     std::string instanceName;
     hazelcast::client::serialization::Data key;
     std::vector<int> resultSizes;
+    int numResults;
     hazelcast::client::serialization::Data oldValue;
 }; 
 
@@ -668,7 +673,7 @@ public:
     {    
     };
     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
-        std::string command = "MPUTIFABSENT";
+        std::string command = "MREPLACEIFSAME";
         command += SPACE + instanceName + SPACE;
         command += "#3" + NEWLINE;    
         
@@ -700,7 +705,7 @@ public:
         int pos = line.find_first_of(' ');
         std::string ok = line.substr(0,pos);
         if(ok.compare("OK"))
-            throw std::domain_error("unexpected header of containsValue return");
+            throw std::domain_error("unexpected header of replace if same return");
        
         success = line.compare("OK true") ? false  : true;
     };
