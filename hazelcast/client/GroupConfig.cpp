@@ -1,6 +1,6 @@
-#include <iosfwd>
-
 #include "GroupConfig.h"
+#include <string>
+#include <iostream>
 
 
 namespace hazelcast{

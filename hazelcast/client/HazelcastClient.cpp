@@ -9,7 +9,8 @@
 namespace hazelcast{
 namespace client{
     
-HazelcastClient::HazelcastClient(ClientConfig& config):clientConfig(config)
+HazelcastClient::HazelcastClient(ClientConfig& config):clientService(*this)
+                                                      ,clientConfig(config)
                                                       ,serializationService(0,clientConfig.getPortableFactory())
                                                       ,commandHandler(config.getAddress(),&serializationService)
 {

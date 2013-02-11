@@ -15,7 +15,7 @@
 namespace hazelcast{ 
 namespace client{
 namespace serialization{
-//TODO uncomment code below !!!!! main test fails
+
  DataInput::DataInput(std::vector<byte>& rhsBuffer, SerializationService* service):service(service)
                                                                             
 {   

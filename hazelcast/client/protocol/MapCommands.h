@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <thread>
 
 namespace hazelcast{
 namespace client{
@@ -850,8 +851,9 @@ public:
         int integerBufferSize;
         
         std::string command;
-//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
-//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        std::hash<std::thread::id> h;
+        integerBufferSize = sprintf(integerBuffer,"%li",h(std::this_thread::get_id()));
+        command.append(integerBuffer, integerBufferSize); 
         
         command += "MLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
         
@@ -867,8 +869,10 @@ public:
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
-        if(line.compare("OK"))
-            throw std::domain_error("unexpected header of lock return");      
+        int pos = line.find_first_of(' ');
+        std::string ok = line.substr(0,pos);
+        if(ok.compare("OK"))
+            throw std::domain_error("unexpected header of lock return");   
     };
     void readSizeLine(std::string line) {
     };
@@ -953,8 +957,10 @@ public:
         int integerBufferSize;
         
         std::string command;
-//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
-//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        std::hash<std::thread::id> h;
+        integerBufferSize = sprintf(integerBuffer,"%li",h(std::this_thread::get_id()));
+        command.append(integerBuffer, integerBufferSize); 
+        
         
         command += "MTRYLOCK" + SPACE + instanceName + SPACE;
         
@@ -1015,8 +1021,9 @@ public:
         int integerBufferSize;
         
         std::string command;
-//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
-//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        std::hash<std::thread::id> h;
+        integerBufferSize = sprintf(integerBuffer,"%li",h(std::this_thread::get_id()));
+        command.append(integerBuffer, integerBufferSize); 
         
         command += "MUNLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
         
@@ -1032,8 +1039,10 @@ public:
         dataOutput.write(NEWLINE.c_str(),0,NEWLINE.length());
     };
     void readHeaderLine(std::string line){
-        if(line.compare("OK"))
-            throw std::domain_error("unexpected header of unlock return");      
+        int pos = line.find_first_of(' ');
+        std::string ok = line.substr(0,pos);
+        if(ok.compare("OK"))
+            throw std::domain_error("unexpected header of unlock return");   
     };
     void readSizeLine(std::string line) {
     };
@@ -1063,8 +1072,9 @@ public:
         int integerBufferSize;
         
         std::string command;
-//        integerBufferSize = sprintf(integerBuffer,"%d",threadId);
-//        command.append(integerBuffer, integerBufferSize); //TODO add thread-id
+        std::hash<std::thread::id> h;
+        integerBufferSize = sprintf(integerBuffer,"%li",h(std::this_thread::get_id()));
+        command.append(integerBuffer, integerBufferSize); 
         
         command += "MFORCEUNLOCK" + SPACE + instanceName + SPACE + "#1" + NEWLINE;
         
