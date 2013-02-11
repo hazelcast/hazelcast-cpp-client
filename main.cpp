@@ -41,7 +41,6 @@ int main(int argc, char** argv) {
     testSerialization();
     testSerializationViaFile();
     testMapOperations();
-//    testMapLocks();
 
     return 0;
 };
