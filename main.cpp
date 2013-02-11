@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     testSerialization();
     testSerializationViaFile();
     testMapOperations();
-    testMapLocks();
+    //testMapLocks();
     return 0;
 };
 
@@ -45,7 +45,7 @@ void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.2:5701");
+    clientConfig.setAddress("192.168.2.125:5701");
     clientConfig.setPortableFactory(&tpf1);
 
     try {
