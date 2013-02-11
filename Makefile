@@ -2,7 +2,7 @@ CC=clang++
 OUT=p.out
 RM=rm -f
 
-OBJS=./obj/hazelcast/client/serialization/DefaultPortableWriter.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/serialization/DataInput.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/IMap.o ./obj/hazelcast/client/serialization/ClassDefinition.o  ./obj/hazelcast/client/Address.o  ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/serialization/PortableSerializer.o ./obj/hazelcast/client/HazelcastClient.o ./obj/main.o ./obj/hazelcast/client/serialization/SerializationService.o  ./obj/hazelcast/client/protocol/CommandHandler.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/serialization/DataOutput.o ./obj/hazelcast/client/protocol/Socket.o ./obj/hazelcast/client/serialization/SerializationContext.o 
+OBJS=./obj/hazelcast/client/serialization/DefaultPortableWriter.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/serialization/DataInput.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/GroupConfig.o  ./obj/hazelcast/client/serialization/ClassDefinition.o  ./obj/hazelcast/client/Address.o  ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/ClientService.o ./obj/hazelcast/client/serialization/PortableSerializer.o ./obj/hazelcast/client/HazelcastClient.o ./obj/main.o ./obj/hazelcast/client/serialization/SerializationService.o  ./obj/hazelcast/client/protocol/CommandHandler.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/serialization/DataOutput.o ./obj/hazelcast/client/protocol/Socket.o ./obj/hazelcast/client/serialization/SerializationContext.o 
 
 CFLAGS= -std=c++11 -stdlib=libc++
 LFLAGS= -std=c++11 -stdlib=libc++ /usr/local/lib/libz.a
@@ -22,6 +22,10 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
+./obj/hazelcast/client/ClientService.o: ./hazelcast/client/ClientService.cpp ./hazelcast/client/ClientService.h
+	echo "Compiling $< to $@..."
+	$(CC) $(CFLAGS) -c $< -o $@
+	
 ./obj/hazelcast/client/GroupConfig.o: ./hazelcast/client/GroupConfig.cpp
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -29,11 +33,6 @@ $(OUT): $(OBJS)
 ./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/HazelcastClient.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
-
-./obj/hazelcast/client/IMap.o: ./hazelcast/client/IMap.cpp
-	echo "Compiling $< to $@..."
-	$(CC) $(CFLAGS) -c $< -o $@
-
 
 ./obj/hazelcast/client/protocol/CommandHandler.o: ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h
 	echo "Compiling $< to $@..."
@@ -91,7 +90,7 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/main.o: ./main.cpp ./TestInnerPortable.h ./TestMainPortable.h ./TestNamedPortable.h ./TestPortableFactory.h ./hazelcast/client/serialization/Portable.h  ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/IMap.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/SerializationService.o
+./obj/main.o: ./main.cpp ./TestInnerPortable.h ./TestMainPortable.h ./TestNamedPortable.h ./TestPortableFactory.h ./hazelcast/client/serialization/Portable.h  ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/SerializationService.o
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
