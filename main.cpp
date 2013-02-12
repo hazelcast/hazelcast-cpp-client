@@ -30,9 +30,9 @@ using namespace hazelcast::client;
 void testSerialization();
 void testSerializationViaFile();
 void testMapOperations();
-void testMapLocks();
+void testMapLocksInParallel();
 
-void parallelTest(); 
+void testMapLocksInSequential(); 
 void write();
 void read();
 TestMainPortable getTestMainPortable();
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     testSerialization();
     testSerializationViaFile();
     testMapOperations();
-
+    //testMapLocksInSequential();
     return 0;
 };
 
@@ -49,7 +49,7 @@ void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.125:5701");
+    clientConfig.setAddress("192.168.2.2:5701");
     clientConfig.setPortableFactory(&tpf1);
 
     try {
@@ -146,11 +146,11 @@ void testMapOperations() {
     }
 };
 
-void testMapLocks(){
+void testMapLocksInParallel(){
     try {
         
-        std::thread t1(parallelTest);
-        std::thread t2(parallelTest);
+        std::thread t1(testMapLocksInSequential);
+        std::thread t2(testMapLocksInSequential);
         
         t1.join();
         t2.join();
@@ -160,7 +160,7 @@ void testMapLocks(){
     }
 };
 
-void parallelTest(){
+void testMapLocksInSequential(){
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
     clientConfig.setAddress("192.168.2.2:5701");
@@ -168,21 +168,21 @@ void parallelTest(){
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
 
-        IMap<std::string, int> imap = hazelcastClient->getMap<std::string, int > ("testLockMap");
+        IMap<int, int> imap = hazelcastClient->getMap<int, int > ("testLockMap");
         std::hash<std::thread::id> h;
         long currentId = h(std::this_thread::get_id());
 
-        imap.lock("pre");    
+        imap.lock(0);    
         std::cout << "pre "<< currentId << endl;
-        imap.unlock("pre");    
+        imap.unlock(0);    
 
-        imap.lock("critical");    
+        imap.lock(1);    
         std::cout << "critical "<< currentId << endl;
-        imap.unlock("critical");
+        imap.unlock(1);
 
-        imap.lock("out");  
+        imap.lock(2);  
         std::cout << "out "<< currentId << endl;
-        imap.unlock("out");
+        imap.unlock(2);
 
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
