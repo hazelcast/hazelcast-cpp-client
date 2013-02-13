@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
     testSerializationViaFile();
     testMapOperations();
     //testMapLocksInSequential();
+    std::cout << "Test are completed successfully" << std::endl;
     return 0;
 };
 

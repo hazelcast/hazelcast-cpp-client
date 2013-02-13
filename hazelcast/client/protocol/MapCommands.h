@@ -307,6 +307,7 @@ namespace hazelcast {
                 private:
                     std::string instanceName;
                     hazelcast::client::serialization::Data key;
+                    hazelcast::client::serialization::Data oldValue;
                     int returnSize;
                 };
 

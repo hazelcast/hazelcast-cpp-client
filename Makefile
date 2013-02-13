@@ -2,7 +2,7 @@ CC=clang++
 OUT=p.out
 RM=rm -f
 
-OBJS=./obj/hazelcast/client/serialization/DefaultPortableWriter.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/serialization/DataInput.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/serialization/ClassDefinition.o ./obj/hazelcast/client/Address.o ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/ClientService.o ./obj/hazelcast/client/serialization/PortableSerializer.o ./obj/hazelcast/client/HazelcastClient.o ./obj/main.o ./obj/hazelcast/client/serialization/SerializationService.o ./obj/hazelcast/client/protocol/CommandHandler.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/serialization/DataOutput.o ./obj/hazelcast/client/protocol/Socket.o ./obj/hazelcast/client/serialization/SerializationContext.o
+OBJS=./obj/hazelcast/client/serialization/DefaultPortableWriter.o ./obj/hazelcast/client/ISemaphore.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/serialization/DataInput.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/IdGenerator.o ./obj/hazelcast/client/serialization/ClassDefinition.o ./obj/hazelcast/client/Address.o ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/ClientService.o ./obj/hazelcast/client/serialization/PortableSerializer.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/ICountDownLatch.o ./obj/main.o ./obj/hazelcast/client/serialization/SerializationService.o ./obj/hazelcast/client/protocol/CommandHandler.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/AtomicNumber.o ./obj/hazelcast/client/serialization/DataOutput.o ./obj/hazelcast/client/protocol/Socket.o ./obj/hazelcast/client/serialization/SerializationContext.o
 
 CFLAGS=-std=c++11 -stdlib=libc++
 LFLAGS=-std=c++11 -stdlib=libc++ /usr/local/lib/libz.a
@@ -18,6 +18,10 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
+./obj/hazelcast/client/AtomicNumber.o: ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/AtomicNumber.h
+	echo "Compiling $< to $@..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
 ./obj/hazelcast/client/ClientConfig.o: ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/Address.cpp ./hazelcast/client/Address.h ./hazelcast/client/ClientConfig.h ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h ./hazelcast/client/serialization/PortableFactory.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -30,7 +34,19 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/ClientService.cpp ./hazelcast/client/ClientService.h ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IMap.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/GeneralCommands.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/AtomicNumber.h ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/HazelcastClient.h ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h ./hazelcast/client/IList.h ./hazelcast/client/IMap.h ./hazelcast/client/IQueue.h ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h ./hazelcast/client/ISet.h ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h ./hazelcast/client/MultiMap.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/GeneralCommands.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
+	echo "Compiling $< to $@..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
+./obj/hazelcast/client/ICountDownLatch.o: ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h
+	echo "Compiling $< to $@..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
+./obj/hazelcast/client/ISemaphore.o: ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h
+	echo "Compiling $< to $@..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
+./obj/hazelcast/client/IdGenerator.o: ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 

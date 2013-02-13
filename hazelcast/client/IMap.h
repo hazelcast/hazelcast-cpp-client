@@ -31,6 +31,10 @@ namespace hazelcast {
 
             };
 
+            std::string getName() const {
+                return instanceName;
+            };
+
             bool containsKey(K key) {
                 serialization::Data keyInBytes = clientService.getSerializationService().toData(key);
                 protocol::MapCommands::ContainsKeyCommand command(instanceName, keyInBytes);
@@ -73,10 +77,6 @@ namespace hazelcast {
             void flush() {
                 protocol::MapCommands::FlushCommand command(instanceName);
                 clientService.getCommandHandler().sendCommand(&command);
-            };
-
-            std::string getName() const {
-                return instanceName;
             };
 
             std::map< K, V > getAll(std::set<K> keys) {
