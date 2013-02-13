@@ -106,7 +106,7 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/main.o: ./main.cpp ./TestInnerPortable.h ./TestMainPortable.h ./TestNamedPortable.h ./TestPortableFactory.h ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IMap.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
+./obj/main.o: ./main.cpp ./SimpleMapTest.h ./TestInnerPortable.h ./TestMainPortable.h ./TestNamedPortable.h ./TestPortableFactory.h ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IMap.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 

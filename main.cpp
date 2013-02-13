@@ -5,6 +5,7 @@
 #include "TestNamedPortable.h"
 #include "TestInnerPortable.h"
 #include "TestMainPortable.h"
+#include "SimpleMapTest.h"
 
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/serialization/Data.h"
@@ -27,21 +28,23 @@
 #include <memory>
 using namespace hazelcast::client;
 
+void testSpeed();
 void testSerialization();
 void testSerializationViaFile();
 void testMapOperations();
 void testMapLocksInParallel();
-
 void testMapLocksInSequential(); 
 void write();
 void read();
 TestMainPortable getTestMainPortable();
 
 int main(int argc, char** argv) {
-    testSerialization();
-    testSerializationViaFile();
-    testMapOperations();
-    //testMapLocksInSequential();
+//    testSerialization();
+//    testSerializationViaFile();
+//    testMapOperations();
+//    testMapLocksInSequential();
+//    testMapLocksInParalled();
+    testSpeed();
     std::cout << "Test are completed successfully" << std::endl;
     return 0;
 };
@@ -342,4 +345,9 @@ TestMainPortable getTestMainPortable() {
     TestMainPortable main((byte) 113, true, 'x', (short) - 500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);
     return main;
+};
+
+void testSpeed(){
+    SimpleMapTest s;
+    s.run();
 };
