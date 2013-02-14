@@ -5,11 +5,12 @@
 #include "Command.h"
 #include "../serialization/DataInput.h"
 #include "../serialization/DataOutput.h"
+#include <boost/thread.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <utility>
-#include <thread>
-
+#include <cstdlib>
+#include <cstdio>
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -944,8 +945,8 @@ namespace hazelcast {
                         int integerBufferSize;
 
                         std::string command;
-                        std::hash<std::thread::id> h;
-                        int threadId = h(std::this_thread::get_id());
+                        boost::hash<boost::thread::id> h;
+                        int threadId = h(boost::this_thread::get_id());
                         integerBufferSize = sprintf(integerBuffer, "%d", threadId);
                         command.append(integerBuffer, integerBufferSize);
 
@@ -1064,8 +1065,8 @@ namespace hazelcast {
                         int integerBufferSize;
 
                         std::string command;
-                        std::hash<std::thread::id> h;
-                        int threadId = h(std::this_thread::get_id());
+                        boost::hash<boost::thread::id> h;
+                        int threadId = h(boost::this_thread::get_id());
                         integerBufferSize = sprintf(integerBuffer, "%d", threadId);
                         command.append(integerBuffer, integerBufferSize);
 
@@ -1136,8 +1137,8 @@ namespace hazelcast {
                         int integerBufferSize;
 
                         std::string command;
-                        std::hash<std::thread::id> h;
-                        int threadId = h(std::this_thread::get_id());
+                        boost::hash<boost::thread::id> h;
+                        int threadId = h(boost::this_thread::get_id());
                         integerBufferSize = sprintf(integerBuffer, "%d", threadId);
                         command.append(integerBuffer, integerBufferSize);
 
@@ -1194,8 +1195,8 @@ namespace hazelcast {
                         int integerBufferSize;
 
                         std::string command;
-                        std::hash<std::thread::id> h;
-                        int threadId = h(std::this_thread::get_id());
+                        boost::hash<boost::thread::id> h;
+                        int threadId = h(boost::this_thread::get_id());
                         integerBufferSize = sprintf(integerBuffer, "%d", threadId);
                         command.append(integerBuffer, integerBufferSize);
 

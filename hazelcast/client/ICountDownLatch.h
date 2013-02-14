@@ -1,6 +1,7 @@
 #ifndef HAZELCAST_ICOUNT_DOWN_LATCH
 #define HAZELCAST_ICOUNT_DOWN_LATCH
 #include <string>
+#include <stdexcept>
 namespace hazelcast {
     namespace client {
 

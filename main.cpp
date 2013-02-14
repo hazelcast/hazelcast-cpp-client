@@ -15,10 +15,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
 
-#include <utility>
-#include <thread>
-#include <chrono>
-#include <functional>
+#include <boost/thread.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -52,8 +49,8 @@ int main(int argc, char** argv) {
 void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.2:5701");
+    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
+    clientConfig.setAddress("127.0.0.1:5701");
     clientConfig.setPortableFactory(&tpf1);
 
     try {
@@ -151,10 +148,11 @@ void testMapOperations() {
 };
 
 void testMapLocksInParallel(){
+    
     try {
         
-        std::thread t1(testMapLocksInSequential);
-        std::thread t2(testMapLocksInSequential);
+        boost::thread t1(testMapLocksInSequential);
+        boost::thread t2(testMapLocksInSequential);
         
         t1.join();
         t2.join();
@@ -166,15 +164,15 @@ void testMapLocksInParallel(){
 
 void testMapLocksInSequential(){
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.2:5701");
+    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
+    clientConfig.setAddress("127.0.0.1:5701");
 
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
 
         IMap<int, int> imap = hazelcastClient->getMap<int, int > ("testLockMap");
-        std::hash<std::thread::id> h;
-        long currentId = h(std::this_thread::get_id());
+        boost::hash<boost::thread::id> h;
+        long currentId = h(boost::this_thread::get_id());
 
         imap.lock(0);    
         std::cout << "pre "<< currentId << endl;

@@ -57,7 +57,7 @@ namespace hazelcast {
         ISemaphore HazelcastClient::getISemaphore(std::string instanceName) {
             return ISemaphore(instanceName, clientService);
         };
-        
+
         void HazelcastClient::setupInitialConnection() {
             commandHandler.start();
             protocol::GeneralCommands::AuthCommand authCommand(clientConfig.getGroupConfig().getName(), clientConfig.getGroupConfig().getPassword());

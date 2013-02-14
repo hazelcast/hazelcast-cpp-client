@@ -9,11 +9,9 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <utility>
-#include <thread>
-#include <chrono>
-#include <functional>
-
+#include <boost/thread.hpp>
+#include <boost/atomic.hpp>
+#include <boost/chrono.hpp>
 using namespace hazelcast::client;
 
 int THREAD_COUNT = 1;
@@ -27,36 +25,40 @@ int PUT_PERCENTAGE = 100;
 
 class Stats {
 public:
-    long gets = 0;
-    long puts = 0;
-    long removes = 0;
-
-    Stats getAndReset() {
+    Stats(){
+    };
+    Stats(const Stats& rhs){
         Stats newOne;
-        newOne.gets = gets;
-        newOne.puts = puts;
-        newOne.removes = removes;
-        puts = 0;
-        gets = 0;
-        removes = 0;
+        gets.store(rhs.gets.load());
+        puts.store(rhs.puts.load());
+        removes.store(rhs.removes.load());
+        
+    };
+    Stats getAndReset() {
+        Stats newOne(*this);
+        puts.store(0);
+        gets.store(0);
+        removes.store(0);
         return newOne;
     };
+    boost::atomic<long> gets;
+    boost::atomic<long> puts;
+    boost::atomic<long> removes;
 
     void print() {
-        std::cout << "Total = " << total() << ", puts = " << puts << " , gets = " << gets << " , removes = " << removes << std::endl;
+        std::cout << "Total = " << total() << ", puts = " << puts.load() << " , gets = " << gets.load() << " , removes = " << removes.load() << std::endl;
     };
 
     long total() {
-        return gets + puts + removes;
+        return gets.load() + puts.load() + removes.load();
     };
 } stats;
 
 void printStats() {
     while (true) {
         try {
-
-            std::chrono::milliseconds dura(STATS_SECONDS * 1000);
-            std::this_thread::sleep_for(dura);
+            boost::chrono::milliseconds dura(STATS_SECONDS * 1000);
+            boost::this_thread::sleep_for(dura);
             Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
@@ -84,10 +86,10 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-        clientConfig.setAddress("192.168.2.7:5701");
+        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
+        clientConfig.setAddress("127.0.0.1:5701");
 
-        std::thread monitor(printStats);
+        boost::thread monitor(printStats);
         try {
             auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
             IMap<std::string, vector<char> > map = hazelcastClient->getMap<std::string, vector<char > > ("default");

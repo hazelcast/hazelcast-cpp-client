@@ -3,9 +3,6 @@
 #include "serialization/SerializationService.h"
 #include "protocol/CommandHandler.h"
 #include "ClientConfig.h"
-#include <utility>
-#include <thread>
-
 
 namespace hazelcast {
     namespace client {

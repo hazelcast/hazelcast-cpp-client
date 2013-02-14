@@ -1,6 +1,7 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
 #include <string>
+#include <stdexcept>
 namespace hazelcast {
     namespace client {
 

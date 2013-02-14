@@ -16,71 +16,72 @@
 #include "ClassDefinitionWriter.h"
 #include <cassert>
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-PortableSerializer::PortableSerializer(SerializationContext* context):context(context){
+            PortableSerializer::PortableSerializer(SerializationContext* context) : context(context) {
 
-};
+            };
 
-int PortableSerializer::getTypeId(){
-    return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-};
+            int PortableSerializer::getTypeId() {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
 
-PortableSerializer::~PortableSerializer(){
+            PortableSerializer::~PortableSerializer() {
 
-};
+            };
 
+            ClassDefinition* PortableSerializer::getClassDefinition(Portable& p) {
+                int classId = p.getClassId();
+                ClassDefinition* cd;
 
-ClassDefinition* PortableSerializer::getClassDefinition(Portable& p)  {
-    int classId = p.getClassId();
-    ClassDefinition* cd;
-    
-    if (context->isClassDefinitionExists(classId)) {
-        cd =  context->lookup(classId);
-    }else{
-        ClassDefinitionWriter classDefinitionWriter(classId,context->getVersion(),this);
-        p.writePortable(classDefinitionWriter);
-        
-        cd = classDefinitionWriter.cd;
-        context->registerClassDefinition(cd);
+                if (context->isClassDefinitionExists(classId)) {
+                    cd = context->lookup(classId);
+                } else {
+                    ClassDefinitionWriter classDefinitionWriter(classId, context->getVersion(), this);
+                    p.writePortable(classDefinitionWriter);
+
+                    cd = classDefinitionWriter.cd;
+                    context->registerClassDefinition(cd);
+                }
+
+                return cd;
+            };
+
+            int PortableSerializer::getVersion() {
+                return context->getVersion();
+            };
+
+            void PortableSerializer::write(DataOutput* dataOutput, Portable& p) {
+
+                ClassDefinition* cd = getClassDefinition(p);
+                DefaultPortableWriter writer(this, dataOutput, cd);
+                p.writePortable(writer);
+
+            };
+
+            std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
+
+                int dataClassId = dataInput.getDataClassId();
+                int dataVersion = dataInput.getDataVersion();
+                std::auto_ptr<Portable> p = context->createPortable(dataClassId);
+
+                ClassDefinition* cd;
+                if (context->getVersion() == dataVersion) {
+                    cd = context->lookup(dataClassId); // using context.version
+                    PortableReader reader(this, dataInput, cd);
+                    p->readPortable(reader);
+                } else {
+                    cd = context->lookup(dataClassId, dataVersion); // registered during read
+                    MorphingPortableReader reader(this, dataInput, cd);
+                    p->readPortable(reader);
+                }
+                return p;
+
+            };
+
+        }
     }
-    
-    return cd;
-};
-
-int PortableSerializer::getVersion(){
-    return context->getVersion();
-};
-
-void PortableSerializer::write(DataOutput* dataOutput, Portable& p)  {
-    
-    ClassDefinition* cd = getClassDefinition(p);
-    DefaultPortableWriter writer(this, dataOutput, cd);
-    p.writePortable(writer);
-    
-};
-
-std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
-    
-    int dataClassId = dataInput.getDataClassId();
-    int dataVersion = dataInput.getDataVersion();
-    std::auto_ptr<Portable> p = context->createPortable(dataClassId);
-    
-    ClassDefinition* cd;
-    if (context->getVersion() == dataVersion) {
-        cd = context->lookup(dataClassId); // using context.version
-        PortableReader reader(this, dataInput, cd);
-        p->readPortable(reader);
-    } else {
-        cd = context->lookup(dataClassId, dataVersion); // registered during read
-        MorphingPortableReader reader(this, dataInput, cd);
-        p->readPortable(reader);
-    }
-    return p;
-    
-};
-
-}}}
+}
 
