@@ -86,8 +86,8 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-        clientConfig.setAddress("127.0.0.1:5701");
+        clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+        clientConfig.setAddress("192.168.2.7:5701");
 
         boost::thread monitor(printStats);
         try {

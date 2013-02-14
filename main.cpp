@@ -49,8 +49,8 @@ int main(int argc, char** argv) {
 void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-    clientConfig.setAddress("127.0.0.1:5701");
+    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+    clientConfig.setAddress("192.168.2.7:5701");
     clientConfig.setPortableFactory(&tpf1);
 
     try {
@@ -164,8 +164,8 @@ void testMapLocksInParallel(){
 
 void testMapLocksInSequential(){
     ClientConfig clientConfig;
-    clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-    clientConfig.setAddress("127.0.0.1:5701");
+    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+    clientConfig.setAddress("192.168.2.7:5701");
 
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);

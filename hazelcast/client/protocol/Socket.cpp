@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <vector>
+#include <cstring>
 
 namespace hazelcast{
 namespace client{

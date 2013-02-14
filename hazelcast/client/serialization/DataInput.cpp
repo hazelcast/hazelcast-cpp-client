@@ -10,7 +10,7 @@
 #include "SerializationService.h"
 #include "SerializationContext.h"
 #include <iostream>
-
+#include <cstring>
 
 namespace hazelcast{ 
 namespace client{
