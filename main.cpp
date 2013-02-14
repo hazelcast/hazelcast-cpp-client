@@ -8,7 +8,7 @@
 #include "SimpleMapTest.h"
 
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/Data.h" 
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/GroupConfig.h"
@@ -23,27 +23,54 @@
 #include <vector>
 #include <set>
 #include <memory>
+#include <cstdio>
 using namespace hazelcast::client;
 
 void testSpeed();
+void testCompression();
 void testSerialization();
 void testSerializationViaFile();
 void testMapOperations();
 void testMapLocksInParallel();
-void testMapLocksInSequential(); 
+void testMapLocksInSequential();
 void write();
 void read();
 TestMainPortable getTestMainPortable();
 
 int main(int argc, char** argv) {
-//    testSerialization();
-//    testSerializationViaFile();
-//    testMapOperations();
-//    testMapLocksInSequential();
-//    testMapLocksInParalled();
-    testSpeed();
-    std::cout << "Test are completed successfully" << std::endl;
+    try {
+        testCompression();
+        testSerialization();
+        testSerializationViaFile();
+        testMapOperations();
+        //    testMapLocksInSequential();
+        //    testMapLocksInParalled();
+        testSpeed();
+        std::cout << "Test are completed successfully" << std::endl;
+    } catch (const char* s) {
+        printf("%s", s);
+    }
     return 0;
+};
+
+void testCompression() {
+    TestPortableFactory tpf1;
+    serialization::SerializationService serializationService1(1, &tpf1);
+    TestMainPortable mainPortable = getTestMainPortable();
+
+    Data data = serializationService1.toData(mainPortable);
+
+    DataOutput* out = serializationService1.pop();
+    data.writeData(*out);
+
+    vector<byte> xxx = out->toByteArray();
+
+    serialization::SerializationService serializationService2(1, &tpf1);
+    serialization::DataInput dataInput(xxx, &serializationService2);
+    Data newData;
+    newData.readData(dataInput);
+    TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable > (newData);
+    assert(returnedPortable == mainPortable);
 };
 
 void testMapOperations() {
@@ -147,22 +174,22 @@ void testMapOperations() {
     }
 };
 
-void testMapLocksInParallel(){
-    
+void testMapLocksInParallel() {
+
     try {
-        
+
         boost::thread t1(testMapLocksInSequential);
         boost::thread t2(testMapLocksInSequential);
-        
+
         t1.join();
         t2.join();
-        
+
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
 };
 
-void testMapLocksInSequential(){
+void testMapLocksInSequential() {
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
     clientConfig.setAddress("192.168.2.7:5701");
@@ -174,26 +201,26 @@ void testMapLocksInSequential(){
         boost::hash<boost::thread::id> h;
         long currentId = h(boost::this_thread::get_id());
 
-        imap.lock(0);    
-        std::cout << "pre "<< currentId << endl;
-        imap.unlock(0);    
+        imap.lock(0);
+        std::cout << "pre " << currentId << endl;
+        imap.unlock(0);
 
-        imap.lock(1);    
-        std::cout << "critical "<< currentId << endl;
+        imap.lock(1);
+        std::cout << "critical " << currentId << endl;
         imap.unlock(1);
 
-        imap.lock(2);  
-        std::cout << "out "<< currentId << endl;
+        imap.lock(2);
+        std::cout << "out " << currentId << endl;
         imap.unlock(2);
 
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
-//        imap.lock(1);
-//        imap.unlock(5);
-//        imap.isLocked(4);
-//        imap.forceunlock(3);
-//        imap.tryLock(3,1000);
+    //        imap.lock(1);
+    //        imap.unlock(5);
+    //        imap.isLocked(4);
+    //        imap.forceunlock(3);
+    //        imap.tryLock(3,1000);
 };
 
 void write() {
@@ -205,7 +232,8 @@ void write() {
     data.writeData(*out);
     std::vector<byte> outBuffer = out->toByteArray();
 
-    ofstream outfile("/Users/msk/Desktop/text.txt");
+    ofstream outfile;
+    outfile.open("./text.txt", std::ios_base::out);
     for (int i = 0; i < outBuffer.size(); i++)
         outfile.put(outBuffer[i]);
 
@@ -220,7 +248,7 @@ void read() {
     serialization::SerializationService serializationService(1, &tpf1);
 
     std::ifstream is;
-    is.open("/Users/msk/Desktop/text.txt", std::ios::binary);
+    is.open("./text.txt", std::ios::binary);
     char bytes[673];
     is.read(bytes, 673);
     is.close();
@@ -345,7 +373,7 @@ TestMainPortable getTestMainPortable() {
     return main;
 };
 
-void testSpeed(){
+void testSpeed() {
     SimpleMapTest s;
     s.run();
 };

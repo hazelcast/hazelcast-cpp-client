@@ -115,11 +115,11 @@ void SerializationContext::compress(std::vector<byte>& binary) {
     int err = compress2((Bytef *)compressedTemp, &compSize, (Bytef *)uncompressedTemp, ucompSize,Z_BEST_COMPRESSION);
     switch (err) {
         case Z_BUF_ERROR:
-            throw "not enough room in the output buffer";
+            throw "not enough room in the output buffer at compression";
         case Z_DATA_ERROR:
-            throw "data is corrupted";
+            throw "data is corrupted at compression";
         case Z_MEM_ERROR:
-            throw "if there was not  enough memory";
+            throw "if there was not  enough memory at compression";
     }
     std::vector<byte> compressed(compressedTemp , compressedTemp + compSize);
     binary = compressed;
@@ -140,12 +140,14 @@ void SerializationContext::decompress(std::vector<byte>& binary) {
         temp = new byte[ucompSize];
         err = uncompress((Bytef *)temp, &ucompSize, (Bytef *)compressedTemp, compSize);
         switch (err) {
+            case Z_BUF_ERROR:
+                std::cerr << "buffer size is not enough" <<std::endl;
             case Z_DATA_ERROR:
-                throw "data is corrupted";
+                 std::cerr << "data is corrupted or incomplete at decompression" << std::endl;
             case Z_MEM_ERROR:
-                throw "if there was not  enough memory";
+                 std::cerr << "there was not  enough memory at decompression"<< std::endl;
         }
-    }while(err == Z_BUF_ERROR);
+    }while(err != Z_OK);
     std::vector<byte> decompressed(temp,temp + ucompSize);
     binary = decompressed;
     delete [] temp;

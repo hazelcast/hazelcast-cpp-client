@@ -5,7 +5,7 @@ RM=rm -f
 OBJS=./obj/hazelcast/client/serialization/DefaultPortableWriter.o ./obj/hazelcast/client/ISemaphore.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/serialization/DataInput.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/IdGenerator.o ./obj/hazelcast/client/serialization/ClassDefinition.o ./obj/hazelcast/client/Address.o ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/ClientService.o ./obj/hazelcast/client/serialization/PortableSerializer.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/ICountDownLatch.o ./obj/main.o ./obj/hazelcast/client/serialization/SerializationService.o ./obj/hazelcast/client/protocol/CommandHandler.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/AtomicNumber.o ./obj/hazelcast/client/serialization/DataOutput.o ./obj/hazelcast/client/protocol/Socket.o ./obj/hazelcast/client/serialization/SerializationContext.o
 
 CFLAGS=
-LFLAGS=-pthread /usr/local/lib/libz.a /usr/local/lib/libboost_thread.a /usr/local/lib/libboost_system.a -lrt
+LFLAGS=-pthread /usr/local/lib/libz.a /usr/local/lib/libboost_thread.a /usr/local/lib/libboost_system.a
 
 all: $(OUT)
 	echo "Finished."
