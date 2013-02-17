@@ -12,6 +12,7 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "SerializationContext.h"
+#include <boost/shared_ptr.hpp>
 #include <cassert>
 
 namespace hazelcast {
@@ -30,14 +31,14 @@ namespace hazelcast {
 
             };
 
-            ClassDefinition* PortableSerializer::getClassDefinition(Portable& p) {
+            boost::shared_ptr<ClassDefinition> PortableSerializer::getClassDefinition(Portable& p) {
                 int classId = p.getClassId();
-                ClassDefinition* cd;
+                boost::shared_ptr<ClassDefinition> cd;
 
                 if (context->isClassDefinitionExists(classId)) {
                     cd = context->lookup(classId);
                 } else {
-                    cd = new ClassDefinition(classId, context->getVersion());
+                    cd.reset( new ClassDefinition(classId, context->getVersion()));
                     PortableWriter classDefinitionWriter(this, cd, NULL,PortableWriter::CLASS_DEFINITION_WRITER);
                     p.writePortable(classDefinitionWriter);
                     context->registerClassDefinition(cd);
@@ -52,7 +53,7 @@ namespace hazelcast {
 
             void PortableSerializer::write(DataOutput* dataOutput, Portable& p) {
 
-                ClassDefinition* cd = getClassDefinition(p);
+                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                 PortableWriter writer(this, cd, dataOutput, PortableWriter::DEFAULT);
                 p.writePortable(writer);
 
@@ -64,7 +65,7 @@ namespace hazelcast {
                 int dataVersion = dataInput.getDataVersion();
                 std::auto_ptr<Portable> p = context->createPortable(dataClassId);
 
-                ClassDefinition* cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 if (context->getVersion() == dataVersion) {
                     cd = context->lookup(dataClassId); // using context.version
                     PortableReader reader(this, dataInput, cd, PortableReader::DEFAULT);

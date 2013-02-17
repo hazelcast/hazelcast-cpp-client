@@ -9,7 +9,6 @@
 #ifndef HAZELCAST_CLASS_DEFINITION
 #define HAZELCAST_CLASS_DEFINITION
 
-#include "ClassDefinition.h"
 #include "DataSerializable.h"
 #include "FieldDefinition.h"
 
@@ -19,6 +18,7 @@
 #include <vector>
 #include <set>
 #include <cassert>
+#include <boost/shared_ptr.hpp>
 
 using namespace std;
 
@@ -35,18 +35,15 @@ namespace hazelcast {
             public:
                 ClassDefinition();
                 ClassDefinition(int classId, int version);
-                ClassDefinition(const ClassDefinition&);
                 
-                ClassDefinition& operator=(const ClassDefinition& rhs);
-
                 void add(FieldDefinition&);
-                void add(ClassDefinition*);
+                void add(boost::shared_ptr<ClassDefinition>);
 
                 bool isFieldDefinitionExists(std::string);
                 const FieldDefinition& get(std::string);
                 const FieldDefinition& get(int);
 
-                const vector<ClassDefinition*>& getNestedClassDefinitions();
+                vector<boost::shared_ptr<ClassDefinition > > &getNestedClassDefinitions();
 
                 void writeData(DataOutput&) const;
                 void readData(DataInput&);
@@ -64,11 +61,12 @@ namespace hazelcast {
                 int classId;
                 int version;
             private:
-
-
+                ClassDefinition(const ClassDefinition&);
+                ClassDefinition& operator=(const ClassDefinition& rhs);
+                
                 vector<FieldDefinition> fieldDefinitions;
                 map<std::string, FieldDefinition> fieldDefinitionsMap;
-                vector<ClassDefinition*> nestedClassDefinitions; //TODO ask if equaliy is important
+                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions; //TODO ask if equaliy is important
 
                 std::vector<byte> binary;
 

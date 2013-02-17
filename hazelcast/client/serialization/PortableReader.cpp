@@ -17,7 +17,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(PortableSerializer* serializer, DataInput& input, ClassDefinition* cd, Type type)
+            PortableReader::PortableReader(PortableSerializer* serializer, DataInput& input, boost::shared_ptr<ClassDefinition> cd, Type type)
             : serializer(serializer)
             , input(&input)
             , cd(cd)

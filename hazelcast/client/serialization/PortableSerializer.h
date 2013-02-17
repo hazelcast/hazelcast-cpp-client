@@ -11,6 +11,7 @@
 
 #include "Portable.h"
 #include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast{ 
 namespace client{
@@ -26,7 +27,7 @@ public:
     PortableSerializer(SerializationContext*);
     ~PortableSerializer();
     
-    ClassDefinition* getClassDefinition(Portable& p);
+    boost::shared_ptr<ClassDefinition> getClassDefinition(Portable& p);
     
     int getTypeId();
     int getVersion();

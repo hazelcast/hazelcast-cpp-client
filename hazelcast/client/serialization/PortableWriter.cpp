@@ -20,7 +20,7 @@ namespace hazelcast {
 
             };
 
-            PortableWriter::PortableWriter(PortableSerializer* serializer, ClassDefinition* cd, DataOutput* output, Type type)
+            PortableWriter::PortableWriter(PortableSerializer* serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput* output, Type type)
             : type(type)
             , serializer(serializer)
             , output(output)
@@ -342,7 +342,7 @@ namespace hazelcast {
 
             void PortableWriter::addNestedField(Portable& p, FieldDefinition& fd) {
                 cd->add(fd);
-                ClassDefinition* nestedCd = serializer->getClassDefinition(p);
+                boost::shared_ptr<ClassDefinition> nestedCd = serializer->getClassDefinition(p);
 
                 cd->add(nestedCd);
             };

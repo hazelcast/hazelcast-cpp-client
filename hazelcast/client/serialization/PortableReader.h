@@ -36,7 +36,7 @@ namespace hazelcast {
                     DEFAULT, MORPHING
                 };
 
-                PortableReader(PortableSerializer* serializer, DataInput& input, ClassDefinition* cd, Type isMorphing);
+                PortableReader(PortableSerializer* serializer, DataInput& input, boost::shared_ptr<ClassDefinition> cd, Type isMorphing);
 
                 int readInt(string fieldName);
                 long readLong(string fieldName);
@@ -151,7 +151,7 @@ namespace hazelcast {
                 int getPosition(FieldDefinition*);
 
                 PortableSerializer* serializer;
-                ClassDefinition* cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 DataInput* input;
                 int offset;
                 Type type;

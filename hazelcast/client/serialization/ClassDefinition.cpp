@@ -46,7 +46,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.fieldName] = fd;
             };
 
-            void ClassDefinition::add(ClassDefinition* cd) {
+            void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -62,7 +62,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            const vector<ClassDefinition*>& ClassDefinition::getNestedClassDefinitions() {
+            vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -73,7 +73,7 @@ namespace hazelcast {
                 for (vector<FieldDefinition>::const_iterator it = fieldDefinitions.begin(); it != fieldDefinitions.end(); it++)
                     (*it).writeData(out);
                 out.writeInt((int) nestedClassDefinitions.size());
-                for (vector<ClassDefinition*>::const_iterator it = nestedClassDefinitions.begin(); it != nestedClassDefinitions.end(); it++)
+                for (vector<boost::shared_ptr<ClassDefinition> >::const_iterator it = nestedClassDefinitions.begin(); it != nestedClassDefinitions.end(); it++)
                     (*it)->writeData(out);
             };
 
@@ -88,7 +88,7 @@ namespace hazelcast {
                 }
                 size = in.readInt();
                 for (int i = 0; i < size; i++) {
-                    ClassDefinition* classDefinition = new ClassDefinition;
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
                     classDefinition->readData(in);
                     add(classDefinition);
                 }

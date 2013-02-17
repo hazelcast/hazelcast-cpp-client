@@ -13,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast{ 
 namespace client{
@@ -42,7 +43,7 @@ public:
     void writeData(DataOutput&) const;
     void readData(DataInput&);
     
-    ClassDefinition* cd;
+    boost::shared_ptr<ClassDefinition> cd;
     int type;
     std::vector<byte> buffer;
 private:

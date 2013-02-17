@@ -32,7 +32,7 @@ namespace hazelcast {
                 };
 
                 PortableWriter();
-                PortableWriter(PortableSerializer* serializer, ClassDefinition* cd, DataOutput* output, Type type);
+                PortableWriter(PortableSerializer* serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput* output, Type type);
 
                 void writeInt(string fieldName, int value);
                 void writeLong(string fieldName, long value);
@@ -110,7 +110,7 @@ namespace hazelcast {
                 PortableSerializer* serializer;
                 DataOutput* output;
                 int offset;
-                ClassDefinition* cd;
+                boost::shared_ptr<ClassDefinition> cd;
             };
 
         }
