@@ -39,10 +39,9 @@ namespace hazelcast {
                 if (context->isClassDefinitionExists(classId)) {
                     cd = context->lookup(classId);
                 } else {
-                    ClassDefinitionWriter classDefinitionWriter(classId, context->getVersion(), this);
+                    cd = new ClassDefinition(classId, context->getVersion());
+                    ClassDefinitionWriter classDefinitionWriter(this, cd);
                     p.writePortable(classDefinitionWriter);
-
-                    cd = classDefinitionWriter.cd;
                     context->registerClassDefinition(cd);
                 }
 
@@ -56,7 +55,7 @@ namespace hazelcast {
             void PortableSerializer::write(DataOutput* dataOutput, Portable& p) {
 
                 ClassDefinition* cd = getClassDefinition(p);
-                DefaultPortableWriter writer(this, dataOutput, cd);
+                DefaultPortableWriter writer(this, cd, dataOutput);
                 p.writePortable(writer);
 
             };

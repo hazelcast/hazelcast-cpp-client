@@ -39,13 +39,13 @@ TestMainPortable getTestMainPortable();
 
 int main(int argc, char** argv) {
     try {
-        testCompression();
+//        testCompression();
         testSerialization();
         testSerializationViaFile();
-        testMapOperations();
+//        testMapOperations();
         //    testMapLocksInSequential();
         //    testMapLocksInParalled();
-        testSpeed();
+//        testSpeed();
         std::cout << "Test are completed successfully" << std::endl;
     } catch (const char* s) {
         printf("%s", s);
