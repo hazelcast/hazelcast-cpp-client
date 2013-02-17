@@ -31,27 +31,33 @@ namespace hazelcast {
 
             class PortableReader {
             public:
-                PortableReader(PortableSerializer*, DataInput&, ClassDefinition*);
-                
-                int readInt(string);
-                long readLong(string);
-                bool readBoolean(string);
-                byte readByte(string);
-                char readChar(string);
-                double readDouble(string);
-                float readFloat(string);
-                short readShort(string);
-                string readUTF(string);
-                std::vector<byte> readByteArray(string);
-                std::vector<char> readCharArray(string);
-                std::vector<int> readIntArray(string);
-                std::vector<long> readLongArray(string);
-                std::vector<double> readDoubleArray(string);
-                std::vector<float> readFloatArray(string);
-                std::vector<short> readShortArray(string);
+
+                enum Type {
+                    DEFAULT, MORPHING
+                };
+
+                PortableReader(PortableSerializer* serializer, DataInput& input, ClassDefinition* cd, Type isMorphing);
+
+                int readInt(string fieldName);
+                long readLong(string fieldName);
+                bool readBoolean(string fieldName);
+                byte readByte(string fieldName);
+                char readChar(string fieldName);
+                double readDouble(string fieldName);
+                float readFloat(string fieldName);
+                short readShort(string fieldName);
+                string readUTF(string fieldName);
+                std::vector<byte> readByteArray(string fieldName);
+                std::vector<char> readCharArray(string fieldName);
+                std::vector<int> readIntArray(string fieldName);
+                std::vector<long> readLongArray(string fieldName);
+                std::vector<double> readDoubleArray(string fieldName);
+                std::vector<float> readFloatArray(string fieldName);
+                std::vector<short> readShortArray(string fieldName);
 
                 template<typename T>
                 T readPortable(string fieldName) {
+                    if (type == MORPHING && !isFieldMorphed) return morphPortable<T > (fieldName);
                     if (!cd->isFieldDefinitionExists(fieldName))
                         throw "throwUnknownFieldException" + fieldName;
 
@@ -73,6 +79,7 @@ namespace hazelcast {
 
                 template<typename T>
                 std::vector< T > readPortableArray(string fieldName) {
+                    if (type == MORPHING && !isFieldMorphed) return morphPortableArray<T > (fieldName);
                     if (!cd->isFieldDefinitionExists(fieldName))
                         throw "throwUnknownFieldException" + fieldName;
                     FieldDefinition fd = cd->get(fieldName);
@@ -95,16 +102,60 @@ namespace hazelcast {
                     return portables;
                 };
 
+                int morphInt(string fieldName);
+                long morphLong(string fieldName);
+                bool morphBoolean(string fieldName);
+                byte morphByte(string fieldName);
+                char morphChar(string fieldName);
+                double morphDouble(string fieldName);
+                float morphFloat(string fieldName);
+                short morphShort(string fieldName);
+                string morphUTF(string fieldName);
+                std::vector<byte> morphByteArray(string fieldName);
+                std::vector<char> morphCharArray(string fieldName);
+                std::vector<int> morphIntArray(string fieldName);
+                std::vector<long> morphLongArray(string fieldName);
+                std::vector<double> morphDoubleArray(string fieldName);
+                std::vector<float> morphFloatArray(string fieldName);
+                std::vector<short> morphShortArray(string fieldName);
+
+                template <typename T>
+                T morphPortable(string fieldName) {
+                    isFieldMorphed = true;
+                    if (!cd->isFieldDefinitionExists(fieldName))
+                        throw "throwUnknownFieldException" + fieldName;
+                    FieldDefinition fd = cd->get(fieldName);
+
+                    if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
+                        throw "IncompatibleClassChangeError";
+                    }
+                    return readPortable<T > (fieldName);
+                };
+
+                template <typename T>
+                std::vector< T > morphPortableArray(string fieldName) {
+                    isFieldMorphed = true;
+                    if (!cd->isFieldDefinitionExists(fieldName))
+                        throw "throwUnknownFieldException" + fieldName;
+                    FieldDefinition fd = cd->get(fieldName);
+
+                    if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
+                        throw "IncompatibleClassChangeError";
+                    }
+                    return readPortableArray<T > (fieldName);
+                };
+
 
             protected:
-                int getPosition(string);
+                int getPosition(string fieldName);
                 int getPosition(FieldDefinition*);
 
                 PortableSerializer* serializer;
                 ClassDefinition* cd;
                 DataInput* input;
                 int offset;
-
+                Type type;
+                bool isFieldMorphed;
             };
 
         }

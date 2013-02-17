@@ -9,11 +9,9 @@
 #include "SerializationConstants.h"
 #include "DataInput.h"
 #include "DataOutput.h"
-#include "DefaultPortableWriter.h"
+#include "PortableWriter.h"
 #include "PortableReader.h"
-#include "MorphingPortableReader.h"
 #include "SerializationContext.h"
-#include "ClassDefinitionWriter.h"
 #include <cassert>
 
 namespace hazelcast {
@@ -40,7 +38,7 @@ namespace hazelcast {
                     cd = context->lookup(classId);
                 } else {
                     cd = new ClassDefinition(classId, context->getVersion());
-                    ClassDefinitionWriter classDefinitionWriter(this, cd);
+                    PortableWriter classDefinitionWriter(this, cd, NULL,PortableWriter::CLASS_DEFINITION_WRITER);
                     p.writePortable(classDefinitionWriter);
                     context->registerClassDefinition(cd);
                 }
@@ -55,7 +53,7 @@ namespace hazelcast {
             void PortableSerializer::write(DataOutput* dataOutput, Portable& p) {
 
                 ClassDefinition* cd = getClassDefinition(p);
-                DefaultPortableWriter writer(this, cd, dataOutput);
+                PortableWriter writer(this, cd, dataOutput, PortableWriter::DEFAULT);
                 p.writePortable(writer);
 
             };
@@ -69,11 +67,11 @@ namespace hazelcast {
                 ClassDefinition* cd;
                 if (context->getVersion() == dataVersion) {
                     cd = context->lookup(dataClassId); // using context.version
-                    PortableReader reader(this, dataInput, cd);
+                    PortableReader reader(this, dataInput, cd, PortableReader::DEFAULT);
                     p->readPortable(reader);
                 } else {
                     cd = context->lookup(dataClassId, dataVersion); // registered during read
-                    MorphingPortableReader reader(this, dataInput, cd);
+                    PortableReader reader(this, dataInput, cd, PortableReader::MORPHING);
                     p->readPortable(reader);
                 }
                 return p;
