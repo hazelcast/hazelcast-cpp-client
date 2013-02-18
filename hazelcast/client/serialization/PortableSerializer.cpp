@@ -38,8 +38,8 @@ namespace hazelcast {
                 if (context->isClassDefinitionExists(classId)) {
                     cd = context->lookup(classId);
                 } else {
-                    cd.reset( new ClassDefinition(classId, context->getVersion()));
-                    PortableWriter classDefinitionWriter(this, cd, NULL,PortableWriter::CLASS_DEFINITION_WRITER);
+                    cd.reset(new ClassDefinition(classId, context->getVersion()));
+                    PortableWriter classDefinitionWriter(this, cd, NULL, PortableWriter::CLASS_DEFINITION_WRITER);
                     p.writePortable(classDefinitionWriter);
                     context->registerClassDefinition(cd);
                 }

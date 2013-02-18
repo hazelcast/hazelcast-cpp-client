@@ -18,7 +18,7 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/AtomicNumber.o: ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/AtomicNumber.h
+./obj/hazelcast/client/AtomicNumber.o: ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/IAtomicLong.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -34,7 +34,7 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/AtomicNumber.h ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/HazelcastClient.h ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h ./hazelcast/client/IList.h ./hazelcast/client/IMap.h ./hazelcast/client/IQueue.h ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h ./hazelcast/client/ISet.h ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h ./hazelcast/client/MultiMap.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/GeneralCommands.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IAtomicLong.h ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h ./hazelcast/client/IList.h ./hazelcast/client/IMap.h ./hazelcast/client/IQueue.h ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h ./hazelcast/client/ISet.h ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h ./hazelcast/client/MultiMap.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/GeneralCommands.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -94,7 +94,7 @@ $(OUT): $(OBJS)
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/SerializationService.o: ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/ConstantSerializers.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/PortableFactory.h ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/PortableSerializer.h ./hazelcast/client/serialization/SerializationConstants.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h ./hazelcast/client/serialization/SerializationService.h ./hazelcast/client/serialization/TypeSerializer.h
+./obj/hazelcast/client/serialization/SerializationService.o: ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/ConstantSerializers.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/PortableFactory.h ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/PortableSerializer.h ./hazelcast/client/serialization/SerializationConstants.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 

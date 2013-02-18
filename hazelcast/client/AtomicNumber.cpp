@@ -1,22 +1,22 @@
-#include "AtomicNumber.h"
+#include "IAtomicLong.h"
 
 namespace hazelcast {
     namespace client {
 
-        AtomicNumber::AtomicNumber(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+        IAtomicLong::IAtomicLong(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
         , clientService(clientService) {
 
         };
 
-        AtomicNumber::AtomicNumber(const AtomicNumber& rhs) : instanceName(rhs.instanceName)
+        IAtomicLong::IAtomicLong(const IAtomicLong& rhs) : instanceName(rhs.instanceName)
         , clientService(rhs.clientService) {
         };
 
-        AtomicNumber::~AtomicNumber() {
+        IAtomicLong::~IAtomicLong() {
 
         };
 
-        std::string AtomicNumber::getName() const {
+        std::string IAtomicLong::getName() const {
             return instanceName;
         };
 

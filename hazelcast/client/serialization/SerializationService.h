@@ -39,6 +39,7 @@ namespace hazelcast {
                     portableSerializer.write(output, object);
 
                     Data data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
+                    push(output);
 
                     Portable* portable = dynamic_cast<Portable*> (&object);
                     if (portable != NULL) {
@@ -46,7 +47,6 @@ namespace hazelcast {
                     } else {
                         throw "class is not portable";
                     }
-                    push(output);
                     return data;
 
                 };

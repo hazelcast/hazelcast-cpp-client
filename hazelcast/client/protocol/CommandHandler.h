@@ -4,27 +4,28 @@
 #include "Socket.h"
 #include "../serialization/SerializationService.h"
 #include <memory>
-namespace hazelcast{
-namespace client{
-namespace protocol{
+namespace hazelcast {
+    namespace client {
+        namespace protocol {
 
-class Command;   
-class Socket;
-    
-class CommandHandler{
-public:
-    CommandHandler(Address address,hazelcast::client::serialization::SerializationService* serializationService);
-    void start();
-    void sendCommand(Command* const  command);
-    ~CommandHandler();
-    
-private:
-    hazelcast::client::serialization::SerializationService* serializationService;
-    Socket socket;
-    CommandHandler(const CommandHandler& );
-    bool readResponseHeader();
-};    
-    
-}}}
+            class Command;
+            class Socket;
+
+            class CommandHandler {
+            public:
+                CommandHandler(Address address, hazelcast::client::serialization::SerializationService* serializationService);
+                void start();
+                void sendCommand(Command * const command);
+
+            private:
+                hazelcast::client::serialization::SerializationService* serializationService;
+                Socket socket;
+                CommandHandler(const CommandHandler&);
+                bool readResponseHeader();
+            };
+
+        }
+    }
+}
 
 #endif /* HAZELCAST_COMMAND_HANDLER */

@@ -3,7 +3,7 @@
 #include "protocol/CommandHandler.h"
 #include "ClientConfig.h"
 #include "IdGenerator.h"
-#include "AtomicNumber.h"
+#include "IAtomicLong.h"
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
 #include <memory>
@@ -46,8 +46,8 @@ namespace hazelcast {
             return IdGenerator(instanceName, clientService);
         };
 
-        AtomicNumber HazelcastClient::getAtomicNumber(std::string instanceName) {
-            return AtomicNumber(instanceName, clientService);
+        IAtomicLong HazelcastClient::getIAtomicLong(std::string instanceName) {
+            return IAtomicLong(instanceName, clientService);
         };
 
         ICountDownLatch HazelcastClient::getICountDownLatch(std::string instanceName) {

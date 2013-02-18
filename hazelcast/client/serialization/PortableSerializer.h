@@ -13,32 +13,34 @@
 #include <memory>
 #include <boost/shared_ptr.hpp>
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-class DataInput;
-class DataOutput;
-class ClassDefinition;
-class SerializationContext;
+            class DataInput;
+            class DataOutput;
+            class ClassDefinition;
+            class SerializationContext;
 
-class PortableSerializer{
-public:
-    PortableSerializer(SerializationContext*);
-    ~PortableSerializer();
-    
-    boost::shared_ptr<ClassDefinition> getClassDefinition(Portable& p);
-    
-    int getTypeId();
-    int getVersion();
-    
-    void write(DataOutput* output, Portable& p);
-    
-    std::auto_ptr<Portable> read(DataInput& dataInput);
-    
-private:
-    SerializationContext* context;
-};
- 
-}}}
+            class PortableSerializer {
+            public:
+                PortableSerializer(SerializationContext*);
+                ~PortableSerializer();
+
+                boost::shared_ptr<ClassDefinition> getClassDefinition(Portable& p);
+
+                int getTypeId();
+                int getVersion();
+
+                void write(DataOutput* output, Portable& p);
+
+                std::auto_ptr<Portable> read(DataInput& dataInput);
+
+            private:
+                SerializationContext* context;
+            };
+
+        }
+    }
+}
 #endif /* HAZELCAST_PORTABLE_SERIALIZER */

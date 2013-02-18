@@ -21,7 +21,7 @@ public:
     virtual int getClassId() = 0; 
     virtual void writePortable(PortableWriter& writer)  = 0; 
     virtual void readPortable(PortableReader& reader)  = 0; 
-    
+    virtual ~Portable(){ };
 };
 
 }}}

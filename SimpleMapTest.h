@@ -71,9 +71,9 @@ void printStats() {
 
 class SimpleMapTest {
 public:
-
-    SimpleMapTest() {
-
+    std::string server_address;
+    SimpleMapTest(std::string address) {
+        server_address = address;
     };
 
     void run() {
@@ -87,7 +87,7 @@ public:
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-        clientConfig.setAddress("192.168.2.7:5701");
+        clientConfig.setAddress(server_address);
 
         boost::thread monitor(printStats);
         try {

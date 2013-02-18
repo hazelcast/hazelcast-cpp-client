@@ -23,7 +23,7 @@ namespace hazelcast {
             , cd(cd)
             , offset(input.position())
             , type(type)
-            , isFieldMorphed(false){
+            , isFieldMorphed(false) {
             };
 
             int PortableReader::readInt(string fieldName) {
@@ -33,55 +33,55 @@ namespace hazelcast {
             };
 
             long PortableReader::readLong(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphLong(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphLong(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readLong(pos);
             };
 
             bool PortableReader::readBoolean(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphBoolean(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphBoolean(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readBoolean(pos);
             };
 
             byte PortableReader::readByte(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphByte(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphByte(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readByte(pos);
             };
 
             char PortableReader::readChar(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphChar(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphChar(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readChar(pos);
             };
 
             double PortableReader::readDouble(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphDouble(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphDouble(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readDouble(pos);
             };
 
             float PortableReader::readFloat(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphFloat(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphFloat(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readFloat(pos);
             };
 
             short PortableReader::readShort(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphShort(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphShort(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readShort(pos);
             };
 
             string PortableReader::readUTF(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphUTF(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphUTF(fieldName);
                 int pos = getPosition(fieldName);
                 return input->readUTF(pos);
             };
 
             std::vector<byte> PortableReader::readByteArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphByteArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphByteArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -93,7 +93,7 @@ namespace hazelcast {
             };
 
             std::vector<char> PortableReader::readCharArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphCharArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphCharArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -105,7 +105,7 @@ namespace hazelcast {
             };
 
             std::vector<int> PortableReader::readIntArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphIntArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphIntArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -117,7 +117,7 @@ namespace hazelcast {
             };
 
             std::vector<long> PortableReader::readLongArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphLongArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphLongArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -129,7 +129,7 @@ namespace hazelcast {
             };
 
             std::vector<double> PortableReader::readDoubleArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphDoubleArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphDoubleArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -141,7 +141,7 @@ namespace hazelcast {
             };
 
             std::vector<float> PortableReader::readFloatArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphFloatArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphFloatArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();
@@ -153,7 +153,7 @@ namespace hazelcast {
             };
 
             std::vector<short> PortableReader::readShortArray(string fieldName) {
-                 if (type == MORPHING && !isFieldMorphed) return morphShortArray(fieldName);
+                if (type == MORPHING && !isFieldMorphed) return morphShortArray(fieldName);
                 int pos = getPosition(fieldName);
                 input->position(pos);
                 int len = input->readInt();

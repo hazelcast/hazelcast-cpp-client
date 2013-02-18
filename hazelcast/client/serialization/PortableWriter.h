@@ -91,6 +91,7 @@ namespace hazelcast {
                 void getCdDoubleArray(string fieldName, std::vector<double>&);
                 void getCdFloatArray(string fieldName, std::vector<float>&);
                 void getCdShortArray(string fieldName, std::vector<short>&);
+
                 template<typename T>
                 void getCdPortableArray(string fieldName, std::vector<T>& portables) {
                     int classId = portables[0].getClassId();

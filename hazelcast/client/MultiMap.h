@@ -1,5 +1,5 @@
-#ifndef HAZELCAST_MultiMap
-#define HAZELCAST_MultiMap
+#ifndef HAZELCAST_MULTI_MAP
+#define HAZELCAST_MULTI_MAP
 
 #include "ClientService.h"
 #include <string>
@@ -377,4 +377,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_MultiMap */
+#endif /* HAZELCAST_MULTI_MAP */

@@ -11,19 +11,21 @@
 
 #include <iostream>
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
-    
-class DataInput;
-class DataOutput;
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-class DataSerializable{
-public:
-    virtual void writeData(DataOutput&) const  = 0;
-    virtual void readData(DataInput&)  = 0;
+            class DataInput;
+            class DataOutput;
 
-};
+            class DataSerializable {
+            public:
+                virtual void writeData(DataOutput&) const = 0;
+                virtual void readData(DataInput&) = 0;
 
-}}}
+            };
+
+        }
+    }
+}
 #endif /* HAZELCAST_DATA_SERIALIZALE */

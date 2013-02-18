@@ -5,25 +5,25 @@
 #include "protocol/CommandHandler.h"
 
 
-namespace hazelcast{ 
-namespace client{
-  
-class HazelcastClient;
-class serialization::SerializationService;
-class protocol::CommandHandler;
-class ClientConfig;
+namespace hazelcast {
+    namespace client {
 
-class ClientService{
-public:
-    ClientService(HazelcastClient& hazelcastClient);
-    ClientService(const ClientService&);
-    serialization::SerializationService& getSerializationService();
-    protocol::CommandHandler& getCommandHandler();
-    ClientConfig& getClientConfig();
+        class HazelcastClient;
+        class serialization::SerializationService;
+        class protocol::CommandHandler;
+        class ClientConfig;
 
-private:
-    HazelcastClient& hazelcastClient;
-};    
-}}
+        class ClientService {
+        public:
+            ClientService(HazelcastClient& hazelcastClient);
+            serialization::SerializationService& getSerializationService();
+            protocol::CommandHandler& getCommandHandler();
+            ClientConfig& getClientConfig();
+
+        private:
+            HazelcastClient& hazelcastClient;
+        };
+    }
+}
 
 #endif /* HAZELCAST_CLIENT_SERVICE */

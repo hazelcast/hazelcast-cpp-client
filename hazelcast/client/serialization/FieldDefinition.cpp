@@ -11,70 +11,72 @@
 #include <string>
 #include <iostream>
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-FieldDefinition::FieldDefinition(){
-    
-};
+            FieldDefinition::FieldDefinition() {
 
-FieldDefinition::FieldDefinition(int index,std::string fieldName, byte type):classId(-1){
-    this->index = index;
-    this->fieldName = fieldName;
-    this->type = type;
-};
+            };
 
-FieldDefinition::FieldDefinition(int index,std::string fieldName, byte type,int classId){
-    this->index = index;
-    this->fieldName = fieldName;
-    this->type = type;
-    this->classId = classId;
-};
+            FieldDefinition::FieldDefinition(int index, std::string fieldName, byte type) : classId(-1) {
+                this->index = index;
+                this->fieldName = fieldName;
+                this->type = type;
+            };
 
-byte FieldDefinition::getType(){
-    return type;
-};
+            FieldDefinition::FieldDefinition(int index, std::string fieldName, byte type, int classId) {
+                this->index = index;
+                this->fieldName = fieldName;
+                this->type = type;
+                this->classId = classId;
+            };
 
-std::string FieldDefinition::getName(){
-    return fieldName;
-};
+            byte FieldDefinition::getType() {
+                return type;
+            };
 
-int FieldDefinition::getIndex(){
-    return index;
-};
+            std::string FieldDefinition::getName() {
+                return fieldName;
+            };
 
-int FieldDefinition::getClassId(){
-    return classId;
-};
+            int FieldDefinition::getIndex() {
+                return index;
+            };
 
-void FieldDefinition::writeData(DataOutput& out) const {
-    out.writeInt(index);
-    out.writeUTF(fieldName);
-    out.writeByte(type);
-    out.writeInt(classId);
-};
+            int FieldDefinition::getClassId() {
+                return classId;
+            };
 
-void FieldDefinition::readData(DataInput& in) {
-    index = in.readInt();
-    fieldName = in.readUTF();
-    type = in.readByte();
-    classId = in.readInt();
-};
+            void FieldDefinition::writeData(DataOutput& out) const {
+                out.writeInt(index);
+                out.writeUTF(fieldName);
+                out.writeByte(type);
+                out.writeInt(classId);
+            };
 
-bool FieldDefinition::operator==(const FieldDefinition & other)const{
-    if(this == &other) return true;
-    
-    if (classId != other.classId) return false;
-    if (index != other.index) return false;
-    if (type != other.type) return false;
-    if (fieldName.compare(other.fieldName)) return false;
-    
-    return true;
-};
+            void FieldDefinition::readData(DataInput& in) {
+                index = in.readInt();
+                fieldName = in.readUTF();
+                type = in.readByte();
+                classId = in.readInt();
+            };
 
-bool FieldDefinition::operator!=(const FieldDefinition & other)const{
-    return !(*this == other);
-};
+            bool FieldDefinition::operator==(const FieldDefinition & other)const {
+                if (this == &other) return true;
 
-}}}
+                if (classId != other.classId) return false;
+                if (index != other.index) return false;
+                if (type != other.type) return false;
+                if (fieldName.compare(other.fieldName)) return false;
+
+                return true;
+            };
+
+            bool FieldDefinition::operator!=(const FieldDefinition & other)const {
+                return !(*this == other);
+            };
+
+        }
+    }
+}

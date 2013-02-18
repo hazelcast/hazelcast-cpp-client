@@ -24,6 +24,11 @@
 #include <set>
 #include <memory>
 #include <cstdio>
+#include <ctime>
+#include <cstdlib>
+
+#define SERVER_ADDRESS "192.168.2.2:5701"
+
 using namespace hazelcast::client;
 
 void testSpeed();
@@ -39,14 +44,17 @@ TestMainPortable getTestMainPortable();
 
 int main(int argc, char** argv) {
     try {
-//        testCompression();
+        testCompression();
         testSerialization();
         testSerializationViaFile();
-//        testMapOperations();
-        //    testMapLocksInSequential();
-        //    testMapLocksInParalled();
-//        testSpeed();
+        testMapOperations();
+        //        testMapLocksInSequential();
+        //        testMapLocksInParallel();
+        //        testSpeed();
         std::cout << "Test are completed successfully" << std::endl;
+//        int a;
+//        std::cin >> a;
+
     } catch (const char* s) {
         printf("%s", s);
     }
@@ -64,6 +72,7 @@ void testCompression() {
     data.writeData(*out);
 
     vector<byte> xxx = out->toByteArray();
+    serializationService1.push(out);
 
     serialization::SerializationService serializationService2(1, &tpf1);
     serialization::DataInput dataInput(xxx, &serializationService2);
@@ -77,13 +86,13 @@ void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.7:5701");
+    clientConfig.setAddress(SERVER_ADDRESS);
     clientConfig.setPortableFactory(&tpf1);
 
     try {
 
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int, TestMainPortable> imap = hazelcastClient->getMap<int, TestMainPortable > ("kamil");
+        IMap<int, TestMainPortable> imap = hazelcastClient->getMap<int, TestMainPortable > ("sancar");
         TestMainPortable mainPortable = getTestMainPortable();
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = mainPortable;
@@ -192,7 +201,7 @@ void testMapLocksInParallel() {
 void testMapLocksInSequential() {
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress("192.168.2.7:5701");
+    clientConfig.setAddress(SERVER_ADDRESS);
 
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
@@ -314,7 +323,8 @@ void testSerialization() {
     for (int i = 0; i < 5; i++) {
         string x = "named-portable-";
         x.push_back('0' + i);
-        portableArray[i] = TestNamedPortable(x, i);
+        portableArray[i].name = x;
+        portableArray[i].k = i;
     }
     std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
@@ -374,6 +384,6 @@ TestMainPortable getTestMainPortable() {
 };
 
 void testSpeed() {
-    SimpleMapTest s;
+    SimpleMapTest s(SERVER_ADDRESS);
     s.run();
 };

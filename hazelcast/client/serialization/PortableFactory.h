@@ -13,14 +13,16 @@
 #include <iostream>
 #include <memory>
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-class PortableFactory{
-public:
-    virtual Portable* create(int) const = 0;
-};
+            class PortableFactory {
+            public:
+                virtual Portable* create(int) const = 0;
+            };
 
-}}}
+        }
+    }
+}
 #endif /* HAZELCAST_PORTABLE_FACTORY */

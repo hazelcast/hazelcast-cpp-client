@@ -23,17 +23,6 @@ public:
     };
         
     TestNamedPortable(std::string name , int k ):name(name),k(k) {
-        
-    };
-    
-    TestNamedPortable(const TestNamedPortable& rhs){
-        *this = rhs;
-    }
-    
-    const TestNamedPortable& operator=(const TestNamedPortable& rhs){
-        name = rhs.name;
-        k = rhs.k;
-        return *this;
     };
     
     int getClassId() {

@@ -11,10 +11,6 @@ namespace hazelcast {
 
         };
 
-        ClientService::ClientService(const ClientService& rhs) : hazelcastClient(rhs.hazelcastClient) {
-
-        };
-
         serialization::SerializationService& ClientService::getSerializationService() {
             return hazelcastClient.getSerializationService();
         };

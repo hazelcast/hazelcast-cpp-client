@@ -19,7 +19,7 @@ namespace hazelcast {
 
             Data::Data() : partitionHash(-1)
             , buffer(0)
-            , type(-1){
+            , type(-1) {
 
             };
 
@@ -27,9 +27,12 @@ namespace hazelcast {
                 (*this) = rhs;
             };
 
-            Data::Data(const int type, std::vector<byte> buffer) : partitionHash(-1){
+            Data::Data(const int type, std::vector<byte> buffer) : partitionHash(-1) {
                 this->type = type;
                 this->buffer = buffer;
+            };
+
+            Data::~Data() {
             };
 
             Data& Data::operator=(const Data& rhs) {

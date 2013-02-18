@@ -6,14 +6,14 @@ namespace hazelcast {
 
         class ClientService;
 
-        class AtomicNumber {
+        class IAtomicLong {
         public:
 
-            AtomicNumber(std::string instanceName, ClientService& clientService);
+            IAtomicLong(std::string instanceName, ClientService& clientService);
 
-            AtomicNumber(const AtomicNumber& rhs);
+            IAtomicLong(const IAtomicLong& rhs);
 
-            ~AtomicNumber();
+            ~IAtomicLong();
             /**
              * Returns the name of this IAtomicLong instance.
              *

@@ -14,91 +14,91 @@ $(OUT): $(OBJS)
 	echo "Linking $(OUT)..."
 	$(CC)  $(OBJS) -o $(OUT) $(LFLAGS)
 
-./obj/hazelcast/client/Address.o: ./cppClient/hazelcast/client/Address.cpp ./cppClient/hazelcast/client/Address.h
+./obj/hazelcast/client/Address.o: ./hazelcast/client/Address.cpp ./hazelcast/client/Address.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/AtomicNumber.o: ./cppClient/hazelcast/client/AtomicNumber.cpp ./cppClient/hazelcast/client/AtomicNumber.h
+./obj/hazelcast/client/AtomicNumber.o: ./hazelcast/client/AtomicNumber.cpp ./hazelcast/client/IAtomicLong.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/ClientConfig.o: ./cppClient/hazelcast/client/ClientConfig.cpp ./cppClient/hazelcast/client/Address.cpp ./cppClient/hazelcast/client/Address.h ./cppClient/hazelcast/client/ClientConfig.h ./cppClient/hazelcast/client/GroupConfig.cpp ./cppClient/hazelcast/client/GroupConfig.h ./cppClient/hazelcast/client/serialization/PortableFactory.h
+./obj/hazelcast/client/ClientConfig.o: ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/Address.cpp ./hazelcast/client/Address.h ./hazelcast/client/ClientConfig.h ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h ./hazelcast/client/serialization/PortableFactory.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/ClientService.o: ./cppClient/hazelcast/client/ClientService.cpp ./cppClient/hazelcast/client/ClientConfig.cpp ./cppClient/hazelcast/client/ClientConfig.h ./cppClient/hazelcast/client/ClientService.h ./cppClient/hazelcast/client/HazelcastClient.cpp ./cppClient/hazelcast/client/HazelcastClient.h ./cppClient/hazelcast/client/protocol/CommandHandler.cpp ./cppClient/hazelcast/client/protocol/CommandHandler.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/ClientService.o: ./hazelcast/client/ClientService.cpp ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/ClientService.h ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/HazelcastClient.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/GroupConfig.o: ./cppClient/hazelcast/client/GroupConfig.cpp ./cppClient/hazelcast/client/GroupConfig.h
+./obj/hazelcast/client/GroupConfig.o: ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/HazelcastClient.o: ./cppClient/hazelcast/client/HazelcastClient.cpp ./cppClient/hazelcast/client/AtomicNumber.cpp ./cppClient/hazelcast/client/AtomicNumber.h ./cppClient/hazelcast/client/ClientConfig.cpp ./cppClient/hazelcast/client/ClientConfig.h ./cppClient/hazelcast/client/HazelcastClient.h ./cppClient/hazelcast/client/ICountDownLatch.cpp ./cppClient/hazelcast/client/ICountDownLatch.h ./cppClient/hazelcast/client/IList.h ./cppClient/hazelcast/client/IMap.h ./cppClient/hazelcast/client/IQueue.h ./cppClient/hazelcast/client/ISemaphore.cpp ./cppClient/hazelcast/client/ISemaphore.h ./cppClient/hazelcast/client/ISet.h ./cppClient/hazelcast/client/IdGenerator.cpp ./cppClient/hazelcast/client/IdGenerator.h ./cppClient/hazelcast/client/MultiMap.h ./cppClient/hazelcast/client/protocol/CommandHandler.cpp ./cppClient/hazelcast/client/protocol/CommandHandler.h ./cppClient/hazelcast/client/protocol/GeneralCommands.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/HazelcastClient.o: ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IAtomicLong.h ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h ./hazelcast/client/IList.h ./hazelcast/client/IMap.h ./hazelcast/client/IQueue.h ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h ./hazelcast/client/ISet.h ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h ./hazelcast/client/MultiMap.h ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/GeneralCommands.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/ICountDownLatch.o: ./cppClient/hazelcast/client/ICountDownLatch.cpp ./cppClient/hazelcast/client/ICountDownLatch.h
+./obj/hazelcast/client/ICountDownLatch.o: ./hazelcast/client/ICountDownLatch.cpp ./hazelcast/client/ICountDownLatch.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/ISemaphore.o: ./cppClient/hazelcast/client/ISemaphore.cpp ./cppClient/hazelcast/client/ISemaphore.h
+./obj/hazelcast/client/ISemaphore.o: ./hazelcast/client/ISemaphore.cpp ./hazelcast/client/ISemaphore.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/IdGenerator.o: ./cppClient/hazelcast/client/IdGenerator.cpp ./cppClient/hazelcast/client/IdGenerator.h
+./obj/hazelcast/client/IdGenerator.o: ./hazelcast/client/IdGenerator.cpp ./hazelcast/client/IdGenerator.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/protocol/CommandHandler.o: ./cppClient/hazelcast/client/protocol/CommandHandler.cpp ./cppClient/hazelcast/client/protocol/Command.h ./cppClient/hazelcast/client/protocol/CommandHandler.h ./cppClient/hazelcast/client/protocol/Socket.cpp ./cppClient/hazelcast/client/protocol/Socket.h ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/protocol/CommandHandler.o: ./hazelcast/client/protocol/CommandHandler.cpp ./hazelcast/client/protocol/Command.h ./hazelcast/client/protocol/CommandHandler.h ./hazelcast/client/protocol/Socket.cpp ./hazelcast/client/protocol/Socket.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/protocol/Socket.o: ./cppClient/hazelcast/client/protocol/Socket.cpp ./cppClient/hazelcast/client/Address.cpp ./cppClient/hazelcast/client/Address.h ./cppClient/hazelcast/client/protocol/Socket.h
+./obj/hazelcast/client/protocol/Socket.o: ./hazelcast/client/protocol/Socket.cpp ./hazelcast/client/Address.cpp ./hazelcast/client/Address.h ./hazelcast/client/protocol/Socket.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/ClassDefinition.o: ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/DataSerializable.h ./cppClient/hazelcast/client/serialization/FieldDefinition.cpp ./cppClient/hazelcast/client/serialization/FieldDefinition.h
+./obj/hazelcast/client/serialization/ClassDefinition.o: ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/DataSerializable.h ./hazelcast/client/serialization/FieldDefinition.cpp ./hazelcast/client/serialization/FieldDefinition.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/Data.o: ./cppClient/hazelcast/client/serialization/Data.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/Data.h ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/DataSerializable.h ./cppClient/hazelcast/client/serialization/SerializationContext.cpp ./cppClient/hazelcast/client/serialization/SerializationContext.h
+./obj/hazelcast/client/serialization/Data.o: ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/DataSerializable.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/DataInput.o: ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/Data.cpp ./cppClient/hazelcast/client/serialization/Data.h ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/SerializationContext.cpp ./cppClient/hazelcast/client/serialization/SerializationContext.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/serialization/DataInput.o: ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/DataOutput.o: ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/serialization/DataOutput.o: ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/FieldDefinition.o: ./cppClient/hazelcast/client/serialization/FieldDefinition.cpp ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/DataSerializable.h ./cppClient/hazelcast/client/serialization/FieldDefinition.h
+./obj/hazelcast/client/serialization/FieldDefinition.o: ./hazelcast/client/serialization/FieldDefinition.cpp ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/DataSerializable.h ./hazelcast/client/serialization/FieldDefinition.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/PortableReader.o: ./cppClient/hazelcast/client/serialization/PortableReader.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/FieldDefinition.cpp ./cppClient/hazelcast/client/serialization/FieldDefinition.h ./cppClient/hazelcast/client/serialization/Portable.h ./cppClient/hazelcast/client/serialization/PortableReader.h ./cppClient/hazelcast/client/serialization/PortableSerializer.cpp ./cppClient/hazelcast/client/serialization/PortableSerializer.h
+./obj/hazelcast/client/serialization/PortableReader.o: ./hazelcast/client/serialization/PortableReader.cpp ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/FieldDefinition.cpp ./hazelcast/client/serialization/FieldDefinition.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/PortableReader.h ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/PortableSerializer.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/PortableSerializer.o: ./cppClient/hazelcast/client/serialization/PortableSerializer.cpp ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/Portable.h ./cppClient/hazelcast/client/serialization/PortableReader.cpp ./cppClient/hazelcast/client/serialization/PortableReader.h ./cppClient/hazelcast/client/serialization/PortableSerializer.h ./cppClient/hazelcast/client/serialization/PortableWriter.cpp ./cppClient/hazelcast/client/serialization/PortableWriter.h ./cppClient/hazelcast/client/serialization/SerializationConstants.h ./cppClient/hazelcast/client/serialization/SerializationContext.cpp ./cppClient/hazelcast/client/serialization/SerializationContext.h
+./obj/hazelcast/client/serialization/PortableSerializer.o: ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/PortableReader.cpp ./hazelcast/client/serialization/PortableReader.h ./hazelcast/client/serialization/PortableSerializer.h ./hazelcast/client/serialization/PortableWriter.cpp ./hazelcast/client/serialization/PortableWriter.h ./hazelcast/client/serialization/SerializationConstants.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/PortableWriter.o: ./cppClient/hazelcast/client/serialization/PortableWriter.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/FieldDefinition.cpp ./cppClient/hazelcast/client/serialization/FieldDefinition.h ./cppClient/hazelcast/client/serialization/PortableSerializer.cpp ./cppClient/hazelcast/client/serialization/PortableSerializer.h ./cppClient/hazelcast/client/serialization/PortableWriter.h
+./obj/hazelcast/client/serialization/PortableWriter.o: ./hazelcast/client/serialization/PortableWriter.cpp ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/FieldDefinition.cpp ./hazelcast/client/serialization/FieldDefinition.h ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/PortableSerializer.h ./hazelcast/client/serialization/PortableWriter.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/SerializationContext.o: ./cppClient/hazelcast/client/serialization/SerializationContext.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.cpp ./cppClient/hazelcast/client/serialization/ClassDefinition.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/SerializationContext.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/hazelcast/client/serialization/SerializationContext.o: ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/ClassDefinition.cpp ./hazelcast/client/serialization/ClassDefinition.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/SerializationContext.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/hazelcast/client/serialization/SerializationService.o: ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/ConstantSerializers.h ./cppClient/hazelcast/client/serialization/Data.cpp ./cppClient/hazelcast/client/serialization/Data.h ./cppClient/hazelcast/client/serialization/DataInput.cpp ./cppClient/hazelcast/client/serialization/DataInput.h ./cppClient/hazelcast/client/serialization/DataOutput.cpp ./cppClient/hazelcast/client/serialization/DataOutput.h ./cppClient/hazelcast/client/serialization/Portable.h ./cppClient/hazelcast/client/serialization/PortableFactory.h ./cppClient/hazelcast/client/serialization/PortableSerializer.cpp ./cppClient/hazelcast/client/serialization/PortableSerializer.h ./cppClient/hazelcast/client/serialization/SerializationConstants.h ./cppClient/hazelcast/client/serialization/SerializationContext.cpp ./cppClient/hazelcast/client/serialization/SerializationContext.h ./cppClient/hazelcast/client/serialization/SerializationService.h ./cppClient/hazelcast/client/serialization/TypeSerializer.h
+./obj/hazelcast/client/serialization/SerializationService.o: ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/ConstantSerializers.h ./hazelcast/client/serialization/Data.cpp ./hazelcast/client/serialization/Data.h ./hazelcast/client/serialization/DataInput.cpp ./hazelcast/client/serialization/DataInput.h ./hazelcast/client/serialization/DataOutput.cpp ./hazelcast/client/serialization/DataOutput.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/PortableFactory.h ./hazelcast/client/serialization/PortableSerializer.cpp ./hazelcast/client/serialization/PortableSerializer.h ./hazelcast/client/serialization/SerializationConstants.h ./hazelcast/client/serialization/SerializationContext.cpp ./hazelcast/client/serialization/SerializationContext.h ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-./obj/main.o: ./cppClient/main.cpp ./cppClient/SimpleMapTest.h ./cppClient/TestInnerPortable.h ./cppClient/TestMainPortable.h ./cppClient/TestNamedPortable.h ./cppClient/TestPortableFactory.h ./cppClient/hazelcast/client/ClientConfig.cpp ./cppClient/hazelcast/client/ClientConfig.h ./cppClient/hazelcast/client/GroupConfig.cpp ./cppClient/hazelcast/client/GroupConfig.h ./cppClient/hazelcast/client/HazelcastClient.cpp ./cppClient/hazelcast/client/HazelcastClient.h ./cppClient/hazelcast/client/IMap.h ./cppClient/hazelcast/client/serialization/Portable.h ./cppClient/hazelcast/client/serialization/SerializationService.cpp ./cppClient/hazelcast/client/serialization/SerializationService.h
+./obj/main.o: ./main.cpp ./SimpleMapTest.h ./TestInnerPortable.h ./TestMainPortable.h ./TestNamedPortable.h ./TestPortableFactory.h ./hazelcast/client/ClientConfig.cpp ./hazelcast/client/ClientConfig.h ./hazelcast/client/GroupConfig.cpp ./hazelcast/client/GroupConfig.h ./hazelcast/client/HazelcastClient.cpp ./hazelcast/client/HazelcastClient.h ./hazelcast/client/IMap.h ./hazelcast/client/serialization/Portable.h ./hazelcast/client/serialization/SerializationService.cpp ./hazelcast/client/serialization/SerializationService.h
 	echo "Compiling $< to $@..."
 	$(CC) $(CFLAGS) -c $< -o $@
 

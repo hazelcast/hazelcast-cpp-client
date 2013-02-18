@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
 
         class IdGenerator;
-        class AtomicNumber;
+        class IAtomicLong;
         class ICountDownLatch;
         class ISemaphore;
         //TODO  Lock , Topic
@@ -53,7 +53,7 @@ namespace hazelcast {
             };
 
             IdGenerator getIdGenerator(std::string instanceName);
-            AtomicNumber getAtomicNumber(std::string instanceName);
+            IAtomicLong getIAtomicLong(std::string instanceName);
             ICountDownLatch getICountDownLatch(std::string instanceName);
             ISemaphore getISemaphore(std::string instanceName);
             ~HazelcastClient();
