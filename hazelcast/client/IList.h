@@ -78,6 +78,7 @@ namespace hazelcast {
             typename std::set<E>::iterator listIterator(int i);
 
             std::set<E> subList(int i, int i1);
+
         private:
             std::string instanceName;
             ClientService& clientService;

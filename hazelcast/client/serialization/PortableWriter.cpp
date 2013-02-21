@@ -7,10 +7,7 @@
 //
 
 #include "PortableWriter.h"
-#include "DataOutput.h"
 #include "ClassDefinition.h"
-#include "PortableSerializer.h"
-#include "FieldDefinition.h"
 
 namespace hazelcast {
     namespace client {
@@ -20,7 +17,7 @@ namespace hazelcast {
 
             };
 
-            PortableWriter::PortableWriter(PortableSerializer* serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput* output, Type type)
+            PortableWriter::PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type type)
             : type(type)
             , serializer(serializer)
             , output(output)

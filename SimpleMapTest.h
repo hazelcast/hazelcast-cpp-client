@@ -12,6 +12,7 @@
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 #include <boost/chrono.hpp>
+
 using namespace hazelcast::client;
 
 int THREAD_COUNT = 1;
@@ -22,17 +23,16 @@ int GET_PERCENTAGE = 0;
 int PUT_PERCENTAGE = 100;
 
 
-
 class Stats {
 public:
-    Stats(){
+    Stats() {
     };
-    Stats(const Stats& rhs){
+    Stats(const Stats& rhs) {
         Stats newOne;
         gets.store(rhs.gets.load());
         puts.store(rhs.puts.load());
         removes.store(rhs.removes.load());
-        
+
     };
     Stats getAndReset() {
         Stats newOne(*this);
@@ -72,6 +72,7 @@ void printStats() {
 class SimpleMapTest {
 public:
     std::string server_address;
+
     SimpleMapTest(std::string address) {
         server_address = address;
     };
@@ -92,13 +93,13 @@ public:
         boost::thread monitor(printStats);
         try {
             auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-            IMap<std::string, vector<char> > map = hazelcastClient->getMap<std::string, vector<char > > ("default");
+            IMap<std::string, vector<char> > map = hazelcastClient->getMap<std::string, vector<char > >("default");
             while (true) {
                 char temp[20];
-                int size = sprintf(temp,"%d",(int) (rand() % ENTRY_COUNT));
-                std::string key(temp,size);
-                
-                size = sprintf(temp,"%d", (int)time(NULL));
+                int size = sprintf(temp, "%d", (int) (rand() % ENTRY_COUNT));
+                std::string key(temp, size);
+
+                size = sprintf(temp, "%d", (int) time(NULL));
                 std::vector<char> value(temp, temp + size);
                 int operation = ((int) (rand() % 100));
                 if (operation < GET_PERCENTAGE) {
@@ -120,10 +121,7 @@ public:
     }
 
 
-
-
 };
-
 
 
 #endif

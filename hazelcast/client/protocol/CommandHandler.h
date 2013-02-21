@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "../serialization/SerializationService.h"
 #include <memory>
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -13,15 +14,21 @@ namespace hazelcast {
 
             class CommandHandler {
             public:
-                CommandHandler(Address address, hazelcast::client::serialization::SerializationService* serializationService);
+
+                CommandHandler(Address address, hazelcast::client::serialization::SerializationService *serializationService);
+
                 void start();
-                void sendCommand(Command * const command);
+
+                void sendCommand(Command *const command);
 
             private:
-                hazelcast::client::serialization::SerializationService* serializationService;
+                hazelcast::client::serialization::SerializationService *serializationService;
                 Socket socket;
+
                 CommandHandler(const CommandHandler&);
+
                 bool readResponseHeader();
+
             };
 
         }

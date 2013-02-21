@@ -8,16 +8,12 @@
 #include "DataInput.h"
 #include "ClassDefinition.h"
 #include "SerializationService.h"
-#include "SerializationContext.h"
-#include <iostream>
-#include <cstring>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataInput::DataInput(std::vector<byte>& rhsBuffer, SerializationService* service) : service(service)
- {
+            DataInput::DataInput(std::vector<byte>& rhsBuffer, SerializationService *service) : service(service) {
                 int size = rhsBuffer.size();
                 try {
                     beg = new byte[size];
@@ -29,7 +25,7 @@ namespace hazelcast {
                 };
             };
 
-            DataInput::DataInput(const Data& data, SerializationService* service) : service(service)
+            DataInput::DataInput(const Data& data, SerializationService *service) : service(service)
             , dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
             , dataVersion(data.cd != NULL ? data.cd->getVersion() : -1) {
                 int size = data.bufferSize();
@@ -47,7 +43,7 @@ namespace hazelcast {
                 delete [] beg;
             };
 
-            DataInput& DataInput::operator=(const DataInput&) {
+            DataInput& DataInput::operator = (const DataInput&) {
                 return *this;
             };
 
@@ -63,7 +59,7 @@ namespace hazelcast {
                 return dataVersion;
             };
 
-            SerializationContext* DataInput::getSerializationContext() {
+            SerializationContext *DataInput::getSerializationContext() {
                 return service->getSerializationContext();
             }
             //Inherited from DataInoput
@@ -71,7 +67,7 @@ namespace hazelcast {
             void DataInput::readFully(std::vector<byte>& bytes) {
                 byte temp[bytes.size()];
                 readFully(temp, 0, bytes.size());
-                bytes = std::vector<byte > (temp, temp + bytes.size());
+                bytes = std::vector<byte >(temp, temp + bytes.size());
             };
 
             void DataInput::readFully(byte *bytes, int off, int len) {
@@ -182,7 +178,7 @@ namespace hazelcast {
                 return v;
             };
 
-            int DataInput::read(int index, byte* b, int off, int len) {
+            int DataInput::read(int index, byte *b, int off, int len) {
                 int pos = position();
                 position(index);
                 readFully(b, off, len);

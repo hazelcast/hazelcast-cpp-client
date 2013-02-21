@@ -7,17 +7,12 @@
 //
 #include "Portable.h"
 #include "PortableReader.h"
-#include "DataInput.h"
-#include "PortableSerializer.h"
-#include "FieldDefinition.h"
-
-#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(PortableSerializer* serializer, DataInput& input, boost::shared_ptr<ClassDefinition> cd, Type type)
+            PortableReader::PortableReader(PortableSerializer *serializer, DataInput& input, boost::shared_ptr<ClassDefinition> cd, Type type)
             : serializer(serializer)
             , input(&input)
             , cd(cd)
@@ -172,7 +167,7 @@ namespace hazelcast {
                 return getPosition(&fd);
             };
 
-            int PortableReader::getPosition(FieldDefinition* fd) {
+            int PortableReader::getPosition(FieldDefinition *fd) {
                 return input->readInt(offset + fd->getIndex() * sizeof (int));
             };
 

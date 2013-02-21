@@ -8,8 +8,6 @@
 #include "FieldDefinition.h"
 #include "DataOutput.h"
 #include "DataInput.h"
-#include <string>
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -62,7 +60,7 @@ namespace hazelcast {
                 classId = in.readInt();
             };
 
-            bool FieldDefinition::operator==(const FieldDefinition & other)const {
+            bool FieldDefinition::operator ==(const FieldDefinition & other) const {
                 if (this == &other) return true;
 
                 if (classId != other.classId) return false;
@@ -73,7 +71,7 @@ namespace hazelcast {
                 return true;
             };
 
-            bool FieldDefinition::operator!=(const FieldDefinition & other)const {
+            bool FieldDefinition::operator !=(const FieldDefinition & other) const {
                 return !(*this == other);
             };
 

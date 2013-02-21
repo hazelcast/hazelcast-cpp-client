@@ -1,8 +1,5 @@
 #include "ClientService.h"
 #include "HazelcastClient.h"
-#include "serialization/SerializationService.h"
-#include "protocol/CommandHandler.h"
-#include "ClientConfig.h"
 
 namespace hazelcast {
     namespace client {

@@ -19,7 +19,9 @@ namespace hazelcast {
 
             class PortableFactory {
             public:
-                virtual Portable* create(int) const = 0;
+
+                virtual Portable *create(int) const = 0;
+
             };
 
         }

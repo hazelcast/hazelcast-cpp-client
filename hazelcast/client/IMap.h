@@ -55,7 +55,7 @@ namespace hazelcast {
                 clientService.getCommandHandler().sendCommand(&command);
                 if (command.nResults() == 1) {
                     serialization::Data valueInBytes = command.get();
-                    return clientService.getSerializationService().template toObject<V > (valueInBytes);
+                    return clientService.getSerializationService().template toObject<V >(valueInBytes);
                 } else
                     return V();
             };
@@ -96,8 +96,8 @@ namespace hazelcast {
                 std::map<K, V> result;
                 size = resultKeys.size();
                 for (int i = 0; i < size; i++) {
-                    K key = clientService.getSerializationService().template toObject<K > (resultKeys[i]);
-                    V value = clientService.getSerializationService().template toObject<V > (resultValues[i]);
+                    K key = clientService.getSerializationService().template toObject<K >(resultKeys[i]);
+                    V value = clientService.getSerializationService().template toObject<V >(resultValues[i]);
                     result[key] = value;
                 }
                 return result;
@@ -185,7 +185,7 @@ namespace hazelcast {
                 std::vector<hazelcast::client::serialization::Data> resultDataVector = command.get();
                 int size = resultDataVector.size();
                 for (int i = 0; i < size; i++) {
-                    K key = clientService.getSerializationService().template toObject<K > (resultDataVector[i]);
+                    K key = clientService.getSerializationService().template toObject<K >(resultDataVector[i]);
                     resultSet.insert(key);
                 }
                 return resultSet;
@@ -205,7 +205,7 @@ namespace hazelcast {
                 std::map<K, V> allMap = getAll(allKeys);
                 std::vector< std::pair < K, V > > mapEntries;
                 for (typename std::map<K, V>::iterator it = allMap.begin(); it != allMap.end(); it++)
-                    mapEntries.push_back(pair< K, V > (it->first, it->second));
+                    mapEntries.push_back(pair< K, V >(it->first, it->second));
                 return mapEntries;
             };
 

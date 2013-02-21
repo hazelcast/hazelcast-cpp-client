@@ -24,20 +24,23 @@ namespace hazelcast {
 
             class PortableSerializer {
             public:
-                PortableSerializer(SerializationContext*);
+
+                PortableSerializer(SerializationContext *);
+
                 ~PortableSerializer();
 
                 boost::shared_ptr<ClassDefinition> getClassDefinition(Portable& p);
 
                 int getTypeId();
+
                 int getVersion();
 
-                void write(DataOutput* output, Portable& p);
+                void write(DataOutput *output, Portable& p);
 
                 std::auto_ptr<Portable> read(DataInput& dataInput);
 
             private:
-                SerializationContext* context;
+                SerializationContext *context;
             };
 
         }

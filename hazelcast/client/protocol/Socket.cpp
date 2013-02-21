@@ -1,18 +1,7 @@
 #include "Socket.h"
 
-#include "../Address.h"
-
-#include <string>
 #include <iostream>
-#include <memory>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <vector>
-#include <cstring>
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +25,7 @@ namespace hazelcast {
                 ::close(socketId);
             };
 
-            void Socket::sendData(const void* buffer, int len) {
+            void Socket::sendData(const void *buffer, int len) {
                 if (send(socketId, buffer, len, 0) == -1)
                     throw "Error at sending";
             };
@@ -57,7 +46,7 @@ namespace hazelcast {
                 return line;
             };
 
-            void Socket::recvData(void* buffer, int len) {
+            void Socket::recvData(void *buffer, int len) {
                 int size = recv(socketId, (void *) buffer, len, 0);
                 if (size == -1)
                     throw "Error at reading";

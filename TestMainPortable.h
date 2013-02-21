@@ -18,17 +18,19 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestMainPortable : public Portable{
+class TestMainPortable : public Portable {
 public:
-        
-    TestMainPortable(){
+
+    TestMainPortable() {
     };
-    
-    TestMainPortable(const TestMainPortable& rhs){
+
+    TestMainPortable(const TestMainPortable& rhs) {
         *this = rhs;
     }
-    ~TestMainPortable(){
+
+    ~TestMainPortable() {
     }
+
     TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, string str, TestInnerPortable p) {
         this->b = b;
         this->boolean = boolean;
@@ -41,8 +43,8 @@ public:
         this->str = str;
         this->p = p;
     };
-    
-    const TestMainPortable& operator=(const TestMainPortable& rhs){
+
+    const TestMainPortable& operator = (const TestMainPortable& rhs) {
         b = rhs.b;
         boolean = rhs.boolean;
         c = rhs.c;
@@ -55,12 +57,12 @@ public:
         p = rhs.p;
         return (*this);
     };
-    
-    
+
+
     int getClassId() {
         return 1;
     };
-        
+
     void writePortable(PortableWriter& writer) {
         writer.writeByte("b", b);
         writer.writeBoolean("bool", boolean);
@@ -72,9 +74,9 @@ public:
         writer.writeDouble("d", d);
         writer.writeUTF("str", str);
         writer.writePortable("p", p);
-        
+
     };
-        
+
     void readPortable(PortableReader& reader) {
         b = reader.readByte("b");
         boolean = reader.readBoolean("bool");
@@ -86,27 +88,27 @@ public:
         d = reader.readDouble("d");
         str = reader.readUTF("str");
         p = reader.readPortable<TestInnerPortable>("p");
-        
+
     };
-    
-    bool operator==(TestMainPortable& m){
-        if(this == &m) return true;
-        
-        if(b != m.b ) return false;
-        if(boolean != m.boolean ) return false;
-        if(c != m.c ) return false;
-        if(s != m.s ) return false;
-        if(i != m.i ) return false;
-        if(l != m.l ) return false;
-        if(f != m.f ) return false;
-        if(d != m.d ) return false;
-        if( str.compare(m.str) ) return false;
-        if(p != m.p) return false;
+
+    bool operator ==(TestMainPortable& m) {
+        if (this == &m) return true;
+
+        if (b != m.b) return false;
+        if (boolean != m.boolean) return false;
+        if (c != m.c) return false;
+        if (s != m.s) return false;
+        if (i != m.i) return false;
+        if (l != m.l) return false;
+        if (f != m.f) return false;
+        if (d != m.d) return false;
+        if (str.compare(m.str)) return false;
+        if (p != m.p) return false;
         return true;
     };
-    
-    bool operator!=(TestMainPortable& m){
-        return !(*this == m );  
+
+    bool operator !=(TestMainPortable& m) {
+        return !(*this == m);
     };
     TestInnerPortable p;
     int i;

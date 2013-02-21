@@ -8,15 +8,13 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "SerializationService.h"
-#include "DataOutput.h"
 #include "zlib.h"
-#include <cassert>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializationContext::SerializationContext(PortableFactory const * portableFactory, int version, SerializationService* service)
+            SerializationContext::SerializationContext(PortableFactory const *portableFactory, int version, SerializationService *service)
             : portableFactory(portableFactory)
             , version(version)
             , service(service) {
@@ -28,7 +26,7 @@ namespace hazelcast {
             SerializationContext::SerializationContext(const SerializationContext& rhs) {
             };
 
-            void SerializationContext::operator=(const SerializationContext& rhs) {
+            void SerializationContext::operator = (const SerializationContext& rhs) {
             };
 
             bool SerializationContext::isClassDefinitionExists(int classId) {
@@ -52,7 +50,7 @@ namespace hazelcast {
             };
 
             std::auto_ptr<Portable> SerializationContext::createPortable(int classId) {
-                return std::auto_ptr<Portable > (portableFactory->create(classId));
+                return std::auto_ptr<Portable >(portableFactory->create(classId));
             };
 
             boost::shared_ptr<ClassDefinition> SerializationContext::createClassDefinition(std::vector<byte>& binary) {
@@ -85,7 +83,7 @@ namespace hazelcast {
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
 
-                        DataOutput* output = service->pop();
+                        DataOutput *output = service->pop();
                         assert(output != NULL);
                         cd->writeData(*output);
                         std::vector<byte> binary = output->toByteArray();
@@ -127,7 +125,7 @@ namespace hazelcast {
                 uLong compSize = binary.size();
 
                 uLong ucompSize = 512;
-                byte* temp = NULL;
+                byte *temp = NULL;
                 byte compressedTemp[binary.size()];
                 for (int i = 0; i < binary.size(); i++)
                     compressedTemp[i] = binary[i];

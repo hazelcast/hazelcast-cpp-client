@@ -19,10 +19,10 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestPortableFactory : public PortableFactory{
-    
+class TestPortableFactory : public PortableFactory {
+
 public:
-    Portable* create(int classId) const{
+    Portable *create(int classId) const {
         switch (classId) {
             case 1:
                 return new TestMainPortable();
@@ -32,9 +32,9 @@ public:
                 return new TestNamedPortable();
             default:
                 throw "Illegal Statement Exception";
-            }
-            
+        }
+
     };
-    
+
 };
 #endif /* defined(__Server__TestPortableFactory__) */

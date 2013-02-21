@@ -17,40 +17,40 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestNamedPortable : public Portable{
+class TestNamedPortable : public Portable {
 public:
     TestNamedPortable() {
     };
-        
-    TestNamedPortable(std::string name , int k ):name(name),k(k) {
+
+    TestNamedPortable(std::string name, int k):name(name), k(k) {
     };
-    
+
     int getClassId() {
         return 3;
     };
-        
+
     void writePortable(PortableWriter& writer) {
-        writer.writeUTF("name",name); 
+        writer.writeUTF("name", name);
         writer.writeInt("myint", k);
     };
-        
-    void readPortable(PortableReader& reader)  {      
+
+    void readPortable(PortableReader& reader) {
         name = reader.readUTF("name");
         k = reader.readInt("myint");
     };
-    
-    bool operator==(TestNamedPortable& m){
-        if(this == &m)
+
+    bool operator ==(TestNamedPortable& m) {
+        if (this == &m)
             return true;
-        if(k != m.k) 
+        if (k != m.k)
             return false;
-        if (name.compare(m.name)) 
+        if (name.compare(m.name))
             return false;
         return true;
     };
-    
-    bool operator!=(TestNamedPortable& m){
-        return !(*this == m );  
+
+    bool operator !=(TestNamedPortable& m) {
+        return !(*this == m);
     };
     std::string name;
     int k;

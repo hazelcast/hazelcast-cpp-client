@@ -8,18 +8,15 @@
 #include "PortableSerializer.h"
 #include "SerializationConstants.h"
 #include "DataInput.h"
-#include "DataOutput.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "SerializationContext.h"
-#include <boost/shared_ptr.hpp>
-#include <cassert>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableSerializer::PortableSerializer(SerializationContext* context) : context(context) {
+            PortableSerializer::PortableSerializer(SerializationContext *context) : context(context) {
 
             };
 
@@ -51,7 +48,7 @@ namespace hazelcast {
                 return context->getVersion();
             };
 
-            void PortableSerializer::write(DataOutput* dataOutput, Portable& p) {
+            void PortableSerializer::write(DataOutput *dataOutput, Portable& p) {
 
                 boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                 PortableWriter writer(this, cd, dataOutput, PortableWriter::DEFAULT);

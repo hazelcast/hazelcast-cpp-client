@@ -6,10 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "ClassDefinition.h"
-#include "FieldDefinition.h"
 #include "DataInput.h"
-#include "DataOutput.h"
-#include <cassert>
 
 namespace hazelcast {
     namespace client {
@@ -31,7 +28,7 @@ namespace hazelcast {
             , binary(rhs.binary) {
             };
 
-            ClassDefinition& ClassDefinition::operator=(const ClassDefinition& rhs) {
+            ClassDefinition& ClassDefinition::operator = (const ClassDefinition& rhs) {
                 classId = rhs.classId;
                 version = rhs.version;
                 fieldDefinitions = rhs.fieldDefinitions;

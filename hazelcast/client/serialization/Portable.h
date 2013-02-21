@@ -9,20 +9,27 @@
 #ifndef HAZELCAST_PORTABLE
 #define HAZELCAST_PORTABLE
 
-namespace hazelcast{ 
-namespace client{
-namespace serialization{
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
 
-class PortableWriter;
-class PortableReader;
+            class PortableWriter;
+            class PortableReader;
 
-class Portable{
-public:
-    virtual int getClassId() = 0; 
-    virtual void writePortable(PortableWriter& writer)  = 0; 
-    virtual void readPortable(PortableReader& reader)  = 0; 
-    virtual ~Portable(){ };
-};
+            class Portable {
+            public:
 
-}}}
+                virtual int getClassId() = 0;
+
+                virtual void writePortable(PortableWriter& writer) = 0;
+
+                virtual void readPortable(PortableReader& reader) = 0;
+
+                virtual ~Portable() {
+                };
+            };
+
+        }
+    }
+}
 #endif /* HAZELCAST_PORTABLE */

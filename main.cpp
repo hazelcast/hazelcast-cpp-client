@@ -2,60 +2,48 @@
 // server.cpp
 
 #include "TestPortableFactory.h"
-#include "TestNamedPortable.h"
-#include "TestInnerPortable.h"
-#include "TestMainPortable.h"
 #include "SimpleMapTest.h"
 
-#include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/serialization/Data.h" 
-#include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/GroupConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/IMap.h"
-
-#include <boost/thread.hpp>
-
-#include <iostream>
 #include <fstream>
-#include <cassert>
-#include <vector>
-#include <set>
-#include <memory>
-#include <cstdio>
-#include <ctime>
-#include <cstdlib>
 
 #define SERVER_ADDRESS "192.168.2.2:5701"
 
 using namespace hazelcast::client;
 
 void testSpeed();
+
 void testCompression();
+
 void testSerialization();
+
 void testSerializationViaFile();
+
 void testMapOperations();
+
 void testMapLocksInParallel();
+
 void testMapLocksInSequential();
+
 void write();
+
 void read();
+
 TestMainPortable getTestMainPortable();
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     try {
         testCompression();
         testSerialization();
         testSerializationViaFile();
         testMapOperations();
-        //        testMapLocksInSequential();
-        //        testMapLocksInParallel();
-        //        testSpeed();
+//        testMapLocksInSequential();
+//        testMapLocksInParallel();
+        testSpeed();
         std::cout << "Test are completed successfully" << std::endl;
 //        int a;
 //        std::cin >> a;
 
-    } catch (const char* s) {
+    } catch (const char *s) {
         printf("%s", s);
     }
     return 0;
@@ -68,7 +56,7 @@ void testCompression() {
 
     Data data = serializationService1.toData(mainPortable);
 
-    DataOutput* out = serializationService1.pop();
+    DataOutput *out = serializationService1.pop();
     data.writeData(*out);
 
     vector<byte> xxx = out->toByteArray();
@@ -78,7 +66,7 @@ void testCompression() {
     serialization::DataInput dataInput(xxx, &serializationService2);
     Data newData;
     newData.readData(dataInput);
-    TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable > (newData);
+    TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
     assert(returnedPortable == mainPortable);
 };
 
@@ -92,7 +80,7 @@ void testMapOperations() {
     try {
 
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int, TestMainPortable> imap = hazelcastClient->getMap<int, TestMainPortable > ("sancar");
+        IMap<int, TestMainPortable> imap = hazelcastClient->getMap<int, TestMainPortable >("sancar");
         TestMainPortable mainPortable = getTestMainPortable();
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = mainPortable;
@@ -206,7 +194,7 @@ void testMapLocksInSequential() {
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
 
-        IMap<int, int> imap = hazelcastClient->getMap<int, int > ("testLockMap");
+        IMap<int, int> imap = hazelcastClient->getMap<int, int >("testLockMap");
         boost::hash<boost::thread::id> h;
         long currentId = h(boost::this_thread::get_id());
 
@@ -237,7 +225,7 @@ void write() {
     serialization::SerializationService serializationService(1, &tpf1);
     TestMainPortable mainPortable = getTestMainPortable();
     Data data = serializationService.toData(mainPortable);
-    DataOutput* out = serializationService.pop();
+    DataOutput *out = serializationService.pop();
     data.writeData(*out);
     std::vector<byte> outBuffer = out->toByteArray();
 
@@ -262,7 +250,7 @@ void read() {
     is.read(bytes, 673);
     is.close();
 
-    byte* tempPtr = (byte*) bytes;
+    byte *tempPtr = (byte *) bytes;
     std::vector<byte> buffer(tempPtr, tempPtr + 673);
     serialization::DataInput dataInput(buffer, &serializationService);
 
@@ -270,7 +258,7 @@ void read() {
     data.readData(dataInput);
 
     TestMainPortable tmp1;
-    tmp1 = serializationService.toObject<TestMainPortable > (data);
+    tmp1 = serializationService.toObject<TestMainPortable >(data);
 
     TestMainPortable mainPortable = getTestMainPortable();
     assert(mainPortable == tmp1);
@@ -299,8 +287,8 @@ void testSerialization() {
     data = serializationService.toData(np);
 
     TestNamedPortable tnp1, tnp2;
-    tnp1 = serializationService.toObject<TestNamedPortable > (data);
-    tnp2 = serializationService2.toObject<TestNamedPortable > (data);
+    tnp1 = serializationService.toObject<TestNamedPortable >(data);
+    tnp2 = serializationService2.toObject<TestNamedPortable >(data);
 
     assert(np == tnp1);
     assert(np == tnp2);
@@ -333,21 +321,21 @@ void testSerialization() {
     data = serializationService.toData(inner);
 
     TestInnerPortable tip1, tip2;
-    tip1 = serializationService.toObject<TestInnerPortable > (data);
-    tip2 = serializationService2.toObject<TestInnerPortable > (data);
+    tip1 = serializationService.toObject<TestInnerPortable >(data);
+    tip2 = serializationService2.toObject<TestInnerPortable >(data);
 
 
     assert(inner == tip1);
     assert(inner == tip2);
 
 
-    TestMainPortable main((byte) 113, true, 'x', (short) - 500, 56789, -50992225, 900.5678,
+    TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);
     data = serializationService.toData(main);
 
     TestMainPortable tmp1, tmp2;
-    tmp1 = serializationService.toObject<TestMainPortable > (data);
-    tmp2 = serializationService2.toObject<TestMainPortable > (data);
+    tmp1 = serializationService.toObject<TestMainPortable >(data);
+    tmp2 = serializationService2.toObject<TestMainPortable >(data);
     assert(main == tmp1);
     assert(main == tmp2);
 
@@ -378,7 +366,7 @@ TestMainPortable getTestMainPortable() {
     std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
     TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
-    TestMainPortable main((byte) 113, true, 'x', (short) - 500, 56789, -50992225, 900.5678,
+    TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);
     return main;
 };

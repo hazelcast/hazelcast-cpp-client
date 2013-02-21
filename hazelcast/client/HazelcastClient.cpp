@@ -1,14 +1,9 @@
 #include "HazelcastClient.h"
 #include "protocol/GeneralCommands.h"
-#include "protocol/CommandHandler.h"
-#include "ClientConfig.h"
 #include "IdGenerator.h"
 #include "IAtomicLong.h"
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
-#include <memory>
-#include <iterator>
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -39,7 +34,7 @@ namespace hazelcast {
         };
 
         std::auto_ptr<HazelcastClient> HazelcastClient::newHazelcastClient(ClientConfig& config) {
-            return std::auto_ptr<HazelcastClient > (new HazelcastClient(config));
+            return std::auto_ptr<HazelcastClient >(new HazelcastClient(config));
         };
 
         IdGenerator HazelcastClient::getIdGenerator(std::string instanceName) {

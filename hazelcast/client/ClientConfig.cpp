@@ -1,6 +1,4 @@
-
 #include "ClientConfig.h"
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +17,7 @@ namespace hazelcast {
 
         };
 
-        ClientConfig& ClientConfig::operator =(const ClientConfig& rhs) {
+        ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
             groupConfig = rhs.groupConfig;
             address = rhs.address;
             portableFactory = rhs.portableFactory;
@@ -42,11 +40,11 @@ namespace hazelcast {
             return address;
         };
 
-        serialization::PortableFactory const * ClientConfig::getPortableFactory() const {
+        serialization::PortableFactory const *ClientConfig::getPortableFactory() const {
             return portableFactory;
         };
 
-        void ClientConfig::setPortableFactory(serialization::PortableFactory* portableFactory) {
+        void ClientConfig::setPortableFactory(serialization::PortableFactory *portableFactory) {
             this->portableFactory = portableFactory;
         };
 

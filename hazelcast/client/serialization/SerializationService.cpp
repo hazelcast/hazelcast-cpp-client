@@ -7,17 +7,14 @@
 //
 
 #include "SerializationService.h"
-#include "SerializationContext.h"
-#include "ConstantSerializers.h"
-#include "Portable.h"
-#include "SerializationConstants.h"
+
 using namespace std;
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializationService::SerializationService(int version, PortableFactory const * portableFactory)
+            SerializationService::SerializationService(int version, PortableFactory const *portableFactory)
             : serializationContext(portableFactory, version, this)
             , portableSerializer(&serializationContext) {
 
@@ -25,19 +22,19 @@ namespace hazelcast {
 
             SerializationService::~SerializationService() {
                 while (!outputPool.empty()) {
-                    DataOutput* out = outputPool.front();
+                    DataOutput *out = outputPool.front();
                     outputPool.pop();
                     delete out;
                 }
             };
 
-            void SerializationService::push(DataOutput* out) {
+            void SerializationService::push(DataOutput *out) {
                 out->reset();
                 outputPool.push(out);
             };
 
-            DataOutput* SerializationService::pop() {
-                DataOutput* out;
+            DataOutput *SerializationService::pop() {
+                DataOutput *out;
                 if (outputPool.empty()) {
                     out = new DataOutput(this);
                 } else {
@@ -48,7 +45,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(bool object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 booleanSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_BOOLEAN, output->toByteArray());
                 push(output);
@@ -56,7 +53,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(char object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 charSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_CHAR, output->toByteArray());
                 push(output);
@@ -64,7 +61,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(short object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 shortSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_SHORT, output->toByteArray());
                 push(output);
@@ -72,7 +69,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(int object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 integerSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_INTEGER, output->toByteArray());
                 push(output);
@@ -80,7 +77,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(long object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 longSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_LONG, output->toByteArray());
                 push(output);
@@ -88,7 +85,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(float object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 floatSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_FLOAT, output->toByteArray());
                 push(output);
@@ -96,7 +93,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(double object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 doubleSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE, output->toByteArray());
                 push(output);
@@ -104,7 +101,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<char>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 charArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, output->toByteArray());
                 push(output);
@@ -112,7 +109,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<short>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 shortArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, output->toByteArray());
                 push(output);
@@ -120,7 +117,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<int>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 integerArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, output->toByteArray());
                 push(output);
@@ -128,7 +125,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<long>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 longArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, output->toByteArray());
                 push(output);
@@ -136,7 +133,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<float>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 floatArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, output->toByteArray());
                 push(output);
@@ -144,7 +141,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(std::vector<double>& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 doubleArraySerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, output->toByteArray());
                 push(output);
@@ -152,7 +149,7 @@ namespace hazelcast {
             };
 
             Data SerializationService::toData(string& object) {
-                DataOutput* output = pop();
+                DataOutput *output = pop();
                 stringSerializer.write(output, object);
                 Data data(SerializationConstants::CONSTANT_TYPE_STRING, output->toByteArray());
                 push(output);

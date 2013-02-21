@@ -7,10 +7,8 @@
 //
 #include "Data.h"
 #include "DataInput.h"
-#include "DataOutput.h"
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
-
 
 
 namespace hazelcast {
@@ -35,7 +33,7 @@ namespace hazelcast {
             Data::~Data() {
             };
 
-            Data& Data::operator=(const Data& rhs) {
+            Data& Data::operator = (const Data& rhs) {
                 type = rhs.type;
                 buffer = rhs.buffer;
                 cd = rhs.cd;
@@ -43,7 +41,7 @@ namespace hazelcast {
                 return (*this);
             };
 
-            bool Data::operator==(const Data& rhs) const {
+            bool Data::operator ==(const Data& rhs) const {
                 if (type != rhs.type) return false;
                 if (cd != rhs.cd) return false;
                 if (partitionHash != rhs.partitionHash) return false;
@@ -51,7 +49,7 @@ namespace hazelcast {
                 return true;
             };
 
-            bool Data::operator!=(const Data& rhs) const {
+            bool Data::operator !=(const Data& rhs) const {
                 return !((*this) == rhs);
             };
 
@@ -96,7 +94,7 @@ namespace hazelcast {
                 int classId = in.readInt();
                 if (classId != NO_CLASS_ID) {
                     int version = in.readInt();
-                    SerializationContext* context = in.getSerializationContext();
+                    SerializationContext *context = in.getSerializationContext();
 
                     int classDefSize = in.readInt();
 

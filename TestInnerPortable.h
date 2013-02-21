@@ -16,28 +16,30 @@
 
 #include "TestNamedPortable.h"
 #include <iostream>
+
 using namespace hazelcast::client;
 
-class TestInnerPortable : public Portable{
+class TestInnerPortable : public Portable {
 public:
-    TestInnerPortable(){
+    TestInnerPortable() {
     };
-    TestInnerPortable(const TestInnerPortable& rhs){    
+    TestInnerPortable(const TestInnerPortable& rhs) {
         *this = rhs;
     }
-    TestInnerPortable(std::vector<byte> b,  
-                        std::vector<char> c , 
-                        std::vector<short> s, 
-                        std::vector<int>  i , 
-                        std::vector<long> l, 
-                        std::vector<float> f, 
-                        std::vector<double> d,
-                        std::vector<TestNamedPortable> n):bb(b),cc(c),ss(s),ii(i),ll(l),ff(f),dd(d),nn(n){
-        
-        
+
+    TestInnerPortable(std::vector<byte> b,
+            std::vector<char> c,
+            std::vector<short> s,
+            std::vector<int> i,
+            std::vector<long> l,
+            std::vector<float> f,
+            std::vector<double> d,
+            std::vector<TestNamedPortable> n):bb(b), cc(c), ss(s), ii(i), ll(l), ff(f), dd(d), nn(n) {
+
+
     };
-    
-    TestInnerPortable& operator=(const TestInnerPortable& rhs){
+
+    TestInnerPortable& operator = (const TestInnerPortable& rhs) {
         bb = rhs.bb;
         cc = rhs.cc;
         ss = rhs.ss;
@@ -47,12 +49,14 @@ public:
         dd = rhs.dd;
         nn = rhs.nn;
         return (*this);
-    }    
+    }
+
     int getClassId() {
         return 2;
     };
-    ~TestInnerPortable(){
-    }    
+    ~TestInnerPortable() {
+    }
+
     void writePortable(serialization::PortableWriter& writer) {
         writer.writeByteArray("b", bb);
         writer.writeCharArray("c", cc);
@@ -62,9 +66,9 @@ public:
         writer.writeFloatArray("f", ff);
         writer.writeDoubleArray("d", dd);
         writer.writePortableArray("nn", nn);
-        
+
     };
-        
+
     void readPortable(serialization::PortableReader& reader) {
         bb = reader.readByteArray("b");
         cc = reader.readCharArray("c");
@@ -75,23 +79,23 @@ public:
         dd = reader.readDoubleArray("d");
         nn = reader.readPortableArray<TestNamedPortable>("nn");
     };
-    
-    bool operator==(TestInnerPortable& m){
-       if( bb != m.bb ) return false;
-       if( cc != m.cc ) return false;
-       if( ss != m.ss ) return false;
-       if( ii != m.ii ) return false;
-       if( ll != m.ll ) return false;
-       if( ff != m.ff ) return false;
-       if( dd != m.dd ) return false;
-       for(int i = 0; i < nn.size() ; i++)
-           if( nn[i] != m.nn[i]  ) 
+
+    bool operator ==(TestInnerPortable& m) {
+        if (bb != m.bb) return false;
+        if (cc != m.cc) return false;
+        if (ss != m.ss) return false;
+        if (ii != m.ii) return false;
+        if (ll != m.ll) return false;
+        if (ff != m.ff) return false;
+        if (dd != m.dd) return false;
+        for (int i = 0; i < nn.size(); i++)
+            if (nn[i] != m.nn[i])
                 return false;
-       return true;
+        return true;
     };
-    
-    bool operator!=(TestInnerPortable& m){
-        return !(*this == m );  
+
+    bool operator !=(TestInnerPortable& m) {
+        return !(*this == m);
     };
     std::vector<int> ii;
 private:
@@ -102,6 +106,6 @@ private:
     std::vector<float> ff;
     std::vector<double> dd;
     std::vector< TestNamedPortable > nn;
-    
+
 };
 #endif

@@ -9,16 +9,11 @@
 #include "DataOutput.h"
 #include "SerializationService.h"
 
-#include <string>
-#include <algorithm>
-#include <cassert>
-#include <ios>
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataOutput::DataOutput(SerializationService* service) : offset(0) {
+            DataOutput::DataOutput(SerializationService *service) : offset(0) {
                 this->service = service;
             };
 
@@ -133,7 +128,7 @@ namespace hazelcast {
                 position(pos);
             };
 
-            void DataOutput::write(int index, char* b, int off, int len) {
+            void DataOutput::write(int index, char *b, int off, int len) {
                 int pos = position();
                 position(index);
                 write(b, off, len);

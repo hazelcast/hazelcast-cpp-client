@@ -1,6 +1,8 @@
 #ifndef HAZELCAST_ID_GENERATOR
 #define HAZELCAST_ID_GENERATOR
+
 #include <string>
+
 namespace hazelcast {
     namespace client {
 
@@ -33,6 +35,7 @@ namespace hazelcast {
              * @return cluster-wide new unique id
              */
             long newId();
+
         private:
             std::string instanceName;
             ClientService& clientService;

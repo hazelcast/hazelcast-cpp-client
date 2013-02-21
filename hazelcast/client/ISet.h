@@ -50,6 +50,7 @@ namespace hazelcast {
             bool removeAll(std::vector<E> objects);
 
             void clear();
+
         private:
             std::string instanceName;
             ClientService& clientService;

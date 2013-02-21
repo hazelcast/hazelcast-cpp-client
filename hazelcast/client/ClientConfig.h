@@ -12,20 +12,29 @@ namespace hazelcast {
 
         class ClientConfig {
         public:
+
             ClientConfig();
+
             ClientConfig(const ClientConfig&);
-            ClientConfig& operator=(const ClientConfig&);
+
+            ClientConfig& operator = (const ClientConfig&);
+
             ~ClientConfig();
 
             GroupConfig& getGroupConfig();
+
             void setAddress(std::string);
+
             Address getAddress() const;
-            void setPortableFactory(serialization::PortableFactory*);
-            serialization::PortableFactory const * getPortableFactory() const;
+
+            void setPortableFactory(serialization::PortableFactory *);
+
+            serialization::PortableFactory const *getPortableFactory() const;
+
         private:
             GroupConfig groupConfig;
             Address address;
-            serialization::PortableFactory* portableFactory;
+            serialization::PortableFactory *portableFactory;
         };
 
     }

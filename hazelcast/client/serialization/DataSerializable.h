@@ -20,7 +20,9 @@ namespace hazelcast {
 
             class DataSerializable {
             public:
+
                 virtual void writeData(DataOutput&) const = 0;
+
                 virtual void readData(DataInput&) = 0;
 
             };

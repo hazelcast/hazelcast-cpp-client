@@ -30,18 +30,19 @@ namespace hazelcast {
             public:
 
                 SerializationService(int, PortableFactory const *);
+
                 ~SerializationService();
 
                 template<typename K>
                 Data toData(K& object) {
-                    DataOutput* output = pop();
+                    DataOutput *output = pop();
 
                     portableSerializer.write(output, object);
 
                     Data data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
                     push(output);
 
-                    Portable* portable = dynamic_cast<Portable*> (&object);
+                    Portable *portable = dynamic_cast<Portable *> (&object);
                     if (portable != NULL) {
                         data.cd = serializationContext.lookup(portable->getClassId());
                     } else {
@@ -52,19 +53,33 @@ namespace hazelcast {
                 };
 
                 Data toData(Data&);
+
                 Data toData(bool);
+
                 Data toData(char);
+
                 Data toData(short);
+
                 Data toData(int);
+
                 Data toData(long);
+
                 Data toData(float);
+
                 Data toData(double);
+
                 Data toData(std::vector<char>&);
+
                 Data toData(std::vector<short>&);
+
                 Data toData(std::vector<int>&);
+
                 Data toData(std::vector<long>&);
+
                 Data toData(std::vector<float>&);
+
                 Data toData(std::vector<double>&);
+
                 Data toData(string&);
 
                 template<typename K>
@@ -83,19 +98,20 @@ namespace hazelcast {
                     DataInput dataInput(data, this);
                     std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
 
-                    K* ptr = dynamic_cast<K*> (autoPtr.get());
+                    K *ptr = dynamic_cast<K *> (autoPtr.get());
 
                     return (*ptr);
                 };
 
-                void push(DataOutput*);
+                void push(DataOutput *);
 
-                DataOutput* pop();
+                DataOutput *pop();
 
                 static long combineToLong(int x, int y);
+
                 static int extractInt(long value, bool lowerBits);
 
-                SerializationContext* getSerializationContext() {
+                SerializationContext *getSerializationContext() {
                     return &serializationContext;
                 }
             private:
@@ -103,7 +119,7 @@ namespace hazelcast {
                 static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;
                 static int const CONSTANT_SERIALIZERS_SIZE = SerializationConstants::CONSTANT_SERIALIZERS_LENGTH;
 
-                queue<DataOutput*> outputPool;
+                queue<DataOutput *> outputPool;
 
                 PortableSerializer portableSerializer;
                 ConstantSerializers::ByteSerializer byteSerializer;

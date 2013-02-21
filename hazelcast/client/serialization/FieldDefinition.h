@@ -21,20 +21,28 @@ namespace hazelcast {
 
             class FieldDefinition : public DataSerializable {
             public:
+
                 FieldDefinition();
+
                 FieldDefinition(int, std::string, byte);
+
                 FieldDefinition(int, std::string, byte, int);
 
                 byte getType();
+
                 std::string getName();
+
                 int getIndex();
+
                 int getClassId();
 
                 void writeData(DataOutput&) const;
+
                 void readData(DataInput&);
 
-                bool operator==(const FieldDefinition&) const;
-                bool operator!=(const FieldDefinition&) const;
+                bool operator ==(const FieldDefinition&) const;
+
+                bool operator !=(const FieldDefinition&) const;
 
                 std::string fieldName;
 

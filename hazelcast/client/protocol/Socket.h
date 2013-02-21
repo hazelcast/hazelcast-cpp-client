@@ -15,16 +15,25 @@ namespace hazelcast {
 
             class Socket {
             public:
+
                 Socket(Address& address);
+
                 ~Socket();
-                void sendData(const void* buffer, int len);
-                void recvData(void* buffer, int len);
+
+                void sendData(const void *buffer, int len);
+
+                void recvData(void *buffer, int len);
+
                 std::string readLine();
+
             private:
+
                 Socket(const Socket& rhs);
+
                 void getInfo();
+
                 Address address;
-                struct addrinfo * server_info;
+                struct addrinfo *server_info;
                 int socketId;
             };
 

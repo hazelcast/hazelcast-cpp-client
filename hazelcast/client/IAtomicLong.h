@@ -1,6 +1,8 @@
 #ifndef HAZELCAST_ATOMIC_NUMBER
 #define HAZELCAST_ATOMIC_NUMBER
+
 #include <string>
+
 namespace hazelcast {
     namespace client {
 
@@ -14,6 +16,7 @@ namespace hazelcast {
             IAtomicLong(const IAtomicLong& rhs);
 
             ~IAtomicLong();
+
             /**
              * Returns the name of this IAtomicLong instance.
              *

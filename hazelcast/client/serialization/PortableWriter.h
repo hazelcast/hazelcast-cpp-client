@@ -14,6 +14,7 @@
 #include "FieldDefinition.h"
 #include <iostream>
 #include <string>
+
 using namespace std;
 
 namespace hazelcast {
@@ -32,24 +33,41 @@ namespace hazelcast {
                 };
 
                 PortableWriter();
-                PortableWriter(PortableSerializer* serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput* output, Type type);
+
+                PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type type);
 
                 void writeInt(string fieldName, int value);
+
                 void writeLong(string fieldName, long value);
+
                 void writeBoolean(string fieldName, bool value);
+
                 void writeByte(string fieldName, byte value);
+
                 void writeChar(string fieldName, int value);
+
                 void writeDouble(string fieldName, double value);
+
                 void writeFloat(string fieldName, float value);
+
                 void writeShort(string fieldName, short value);
+
                 void writeUTF(string fieldName, string str);
+
                 void writePortable(string fieldName, Portable& portable);
+
                 void writeByteArray(string fieldName, std::vector<byte>&);
+
                 void writeCharArray(string fieldName, std::vector<char>&);
+
                 void writeIntArray(string fieldName, std::vector<int>&);
+
                 void writeLongArray(string fieldName, std::vector<long>&);
+
                 void writeDoubleArray(string fieldName, std::vector<double>&);
+
                 void writeFloatArray(string fieldName, std::vector<float>&);
+
                 void writeShortArray(string fieldName, std::vector<short>&);
 
                 template <typename T>
@@ -75,21 +93,37 @@ namespace hazelcast {
                 void setPosition(string fieldName);
 
                 void getCdInt(string fieldName, int value);
+
                 void getCdLong(string fieldName, long value);
+
                 void getCdUTF(string fieldName, string str);
+
                 void getCdBoolean(string fieldName, bool value);
+
                 void getCdByte(string fieldName, byte value);
+
                 void getCdChar(string fieldName, int value);
+
                 void getCdDouble(string fieldName, double value);
+
                 void getCdFloat(string fieldName, float value);
+
                 void getCdShort(string fieldName, short value);
+
                 void getCdPortable(string fieldName, Portable& portable);
+
                 void getCdByteArray(string fieldName, std::vector<byte>&);
+
                 void getCdCharArray(string fieldName, std::vector<char>&);
+
                 void getCdIntArray(string fieldName, std::vector<int>&);
+
                 void getCdLongArray(string fieldName, std::vector<long>&);
+
                 void getCdDoubleArray(string fieldName, std::vector<double>&);
+
                 void getCdFloatArray(string fieldName, std::vector<float>&);
+
                 void getCdShortArray(string fieldName, std::vector<short>&);
 
                 template<typename T>
@@ -103,13 +137,14 @@ namespace hazelcast {
                     FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
                     addNestedField(portables[0], fd);
                 };
+
                 void addNestedField(Portable& p, FieldDefinition& fd);
 
             private:
                 Type type;
                 int index;
-                PortableSerializer* serializer;
-                DataOutput* output;
+                PortableSerializer *serializer;
+                DataOutput *output;
                 int offset;
                 boost::shared_ptr<ClassDefinition> cd;
             };

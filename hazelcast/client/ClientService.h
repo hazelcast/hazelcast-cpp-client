@@ -15,9 +15,13 @@ namespace hazelcast {
 
         class ClientService {
         public:
+
             ClientService(HazelcastClient& hazelcastClient);
+
             serialization::SerializationService& getSerializationService();
+
             protocol::CommandHandler& getCommandHandler();
+
             ClientConfig& getClientConfig();
 
         private:

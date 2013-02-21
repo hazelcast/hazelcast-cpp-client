@@ -1,5 +1,4 @@
 #include "GroupConfig.h"
-#include <string>
 #include <iostream>
 
 

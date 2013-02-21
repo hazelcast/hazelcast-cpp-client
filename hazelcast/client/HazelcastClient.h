@@ -25,47 +25,56 @@ namespace hazelcast {
             friend class ClientService;
 
         public:
+
             static std::auto_ptr<HazelcastClient> newHazelcastClient(ClientConfig& config);
 
             template<typename K, typename V>
             IMap<K, V> getMap(std::string instanceName) {
-                return IMap<K, V > (instanceName, clientService);
+                return IMap<K, V >(instanceName, clientService);
             };
 
             template<typename K, typename V>
             MultiMap<K, V> getMultiMap(std::string instanceName) {
-                return MultiMap<K, V > (instanceName, clientService);
+                return MultiMap<K, V >(instanceName, clientService);
             };
 
             template<typename E>
             IQueue<E> getQueue(std::string instanceName) {
-                return IQueue<E > (instanceName, clientService);
+                return IQueue<E >(instanceName, clientService);
             };
 
             template<typename E>
             ISet<E> getSet(std::string instanceName) {
-                return ISet<E > (instanceName, clientService);
+                return ISet<E >(instanceName, clientService);
             };
 
             template<typename E>
             IList<E> getList(std::string instanceName) {
-                return IList<E > (instanceName, clientService);
+                return IList<E >(instanceName, clientService);
             };
 
             IdGenerator getIdGenerator(std::string instanceName);
+
             IAtomicLong getIAtomicLong(std::string instanceName);
+
             ICountDownLatch getICountDownLatch(std::string instanceName);
+
             ISemaphore getISemaphore(std::string instanceName);
+
             ~HazelcastClient();
 
         private:
+
             serialization::SerializationService& getSerializationService();
+
             protocol::CommandHandler& getCommandHandler();
+
             ClientConfig& getClientConfig();
 
             void setupInitialConnection();
 
             HazelcastClient(ClientConfig&);
+
             HazelcastClient(const HazelcastClient&);
 
             ClientService clientService;

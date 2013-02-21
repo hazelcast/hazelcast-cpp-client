@@ -1,7 +1,9 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
+
 #include <string>
 #include <stdexcept>
+
 namespace hazelcast {
     namespace client {
 
@@ -17,6 +19,7 @@ namespace hazelcast {
             ~ISemaphore();
 
             std::string getName() const;
+
             /**
              * Try to initialize this ISemaphore instance with given permit count
              *
