@@ -12,8 +12,10 @@
 #include "DataOutput.h"
 #include "PortableSerializer.h"
 #include "FieldDefinition.h"
+#include "HazelcastException.h"
 #include <iostream>
 #include <string>
+#include <set>
 
 using namespace std;
 
@@ -72,17 +74,13 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortableArray(string fieldName, std::vector<T>& values) {
-                    if (type == CLASS_DEFINITION_WRITER) {
-                        getCdPortableArray(fieldName, values);
-                        return;
-                    }
+                    if (checkType(fieldName, values)) return;
                     setPosition(fieldName);
                     int len = values.size();
                     output->writeInt(len);
                     if (len > 0) {
                         int offset = output->position();
-                        char zeros[len * sizeof (int) ];
-                        output->write(zeros, 0, len * sizeof (int));
+                        output->position(offset + len * sizeof (int));
                         for (int i = 0; i < len; i++) {
                             output->writeInt(offset + i * sizeof (int), output->position());
                             serializer->write(output, values[i]);
@@ -90,63 +88,48 @@ namespace hazelcast {
                     }
                 };
 
+                DataOutput *getRawDataOutput();
+
+            private:
+
                 void setPosition(string fieldName);
 
-                void getCdInt(string fieldName, int value);
+                bool checkType(string fieldName, byte type);
 
-                void getCdLong(string fieldName, long value);
-
-                void getCdUTF(string fieldName, string str);
-
-                void getCdBoolean(string fieldName, bool value);
-
-                void getCdByte(string fieldName, byte value);
-
-                void getCdChar(string fieldName, int value);
-
-                void getCdDouble(string fieldName, double value);
-
-                void getCdFloat(string fieldName, float value);
-
-                void getCdShort(string fieldName, short value);
-
-                void getCdPortable(string fieldName, Portable& portable);
-
-                void getCdByteArray(string fieldName, std::vector<byte>&);
-
-                void getCdCharArray(string fieldName, std::vector<char>&);
-
-                void getCdIntArray(string fieldName, std::vector<int>&);
-
-                void getCdLongArray(string fieldName, std::vector<long>&);
-
-                void getCdDoubleArray(string fieldName, std::vector<double>&);
-
-                void getCdFloatArray(string fieldName, std::vector<float>&);
-
-                void getCdShortArray(string fieldName, std::vector<short>&);
+                bool checkType(string fieldName, Portable& portable);
 
                 template<typename T>
-                void getCdPortableArray(string fieldName, std::vector<T>& portables) {
-                    int classId = portables[0].getClassId();
-                    for (int i = 1; i < portables.size(); i++) {
-                        if (portables[i].getClassId() != classId) {
-                            throw "Illegal Argument Exception";
+                bool checkType(string fieldName, std::vector<T>& portables) {
+                    if (type == CLASS_DEFINITION_WRITER) {
+                        if (!raw) {
+                            int classId = portables[0].getClassId();
+                            for (int i = 1; i < portables.size(); i++) {
+                                if (portables[i].getClassId() != classId) {
+                                    throw hazelcast::client::HazelcastException("Illegal Argument Exception");
+                                }
+                            }
+                            FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
+                            addNestedField(portables[0], fd);
                         }
+                        return true;
+                    } else {
+                        return false;
                     }
-                    FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
-                    addNestedField(portables[0], fd);
+
+
                 };
 
                 void addNestedField(Portable& p, FieldDefinition& fd);
 
-            private:
                 Type type;
                 int index;
+                bool raw;
                 PortableSerializer *serializer;
                 DataOutput *output;
                 int offset;
+                std::set<std::string> writtenFields;
                 boost::shared_ptr<ClassDefinition> cd;
+
             };
 
         }

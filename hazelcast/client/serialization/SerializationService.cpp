@@ -7,6 +7,7 @@
 //
 
 #include "SerializationService.h"
+#include "OutputStringStream.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ namespace hazelcast {
             DataOutput *SerializationService::pop() {
                 DataOutput *out;
                 if (outputPool.empty()) {
-                    out = new DataOutput(this);
+                    out = new DataOutput(this,new OutputStringStream());
                 } else {
                     out = outputPool.front();
                     outputPool.pop();

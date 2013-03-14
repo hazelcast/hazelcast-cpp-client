@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
@@ -53,7 +54,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire()throw ( std::domain_error);
+            void acquire()throw ( hazelcast::client::HazelcastException);
 
             /**
              * <p>Acquires the given number of permits, if they are available,
@@ -86,7 +87,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire(int permits)throw ( std::domain_error);
+            void acquire(int permits)throw ( hazelcast::client::HazelcastException);
 
 
             /**
@@ -214,7 +215,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(long timeoutInMillis) throw ( std::domain_error);
+            bool tryAcquire(long timeoutInMillis) throw ( hazelcast::client::HazelcastException);
 
             /**
              * Acquires the given number of permits, if they are available and
@@ -257,7 +258,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(int permits, long timeoutInMillis) throw ( std::domain_error);
+            bool tryAcquire(int permits, long timeoutInMillis) throw ( hazelcast::client::HazelcastException);
 
 
         private:

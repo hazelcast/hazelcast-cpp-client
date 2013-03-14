@@ -209,7 +209,7 @@ namespace hazelcast {
                 return mapEntries;
             };
 
-            void lock(K key) throw (std::domain_error) {
+            void lock(K key) throw (hazelcast::client::HazelcastException) {
                 serialization::Data keyInBytes = clientService.getSerializationService().toData(key);
                 protocol::MapCommands::LockCommand command(instanceName, keyInBytes);
                 clientService.getCommandHandler().sendCommand(&command);
@@ -235,7 +235,7 @@ namespace hazelcast {
                 clientService.getCommandHandler().sendCommand(&command);
             };
 
-            void forceunlock(K key) {
+            void forceUnlock(K key) {
                 serialization::Data keyInBytes = clientService.getSerializationService().toData(key);
                 protocol::MapCommands::ForceUnlockCommand command(instanceName, keyInBytes);
                 clientService.getCommandHandler().sendCommand(&command);

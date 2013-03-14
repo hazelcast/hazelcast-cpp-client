@@ -3,12 +3,16 @@
 
 #include "TestPortableFactory.h"
 #include "SimpleMapTest.h"
+#include "MapPutOperation.h"
+#include "OutputSocketStream.h"
 
 #include <fstream>
 
-#define SERVER_ADDRESS "192.168.2.2:5701"
+#define SERVER_ADDRESS "192.168.2.6:5701"
 
 using namespace hazelcast::client;
+
+void testPut();
 
 void testSpeed();
 
@@ -24,30 +28,50 @@ void testMapLocksInParallel();
 
 void testMapLocksInSequential();
 
-void write();
+int write();
 
-void read();
+void read(int size);
 
 TestMainPortable getTestMainPortable();
 
 int main(int argc, char **argv) {
-    try {
-        testCompression();
-        testSerialization();
-        testSerializationViaFile();
-        testMapOperations();
+//              try{
+//    testCompression();
+//    testSerialization();
+//    testSerializationViaFile();
+//        testMapOperations();
 //        testMapLocksInSequential();
 //        testMapLocksInParallel();
-        testSpeed();
-        std::cout << "Test are completed successfully" << std::endl;
-//        int a;
-//        std::cin >> a;
+//    testSpeed();
+    testPut();
+    std::cout << "Test are completed successfully" << std::endl;
+    std::cin >> argc;
 
-    } catch (const char *s) {
-        printf("%s", s);
-    }
+//    } catch (HazelcastException exception) {
+//        std::cout << exception.what() << std::endl;
+//    }
     return 0;
 };
+
+void testPut() {
+    TestPortableFactory tpf1;
+    serialization::SerializationService service(1, &tpf1);
+    Data key = service.toData(23);
+    Data value = service.toData(32);
+    MapPutOperation mapPutOperation(key, value);
+    Address address("192.168.2.6", "5701");
+    hazelcast::client::protocol::Socket socket(address);
+    char protocol[] = {'C', 'B', '1'};
+    socket.sendData((void *) protocol, 3 * sizeof(char));
+
+    Data data = service.toData(mapPutOperation);
+
+    OutputStream *stream = (OutputStream *) new OutputSocketStream(socket);
+    DataOutput *output = new DataOutput(&service, stream);
+    data.writeData(*output);
+
+
+}
 
 void testCompression() {
     TestPortableFactory tpf1;
@@ -216,11 +240,11 @@ void testMapLocksInSequential() {
     //        imap.lock(1);
     //        imap.unlock(5);
     //        imap.isLocked(4);
-    //        imap.forceunlock(3);
+    //        imap.forceUnlock(3);
     //        imap.tryLock(3,1000);
 };
 
-void write() {
+int write() {
     TestPortableFactory tpf1;
     serialization::SerializationService serializationService(1, &tpf1);
     TestMainPortable mainPortable = getTestMainPortable();
@@ -228,30 +252,31 @@ void write() {
     DataOutput *out = serializationService.pop();
     data.writeData(*out);
     std::vector<byte> outBuffer = out->toByteArray();
-
+    int size = outBuffer.size();
     ofstream outfile;
     outfile.open("./text.txt", std::ios_base::out);
-    for (int i = 0; i < outBuffer.size(); i++)
+    for (int i = 0; i < size; i++)
         outfile.put(outBuffer[i]);
 
     serializationService.push(out);
     outfile.close();
+    return size;
 
 }
 
-void read() {
+void read(int size) {
 
     TestPortableFactory tpf1;
     serialization::SerializationService serializationService(1, &tpf1);
 
     std::ifstream is;
     is.open("./text.txt", std::ios::binary);
-    char bytes[673];
-    is.read(bytes, 673);
+    char bytes[size];
+    is.read(bytes, size);
     is.close();
 
     byte *tempPtr = (byte *) bytes;
-    std::vector<byte> buffer(tempPtr, tempPtr + 673);
+    std::vector<byte> buffer(tempPtr, tempPtr + size);
     serialization::DataInput dataInput(buffer, &serializationService);
 
     serialization::Data data;
@@ -265,8 +290,8 @@ void read() {
 };
 
 void testSerializationViaFile() {
-    write();
-    read();
+    int size = write();
+    read(size);
 }
 
 void testSerialization() {

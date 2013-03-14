@@ -66,4 +66,4 @@ namespace hazelcast {
         }
     }
 }
-#endif /* defined(__Server__Data__) */
+#endif /* HAZELCAST_DATA */

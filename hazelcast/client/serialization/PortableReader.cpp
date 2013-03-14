@@ -7,6 +7,7 @@
 //
 #include "Portable.h"
 #include "PortableReader.h"
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
@@ -159,10 +160,14 @@ namespace hazelcast {
                 return values;
             };
 
+            DataInput* PortableReader::getRawDataInput() {
+                return input;
+            }
+
             int PortableReader::getPosition(string fieldName) {
                 isFieldMorphed = false;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
                 return getPosition(&fd);
             };
@@ -187,7 +192,7 @@ namespace hazelcast {
                     case FieldDefinition::TYPE_SHORT:
                         return readShort(fieldName);
                     default:
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
             };
 
@@ -209,7 +214,7 @@ namespace hazelcast {
                     case FieldDefinition::TYPE_SHORT:
                         return readShort(fieldName);
                     default:
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
             };
 
@@ -220,7 +225,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_BOOLEAN)
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return readBoolean(fieldName);
             };
@@ -232,7 +237,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_BYTE)
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return readByte(fieldName);
             };
@@ -244,7 +249,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_CHAR)
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return readChar(fieldName);
             };
@@ -271,7 +276,7 @@ namespace hazelcast {
                     case FieldDefinition::TYPE_SHORT:
                         return readShort(fieldName);
                     default:
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
             };
 
@@ -293,7 +298,7 @@ namespace hazelcast {
                     case FieldDefinition::TYPE_SHORT:
                         return readShort(fieldName);
                     default:
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
             };
 
@@ -309,7 +314,7 @@ namespace hazelcast {
                     case FieldDefinition::TYPE_SHORT:
                         return readShort(fieldName);
                     default:
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
             };
 
@@ -320,7 +325,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_UTF) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readUTF(fieldName);
             };
@@ -332,7 +337,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_BYTE_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readByteArray(fieldName);
             };
@@ -344,7 +349,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_CHAR_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readCharArray(fieldName);
             };
@@ -356,7 +361,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_INT_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readIntArray(fieldName);
             };
@@ -368,7 +373,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_LONG_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readLongArray(fieldName);
             };
@@ -380,7 +385,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_DOUBLE_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readDoubleArray(fieldName);
             };
@@ -392,7 +397,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_FLOAT_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readFloatArray(fieldName);
             };
@@ -404,7 +409,7 @@ namespace hazelcast {
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldDefinition::TYPE_SHORT_ARRAY) {
-                    throw "IncompatibleClassChangeError";
+                    throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return readShortArray(fieldName);
             };

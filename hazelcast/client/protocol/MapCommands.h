@@ -5,6 +5,7 @@
 #include "Command.h"
 #include "../serialization/DataInput.h"
 #include "../serialization/DataOutput.h"
+#include "HazelcastException.h"
 #include <boost/thread.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -30,24 +31,24 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "MCONTAINSKEY";
                         command += SPACE + instanceName + SPACE + "#1" + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         char integerBuffer[20];
                         int integerBufferSize = sprintf(integerBuffer, "%d", key.totalSize());
-                        dataOutput.write(integerBuffer, 0, integerBufferSize);
+                        dataOutput.write(integerBuffer, integerBufferSize);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of containsKey return");
+                            throw hazelcast::client::HazelcastException("unexpected header of containsKey return");
 
                         containsKey = line.compare("OK true") ? false : true;
                     };
@@ -85,24 +86,24 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "MCONTAINSVALUE";
                         command += SPACE + instanceName + SPACE + "#1" + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         char integerBuffer[20];
                         int integerBufferSize = sprintf(integerBuffer, "%d", value.totalSize());
-                        dataOutput.write(integerBuffer, 0, integerBufferSize);
+                        dataOutput.write(integerBuffer, integerBufferSize);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
 
                         value.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of containsValue return");
+                            throw hazelcast::client::HazelcastException("unexpected header of containsValue return");
 
                         containsValue = line.compare("OK true") ? false : true;
                     };
@@ -164,12 +165,12 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
                         value.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
@@ -178,7 +179,7 @@ namespace hazelcast {
                         else if (!line.compare("OK #1"))
                             numResults = 1;
                         else
-                            throw std::domain_error("unexpected header of put return");
+                            throw hazelcast::client::HazelcastException("unexpected header of put return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -220,11 +221,11 @@ namespace hazelcast {
                         command.append(integerBuffer, integerBufferSize);
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
@@ -233,7 +234,7 @@ namespace hazelcast {
                         else if (!line.compare("OK #1"))
                             numResults = 1;
                         else
-                            throw std::domain_error("unexpected header of get return");
+                            throw hazelcast::client::HazelcastException("unexpected header of get return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -280,16 +281,16 @@ namespace hazelcast {
                         command.append(integerBuffer, integerBufferSize);
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK #1"))
-                            throw std::domain_error("unexpected header of remove return");
+                            throw hazelcast::client::HazelcastException("unexpected header of remove return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -322,12 +323,12 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "MFLUSH";
                         command += SPACE + instanceName + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK "))
-                            throw std::domain_error("unexpected header of flush return");
+                            throw hazelcast::client::HazelcastException("unexpected header of flush return");
 
                     };
 
@@ -375,18 +376,18 @@ namespace hazelcast {
                         command.erase(command.end() - 1);
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
                         for (DataSet::const_iterator it = keySet.begin(); it != keySet.end(); it++) {
                             it->writeData(dataOutput);
                         }
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of('#');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK "))
-                            throw std::domain_error("unexpected header of getAll return");
+                            throw hazelcast::client::HazelcastException("unexpected header of getAll return");
                         std::string sizeStr = line.substr(pos + 1, line.length() - pos);
                         nReturnedResults = std::atoi(sizeStr.c_str());
                         nReturnedResults /= 2;
@@ -474,11 +475,11 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
@@ -491,7 +492,7 @@ namespace hazelcast {
                         } else if (!line.compare("OK timeout"))
                             success = false;
                         else
-                            throw std::domain_error("unexpected header of tryRemove return");
+                            throw hazelcast::client::HazelcastException("unexpected header of tryRemove return");
 
                     };
 
@@ -538,30 +539,30 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "MTRYPUT";
                         command += SPACE + instanceName + SPACE + "#2" + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         char integerBuffer[20];
                         int integerBufferSize = sprintf(integerBuffer, "%d", key.totalSize());
-                        dataOutput.write(integerBuffer, 0, integerBufferSize);
+                        dataOutput.write(integerBuffer, integerBufferSize);
 
-                        dataOutput.write(SPACE.c_str(), 0, SPACE.length());
+                        dataOutput.write(SPACE.c_str(), SPACE.length());
 
                         integerBufferSize = sprintf(integerBuffer, "%d", value.totalSize());
-                        dataOutput.write(integerBuffer, 0, integerBufferSize);
+                        dataOutput.write(integerBuffer, integerBufferSize);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
 
                         key.writeData(dataOutput);
                         value.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of tryPut return");
+                            throw hazelcast::client::HazelcastException("unexpected header of tryPut return");
 
                         success = line.compare("OK true") ? false : true;
                     };
@@ -625,17 +626,17 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
                         value.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK"))
-                            throw std::domain_error("unexpected header of putTransient return");
+                            throw hazelcast::client::HazelcastException("unexpected header of putTransient return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -692,17 +693,17 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
                         value.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK #1"))
-                            throw std::domain_error("unexpected header of putIfAbsent return");
+                            throw hazelcast::client::HazelcastException("unexpected header of putIfAbsent return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -769,20 +770,20 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
                         oldValue.writeData(dataOutput);
                         newValue.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of replace if same return");
+                            throw hazelcast::client::HazelcastException("unexpected header of replace if same return");
 
                         success = line.compare("OK true") ? false : true;
                     };
@@ -824,24 +825,24 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "MEVICT";
                         command += SPACE + instanceName + SPACE + "#1" + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         char integerBuffer[20];
                         int integerBufferSize = sprintf(integerBuffer, "%d", key.totalSize());
-                        dataOutput.write(integerBuffer, 0, integerBufferSize);
+                        dataOutput.write(integerBuffer, integerBufferSize);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of evict return");
+                            throw hazelcast::client::HazelcastException("unexpected header of evict return");
 
                         success = line.compare("OK true") ? false : true;
                     };
@@ -879,14 +880,14 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "KEYSET";
                         command += SPACE + "map" + SPACE + instanceName + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of('#');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK "))
-                            throw std::domain_error("unexpected header of keySet return");
+                            throw hazelcast::client::HazelcastException("unexpected header of keySet return");
                         std::string sizeStr = line.substr(pos + 1, line.length() - pos);
                         nReturnedResults = std::atoi(sizeStr.c_str());
                     };
@@ -958,18 +959,18 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of lock return");
+                            throw hazelcast::client::HazelcastException("unexpected header of lock return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -1011,18 +1012,18 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of isLocked return");
+                            throw hazelcast::client::HazelcastException("unexpected header of isLocked return");
 
                         isLocked = line.compare("OK true") ? false : true;
                     };
@@ -1084,18 +1085,18 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of tryLock return");
+                            throw hazelcast::client::HazelcastException("unexpected header of tryLock return");
 
                         isAcquired = line.compare("OK true") ? false : true;
                     };
@@ -1150,18 +1151,18 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         int pos = line.find_first_of(' ');
                         std::string ok = line.substr(0, pos);
                         if (ok.compare("OK"))
-                            throw std::domain_error("unexpected header of unlock return");
+                            throw hazelcast::client::HazelcastException("unexpected header of unlock return");
                     };
 
                     void readSizeLine(std::string line) {
@@ -1208,16 +1209,16 @@ namespace hazelcast {
 
                         command += NEWLINE;
 
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
 
                         key.writeData(dataOutput);
 
-                        dataOutput.write(NEWLINE.c_str(), 0, NEWLINE.length());
+                        dataOutput.write(NEWLINE.c_str(), NEWLINE.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK"))
-                            throw std::domain_error("unexpected header of force unlock return");
+                            throw hazelcast::client::HazelcastException("unexpected header of force unlock return");
                     };
 
                     void readSizeLine(std::string line) {

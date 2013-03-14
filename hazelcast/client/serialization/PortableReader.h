@@ -13,6 +13,7 @@
 #include "DataInput.h"
 #include "FieldDefinition.h"
 #include "PortableSerializer.h"
+#include "HazelcastException.h"
 
 #include <iostream>
 #include <string>
@@ -74,7 +75,7 @@ namespace hazelcast {
                 T readPortable(string fieldName) {
                     if (type == MORPHING && !isFieldMorphed) return morphPortable<T >(fieldName);
                     if (!cd->isFieldDefinitionExists(fieldName))
-                        throw "throwUnknownFieldException" + fieldName;
+                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
 
                     FieldDefinition fd = cd->get(fieldName);
 
@@ -96,7 +97,7 @@ namespace hazelcast {
                 std::vector< T > readPortableArray(string fieldName) {
                     if (type == MORPHING && !isFieldMorphed) return morphPortableArray<T >(fieldName);
                     if (!cd->isFieldDefinitionExists(fieldName))
-                        throw "throwUnknownFieldException" + fieldName;
+                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
                     FieldDefinition fd = cd->get(fieldName);
                     int currentPos = input->position();
                     int pos = getPosition(fieldName);
@@ -116,6 +117,10 @@ namespace hazelcast {
                     input->position(currentPos);
                     return portables;
                 };
+
+                DataInput *getRawDataInput();
+
+            private:
 
                 int morphInt(string fieldName);
 
@@ -153,11 +158,11 @@ namespace hazelcast {
                 T morphPortable(string fieldName) {
                     isFieldMorphed = true;
                     if (!cd->isFieldDefinitionExists(fieldName))
-                        throw "throwUnknownFieldException" + fieldName;
+                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
                     FieldDefinition fd = cd->get(fieldName);
 
                     if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                     }
                     return readPortable<T >(fieldName);
                 };
@@ -166,17 +171,15 @@ namespace hazelcast {
                 std::vector< T > morphPortableArray(string fieldName) {
                     isFieldMorphed = true;
                     if (!cd->isFieldDefinitionExists(fieldName))
-                        throw "throwUnknownFieldException" + fieldName;
+                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
                     FieldDefinition fd = cd->get(fieldName);
 
                     if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
-                        throw "IncompatibleClassChangeError";
+                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                     }
                     return readPortableArray<T >(fieldName);
                 };
 
-
-            protected:
 
                 int getPosition(string fieldName);
 

@@ -123,14 +123,14 @@ namespace hazelcast {
                     out.writeInt(cd->getVersion());
                     std::vector<byte> classDefBytes = cd->getBinary();
                     out.writeInt(classDefBytes.size());
-                    out.write(classDefBytes);
+                    out.write(classDefBytes);//TODO only usage ins class this necessary
                 } else {
                     out.writeInt(NO_CLASS_ID);
                 }
                 int len = bufferSize();
                 out.writeInt(len);
                 if (len > 0) {
-                    out.write(buffer);
+                    out.write(buffer); //TODO only usage ins class this necessary
                 }
                 out.writeInt(partitionHash);
             };

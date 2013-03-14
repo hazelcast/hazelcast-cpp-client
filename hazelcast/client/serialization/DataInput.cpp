@@ -296,12 +296,12 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw "malformed input: partial character at end";
+                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
                                 std::string error = "malformed input around byte";
                                 error += count;
-                                throw error;
+                                throw hazelcast::client::HazelcastException(error);
                             }
                             chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                             break;
@@ -309,13 +309,13 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw "malformed input: partial character at end";
+                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                std::string error = "malformed input around byte";
+                                std::string error = "DataInput::readShortUTF : malformed input around byte";
                                 error += count - 1;
-                                throw error;
+                                throw hazelcast::client::HazelcastException(error);
                             }
                             chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                             break;
@@ -324,7 +324,7 @@ namespace hazelcast {
 
                             std::string error = "malformed input around byte";
                             error += count;
-                            throw error;
+                            throw hazelcast::client::HazelcastException(error);
 
                     }
                 }

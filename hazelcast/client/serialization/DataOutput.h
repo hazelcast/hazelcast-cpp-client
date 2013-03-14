@@ -14,6 +14,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include "OutputStream.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,76 +23,77 @@ namespace hazelcast {
             class SerializationContext;
             class SerializationService;
 
+
             typedef unsigned char byte;
             //TODO ask if necessary add offset
 
             class DataOutput {
             public:
 
-                DataOutput(SerializationService *);
+                DataOutput(SerializationService *serializationService, OutputStream *outputStream);
 
-                std::vector<byte> toByteArray();
+                virtual std::vector<byte> toByteArray();
 
-                std::string toString();
+                virtual std::string toString();
 
-                int getSize();
-
-                SerializationContext *getSerializationContext();
+                virtual int getSize();
 
                 //Inherited from DataOutput
-                void write(const std::vector<byte>& bytes);
+                virtual void write(const std::vector<byte>& bytes);
 
-                void write(const char *bytes, int offset, int length);
+                virtual void write(char const *bytes, int length);
 
-                void writeBoolean(bool b);
+                virtual void writeBoolean(bool b);
 
-                void writeByte(int i);
+                virtual void writeByte(int i);
 
-                void writeShort(int i);
+                virtual void writeByte(int n, int i);
 
-                void writeChar(int i);
+                virtual void writeShort(int i);
 
-                void writeInt(int i);
+                virtual void writeChar(int i);
 
-                void writeLong(long l);
+                virtual void writeInt(int i);
 
-                void writeFloat(float v);
+                virtual void writeLong(long l);
 
-                void writeDouble(double v);
+                virtual void writeFloat(float v);
 
-                void writeUTF(std::string s);
+                virtual void writeDouble(double v);
 
-                //Inherited from BufferObjecDataOutput
-                void write(int index, int b);
+                virtual void writeUTF(std::string s);
 
-                void write(int index, char *b, int off, int len);
+                //Inherited from BufferObjectDataOutput
+//                virtual void write(int index, int b);
+//
+//                virtual void write(int index, char *b, int off, int len);
 
-                void writeInt(int index, int v);
+                virtual void writeInt(int index, int v);
 
-                void writeLong(int index, const long v);
+//                virtual void writeLong(int index, const long v);
 
-                void writeBoolean(int index, const bool v);
+//                virtual void writeBoolean(int index, const bool v);
 
-                void writeByte(int index, const int v);
+//                virtual void writeByte(int index, const int v);
 
-                void writeChar(int index, const int v);
+//                virtual void writeChar(int index, const int v);
 
-                void writeDouble(int index, const double v);
+//                virtual void writeDouble(int index, const double v);
 
-                void writeFloat(int index, const float v);
+//                virtual void writeFloat(int index, const float v);
 
-                void writeShort(int index, const int v);
+//                virtual void writeShort(int index, const int v);
 
-                int position();
+                virtual int position();
 
-                void position(int newPos);
+                virtual void position(int newPos);
 
-                void reset();
+                virtual void reset();
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                std::ostringstream buffer;
+                std::auto_ptr<OutputStream> outputStream;
                 int const offset;
                 SerializationService *service;
                 static int const DEFAULT_SIZE = 1024 * 4;

@@ -1,6 +1,6 @@
 #include "Socket.h"
+#include "HazelcastException.h"
 
-#include <iostream>
 #include <vector>
 
 namespace hazelcast {
@@ -27,7 +27,7 @@ namespace hazelcast {
 
             void Socket::sendData(const void *buffer, int len) {
                 if (send(socketId, buffer, len, 0) == -1)
-                    throw "Error at sending";
+                    throw hazelcast::client::HazelcastException("Socket::sendData :Error socket send");
             };
 
             std::string Socket::readLine() {
@@ -47,11 +47,11 @@ namespace hazelcast {
             };
 
             void Socket::recvData(void *buffer, int len) {
-                int size = recv(socketId, (void *) buffer, len, 0);
+                int size = recv(socketId, buffer, len, 0);
                 if (size == -1)
-                    throw "Error at reading";
+                    throw hazelcast::client::HazelcastException("Socket::recvData :Error socket read");
                 else if (size == 0) {
-                    throw "Connection closed by remote";
+                    throw hazelcast::client::HazelcastException("Socket::recvData : Connection closed by remote");
                 }
             };
 
@@ -59,7 +59,6 @@ namespace hazelcast {
                 struct addrinfo hints;
                 std::memset(&hints, 0, sizeof (hints));
                 hints.ai_family = AF_UNSPEC;
-                char ipstr[INET6_ADDRSTRLEN];
                 hints.ai_socktype = SOCK_STREAM;
                 hints.ai_flags = AI_PASSIVE;
 

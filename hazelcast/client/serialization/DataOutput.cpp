@@ -13,46 +13,49 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataOutput::DataOutput(SerializationService *service) : offset(0) {
+            DataOutput::DataOutput(SerializationService *service, OutputStream *outputStream)
+            : offset(0), outputStream(outputStream) {
                 this->service = service;
             };
 
             std::vector<byte> DataOutput::toByteArray() {
-                int size = getSize();
-                std::vector<byte> byteArray(size);
-                std::string str = buffer.str();
-                for (int i = 0; i < size; i++) {
-                    byteArray[i] = str[i];
-                }
-                return byteArray;
+                return outputStream->toByteArray();
             };
 
             std::string DataOutput::toString() {
-                return buffer.str();
+                std::vector<byte> bytes = outputStream->toByteArray();
+                std::string s;
+                for (int i = 0; i < bytes.size(); i++) {
+                    s.push_back(bytes[i]);
+                }
+                return s;
             };
 
             int DataOutput::getSize() {
-                return (int) buffer.str().length();
+                return outputStream->size();
             };
 
             //Inherited from DataOutput
 
             void DataOutput::write(const std::vector<byte>& bytes) {
                 for (int i = 0; i < bytes.size(); i++)
-                    buffer.put(bytes[i]);
+                    outputStream->put(bytes[i]);
             };
 
-            void DataOutput::write(const char *bytes, int off, int len) {
-                buffer.write(bytes + off, sizeof (char) * len);
+            void DataOutput::write(char const *bytes, int length) {
+                outputStream->write(bytes, sizeof (char) * length);
             };
 
             void DataOutput::writeBoolean(bool i) {
                 writeByte(i);
             };
 
+            void DataOutput::writeByte(int n, int i) {
+                outputStream->put(n, 0xff & i);
+            }
+
             void DataOutput::writeByte(int i) {
-                buffer.put(0xff & i);
-                assert(!buffer.bad());
+                outputStream->put(0xff & i);
             };
 
             void DataOutput::writeShort(int v) {
@@ -121,93 +124,90 @@ namespace hazelcast {
 
             //Inherited from BufferObjectDataOutput
 
-            void DataOutput::write(int index, int b) {
-                int pos = position();
-                position(index);
-                writeByte(b);
-                position(pos);
-            };
-
-            void DataOutput::write(int index, char *b, int off, int len) {
-                int pos = position();
-                position(index);
-                write(b, off, len);
-                position(pos);
-            };
+//            void DataOutput::write(int index, int b) {
+//                int pos = position();
+//                position(index);
+//                writeByte(b);
+//                position(pos);
+//            };
+//
+//            void DataOutput::write(int index, char *b, int off, int len) {
+//                int pos = position();
+//                position(index);
+//                write(b, off, len);
+//                position(pos);
+//            };
 
             void DataOutput::writeInt(int index, int v) {
-                int pos = position();
-                position(index);
-                writeInt(v);
-                position(pos);
+//                int pos = position();
+//                position(index);
+//                writeInt(v);
+//                position(pos);
+                writeByte(index++, (v >> 24));
+                writeByte(index++, (v >> 16));
+                writeByte(index++, (v >> 8));
+                writeByte(index, v);
             };
 
-            void DataOutput::writeLong(int index, const long v) {
-                int pos = position();
-                position(index);
-                writeLong(v);
-                position(pos);
-            };
+//            void DataOutput::writeLong(int index, const long v) {
+//                int pos = position();
+//                position(index);
+//                writeLong(v);
+//                position(pos);
+//            };
 
-            void DataOutput::writeBoolean(int index, const bool v) {
-                int pos = position();
-                position(index);
-                writeBoolean(v);
-                position(pos);
-            };
+//            void DataOutput::writeBoolean(int index, const bool v) {
+//                int pos = position();
+//                position(index);
+//                writeBoolean(v);
+//                position(pos);
+//            };
 
-            void DataOutput::writeByte(int index, const int v) {
-                int pos = position();
-                position(index);
-                writeByte(v);
-                position(pos);
-            };
-
-            void DataOutput::writeChar(int index, const int v) {
-                int pos = position();
-                position(index);
-                writeChar(v);
-                position(pos);
-            };
-
-            void DataOutput::writeDouble(int index, const double v) {
-                int pos = position();
-                position(index);
-                writeDouble(v);
-                position(pos);
-            };
-
-            void DataOutput::writeFloat(int index, const float v) {
-                int pos = position();
-                position(index);
-                writeFloat(v);
-                position(pos);
-            };
-
-            void DataOutput::writeShort(int index, const int v) {
-                int pos = position();
-                position(index);
-                writeShort(v);
-                position(pos);
-            };
+//            void DataOutput::writeByte(int index, const int v) {
+//                int pos = position();
+//                position(index);
+//                writeByte(v);
+//                position(pos);
+//            };
+//
+//            void DataOutput::writeChar(int index, const int v) {
+//                int pos = position();
+//                position(index);
+//                writeChar(v);
+//                position(pos);
+//            };
+//
+//            void DataOutput::writeDouble(int index, const double v) {
+//                int pos = position();
+//                position(index);
+//                writeDouble(v);
+//                position(pos);
+//            };
+//
+//            void DataOutput::writeFloat(int index, const float v) {
+//                int pos = position();
+//                position(index);
+//                writeFloat(v);
+//                position(pos);
+//            };
+//
+//            void DataOutput::writeShort(int index, const int v) {
+//                int pos = position();
+//                position(index);
+//                writeShort(v);
+//                position(pos);
+//            };
 
             int DataOutput::position() {
-                assert(buffer.tellp() != -1);
-                return (int) buffer.tellp();
+                return outputStream->size();
             };
 
             void DataOutput::position(int newPos) {
-                buffer.seekp(newPos);
-                assert(buffer.tellp() != -1);
-                assert(buffer.eofbit);
-                assert(buffer.failbit);
-                assert(buffer.badbit);
-
+                outputStream->resize(newPos);
             };
 
             void DataOutput::reset() {
-                position(0);
-                buffer.str("");
+                outputStream->reset();
             };
 
             //private functions
@@ -230,7 +230,7 @@ namespace hazelcast {
                     std::string error = "encoded string too long:";
                     error += utfLength;
                     error += " bytes";
-                    throw error;
+                    throw hazelcast::client::HazelcastException(error);
                 }
                 char byteArray[utfLength];
                 int i;
@@ -252,7 +252,7 @@ namespace hazelcast {
                     }
                 }
                 writeShort(utfLength);
-                write(byteArray, 0, utfLength);
+                write(byteArray, utfLength);
             };
 
         }

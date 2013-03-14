@@ -25,12 +25,12 @@ namespace hazelcast {
                     void writeCommand(hazelcast::client::serialization::DataOutput& dataOutput) {
                         std::string command = "AUTH";
                         command += SPACE + name + SPACE + password + NEWLINE;
-                        dataOutput.write(command.c_str(), 0, command.length());
+                        dataOutput.write(command.c_str(), command.length());
                     };
 
                     void readHeaderLine(std::string line) {
                         if (line.compare("OK")) {
-                            throw std::domain_error("wrong name or password");
+                            throw hazelcast::client::HazelcastException("wrong name or password");
                         }
 
                     };

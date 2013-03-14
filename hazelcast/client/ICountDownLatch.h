@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
@@ -64,7 +65,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool await(long timeoutInMillis) throw(std::domain_error);
+            bool await(long timeoutInMillis) throw(hazelcast::client::HazelcastException);
 
             /**
              * Decrements the count of the latch, releasing all waiting threads if

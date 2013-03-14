@@ -9,6 +9,7 @@
 #include "SerializationContext.h"
 #include "SerializationService.h"
 #include "zlib.h"
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
@@ -82,9 +83,7 @@ namespace hazelcast {
 
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
-
                         DataOutput *output = service->pop();
-                        assert(output != NULL);
                         cd->writeData(*output);
                         std::vector<byte> binary = output->toByteArray();
                         compress(binary);
@@ -111,11 +110,11 @@ namespace hazelcast {
                 int err = compress2((Bytef *) compressedTemp, &compSize, (Bytef *) uncompressedTemp, ucompSize, Z_BEST_COMPRESSION);
                 switch (err) {
                     case Z_BUF_ERROR:
-                        throw "not enough room in the output buffer at compression";
+                        throw hazelcast::client::HazelcastException("not enough room in the output buffer at compression");
                     case Z_DATA_ERROR:
-                        throw "data is corrupted at compression";
+                        throw hazelcast::client::HazelcastException( "data is corrupted at compression");
                     case Z_MEM_ERROR:
-                        throw "if there was not  enough memory at compression";
+                        throw hazelcast::client::HazelcastException("if there was not  enough memory at compression");
                 }
                 std::vector<byte> compressed(compressedTemp, compressedTemp + compSize);
                 binary = compressed;
