@@ -15,9 +15,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializationService::SerializationService(int version, PortableFactory const *portableFactory)
-            : serializationContext(portableFactory, version, this)
-            , portableSerializer(&serializationContext) {
+            SerializationService::SerializationService(int version, std::map< int, PortableFactory const *  > const &portableFactories)
+            : portableSerializer(this, portableFactories)
+            , serializationContext(portableSerializer.getFactoryIds(), version, this) {
 
             };
 
@@ -37,7 +37,7 @@ namespace hazelcast {
             DataOutput *SerializationService::pop() {
                 DataOutput *out;
                 if (outputPool.empty()) {
-                    out = new DataOutput(this,new OutputStringStream());
+                    out = new DataOutput(this, new OutputStringStream());
                 } else {
                     out = outputPool.front();
                     outputPool.pop();

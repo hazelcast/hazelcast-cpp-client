@@ -13,43 +13,61 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            FieldDefinition::FieldDefinition() {
+            FieldDefinition::FieldDefinition(): type(0) {
 
             };
 
-            FieldDefinition::FieldDefinition(int index, std::string fieldName, byte type) : classId(-1) {
-                this->index = index;
-                this->fieldName = fieldName;
-                this->type = type;
+
+            FieldDefinition::FieldDefinition(FieldDefinition const& rhs)
+            :classId(rhs.classId)
+            , type(rhs.type)
+            , fieldName(rhs.fieldName)
+            , index(rhs.index)
+            , factoryId(rhs.factoryId) {
+
             };
 
-            FieldDefinition::FieldDefinition(int index, std::string fieldName, byte type, int classId) {
-                this->index = index;
-                this->fieldName = fieldName;
-                this->type = type;
-                this->classId = classId;
+            FieldDefinition::FieldDefinition(int index, std::string fieldName, FieldType const &type)
+            :classId(-1)
+            , type(type)
+            , fieldName(fieldName)
+            , index(index)
+            , factoryId(0) {
             };
 
-            byte FieldDefinition::getType() {
+            FieldDefinition::FieldDefinition(int index, std::string fieldName, FieldType const &type, int factoryId, int classId)
+            :classId(classId)
+            , type(type)
+            , fieldName(fieldName)
+            , index(index)
+            , factoryId(factoryId) {
+            };
+
+            FieldType FieldDefinition::getType() const {
                 return type;
             };
 
-            std::string FieldDefinition::getName() {
+            std::string FieldDefinition::getName() const {
                 return fieldName;
             };
 
-            int FieldDefinition::getIndex() {
+            int FieldDefinition::getIndex() const {
                 return index;
             };
 
-            int FieldDefinition::getClassId() {
+            int FieldDefinition::getFactoryId() const {
+                return factoryId;
+            }
+
+            int FieldDefinition::getClassId() const {
                 return classId;
             };
 
             void FieldDefinition::writeData(DataOutput& out) const {
                 out.writeInt(index);
                 out.writeUTF(fieldName);
-                out.writeByte(type);
+                out.writeByte(type.getId());
+                out.writeInt(factoryId);
                 out.writeInt(classId);
             };
 
@@ -57,6 +75,7 @@ namespace hazelcast {
                 index = in.readInt();
                 fieldName = in.readUTF();
                 type = in.readByte();
+                factoryId = in.readInt();
                 classId = in.readInt();
             };
 
@@ -64,8 +83,9 @@ namespace hazelcast {
                 if (this == &other) return true;
 
                 if (classId != other.classId) return false;
+                if (factoryId != other.factoryId) return false;
                 if (index != other.index) return false;
-                if (type != other.type) return false;
+                if (type.getId() != other.type.getId()) return false;
                 if (fieldName.compare(other.fieldName)) return false;
 
                 return true;

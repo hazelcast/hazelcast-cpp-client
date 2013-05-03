@@ -9,6 +9,7 @@
 #include "DataInput.h"
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
+#include "SerializationConstants.h"
 
 
 namespace hazelcast {
@@ -17,7 +18,7 @@ namespace hazelcast {
 
             Data::Data() : partitionHash(-1)
             , buffer(0)
-            , type(-1) {
+            , type(SerializationConstants::CONSTANT_TYPE_DATA) {
 
             };
 
@@ -68,9 +69,11 @@ namespace hazelcast {
                 int total = 0;
                 total += 4; // type
                 if (cd != NULL) {
-                    total += 4; // cd-classId
-                    total += 4; // cd-version
-                    total += 4; // cd-binary-length
+                    total += 4; // classDefinition-classId
+                    total += 4; // classDefinition-namespace-size
+                    total += 4; // // classDefinition-factory-id
+                    total += 4; // classDefinition-version
+                    total += 4; // classDefinition-binary-length
                     total += cd->getBinary().size(); // cd-binary
                 } else {
                     total += 4; // no-classId
@@ -93,18 +96,19 @@ namespace hazelcast {
                 type = in.readInt();
                 int classId = in.readInt();
                 if (classId != NO_CLASS_ID) {
+                    int factoryId = in.readInt();
                     int version = in.readInt();
                     SerializationContext *context = in.getSerializationContext();
 
                     int classDefSize = in.readInt();
 
                     if (context->isClassDefinitionExists(classId, version)) {
-                        cd = context->lookup(classId, version);
+                        cd = context->lookup(factoryId, classId, version);
                         in.skipBytes(classDefSize);
                     } else {
                         std::vector<byte> classDefBytes(classDefSize);
                         in.readFully(classDefBytes);
-                        cd = context->createClassDefinition(classDefBytes);
+                        cd = context->createClassDefinition(factoryId, classDefBytes);
                     }
                 }
                 int size = in.readInt();
@@ -120,6 +124,7 @@ namespace hazelcast {
                 out.writeInt(type);
                 if (cd != NULL) {
                     out.writeInt(cd->getClassId());
+                    out.writeInt(cd->getFactoryId());
                     out.writeInt(cd->getVersion());
                     std::vector<byte> classDefBytes = cd->getBinary();
                     out.writeInt(classDefBytes.size());
@@ -135,6 +140,13 @@ namespace hazelcast {
                 out.writeInt(partitionHash);
             };
 
+            int Data::getFactoryId() const {
+                return FACTORY_ID;
+            };
+
+            int Data::getId() const {
+                return ID;
+            };
         }
     }
 }

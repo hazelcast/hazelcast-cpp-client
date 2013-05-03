@@ -18,6 +18,7 @@ namespace hazelcast {
         namespace serialization {
 
             class SerializationService;
+
             class SerializationContext;
 
             typedef unsigned char byte;
@@ -31,11 +32,13 @@ namespace hazelcast {
 
                 ~DataInput();
 
-                int getDataClassId();
+                int getFactoryId() const;
+
+                int getDataClassId() const;
 
                 void setDataClassId(int);
 
-                int getDataVersion();
+                int getDataVersion() const;
 
                 SerializationContext *getSerializationContext();
 
@@ -95,6 +98,7 @@ namespace hazelcast {
                 SerializationService *service;
                 byte *ptr;
                 byte *beg;
+                int factoryId;
                 int dataClassId;
                 int dataVersion;
 

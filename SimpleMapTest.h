@@ -27,38 +27,40 @@ class Stats {
 public:
     Stats() {
     };
+
     Stats(const Stats& rhs) {
         Stats newOne;
-        gets.store(rhs.gets.load());
-        puts.store(rhs.puts.load());
-        removes.store(rhs.removes.load());
+        getCount.store(rhs.getCount.load());
+        putCount.store(rhs.putCount.load());
+        removeCount.store(rhs.removeCount.load());
 
     };
+
     Stats getAndReset() {
         Stats newOne(*this);
-        puts.store(0);
-        gets.store(0);
-        removes.store(0);
+        putCount.store(0);
+        getCount.store(0);
+        removeCount.store(0);
         return newOne;
     };
-    boost::atomic<long> gets;
-    boost::atomic<long> puts;
-    boost::atomic<long> removes;
+    boost::atomic<long> getCount;
+    boost::atomic<long> putCount;
+    boost::atomic<long> removeCount;
 
     void print() {
-        std::cout << "Total = " << total() << ", puts = " << puts.load() << " , gets = " << gets.load() << " , removes = " << removes.load() << std::endl;
+        std::cout << "Total = " << total() << ", puts = " << putCount.load() << " , gets = " << getCount.load() << " , removes = " << removeCount.load() << std::endl;
     };
 
     long total() {
-        return gets.load() + puts.load() + removes.load();
+        return getCount.load() + putCount.load() + removeCount.load();
     };
 } stats;
 
 void printStats() {
     while (true) {
         try {
-            boost::chrono::milliseconds dura(STATS_SECONDS * 1000);
-            boost::this_thread::sleep_for(dura);
+            boost::chrono::milliseconds duration(STATS_SECONDS * 1000);
+            boost::this_thread::sleep_for(duration);
             Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
@@ -104,13 +106,13 @@ public:
                 int operation = ((int) (rand() % 100));
                 if (operation < GET_PERCENTAGE) {
                     map.get(key);
-                    stats.gets++;
+                    stats.getCount++;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
                     map.put(key, value);
-                    stats.puts++;
+                    stats.putCount++;
                 } else {
                     map.remove(key);
-                    stats.removes++;
+                    stats.removeCount++;
                 }
             }
 

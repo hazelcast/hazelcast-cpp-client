@@ -26,6 +26,7 @@ namespace hazelcast {
             };
 
             DataInput::DataInput(const Data& data, SerializationService *service) : service(service)
+            , factoryId(data.cd != NULL ? data.cd->getFactoryId() : -1)
             , dataClassId(data.cd != NULL ? data.cd->getClassId() : -1)
             , dataVersion(data.cd != NULL ? data.cd->getVersion() : -1) {
                 int size = data.bufferSize();
@@ -47,7 +48,11 @@ namespace hazelcast {
                 return *this;
             };
 
-            int DataInput::getDataClassId() {
+            int DataInput::getFactoryId() const {
+                return factoryId;
+            };
+
+            int DataInput::getDataClassId() const {
                 return dataClassId;
             };
 
@@ -55,13 +60,13 @@ namespace hazelcast {
                 dataClassId = id;
             };
 
-            int DataInput::getDataVersion() {
+            int DataInput::getDataVersion() const {
                 return dataVersion;
             };
 
             SerializationContext *DataInput::getSerializationContext() {
                 return service->getSerializationContext();
-            }
+            };
             //Inherited from DataInoput
 
             void DataInput::readFully(std::vector<byte>& bytes) {

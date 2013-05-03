@@ -15,7 +15,6 @@
 #include "DataOutput.h"
 #include "DataInput.h"
 #include "PortableFactory.h"
-#include "SerializationService.h"
 #include "SerializationContext.h"
 #include "HazelcastException.h"
 #include <iostream>
@@ -30,7 +29,7 @@ namespace hazelcast {
             class SerializationService {
             public:
 
-                SerializationService(int, PortableFactory const *);
+                SerializationService(int, std::map< int, PortableFactory const *  > const  &);
 
                 ~SerializationService();
 
@@ -45,7 +44,7 @@ namespace hazelcast {
 
                     Portable *portable = dynamic_cast<Portable *> (&object);
                     if (portable != NULL) {
-                        data.cd = serializationContext.lookup(portable->getClassId());
+                        data.cd = serializationContext.lookup(portable->getFactoryId(), portable->getClassId());
                     } else {
                         throw hazelcast::client::HazelcastException("class is not portable");
                     }
@@ -115,11 +114,8 @@ namespace hazelcast {
                 SerializationContext *getSerializationContext() {
                     return &serializationContext;
                 }
+
             private:
-
-                static int const OUTPUT_STREAM_BUFFER_SIZE = 32 * 1024;
-                static int const CONSTANT_SERIALIZERS_SIZE = SerializationConstants::CONSTANT_SERIALIZERS_LENGTH;
-
                 queue<DataOutput *> outputPool;
 
                 PortableSerializer portableSerializer;
@@ -141,8 +137,6 @@ namespace hazelcast {
                 ConstantSerializers::StringSerializer stringSerializer;
 
                 SerializationContext serializationContext;
-
-
             };
 
             template<>

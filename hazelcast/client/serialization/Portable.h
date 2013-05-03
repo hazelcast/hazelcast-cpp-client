@@ -14,10 +14,13 @@ namespace hazelcast {
         namespace serialization {
 
             class PortableWriter;
+
             class PortableReader;
 
             class Portable {
             public:
+
+                virtual int getFactoryId() = 0;
 
                 virtual int getClassId() = 0;
 

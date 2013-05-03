@@ -13,6 +13,7 @@
 #include "PortableSerializer.h"
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
+#include "FieldType.h"
 #include <iostream>
 #include <string>
 #include <set>
@@ -24,7 +25,9 @@ namespace hazelcast {
         namespace serialization {
 
             class ClassDefinition;
+
             class DataInput;
+
             class Portable;
 
             class PortableWriter {
@@ -33,8 +36,6 @@ namespace hazelcast {
                 enum Type {
                     DEFAULT, CLASS_DEFINITION_WRITER
                 };
-
-                PortableWriter();
 
                 PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type type);
 
@@ -94,7 +95,7 @@ namespace hazelcast {
 
                 void setPosition(string fieldName);
 
-                bool checkType(string fieldName, byte type);
+                bool checkType(string fieldName, FieldType const& type);
 
                 bool checkType(string fieldName, Portable& portable);
 
@@ -103,12 +104,13 @@ namespace hazelcast {
                     if (type == CLASS_DEFINITION_WRITER) {
                         if (!raw) {
                             int classId = portables[0].getClassId();
+                            int factoryId = portables[0].getFactoryId();
                             for (int i = 1; i < portables.size(); i++) {
                                 if (portables[i].getClassId() != classId) {
                                     throw hazelcast::client::HazelcastException("Illegal Argument Exception");
                                 }
                             }
-                            FieldDefinition fd(index++, fieldName, FieldDefinition::TYPE_PORTABLE_ARRAY, classId);
+                            FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
                             addNestedField(portables[0], fd);
                         }
                         return true;

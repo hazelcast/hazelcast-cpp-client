@@ -9,12 +9,8 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-
-#include <vector>
-#include <iostream>
-#include <memory>
 #include <map>
-#include <memory>
+#include <set>
 #include <boost/shared_array.hpp>
 
 namespace hazelcast {
@@ -22,31 +18,35 @@ namespace hazelcast {
         namespace serialization {
 
             class ClassDefinition;
+
             class PortableFactory;
+
             class Portable;
+
             class SerializationService;
+
             class DataOutput;
+
+            class PortableContext;
 
             typedef unsigned char byte;
 
             class SerializationContext {
             public:
 
-                SerializationContext(PortableFactory const *, int, SerializationService *);
+                SerializationContext(std::vector<int> const & portableFactories, int, SerializationService *);
 
                 ~SerializationContext();
 
-                bool isClassDefinitionExists(int);
-
-                boost::shared_ptr<ClassDefinition> lookup(int);
-
-                bool isClassDefinitionExists(int, int);
+                bool isClassDefinitionExists(int, int) const;
 
                 boost::shared_ptr<ClassDefinition> lookup(int, int);
 
-                std::auto_ptr<Portable> createPortable(int classId);
+                bool isClassDefinitionExists(int, int, int) const;
 
-                boost::shared_ptr<ClassDefinition> createClassDefinition(std::vector<byte>&);
+                boost::shared_ptr<ClassDefinition> lookup(int, int, int) const;
+
+                boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::vector<byte>&);
 
                 void registerNestedDefinitions(boost::shared_ptr<ClassDefinition> cd);
 
@@ -58,16 +58,13 @@ namespace hazelcast {
 
                 SerializationContext(const SerializationContext&);
 
+                PortableContext *getPortableContext(int factoryId) const;
+
                 void operator = (const SerializationContext&);
 
-                void compress(std::vector<byte>&);
-
-                void decompress(std::vector<byte>&);
-
-                PortableFactory const *portableFactory;
+                int contextVersion;
+                std::map<int, PortableContext *> portableContextMap;
                 SerializationService *service;
-                int version;
-                std::map<long, boost::shared_ptr<ClassDefinition> > versionedDefinitions;
 
             };
 

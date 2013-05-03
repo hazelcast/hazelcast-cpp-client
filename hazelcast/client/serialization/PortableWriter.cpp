@@ -14,10 +14,6 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableWriter::PortableWriter() {
-
-            };
-
             PortableWriter::PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type type)
             : type(type)
             , serializer(serializer)
@@ -34,55 +30,55 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeInt(string fieldName, int value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_INT)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_INT)) return;
                 setPosition(fieldName);
                 output->writeInt(value);
             };
 
             void PortableWriter::writeLong(string fieldName, long value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_LONG)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_LONG)) return;
                 setPosition(fieldName);
                 output->writeLong(value);
             };
 
             void PortableWriter::writeBoolean(string fieldName, bool value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_BOOLEAN)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_BOOLEAN)) return;
                 setPosition(fieldName);
                 output->writeBoolean(value);
             };
 
             void PortableWriter::writeByte(string fieldName, byte value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_BYTE)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_BYTE)) return;
                 setPosition(fieldName);
                 output->writeByte(value);
             };
 
             void PortableWriter::writeChar(string fieldName, int value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_CHAR)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_CHAR)) return;
                 setPosition(fieldName);
                 output->writeChar(value);
             };
 
             void PortableWriter::writeDouble(string fieldName, double value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_DOUBLE)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_DOUBLE)) return;
                 setPosition(fieldName);
                 output->writeDouble(value);
             };
 
             void PortableWriter::writeFloat(string fieldName, float value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_FLOAT)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_FLOAT)) return;
                 setPosition(fieldName);
                 output->writeFloat(value);
             };
 
             void PortableWriter::writeShort(string fieldName, short value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_SHORT)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_SHORT)) return;
                 setPosition(fieldName);
                 output->writeShort(value);
             };
 
             void PortableWriter::writeUTF(string fieldName, string value) {
-                if (checkType(fieldName, FieldDefinition::TYPE_UTF)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_UTF)) return;
                 setPosition(fieldName);
                 output->writeUTF(value);
             };
@@ -98,7 +94,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeByteArray(string fieldName, std::vector<byte>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_BYTE_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_BYTE_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -110,7 +106,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeCharArray(string fieldName, std::vector<char>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_CHAR_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_CHAR_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -122,7 +118,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeIntArray(string fieldName, std::vector<int>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_INT_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_INT_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -134,7 +130,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeLongArray(string fieldName, std::vector<long>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_LONG_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_LONG_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -146,7 +142,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeDoubleArray(string fieldName, std::vector<double>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_DOUBLE_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -158,7 +154,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeFloatArray(string fieldName, std::vector<float>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_FLOAT_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_FLOAT_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -170,7 +166,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::writeShortArray(string fieldName, std::vector<short>& values) {
-                if (checkType(fieldName, FieldDefinition::TYPE_SHORT_ARRAY)) return;
+                if (checkType(fieldName, FieldTypes::TYPE_SHORT_ARRAY)) return;
                 setPosition(fieldName);
                 int len = values.size();
                 output->writeInt(len);
@@ -220,7 +216,7 @@ namespace hazelcast {
 
             };
 
-            bool PortableWriter::checkType(string fieldName, byte fieldType) {
+            bool PortableWriter::checkType(string fieldName, FieldType const& fieldType) {
                 if (type == CLASS_DEFINITION_WRITER) {
                     if (!raw) {
                         FieldDefinition fd(index++, fieldName, fieldType);
@@ -235,7 +231,7 @@ namespace hazelcast {
             bool PortableWriter::checkType(string fieldName, Portable& portable) {
                 if (type == CLASS_DEFINITION_WRITER) {
                     if (!raw) {
-                        FieldDefinition fd = FieldDefinition(index++, fieldName, FieldDefinition::TYPE_PORTABLE, portable.getClassId());
+                        FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, portable.getFactoryId(), portable.getClassId());
                         addNestedField(portable, fd);
                     }
                     return true;

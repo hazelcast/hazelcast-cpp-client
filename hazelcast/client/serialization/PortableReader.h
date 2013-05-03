@@ -26,6 +26,7 @@ namespace hazelcast {
         namespace serialization {
 
             class Portable;
+
             class BufferObjectDataInput;
 
             typedef unsigned char byte;
@@ -161,7 +162,7 @@ namespace hazelcast {
                         throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
                     FieldDefinition fd = cd->get(fieldName);
 
-                    if (fd.getType() != FieldDefinition::TYPE_PORTABLE) {
+                    if (fd.getType() != FieldTypes::TYPE_PORTABLE) {
                         throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                     }
                     return readPortable<T >(fieldName);
@@ -174,7 +175,7 @@ namespace hazelcast {
                         throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
                     FieldDefinition fd = cd->get(fieldName);
 
-                    if (fd.getType() != FieldDefinition::TYPE_PORTABLE_ARRAY) {
+                    if (fd.getType() != FieldTypes::TYPE_PORTABLE_ARRAY) {
                         throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                     }
                     return readPortableArray<T >(fieldName);

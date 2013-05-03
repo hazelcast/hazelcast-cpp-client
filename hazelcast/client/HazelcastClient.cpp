@@ -10,7 +10,7 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig& config) : clientService(*this)
         , clientConfig(config)
-        , serializationService(0, clientConfig.getPortableFactory())
+        , serializationService(0, *clientConfig.getPortableFactories())
         , commandHandler(config.getAddress(), &serializationService) {
             std::cout << "trying to connect to " << config.getAddress().getAddress() << ":" << config.getAddress().getPort() << std::endl;
             setupInitialConnection();

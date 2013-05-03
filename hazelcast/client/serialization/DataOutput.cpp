@@ -87,7 +87,6 @@ namespace hazelcast {
             };
 
             void DataOutput::writeFloat(float x) {
-
                 union {
                     float f;
                     int i;
@@ -97,7 +96,6 @@ namespace hazelcast {
             };
 
             void DataOutput::writeDouble(double v) {
-
                 union {
                     double d;
                     long l;
@@ -122,81 +120,12 @@ namespace hazelcast {
                 }
             };
 
-            //Inherited from BufferObjectDataOutput
-
-//            void DataOutput::write(int index, int b) {
-//                int pos = position();
-//                position(index);
-//                writeByte(b);
-//                position(pos);
-//            };
-//
-//            void DataOutput::write(int index, char *b, int off, int len) {
-//                int pos = position();
-//                position(index);
-//                write(b, off, len);
-//                position(pos);
-//            };
-
             void DataOutput::writeInt(int index, int v) {
-//                int pos = position();
-//                position(index);
-//                writeInt(v);
-//                position(pos);
                 writeByte(index++, (v >> 24));
                 writeByte(index++, (v >> 16));
                 writeByte(index++, (v >> 8));
                 writeByte(index, v);
             };
-
-//            void DataOutput::writeLong(int index, const long v) {
-//                int pos = position();
-//                position(index);
-//                writeLong(v);
-//                position(pos);
-//            };
-
-//            void DataOutput::writeBoolean(int index, const bool v) {
-//                int pos = position();
-//                position(index);
-//                writeBoolean(v);
-//                position(pos);
-//            };
-
-//            void DataOutput::writeByte(int index, const int v) {
-//                int pos = position();
-//                position(index);
-//                writeByte(v);
-//                position(pos);
-//            };
-//
-//            void DataOutput::writeChar(int index, const int v) {
-//                int pos = position();
-//                position(index);
-//                writeChar(v);
-//                position(pos);
-//            };
-//
-//            void DataOutput::writeDouble(int index, const double v) {
-//                int pos = position();
-//                position(index);
-//                writeDouble(v);
-//                position(pos);
-//            };
-//
-//            void DataOutput::writeFloat(int index, const float v) {
-//                int pos = position();
-//                position(index);
-//                writeFloat(v);
-//                position(pos);
-//            };
-//
-//            void DataOutput::writeShort(int index, const int v) {
-//                int pos = position();
-//                position(index);
-//                writeShort(v);
-//                position(pos);
-//            };
 
             int DataOutput::position() {
                 return outputStream->size();

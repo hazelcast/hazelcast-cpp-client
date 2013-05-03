@@ -7,21 +7,25 @@
 //
 #include "ClassDefinition.h"
 #include "DataInput.h"
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ClassDefinition::ClassDefinition() : classId(-1), version(-1) {
+            ClassDefinition::ClassDefinition() : factoryId(0), classId(0), version(-1) {
 
             };
 
-            ClassDefinition::ClassDefinition(int classId, int version) : classId(classId), version(version) {
+            ClassDefinition::ClassDefinition(int factoryId, int classId, int version)
+            : factoryId(factoryId), classId(classId), version(version) {
 
             };
 
-            ClassDefinition::ClassDefinition(const ClassDefinition& rhs) : classId(classId)
-            , version(version)
+            ClassDefinition::ClassDefinition(const ClassDefinition& rhs)
+            : factoryId(rhs.factoryId)
+            , classId(rhs.classId)
+            , version(rhs.version)
             , fieldDefinitions(rhs.fieldDefinitions)
             , fieldDefinitionsMap(rhs.fieldDefinitionsMap)
             , nestedClassDefinitions(rhs.nestedClassDefinitions)
@@ -29,6 +33,7 @@ namespace hazelcast {
             };
 
             ClassDefinition& ClassDefinition::operator = (const ClassDefinition& rhs) {
+                factoryId = rhs.factoryId;
                 classId = rhs.classId;
                 version = rhs.version;
                 fieldDefinitions = rhs.fieldDefinitions;
@@ -40,7 +45,7 @@ namespace hazelcast {
 
             void ClassDefinition::add(FieldDefinition& fd) {
                 fieldDefinitions.push_back(fd);
-                fieldDefinitionsMap[fd.fieldName] = fd;
+                fieldDefinitionsMap[fd.getName()] = fd;
             };
 
             void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
@@ -63,7 +68,39 @@ namespace hazelcast {
                 return nestedClassDefinitions;
             };
 
+
+            bool ClassDefinition::hasField(string & fieldName) const {
+                return fieldDefinitionsMap.count(fieldName) != 0;
+            }
+
+            std::vector<std::string>  ClassDefinition::getFieldNames() const {
+                std::vector<std::string> fieldNames;
+                for (std::map<std::string, FieldDefinition>::const_iterator it = fieldDefinitionsMap.begin(); it != fieldDefinitionsMap.end(); ++it) {
+                    fieldNames.push_back(it->first);
+                }
+                return fieldNames;
+            }
+
+            FieldType ClassDefinition::getFieldType(std::string fieldName) const {
+                if (hasField(fieldName)) {
+                    FieldDefinition x = fieldDefinitionsMap.at(fieldName);
+                    FieldType a = x.getType();
+                    return a;
+                } else {
+                    throw hazelcast::client::HazelcastException("field does not exist");
+                }
+            }
+
+            int ClassDefinition::getFieldClassId(std::string fieldName) const {
+                if (hasField(fieldName)) {
+                    return fieldDefinitionsMap.at(fieldName).getClassId();
+                } else {
+                    throw hazelcast::client::HazelcastException("field does not exist");
+                }
+            }
+
             void ClassDefinition::writeData(DataOutput & out) const {
+                out.writeInt(factoryId);
                 out.writeInt(classId);
                 out.writeInt(version);
                 out.writeInt((int) fieldDefinitions.size());
@@ -75,6 +112,7 @@ namespace hazelcast {
             };
 
             void ClassDefinition::readData(DataInput & in) {
+                factoryId = in.readInt();
                 classId = in.readInt();
                 version = in.readInt();
                 int size = in.readInt();
@@ -91,9 +129,14 @@ namespace hazelcast {
                 }
             };
 
-            int ClassDefinition::getFieldCount() {
+            int ClassDefinition::getFieldCount() const {
                 return (int) fieldDefinitions.size();
             };
+
+
+            int ClassDefinition::getFactoryId() const {
+                return factoryId;
+            }
 
             int ClassDefinition::getClassId() const {
                 return classId;
@@ -109,21 +152,6 @@ namespace hazelcast {
 
             void ClassDefinition::setBinary(std::vector<byte>& binary) {
                 this->binary = binary;
-            };
-
-            bool ClassDefinition::operator ==(const ClassDefinition& rhs) const {
-                if (this == &rhs) return true;
-                if (classId != rhs.classId) return false;
-                if (version != rhs.version) return false;
-                if (fieldDefinitions != rhs.fieldDefinitions) return false;
-                if (fieldDefinitionsMap != rhs.fieldDefinitionsMap) return false;
-                if (nestedClassDefinitions != rhs.nestedClassDefinitions) return false;
-                if (binary != rhs.binary) return false;
-                return true;
-            };
-
-            bool ClassDefinition::operator !=(const ClassDefinition& rhs) const {
-                return !(*this == rhs);
             };
 
         }

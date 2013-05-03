@@ -27,14 +27,14 @@ namespace hazelcast {
 
             Address getAddress() const;
 
-            void setPortableFactory(serialization::PortableFactory *);
+            void addPortableFactory(int, serialization::PortableFactory *);
 
-            serialization::PortableFactory const *getPortableFactory() const;
+            std::map< int, serialization::PortableFactory const *  > const *const getPortableFactories();
 
         private:
             GroupConfig groupConfig;
             Address address;
-            serialization::PortableFactory *portableFactory;
+            std::map< int, serialization::PortableFactory const * > portableFactories;
         };
 
     }

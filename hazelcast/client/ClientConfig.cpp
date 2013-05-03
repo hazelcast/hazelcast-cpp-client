@@ -1,3 +1,4 @@
+#include <map>
 #include "ClientConfig.h"
 
 namespace hazelcast {
@@ -10,7 +11,7 @@ namespace hazelcast {
         ClientConfig::ClientConfig(const ClientConfig& rhs) {
             groupConfig = rhs.groupConfig;
             address = rhs.address;
-            portableFactory = rhs.portableFactory;
+            portableFactories = rhs.portableFactories;
         };
 
         ClientConfig::~ClientConfig() {
@@ -20,7 +21,7 @@ namespace hazelcast {
         ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
             groupConfig = rhs.groupConfig;
             address = rhs.address;
-            portableFactory = rhs.portableFactory;
+            portableFactories = rhs.portableFactories;
             return (*this);
         };
 
@@ -40,12 +41,12 @@ namespace hazelcast {
             return address;
         };
 
-        serialization::PortableFactory const *ClientConfig::getPortableFactory() const {
-            return portableFactory;
+        std::map< int, serialization::PortableFactory const * > const *const ClientConfig::getPortableFactories() {
+            return &portableFactories;
         };
 
-        void ClientConfig::setPortableFactory(serialization::PortableFactory *portableFactory) {
-            this->portableFactory = portableFactory;
+        void ClientConfig::addPortableFactory(int factoryId, serialization::PortableFactory *portableFactory) {
+            portableFactories[factoryId] = portableFactory;
         };
 
     }

@@ -10,6 +10,7 @@
 #define HAZELCAST_DATA
 
 #include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <vector>
 #include <iostream>
 #include <memory>
@@ -20,12 +21,14 @@ namespace hazelcast {
         namespace serialization {
 
             class DataOutput;
+
             class DataInput;
+
             class ClassDefinition;
 
             typedef unsigned char byte;
 
-            class Data : public DataSerializable {
+            class Data : public IdentifiedDataSerializable {
             public:
 
                 Data();
@@ -35,6 +38,7 @@ namespace hazelcast {
                 Data(const int type, std::vector<byte> bytes);
 
                 ~Data();
+
 
                 Data& operator = (const Data&);
 
@@ -59,8 +63,13 @@ namespace hazelcast {
                 std::vector<byte> buffer;
             private:
                 int partitionHash;
-                static const int NO_CLASS_ID = 0;
+                static int const FACTORY_ID = 0;
+                static int const ID = 0;
+                static int const NO_CLASS_ID = 0;
 
+                virtual int getFactoryId() const;
+
+                virtual int getId() const;
             };
 
         }

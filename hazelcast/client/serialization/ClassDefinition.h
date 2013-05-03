@@ -27,6 +27,7 @@ namespace hazelcast {
         namespace serialization {
 
             class DataInput;
+
             class DataOutput;
 
             typedef unsigned char byte;
@@ -36,7 +37,7 @@ namespace hazelcast {
 
                 ClassDefinition();
 
-                ClassDefinition(int classId, int version);
+                ClassDefinition(int factoryId, int classId, int version);
 
                 void add(FieldDefinition&);
 
@@ -50,11 +51,21 @@ namespace hazelcast {
 
                 vector<boost::shared_ptr<ClassDefinition > > &getNestedClassDefinitions();
 
+                bool hasField(std::string& fieldName) const;
+
+                std::vector<std::string> getFieldNames() const;
+
+                FieldType getFieldType(std::string fieldName) const;
+
+                int getFieldClassId(std::string fieldName) const;
+
                 void writeData(DataOutput&) const;
 
                 void readData(DataInput&);
 
-                int getFieldCount();
+                int getFieldCount() const;
+
+                int getFactoryId() const;
 
                 int getClassId() const;
 
@@ -64,20 +75,18 @@ namespace hazelcast {
 
                 void setBinary(std::vector<byte>&);
 
-                bool operator ==(const ClassDefinition&) const;
 
-                bool operator !=(const ClassDefinition&) const;
-
+            private:
                 int classId;
                 int version;
-            private:
+                int factoryId;
 
                 ClassDefinition(const ClassDefinition&);
 
                 ClassDefinition& operator = (const ClassDefinition& rhs);
 
                 vector<FieldDefinition> fieldDefinitions;
-                map<std::string, FieldDefinition> fieldDefinitionsMap;
+                map<string, FieldDefinition> fieldDefinitionsMap;
                 vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions; //TODO ask if equaliy is important
 
                 std::vector<byte> binary;
