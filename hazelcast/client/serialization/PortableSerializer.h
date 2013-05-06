@@ -54,7 +54,7 @@ namespace hazelcast {
                 SerializationContext *const getSerializationContext();
 
                 SerializationService *const service;
-                std::map<int, PortableFactory const * > const &portableFactories;
+                std::map<int, PortableFactory const * > const portableFactories;
             };
 
         }

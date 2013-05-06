@@ -333,7 +333,7 @@ namespace hazelcast {
 
                     }
                 }
-                chararr[chararr_count++] = '\0';
+                chararr[chararr_count] = '\0';
                 return chararr;
             };
 

@@ -89,7 +89,7 @@ namespace hazelcast {
                     }
                 };
 
-                DataOutput *getRawDataOutput();
+                DataOutput *const getRawDataOutput();
 
             private:
 

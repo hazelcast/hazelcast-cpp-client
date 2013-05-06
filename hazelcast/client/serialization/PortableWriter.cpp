@@ -9,6 +9,7 @@
 #include "PortableWriter.h"
 #include "ClassDefinition.h"
 #include "EmptyDataOutput.h"
+#include "StringUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -177,7 +178,7 @@ namespace hazelcast {
                 }
             };
 
-            DataOutput *hazelcast::client::serialization::PortableWriter::getRawDataOutput() {
+            DataOutput *const hazelcast::client::serialization::PortableWriter::getRawDataOutput() {
                 if (type == CLASS_DEFINITION_WRITER) {
                     static EmptyDataOutput *emptyDataOutput = new EmptyDataOutput();
                     return emptyDataOutput;
@@ -192,15 +193,15 @@ namespace hazelcast {
             }
 
             void PortableWriter::setPosition(string fieldName) {
-                if (raw) throw HazelcastException("Can not write Portable fields after getRawDataOutput() is called!");
+                if (raw) throw HazelcastException("Cannot write Portable fields after getRawDataOutput() is called!");
                 if (!cd->isFieldDefinitionExists(fieldName)) {
                     std::string error;
                     error += "HazelcastSerializationException( Invalid field name: '";
                     error += fieldName;
                     error += "' for ClassDefinition {id: ";
-                    error += cd->getClassId();
+                    error += hazelcast::client::util::StringUtil::to_string(cd->getClassId());
                     error += ", version: ";
-                    error += cd->getVersion();
+                    error += hazelcast::client::util::StringUtil::to_string(cd->getVersion());
                     error += "}";
 
                     throw hazelcast::client::HazelcastException(error);

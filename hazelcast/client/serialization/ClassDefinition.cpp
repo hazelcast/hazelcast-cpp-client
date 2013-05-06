@@ -146,6 +146,11 @@ namespace hazelcast {
                 return version;
             };
 
+
+            void ClassDefinition::setVersion(int version) {
+                this->version = version;
+            };
+
             std::vector<byte> ClassDefinition::getBinary() const {
                 return binary;
             };

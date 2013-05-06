@@ -23,6 +23,7 @@ class TestInnerPortable : public Portable {
 public:
     TestInnerPortable() {
     };
+
     TestInnerPortable(const TestInnerPortable& rhs) {
         *this = rhs;
     }
@@ -54,6 +55,11 @@ public:
     int getClassId() {
         return 2;
     };
+
+    int getFactoryId() {
+        return 1;
+    };
+
     ~TestInnerPortable() {
     }
 
@@ -94,9 +100,11 @@ public:
         return true;
     };
 
+
     bool operator !=(TestInnerPortable& m) {
         return !(*this == m);
     };
+
     std::vector<int> ii;
 private:
     std::vector<byte> bb;
@@ -108,4 +116,5 @@ private:
     std::vector< TestNamedPortable > nn;
 
 };
+
 #endif

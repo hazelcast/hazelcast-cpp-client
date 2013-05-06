@@ -49,7 +49,7 @@ namespace hazelcast {
             private:
                 void compress(std::vector<byte>&);
 
-                void decompress(std::vector<byte>&) const;
+                std::vector<byte> decompress(std::vector<byte> const &) const;
 
                 std::map<long, boost::shared_ptr<ClassDefinition> > versionedDefinitions;
                 SerializationService *service;

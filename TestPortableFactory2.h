@@ -6,23 +6,20 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef __Server__TestPortableFactory__
-#define __Server__TestPortableFactory__
+#ifndef __Server__TestPortableFactory2__
+#define __Server__TestPortableFactory2__
 
 #include "hazelcast/client/serialization/PortableFactory.h"
 #include "hazelcast/client/serialization/Portable.h"
 #include "TestMainPortable.h"
 #include "TestInnerPortable.h"
-#include "TestNamedPortable.h"
-#include "TestRawDataPortable.h"
-#include "TestInvalidWritePortable.h"
-#include "TestInvalidReadPortable.h"
+#include "TestNamedPortableV2.h"
 #include <iostream>
 #include <memory>
 
 using namespace hazelcast::client::serialization;
 
-class TestPortableFactory : public PortableFactory {
+class TestPortableFactory2 : public PortableFactory {
 
 public:
     Portable *create(int classId) const {
@@ -32,13 +29,7 @@ public:
             case 2:
                 return new TestInnerPortable();
             case 3:
-                return new TestNamedPortable();
-            case 4:
-                return new TestRawDataPortable();
-            case 5:
-                return new TestInvalidWritePortable();
-            case 6:
-                return new TestInvalidReadPortable();
+                return new TestNamedPortablev2();
             default:
                 throw "Illegal Statement Exception";
         }

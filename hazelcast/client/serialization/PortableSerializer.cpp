@@ -11,7 +11,6 @@
 #include "SerializationConstants.h"
 #include "PortableFactory.h"
 #include "SerializationService.h"
-#import "StringUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -101,7 +100,7 @@ namespace hazelcast {
                     factoryIds.push_back(it->first);
                 }
                 return factoryIds;
-            }
+            };
         }
     }
 }

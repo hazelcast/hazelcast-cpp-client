@@ -63,6 +63,10 @@ public:
         return 1;
     };
 
+    int getFactoryId() {
+        return 1;
+    };
+
     void writePortable(PortableWriter& writer) {
         writer.writeByte("b", b);
         writer.writeBoolean("bool", boolean);
@@ -122,4 +126,5 @@ private:
     double d;
     string str;
 };
+
 #endif

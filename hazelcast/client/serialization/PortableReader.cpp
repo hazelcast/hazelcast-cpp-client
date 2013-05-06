@@ -18,7 +18,8 @@ namespace hazelcast {
             , cd(cd)
             , offset(input.position())
             , type(type)
-            , isFieldMorphed(false) {
+            , isFieldMorphed(false)
+            , raw(false) {
             };
 
             int PortableReader::readInt(string fieldName) {
@@ -159,11 +160,19 @@ namespace hazelcast {
                 return values;
             };
 
-            DataInput *PortableReader::getRawDataInput() {
+            DataInput *const PortableReader::getRawDataInput() {
+                if (!raw) {
+                    int pos = input->readInt(offset + cd->getFieldCount() * 4);
+                    input->position(pos);
+                }
+                raw = true;
                 return input;
             }
 
             int PortableReader::getPosition(string fieldName) {
+                if (raw) {
+                    throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");
+                }
                 isFieldMorphed = false;
                 if (!cd->isFieldDefinitionExists(fieldName))
                     throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + fieldName);
@@ -333,7 +342,7 @@ namespace hazelcast {
             std::vector<byte> PortableReader::morphByteArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_BYTE_ARRAY) {
@@ -345,7 +354,7 @@ namespace hazelcast {
             std::vector<char> PortableReader::morphCharArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_CHAR_ARRAY) {
@@ -357,7 +366,7 @@ namespace hazelcast {
             std::vector<int> PortableReader::morphIntArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_INT_ARRAY) {
@@ -369,7 +378,7 @@ namespace hazelcast {
             std::vector<long> PortableReader::morphLongArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_LONG_ARRAY) {
@@ -381,7 +390,7 @@ namespace hazelcast {
             std::vector<double> PortableReader::morphDoubleArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_DOUBLE_ARRAY) {
@@ -393,7 +402,7 @@ namespace hazelcast {
             std::vector<float> PortableReader::morphFloatArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_FLOAT_ARRAY) {
@@ -405,7 +414,7 @@ namespace hazelcast {
             std::vector<short> PortableReader::morphShortArray(string fieldName) {
                 isFieldMorphed = true;
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw "throwUnknownFieldException" + fieldName;
+                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_SHORT_ARRAY) {

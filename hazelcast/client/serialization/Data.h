@@ -61,11 +61,11 @@ namespace hazelcast {
                 boost::shared_ptr<ClassDefinition> cd;
                 int type;
                 std::vector<byte> buffer;
+                static int const NO_CLASS_ID = 0;
             private:
                 int partitionHash;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
-                static int const NO_CLASS_ID = 0;
 
                 virtual int getFactoryId() const;
 

@@ -119,7 +119,7 @@ namespace hazelcast {
                     return portables;
                 };
 
-                DataInput *getRawDataInput();
+                DataInput *const getRawDataInput();
 
             private:
 
@@ -192,6 +192,7 @@ namespace hazelcast {
                 int offset;
                 Type type;
                 bool isFieldMorphed;
+                bool raw;
             };
 
         }

@@ -6,8 +6,6 @@
 
 
 #include "MapPutOperation.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,9 +15,12 @@ namespace hazelcast {
             }
 
             MapPutOperation::MapPutOperation(Data key, Data value)
-            :key(key) , value(value)
-            {
+            :key(key), value(value) {
 
+            }
+
+            int MapPutOperation::getFactoryId() {
+                return 0;
             }
 
             int MapPutOperation::getClassId() {
@@ -38,10 +39,12 @@ namespace hazelcast {
                 value.readData(*input);
             }
 
-            MapPutOperation::~MapPutOperation(){
+            MapPutOperation::~MapPutOperation() {
 
 
             }
 
 
-        }}}
+        }
+    }
+}

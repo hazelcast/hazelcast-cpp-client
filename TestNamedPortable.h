@@ -29,6 +29,10 @@ public:
         return 3;
     };
 
+    int getFactoryId() {
+        return 1;
+    };
+
     void writePortable(PortableWriter& writer) {
         writer.writeUTF("name", name);
         writer.writeInt("myint", k);
@@ -55,4 +59,5 @@ public:
     std::string name;
     int k;
 };
+
 #endif

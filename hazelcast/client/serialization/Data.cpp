@@ -102,7 +102,7 @@ namespace hazelcast {
 
                     int classDefSize = in.readInt();
 
-                    if (context->isClassDefinitionExists(classId, version)) {
+                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
                         cd = context->lookup(factoryId, classId, version);
                         in.skipBytes(classDefSize);
                     } else {

@@ -75,6 +75,8 @@ namespace hazelcast {
 
                 void setBinary(std::vector<byte>&);
 
+                void setVersion(int);
+
 
             private:
                 int classId;
@@ -87,7 +89,7 @@ namespace hazelcast {
 
                 vector<FieldDefinition> fieldDefinitions;
                 map<string, FieldDefinition> fieldDefinitionsMap;
-                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions; //TODO ask if equaliy is important
+                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions; //TODO ask if equaliy is necessary
 
                 std::vector<byte> binary;
 

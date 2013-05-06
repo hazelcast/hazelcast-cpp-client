@@ -17,6 +17,7 @@
 #include "PortableFactory.h"
 #include "SerializationContext.h"
 #include "HazelcastException.h"
+#include "StringUtil.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -90,8 +91,7 @@ namespace hazelcast {
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
                     } else {
-                        std::string error = "There is no suitable de-serializer for type ";
-                        error += typeID;
+                        std::string error = "There is no suitable de-serializer for type " + hazelcast::client::util::StringUtil::to_string(typeID);
                         throw hazelcast::client::HazelcastException(error);
                     }
 

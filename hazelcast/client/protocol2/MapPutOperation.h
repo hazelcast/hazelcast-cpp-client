@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class MapPutOperation :public Portable{
+            class MapPutOperation : public Portable {
             public:
 
                 MapPutOperation();
@@ -38,6 +38,7 @@ namespace hazelcast {
                 Data value;
 
 
+                virtual int getFactoryId();
             };
         }
     }

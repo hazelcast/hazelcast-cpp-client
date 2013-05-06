@@ -30,9 +30,9 @@ namespace hazelcast {
 
             boost::shared_ptr<ClassDefinition> PortableContext::createClassDefinition(std::vector<byte>& binary) {
 
-                decompress(binary);
+                std::vector<byte> decompressed = decompress(binary);
 
-                DataInput dataInput = DataInput(binary, service);
+                DataInput dataInput = DataInput(decompressed, service);
                 boost::shared_ptr<ClassDefinition> cd(new ClassDefinition);
                 cd->readData(dataInput);
                 cd->setBinary(binary);
@@ -49,7 +49,9 @@ namespace hazelcast {
             };
 
             void PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
-
+                if (cd->getVersion() < 0) {
+                    cd->setVersion(context->getVersion());
+                }
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
                         DataOutput *output = service->pop();
@@ -85,7 +87,7 @@ namespace hazelcast {
                 binary = compressed;
             };
 
-            void PortableContext::decompress(std::vector<byte>& binary) const {
+            std::vector<byte> PortableContext::decompress(std::vector<byte> const & binary) const {
                 uLong compSize = binary.size();
 
                 uLong ucompSize = 512;
@@ -109,8 +111,8 @@ namespace hazelcast {
                     }
                 } while (err != Z_OK);
                 std::vector<byte> decompressed(temp, temp + ucompSize);
-                binary = decompressed;
                 delete [] temp;
+                return decompressed;
             };
 
         }
