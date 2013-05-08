@@ -13,7 +13,25 @@
 #include "ClassDefinitionBuilder.h"
 #include "TestRawDataPortable.h"
 #include "TestInvalidReadPortable.h"
+#include "CustomSerializer.h"
+#include "CustomClass.h"
 #include <fstream>
+
+void testCustomSerializer(){
+    serialization::SerializationService serializationService(1, getPortableFactoryMap());
+    CustomClass customClass(34567);
+    TypeSerializer* ts = new CustomSerializer();
+    serializationService.registerSerializer<CustomClass>(ts);
+
+    Data data = serializationService.toData(customClass);
+    CustomClass x = serializationService.toObject<CustomClass>(data);
+    assert(x.a == customClass.a);
+
+    TestNamedPortableV2 np2("named portable2", 3);
+    data = serializationService.toData(np2);
+    TestNamedPortableV2 x2 = serializationService.toObject<TestNamedPortableV2>(data);
+    assert(np2 == x2);
+}
 
 void testRawData() {
     serialization::SerializationService serializationService(1, getPortableFactoryMap());
@@ -88,10 +106,10 @@ void testDifferentVersions() {
     TestNamedPortable p1("portable-v1", 111);
     Data data = serializationService.toData(p1);
 
-    TestNamedPortablev2 p2("portable-v2", 123);
+    TestNamedPortableV2 p2("portable-v2", 123);
     Data data2 = serializationService2.toData(p2);
 
-    TestNamedPortablev2 t2 = serializationService2.toObject<TestNamedPortablev2>(data);
+    TestNamedPortableV2 t2 = serializationService2.toObject<TestNamedPortableV2>(data);
     assert(t2.name.compare("portable-v1") == 0);
     assert(t2.k == 111);
     assert(t2.v == 0);

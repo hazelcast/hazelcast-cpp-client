@@ -25,10 +25,6 @@ namespace hazelcast {
             ~HazelcastException() throw();
 
             char const *what() const throw();
-
-
-        private:
-            std::string message;
         };
 
     }

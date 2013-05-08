@@ -29,7 +29,7 @@ public:
             case 2:
                 return new TestInnerPortable();
             case 3:
-                return new TestNamedPortablev2();
+                return new TestNamedPortableV2();
             default:
                 throw "Illegal Statement Exception";
         }

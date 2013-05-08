@@ -13,11 +13,11 @@ namespace hazelcast {
         : std::domain_error(message){
         }
 
-        HazelcastException::~HazelcastException() {
+        HazelcastException::~HazelcastException() throw(){
 
         }
 
-        char const * HazelcastException::what() const {
+        char const * HazelcastException::what() const throw(){
             return std::domain_error::what();
         }
 

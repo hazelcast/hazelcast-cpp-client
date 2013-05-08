@@ -8,10 +8,20 @@
 #define __CustomSerializer_H_
 
 #include <iostream>
+#include "TypeSerializer.h"
+#include "DataOutput.h"
+#include "DataInput.h"
 
+using namespace hazelcast::client::serialization;
 
-class CustomSerializer {
+class CustomSerializer : public TypeSerializer {
 
+public:
+    virtual int getTypeId();
+
+    virtual void write(DataOutput *out, void *object);
+
+    virtual void *read(DataInput& in);
 };
 
 

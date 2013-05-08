@@ -13,9 +13,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataOutput::DataOutput(SerializationService *service, OutputStream *outputStream)
+            DataOutput::DataOutput(OutputStream *outputStream)
             : offset(0), outputStream(outputStream) {
-                this->service = service;
             };
 
             std::vector<byte> DataOutput::toByteArray() {

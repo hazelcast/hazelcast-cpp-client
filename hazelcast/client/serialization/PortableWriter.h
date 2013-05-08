@@ -59,6 +59,8 @@ namespace hazelcast {
 
                 void writePortable(string fieldName, Portable& portable);
 
+                void writeNullPortable(string fieldName, int factoryId, int classId);
+
                 void writeByteArray(string fieldName, std::vector<byte>&);
 
                 void writeCharArray(string fieldName, std::vector<char>&);
@@ -84,7 +86,7 @@ namespace hazelcast {
                         output->position(offset + len * sizeof (int));
                         for (int i = 0; i < len; i++) {
                             output->writeInt(offset + i * sizeof (int), output->position());
-                            serializer->write(output, values[i]);
+                            serializer->write(output, &(values[i]));
                         }
                     }
                 };
@@ -96,6 +98,8 @@ namespace hazelcast {
                 void setPosition(string fieldName);
 
                 bool checkType(string fieldName, FieldType const& type);
+
+                bool checkType(string fieldName, int factoryId , int classId);
 
                 bool checkType(string fieldName, Portable& portable);
 

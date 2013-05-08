@@ -23,7 +23,7 @@ namespace hazelcast {
 
             GroupConfig& getGroupConfig();
 
-            void setAddress(std::string);
+            void setAddress(std::string, std::string);
 
             Address getAddress() const;
 

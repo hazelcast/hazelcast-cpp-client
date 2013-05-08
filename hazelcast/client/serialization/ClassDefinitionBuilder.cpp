@@ -157,7 +157,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done) {
-                    throw new hazelcast::client::HazelcastException("ClassDefinition is already built for " + hazelcast::client::util::StringUtil::to_string(cd->getClassId()));
+                    throw hazelcast::client::HazelcastException("ClassDefinition is already built for " + hazelcast::client::util::StringUtil::to_string(cd->getClassId()));
                 }
 
             }

@@ -26,7 +26,7 @@ public:
 
     TestInvalidWritePortable(long l, int i, std::string s) {
         this->l = l;
-        this->i = l;
+        this->i = i;
         this->s = l;
     }
 

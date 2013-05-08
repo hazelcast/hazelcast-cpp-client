@@ -30,6 +30,7 @@ namespace hazelcast {
                 void writePortable(PortableWriter & writer);
 
                 void readPortable(PortableReader & reader);
+                virtual int getFactoryId();
 
                 ~MapPutOperation();
 
@@ -38,7 +39,6 @@ namespace hazelcast {
                 Data value;
 
 
-                virtual int getFactoryId();
             };
         }
     }

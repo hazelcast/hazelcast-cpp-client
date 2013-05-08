@@ -10,8 +10,16 @@
 #include <iostream>
 
 
-class CustomClass {
+class CustomClass{
+public:
+    CustomClass():a(-1){
 
+    }
+
+    CustomClass(int x):a(x){
+
+    };
+    int a;
 };
 
 

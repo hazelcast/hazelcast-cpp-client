@@ -37,7 +37,7 @@ namespace hazelcast {
             DataOutput *SerializationService::pop() {
                 DataOutput *out;
                 if (outputPool.empty()) {
-                    out = new DataOutput(this, new OutputStringStream());
+                    out = new DataOutput(new OutputStringStream());
                 } else {
                     out = outputPool.front();
                     outputPool.pop();

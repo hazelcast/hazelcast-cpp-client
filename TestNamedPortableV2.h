@@ -10,13 +10,13 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestNamedPortablev2 : public TestNamedPortable {
+class TestNamedPortableV2 : public TestNamedPortable {
 public:
-    TestNamedPortablev2() {
+    TestNamedPortableV2() {
 
     };
 
-    TestNamedPortablev2(std::string name, int v) : TestNamedPortable(name, v * 10) {
+    TestNamedPortableV2(std::string name, int v) : TestNamedPortable(name, v * 10) {
         this->v = v;
     };
 

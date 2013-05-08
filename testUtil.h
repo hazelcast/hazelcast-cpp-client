@@ -1,11 +1,12 @@
-#ifndef PORTABLETEST
-#define PORTABLETEST
+#ifndef TEST_UTIL
+#define TEST_UTIL
+
+#define SERVER_ADDRESS "192.168.2.6"
+#define SERVER_PORT "5701"
 
 #include "TestMainPortable.h"
 #include "TestPortableFactory.h"
 #include "TestPortableFactory2.h"
-
-#define SERVER_ADDRESS "192.168.2.6:5701"
 
 TestMainPortable getTestMainPortable() {
     byte byteArray[] = {0, 1, 2};

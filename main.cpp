@@ -1,17 +1,13 @@
 //
 // server.cpp
 
-//#include "TestPortableFactory.h"
-//#include "SimpleMapTest.h"
-
-#define SERVER_ADDRESS "192.168.2.6:5701"
-
 #include <iostream>
 #include "portableTest.h"
-//#include "mapTest.h"
+//#include "binaryClientTest.h"
 
 int main(int argc, char **argv) {
     try{
+        testCustomSerializer();
         testRawData();
         testRawDataWithoutRegistering();
         testRawDataInvalidWrite();
@@ -20,6 +16,8 @@ int main(int argc, char **argv) {
         testCompression();
         testSerialization();
         testSerializationViaFile();
+//        testBinaryClient();
+
 
 //        testMapOperations();
 //        testMapLocksInSequential();

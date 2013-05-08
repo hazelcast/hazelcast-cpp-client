@@ -29,10 +29,10 @@ namespace hazelcast {
             return groupConfig;
         };
 
-        void ClientConfig::setAddress(std::string addressStr) {//TODO if address is not set
-            int middle = addressStr.find_first_of(':', 0);
-            std::string address = addressStr.substr(0, middle);
-            std::string port = addressStr.substr(middle + 1, addressStr.length() - middle);
+        void ClientConfig::setAddress(std::string address, std::string port) {//TODO if address is not set
+//            int middle = addressStr.find_first_of(':', 0);
+//            std::string address = addressStr.substr(0, middle);
+//            std::string port = addressStr.substr(middle + 1, addressStr.length() - middle);
             this->address.setAddress(address);
             this->address.setPort(port);
         };

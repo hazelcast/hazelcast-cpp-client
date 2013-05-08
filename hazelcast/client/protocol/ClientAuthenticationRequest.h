@@ -8,10 +8,22 @@
 #define __ClientAuthenticationRequest_H_
 
 #include <iostream>
+#include "Portable.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 
-class ClientAuthenticationRequest {
+class ClientAuthenticationRequest : public hazelcast::client::serialization::Portable{
 
+    public:
+
+    virtual int getFactoryId();
+
+    virtual int getClassId();
+
+    virtual void writePortable(hazelcast::client::serialization::PortableWriter & writer);
+
+    virtual void readPortable(hazelcast::client::serialization::PortableReader & reader);
 };
 
 

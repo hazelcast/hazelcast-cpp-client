@@ -10,6 +10,7 @@
 #include "ClassDefinition.h"
 #include "EmptyDataOutput.h"
 #include "StringUtil.h"
+#include "SerializationContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -87,11 +88,15 @@ namespace hazelcast {
             void PortableWriter::writePortable(string fieldName, Portable& value) {
                 if (checkType(fieldName, value)) return;
                 setPosition(fieldName);
-                bool isNull = false;
-                output->writeBoolean(isNull);
-                if (!isNull) {
-                    serializer->write(output, value);
-                }
+                output->writeBoolean(false);
+                serializer->write(output, &value);
+            };
+
+
+            void PortableWriter::writeNullPortable(string fieldName, int factoryId, int classId) {
+                if (checkType(fieldName, factoryId, classId)) return;
+                setPosition(fieldName);
+                output->writeBoolean(true);
             };
 
             void PortableWriter::writeByteArray(string fieldName, std::vector<byte>& values) {
@@ -222,6 +227,24 @@ namespace hazelcast {
                     if (!raw) {
                         FieldDefinition fd(index++, fieldName, fieldType);
                         cd->add(fd);
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            bool PortableWriter::checkType(string fieldName, int factoryId, int classId) {
+                if (type == CLASS_DEFINITION_WRITER) {
+                    if (!raw) {
+                        FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
+                        SerializationContext *pContext = serializer->getSerializationContext();
+                        if (pContext->isClassDefinitionExists(factoryId, classId) == false) {
+                            throw hazelcast::client::HazelcastException("Cannot write null portable withouy explicitly registering class definition!");
+                        } else {
+                            cd->add(fd);
+                            cd->add(pContext->lookup(factoryId, classId));
+                        }
                     }
                     return true;
                 } else {

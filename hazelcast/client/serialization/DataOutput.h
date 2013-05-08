@@ -30,7 +30,7 @@ namespace hazelcast {
             class DataOutput {
             public:
 
-                DataOutput(SerializationService *serializationService, OutputStream *outputStream);
+                DataOutput(OutputStream *outputStream);
 
                 virtual std::vector<byte> toByteArray();
 
@@ -95,8 +95,6 @@ namespace hazelcast {
             private:
                 std::auto_ptr<OutputStream> outputStream;
                 int const offset;
-                SerializationService *service;
-                static int const DEFAULT_SIZE = 1024 * 4;
 
                 void writeShortUTF(std::string);
 

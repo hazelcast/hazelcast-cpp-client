@@ -46,19 +46,15 @@ namespace hazelcast {
                 return cd;
             };
 
-            int PortableSerializer::getVersion() {
-                return getSerializationContext()->getVersion();
-            };
-
-            void PortableSerializer::write(DataOutput *dataOutput, Portable& p) {
-
-                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+            void PortableSerializer::write(DataOutput *dataOutput, void* p) {
+                Portable* portable = (Portable*)p;
+                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(*portable);
                 PortableWriter writer(this, cd, dataOutput, PortableWriter::DEFAULT);
-                p.writePortable(writer);
+                portable->writePortable(writer);
 
             };
 
-            std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
+            void* PortableSerializer::read(DataInput& dataInput) {
 
                 int factoryId = dataInput.getFactoryId();
                 int dataClassId = dataInput.getDataClassId();
@@ -70,9 +66,8 @@ namespace hazelcast {
                     throw hazelcast::client::HazelcastException("Could not find PortableFactory for factoryId: " + hazelcast::client::util::StringUtil::to_string(factoryId));
                 }
 
-
-                std::auto_ptr<Portable> p(portableFactory->create(dataClassId));
-                if (p.get() == NULL) {
+                Portable* p = portableFactory->create(dataClassId);
+                if (p == NULL) {
                     throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::client::util::StringUtil::to_string(factoryId));
                 }
                 SerializationContext *const context = getSerializationContext();

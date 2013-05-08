@@ -18,6 +18,7 @@
 #include "SerializationContext.h"
 #include "HazelcastException.h"
 #include "StringUtil.h"
+#include "boost/type_traits/is_base_of.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -37,20 +38,24 @@ namespace hazelcast {
                 template<typename K>
                 Data toData(K& object) {
                     DataOutput *output = pop();
+                    int typeID;
+                    if (boost::is_base_of<Portable, K>::value) {
+                        portableSerializer.write(output, &object);
+                        typeID = portableSerializer.getTypeId();
+                    } else if (typeMap.count(typeid(K).name()) > 0) {
+                        boost::shared_ptr<TypeSerializer> serializer = typeMap[typeid(K).name()];
+                        serializer->write(output, &object);
+                        typeID = serializer->getTypeId();
+                    } else
+                        throw hazelcast::client::HazelcastException("No suitable serializer is found for the class with type-id" + std::string(typeid(K).name()));
 
-                    portableSerializer.write(output, object);
-
-                    Data data(SerializationConstants::CONSTANT_TYPE_PORTABLE, output->toByteArray());
+                    Data data(typeID, output->toByteArray());
                     push(output);
-
-                    Portable *portable = dynamic_cast<Portable *> (&object);
-                    if (portable != NULL) {
-                        data.cd = serializationContext.lookup(portable->getFactoryId(), portable->getClassId());
-                    } else {
-                        throw hazelcast::client::HazelcastException("class is not portable");
+                    if (boost::is_base_of<Portable, K>::value) {//TODO ???
+                        data.cd = portableSerializer.getClassDefinition(reinterpret_cast<Portable&>(object));
+//                         data.cd = serializationContext.lookup(object.getFactoryId(), object.getClassId());
                     }
                     return data;
-
                 };
 
                 Data toData(Data&);
@@ -87,25 +92,38 @@ namespace hazelcast {
                 inline K toObject(const Data& data) {
                     if (data.bufferSize() == 0)
                         throw hazelcast::client::HazelcastException("Empty Data");
+
+                    K ptr;
+                    DataInput dataInput(data, this);
+
                     int typeID = data.type;
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
+//                        std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
+//                        ptr = dynamic_cast<K *> (autoPtr.get());
+                        ptr = *reinterpret_cast<K *>(portableSerializer.read(dataInput));
+                    } else if (idMap.count(typeID) > 0) {
+                        boost::shared_ptr<TypeSerializer> serializer = idMap[typeID];
+//                        std::auto_ptr<Portable> autoPtr(serializer->read(dataInput));
+//                        ptr = dynamic_cast<K *> (autoPtr.get());
+                        ptr = *reinterpret_cast<K *>(serializer->read(dataInput));
                     } else {
                         std::string error = "There is no suitable de-serializer for type " + hazelcast::client::util::StringUtil::to_string(typeID);
                         throw hazelcast::client::HazelcastException(error);
                     }
-
-                    DataInput dataInput(data, this);
-                    std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
-
-                    K *ptr = dynamic_cast<K *> (autoPtr.get());
-
-                    return (*ptr);
+                    return ptr;
                 };
 
                 void push(DataOutput *);
 
                 DataOutput *pop();
+
+                template <typename K>
+                void registerSerializer(TypeSerializer *typeSerializer) {
+                    boost::shared_ptr<TypeSerializer> ts(typeSerializer);
+                    typeMap[typeid(K).name()] = ts;
+                    idMap[typeSerializer->getTypeId()] = ts;
+                };
 
                 static long combineToLong(int x, int y);
 
@@ -135,6 +153,9 @@ namespace hazelcast {
                 ConstantSerializers::FloatArraySerializer floatArraySerializer;
                 ConstantSerializers::DoubleArraySerializer doubleArraySerializer;
                 ConstantSerializers::StringSerializer stringSerializer;
+
+                map<std::string, boost::shared_ptr<TypeSerializer> > typeMap;
+                map<int, boost::shared_ptr<TypeSerializer> > idMap;
 
                 SerializationContext serializationContext;
             };

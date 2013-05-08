@@ -17,22 +17,19 @@ void testPut() {
     Data key = service.toData(23);
     Data value = service.toData(32);
     MapPutOperation mapPutOperation(key, value);
-    Address address("192.168.2.6", "5701");
+    Address address(SERVER_ADDRESS, SERVER_PORT);
     hazelcast::client::protocol::Socket socket(address);
     char protocol[] = {'C', 'B', '1'};
     socket.sendData((void *) protocol, 3 * sizeof(char));
 
     Data data = service.toData(mapPutOperation);
 
-    OutputStream stream(socket);
-    DataOutput output(&service, &stream);
+    DataOutput output(new OutputSocketStream(socket));
     data.writeData(output);
-
-
 }
 
 void testSpeed() {
-    SimpleMapTest s(SERVER_ADDRESS);
+    SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
     s.run();
 };
 
@@ -40,7 +37,7 @@ void testMapOperations() {
     TestPortableFactory tpf1;
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress(SERVER_ADDRESS);
+    clientConfig.setAddress(SERVER_ADDRESS, SERVER_PORT);
     clientConfig.addPortableFactory(999, &tpf1);
 
     try {
@@ -140,7 +137,7 @@ void testMapOperations() {
 void testMapLocksInSequential() {
     ClientConfig clientConfig;
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress(SERVER_ADDRESS);
+    clientConfig.setAddress(SERVER_ADDRESS, SERVER_PORT);
 
     try {
         auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
