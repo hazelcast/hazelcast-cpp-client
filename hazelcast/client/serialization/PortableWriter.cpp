@@ -89,7 +89,7 @@ namespace hazelcast {
                 if (checkType(fieldName, value)) return;
                 setPosition(fieldName);
                 output->writeBoolean(false);
-                serializer->write(output, &value);
+                serializer->write(*output, value);
             };
 
 
@@ -185,8 +185,8 @@ namespace hazelcast {
 
             DataOutput *const hazelcast::client::serialization::PortableWriter::getRawDataOutput() {
                 if (type == CLASS_DEFINITION_WRITER) {
-                    static EmptyDataOutput *emptyDataOutput = new EmptyDataOutput();
-                    return emptyDataOutput;
+                    static EmptyDataOutput emptyDataOutput;
+                    return &emptyDataOutput;
                 }
                 if (!raw) {
                     int pos = output->position();

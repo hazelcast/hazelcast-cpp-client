@@ -10,7 +10,6 @@
 #define HAZELCAST_PORTABLE_SERIALIZER
 
 #include "Portable.h"
-#include "TypeSerializer.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <map>
@@ -32,7 +31,7 @@ namespace hazelcast {
 
             class PortableFactory;
 
-            class PortableSerializer : public TypeSerializer {
+            class PortableSerializer{
             public:
 
                 PortableSerializer(SerializationService *const serializationService, std::map < int, PortableFactory const * > const &portableFactories);
@@ -41,18 +40,15 @@ namespace hazelcast {
 
                 boost::shared_ptr<ClassDefinition> getClassDefinition(Portable& p);
 
-                int getTypeId();
+                void write(DataOutput& output, Portable& p);
 
-                void write(DataOutput *output, void* p);
-
-                void* read(DataInput& dataInput);
+                std::auto_ptr<Portable> read(DataInput& dataInput);
 
                 std::vector<int> const getFactoryIds() const;
 
                 SerializationContext *const getSerializationContext();
 
             private:
-
                 SerializationService *const service;
                 std::map<int, PortableFactory const * > const portableFactories;
             };

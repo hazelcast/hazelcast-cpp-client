@@ -87,10 +87,10 @@ namespace hazelcast {
                         return T();
                     }
                     input->setDataClassId(fd.getClassId());
-
-                    T portable = *reinterpret_cast<T *> (serializer->read(*input));
+                    std::auto_ptr<Portable> p(serializer->read(*input));
 
                     input->setDataClassId(cd->getClassId());
+                    T portable = *dynamic_cast<T *> (p.get());
                     return portable;
                 };
 
@@ -112,7 +112,7 @@ namespace hazelcast {
                         for (int i = 0; i < len; i++) {
                             start = input->readInt(offset + i * sizeof (int));
                             input->position(start);
-                            portables[i] = *reinterpret_cast<T *> (serializer->read(*input));
+                            portables[i] = *dynamic_cast<T *> (serializer->read(*input).get());
                         }
                     }
                     input->position(currentPos);

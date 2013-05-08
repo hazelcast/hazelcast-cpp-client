@@ -25,6 +25,10 @@ public:
     TestNamedPortable(std::string name, int k):name(name), k(k) {
     };
 
+    virtual ~TestNamedPortable(){
+
+    };
+
     int getClassId() {
         return 3;
     };

@@ -22,6 +22,9 @@ namespace hazelcast {
 
                 virtual Portable *create(int) const = 0;
 
+                virtual ~PortableFactory(){
+
+                };
             };
 
         }

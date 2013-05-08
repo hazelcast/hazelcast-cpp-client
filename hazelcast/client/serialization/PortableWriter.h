@@ -86,7 +86,7 @@ namespace hazelcast {
                         output->position(offset + len * sizeof (int));
                         for (int i = 0; i < len; i++) {
                             output->writeInt(offset + i * sizeof (int), output->position());
-                            serializer->write(output, &(values[i]));
+                            serializer->write(*output, values[i]);
                         }
                     }
                 };

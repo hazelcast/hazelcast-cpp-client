@@ -7,7 +7,6 @@
 
 int main(int argc, char **argv) {
     try{
-        testCustomSerializer();
         testRawData();
         testRawDataWithoutRegistering();
         testRawDataInvalidWrite();
@@ -16,9 +15,8 @@ int main(int argc, char **argv) {
         testCompression();
         testSerialization();
         testSerializationViaFile();
+
 //        testBinaryClient();
-
-
 //        testMapOperations();
 //        testMapLocksInSequential();
 //        testMapLocksInParallel();

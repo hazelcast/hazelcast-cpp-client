@@ -13,25 +13,7 @@
 #include "ClassDefinitionBuilder.h"
 #include "TestRawDataPortable.h"
 #include "TestInvalidReadPortable.h"
-#include "CustomSerializer.h"
-#include "CustomClass.h"
 #include <fstream>
-
-void testCustomSerializer(){
-    serialization::SerializationService serializationService(1, getPortableFactoryMap());
-    CustomClass customClass(34567);
-    TypeSerializer* ts = new CustomSerializer();
-    serializationService.registerSerializer<CustomClass>(ts);
-
-    Data data = serializationService.toData(customClass);
-    CustomClass x = serializationService.toObject<CustomClass>(data);
-    assert(x.a == customClass.a);
-
-    TestNamedPortableV2 np2("named portable2", 3);
-    data = serializationService.toData(np2);
-    TestNamedPortableV2 x2 = serializationService.toObject<TestNamedPortableV2>(data);
-    assert(np2 == x2);
-}
 
 void testRawData() {
     serialization::SerializationService serializationService(1, getPortableFactoryMap());
@@ -93,7 +75,7 @@ void testRawDataInvalidRead() {
         Data data = serializationService.toData(p);
         serializationService.toObject<TestInvalidReadPortable>(data);
 
-    }  catch (HazelcastException exception) {
+    }  catch (HazelcastException& exception) {
         std::cout << "Expected exception " << exception.what() << std::endl;
     }
 }

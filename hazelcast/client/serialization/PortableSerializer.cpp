@@ -22,12 +22,10 @@ namespace hazelcast {
 
             };
 
-            int PortableSerializer::getTypeId() {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
             PortableSerializer::~PortableSerializer() {
-
+                for (std::map< int, PortableFactory const * >::const_iterator it = portableFactories.begin(); it != portableFactories.end(); ++it) {
+                    delete it->second;
+                }
             };
 
             boost::shared_ptr<ClassDefinition> PortableSerializer::getClassDefinition(Portable& p) {
@@ -46,15 +44,14 @@ namespace hazelcast {
                 return cd;
             };
 
-            void PortableSerializer::write(DataOutput *dataOutput, void* p) {
-                Portable* portable = (Portable*)p;
-                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(*portable);
-                PortableWriter writer(this, cd, dataOutput, PortableWriter::DEFAULT);
-                portable->writePortable(writer);
+            void PortableSerializer::write(DataOutput &dataOutput, Portable& p) {
+                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+                PortableWriter writer(this, cd, &dataOutput, PortableWriter::DEFAULT);
+                p.writePortable(writer);
 
             };
 
-            void* PortableSerializer::read(DataInput& dataInput) {
+            std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
 
                 int factoryId = dataInput.getFactoryId();
                 int dataClassId = dataInput.getDataClassId();
@@ -66,8 +63,8 @@ namespace hazelcast {
                     throw hazelcast::client::HazelcastException("Could not find PortableFactory for factoryId: " + hazelcast::client::util::StringUtil::to_string(factoryId));
                 }
 
-                Portable* p = portableFactory->create(dataClassId);
-                if (p == NULL) {
+                std::auto_ptr<Portable> p(portableFactory->create(dataClassId));
+                if (p.get() == NULL) {
                     throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::client::util::StringUtil::to_string(factoryId));
                 }
                 SerializationContext *const context = getSerializationContext();

@@ -35,7 +35,8 @@ namespace hazelcast {
 
                 virtual int size() = 0;
 
-//                virtual ~OutputStream() = 0;
+                virtual ~OutputStream() {
+                };
 
             };
 
