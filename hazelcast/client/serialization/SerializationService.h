@@ -88,15 +88,18 @@ namespace hazelcast {
                     if (data.bufferSize() == 0)
                         throw hazelcast::client::HazelcastException("Empty Data");
                     int typeID = data.type;
+                    DataInput dataInput(data.buffer);
+
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
+                    } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
+                        //TODO add dataSerialiazer
                     } else {
                         std::string error = "There is no suitable de-serializer for type " + hazelcast::client::util::StringUtil::to_string(typeID);
                         throw hazelcast::client::HazelcastException(error);
                     }
 
-                    DataInput dataInput(data, this);
-                    std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput));
+                    std::auto_ptr<Portable> autoPtr(portableSerializer.read(dataInput, data.cd->getFactoryId(), data.cd->getClassId(), data.cd->getFactoryId()));
 
                     K *ptr = dynamic_cast<K *> (autoPtr.get());
 
@@ -116,6 +119,9 @@ namespace hazelcast {
                 }
 
             private:
+
+                SerializationService(const SerializationService&);
+
                 queue<DataOutput *> outputPool;
 
                 PortableSerializer portableSerializer;
@@ -143,7 +149,7 @@ namespace hazelcast {
             inline byte SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return byteSerializer.read(&dataInput);
             };
 
@@ -151,7 +157,7 @@ namespace hazelcast {
             inline bool SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return booleanSerializer.read(&dataInput);
             };
 
@@ -159,7 +165,7 @@ namespace hazelcast {
             inline char SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return charSerializer.read(&dataInput);
             };
 
@@ -167,7 +173,7 @@ namespace hazelcast {
             inline short SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return shortSerializer.read(&dataInput);
             };
 
@@ -175,7 +181,7 @@ namespace hazelcast {
             inline int SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return integerSerializer.read(&dataInput);
             };
 
@@ -183,7 +189,7 @@ namespace hazelcast {
             inline long SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return longSerializer.read(&dataInput);
             };
 
@@ -191,7 +197,7 @@ namespace hazelcast {
             inline float SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return floatSerializer.read(&dataInput);
             };
 
@@ -199,7 +205,7 @@ namespace hazelcast {
             inline double SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return doubleSerializer.read(&dataInput);
             };
 
@@ -207,7 +213,7 @@ namespace hazelcast {
             inline std::vector<byte> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return byteArraySerializer.read(&dataInput);
             };
 
@@ -215,7 +221,7 @@ namespace hazelcast {
             inline std::vector<char> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return charArraySerializer.read(&dataInput);
             };
 
@@ -223,7 +229,7 @@ namespace hazelcast {
             inline std::vector<short> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return shortArraySerializer.read(&dataInput);
             };
 
@@ -231,7 +237,7 @@ namespace hazelcast {
             inline std::vector<int> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return integerArraySerializer.read(&dataInput);
             };
 
@@ -239,7 +245,7 @@ namespace hazelcast {
             inline std::vector<long> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return longArraySerializer.read(&dataInput);
             };
 
@@ -247,7 +253,7 @@ namespace hazelcast {
             inline std::vector<float> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return floatArraySerializer.read(&dataInput);
             };
 
@@ -255,7 +261,7 @@ namespace hazelcast {
             inline std::vector<double> SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return doubleArraySerializer.read(&dataInput);
             };
 
@@ -263,7 +269,7 @@ namespace hazelcast {
             inline std::string SerializationService::toObject(const Data& data) {
                 if (data.bufferSize() == 0)
                     throw hazelcast::client::HazelcastException("Empty Data");
-                DataInput dataInput(data, this);
+                DataInput dataInput(data);
                 return stringSerializer.read(&dataInput);
             };
 

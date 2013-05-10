@@ -1,9 +1,10 @@
 #include "IdGenerator.h"
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        IdGenerator::IdGenerator(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+        IdGenerator::IdGenerator(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
         , clientService(clientService) {
 
         };

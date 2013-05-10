@@ -90,14 +90,13 @@ public:
         std::cout << "    Get Percentage: " << GET_PERCENTAGE << std::endl;
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
-        ClientConfig clientConfig;
+        ClientConfig clientConfig(Address(server_address, server_port));
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-        clientConfig.setAddress(server_address, server_port);
 
         boost::thread monitor(printStats);
         try {
-            auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-            IMap<std::string, vector<char> > map = hazelcastClient->getMap<std::string, vector<char > >("default");
+            HazelcastClient hazelcastClient(clientConfig);
+            IMap<std::string, vector<char> > map = hazelcastClient.getMap<std::string, vector<char > >("default");
             while (true) {
                 char temp[20];
                 int size = sprintf(temp, "%d", (int) (rand() % ENTRY_COUNT));

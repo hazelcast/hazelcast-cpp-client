@@ -10,6 +10,8 @@
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
 #include "SerializationConstants.h"
+#include "OutputSocketStream.h"
+#include "InputSocketStream.h"
 
 
 namespace hazelcast {
@@ -52,6 +54,11 @@ namespace hazelcast {
 
             bool Data::operator !=(const Data& rhs) const {
                 return !((*this) == rhs);
+            };
+
+
+            void Data::setSerializationContext(SerializationContext *context) {
+                this->context = context;
             };
 
             int Data::bufferSize() const {
@@ -98,7 +105,6 @@ namespace hazelcast {
                 if (classId != NO_CLASS_ID) {
                     int factoryId = in.readInt();
                     int version = in.readInt();
-                    SerializationContext *context = in.getSerializationContext();
 
                     int classDefSize = in.readInt();
 
@@ -120,7 +126,56 @@ namespace hazelcast {
                 partitionHash = in.readInt();
             };
 
+
+            void Data::readData(InputSocketStream & in) {
+                type = in.readInt();
+                int classId = in.readInt();
+                if (classId != NO_CLASS_ID) {
+                    int factoryId = in.readInt();
+                    int version = in.readInt();
+
+                    int classDefSize = in.readInt();
+
+                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
+                        cd = context->lookup(factoryId, classId, version);
+                        in.skipBytes(classDefSize);
+                    } else {
+                        std::vector<byte> classDefBytes(classDefSize);
+                        in.readFully(classDefBytes);
+                        cd = context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = in.readInt();
+                if (size > 0) {
+                    std::vector<byte> buffer(size);
+                    in.readFully(buffer);
+                    this->buffer = buffer;
+                }
+                partitionHash = in.readInt();
+
+            }
+
             void Data::writeData(DataOutput& out) const {
+                out.writeInt(type);
+                if (cd != NULL) {
+                    out.writeInt(cd->getClassId());
+                    out.writeInt(cd->getFactoryId());
+                    out.writeInt(cd->getVersion());
+                    std::vector<byte> classDefBytes = cd->getBinary();
+                    out.writeInt(classDefBytes.size());
+                    out.write(classDefBytes);//TODO only usage ins class this necessary
+                } else {
+                    out.writeInt(NO_CLASS_ID);
+                }
+                int len = bufferSize();
+                out.writeInt(len);
+                if (len > 0) {
+                    out.write(buffer); //TODO only usage ins class this necessary
+                }
+                out.writeInt(partitionHash);
+            };
+
+            void Data::writeData(OutputSocketStream& out) const {
                 out.writeInt(type);
                 if (cd != NULL) {
                     out.writeInt(cd->getClassId());

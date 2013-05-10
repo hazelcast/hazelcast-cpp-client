@@ -2,16 +2,17 @@
 #define HAZELCAST_ID_GENERATOR
 
 #include <string>
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         class IdGenerator {
         public:
 
-            IdGenerator(std::string instanceName, ClientService& clientService);
+            IdGenerator(std::string instanceName, impl::ClientService& clientService);
 
             IdGenerator(const IdGenerator& rhs);
 
@@ -38,7 +39,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

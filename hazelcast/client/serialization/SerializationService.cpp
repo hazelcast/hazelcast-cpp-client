@@ -21,6 +21,12 @@ namespace hazelcast {
 
             };
 
+
+            SerializationService::SerializationService(SerializationService const & rhs)
+            :portableSerializer(rhs.portableSerializer)
+            , serializationContext(portableSerializer.getFactoryIds(),1,this) {
+            }
+
             SerializationService::~SerializationService() {
                 while (!outputPool.empty()) {
                     DataOutput *out = outputPool.front();
@@ -37,7 +43,7 @@ namespace hazelcast {
             DataOutput *SerializationService::pop() {
                 DataOutput *out;
                 if (outputPool.empty()) {
-                    out = new DataOutput(new OutputStringStream());
+                    out = new DataOutput();
                 } else {
                     out = outputPool.front();
                     outputPool.pop();

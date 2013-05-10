@@ -4,14 +4,13 @@
 namespace hazelcast {
     namespace client {
 
-        ClientConfig::ClientConfig() {
-
+        ClientConfig::ClientConfig(const Address& address):address(address) {
         };
 
-        ClientConfig::ClientConfig(const ClientConfig& rhs) {
-            groupConfig = rhs.groupConfig;
-            address = rhs.address;
-            portableFactories = rhs.portableFactories;
+        ClientConfig::ClientConfig(const ClientConfig& rhs)
+        :address(address)
+        , groupConfig(groupConfig)
+        , portableFactories(portableFactories) {
         };
 
         ClientConfig::~ClientConfig() {
@@ -27,14 +26,6 @@ namespace hazelcast {
 
         GroupConfig& ClientConfig::getGroupConfig() {
             return groupConfig;
-        };
-
-        void ClientConfig::setAddress(std::string address, std::string port) {//TODO if address is not set
-//            int middle = addressStr.find_first_of(':', 0);
-//            std::string address = addressStr.substr(0, middle);
-//            std::string port = addressStr.substr(middle + 1, addressStr.length() - middle);
-            this->address.setAddress(address);
-            this->address.setPort(port);
         };
 
         Address ClientConfig::getAddress() const {

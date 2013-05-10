@@ -4,16 +4,17 @@
 #include <string>
 #include <stdexcept>
 #include "HazelcastException.h"
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         class ICountDownLatch {
         public:
 
-            ICountDownLatch(std::string instanceName, ClientService& clientService);
+            ICountDownLatch(std::string instanceName, impl::ClientService& clientService);
 
             ICountDownLatch(const ICountDownLatch& rhs);
 
@@ -111,7 +112,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

@@ -4,28 +4,20 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address() : address(""), port("") {
+        Address::Address(std::string url, std::string port) : url(url), port(port) {
 
         };
 
-        Address::Address(std::string address, std::string port) : address(address), port(port) {
+        Address::Address(const Address& address): url(address.url), port(address.port) {
 
         };
-
-        void Address::setPort(std::string port) {
-            this->port = port;
-        }
 
         std::string Address::getPort() const {
             return port;
         }
 
-        void Address::setAddress(std::string address) {
-            this->address = address;
-        }
-
         std::string Address::getAddress() const {
-            return address;
+            return url;
         };
 
     }

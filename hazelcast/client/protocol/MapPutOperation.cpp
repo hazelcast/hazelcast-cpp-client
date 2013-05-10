@@ -35,6 +35,7 @@ namespace hazelcast {
 
             void MapPutOperation::readPortable(PortableReader & reader) {
                 DataInput *input = reader.getRawDataInput();
+                //TODO set context of data somewhere
                 key.readData(*input);
                 value.readData(*input);
             }

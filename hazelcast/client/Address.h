@@ -9,20 +9,16 @@ namespace hazelcast {
         class Address {
         public:
 
-            Address();
+            Address(std::string url, std::string port);
 
-            Address(std::string address, std::string port);
-
-            void setPort(std::string port);
+            Address(const Address&);
 
             std::string getPort() const;
-
-            void setAddress(std::string address);
 
             std::string getAddress() const;
 
         private:
-            std::string address;
+            std::string url;
             std::string port;
         };
 

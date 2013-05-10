@@ -20,12 +20,13 @@ namespace hazelcast {
 
                 ~Socket();
 
-                void sendData(const void *buffer, int len);
+                void connect();
 
-                void recvData(void *buffer, int len);
+                void send(const void *buffer, int len);
 
-                std::string readLine();
+                void receive(void *buffer, int len);
 
+                int getSocketId() const;
             private:
 
                 Socket(const Socket& rhs);

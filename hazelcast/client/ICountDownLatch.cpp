@@ -3,7 +3,7 @@
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+        ICountDownLatch::ICountDownLatch(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
         , clientService(clientService) {
 
         };

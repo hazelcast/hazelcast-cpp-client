@@ -9,10 +9,6 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "DataOutput.h"
-#include "Data.h"
-#include <string>
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -26,21 +22,9 @@ namespace hazelcast {
             class DataInput {
             public:
 
-                DataInput(std::vector<byte>&, SerializationService *service);
-
-                DataInput(const Data&, SerializationService *service);
+                DataInput(const std::vector<byte>&);
 
                 ~DataInput();
-
-                int getFactoryId() const;
-
-                int getDataClassId() const;
-
-                void setDataClassId(int);
-
-                int getDataVersion() const;
-
-                SerializationContext *getSerializationContext();
 
                 void readFully(std::vector<byte>&);
 
@@ -92,17 +76,11 @@ namespace hazelcast {
 
                 void position(int newPos);
 
-                void reset();
-
             private:
-                SerializationService *service;
                 byte *ptr;
                 byte *beg;
-                int factoryId;
-                int dataClassId;
-                int dataVersion;
 
-                static int const STRING_CHUNK_SIZE = DataOutput::STRING_CHUNK_SIZE;
+                static int const STRING_CHUNK_SIZE = 16 * 1024;
 
                 std::string readShortUTF();
 

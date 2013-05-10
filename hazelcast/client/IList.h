@@ -2,17 +2,18 @@
 #define HAZELCAST_ILIST
 
 #include <stdexcept>
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         template<typename E>
         class IList {
         public:
 
-            IList(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+            IList(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
             , clientService(clientService) {
 
             };
@@ -81,7 +82,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

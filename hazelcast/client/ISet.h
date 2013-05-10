@@ -6,13 +6,13 @@
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         template<typename E>
         class ISet {
         public:
 
-            ISet(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+            ISet(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
             , clientService(clientService) {
 
             };
@@ -53,7 +53,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

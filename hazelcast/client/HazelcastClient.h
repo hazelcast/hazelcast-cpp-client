@@ -1,7 +1,6 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include "protocol/CommandHandler.h"
 #include "serialization/SerializationService.h"
 #include "ClientConfig.h"
 #include "IMap.h"
@@ -9,6 +8,7 @@
 #include "IQueue.h"
 #include "ISet.h"
 #include "IList.h"
+#include "ClientService.h"
 #include <memory>
 #include <map>
 
@@ -22,11 +22,11 @@ namespace hazelcast {
         //TODO  Lock , Topic
 
         class HazelcastClient {
-            friend class ClientService;
+            friend class impl::ClientService;
 
         public:
 
-            static std::auto_ptr<HazelcastClient> newHazelcastClient(ClientConfig& config);
+            HazelcastClient(ClientConfig&);
 
             template<typename K, typename V>
             IMap<K, V> getMap(std::string instanceName) {
@@ -67,19 +67,14 @@ namespace hazelcast {
 
             serialization::SerializationService& getSerializationService();
 
-            protocol::CommandHandler& getCommandHandler();
-
             ClientConfig& getClientConfig();
 
             void setupInitialConnection();
 
-            HazelcastClient(ClientConfig&);
+            HazelcastClient(const HazelcastClient& rhs);
 
-            HazelcastClient(const HazelcastClient&);
-
-            ClientService clientService;
+            impl::ClientService clientService;
             ClientConfig clientConfig;
-            protocol::CommandHandler commandHandler;
             serialization::SerializationService serializationService;
         };
 

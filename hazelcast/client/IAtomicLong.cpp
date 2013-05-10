@@ -1,9 +1,10 @@
 #include "IAtomicLong.h"
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        IAtomicLong::IAtomicLong(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+        IAtomicLong::IAtomicLong(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
         , clientService(clientService) {
 
         };

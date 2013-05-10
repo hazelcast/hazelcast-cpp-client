@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "portableTest.h"
-//#include "binaryClientTest.h"
+#include "binaryClientTest.h"
 
 int main(int argc, char **argv) {
     try{

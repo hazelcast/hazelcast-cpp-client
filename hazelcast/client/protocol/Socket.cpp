@@ -1,5 +1,6 @@
 #include "Socket.h"
 #include "HazelcastException.h"
+#include "errno.h"
 
 #include <vector>
 
@@ -10,14 +11,10 @@ namespace hazelcast {
             Socket::Socket(Address& address) : address(address) {
                 getInfo();
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-                if (connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
-                    std::cout << "connection error" << std::endl;
             };
 
-            Socket::Socket(const Socket& rhs) {
+            Socket::Socket(const Socket& rhs) : address(rhs.address) {
                 //private
-                address = rhs.address;
-                socketId = rhs.socketId;
             };
 
             Socket::~Socket() {
@@ -25,35 +22,29 @@ namespace hazelcast {
                 ::close(socketId);
             };
 
-            void Socket::sendData(const void *buffer, int len) {
-                if (send(socketId, buffer, len, 0) == -1)
-                    throw hazelcast::client::HazelcastException("Socket::sendData :Error socket send");
+            void Socket::connect() {
+                if (::connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
+                    throw hazelcast::client::HazelcastException(strerror(errno));
+            }
+
+            void Socket::send(const void *buffer, int len) {
+                if (::send(socketId, buffer, len, 0) == -1)
+                    throw hazelcast::client::HazelcastException("Socket::send :Error socket send");
             };
 
-            std::string Socket::readLine() {
-                std::string line;
-                bool lineIsRead = false;
-                while (!lineIsRead) {
-                    char current;
-                    recvData(&current, sizeof (char));
-                    if (current == '\n') {
-                        lineIsRead = true;
-                    } else if (current != '\r') {
-                        line.push_back(current);
-                    }
-
-                }
-                return line;
-            };
-
-            void Socket::recvData(void *buffer, int len) {
-                int size = recv(socketId, buffer, len, 0);
+            void Socket::receive(void *buffer, int len) {
+                int size = ::recv(socketId, buffer, len, 0);
                 if (size == -1)
-                    throw hazelcast::client::HazelcastException("Socket::recvData :Error socket read");
+                    throw hazelcast::client::HazelcastException("Socket::receive :Error socket read");
                 else if (size == 0) {
-                    throw hazelcast::client::HazelcastException("Socket::recvData : Connection closed by remote");
+                    throw hazelcast::client::HazelcastException("Socket::receive : Connection closed by remote");
                 }
             };
+
+
+            int Socket::getSocketId() const {
+                return socketId;
+            }
 
             void Socket::getInfo() {
                 struct addrinfo hints;

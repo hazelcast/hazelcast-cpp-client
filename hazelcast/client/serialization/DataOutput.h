@@ -10,35 +10,21 @@
 #define HAZELCAST_DATA_OUTPUT
 
 #include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <memory>
-#include "OutputStream.h"
+#include <iosfwd>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializationContext;
-            class SerializationService;
-
-
             typedef unsigned char byte;
-            //TODO ask if necessary add offset
 
             class DataOutput {
             public:
 
-                DataOutput(OutputStream *outputStream);
+                DataOutput();
 
                 virtual std::vector<byte> toByteArray();
 
-                virtual std::string toString();
-
-                virtual int getSize();
-
-                //Inherited from DataOutput
                 virtual void write(const std::vector<byte>& bytes);
 
                 virtual void write(char const *bytes, int length);
@@ -93,8 +79,7 @@ namespace hazelcast {
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                std::auto_ptr<OutputStream> outputStream;
-                int const offset;
+                std::vector<byte> outputStream;
 
                 void writeShortUTF(std::string);
 

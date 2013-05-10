@@ -9,11 +9,8 @@
 #ifndef HAZELCAST_DATA
 #define HAZELCAST_DATA
 
-#include "DataSerializable.h"
-#include "IdentifiedDataSerializable.h"
 #include <vector>
-#include <iostream>
-#include <memory>
+#include <iosfwd>
 #include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
@@ -26,9 +23,15 @@ namespace hazelcast {
 
             class ClassDefinition;
 
+            class SerializationContext;
+
+            class InputSocketStream;
+
+            class OutputSocketStream;
+
             typedef unsigned char byte;
 
-            class Data : public IdentifiedDataSerializable {
+            class Data {
             public:
 
                 Data();
@@ -41,6 +44,8 @@ namespace hazelcast {
 
 
                 Data& operator = (const Data&);
+
+                void setSerializationContext(SerializationContext *context);
 
                 int bufferSize() const;
 
@@ -58,18 +63,24 @@ namespace hazelcast {
 
                 void readData(DataInput&);
 
+                void writeData(OutputSocketStream&) const;
+
+                void readData(InputSocketStream&);
+
                 boost::shared_ptr<ClassDefinition> cd;
                 int type;
                 std::vector<byte> buffer;
                 static int const NO_CLASS_ID = 0;
             private:
+                SerializationContext *context;
+
                 int partitionHash;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
 
-                virtual int getFactoryId() const;
+                int getFactoryId() const;
 
-                virtual int getId() const;
+                int getId() const;
             };
 
         }

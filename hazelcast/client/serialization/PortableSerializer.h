@@ -42,7 +42,7 @@ namespace hazelcast {
 
                 void write(DataOutput& output, Portable& p);
 
-                std::auto_ptr<Portable> read(DataInput& dataInput);
+                std::auto_ptr<Portable> read(DataInput& dataInput, int factoryId, int dataClassId, int dataVersion);
 
                 std::vector<int> const getFactoryIds() const;
 

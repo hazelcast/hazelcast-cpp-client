@@ -13,7 +13,7 @@ namespace hazelcast {
         class ClientConfig {
         public:
 
-            ClientConfig();
+            ClientConfig(const Address&);
 
             ClientConfig(const ClientConfig&);
 
@@ -22,8 +22,6 @@ namespace hazelcast {
             ~ClientConfig();
 
             GroupConfig& getGroupConfig();
-
-            void setAddress(std::string, std::string);
 
             Address getAddress() const;
 

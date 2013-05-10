@@ -1,79 +1,59 @@
 //
-//  DataInput.cpp
-//  Server
-//
-//  Created by sancar koyunlu on 1/3/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
-#include "DataInput.h"
-#include "ClassDefinition.h"
-#include "SerializationService.h"
+// Created by sancar koyunlu on 5/10/13.
+// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
+
+#include "InputSocketStream.h"
+#include "HazelcastException.h"
+#include "Socket.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataInput::DataInput(const std::vector<byte>& rhsBuffer) {
-                int size = rhsBuffer.size();
-                try {
-                    beg = new byte[size];
-                    ptr = beg;
-                    for (int i = 0; i < size; i++)
-                        beg[i] = rhsBuffer[i];
-                } catch (std::exception& e) {
-                    delete [] beg;
-                };
+            InputSocketStream::InputSocketStream(hazelcast::client::protocol::Socket& socket):socket(socket) {
             };
 
-            DataInput::~DataInput() {
-                delete [] beg;
-            };
-
-            DataInput& DataInput::operator = (const DataInput&) {
+            InputSocketStream& InputSocketStream::operator = (const InputSocketStream&) {
                 return *this;
             };
 
-            void DataInput::readFully(std::vector<byte>& bytes) {
+            void InputSocketStream::readFully(std::vector<byte>& bytes) {
                 byte temp[bytes.size()];
-                readFully(temp, 0, bytes.size());
+                socket.receive(temp, bytes.size());
                 bytes = std::vector<byte >(temp, temp + bytes.size());
             };
 
-            void DataInput::readFully(byte *bytes, int off, int len) {
-                memcpy(bytes + off, ptr, sizeof (byte) * len);
-                ptr += sizeof (byte) * len;
-            };
-
-            int DataInput::skipBytes(int i) {
-                ptr += i;
+            int InputSocketStream::skipBytes(int i) {
+                byte temp[i];
+                socket.receive(temp, i);
                 return i;
             };
 
-            bool DataInput::readBoolean() {
+            bool InputSocketStream::readBoolean() {
                 return readByte();
             };
 
-            byte DataInput::readByte() {
+            byte InputSocketStream::readByte() {
                 byte b;
-                memcpy(&b, ptr, sizeof (byte));
-                ptr += sizeof (byte);
+                socket.receive(&b, sizeof(byte));
                 return b;
             };
 
-            short DataInput::readShort() {
+            short InputSocketStream::readShort() {
                 byte a = readByte();
                 byte b = readByte();
                 return (0xff00 & (a << 8)) |
                         (0x00ff & b);
             };
 
-            char DataInput::readChar() {
+            char InputSocketStream::readChar() {
                 readByte();
                 byte b = readByte();
                 return b;
             };
 
-            int DataInput::readInt() {
+            int InputSocketStream::readInt() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -84,7 +64,7 @@ namespace hazelcast {
                         (0x000000ff & d);
             };
 
-            long DataInput::readLong() {
+            long InputSocketStream::readLong() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -103,7 +83,7 @@ namespace hazelcast {
                         (0x00000000000000ff & h);
             };
 
-            float DataInput::readFloat() {
+            float InputSocketStream::readFloat() {
 
                 union {
                     int i;
@@ -113,7 +93,7 @@ namespace hazelcast {
                 return u.f;
             };
 
-            double DataInput::readDouble() {
+            double InputSocketStream::readDouble() {
 
                 union {
                     double d;
@@ -123,7 +103,7 @@ namespace hazelcast {
                 return u.d;
             };
 
-            std::string DataInput::readUTF() {
+            std::string InputSocketStream::readUTF() {
                 bool isNull = readBoolean();
                 if (isNull)
                     return "";
@@ -137,113 +117,14 @@ namespace hazelcast {
                 return result;
             };
 
-            //Inherited from BufferObjectDataInput
-
-            int DataInput::read(int index) {
-                int pos = position();
-                position(index);
-                int v = readByte();
-                position(pos);
-                return v;
-            };
-
-            int DataInput::read(int index, byte *b, int off, int len) {
-                int pos = position();
-                position(index);
-                readFully(b, off, len);
-                position(pos);
-                return len;
-            };
-
-            int DataInput::readInt(int index) {
-                int pos = position();
-                position(index);
-                int v = readInt();
-                position(pos);
-                return v;
-            };
-
-            long DataInput::readLong(int index) {
-                int pos = position();
-                position(index);
-                long v = readLong();
-                position(pos);
-                return v;
-            };
-
-            bool DataInput::readBoolean(int index) {
-                int pos = position();
-                position(index);
-                bool v = readBoolean();
-                position(pos);
-                return v;
-            };
-
-            byte DataInput::readByte(int index) {
-                int pos = position();
-                position(index);
-                byte v = readByte();
-                position(pos);
-                return v;
-            };
-
-            char DataInput::readChar(int index) {
-                int pos = position();
-                position(index);
-                char v = readChar();
-                position(pos);
-                return v;
-            };
-
-            double DataInput::readDouble(int index) {
-                int pos = position();
-                position(index);
-                double v = readDouble();
-                position(pos);
-                return v;
-            };
-
-            float DataInput::readFloat(int index) {
-                int pos = position();
-                position(index);
-                float v = readFloat();
-                position(pos);
-                return v;
-            };
-
-            short DataInput::readShort(int index) {
-                int pos = position();
-                position(index);
-                short v = readShort();
-                position(pos);
-                return v;
-            };
-
-            std::string DataInput::readUTF(int index) {
-                int pos = position();
-                position(index);
-                std::string v = readUTF();
-                position(pos);
-                return v;
-            };
-
-            int DataInput::position() {
-                return int(ptr - beg);
-            };
-
-            void DataInput::position(int newPos) {
-                ptr = beg + newPos;
-            };
-            //private functions
-
-            std::string DataInput::readShortUTF() {
+            std::string InputSocketStream::readShortUTF() {
                 short utflen = readShort();
-                byte bytearr[utflen];
+                std::vector<byte> bytearr(utflen);
                 char chararr[utflen];
                 int c, char2, char3;
                 int count = 0;
                 int chararr_count = 0;
-                readFully(bytearr, 0, utflen);
+                readFully(bytearr);
 
                 while (count < utflen) {
                     c = bytearr[count] & 0xff;
@@ -265,7 +146,7 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
+                                throw hazelcast::client::HazelcastException("InputSocketStream::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
                                 std::string error = "malformed input around byte";
@@ -278,11 +159,11 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
+                                throw hazelcast::client::HazelcastException("InputSocketStream::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                std::string error = "DataInput::readShortUTF : malformed input around byte";
+                                std::string error = "InputSocketStream::readShortUTF : malformed input around byte";
                                 error += count - 1;
                                 throw hazelcast::client::HazelcastException(error);
                             }

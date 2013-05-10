@@ -4,16 +4,17 @@
 #include <string>
 #include <stdexcept>
 #include "HazelcastException.h"
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         class ISemaphore {
         public:
 
-            ISemaphore(std::string instanceName, ClientService& clientService);
+            ISemaphore(std::string instanceName, impl::ClientService& clientService);
 
             ISemaphore(const ISemaphore& rhs);
 
@@ -263,7 +264,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

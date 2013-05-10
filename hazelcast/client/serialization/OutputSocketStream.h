@@ -10,39 +10,49 @@
 #ifndef HAZELCAST_OUTPUT_SOCKET_STREAM
 #define HAZELCAST_OUTPUT_SOCKET_STREAM
 
-#include "OutputStream.h"
-#include "Socket.h"
 #include <string>
 #include <vector>
 
 namespace hazelcast {
     namespace client {
+
+        class protocol::Socket;
+
         namespace serialization {
 
-
-            class OutputSocketStream : public OutputStream {
+            class OutputSocketStream {
             public:
 
                 OutputSocketStream(hazelcast::client::protocol::Socket& socket);
 
-                ~OutputSocketStream();
+                virtual void write(const std::vector<byte>& bytes);
 
-                void put(char c);
+                virtual void write(char const *bytes, int length);
 
-                void put(int n, char c);
+                virtual void writeBoolean(bool b);
 
-                void write(char const *buffer, int size);
+                virtual void writeByte(int i);
 
-                std::vector<byte> toByteArray();
+                virtual void writeShort(int i);
 
-                void reset();
+                virtual void writeChar(int i);
 
-                void resize(int size);
+                virtual void writeInt(int i);
 
-                int size();
+                virtual void writeLong(long l);
+
+                virtual void writeFloat(float v);
+
+                virtual void writeDouble(double v);
+
+                virtual void writeUTF(std::string s);
+
+                static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
                 hazelcast::client::protocol::Socket& socket;
+
+                void writeShortUTF(std::string);
             };
 
         }

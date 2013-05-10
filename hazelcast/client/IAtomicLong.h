@@ -2,16 +2,17 @@
 #define HAZELCAST_ATOMIC_NUMBER
 
 #include <string>
+#include "ClientService.h"
 
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         class IAtomicLong {
         public:
 
-            IAtomicLong(std::string instanceName, ClientService& clientService);
+            IAtomicLong(std::string instanceName, impl::ClientService& clientService);
 
             IAtomicLong(const IAtomicLong& rhs);
 
@@ -96,7 +97,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
     }
 }

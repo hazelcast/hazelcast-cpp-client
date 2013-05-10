@@ -51,11 +51,8 @@ namespace hazelcast {
 
             };
 
-            std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput) {
+            std::auto_ptr<Portable> PortableSerializer::read(DataInput& dataInput, int factoryId, int dataClassId, int dataVersion) {
 
-                int factoryId = dataInput.getFactoryId();
-                int dataClassId = dataInput.getDataClassId();
-                int dataVersion = dataInput.getDataVersion();
                 PortableFactory const *portableFactory;
                 if (portableFactories.count(factoryId) != 0) {
                     portableFactory = portableFactories.at(factoryId);

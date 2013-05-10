@@ -20,7 +20,7 @@ void testPut() {
     Address address(SERVER_ADDRESS, SERVER_PORT);
     hazelcast::client::protocol::Socket socket(address);
     char protocol[] = {'C', 'B', '1'};
-    socket.sendData((void *) protocol, 3 * sizeof(char));
+    socket.send((void *) protocol, 3 * sizeof(char));
 
     Data data = service.toData(mapPutOperation);
 
@@ -35,15 +35,14 @@ void testSpeed() {
 
 void testMapOperations() {
     TestPortableFactory tpf1;
-    ClientConfig clientConfig;
+    ClientConfig clientConfig(Address(SERVER_ADDRESS, SERVER_PORT));
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress(SERVER_ADDRESS, SERVER_PORT);
     clientConfig.addPortableFactory(999, &tpf1);
 
     try {
 
-        auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
-        IMap<int, TestMainPortable> imap = hazelcastClient->getMap<int, TestMainPortable >("sancar");
+        HazelcastClient hazelcastClient(clientConfig);
+        IMap<int, TestMainPortable> imap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
         TestMainPortable mainPortable = getTestMainPortable();
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = mainPortable;
@@ -135,14 +134,14 @@ void testMapOperations() {
 };
 
 void testMapLocksInSequential() {
-    ClientConfig clientConfig;
+    ClientConfig clientConfig(Address(SERVER_ADDRESS, SERVER_PORT));
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    clientConfig.setAddress(SERVER_ADDRESS, SERVER_PORT);
+
 
     try {
-        auto_ptr<HazelcastClient> hazelcastClient = HazelcastClient::newHazelcastClient(clientConfig);
+        HazelcastClient hazelcastClient(clientConfig);
 
-        IMap<int, int> imap = hazelcastClient->getMap<int, int >("testLockMap");
+        IMap<int, int> imap = hazelcastClient.getMap<int, int >("testLockMap");
         boost::hash<boost::thread::id> h;
         long currentId = h(boost::this_thread::get_id());
 

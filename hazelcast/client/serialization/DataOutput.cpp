@@ -13,36 +13,20 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataOutput::DataOutput(OutputStream *outputStream)
-            : offset(0), outputStream(outputStream) {
+            DataOutput::DataOutput() {
             };
 
             std::vector<byte> DataOutput::toByteArray() {
-                return outputStream->toByteArray();
+                return outputStream;
             };
-
-            std::string DataOutput::toString() {
-                std::vector<byte> bytes = outputStream->toByteArray();
-                std::string s;
-                for (int i = 0; i < bytes.size(); i++) {
-                    s.push_back(bytes[i]);
-                }
-                return s;
-            };
-
-            int DataOutput::getSize() {
-                return outputStream->size();
-            };
-
-            //Inherited from DataOutput
 
             void DataOutput::write(const std::vector<byte>& bytes) {
                 for (int i = 0; i < bytes.size(); i++)
-                    outputStream->put(bytes[i]);
+                    writeByte(bytes[i]);
             };
 
             void DataOutput::write(char const *bytes, int length) {
-                outputStream->write(bytes, sizeof (char) * length);
+                outputStream.insert(outputStream.end(), bytes, bytes + (length * sizeof (char)));
             };
 
             void DataOutput::writeBoolean(bool i) {
@@ -50,11 +34,11 @@ namespace hazelcast {
             };
 
             void DataOutput::writeByte(int n, int i) {
-                outputStream->put(n, 0xff & i);
+                outputStream[n] = char(0xff & i);
             }
 
             void DataOutput::writeByte(int i) {
-                outputStream->put(0xff & i);
+                outputStream.push_back(char(0xff & i));
             };
 
             void DataOutput::writeShort(int v) {
@@ -127,15 +111,16 @@ namespace hazelcast {
             };
 
             int DataOutput::position() {
-                return outputStream->size();
+                return outputStream.size();
             };
 
             void DataOutput::position(int newPos) {
-                outputStream->resize(newPos);
+                if (outputStream.size() < newPos)
+                    outputStream.resize(newPos, 0);
             };
 
             void DataOutput::reset() {
-                outputStream->reset();
+                outputStream.clear();
             };
 
             //private functions

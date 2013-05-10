@@ -117,6 +117,7 @@ void testCompression() {
     serialization::SerializationService serializationService2(1, getPortableFactoryMap());
     serialization::DataInput dataInput(xxx, &serializationService2);
     Data newData;
+    newData.setSerializationContext(serializationService2.getSerializationContext());
     newData.readData(dataInput);
     TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
     assert(returnedPortable == mainPortable);
@@ -157,6 +158,7 @@ void read(int size) {
     serialization::DataInput dataInput(buffer, &serializationService);
 
     serialization::Data data;
+    data.setSerializationContext(serializationService.getSerializationContext());
     data.readData(dataInput);
 
     TestMainPortable tmp1;

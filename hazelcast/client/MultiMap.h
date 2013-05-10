@@ -1,7 +1,6 @@
 #ifndef HAZELCAST_MULTI_MAP
 #define HAZELCAST_MULTI_MAP
 
-#include "ClientService.h"
 #include <string>
 #include <map>
 #include <set>
@@ -11,13 +10,13 @@
 namespace hazelcast {
     namespace client {
 
-        class ClientService;
+        class impl::ClientService;
 
         template<typename K, typename V>
         class MultiMap {
         public:
 
-            MultiMap(std::string instanceName, ClientService& clientService) : instanceName(instanceName)
+            MultiMap(std::string instanceName, impl::ClientService& clientService) : instanceName(instanceName)
             , clientService(clientService) {
 
             };
@@ -370,7 +369,7 @@ namespace hazelcast {
              */
         private:
             std::string instanceName;
-            ClientService& clientService;
+            impl::ClientService& clientService;
         };
 
 

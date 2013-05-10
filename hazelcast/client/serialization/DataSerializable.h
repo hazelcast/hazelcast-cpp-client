@@ -9,8 +9,6 @@
 #ifndef HAZELCAST_DATA_SERIALIZALE
 #define HAZELCAST_DATA_SERIALIZALE
 
-#include <iostream>
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
