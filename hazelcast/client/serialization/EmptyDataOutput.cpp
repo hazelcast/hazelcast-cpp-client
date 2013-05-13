@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            EmptyDataOutput::EmptyDataOutput() : DataOutput(NULL) {
+            EmptyDataOutput::EmptyDataOutput() : DataOutput() {
             }
 
             std::vector<unsigned char>  EmptyDataOutput::toByteArray() {

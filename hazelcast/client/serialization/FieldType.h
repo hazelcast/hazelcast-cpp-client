@@ -29,34 +29,33 @@ namespace hazelcast {
             class FieldType {
             public:
 
-                FieldType(int type) :type((byte) type) {
+                FieldType(int type) :id((byte) type) {
                 };
 
-                FieldType(FieldType const& rhs) : type(rhs.type) {
+                FieldType(FieldType const& rhs) : id(rhs.id) {
 
                 };
 
                 const byte getId() const {
-                    return type;
+                    return id;
                 };
 
                 FieldType& operator = (FieldType const& rhs) {
-                    this->type = rhs.type;
+                    this->id = rhs.id;
                     return (*this);
                 };
 
                 bool operator ==(FieldType const& rhs) const {
-                    if (type != rhs.type) return false;
+                    if (id != rhs.id) return false;
                     return true;
                 };
 
                 bool operator !=(FieldType const& rhs) const {
-                    if (type == rhs.type) return false;
+                    if (id == rhs.id) return false;
                     return true;
                 };
 
-            private:
-                byte type;
+                byte id;
             };
 
             namespace FieldTypes {

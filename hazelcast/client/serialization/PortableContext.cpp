@@ -32,9 +32,11 @@ namespace hazelcast {
 
                 std::vector<byte> decompressed = decompress(binary);
 
-                DataInput dataInput = DataInput(decompressed, service);
+                DataInput dataInput = DataInput(decompressed);
                 boost::shared_ptr<ClassDefinition> cd(new ClassDefinition);
-                cd->readData(dataInput);
+                operator >>(dataInput, cd);
+//                dataInput >> cd;
+//                cd->readData(dataInput);
                 cd->setBinary(binary);
 
                 long key = service->combineToLong(cd->getClassId(), context->getVersion());
@@ -55,7 +57,9 @@ namespace hazelcast {
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
                         DataOutput *output = service->pop();
-                        cd->writeData(*output);
+                        operator<<(*output, cd);
+//                        (*output) << cd;
+//                        cd->writeData(*output);
                         std::vector<byte> binary = output->toByteArray();
                         compress(binary);
                         cd->setBinary(binary);

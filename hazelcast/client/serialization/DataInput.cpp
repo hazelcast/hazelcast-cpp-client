@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "DataInput.h"
-#include "ClassDefinition.h"
-#include "SerializationService.h"
+#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {

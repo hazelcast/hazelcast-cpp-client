@@ -9,16 +9,15 @@
 #ifndef HAZELCAST_CLASS_DEFINITION
 #define HAZELCAST_CLASS_DEFINITION
 
-#include "DataSerializable.h"
-#include "FieldDefinition.h"
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
 #include <map>
 #include <vector>
 #include <set>
 #include <cassert>
 #include <boost/shared_ptr.hpp>
+#include "FieldDefinition.h"
 
 using namespace std;
 
@@ -32,7 +31,13 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class ClassDefinition : public DataSerializable {
+            class ClassDefinition {
+                template<typename DataOutput>
+                friend void operator <<(DataOutput& dataOutput, boost::shared_ptr<ClassDefinition> data);
+
+                template<typename DataInput>
+                friend void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data);
+
             public:
 
                 ClassDefinition();
@@ -59,10 +64,6 @@ namespace hazelcast {
 
                 int getFieldClassId(std::string fieldName) const;
 
-                void writeData(DataOutput&) const;
-
-                void readData(DataInput&);
-
                 int getFieldCount() const;
 
                 int getFactoryId() const;
@@ -76,7 +77,6 @@ namespace hazelcast {
                 void setBinary(std::vector<byte>&);
 
                 void setVersion(int);
-
 
             private:
                 int classId;
@@ -95,6 +95,45 @@ namespace hazelcast {
 
             };
 
+            template<typename DataOutput>
+            void operator <<(DataOutput& dataOutput, const boost::shared_ptr<ClassDefinition> data) {
+                dataOutput << data->getFactoryId();
+                dataOutput << data->getClassId();
+                dataOutput << data->getVersion();
+                dataOutput << data->getFieldCount();
+                for (vector<FieldDefinition>::const_iterator it = data->fieldDefinitions.begin(); it != data->fieldDefinitions.end(); it++)
+                    dataOutput << (*it);
+                dataOutput << ((int) data->nestedClassDefinitions.size());
+                for (vector<boost::shared_ptr<ClassDefinition> >::const_iterator it = data->nestedClassDefinitions.begin(); it != data->nestedClassDefinitions.end(); it++)
+                    dataOutput << (*it);
+            };
+
+            template<typename DataInput>
+            void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data) {
+//                operator >>(dataInput, data->factoryId);
+                dataInput >> data->factoryId;
+                dataInput >> data->classId;
+                dataInput >> data->version;
+                int size = 0;
+                dataInput >> size;
+                for (int i = 0; i < size; i++) {
+                    FieldDefinition fieldDefinition;
+                    dataInput >> fieldDefinition;
+                    data->add(fieldDefinition);
+                }
+                dataInput >> size;
+                for (int i = 0; i < size; i++) {
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
+//                    classDefinition->readData(in);
+                    dataInput >> classDefinition;
+                    data->add(classDefinition);
+                }
+            };
+//            template<typename DataOutput>
+//            void operator <<(DataOutput& dataOutput, boost::shared_ptr<ClassDefinition> data);
+//
+//            template<typename DataInput>
+//            void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data);
         }
     }
 }

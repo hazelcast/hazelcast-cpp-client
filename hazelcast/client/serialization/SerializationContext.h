@@ -34,7 +34,7 @@ namespace hazelcast {
             class SerializationContext {
             public:
 
-                SerializationContext(std::vector<int> const & portableFactories, int, SerializationService *);
+                SerializationContext(int, SerializationService *);
 
                 ~SerializationContext();
 

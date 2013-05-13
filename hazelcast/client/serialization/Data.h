@@ -32,6 +32,12 @@ namespace hazelcast {
             typedef unsigned char byte;
 
             class Data {
+                template<typename DataOutput>
+                friend void operator <<(DataOutput& dataOutput, const Data& data);
+
+                template<typename DataInput>
+                friend void operator >>(DataInput& dataInput, Data& data);
+
             public:
 
                 Data();
@@ -41,7 +47,6 @@ namespace hazelcast {
                 Data(const int type, std::vector<byte> bytes);
 
                 ~Data();
-
 
                 Data& operator = (const Data&);
 
@@ -59,14 +64,6 @@ namespace hazelcast {
 
                 bool operator !=(const Data&) const;
 
-                void writeData(DataOutput&) const;
-
-                void readData(DataInput&);
-
-                void writeData(OutputSocketStream&) const;
-
-                void readData(InputSocketStream&);
-
                 boost::shared_ptr<ClassDefinition> cd;
                 int type;
                 std::vector<byte> buffer;
@@ -80,8 +77,14 @@ namespace hazelcast {
 
                 int getFactoryId() const;
 
-                int getId() const;
+                int getClassId() const;
             };
+
+            template<typename DataOutput>
+            void operator <<(DataOutput& dataOutput, const Data& data);
+
+            template<typename DataInput>
+            void operator >>(DataInput& dataInput, Data& data);
 
         }
     }

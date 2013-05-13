@@ -1,51 +1,51 @@
+////
+//// Created by msk on 3/13/13.
+////
+//// To change the template use AppCode | Preferences | File Templates.
+////
 //
-// Created by msk on 3/13/13.
 //
-// To change the template use AppCode | Preferences | File Templates.
+//#include "MapPutOperation.h"
 //
-
-
-#include "MapPutOperation.h"
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            MapPutOperation::MapPutOperation() {
-
-            }
-
-            MapPutOperation::MapPutOperation(Data key, Data value)
-            :key(key), value(value) {
-
-            }
-
-            int MapPutOperation::getFactoryId() {
-                return 0;
-            }
-
-            int MapPutOperation::getClassId() {
-                return -1;
-            }
-
-            void MapPutOperation::writePortable(PortableWriter & writer) {
-                DataOutput *output = writer.getRawDataOutput();
-                key.writeData(*output);
-                value.writeData(*output);
-            }
-
-            void MapPutOperation::readPortable(PortableReader & reader) {
-                DataInput *input = reader.getRawDataInput();
-                //TODO set context of data somewhere
-                key.readData(*input);
-                value.readData(*input);
-            }
-
-            MapPutOperation::~MapPutOperation() {
-
-
-            }
-
-
-        }
-    }
-}
+//namespace hazelcast {
+//    namespace client {
+//        namespace serialization {
+//            MapPutOperation::MapPutOperation() {
+//
+//            }
+//
+//            MapPutOperation::MapPutOperation(Data key, Data value)
+//            :key(key), value(value) {
+//
+//            }
+//
+//            int MapPutOperation::getFactoryId() {
+//                return 0;
+//            }
+//
+//            int MapPutOperation::getClassId() {
+//                return -1;
+//            }
+//
+//            void MapPutOperation::writePortable(PortableWriter & writer) {
+//                DataOutput *output = writer.getRawDataOutput();
+//                key.writeData(*output);
+//                value.writeData(*output);
+//            }
+//
+//            void MapPutOperation::readPortable(PortableReader & reader) {
+//                DataInput *input = reader.getRawDataInput();
+//                //TODO set context of data somewhere
+//                key.readData(*input);
+//                value.readData(*input);
+//            }
+//
+//            MapPutOperation::~MapPutOperation() {
+//
+//
+//            }
+//
+//
+//        }
+//    }
+//}

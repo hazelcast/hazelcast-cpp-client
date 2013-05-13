@@ -9,9 +9,7 @@
 #ifndef HAZELCAST_FIELD_DEFINITION
 #define HAZELCAST_FIELD_DEFINITION
 
-#include "DataSerializable.h"
 #include "FieldType.h"
-#include <iostream>
 #include <string>
 
 namespace hazelcast {
@@ -19,7 +17,13 @@ namespace hazelcast {
         namespace serialization {
 
 
-            class FieldDefinition : public DataSerializable {
+            class FieldDefinition {
+                template<typename DataOutput>
+                friend void operator <<(DataOutput& dataOutput, const FieldDefinition& data);
+
+                template<typename DataInput>
+                friend void operator >>(DataInput& dataInput, FieldDefinition& data);
+
             public:
 
                 FieldDefinition();
@@ -40,10 +44,6 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(DataOutput&) const;
-
-                void readData(DataInput&);
-
                 bool operator ==(const FieldDefinition&) const;
 
                 bool operator !=(const FieldDefinition&) const;
@@ -56,6 +56,31 @@ namespace hazelcast {
                 int classId;
                 int factoryId;
             };
+
+            template <typename DataOutput>
+            void operator <<(DataOutput & dataOutput, FieldDefinition const & data) {
+                dataOutput << data.index;
+                dataOutput << data.fieldName;
+                dataOutput << data.type.getId();
+                dataOutput << data.factoryId;
+                dataOutput << data.classId;
+
+            };
+
+            template <typename DataInput>
+            void operator >>(DataInput & dataInput, FieldDefinition & data) {
+                dataInput >> data.index;
+                dataInput >> data.fieldName;
+                dataInput >> data.type.id;
+                dataInput >> data.factoryId;
+                dataInput >> data.classId;
+
+            };
+//            template<typename DataOutput>
+//            void operator <<(DataOutput& dataOutput, const FieldDefinition& data);
+//
+//            template<typename DataInput>
+//            void operator >>(DataInput& dataInput, FieldDefinition& data);
 
         }
     }

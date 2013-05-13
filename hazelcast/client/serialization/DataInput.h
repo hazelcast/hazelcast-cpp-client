@@ -9,6 +9,9 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
+#include <vector>
+#include <string>
+
 namespace hazelcast {
     namespace client {
         namespace serialization {

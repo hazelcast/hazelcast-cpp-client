@@ -6,8 +6,6 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "FieldDefinition.h"
-#include "DataOutput.h"
-#include "DataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -63,21 +61,6 @@ namespace hazelcast {
                 return classId;
             };
 
-            void FieldDefinition::writeData(DataOutput& out) const {
-                out.writeInt(index);
-                out.writeUTF(fieldName);
-                out.writeByte(type.getId());
-                out.writeInt(factoryId);
-                out.writeInt(classId);
-            };
-
-            void FieldDefinition::readData(DataInput& in) {
-                index = in.readInt();
-                fieldName = in.readUTF();
-                type = in.readByte();
-                factoryId = in.readInt();
-                classId = in.readInt();
-            };
 
             bool FieldDefinition::operator ==(const FieldDefinition & other) const {
                 if (this == &other) return true;
@@ -94,6 +77,26 @@ namespace hazelcast {
             bool FieldDefinition::operator !=(const FieldDefinition & other) const {
                 return !(*this == other);
             };
+
+//            template <typename DataOutput>
+//            void operator <<(DataOutput & dataOutput, FieldDefinition const & data) {
+//                dataOutput << data.index;
+//                dataOutput << data.fieldName;
+//                dataOutput << data.getType().getId();
+//                dataOutput << data.factoryId;
+//                dataOutput << data.classId;
+//
+//            }
+//
+//            template <typename DataInput>
+//            void operator >>(DataInput & dataInput, FieldDefinition & data) {
+//                dataInput >> data.index;
+//                dataInput >> data.fieldName;
+//                dataInput >> data.getType().getId();
+//                dataInput >> data.factoryId;
+//                dataInput >> data.classId;
+//
+//            }
 
         }
     }

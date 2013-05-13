@@ -14,18 +14,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializationContext::SerializationContext(std::vector<int> const & portableFactories, int version, SerializationService *service)
+            SerializationContext::SerializationContext(int version, SerializationService *service)
             : contextVersion(version)
             , service(service) {
-                for (std::vector<int>::const_iterator factoryId = portableFactories.begin(); factoryId != portableFactories.end(); ++factoryId) {
-                    portableContextMap[*factoryId] = new PortableContext(service, this);
-                }
             };
 
             SerializationContext::~SerializationContext() {
-                for (std::map<int, PortableContext *>::iterator it = portableContextMap.begin(); it != portableContextMap.end(); ++it) {
-                    delete it->second;
-                }
             };
 
             SerializationContext::SerializationContext(const SerializationContext& rhs) {

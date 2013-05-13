@@ -6,12 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "Data.h"
-#include "DataInput.h"
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
 #include "SerializationConstants.h"
-#include "OutputSocketStream.h"
-#include "InputSocketStream.h"
 
 
 namespace hazelcast {
@@ -74,7 +71,7 @@ namespace hazelcast {
              */
             int Data::totalSize() const {
                 int total = 0;
-                total += 4; // type
+                total += 4; // id
                 if (cd != NULL) {
                     total += 4; // classDefinition-classId
                     total += 4; // classDefinition-namespace-size
@@ -99,108 +96,66 @@ namespace hazelcast {
                 this->partitionHash = partitionHash;
             };
 
-            void Data::readData(DataInput& in) {
-                type = in.readInt();
-                int classId = in.readInt();
-                if (classId != NO_CLASS_ID) {
-                    int factoryId = in.readInt();
-                    int version = in.readInt();
-
-                    int classDefSize = in.readInt();
-
-                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                        cd = context->lookup(factoryId, classId, version);
-                        in.skipBytes(classDefSize);
-                    } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        in.readFully(classDefBytes);
-                        cd = context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = in.readInt();
-                if (size > 0) {
-                    std::vector<byte> buffer(size);
-                    in.readFully(buffer);
-                    this->buffer = buffer;
-                }
-                partitionHash = in.readInt();
-            };
-
-
-            void Data::readData(InputSocketStream & in) {
-                type = in.readInt();
-                int classId = in.readInt();
-                if (classId != NO_CLASS_ID) {
-                    int factoryId = in.readInt();
-                    int version = in.readInt();
-
-                    int classDefSize = in.readInt();
-
-                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                        cd = context->lookup(factoryId, classId, version);
-                        in.skipBytes(classDefSize);
-                    } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        in.readFully(classDefBytes);
-                        cd = context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = in.readInt();
-                if (size > 0) {
-                    std::vector<byte> buffer(size);
-                    in.readFully(buffer);
-                    this->buffer = buffer;
-                }
-                partitionHash = in.readInt();
-
-            }
-
-            void Data::writeData(DataOutput& out) const {
-                out.writeInt(type);
-                if (cd != NULL) {
-                    out.writeInt(cd->getClassId());
-                    out.writeInt(cd->getFactoryId());
-                    out.writeInt(cd->getVersion());
-                    std::vector<byte> classDefBytes = cd->getBinary();
-                    out.writeInt(classDefBytes.size());
-                    out.write(classDefBytes);//TODO only usage ins class this necessary
-                } else {
-                    out.writeInt(NO_CLASS_ID);
-                }
-                int len = bufferSize();
-                out.writeInt(len);
-                if (len > 0) {
-                    out.write(buffer); //TODO only usage ins class this necessary
-                }
-                out.writeInt(partitionHash);
-            };
-
-            void Data::writeData(OutputSocketStream& out) const {
-                out.writeInt(type);
-                if (cd != NULL) {
-                    out.writeInt(cd->getClassId());
-                    out.writeInt(cd->getFactoryId());
-                    out.writeInt(cd->getVersion());
-                    std::vector<byte> classDefBytes = cd->getBinary();
-                    out.writeInt(classDefBytes.size());
-                    out.write(classDefBytes);//TODO only usage ins class this necessary
-                } else {
-                    out.writeInt(NO_CLASS_ID);
-                }
-                int len = bufferSize();
-                out.writeInt(len);
-                if (len > 0) {
-                    out.write(buffer); //TODO only usage ins class this necessary
-                }
-                out.writeInt(partitionHash);
-            };
-
             int Data::getFactoryId() const {
                 return FACTORY_ID;
             };
 
-            int Data::getId() const {
+            int Data::getClassId() const {
                 return ID;
+            };
+
+            template<typename DataOutput>
+            void operator <<(DataOutput& dataOutput, const Data& data) {
+                dataOutput << data.type;
+                if (data.cd != NULL) {
+                    dataOutput << data.cd->getClassId();
+                    dataOutput << data.cd->getFactoryId();
+                    dataOutput << data.cd->getVersion();
+                    std::vector<byte> classDefBytes = data.cd->getBinary();
+                    dataOutput << classDefBytes.size();
+                    dataOutput << classDefBytes;
+                } else {
+                    dataOutput << data.NO_CLASS_ID;
+                }
+                int len = data.bufferSize();
+                dataOutput << len;
+                if (len > 0) {
+                    dataOutput << data.buffer;
+                }
+                dataOutput << data.partitionHash;
+            };
+
+            template<typename DataInput>
+            void operator >>(DataInput& dataInput, Data& data) {
+                dataInput >> data.type;
+                int classId = data.NO_CLASS_ID;
+                dataInput >> data;
+                if (classId != data.NO_CLASS_ID) {
+                    int factoryId = 0;
+                    int version = 0;
+                    dataInput >> factoryId;
+                    dataInput >> version;
+
+                    int classDefSize = 0;
+                    dataInput >> classDefSize;
+
+                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
+                        data.cd = data.context->lookup(factoryId, classId, version);
+                        dataInput.skipBytes(classDefSize);//TODO msk ???
+                    } else {
+                        std::vector<byte> classDefBytes(classDefSize);
+                        dataInput >> classDefBytes;
+                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = 0;
+                dataInput >> size;
+                if (size > 0) {
+                    std::vector<byte> buffer(size);
+                    dataInput >> buffer;
+                    data.buffer = buffer;
+                }
+                dataInput >> data.partitionHash;
             };
         }
     }
