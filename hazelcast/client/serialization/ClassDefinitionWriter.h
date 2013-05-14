@@ -112,7 +112,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        classDefinitionWriter << p; //TODO 1
+                        writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         context->registerClassDefinition(cd);
                     }
@@ -133,7 +133,7 @@ namespace hazelcast {
 
             template<typename T>
             inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T data) {
-                //TODO i probably need to add more to here
+                //TODO i probably need to add more here
                 //........
                 classDefinitionWriter.writePortable(data);
             };

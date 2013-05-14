@@ -135,7 +135,7 @@ namespace hazelcast {
 
             template<typename T>
             inline void operator <<(PortableWriter& portableWriter, T data) {
-                //TODO i probably need to add more to here
+                //TODO i probably need to add more here
                 //........
                 portableWriter.writingToDataOutput();
                 portableWriter.writePortable(data);
