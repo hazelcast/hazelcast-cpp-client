@@ -34,6 +34,7 @@ namespace hazelcast {
                 }
                 setPosition(fieldName);
                 writingPortable = true;
+                return *this;
             };
 
             //TODO need more thought on above and below functions

@@ -18,6 +18,7 @@
 #include <cassert>
 #include <boost/shared_ptr.hpp>
 #include "FieldDefinition.h"
+#include "ConstantSerializers.h"
 
 using namespace std;
 

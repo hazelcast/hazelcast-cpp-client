@@ -14,6 +14,7 @@
 #include "Util.h"
 #include "ClassDefinitionWriter.h"
 #include "PortableWriter.h"
+#import "PortableReader.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <map>
@@ -76,9 +77,9 @@ namespace hazelcast {
 
                     boost::shared_ptr<ClassDefinition> cd;
 //                    if (context->getVersion() == dataVersion) {
-//                        cd = context->lookup(factoryId, classId); // using serializationContext.version
-//                        PortableReader reader(this, dataInput, cd, PortableReader::DEFAULT);
-//                        p->readPortable(reader);
+                    cd = context->lookup(factoryId, classId); // using serializationContext.version
+                    PortableReader reader(dataInput, cd);
+                    readPortable(reader, object);
 //                    } else {
 //                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
 //                        PortableReader reader(this, dataInput, cd, PortableReader::MORPHING);
