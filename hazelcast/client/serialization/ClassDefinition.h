@@ -25,18 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class DataInput;
+            class BufferedDataInput;
 
-            class DataOutput;
+            class BufferedDataOutput;
 
             typedef unsigned char byte;
 
             class ClassDefinition {
                 template<typename DataOutput>
-                friend void operator <<(DataOutput& dataOutput, boost::shared_ptr<ClassDefinition> data);
+                friend void writePortable(DataOutput& dataOutput, boost::shared_ptr<ClassDefinition> data);
 
                 template<typename DataInput>
-                friend void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data);
+                friend void readPortable(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data);
 
             public:
 
@@ -89,14 +89,14 @@ namespace hazelcast {
 
                 vector<FieldDefinition> fieldDefinitions;
                 map<string, FieldDefinition> fieldDefinitionsMap;
-                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions; //TODO ask if equaliy is necessary
+                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
 
                 std::vector<byte> binary;
 
             };
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const boost::shared_ptr<ClassDefinition> data) {
+            void writePortable(DataOutput& dataOutput, const boost::shared_ptr<ClassDefinition> data) {
                 dataOutput << data->getFactoryId();
                 dataOutput << data->getClassId();
                 dataOutput << data->getVersion();
@@ -109,8 +109,7 @@ namespace hazelcast {
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data) {
-//                operator >>(dataInput, data->factoryId);
+            void readPortable(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data) {
                 dataInput >> data->factoryId;
                 dataInput >> data->classId;
                 dataInput >> data->version;
@@ -124,16 +123,10 @@ namespace hazelcast {
                 dataInput >> size;
                 for (int i = 0; i < size; i++) {
                     boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
-//                    classDefinition->readData(in);
                     dataInput >> classDefinition;
                     data->add(classDefinition);
                 }
             };
-//            template<typename DataOutput>
-//            void operator <<(DataOutput& dataOutput, boost::shared_ptr<ClassDefinition> data);
-//
-//            template<typename DataInput>
-//            void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data);
         }
     }
 }

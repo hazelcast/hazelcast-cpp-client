@@ -47,7 +47,7 @@
 //
 //    void readPortable(PortableReader & reader) {
 //        l = reader.readLong("l");
-//        DataInput *input = reader.getRawDataInput();
+//        BufferedDataInput *input = reader.getRawDataInput();
 //        i = reader.readInt("i");
 //        s = input->readUTF();
 //    }

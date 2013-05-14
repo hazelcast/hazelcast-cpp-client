@@ -46,14 +46,14 @@ inline int getClassId(const TestMobile& t) {
 }
 
 template<typename HzWriter>
-inline void operator <<(HzWriter& writer, const TestMobile& data) {
+inline void writePortable(HzWriter& writer, const TestMobile& data) {
 //    writer["sadada"] << data.c;
     writer << data.i;
     writer << data.c;
 };
 
 template<typename HzReader>
-inline void operator >>(HzReader& reader, TestMobile& data) {
+inline void readPortable(HzReader& reader, TestMobile& data) {
 //  reader["wedsa"] >> data.c;
     reader >> data.i;
     reader >> data.c;

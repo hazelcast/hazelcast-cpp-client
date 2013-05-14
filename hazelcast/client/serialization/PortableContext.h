@@ -25,8 +25,6 @@ namespace hazelcast {
 
             class SerializationService;
 
-            class Portable;
-
             typedef unsigned char byte;
 
             class PortableContext {

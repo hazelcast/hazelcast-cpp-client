@@ -50,7 +50,7 @@ void testNewDesign() {
     data = serializationService.toData(np);
 
     TestMobile tnp1;
-    tnp1 = serializationService.toObject<TestMobile >(data);
+    tnp1 = serializationService.toObject<TestMobile>(data);
 
     assert(np == tnp1);
 };

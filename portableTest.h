@@ -108,14 +108,14 @@
 //
 //    Data data = serializationService1.toData(mainPortable);
 //
-//    DataOutput *out = serializationService1.pop();
+//    BufferedDataOutput *out = serializationService1.pop();
 //    data.writeData(*out);
 //
 //    vector<byte> xxx = out->toByteArray();
 //    serializationService1.push(out);
 //
 //    serialization::SerializationService serializationService2(1, getPortableFactoryMap());
-//    serialization::DataInput dataInput(xxx, &serializationService2);
+//    serialization::BufferedDataInput dataInput(xxx, &serializationService2);
 //    Data newData;
 //    newData.setSerializationContext(serializationService2.getSerializationContext());
 //    newData.readData(dataInput);
@@ -128,7 +128,7 @@
 //    serialization::SerializationService serializationService(1, getPortableFactoryMap());
 //    TestMainPortable mainPortable = getTestMainPortable();
 //    Data data = serializationService.toData(mainPortable);
-//    DataOutput *out = serializationService.pop();
+//    BufferedDataOutput *out = serializationService.pop();
 //    data.writeData(*out);
 //    std::vector<byte> outBuffer = out->toByteArray();
 //    int size = outBuffer.size();
@@ -155,7 +155,7 @@
 //
 //    byte *tempPtr = (byte *) bytes;
 //    std::vector<byte> buffer(tempPtr, tempPtr + size);
-//    serialization::DataInput dataInput(buffer, &serializationService);
+//    serialization::BufferedDataInput dataInput(buffer, &serializationService);
 //
 //    serialization::Data data;
 //    data.setSerializationContext(serializationService.getSerializationContext());

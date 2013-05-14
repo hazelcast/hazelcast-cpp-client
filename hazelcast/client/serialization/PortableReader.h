@@ -10,7 +10,7 @@
 //#define HAZELCAST_PORTABLE_READER
 //
 //#include "ClassDefinition.h"
-//#include "DataInput.h"
+//#include "BufferedDataInput.h"
 //#include "FieldDefinition.h"
 //#include "PortableSerializer.h"
 //#include "HazelcastException.h"
@@ -38,7 +38,7 @@
 //                    DEFAULT, MORPHING
 //                };
 //
-//                PortableReader(PortableSerializer *serializer, DataInput& input, boost::shared_ptr<ClassDefinition> cd, Type isMorphing);
+//                PortableReader(PortableSerializer *serializer, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd, Type isMorphing);
 //
 //                int readInt(string fieldName);
 //
@@ -119,7 +119,7 @@
 //                    return portables;
 //                };
 //
-//                DataInput *const getRawDataInput();
+//                BufferedDataInput *const getRawDataInput();
 //
 //            private:
 //
@@ -188,7 +188,7 @@
 //
 //                PortableSerializer *serializer;
 //                boost::shared_ptr<ClassDefinition> cd;
-//                DataInput *input;
+//                BufferedDataInput *input;
 //                int offset;
 //                Type id;
 //                bool isFieldMorphed;

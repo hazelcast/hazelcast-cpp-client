@@ -9,7 +9,7 @@
 //#ifndef HAZELCAST_PORTABLE_WRITER
 //#define HAZELCAST_PORTABLE_WRITER
 //
-//#include "DataOutput.h"
+//#include "BufferedDataOutput.h"
 //#include "PortableSerializer.h"
 //#include "FieldDefinition.h"
 //#include "HazelcastException.h"
@@ -26,7 +26,7 @@
 //
 //            class ClassDefinition;
 //
-//            class DataInput;
+//            class BufferedDataInput;
 //
 //            class Portable;
 //
@@ -37,7 +37,7 @@
 //                    DEFAULT, CLASS_DEFINITION_WRITER
 //                };
 //
-//                PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type id);
+//                PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output, Type id);
 //
 //                void writeInt(string fieldName, int value);
 //
@@ -91,7 +91,7 @@
 //                    }
 //                };
 //
-//                DataOutput *const getRawDataOutput();
+//                BufferedDataOutput *const getRawDataOutput();
 //
 //            private:
 //
@@ -131,7 +131,7 @@
 //                int index;
 //                bool raw;
 //                PortableSerializer *serializer;
-//                DataOutput *output;
+//                BufferedDataOutput *output;
 //                int offset;
 //                std::set<std::string> writtenFields;
 //                boost::shared_ptr<ClassDefinition> cd;

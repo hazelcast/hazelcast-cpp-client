@@ -103,12 +103,12 @@
 //    socket.send("CB1", 3);
 //    ClientAuthenticationRequest c;
 //    Data data = service.toData(c);
-//    DataOutput output(new OutputSocketStream(socket));
+//    BufferedDataOutput output(new OutputSocketStream(socket));
 //    data.writeData(output);
 //
 //    void buffer[1024];
 //    socket.receive(buffer, 1024);
-//    DataInput input;
+//    BufferedDataInput input;
 //    data.setSerializationContext(service.getSerializationContext());
 //    data.readData(input);
 //}

@@ -6,24 +6,18 @@
 //
 
 
-
-#ifndef HAZELCAST_STRING_UTIL
-#define HAZELCAST_STRING_UTIL
-
-#include <iostream>
-
+#include "Util.h"
+#include <sstream>
 
 namespace hazelcast {
     namespace client {
         namespace util {
-            class StringUtil {
-            public:
-
-                static std::string to_string(int);
+            std::string to_string(int value) {
+                std::stringstream s;
+                s << value;
+                return s.str();
             };
         }
     }
 }
 
-
-#endif //HAZELCAST_STRING_UTIL

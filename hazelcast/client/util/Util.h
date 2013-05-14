@@ -6,17 +6,19 @@
 //
 
 
-#include "StringUtil.h"
+
+#ifndef HAZELCAST_STRING_UTIL
+#define HAZELCAST_STRING_UTIL
+
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace util {
-            std::string StringUtil::to_string(int value) {
-                char temp[10];
-                sprintf(temp, "%d", value);
-                return std::string(temp);
-            };
+            std::string to_string(int);
         }
     }
 }
 
+
+#endif //HAZELCAST_STRING_UTIL

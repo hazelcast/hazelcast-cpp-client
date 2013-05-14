@@ -16,7 +16,7 @@
 //    namespace client {
 //        namespace serialization {
 //
-//            PortableWriter::PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, DataOutput *output, Type id)
+//            PortableWriter::PortableWriter(PortableSerializer *serializer, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output, Type id)
 //            : id(id)
 //            , serializer(serializer)
 //            , output(output)
@@ -183,7 +183,7 @@
 //                }
 //            };
 //
-//            DataOutput *const hazelcast::client::serialization::PortableWriter::getRawDataOutput() {
+//            BufferedDataOutput *const hazelcast::client::serialization::PortableWriter::getRawDataOutput() {
 //                if (id == CLASS_DEFINITION_WRITER) {
 //                    static EmptyDataOutput emptyDataOutput;
 //                    return &emptyDataOutput;
@@ -204,9 +204,9 @@
 //                    error += "HazelcastSerializationException( Invalid field name: '";
 //                    error += fieldName;
 //                    error += "' for ClassDefinition {id: ";
-//                    error += hazelcast::client::util::StringUtil::to_string(cd->getClassId());
+//                    error += hazelcast::client::util::to_string(cd->getClassId());
 //                    error += ", version: ";
-//                    error += hazelcast::client::util::StringUtil::to_string(cd->getVersion());
+//                    error += hazelcast::client::util::to_string(cd->getVersion());
 //                    error += "}";
 //
 //                    throw hazelcast::client::HazelcastException(error);

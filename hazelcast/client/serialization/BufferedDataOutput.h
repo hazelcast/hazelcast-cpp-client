@@ -1,5 +1,5 @@
 //
-//  DataOutput.h
+//  BufferedDataOutput.h
 //  Server
 //
 //  Created by sancar koyunlu on 1/3/13.
@@ -18,10 +18,10 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class DataOutput {
+            class BufferedDataOutput {
             public:
 
-                DataOutput();
+                BufferedDataOutput();
 
                 virtual std::vector<byte> toByteArray();
 
@@ -83,6 +83,13 @@ namespace hazelcast {
 
                 void writeShortUTF(std::string);
 
+            };
+
+            template<typename T>
+            inline void operator <<(BufferedDataOutput& dataOutput, T data) {
+                //TODO some control stuff can be added here : not sure what is needed right now
+                //........
+                writePortable(dataOutput, data);
             };
 
         }

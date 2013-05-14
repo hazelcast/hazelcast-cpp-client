@@ -1,5 +1,5 @@
 //
-//  DataOutput.cpp
+//  BufferedDataOutput.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/3/13.
@@ -7,59 +7,59 @@
 //
 
 #include <string>
-#include "DataOutput.h"
+#include "BufferedDataOutput.h"
 #include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataOutput::DataOutput() {
+            BufferedDataOutput::BufferedDataOutput() {
             };
 
-            std::vector<byte> DataOutput::toByteArray() {
+            std::vector<byte> BufferedDataOutput::toByteArray() {
                 return outputStream;
             };
 
-            void DataOutput::write(const std::vector<byte>& bytes) {
+            void BufferedDataOutput::write(const std::vector<byte>& bytes) {
                 for (int i = 0; i < bytes.size(); i++)
                     writeByte(bytes[i]);
             };
 
-            void DataOutput::write(char const *bytes, int length) {
+            void BufferedDataOutput::write(char const *bytes, int length) {
                 outputStream.insert(outputStream.end(), bytes, bytes + (length * sizeof (char)));
             };
 
-            void DataOutput::writeBoolean(bool i) {
+            void BufferedDataOutput::writeBoolean(bool i) {
                 writeByte(i);
             };
 
-            void DataOutput::writeByte(int n, int i) {
+            void BufferedDataOutput::writeByte(int n, int i) {
                 outputStream[n] = char(0xff & i);
             }
 
-            void DataOutput::writeByte(int i) {
+            void BufferedDataOutput::writeByte(int i) {
                 outputStream.push_back(char(0xff & i));
             };
 
-            void DataOutput::writeShort(int v) {
+            void BufferedDataOutput::writeShort(int v) {
                 writeByte((v >> 8));
                 writeByte(v);
             };
 
-            void DataOutput::writeChar(int i) {
+            void BufferedDataOutput::writeChar(int i) {
                 writeByte((i >> 8));
                 writeByte(i);
             };
 
-            void DataOutput::writeInt(int v) {
+            void BufferedDataOutput::writeInt(int v) {
                 writeByte((v >> 24));
                 writeByte((v >> 16));
                 writeByte((v >> 8));
                 writeByte(v);
             };
 
-            void DataOutput::writeLong(long l) {
+            void BufferedDataOutput::writeLong(long l) {
                 writeByte((l >> 56));
                 writeByte((l >> 48));
                 writeByte((l >> 40));
@@ -70,7 +70,7 @@ namespace hazelcast {
                 writeByte((int) l);
             };
 
-            void DataOutput::writeFloat(float x) {
+            void BufferedDataOutput::writeFloat(float x) {
                 union {
                     float f;
                     int i;
@@ -79,7 +79,7 @@ namespace hazelcast {
                 writeInt(u.i);
             };
 
-            void DataOutput::writeDouble(double v) {
+            void BufferedDataOutput::writeDouble(double v) {
                 union {
                     double d;
                     long l;
@@ -88,7 +88,7 @@ namespace hazelcast {
                 writeLong(u.l);
             };
 
-            void DataOutput::writeUTF(std::string str) {
+            void BufferedDataOutput::writeUTF(std::string str) {
                 bool isNull = str.empty();
                 writeBoolean(isNull);
                 if (isNull)
@@ -104,29 +104,29 @@ namespace hazelcast {
                 }
             };
 
-            void DataOutput::writeInt(int index, int v) {
+            void BufferedDataOutput::writeInt(int index, int v) {
                 writeByte(index++, (v >> 24));
                 writeByte(index++, (v >> 16));
                 writeByte(index++, (v >> 8));
                 writeByte(index, v);
             };
 
-            int DataOutput::position() {
+            int BufferedDataOutput::position() {
                 return outputStream.size();
             };
 
-            void DataOutput::position(int newPos) {
+            void BufferedDataOutput::position(int newPos) {
                 if (outputStream.size() < newPos)
                     outputStream.resize(newPos, 0);
             };
 
-            void DataOutput::reset() {
+            void BufferedDataOutput::reset() {
                 outputStream.clear();
             };
 
             //private functions
 
-            void DataOutput::writeShortUTF(std::string str) {
+            void BufferedDataOutput::writeShortUTF(std::string str) {
                 int stringLen = (int) str.length();
                 int utfLength = 0;
                 int count = 0;

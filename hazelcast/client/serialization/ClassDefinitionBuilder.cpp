@@ -8,7 +8,7 @@
 
 #include "ClassDefinitionBuilder.h"
 #include "HazelcastException.h"
-#include "StringUtil.h"
+#include "Util.h"
 #include "Data.h"
 
 namespace hazelcast {
@@ -157,7 +157,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done) {
-                    throw hazelcast::client::HazelcastException("ClassDefinition is already built for " + hazelcast::client::util::StringUtil::to_string(cd->getClassId()));
+                    throw hazelcast::client::HazelcastException("ClassDefinition is already built for " + hazelcast::client::util::to_string(cd->getClassId()));
                 }
 
             }

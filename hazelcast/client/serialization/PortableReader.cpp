@@ -11,7 +11,7 @@
 //    namespace client {
 //        namespace serialization {
 //
-//            PortableReader::PortableReader(PortableSerializer *serializer, DataInput& input, boost::shared_ptr <ClassDefinition> cd, Type id)
+//            PortableReader::PortableReader(PortableSerializer *serializer, BufferedDataInput& input, boost::shared_ptr <ClassDefinition> cd, Type id)
 //            : serializer(serializer)
 //            , input(&input)
 //            , cd(cd)
@@ -156,7 +156,7 @@
 //                return values;
 //            };
 //
-//            DataInput *const PortableReader::getRawDataInput() {
+//            BufferedDataInput *const PortableReader::getRawDataInput() {
 //                if (!raw) {
 //                    int pos = input->readInt(offset + cd->getFieldCount() * 4);
 //                    input->position(pos);

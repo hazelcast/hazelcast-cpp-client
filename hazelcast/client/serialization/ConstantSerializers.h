@@ -9,8 +9,8 @@
 #ifndef HAZELCAST_CONSTANT_SERIALIZERS
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
-#include "DataInput.h"
-#include "DataOutput.h"
+#include "BufferedDataInput.h"
+#include "BufferedDataOutput.h"
 #include "SerializationConstants.h"
 
 #include <iostream>
@@ -25,7 +25,7 @@ namespace hazelcast {
 
             template<typename T>
             int getTypeId(T t) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                return 0;
             };
 
 
@@ -46,6 +46,19 @@ namespace hazelcast {
             };
 
             /*****************************************************************************/
+            /*****************************************************************************/
+
+//            template<typename BufferedDataOutput, typename T> //TODO did not work i just tried to overload every << calls :)
+//            void writePortable(BufferedDataOutput& dataOutput, T data) {
+//                dataOutput.writePortable(data);
+//            };
+//
+//            template<typename BufferedDataInput, typename T>
+//            void readPortable(BufferedDataInput& dataInput, T& data) {
+//                data = dataInput.readPortable();
+//            };
+
+            /*****************************************************************************/
             inline int getFactoryId(byte t) {
                 return -1;
             }
@@ -55,12 +68,12 @@ namespace hazelcast {
             }
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, byte data) {
+            void writePortable(DataOutput& dataOutput, byte data) {
                 dataOutput.writeByte(data);
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, byte& data) {
+            void readPortable(DataInput& dataInput, byte& data) {
                 data = dataInput.readByte();
             };
 
@@ -72,11 +85,11 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
 //                    };
 //
-//                    void write(DataOutput *dataOutput, bool obj) {
+//                    void write(BufferedDataOutput *dataOutput, bool obj) {
 //                        dataOutput->writeBoolean(obj);
 //                    };
 //
-//                    bool read(DataInput *dataInput) {
+//                    bool read(BufferedDataInput *dataInput) {
 //                        return dataInput->readBoolean();
 //                    }
 //                };
@@ -91,12 +104,12 @@ namespace hazelcast {
             }
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const char& data) {
+            void writePortable(DataOutput& dataOutput, const char& data) {
                 dataOutput.writeChar(data);
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, char& data) {
+            void readPortable(DataInput& dataInput, char& data) {
                 data = dataInput.readChar();
             };
             /*****************************************************************************/
@@ -108,11 +121,11 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_SHORT;
 //                    }
 //
-//                    short read(DataInput *dataInput) {
+//                    short read(BufferedDataInput *dataInput) {
 //                        return dataInput->readShort();
 //                    }
 //
-//                    void write(DataOutput *dataOutput, const short obj) {
+//                    void write(BufferedDataOutput *dataOutput, const short obj) {
 //                        dataOutput->writeShort(obj);
 //                    }
 //                };
@@ -127,12 +140,12 @@ namespace hazelcast {
             }
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const int& data) {
+            void writePortable(DataOutput& dataOutput, const int& data) {
                 dataOutput.writeInt(data);
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, int& data) {
+            void readPortable(DataInput& dataInput, int& data) {
                 data = dataInput.readInt();
             };
             /*****************************************************************************/
@@ -144,11 +157,11 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_LONG;
 //                    }
 //
-//                    long read(DataInput *dataInput) {
+//                    long read(BufferedDataInput *dataInput) {
 //                        return dataInput->readLong();
 //                    }
 //
-//                    void write(DataOutput *dataOutput, const long obj) {
+//                    void write(BufferedDataOutput *dataOutput, const long obj) {
 //                        dataOutput->writeLong(obj);
 //                    }
 //                };
@@ -160,11 +173,11 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_FLOAT;
 //                    }
 //
-//                    float read(DataInput *dataInput) {
+//                    float read(BufferedDataInput *dataInput) {
 //                        return dataInput->readFloat();
 //                    }
 //
-//                    void write(DataOutput *dataOutput, const float obj) {
+//                    void write(BufferedDataOutput *dataOutput, const float obj) {
 //                        dataOutput->writeFloat(obj);
 //                    }
 //                };
@@ -176,11 +189,11 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_DOUBLE;
 //                    }
 //
-//                    double read(DataInput *dataInput) {
+//                    double read(BufferedDataInput *dataInput) {
 //                        return dataInput->readDouble();
 //                    }
 //
-//                    void write(DataOutput *dataOutput, const double obj) {
+//                    void write(BufferedDataOutput *dataOutput, const double obj) {
 //                        dataOutput->writeDouble(obj);
 //                    }
 //                };
@@ -195,12 +208,12 @@ namespace hazelcast {
             };
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const std::string&   data) {
+            void writePortable(DataOutput& dataOutput, const std::string&   data) {
                 dataOutput.writeUTF(data);
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, std::string&  data) {
+            void readPortable(DataInput& dataInput, std::string&  data) {
                 data = dataInput.readUTF();
             };
 
@@ -215,7 +228,7 @@ namespace hazelcast {
             };
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const std::vector<byte>&  data) {
+            void writePortable(DataOutput& dataOutput, const std::vector<byte>&  data) {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -226,7 +239,7 @@ namespace hazelcast {
             };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, std::vector<byte>& data) {
+            void readPortable(DataInput& dataInput, std::vector<byte>& data) {
                 int size = dataInput.readInt();
                 data.resize(size, 0);
                 for (int i = 0; i < size; i++) {
@@ -242,7 +255,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
 //                    }
 //
-//                    std::vector<char> read(DataInput *dataInput) {
+//                    std::vector<char> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<char> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -251,7 +264,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<char>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<char>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {
@@ -269,7 +282,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
 //                    }
 //
-//                    std::vector<short> read(DataInput *dataInput) {
+//                    std::vector<short> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<short> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -278,7 +291,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<short>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<short>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {
@@ -296,7 +309,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
 //                    }
 //
-//                    std::vector<int> read(DataInput *dataInput) {
+//                    std::vector<int> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<int> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -305,7 +318,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<int>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<int>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {
@@ -323,7 +336,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
 //                    }
 //
-//                    std::vector<long> read(DataInput *dataInput) {
+//                    std::vector<long> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<long> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -332,7 +345,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<long>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<long>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {
@@ -350,7 +363,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
 //                    }
 //
-//                    std::vector<float> read(DataInput *dataInput) {
+//                    std::vector<float> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<float> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -359,7 +372,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<float>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<float>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {
@@ -377,7 +390,7 @@ namespace hazelcast {
 //                        return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
 //                    }
 //
-//                    std::vector<double> read(DataInput *dataInput) {
+//                    std::vector<double> read(BufferedDataInput *dataInput) {
 //                        int size = dataInput->readInt();
 //                        std::vector<double> c(size);
 //                        for (int i = 0; i < size; i++) {
@@ -386,7 +399,7 @@ namespace hazelcast {
 //                        return c;
 //                    }
 //
-//                    void write(DataOutput *dataOutput, std::vector<double>& obj) {
+//                    void write(BufferedDataOutput *dataOutput, std::vector<double>& obj) {
 //                        int size = obj.size();
 //                        dataOutput->writeInt(size);
 //                        if (size > 0) {

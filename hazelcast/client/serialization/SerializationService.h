@@ -12,11 +12,11 @@
 #include "ConstantSerializers.h"
 #include "Data.h"
 #include "PortableSerializer.h"
-#include "DataOutput.h"
-#include "DataInput.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 #include "SerializationContext.h"
 #include "HazelcastException.h"
-#include "StringUtil.h"
+#include "Util.h"
 #include "boost/type_traits/is_base_of.hpp"
 #include "boost/any.hpp"
 #include <iostream>
@@ -38,12 +38,31 @@ namespace hazelcast {
 
                 template<typename K>
                 Data toData(K& object) {
-                    DataOutput *output = pop();
-                    int typeID = getTypeId(object);
-                    (*output) << object;
-                    Data data(typeID, output->toByteArray());
-                    push(output);
-                    data.cd = serializationContext.lookup(getFactoryId(object), getClassId(object));
+                    BufferedDataOutput output;
+                    int typeID; //TODO uncomment following lines
+//                    if(boost::is_base_of<Portable, K>::value){
+//                        typeID = SerializationConstants::CONSTANT_TYPE_PORTABLE;
+//                    }else if(boost::is_base_of<DataSerializable, K>::value){
+//                        typeID = SerializationConstants::CONSTANT_TYPE_DATA;
+//                    } else {
+                    typeID = getTypeId(object);
+//                    }
+//                    if(typeID == 0){
+//                        throw hazelcast::client::HazelcastException("given class must be either one of primitives,  vector of primitives , DataSeriliazable or Portable)");
+//                    }
+                    if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
+                        PortableSerializer portableSerializer(this);//TODO is service necessary as argument // context can be sufficient
+                        portableSerializer.write(output, object);
+                    } else {
+                        output << object;
+                    }
+                    Data data(typeID, output.toByteArray());
+                    int factoryId = getFactoryId(object);
+                    int classId = getClassId(object);
+
+                    if (serializationContext.isClassDefinitionExists(factoryId, classId)) {
+                        data.cd = serializationContext.lookup(factoryId, classId);
+                    }
                     return data;
                 };
 
@@ -54,24 +73,20 @@ namespace hazelcast {
                     if (data.bufferSize() == 0)
                         throw hazelcast::client::HazelcastException("Empty Data");
                     int typeID = data.type;
-                    DataInput dataInput(data.buffer);
+                    BufferedDataInput dataInput(data.buffer);
 
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
-                        //TODO add dataSerializer
+                        //TODO add dataSerializer NOT SURE
                     } else {
-                        std::string error = "There is no suitable de-serializer for id " + hazelcast::client::util::StringUtil::to_string(typeID);
+                        std::string error = "There is no suitable de-serializer for id " + hazelcast::client::util::to_string(typeID);
                         throw hazelcast::client::HazelcastException(error);
                     }
                     K object;
                     dataInput >> object;
                     return object;
                 };
-
-                void push(DataOutput *);
-
-                DataOutput *pop();
 
                 static long combineToLong(int x, int y);
 
@@ -84,8 +99,6 @@ namespace hazelcast {
             private:
 
                 SerializationService(const SerializationService&);
-
-                std::queue<DataOutput *> outputPool;
 
                 SerializationContext serializationContext;
             };

@@ -19,10 +19,10 @@ namespace hazelcast {
 
             class FieldDefinition {
                 template<typename DataOutput>
-                friend void operator <<(DataOutput& dataOutput, const FieldDefinition& data);
+                friend void writePortable(DataOutput& dataOutput, const FieldDefinition& data);
 
                 template<typename DataInput>
-                friend void operator >>(DataInput& dataInput, FieldDefinition& data);
+                friend void readPortable(DataInput& dataInput, FieldDefinition& data);
 
             public:
 
@@ -58,7 +58,7 @@ namespace hazelcast {
             };
 
             template <typename DataOutput>
-            void operator <<(DataOutput & dataOutput, FieldDefinition const & data) {
+            void writePortable(DataOutput & dataOutput, FieldDefinition const & data) {
                 dataOutput << data.index;
                 dataOutput << data.fieldName;
                 dataOutput << data.type.getId();
@@ -68,7 +68,7 @@ namespace hazelcast {
             };
 
             template <typename DataInput>
-            void operator >>(DataInput & dataInput, FieldDefinition & data) {
+            void readPortable(DataInput & dataInput, FieldDefinition & data) {
                 dataInput >> data.index;
                 dataInput >> data.fieldName;
                 dataInput >> data.type.id;
@@ -76,12 +76,6 @@ namespace hazelcast {
                 dataInput >> data.classId;
 
             };
-//            template<typename DataOutput>
-//            void operator <<(DataOutput& dataOutput, const FieldDefinition& data);
-//
-//            template<typename DataInput>
-//            void operator >>(DataInput& dataInput, FieldDefinition& data);
-
         }
     }
 }

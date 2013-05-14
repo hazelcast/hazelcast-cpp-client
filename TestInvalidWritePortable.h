@@ -41,7 +41,7 @@
 //
 //    void writePortable(PortableWriter & writer) {
 //        writer.writeLong("l", l);
-//        DataOutput *output = writer.getRawDataOutput();
+//        BufferedDataOutput *output = writer.getRawDataOutput();
 //        writer.writeInt("i", i);
 //        output->writeUTF(s);
 //    }

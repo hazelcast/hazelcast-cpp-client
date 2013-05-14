@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "ClassDefinition.h"
-#include "DataInput.h"
+#include "BufferedDataInput.h"
 #include "HazelcastException.h"
 
 namespace hazelcast {
@@ -129,41 +129,6 @@ namespace hazelcast {
                 this->binary = binary;
             };
 
-
-//            template<typename DataOutput>
-//            void operator <<(DataOutput& dataOutput, const boost::shared_ptr<ClassDefinition> data) {
-//                dataOutput << data->getFactoryId();
-//                dataOutput << data->getClassId();
-//                dataOutput << data->getVersion();
-//                dataOutput << data->getFieldCount();
-//                for (vector<FieldDefinition>::const_iterator it = data->fieldDefinitions.begin(); it != data->fieldDefinitions.end(); it++)
-//                    dataOutput << (*it);
-//                dataOutput << ((int) data->nestedClassDefinitions.size());
-//                for (vector<boost::shared_ptr<ClassDefinition> >::const_iterator it = data->nestedClassDefinitions.begin(); it != data->nestedClassDefinitions.end(); it++)
-//                    dataOutput << (*it);
-//            };
-//
-//            template<typename DataInput>
-//            void operator >>(DataInput& dataInput, boost::shared_ptr<ClassDefinition> data) {
-//                dataInput >> data->factoryId;
-//                dataInput >> data->classId;
-//                dataInput >> data->version;
-//                int size = 0;
-//                dataInput >> size;
-//                for (int i = 0; i < size; i++) {
-//                    FieldDefinition fieldDefinition;
-//                    dataInput >> fieldDefinition;
-//                    data->add(fieldDefinition);
-//                }
-//                dataInput >> size;
-//                for (int i = 0; i < size; i++) {
-//                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
-////                    classDefinition->readData(in);
-//                    dataInput >> (*(classDefinition.get()));
-//                    data->add(classDefinition);
-//                }
-//            };
         }
-
     }
 }

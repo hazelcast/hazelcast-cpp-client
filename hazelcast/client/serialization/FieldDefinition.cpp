@@ -77,27 +77,6 @@ namespace hazelcast {
             bool FieldDefinition::operator !=(const FieldDefinition & other) const {
                 return !(*this == other);
             };
-
-//            template <typename DataOutput>
-//            void operator <<(DataOutput & dataOutput, FieldDefinition const & data) {
-//                dataOutput << data.index;
-//                dataOutput << data.fieldName;
-//                dataOutput << data.getType().getId();
-//                dataOutput << data.factoryId;
-//                dataOutput << data.classId;
-//
-//            }
-//
-//            template <typename DataInput>
-//            void operator >>(DataInput & dataInput, FieldDefinition & data) {
-//                dataInput >> data.index;
-//                dataInput >> data.fieldName;
-//                dataInput >> data.getType().getId();
-//                dataInput >> data.factoryId;
-//                dataInput >> data.classId;
-//
-//            }
-
         }
     }
 }

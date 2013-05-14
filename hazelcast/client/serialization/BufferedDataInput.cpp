@@ -1,18 +1,18 @@
 //
-//  DataInput.cpp
+//  BufferedDataInput.cpp
 //  Server
 //
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "DataInput.h"
+#include "BufferedDataInput.h"
 #include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataInput::DataInput(const std::vector<byte>& rhsBuffer) {
+            BufferedDataInput::BufferedDataInput(const std::vector<byte>& rhsBuffer) {
                 int size = rhsBuffer.size();
                 try {
                     beg = new byte[size];
@@ -24,55 +24,55 @@ namespace hazelcast {
                 };
             };
 
-            DataInput::~DataInput() {
+            BufferedDataInput::~BufferedDataInput() {
                 delete [] beg;
             };
 
-            DataInput& DataInput::operator = (const DataInput&) {
+            BufferedDataInput& BufferedDataInput::operator = (const BufferedDataInput&) {
                 return *this;
             };
 
-            void DataInput::readFully(std::vector<byte>& bytes) {
+            void BufferedDataInput::readFully(std::vector<byte>& bytes) {
                 byte temp[bytes.size()];
                 readFully(temp, 0, bytes.size());
                 bytes = std::vector<byte >(temp, temp + bytes.size());
             };
 
-            void DataInput::readFully(byte *bytes, int off, int len) {
+            void BufferedDataInput::readFully(byte *bytes, int off, int len) {
                 memcpy(bytes + off, ptr, sizeof (byte) * len);
                 ptr += sizeof (byte) * len;
             };
 
-            int DataInput::skipBytes(int i) {
+            int BufferedDataInput::skipBytes(int i) {
                 ptr += i;
                 return i;
             };
 
-            bool DataInput::readBoolean() {
+            bool BufferedDataInput::readBoolean() {
                 return readByte();
             };
 
-            byte DataInput::readByte() {
+            byte BufferedDataInput::readByte() {
                 byte b;
                 memcpy(&b, ptr, sizeof (byte));
                 ptr += sizeof (byte);
                 return b;
             };
 
-            short DataInput::readShort() {
+            short BufferedDataInput::readShort() {
                 byte a = readByte();
                 byte b = readByte();
                 return (0xff00 & (a << 8)) |
                         (0x00ff & b);
             };
 
-            char DataInput::readChar() {
+            char BufferedDataInput::readChar() {
                 readByte();
                 byte b = readByte();
                 return b;
             };
 
-            int DataInput::readInt() {
+            int BufferedDataInput::readInt() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -83,7 +83,7 @@ namespace hazelcast {
                         (0x000000ff & d);
             };
 
-            long DataInput::readLong() {
+            long BufferedDataInput::readLong() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -102,7 +102,7 @@ namespace hazelcast {
                         (0x00000000000000ff & h);
             };
 
-            float DataInput::readFloat() {
+            float BufferedDataInput::readFloat() {
 
                 union {
                     int i;
@@ -112,7 +112,7 @@ namespace hazelcast {
                 return u.f;
             };
 
-            double DataInput::readDouble() {
+            double BufferedDataInput::readDouble() {
 
                 union {
                     double d;
@@ -122,7 +122,7 @@ namespace hazelcast {
                 return u.d;
             };
 
-            std::string DataInput::readUTF() {
+            std::string BufferedDataInput::readUTF() {
                 bool isNull = readBoolean();
                 if (isNull)
                     return "";
@@ -138,7 +138,7 @@ namespace hazelcast {
 
             //Inherited from BufferObjectDataInput
 
-            int DataInput::read(int index) {
+            int BufferedDataInput::read(int index) {
                 int pos = position();
                 position(index);
                 int v = readByte();
@@ -146,7 +146,7 @@ namespace hazelcast {
                 return v;
             };
 
-            int DataInput::read(int index, byte *b, int off, int len) {
+            int BufferedDataInput::read(int index, byte *b, int off, int len) {
                 int pos = position();
                 position(index);
                 readFully(b, off, len);
@@ -154,7 +154,7 @@ namespace hazelcast {
                 return len;
             };
 
-            int DataInput::readInt(int index) {
+            int BufferedDataInput::readInt(int index) {
                 int pos = position();
                 position(index);
                 int v = readInt();
@@ -162,7 +162,7 @@ namespace hazelcast {
                 return v;
             };
 
-            long DataInput::readLong(int index) {
+            long BufferedDataInput::readLong(int index) {
                 int pos = position();
                 position(index);
                 long v = readLong();
@@ -170,7 +170,7 @@ namespace hazelcast {
                 return v;
             };
 
-            bool DataInput::readBoolean(int index) {
+            bool BufferedDataInput::readBoolean(int index) {
                 int pos = position();
                 position(index);
                 bool v = readBoolean();
@@ -178,7 +178,7 @@ namespace hazelcast {
                 return v;
             };
 
-            byte DataInput::readByte(int index) {
+            byte BufferedDataInput::readByte(int index) {
                 int pos = position();
                 position(index);
                 byte v = readByte();
@@ -186,7 +186,7 @@ namespace hazelcast {
                 return v;
             };
 
-            char DataInput::readChar(int index) {
+            char BufferedDataInput::readChar(int index) {
                 int pos = position();
                 position(index);
                 char v = readChar();
@@ -194,7 +194,7 @@ namespace hazelcast {
                 return v;
             };
 
-            double DataInput::readDouble(int index) {
+            double BufferedDataInput::readDouble(int index) {
                 int pos = position();
                 position(index);
                 double v = readDouble();
@@ -202,7 +202,7 @@ namespace hazelcast {
                 return v;
             };
 
-            float DataInput::readFloat(int index) {
+            float BufferedDataInput::readFloat(int index) {
                 int pos = position();
                 position(index);
                 float v = readFloat();
@@ -210,7 +210,7 @@ namespace hazelcast {
                 return v;
             };
 
-            short DataInput::readShort(int index) {
+            short BufferedDataInput::readShort(int index) {
                 int pos = position();
                 position(index);
                 short v = readShort();
@@ -218,7 +218,7 @@ namespace hazelcast {
                 return v;
             };
 
-            std::string DataInput::readUTF(int index) {
+            std::string BufferedDataInput::readUTF(int index) {
                 int pos = position();
                 position(index);
                 std::string v = readUTF();
@@ -226,16 +226,16 @@ namespace hazelcast {
                 return v;
             };
 
-            int DataInput::position() {
+            int BufferedDataInput::position() {
                 return int(ptr - beg);
             };
 
-            void DataInput::position(int newPos) {
+            void BufferedDataInput::position(int newPos) {
                 ptr = beg + newPos;
             };
             //private functions
 
-            std::string DataInput::readShortUTF() {
+            std::string BufferedDataInput::readShortUTF() {
                 short utflen = readShort();
                 byte bytearr[utflen];
                 char chararr[utflen];
@@ -264,7 +264,7 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
+                                throw hazelcast::client::HazelcastException("BufferedDataInput::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
                                 std::string error = "malformed input around byte";
@@ -277,11 +277,11 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("DataInput::readShortUTF : malformed input: partial character at end");
+                                throw hazelcast::client::HazelcastException("BufferedDataInput::readShortUTF : malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                std::string error = "DataInput::readShortUTF : malformed input around byte";
+                                std::string error = "BufferedDataInput::readShortUTF : malformed input around byte";
                                 error += count - 1;
                                 throw hazelcast::client::HazelcastException(error);
                             }

@@ -51,7 +51,7 @@
 //        writer.writeLong("l", l);
 //        writer.writeCharArray("c", c);
 //        writer.writePortable("p", p);
-//        DataOutput *const output = writer.getRawDataOutput();
+//        BufferedDataOutput *const output = writer.getRawDataOutput();
 //        output->writeInt(k);
 //        output->writeUTF(s);
 ////        output->writeObject(sds);
@@ -61,7 +61,7 @@
 //        l = reader.readLong("l");
 //        c = reader.readCharArray("c");
 //        p = reader.readPortable<TestNamedPortable>("p");
-//        DataInput *input = reader.getRawDataInput();
+//        BufferedDataInput *input = reader.getRawDataInput();
 //        k = input->readInt();
 //        s = input->readUTF();
 ////        sds = input->readObject();

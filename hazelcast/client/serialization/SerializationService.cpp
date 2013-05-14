@@ -24,27 +24,6 @@ namespace hazelcast {
             };
 
             SerializationService::~SerializationService() {
-                while (!outputPool.empty()) {
-                    DataOutput *out = outputPool.front();
-                    outputPool.pop();
-                    delete out;
-                }
-            };
-
-            void SerializationService::push(DataOutput *out) {
-                out->reset();
-                outputPool.push(out);
-            };
-
-            DataOutput *SerializationService::pop() {
-                DataOutput *out;
-                if (outputPool.empty()) {
-                    out = new DataOutput();
-                } else {
-                    out = outputPool.front();
-                    outputPool.pop();
-                }
-                return out;
             };
 
             Data SerializationService::toData(Data& data) {

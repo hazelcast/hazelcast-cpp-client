@@ -17,9 +17,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class DataOutput;
+            class BufferedDataOutput;
 
-            class DataInput;
+            class BufferedDataInput;
 
             class ClassDefinition;
 

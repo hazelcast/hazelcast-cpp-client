@@ -12,8 +12,8 @@
 //
 //#include <iostream>
 //#include "DataSerializable.h"
-//#include "DataOutput.h"
-//#include "DataInput.h"
+//#include "BufferedDataOutput.h"
+//#include "BufferedDataInput.h"
 //
 //using namespace hazelcast::client::serialization;
 //
@@ -28,12 +28,12 @@
 //        this->data = data;
 //    }
 //
-//    void writeData(DataOutput & out) const {
+//    void writeData(BufferedDataOutput & out) const {
 //        out.writeInt(data.size());
 //        out.write(data);
 //    }
 //
-//    void readData(DataInput & in) {
+//    void readData(BufferedDataInput & in) {
 //        int len = in.readInt();
 //        data.resize(len, 0);
 //        in.readFully(data);

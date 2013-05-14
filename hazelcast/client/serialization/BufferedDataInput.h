@@ -1,5 +1,5 @@
 //
-//  DataInput.h
+//  BufferedDataInput.h
 //  Server
 //
 //  Created by sancar koyunlu on 1/3/13.
@@ -22,12 +22,12 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class DataInput {
+            class BufferedDataInput {
             public:
 
-                DataInput(const std::vector<byte>&);
+                BufferedDataInput(const std::vector<byte>&);
 
-                ~DataInput();
+                ~BufferedDataInput();
 
                 void readFully(std::vector<byte>&);
 
@@ -87,10 +87,16 @@ namespace hazelcast {
 
                 std::string readShortUTF();
 
-                DataInput& operator = (const DataInput&);
+                BufferedDataInput& operator = (const BufferedDataInput&);
 
             };
 
+            template<typename T>
+            inline void operator >>(BufferedDataInput& dataInput, T data) {
+                //TODO some control stuff can be added here : not sure what is needed right now
+                //........
+                readPortable(dataInput, data);
+            };
         }
     }
 }

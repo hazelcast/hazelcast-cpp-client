@@ -24,7 +24,7 @@
 //
 //    Data data = service.toData(mapPutOperation);
 //
-//    DataOutput output(new OutputSocketStream(socket));
+//    BufferedDataOutput output(new OutputSocketStream(socket));
 //    data.writeData(output);
 //}
 //

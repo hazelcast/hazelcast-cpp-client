@@ -28,13 +28,13 @@
 //            }
 //
 //            void MapPutOperation::writePortable(PortableWriter & writer) {
-//                DataOutput *output = writer.getRawDataOutput();
+//                BufferedDataOutput *output = writer.getRawDataOutput();
 //                key.writeData(*output);
 //                value.writeData(*output);
 //            }
 //
 //            void MapPutOperation::readPortable(PortableReader & reader) {
-//                DataInput *input = reader.getRawDataInput();
+//                BufferedDataInput *input = reader.getRawDataInput();
 //                //TODO set context of data somewhere
 //                key.readData(*input);
 //                value.readData(*input);

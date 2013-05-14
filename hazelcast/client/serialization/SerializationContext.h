@@ -10,7 +10,7 @@
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
 #include <map>
-#include <set>
+#include <vector>
 #include <boost/shared_array.hpp>
 
 namespace hazelcast {
@@ -21,11 +21,9 @@ namespace hazelcast {
 
             class PortableFactory;
 
-            class Portable;
-
             class SerializationService;
 
-            class DataOutput;
+            class BufferedDataOutput;
 
             class PortableContext;
 
