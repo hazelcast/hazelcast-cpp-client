@@ -9,15 +9,15 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_WRITER
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
-#include "BufferedDataOutput.h"
-#include "PortableSerializer.h"
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
 #include "FieldType.h"
 #include "ConstantSerializers.h"
-#include <iostream>
+#include "ClassDefinition.h"
+#include "SerializationContext.h"
+#include <iosfwd>
 #include <string>
-#include <set>
+#include <boost/shared_ptr.hpp>
 
 using namespace std;
 
@@ -25,16 +25,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class ClassDefinition;
-
-            class BufferedDataInput;
-
             class ClassDefinitionWriter {
             public:
 
-                ClassDefinitionWriter(int factoryId, int classId, PortableSerializer& portableSerializer /*TODO parameter may change to serializationContext*/);
+                ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext);
 
-                void operator [](std::string& fieldName);
+                ClassDefinitionWriter& operator [](std::string& fieldName);
 
                 void writeInt(int value);
 
@@ -77,10 +73,9 @@ namespace hazelcast {
                         FieldDefinition fd = FieldDefinition(index++, lastFieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
                         addNestedField(portable, fd);
                     }
-
                 };
 
-                template <typename T>
+                template <typename T>  //TODO duplicate code because of cyclic dependency look : PortableSerializer
                 void writePortableArray(std::vector<T>& portables) {
                     if (!raw) {
                         int classId = portables[0].getClassId();
@@ -95,32 +90,52 @@ namespace hazelcast {
                     }
                 };
 
+                boost::shared_ptr<ClassDefinition> getClassDefinition();
+
             private:
                 void addField(FieldType const&);
 
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
                     cd->add(fd);
-                    boost::shared_ptr<ClassDefinition> nestedCd = serializer.getClassDefinition(p);
+                    boost::shared_ptr<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
                     cd->add(nestedCd);
                 };
 
+                template <typename T>
+                boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(T& p) {
+                    boost::shared_ptr<ClassDefinition> cd;
+
+                    int factoryId = getFactoryId(p);
+                    int classId = getClassId(p);
+                    if (context->isClassDefinitionExists(factoryId, classId)) {
+                        cd = context->lookup(factoryId, classId);
+                    } else {
+                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
+                        classDefinitionWriter << p; //TODO 1
+                        cd = classDefinitionWriter.getClassDefinition();
+                        context->registerClassDefinition(cd);
+                    }
+
+                    return cd;
+                };
+
+                int factoryId;
+                int classId;
                 int index;
                 bool raw;
                 bool writingPortable;
-                int factoryId;
-                int classId;
                 std::string lastFieldName; //TODO needs more thoughts on name
                 boost::shared_ptr<ClassDefinition> cd;
-                PortableSerializer& serializer;
+                SerializationContext *context;
 
             };
 
             template<typename T>
-            inline void operator <<(ClassDefinitionWriter& dataOutput, T data) {
+            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T data) {
                 //TODO i probably need to add more to here
                 //........
-                dataOutput.writePortable(data);
+                classDefinitionWriter.writePortable(data);
             };
         }
     }

@@ -9,21 +9,24 @@
 #include "PortableContext.h"
 #include "BufferedDataInput.h"
 #include "SerializationService.h"
-#include "ClassDefinition.h"
 #include <zlib.h>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            PortableContext::PortableContext(SerializationContext *serializationContext)
+            : serializationContext(serializationContext) {
+
+            };
 
             bool PortableContext::isClassDefinitionExists(int classId, int version) const {
-                long key = SerializationService::combineToLong(classId, version);
+                long key = combineToLong(classId, version);
                 return (versionedDefinitions.count(key) > 0);
             };
 
             boost::shared_ptr<ClassDefinition> PortableContext::lookup(int classId, int version) {
-                long key = SerializationService::combineToLong(classId, version);
+                long key = combineToLong(classId, version);
                 return versionedDefinitions[key];
 
             };
@@ -37,10 +40,10 @@ namespace hazelcast {
                 dataInput >> cd;
                 cd->setBinary(binary);
 
-                long key = service->combineToLong(cd->getClassId(), context->getVersion());
+                long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
                 if (versionedDefinitions.count(key) == 0) {
-                    context->registerNestedDefinitions(cd);
+                    serializationContext->registerNestedDefinitions(cd);
                     versionedDefinitions[key] = cd;
                     return cd;
                 }
@@ -50,7 +53,7 @@ namespace hazelcast {
 
             void PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                 if (cd->getVersion() < 0) {
-                    cd->setVersion(context->getVersion());
+                    cd->setVersion(serializationContext->getVersion());
                 }
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
@@ -60,7 +63,7 @@ namespace hazelcast {
                         compress(binary);
                         cd->setBinary(binary);
                     }
-                    long versionedClassId = service->combineToLong(cd->getClassId(), cd->getVersion());
+                    long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
                     versionedDefinitions[versionedClassId] = cd;
                 }
             };
@@ -112,6 +115,14 @@ namespace hazelcast {
                 std::vector<byte> decompressed(temp, temp + ucompSize);
                 delete [] temp;
                 return decompressed;
+            };
+
+            long PortableContext::combineToLong(int x, int y) const {
+                return ((long) x << 32) | ((long) y & 0xFFFFFFFL);
+            };
+
+            int PortableContext::extractInt(long value, bool lowerBits) const {
+                return (lowerBits) ? (int) value : (int) (value >> 32);
             };
 
         }

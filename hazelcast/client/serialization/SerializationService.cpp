@@ -15,12 +15,14 @@ namespace hazelcast {
         namespace serialization {
 
             SerializationService::SerializationService(int version)
-            : serializationContext(version, this) {
+            : serializationContext(version)
+            , portableSerializer(&serializationContext) {
 
             };
 
             SerializationService::SerializationService(SerializationService const & rhs)
-            : serializationContext(1, this) {
+            : serializationContext(1)
+            , portableSerializer(&serializationContext) {
             };
 
             SerializationService::~SerializationService() {
@@ -30,13 +32,6 @@ namespace hazelcast {
                 return data;
             };
 
-            long SerializationService::combineToLong(int x, int y) {
-                return ((long) x << 32) | ((long) y & 0xFFFFFFFL);
-            };
-
-            int SerializationService::extractInt(long value, bool lowerBits) {
-                return (lowerBits) ? (int) value : (int) (value >> 32);
-            };
 
         }
     }

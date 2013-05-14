@@ -14,11 +14,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializationContext::SerializationContext(int version, SerializationService *service)
-            : contextVersion(version)
-            , service(service) {
-                portableContextMap[-1] = new PortableContext(service, this); //TODO right now hardcoded : will changed as configurable (may be)
-                portableContextMap[1] = new PortableContext(service, this);
+            SerializationContext::SerializationContext(int version)
+            : contextVersion(version) {
+                portableContextMap[-1] = new PortableContext(this); //TODO right now hardcoded : will changed as configurable (may be)
+                portableContextMap[1] = new PortableContext(this);
             };
 
             SerializationContext::~SerializationContext() {

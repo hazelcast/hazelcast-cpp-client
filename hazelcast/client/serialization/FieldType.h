@@ -6,26 +6,6 @@ namespace hazelcast {
         namespace serialization {
             typedef unsigned char byte;
 
-//            enum FieldTypes {
-//                PORTABLE,
-//                BYTE,
-//                BOOLEAN,
-//                CHAR,
-//                SHORT,
-//                INT,
-//                LONG,
-//                FLOAT,
-//                DOUBLE,
-//                UTF,
-//                PORTABLE_ARRAY,
-//                BYTE_ARRAY,
-//                CHAR_ARRAY,
-//                SHORT_ARRAY,
-//                INT_ARRAY,
-//                LONG_ARRAY,
-//                FLOAT_ARRAY,
-//                DOUBLE_ARRAY
-//            };
             class FieldType {
             public:
 

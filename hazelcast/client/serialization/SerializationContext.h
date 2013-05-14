@@ -19,12 +19,6 @@ namespace hazelcast {
 
             class ClassDefinition;
 
-            class PortableFactory;
-
-            class SerializationService;
-
-            class BufferedDataOutput;
-
             class PortableContext;
 
             typedef unsigned char byte;
@@ -32,7 +26,7 @@ namespace hazelcast {
             class SerializationContext {
             public:
 
-                SerializationContext(int, SerializationService *);
+                SerializationContext(int);
 
                 ~SerializationContext();
 
@@ -62,7 +56,6 @@ namespace hazelcast {
 
                 int contextVersion;
                 std::map<int, PortableContext *> portableContextMap;
-                SerializationService *service;
 
             };
 

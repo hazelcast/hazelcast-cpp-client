@@ -6,8 +6,8 @@
 ////  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 ////
 //
-//#ifndef HAZELCAST_PORTABLE_READER
-//#define HAZELCAST_PORTABLE_READER
+//#ifndef HAZELCAST_MORPHING_PORTABLE_READER
+//#define HAZELCAST_MORPHING_PORTABLE_READER
 //
 //#include "ClassDefinition.h"
 //#include "BufferedDataInput.h"
@@ -34,7 +34,11 @@
 //            class PortableReader {
 //            public:
 //
-//                PortableReader(BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
+//                enum Type {
+//                    DEFAULT, MORPHING
+//                };
+//
+//                PortableReader(PortableSerializer *serializer, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd, Type isMorphing);
 //
 //                int readInt(string fieldName);
 //
@@ -70,6 +74,7 @@
 //
 //                template<typename T>
 //                T readPortable(string fieldName) {
+//                    if (id == MORPHING && !isFieldMorphed) return morphPortable<T >(fieldName);
 //                    if (!cd->isFieldDefinitionExists(fieldName))
 //                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
 //
@@ -91,6 +96,7 @@
 //
 //                template<typename T>
 //                std::vector< T > readPortableArray(string fieldName) {
+//                    if (id == MORPHING && !isFieldMorphed) return morphPortableArray<T >(fieldName);
 //                    if (!cd->isFieldDefinitionExists(fieldName))
 //                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
 //                    FieldDefinition fd = cd->get(fieldName);
@@ -117,6 +123,65 @@
 //
 //            private:
 //
+//                int morphInt(string fieldName);
+//
+//                long morphLong(string fieldName);
+//
+//                bool morphBoolean(string fieldName);
+//
+//                byte morphByte(string fieldName);
+//
+//                char morphChar(string fieldName);
+//
+//                double morphDouble(string fieldName);
+//
+//                float morphFloat(string fieldName);
+//
+//                short morphShort(string fieldName);
+//
+//                string morphUTF(string fieldName);
+//
+//                std::vector<byte> morphByteArray(string fieldName);
+//
+//                std::vector<char> morphCharArray(string fieldName);
+//
+//                std::vector<int> morphIntArray(string fieldName);
+//
+//                std::vector<long> morphLongArray(string fieldName);
+//
+//                std::vector<double> morphDoubleArray(string fieldName);
+//
+//                std::vector<float> morphFloatArray(string fieldName);
+//
+//                std::vector<short> morphShortArray(string fieldName);
+//
+//                template <typename T>
+//                T morphPortable(string fieldName) {
+//                    isFieldMorphed = true;
+//                    if (!cd->isFieldDefinitionExists(fieldName))
+//                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
+//                    FieldDefinition fd = cd->get(fieldName);
+//
+//                    if (fd.getType() != FieldTypes::TYPE_PORTABLE) {
+//                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
+//                    }
+//                    return readPortable<T >(fieldName);
+//                };
+//
+//                template <typename T>
+//                std::vector< T > morphPortableArray(string fieldName) {
+//                    isFieldMorphed = true;
+//                    if (!cd->isFieldDefinitionExists(fieldName))
+//                        throw hazelcast::client::HazelcastException("throwUnknownFieldException" + fieldName);
+//                    FieldDefinition fd = cd->get(fieldName);
+//
+//                    if (fd.getType() != FieldTypes::TYPE_PORTABLE_ARRAY) {
+//                        throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
+//                    }
+//                    return readPortableArray<T >(fieldName);
+//                };
+//
+//
 //                int getPosition(string fieldName);
 //
 //                int getPosition(FieldDefinition *);
@@ -125,10 +190,12 @@
 //                boost::shared_ptr<ClassDefinition> cd;
 //                BufferedDataInput *input;
 //                int offset;
+//                Type id;
+//                bool isFieldMorphed;
 //                bool raw;
 //            };
 //
 //        }
 //    }
 //}
-//#endif /* HAZELCAST_PORTABLE_READER */
+//#endif /* HAZELCAST_MORPHING_PORTABLE_READER */
