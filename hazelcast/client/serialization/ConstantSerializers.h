@@ -27,19 +27,19 @@ namespace hazelcast {
 
 
             inline int getTypeId(int t) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
+                return SerializationConstants::CONSTANT_TYPE_INTEGER;
             };
 
             inline int getTypeId(char c) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
+                return SerializationConstants::CONSTANT_TYPE_CHAR;
             };
 
             inline int getTypeId(std::string t) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
+                return SerializationConstants::CONSTANT_TYPE_STRING;
             };
 
             inline int getTypeId(std::vector<byte> c) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
+                return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
             };
 
             /*****************************************************************************/

@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 BufferedDataInput(const std::vector<byte>&);
 
+                BufferedDataInput& operator [](std::string);
+
                 ~BufferedDataInput();
 
                 void readFully(std::vector<byte>&);
@@ -52,28 +54,6 @@ namespace hazelcast {
                 double readDouble();
 
                 std::string readUTF();
-
-                int read(int index);
-
-                int read(int index, byte *b, int off, int len);
-
-                int readInt(int index);
-
-                long readLong(int index);
-
-                bool readBoolean(int index);
-
-                byte readByte(int index);
-
-                char readChar(int index);
-
-                double readDouble(int index);
-
-                float readFloat(int index);
-
-                short readShort(int index);
-
-                std::string readUTF(int);
 
                 int position();
 

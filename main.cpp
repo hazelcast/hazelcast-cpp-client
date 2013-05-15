@@ -52,4 +52,8 @@ void testNewDesign() {
     tnp1 = serializationService.toObject<TestMobile>(data);
 
     assert(np == tnp1);
+    int x = 4;
+    data = serializationService.toData(x);
+    int y = serializationService.toObject<int>(data);
+    assert(x == y);
 };

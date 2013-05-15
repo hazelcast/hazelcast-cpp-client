@@ -38,7 +38,7 @@ namespace hazelcast {
 
                 PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
-                PortableReader& operator [](std::string& fieldName);
+                PortableReader& operator [](std::string fieldName);
 
                 int readInt();
 
@@ -104,26 +104,27 @@ namespace hazelcast {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
                         throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
 
-                    bool isNull = input->readBoolean();
+                    bool isNull = input.readBoolean();
                     if (isNull) {
                         return;
                     }
-                    read(*input, portable, cd->getFactoryId(), cd->getClassId(), cd->getVersion());
+                    read(input, portable, cd->getFactoryId(), cd->getClassId(), cd->getVersion());
                 };
 
                 template<typename T>
                 std::vector< T > readPortableArray() {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
                         throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
-                    int len = input->readInt();
+                    int len = input.readInt();
                     std::vector< T > portables(len);
                     if (len > 0) {
-                        int offset = input->position();
+                        int offset = input.position();
                         for (int i = 0; i < len; i++) {
-                            int start = input->readInt(offset + i * sizeof (int));
-                            input->position(start);
+                            input.position(offset + i * sizeof (int));
+                            int start = input.readInt();
+                            input.position(start);
                             FieldDefinition fd = cd->get(lastFieldName);
-                            read(*input, portables[i], fd.getFactoryId(), fd.getClassId(), cd->getVersion());
+                            read(input, portables[i], fd.getFactoryId(), fd.getClassId(), cd->getVersion());
                         }
                     }
                     return portables;
@@ -133,17 +134,14 @@ namespace hazelcast {
 
                 int getPosition(std::string&);
 
-                int getPosition(FieldDefinition *);
-
                 void readingFromDataInput();
-
 
                 int offset;
                 bool raw;
                 bool readingPortable;
                 SerializationContext *context;
                 boost::shared_ptr<ClassDefinition> cd;
-                BufferedDataInput *input;
+                BufferedDataInput& input;
                 std::string lastFieldName;
             };
 
@@ -153,7 +151,7 @@ namespace hazelcast {
                 //........
                 //TODO is base of portable(may be and dataSerializable) ???? NOT SURE
                 portableReader.readingFromDataInput();
-                portableReader.readPortable(data);
+                readPortable(portableReader, data);
             };
 
             template<typename T>
@@ -161,7 +159,8 @@ namespace hazelcast {
                 //TODO i probably need to add more here
                 //........
                 portableReader.readingFromDataInput();
-                data = portableReader.readPortableArray< T >();
+                readPortable(portableReader, data);               //TODO ?!
+//                data = portableReader.readPortableArray< T >(); //TODO !?
             };
 
         }

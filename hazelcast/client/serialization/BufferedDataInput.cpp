@@ -24,6 +24,10 @@ namespace hazelcast {
                 };
             };
 
+            BufferedDataInput& BufferedDataInput::operator [](std::string string) {
+                throw hazelcast::client::HazelcastException("BufferedDataInput::operator [](std::string string) > not supported!!");
+            };
+
             BufferedDataInput::~BufferedDataInput() {
                 delete [] beg;
             };
@@ -134,96 +138,6 @@ namespace hazelcast {
                     chunkSize--;
                 }
                 return result;
-            };
-
-            //Inherited from BufferObjectDataInput
-
-            int BufferedDataInput::read(int index) {
-                int pos = position();
-                position(index);
-                int v = readByte();
-                position(pos);
-                return v;
-            };
-
-            int BufferedDataInput::read(int index, byte *b, int off, int len) {
-                int pos = position();
-                position(index);
-                readFully(b, off, len);
-                position(pos);
-                return len;
-            };
-
-            int BufferedDataInput::readInt(int index) {
-                int pos = position();
-                position(index);
-                int v = readInt();
-                position(pos);
-                return v;
-            };
-
-            long BufferedDataInput::readLong(int index) {
-                int pos = position();
-                position(index);
-                long v = readLong();
-                position(pos);
-                return v;
-            };
-
-            bool BufferedDataInput::readBoolean(int index) {
-                int pos = position();
-                position(index);
-                bool v = readBoolean();
-                position(pos);
-                return v;
-            };
-
-            byte BufferedDataInput::readByte(int index) {
-                int pos = position();
-                position(index);
-                byte v = readByte();
-                position(pos);
-                return v;
-            };
-
-            char BufferedDataInput::readChar(int index) {
-                int pos = position();
-                position(index);
-                char v = readChar();
-                position(pos);
-                return v;
-            };
-
-            double BufferedDataInput::readDouble(int index) {
-                int pos = position();
-                position(index);
-                double v = readDouble();
-                position(pos);
-                return v;
-            };
-
-            float BufferedDataInput::readFloat(int index) {
-                int pos = position();
-                position(index);
-                float v = readFloat();
-                position(pos);
-                return v;
-            };
-
-            short BufferedDataInput::readShort(int index) {
-                int pos = position();
-                position(index);
-                short v = readShort();
-                position(pos);
-                return v;
-            };
-
-            std::string BufferedDataInput::readUTF(int index) {
-                int pos = position();
-                position(index);
-                std::string v = readUTF();
-                position(pos);
-                return v;
             };
 
             int BufferedDataInput::position() {

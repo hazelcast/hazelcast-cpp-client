@@ -13,20 +13,22 @@ namespace hazelcast {
         namespace serialization {
 
             PortableReader::PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr <ClassDefinition> cd)
-            : input(&input)
+            : input(input)
             , context(serializationContext)
             , cd(cd)
             , readingPortable(false)
-            , raw(false) {
+            , raw(false)
+            , offset(0) {
 
             };
 
-            PortableReader & PortableReader::operator [](string & fieldName) {
+            PortableReader & PortableReader::operator [](std::string fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
                 }
                 lastFieldName = fieldName;
-                input->position(getPosition(fieldName));
+                input.position(getPosition(fieldName));
+                readingPortable = true;
                 return *this;
             }
 
@@ -35,114 +37,109 @@ namespace hazelcast {
                 if (readingPortable) {
                     readingPortable = false;
                 } else {
-                    int pos = input->readInt(offset + cd->getFieldCount() * 4);
-                    input->position(pos);
+                    input.position(offset + cd->getFieldCount() * 4);
+                    int pos = input.readInt();
+                    input.position(pos);
                     raw = true;
                 }
             };
 
             int PortableReader::readInt() {
-                return input->readInt();
+                return input.readInt();
             };
 
             long PortableReader::readLong() {
-                return input->readLong();
+                return input.readLong();
             };
 
             bool PortableReader::readBoolean() {
-                return input->readBoolean();
+                return input.readBoolean();
             };
 
             byte PortableReader::readByte() {
-                return input->readByte();
+                return input.readByte();
             };
 
             char PortableReader::readChar() {
-                return input->readChar();
+                return input.readChar();
             };
 
             double PortableReader::readDouble() {
-                return input->readDouble();
+                return input.readDouble();
             };
 
             float PortableReader::readFloat() {
-                return input->readFloat();
+                return input.readFloat();
             };
 
             short PortableReader::readShort() {
-                return input->readShort();
+                return input.readShort();
             };
 
             string PortableReader::readUTF() {
-                return input->readUTF();
+                return input.readUTF();
             };
 
             std::vector <byte> PortableReader::readByteArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector <byte> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readByte();
+                    values[i] = input.readByte();
                 }
                 return values;
             };
 
             std::vector<char> PortableReader::readCharArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector<char> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readChar();
+                    values[i] = input.readChar();
                 }
                 return values;
             };
 
             std::vector<int> PortableReader::readIntArray() {
-                input->position();
-                int len = input->readInt();
+                input.position();
+                int len = input.readInt();
                 std::vector<int> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readInt();
+                    values[i] = input.readInt();
                 }
                 return values;
             };
 
             std::vector<long> PortableReader::readLongArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector<long> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readLong();
+                    values[i] = input.readLong();
                 }
                 return values;
             };
 
             std::vector<double> PortableReader::readDoubleArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector<double> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readDouble();
+                    values[i] = input.readDouble();
                 }
                 return values;
             };
 
             std::vector<float> PortableReader::readFloatArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector<float> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readFloat();
+                    values[i] = input.readFloat();
                 }
                 return values;
             };
 
             std::vector<short> PortableReader::readShortArray() {
-                input->position();
-                int len = input->readInt();
+                int len = input.readInt();
                 std::vector<short> values(len);
                 for (int i = 0; i < len; i++) {
-                    values[i] = input->readShort();
+                    values[i] = input.readShort();
                 }
                 return values;
             };
@@ -155,11 +152,8 @@ namespace hazelcast {
                 if (!cd->isFieldDefinitionExists(fieldName))
                     throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + fieldName);
                 FieldDefinition fd = cd->get(fieldName);
-                return getPosition(&fd);
-            };
-
-            int PortableReader::getPosition(FieldDefinition *fd) {
-                return input->readInt(offset + fd->getIndex() * sizeof (int));
+                input.position(offset + fd.getIndex() * sizeof (int));
+                return input.readInt();
             };
 
         }

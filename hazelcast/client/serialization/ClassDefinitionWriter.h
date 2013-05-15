@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext);
 
-                ClassDefinitionWriter& operator [](std::string& fieldName);
+                ClassDefinitionWriter& operator [](std::string fieldName);
 
                 void writeInt(int value);
 
@@ -135,7 +135,8 @@ namespace hazelcast {
             inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T data) {
                 //TODO i probably need to add more here
                 //........
-                classDefinitionWriter.writePortable(data);
+                writePortable(classDefinitionWriter, data);
+//                classDefinitionWriter.writePortable(data);
             };
         }
     }

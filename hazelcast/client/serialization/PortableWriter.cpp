@@ -7,9 +7,7 @@
 //
 
 #include "PortableWriter.h"
-#include "ClassDefinition.h"
 #include "Util.h"
-#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -28,7 +26,7 @@ namespace hazelcast {
             };
 
 
-            PortableWriter& PortableWriter::operator [](string & fieldName) {
+            PortableWriter& PortableWriter::operator [](std::string fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
                 }

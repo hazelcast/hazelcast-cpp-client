@@ -7,8 +7,10 @@
 #ifndef __TestMobile_H_
 #define __TestMobile_H_
 
+#include "Portable.h"
+#include "ClassDefinitionWriter.h"
 
-class TestMobile {
+class TestMobile : public hazelcast::client::serialization::Portable {
 public:
     TestMobile();
 
@@ -30,16 +32,14 @@ inline int getClassId(const TestMobile& t) {
 
 template<typename HzWriter>
 inline void writePortable(HzWriter& writer, const TestMobile& data) {
-//    writer["sadada"] << data.c;
+    writer["ch"] << data.c;
     writer << data.i;
-    writer << data.c;
 };
 
 template<typename HzReader>
 inline void readPortable(HzReader& reader, TestMobile& data) {
-//  reader["wedsa"] >> data.c;
+    reader["ch"] >> data.c;
     reader >> data.i;
-    reader >> data.c;
 };
 
 

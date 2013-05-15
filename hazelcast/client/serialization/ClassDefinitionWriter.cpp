@@ -20,6 +20,7 @@ namespace hazelcast {
             , raw(false)
             , writingPortable(false)
             , context(serializationContext)
+            , index(0)
             , cd(new ClassDefinition(factoryId, classId, version)) {
             };
 
@@ -28,7 +29,7 @@ namespace hazelcast {
                 return cd;
             };
 
-            ClassDefinitionWriter& ClassDefinitionWriter::operator [](std::string& fieldName) {
+            ClassDefinitionWriter& ClassDefinitionWriter::operator [](std::string fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
                 }

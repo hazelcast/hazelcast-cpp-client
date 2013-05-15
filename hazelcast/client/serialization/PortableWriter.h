@@ -35,7 +35,7 @@ namespace hazelcast {
 
                 PortableWriter(SerializationContext *serializationContext, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output);
 
-                PortableWriter& operator [](std::string& fieldName);
+                PortableWriter& operator [](std::string fieldName);
 
                 void writeInt(int value);
 
@@ -138,7 +138,8 @@ namespace hazelcast {
                 //TODO i probably need to add more here
                 //........
                 portableWriter.writingToDataOutput();
-                portableWriter.writePortable(data);
+                writePortable(portableWriter, data);
+//                portableWriter.writePortable(data);
             };
 
         }

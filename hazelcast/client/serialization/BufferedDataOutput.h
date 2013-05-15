@@ -23,6 +23,8 @@ namespace hazelcast {
 
                 BufferedDataOutput();
 
+                BufferedDataOutput& operator [](std::string);
+
                 virtual std::vector<byte> toByteArray();
 
                 virtual void write(const std::vector<byte>& bytes);
