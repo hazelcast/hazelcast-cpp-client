@@ -1,10 +1,7 @@
 //
 // server.cpp
-#include "HazelcastException.h"
+#include "portableTest.h"
 #include "TestMobile.h"
-#include "SerializationService.h"
-#include <iostream>
-#include <cassert>
 
 using namespace hazelcast::client::serialization;
 
@@ -17,8 +14,8 @@ int main(int argc, char **argv) {
 //        testRawDataInvalidWrite();
 //        testRawDataInvalidRead();
 //        testDifferentVersions();
-//        testCompression();
-//        testSerialization();
+        testCompression();
+        testSerialization();
 //        testSerializationViaFile();
 
 //        testBinaryClient();

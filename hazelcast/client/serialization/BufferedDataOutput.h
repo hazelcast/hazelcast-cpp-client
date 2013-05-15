@@ -51,26 +51,7 @@ namespace hazelcast {
 
                 virtual void writeUTF(std::string s);
 
-                //Inherited from BufferObjectDataOutput
-//                virtual void write(int index, int b);
-//
-//                virtual void write(int index, char *b, int off, int len);
-
                 virtual void writeInt(int index, int v);
-
-//                virtual void writeLong(int index, const long v);
-
-//                virtual void writeBoolean(int index, const bool v);
-
-//                virtual void writeByte(int index, const int v);
-
-//                virtual void writeChar(int index, const int v);
-
-//                virtual void writeDouble(int index, const double v);
-
-//                virtual void writeFloat(int index, const float v);
-
-//                virtual void writeShort(int index, const int v);
 
                 virtual int position();
 

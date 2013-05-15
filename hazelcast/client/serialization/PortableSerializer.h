@@ -62,7 +62,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
-
+                    //TODO portable factory!!!!
 //                    PortableFactory const *portableFactory;
 //                    if (portableFactories.count(factoryId) != 0) {
 //                        portableFactory = portableFactories.at(factoryId);

@@ -139,7 +139,6 @@ namespace hazelcast {
                 //........
                 portableWriter.writingToDataOutput();
                 writePortable(portableWriter, data);
-//                portableWriter.writePortable(data);
             };
 
         }

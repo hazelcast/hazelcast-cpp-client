@@ -18,13 +18,21 @@ namespace hazelcast {
         namespace serialization {
 
             typedef unsigned char byte;
-//            namespace ConstantSerializers {
 
             template<typename T>
             int getTypeId(T t) {
                 return 0;
             };
 
+            template<typename T>
+            int getFactoryId(T t) {
+                return 0;
+            }
+
+            template<typename T>
+            int getClassId(T t) {
+                return 0;
+            }
 
             inline int getTypeId(int t) {
                 return SerializationConstants::CONSTANT_TYPE_INTEGER;
@@ -41,29 +49,8 @@ namespace hazelcast {
             inline int getTypeId(std::vector<byte> c) {
                 return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
             };
-
             /*****************************************************************************/
             /*****************************************************************************/
-
-//            template<typename BufferedDataOutput, typename T> //TODO did not work!!!!. I just tried to overload every << calls :)
-//            void writePortable(BufferedDataOutput& dataOutput, T data) {
-//                dataOutput.writePortable(data);
-//            };
-//
-//            template<typename BufferedDataInput, typename T>
-//            void readPortable(BufferedDataInput& dataInput, T& data) {
-//                data = dataInput.readPortable();
-//            };
-
-            /*****************************************************************************/
-            inline int getFactoryId(byte t) {
-                return -1;
-            }
-
-            inline int getClassId(byte t) {
-                return SerializationConstants::CONSTANT_TYPE_CHAR;
-            }
-
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, byte data) {
                 dataOutput.writeByte(data);
@@ -75,31 +62,17 @@ namespace hazelcast {
             };
 
             /*****************************************************************************/
-//                class BooleanSerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
-//                    };
-//
-//                    void write(BufferedDataOutput *dataOutput, bool obj) {
-//                        dataOutput->writeBoolean(obj);
-//                    };
-//
-//                    bool read(BufferedDataInput *dataInput) {
-//                        return dataInput->readBoolean();
-//                    }
-//                };
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, bool data) {
+                dataOutput.writeBoolean(data);
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, bool& data) {
+                data = dataInput.readBoolean();
+            };
 
             /*****************************************************************************/
-            inline int getFactoryId(char t) {
-                return -1;
-            }
-
-            inline int getClassId(char t) {
-                return SerializationConstants::CONSTANT_TYPE_CHAR;
-            }
-
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, const char& data) {
                 dataOutput.writeChar(data);
@@ -109,33 +82,19 @@ namespace hazelcast {
             void readPortable(DataInput& dataInput, char& data) {
                 data = dataInput.readChar();
             };
-            /*****************************************************************************/
-//
-//                class ShortSerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_SHORT;
-//                    }
-//
-//                    short read(BufferedDataInput *dataInput) {
-//                        return dataInput->readShort();
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, const short obj) {
-//                        dataOutput->writeShort(obj);
-//                    }
-//                };
-//
-            /*****************************************************************************/
-            inline int getFactoryId(int t) {
-                return -1;
-            }
 
-            inline int getClassId(int t) {
-                return SerializationConstants::CONSTANT_TYPE_INTEGER;
-            }
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, short data) {
+                dataOutput.writeShort(data);
+            };
 
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, short & data) {
+                data = dataInput.readShort();
+            };
+
+            /*****************************************************************************/
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, const int& data) {
                 dataOutput.writeInt(data);
@@ -145,65 +104,41 @@ namespace hazelcast {
             void readPortable(DataInput& dataInput, int& data) {
                 data = dataInput.readInt();
             };
+
             /*****************************************************************************/
-//
-//                class LongSerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_LONG;
-//                    }
-//
-//                    long read(BufferedDataInput *dataInput) {
-//                        return dataInput->readLong();
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, const long obj) {
-//                        dataOutput->writeLong(obj);
-//                    }
-//                };
-//
-//                class FloatSerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_FLOAT;
-//                    }
-//
-//                    float read(BufferedDataInput *dataInput) {
-//                        return dataInput->readFloat();
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, const float obj) {
-//                        dataOutput->writeFloat(obj);
-//                    }
-//                };
-//
-//                class DoubleSerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_DOUBLE;
-//                    }
-//
-//                    double read(BufferedDataInput *dataInput) {
-//                        return dataInput->readDouble();
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, const double obj) {
-//                        dataOutput->writeDouble(obj);
-//                    }
-//                };
-//
-            /*****************************************************************************/
-            inline int getFactoryId(std::string& obj) {
-                return -1;
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, long data) {
+                dataOutput.writeLong(data);
             };
 
-            inline int getClassId(std::string& obj) {
-                return SerializationConstants::CONSTANT_TYPE_STRING;
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, long & data) {
+                data = dataInput.readLong();
             };
 
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, float data) {
+                dataOutput.writeFloat(data);
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, float & data) {
+                data = dataInput.readFloat();
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, double data) {
+                dataOutput.writeDouble(data);
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, double & data) {
+                data = dataInput.readDouble();
+            };
+
+            /*****************************************************************************/
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, const std::string&   data) {
                 dataOutput.writeUTF(data);
@@ -215,15 +150,6 @@ namespace hazelcast {
             };
 
             /*****************************************************************************/
-
-            inline int getFactoryId(std::vector<byte>& obj) {
-                return -1;
-            };
-
-            inline int getClassId(std::vector<byte>& obj) {
-                return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
-            };
-
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, const std::vector<byte>&  data) {
                 int size = data.size();
@@ -240,175 +166,136 @@ namespace hazelcast {
                 int size = dataInput.readInt();
                 data.resize(size, 0);
                 for (int i = 0; i < size; i++) {
-                    data[i] = dataInput->readByte();
+                    data[i] = dataInput.readByte();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<char >&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeChar(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<char >& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readChar();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<short >&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeShort(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<short >& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readShort();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<int>&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeInt(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<int>& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readInt();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<long >&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeLong(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<long >& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readLong();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<float >&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeFloat(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<float >& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readFloat();
+                }
+            };
+
+            /*****************************************************************************/
+            template<typename DataOutput>
+            void writePortable(DataOutput& dataOutput, const std::vector<double >&  data) {
+                int size = data.size();
+                dataOutput.writeInt(size);
+                if (size > 0) {
+                    for (int i = 0; i < size; i++) {
+                        dataOutput.writeDouble(data[i]);
+                    }
+                }
+            };
+
+            template<typename DataInput>
+            void readPortable(DataInput& dataInput, std::vector<double >& data) {
+                int size = dataInput.readInt();
+                data.resize(size, 0);
+                for (int i = 0; i < size; i++) {
+                    data[i] = dataInput.readDouble();
                 }
             };
             /*****************************************************************************/
-//
-//                class CharArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
-//                    }
-//
-//                    std::vector<char> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<char> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readChar();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<char>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeChar(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                class ShortArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
-//                    }
-//
-//                    std::vector<short> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<short> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readShort();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<short>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeShort(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                class IntegerArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
-//                    }
-//
-//                    std::vector<int> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<int> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readInt();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<int>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeInt(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                class LongArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
-//                    }
-//
-//                    std::vector<long> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<long> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readLong();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<long>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeLong(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                class FloatArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
-//                    }
-//
-//                    std::vector<float> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<float> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readShort();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<float>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeFloat(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                class DoubleArraySerializer {
-//                public:
-//
-//                    inline int getClassId() {
-//                        return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
-//                    }
-//
-//                    std::vector<double> read(BufferedDataInput *dataInput) {
-//                        int size = dataInput->readInt();
-//                        std::vector<double> c(size);
-//                        for (int i = 0; i < size; i++) {
-//                            c[i] = dataInput->readShort();
-//                        }
-//                        return c;
-//                    }
-//
-//                    void write(BufferedDataOutput *dataOutput, std::vector<double>& obj) {
-//                        int size = obj.size();
-//                        dataOutput->writeInt(size);
-//                        if (size > 0) {
-//                            for (int i = 0; i < size; i++) {
-//                                dataOutput->writeDouble(obj[i]);
-//                            }
-//                        }
-//                    }
-//                };
-
-//            }
-
         }
     }
 }

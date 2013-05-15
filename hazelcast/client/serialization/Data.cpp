@@ -9,6 +9,8 @@
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
 #include "SerializationConstants.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 
 namespace hazelcast {
@@ -103,6 +105,59 @@ namespace hazelcast {
             int Data::getClassId() const {
                 return ID;
             };
+
+            void Data::writeData(BufferedDataOutput & dataOutput) const {
+                dataOutput << type;
+                if (cd != NULL) {
+                    dataOutput << cd->getClassId();
+                    dataOutput << cd->getFactoryId();
+                    dataOutput << cd->getVersion();
+                    std::vector<byte> classDefBytes = cd->getBinary();
+                    dataOutput << classDefBytes.size();
+                    dataOutput << classDefBytes;
+                } else {
+                    dataOutput << NO_CLASS_ID;
+                }
+                int len = bufferSize();
+                dataOutput << len;
+                if (len > 0) {
+                    dataOutput << buffer;
+                }
+                dataOutput << partitionHash;
+
+            }
+
+            void Data::readData(BufferedDataInput & dataInput) {
+                dataInput >> type;
+                int classId = NO_CLASS_ID;
+                dataInput >> classId;
+                if (classId != NO_CLASS_ID) {
+                    int factoryId = 0;
+                    int version = 0;
+                    dataInput >> factoryId;
+                    dataInput >> version;
+
+                    int classDefSize = 0;
+                    dataInput >> classDefSize;
+
+                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
+                        cd = context->lookup(factoryId, classId, version);
+                        dataInput.skipBytes(classDefSize);//TODO msk ???
+                    } else {
+                        std::vector<byte> classDefBytes(classDefSize);
+                        dataInput >> classDefBytes;
+                        cd = context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = 0;
+                dataInput >> size;
+                if (size > 0) {
+                    std::vector<byte> buffer(size);
+                    dataInput >> buffer;
+                    buffer = buffer;
+                }
+                dataInput >> partitionHash;
+            }
 
 
         }

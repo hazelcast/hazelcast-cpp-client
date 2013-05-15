@@ -72,7 +72,7 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator >>(BufferedDataInput& dataInput, T data) {
+            inline void operator >>(BufferedDataInput& dataInput, T& data) {
                 //TODO some control stuff can be added here : not sure what is needed right now
                 //........
                 readPortable(dataInput, data);

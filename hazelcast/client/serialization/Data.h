@@ -54,6 +54,10 @@ namespace hazelcast {
 
                 bool operator !=(const Data&) const;
 
+                void writeData(BufferedDataOutput&) const;
+
+                void readData(BufferedDataInput&);
+
                 boost::shared_ptr<ClassDefinition> cd;
                 int type;
                 std::vector<byte> buffer;
@@ -72,6 +76,7 @@ namespace hazelcast {
 
             template<typename DataOutput>
             inline void writePortable(DataOutput& dataOutput, const Data& data) {
+                std::cout << "DATA WRITE PORTABLE IS CALLED" << std::endl;//TODO test
                 dataOutput << data.type;
                 if (data.cd != NULL) {
                     dataOutput << data.cd->getClassId();
@@ -93,9 +98,10 @@ namespace hazelcast {
 
             template<typename DataInput>
             inline void readPortable(DataInput& dataInput, Data& data) {
+                std::cout << "DATA READ PORTABLE IS CALLED" << std::endl;//TODO test
                 dataInput >> data.type;
                 int classId = data.NO_CLASS_ID;
-                dataInput >> data;
+                dataInput >> classId;
                 if (classId != data.NO_CLASS_ID) {
                     int factoryId = 0;
                     int version = 0;

@@ -20,6 +20,7 @@
 #include "Data.h"
 #include "boost/type_traits/is_base_of.hpp"
 #include "boost/any.hpp"
+#include "DataSerializer.h"
 #include <iosfwd>
 #include <string>
 
@@ -38,7 +39,7 @@ namespace hazelcast {
                 template<typename K>
                 Data toData(K& object) {
                     BufferedDataOutput output;
-                    int typeID; //TODO uncomment following lines && ad Portable DataSerializable pure virtual classes
+                    int typeID;
                     if (boost::is_base_of<Portable, K>::value) {
                         typeID = SerializationConstants::CONSTANT_TYPE_PORTABLE;
                     } else if (boost::is_base_of<DataSerializable, K>::value) {
@@ -46,13 +47,11 @@ namespace hazelcast {
                     } else {
                         typeID = getTypeId(object);
                     }
-                    if (typeID == 0) {
-                        throw hazelcast::client::HazelcastException("given class must be either one of primitives,  vector of primitives , DataSeriliazable or Portable)");
-                    }
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         portableSerializer.write(output, object);
+                    } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
+                        dataSerializer.write(output, object);
                     } else {
-                        //TODO add dataSerializer NOT SURE
                         writePortable(output, object);
                     }
                     Data data(typeID, output.toByteArray());
@@ -78,8 +77,9 @@ namespace hazelcast {
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
                         portableSerializer.read(dataInput, object, data.cd->getFactoryId(), data.cd->getClassId(), data.cd->getVersion());
+                    } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
+                        dataSerializer.read(dataInput, object);
                     } else {
-                        //TODO add dataSerializer NOT SURE
                         readPortable(dataInput, object);
                     }
                     return object;
@@ -95,6 +95,7 @@ namespace hazelcast {
 
                 SerializationContext serializationContext;
                 PortableSerializer portableSerializer;
+                DataSerializer dataSerializer;
             };
         }
     }

@@ -9,8 +9,9 @@
 
 #include "Portable.h"
 #include "ClassDefinitionWriter.h"
+#include "DataSerializable.h"
 
-class TestMobile : public hazelcast::client::serialization::Portable {
+class TestMobile : public hazelcast::client::serialization::DataSerializable {
 public:
     TestMobile();
 
@@ -32,13 +33,13 @@ inline int getClassId(const TestMobile& t) {
 
 template<typename HzWriter>
 inline void writePortable(HzWriter& writer, const TestMobile& data) {
-    writer["ch"] << data.c;
+    writer << data.c;
     writer << data.i;
 };
 
 template<typename HzReader>
 inline void readPortable(HzReader& reader, TestMobile& data) {
-    reader["ch"] >> data.c;
+    reader >> data.c;
     reader >> data.i;
 };
 
