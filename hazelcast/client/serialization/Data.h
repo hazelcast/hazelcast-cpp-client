@@ -12,31 +12,21 @@
 #include <vector>
 #include <iosfwd>
 #include <boost/shared_ptr.hpp>
+#include "ClassDefinition.h"
+#include "SerializationContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class BufferedDataOutput;
-
-            class BufferedDataInput;
-
-            class ClassDefinition;
-
-            class SerializationContext;
-
-            class InputSocketStream;
-
-            class OutputSocketStream;
-
             typedef unsigned char byte;
 
             class Data {
                 template<typename DataOutput>
-                friend void operator <<(DataOutput& dataOutput, const Data& data);
+                friend void writePortable(DataOutput& dataOutput, const Data& data);
 
                 template<typename DataInput>
-                friend void operator >>(DataInput& dataInput, Data& data);
+                friend void readPortable(DataInput& dataInput, Data& data);
 
             public:
 
@@ -81,10 +71,58 @@ namespace hazelcast {
             };
 
             template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const Data& data);
+            inline void writePortable(DataOutput& dataOutput, const Data& data) {
+                dataOutput << data.type;
+                if (data.cd != NULL) {
+                    dataOutput << data.cd->getClassId();
+                    dataOutput << data.cd->getFactoryId();
+                    dataOutput << data.cd->getVersion();
+                    std::vector<byte> classDefBytes = data.cd->getBinary();
+                    dataOutput << classDefBytes.size();
+                    dataOutput << classDefBytes;
+                } else {
+                    dataOutput << data.NO_CLASS_ID;
+                }
+                int len = data.bufferSize();
+                dataOutput << len;
+                if (len > 0) {
+                    dataOutput << data.buffer;
+                }
+                dataOutput << data.partitionHash;
+            };
 
             template<typename DataInput>
-            void operator >>(DataInput& dataInput, Data& data);
+            inline void readPortable(DataInput& dataInput, Data& data) {
+                dataInput >> data.type;
+                int classId = data.NO_CLASS_ID;
+                dataInput >> data;
+                if (classId != data.NO_CLASS_ID) {
+                    int factoryId = 0;
+                    int version = 0;
+                    dataInput >> factoryId;
+                    dataInput >> version;
+
+                    int classDefSize = 0;
+                    dataInput >> classDefSize;
+
+                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
+                        data.cd = data.context->lookup(factoryId, classId, version);
+                        dataInput.skipBytes(classDefSize);//TODO msk ???
+                    } else {
+                        std::vector<byte> classDefBytes(classDefSize);
+                        dataInput >> classDefBytes;
+                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = 0;
+                dataInput >> size;
+                if (size > 0) {
+                    std::vector<byte> buffer(size);
+                    dataInput >> buffer;
+                    data.buffer = buffer;
+                }
+                dataInput >> data.partitionHash;
+            };
 
         }
     }

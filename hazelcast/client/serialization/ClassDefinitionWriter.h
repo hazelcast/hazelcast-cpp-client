@@ -112,7 +112,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        writePortable(classDefinitionWriter, p);
+                        writePortable(p);
                         cd = classDefinitionWriter.getClassDefinition();
                         context->registerClassDefinition(cd);
                     }

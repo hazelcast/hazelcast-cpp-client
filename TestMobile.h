@@ -20,23 +20,6 @@ public:
     char c;
 };
 
-//int getFactoryId(const TestMobile& t);
-//
-//int getClassId(const TestMobile& t);
-//
-//template<typename HzWriter>
-//void operator <<(HzWriter& writer, const TestMobile& data);
-//
-//template<typename HzReader>
-//void operator >>(HzReader& reader, TestMobile& data);
-
-/*
-template <>
-int getFactoryId<TestMobile>(){
-    return 1;
-};
-*/
-
 inline int getFactoryId(const TestMobile& t) {
     return 1;
 }

@@ -1,11 +1,10 @@
 //
 // server.cpp
-#include <iostream>
-#include "ConstantSerializers.h"
-#include <cassert>
 #include "HazelcastException.h"
 #include "TestMobile.h"
 #include "SerializationService.h"
+#include <iostream>
+#include <cassert>
 
 using namespace hazelcast::client::serialization;
 

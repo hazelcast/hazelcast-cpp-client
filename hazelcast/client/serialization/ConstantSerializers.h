@@ -9,18 +9,15 @@
 #ifndef HAZELCAST_CONSTANT_SERIALIZERS
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
-#include "BufferedDataInput.h"
-#include "BufferedDataOutput.h"
 #include "SerializationConstants.h"
-
-#include <iostream>
-
-using namespace std;
+#include <vector>
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            typedef unsigned char byte;
 //            namespace ConstantSerializers {
 
             template<typename T>

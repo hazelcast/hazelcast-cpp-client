@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_EXCEPTION
 #define HAZELCAST_EXCEPTION
 
-#include <iostream>
+#include <string>
 #include <stdexcept>
 
 

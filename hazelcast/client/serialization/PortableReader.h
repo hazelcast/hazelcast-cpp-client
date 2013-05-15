@@ -12,7 +12,6 @@
 #include "ClassDefinition.h"
 #include "BufferedDataInput.h"
 #include "FieldDefinition.h"
-#include "PortableSerializer.h"
 #include "HazelcastException.h"
 
 #include <iostream>
@@ -33,15 +32,13 @@ namespace hazelcast {
 
             class PortableReader {
                 template<typename T>
-                friend void operator >>(PortableReader& portableReader, T data);
+                friend void operator >>(PortableReader& portableReader, T& data);
 
             public:
 
                 PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
                 PortableReader& operator [](std::string& fieldName);
-
-                void readingFromDataInput();
 
                 int readInt();
 
@@ -94,7 +91,7 @@ namespace hazelcast {
 //                    if (context->getVersion() == dataVersion) {
                     cd = context->lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
-                    readPortable(reader, object);
+                    readPortable(object);
 //                    } else {
 //                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
 //                        PortableReader reader(this, dataInput, cd, PortableReader::MORPHING);
@@ -138,6 +135,9 @@ namespace hazelcast {
 
                 int getPosition(FieldDefinition *);
 
+                void readingFromDataInput();
+
+
                 int offset;
                 bool raw;
                 bool readingPortable;
@@ -154,6 +154,14 @@ namespace hazelcast {
                 //TODO is base of portable(may be and dataSerializable) ???? NOT SURE
                 portableReader.readingFromDataInput();
                 portableReader.readPortable(data);
+            };
+
+            template<typename T>
+            inline void operator >>(PortableReader& portableReader, std::vector<T>& data) {
+                //TODO i probably need to add more here
+                //........
+                portableReader.readingFromDataInput();
+                data = portableReader.readPortableArray< T >();
             };
 
         }

@@ -104,59 +104,7 @@ namespace hazelcast {
                 return ID;
             };
 
-            template<typename DataOutput>
-            void operator <<(DataOutput& dataOutput, const Data& data) {
-                dataOutput << data.type;
-                if (data.cd != NULL) {
-                    dataOutput << data.cd->getClassId();
-                    dataOutput << data.cd->getFactoryId();
-                    dataOutput << data.cd->getVersion();
-                    std::vector<byte> classDefBytes = data.cd->getBinary();
-                    dataOutput << classDefBytes.size();
-                    dataOutput << classDefBytes;
-                } else {
-                    dataOutput << data.NO_CLASS_ID;
-                }
-                int len = data.bufferSize();
-                dataOutput << len;
-                if (len > 0) {
-                    dataOutput << data.buffer;
-                }
-                dataOutput << data.partitionHash;
-            };
 
-            template<typename DataInput>
-            void operator >>(DataInput& dataInput, Data& data) {
-                dataInput >> data.type;
-                int classId = data.NO_CLASS_ID;
-                dataInput >> data;
-                if (classId != data.NO_CLASS_ID) {
-                    int factoryId = 0;
-                    int version = 0;
-                    dataInput >> factoryId;
-                    dataInput >> version;
-
-                    int classDefSize = 0;
-                    dataInput >> classDefSize;
-
-                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
-                        data.cd = data.context->lookup(factoryId, classId, version);
-                        dataInput.skipBytes(classDefSize);//TODO msk ???
-                    } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        dataInput >> classDefBytes;
-                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = 0;
-                dataInput >> size;
-                if (size > 0) {
-                    std::vector<byte> buffer(size);
-                    dataInput >> buffer;
-                    data.buffer = buffer;
-                }
-                dataInput >> data.partitionHash;
-            };
         }
     }
 }
