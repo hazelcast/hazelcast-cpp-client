@@ -39,9 +39,9 @@ namespace hazelcast {
             };
 
             namespace FieldTypes {
-                static const FieldType TYPE_PORTABLE(0);
-                static const FieldType TYPE_BYTE(1);
-                static const FieldType TYPE_BOOLEAN(2);
+                static const FieldType TYPE_PORTABLE('0');
+                static const FieldType TYPE_BYTE('1');
+                static const FieldType TYPE_BOOLEAN('2');
                 static const FieldType TYPE_CHAR(3);
                 static const FieldType TYPE_SHORT(4);
                 static const FieldType TYPE_INT(5);
@@ -50,7 +50,7 @@ namespace hazelcast {
                 static const FieldType TYPE_DOUBLE(8);
                 static const FieldType TYPE_UTF(9);
                 static const FieldType TYPE_PORTABLE_ARRAY(10);
-                static const FieldType TYPE_BYTE_ARRAY(11);
+                static const FieldType TYPE_BYTE_ARRAY('11');
                 static const FieldType TYPE_CHAR_ARRAY(12);
                 static const FieldType TYPE_SHORT_ARRAY(13);
                 static const FieldType TYPE_INT_ARRAY(14);

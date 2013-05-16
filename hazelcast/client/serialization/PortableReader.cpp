@@ -80,6 +80,34 @@ namespace hazelcast {
                 return input.readUTF();
             };
 
+            std::vector <byte> PortableReader::readByteArray() {
+                return input.readByteArray();
+            };
+
+            std::vector<char> PortableReader::readCharArray() {
+                return input.readCharArray();
+            };
+
+            std::vector<int> PortableReader::readIntArray() {
+                return input.readIntArray();
+            };
+
+            std::vector<long> PortableReader::readLongArray() {
+                return input.readLongArray();
+            };
+
+            std::vector<double> PortableReader::readDoubleArray() {
+                return input.readDoubleArray();
+            };
+
+            std::vector<float> PortableReader::readFloatArray() {
+                return input.readFloatArray();
+            };
+
+            std::vector<short> PortableReader::readShortArray() {
+                return input.readShortArray();
+            };
+
             int PortableReader::getPosition(std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");

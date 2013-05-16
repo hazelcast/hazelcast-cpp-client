@@ -45,22 +45,38 @@ namespace hazelcast {
                 return 0;
             }
 
-            inline int getTypeId(int t) {
-                return SerializationConstants::CONSTANT_TYPE_INTEGER;
-            };
+            int getTypeId(byte data);
 
-            inline int getTypeId(char c) {
-                return SerializationConstants::CONSTANT_TYPE_CHAR;
-            };
+            int getTypeId(bool data);
 
-            inline int getTypeId(std::string t) {
-                return SerializationConstants::CONSTANT_TYPE_STRING;
-            };
+            int getTypeId(char data);
 
-            inline int getTypeId(std::vector<byte> c) {
-                return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
-            };
-            /*****************************************************************************/
+            int getTypeId(short data);
+
+            int getTypeId(int data);
+
+            int getTypeId(long data);
+
+            int getTypeId(float data);
+
+            int getTypeId(double data);
+
+            int getTypeId(const std::string&   data);
+
+            int getTypeId(const std::vector<byte>&  data);
+
+            int getTypeId(const std::vector<char >&  data);
+
+            int getTypeId(const std::vector<short >&  data);
+
+            int getTypeId(const std::vector<int>&  data);
+
+            int getTypeId(const std::vector<long >&  data);
+
+            int getTypeId(const std::vector<float >&  data);
+
+            int getTypeId(const std::vector<double >&  data);
+
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(ClassDefinitionWriter& dataOutput, byte data);

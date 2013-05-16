@@ -9,6 +9,70 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            int getTypeId(byte data) {
+                return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
+            };
+
+            int getTypeId(bool data) {
+                return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
+            };
+
+            int getTypeId(char data) {
+                return SerializationConstants::CONSTANT_TYPE_CHAR;
+            };
+
+            int getTypeId(short data) {
+                return SerializationConstants::CONSTANT_TYPE_SHORT;
+            };
+
+            int getTypeId(int data) {
+                return SerializationConstants::CONSTANT_TYPE_INTEGER;
+            };
+
+            int getTypeId(long data) {
+                return SerializationConstants::CONSTANT_TYPE_LONG;
+            };
+
+            int getTypeId(float data) {
+                return SerializationConstants::CONSTANT_TYPE_FLOAT;
+            };
+
+            int getTypeId(double data) {
+                return SerializationConstants::CONSTANT_TYPE_DOUBLE;
+            };
+
+            int getTypeId(const std::string&   data) {
+                return SerializationConstants::CONSTANT_TYPE_STRING;
+            };
+
+            int getTypeId(const std::vector<byte>&  data) {
+                return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
+            };
+
+            int getTypeId(const std::vector<char >&  data) {
+                return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
+            };
+
+            int getTypeId(const std::vector<short >&  data) {
+                return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
+            };
+
+            int getTypeId(const std::vector<int>&  data) {
+                return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
+            };
+
+            int getTypeId(const std::vector<long >&  data) {
+                return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
+            };
+
+            int getTypeId(const std::vector<float >&  data) {
+                return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
+            };
+
+            int getTypeId(const std::vector<double >&  data) {
+                return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
+            };
+
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(ClassDefinitionWriter& cdw, byte data) {
@@ -331,60 +395,32 @@ namespace hazelcast {
             };
 
             void readPortable(PortableReader& dataInput, std::vector<byte>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readByte();
-                }
+                data = dataInput.readByteArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<char >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readChar();
-                }
+                data = dataInput.readCharArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<short >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readShort();
-                }
+                data = dataInput.readShortArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<int>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readInt();
-                }
+                data = dataInput.readIntArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<long >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readLong();
-                }
+                data = dataInput.readLongArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<float >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readFloat();
-                }
+                data = dataInput.readFloatArray();
             };
 
             void readPortable(PortableReader& dataInput, std::vector<double >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readDouble();
-                }
-            };
+                data = dataInput.readDoubleArray();
+            }
 
             /*****************************************************************************/
             void readPortable(MorphingPortableReader& dataInput, byte& data) {
@@ -424,60 +460,32 @@ namespace hazelcast {
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<byte>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readByte();
-                }
+                data = dataInput.readByteArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<char >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readChar();
-                }
+                data = dataInput.readCharArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<short >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readShort();
-                }
+                data = dataInput.readShortArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<int>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readInt();
-                }
+                data = dataInput.readIntArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<long >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readLong();
-                }
+                data = dataInput.readLongArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<float >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readFloat();
-                }
+                data = dataInput.readFloatArray();
             };
 
             void readPortable(MorphingPortableReader& dataInput, std::vector<double >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readDouble();
-                }
-            };
+                data = dataInput.readDoubleArray();
+            }
 
             /*****************************************************************************/
             void readPortable(BufferedDataInput& dataInput, byte& data) {
@@ -517,59 +525,31 @@ namespace hazelcast {
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<byte>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readByte();
-                }
+                data = dataInput.readByteArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<char >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readChar();
-                }
+                data = dataInput.readCharArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<short >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readShort();
-                }
+                data = dataInput.readShortArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<int>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readInt();
-                }
+                data = dataInput.readIntArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<long >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readLong();
-                }
+                data = dataInput.readLongArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<float >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readFloat();
-                }
+                data = dataInput.readFloatArray();
             };
 
             void readPortable(BufferedDataInput& dataInput, std::vector<double >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readDouble();
-                }
+                data = dataInput.readDoubleArray();
             };
             /*****************************************************************************/
 

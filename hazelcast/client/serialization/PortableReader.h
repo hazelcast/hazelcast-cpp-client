@@ -60,6 +60,20 @@ namespace hazelcast {
 
                 string readUTF();
 
+                std::vector<byte> readByteArray();
+
+                std::vector<char> readCharArray();
+
+                std::vector<int> readIntArray();
+
+                std::vector<long> readLongArray();
+
+                std::vector<double> readDoubleArray();
+
+                std::vector<float> readFloatArray();
+
+                std::vector<short> readShortArray();
+
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
 

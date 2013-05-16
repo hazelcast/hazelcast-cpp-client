@@ -125,15 +125,11 @@ namespace hazelcast {
 
             template<typename T>
             inline void writePortable(PortableWriter& portableWriter, const std::vector<T>& data) {
-                //TODO i probably need to add more here
-                //........
                 portableWriter.writePortable(data);
             };
 
             template<typename T>
             inline void operator <<(PortableWriter& portableWriter, const T& data) {
-                //TODO i probably need to add more here
-                //........
                 portableWriter.writingToDataOutput();
                 if (boost::is_base_of<Portable, T>::value)
                     portableWriter.writePortable(data);

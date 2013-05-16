@@ -214,6 +214,75 @@ namespace hazelcast {
                 return std::string(chararr);
             };
 
+            std::vector <byte> BufferedDataInput::readByteArray() {
+                int len = readInt();
+                std::vector <byte> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readByte();
+                }
+                return values;
+            };
+
+            std::vector<char> BufferedDataInput::readCharArray() {
+
+                int len = readInt();
+                std::vector<char> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readChar();
+                }
+                return values;
+            };
+
+            std::vector<int> BufferedDataInput::readIntArray() {
+
+                int len = readInt();
+                std::vector<int> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readInt();
+                }
+                return values;
+            };
+
+            std::vector<long> BufferedDataInput::readLongArray() {
+
+                int len = readInt();
+                std::vector<long> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readLong();
+                }
+                return values;
+            };
+
+            std::vector<double> BufferedDataInput::readDoubleArray() {
+
+                int len = readInt();
+                std::vector<double> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readDouble();
+                }
+                return values;
+            };
+
+            std::vector<float> BufferedDataInput::readFloatArray() {
+
+                int len = readInt();
+                std::vector<float> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readFloat();
+                }
+                return values;
+            };
+
+            std::vector<short> BufferedDataInput::readShortArray() {
+
+                int len = readInt();
+                std::vector<short> values(len);
+                for (int i = 0; i < len; i++) {
+                    values[i] = readShort();
+                }
+                return values;
+            };
+
         }
     }
 }
