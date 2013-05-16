@@ -9,18 +9,18 @@
 #ifndef Server_TestMainPortable_h
 #define Server_TestMainPortable_h
 
-#include "hazelcast/client/serialization/Portable.h"
 #include "TestInnerPortable.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 using namespace hazelcast::client::serialization;
 
 class TestMainPortable : public Portable {
     template<typename HzWriter>
-    friend void writePortable(HzWriter& writer, const TestMainPortable& data);
+    friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestMainPortable& data);
 
     template<typename HzReader>
-    friend void readPortable(HzReader& reader, TestMainPortable& data);
+    friend void hazelcast::client::serialization::readPortable(HzReader& reader, TestMainPortable& data);
 
 public:
 
@@ -93,40 +93,48 @@ private:
     std::string str;
 };
 
-inline int getFactoryId(const TestMainPortable& t) {
-    return 1;
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            inline int getFactoryId(const TestMainPortable& t) {
+                return 1;
+            }
+
+            inline int getClassId(const TestMainPortable& t) {
+                return 1;
+            }
+
+            template<typename HzWriter>
+            inline void writePortable(HzWriter& writer, const TestMainPortable& data) {
+                writer["b"] << data.b;
+//                write(writer,"jhjhj",data.b);
+//                writeInt(writer,"dsda",data.b);
+//                writer.writeInt("",data.b);
+                writer["bool"] << data.boolean;
+                writer["c"] << data.c;
+                writer["s"] << data.s;
+                writer["i"] << data.i;
+                writer["l"] << data.l;
+                writer["f"] << data.f;
+                writer["d"] << data.d;
+                writer["str"] << data.str;
+                writer["p"] << data.p;
+            };
+
+            template<typename HzReader>
+            inline void readPortable(HzReader& reader, TestMainPortable& data) {
+                reader["b"] >> data.b;
+                reader["bool"] >> data.boolean;
+                reader["c"] >> data.c;
+                reader["s"] >> data.s;
+                reader["i"] >> data.i;
+                reader["l"] >> data.l;
+                reader["f"] >> data.f;
+                reader["d"] >> data.d;
+                reader["str"] >> data.str;
+                reader["p"] >> data.p;
+            };
+        }
+    }
 }
-
-inline int getClassId(const TestMainPortable& t) {
-    return 1;
-}
-
-template<typename HzWriter>
-inline void writePortable(HzWriter& writer, const TestMainPortable& data) {
-    writer["b"] << data.b;
-    writer["bool"] << data.boolean;
-    writer["c"] << data.c;
-    writer["s"] << data.s;
-    writer["i"] << data.i;
-    writer["l"] << data.l;
-    writer["f"] << data.f;
-    writer["d"] << data.d;
-    writer["str"] << data.str;
-    writer["p"] << data.p;
-};
-
-template<typename HzReader>
-inline void readPortable(HzReader& reader, TestMainPortable& data) {
-    reader["b"] >> data.b;
-    reader["bool"] >> data.boolean;
-    reader["c"] >> data.c;
-    reader["s"] >> data.s;
-    reader["i"] >> data.i;
-    reader["l"] >> data.l;
-    reader["f"] >> data.f;
-    reader["d"] >> data.d;
-    reader["str"] >> data.str;
-    reader["p"] >> data.p;
-};
-
 #endif

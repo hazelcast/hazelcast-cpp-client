@@ -104,10 +104,10 @@
 //};
 //
 void testCompression() {
-    serialization::SerializationService serializationService1(1);
-    TestMainPortable mainPortable = getTestMainPortable();
-
-    Data data = serializationService1.toData(mainPortable);
+//    serialization::SerializationService serializationService1(1);
+//    TestMainPortable mainPortable = getTestMainPortable();
+//
+//    Data data = serializationService1.toData(mainPortable);
 //
 //    BufferedDataOutput out;
 //    data.writeData(out);
@@ -174,74 +174,136 @@ void testCompression() {
 //    read(size);
 //}
 //
+
 void testSerialization() {
-//    serialization::SerializationService serializationService(1);
-//    serialization::SerializationService serializationService2(2);
-//    serialization::Data data;
-//
-//    int x = 3;
-//    data = serializationService.toData(x);
-//    assert(x == serializationService.toObject<int>(data));
-//
-//    short f = 3.2;
-//    data = serializationService.toData(f);
-//    assert(f == serializationService.toObject<short>(data));
-//
-//    TestNamedPortable np("name", 5);
-//    data = serializationService.toData(np);
-//
-//    TestNamedPortable tnp1, tnp2;
-//    tnp1 = serializationService.toObject<TestNamedPortable >(data);
-//    tnp2 = serializationService2.toObject<TestNamedPortable >(data);
-//
-//    assert(np == tnp1);
-//    assert(np == tnp2);
-//
-//    byte byteArray[] = {0, 1, 2};
-//    std::vector<byte> bb(byteArray, byteArray + 3);
-//    char charArray[] = {'c', 'h', 'a', 'r'};
-//    std::vector<char> cc(charArray, charArray + 4);
-//    short shortArray[] = {3, 4, 5};
-//    std::vector<short> ss(shortArray, shortArray + 3);
-//    int integerArray[] = {9, 8, 7, 6};
-//    std::vector<int> ii(integerArray, integerArray + 4);
-//    long longArray[] = {0, 1, 5, 7, 9, 11};
-//    std::vector<long> ll(longArray, longArray + 6);
-//    float floatArray[] = {0.6543f, -3.56f, 45.67f};
-//    std::vector<float> ff(floatArray, floatArray + 3);
-//    double doubleArray[] = {456.456, 789.789, 321.321};
-//    std::vector<double> dd(doubleArray, doubleArray + 3);
-//    TestNamedPortable portableArray[5];
-//    for (int i = 0; i < 5; i++) {
-//        string x = "named-portable-";
-//        x.push_back('0' + i);
-//        portableArray[i].name = x;
-//        portableArray[i].k = i;
-//    }
-//    std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
-//
-//    TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
-//
-//    data = serializationService.toData(inner);
-//
-//    TestInnerPortable tip1, tip2;
-//    tip1 = serializationService.toObject<TestInnerPortable >(data);
-//    tip2 = serializationService2.toObject<TestInnerPortable >(data);
-//
-//
-//    assert(inner == tip1);
-//    assert(inner == tip2);
-//
-//
-//    TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
-//            -897543.3678909, "this is main portable object created for testing!", inner);
-//    data = serializationService.toData(main);
-//
-//    TestMainPortable tmp1, tmp2;
-//    tmp1 = serializationService.toObject<TestMainPortable >(data);
-//    tmp2 = serializationService2.toObject<TestMainPortable >(data);
-//    assert(main == tmp1);
-//    assert(main == tmp2);
+    serialization::SerializationService serializationService(1);
+    serialization::Data data;
+
+    int x = 3;
+    data = serializationService.toData(x);
+    assert(x == serializationService.toObject<int>(data));
+
+    short f = 3.2;
+    data = serializationService.toData(f);
+    assert(f == serializationService.toObject<short>(data));
+
+    TestNamedPortable np("name", 5);
+    data = serializationService.toData(np);
+
+    TestNamedPortable tnp1;
+    tnp1 = serializationService.toObject<TestNamedPortable >(data);
+
+    assert(np == tnp1);
+
+    byte byteArray[] = {0, 1, 2};
+    std::vector<byte> bb(byteArray, byteArray + 3);
+    char charArray[] = {'c', 'h', 'a', 'r'};
+    std::vector<char> cc(charArray, charArray + 4);
+    short shortArray[] = {3, 4, 5};
+    std::vector<short> ss(shortArray, shortArray + 3);
+    int integerArray[] = {9, 8, 7, 6};
+    std::vector<int> ii(integerArray, integerArray + 4);
+    long longArray[] = {0, 1, 5, 7, 9, 11};
+    std::vector<long> ll(longArray, longArray + 6);
+    float floatArray[] = {0.6543f, -3.56f, 45.67f};
+    std::vector<float> ff(floatArray, floatArray + 3);
+    double doubleArray[] = {456.456, 789.789, 321.321};
+    std::vector<double> dd(doubleArray, doubleArray + 3);
+    TestNamedPortable portableArray[5];
+    for (int i = 0; i < 5; i++) {
+        string x = "named-portable-";
+        x.push_back('0' + i);
+        portableArray[i].name = x;
+        portableArray[i].k = i;
+    }
+    std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
+
+    TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+
+    data = serializationService.toData(inner);
+
+    TestInnerPortable tip1;
+    tip1 = serializationService.toObject<TestInnerPortable >(data);
+
+    assert(inner == tip1);
+
+    TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
+            -897543.3678909, "this is main portable object created for testing!", inner);
+    data = serializationService.toData(main);
+
+    TestMainPortable tmp1;
+    tmp1 = serializationService.toObject<TestMainPortable >(data);
+    assert(main == tmp1);
+};
+
+void testSerializationWithDifferentVersions() {
+    serialization::SerializationService serializationService(1);
+    serialization::SerializationService serializationService2(2);
+    serialization::Data data;
+
+    int x = 3;
+    data = serializationService.toData(x);
+    assert(x == serializationService.toObject<int>(data));
+
+    short f = 3.2;
+    data = serializationService.toData(f);
+    assert(f == serializationService.toObject<short>(data));
+
+    TestNamedPortable np("name", 5);
+    data = serializationService.toData(np);
+
+    TestNamedPortable tnp1, tnp2;
+    tnp1 = serializationService.toObject<TestNamedPortable >(data);
+    tnp2 = serializationService2.toObject<TestNamedPortable >(data);
+
+    assert(np == tnp1);
+    assert(np == tnp2);
+
+    byte byteArray[] = {0, 1, 2};
+    std::vector<byte> bb(byteArray, byteArray + 3);
+    char charArray[] = {'c', 'h', 'a', 'r'};
+    std::vector<char> cc(charArray, charArray + 4);
+    short shortArray[] = {3, 4, 5};
+    std::vector<short> ss(shortArray, shortArray + 3);
+    int integerArray[] = {9, 8, 7, 6};
+    std::vector<int> ii(integerArray, integerArray + 4);
+    long longArray[] = {0, 1, 5, 7, 9, 11};
+    std::vector<long> ll(longArray, longArray + 6);
+    float floatArray[] = {0.6543f, -3.56f, 45.67f};
+    std::vector<float> ff(floatArray, floatArray + 3);
+    double doubleArray[] = {456.456, 789.789, 321.321};
+    std::vector<double> dd(doubleArray, doubleArray + 3);
+    TestNamedPortable portableArray[5];
+    for (int i = 0; i < 5; i++) {
+        string x = "named-portable-";
+        x.push_back('0' + i);
+        portableArray[i].name = x;
+        portableArray[i].k = i;
+    }
+    std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
+
+    TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+
+    data = serializationService.toData(inner);
+
+    TestInnerPortable tip1, tip2;
+    tip1 = serializationService.toObject<TestInnerPortable >(data);
+    tip2 = serializationService2.toObject<TestInnerPortable >(data);
+
+
+    assert(inner == tip1);
+    assert(inner == tip2);
+
+
+    TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
+            -897543.3678909, "this is main portable object created for testing!", inner);
+    data = serializationService.toData(main);
+
+    TestMainPortable tmp1, tmp2;
+    tmp1 = serializationService.toObject<TestMainPortable >(data);
+    tmp2 = serializationService2.toObject<TestMainPortable >(data);
+    assert(main == tmp1);
+    assert(main == tmp2);
 
 
 };

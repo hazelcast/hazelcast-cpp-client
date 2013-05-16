@@ -14,6 +14,7 @@
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
 #include "ConstantSerializers.h"
+#include "boost/type_traits/is_base_of.hpp"
 
 #include <iostream>
 #include <string>
@@ -34,9 +35,6 @@ namespace hazelcast {
             class PortableReader {
                 template<typename T>
                 friend void operator >>(PortableReader& portableReader, T& data);
-
-                template<typename T>
-                friend void operator >>(PortableReader& portableReader, std::vector<T>& data);
 
             public:
 
@@ -62,22 +60,8 @@ namespace hazelcast {
 
                 string readUTF();
 
-                std::vector<byte> readByteArray();
-
-                std::vector<char> readCharArray();
-
-                std::vector<int> readIntArray();
-
-                std::vector<long> readLongArray();
-
-                std::vector<double> readDoubleArray();
-
-                std::vector<float> readFloatArray();
-
-                std::vector<short> readShortArray();
-
                 template<typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
 
 //                    PortableFactory const *portableFactory;
 //                    if (portableFactories.count(factoryId) != 0) {
@@ -92,35 +76,29 @@ namespace hazelcast {
 //                    }
 
                     boost::shared_ptr<ClassDefinition> cd;
-//                    if (context->getVersion() == dataVersion) {
                     cd = context->lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
-                    readPortable(object);
-//                    } else {
-//                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
-//                        PortableReader reader(this, dataInput, cd, PortableReader::MORPHING);
-//                        p->readPortable(reader);
-//                    }
+                    hazelcast::client::serialization::readPortable(reader, object);
                 };
 
                 template<typename T>
                 void readPortable(T& portable) {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
                         throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
-
+                    FieldDefinition fd = cd->get(lastFieldName);
                     bool isNull = input.readBoolean();
                     if (isNull) {
                         return;
                     }
-                    read(input, portable, cd->getFactoryId(), cd->getClassId(), cd->getVersion());
+                    read(input, portable, fd.getFactoryId(), fd.getClassId());
                 };
 
                 template<typename T>
-                std::vector< T > readPortableArray() {
+                void readPortable(std::vector< T >& portables) {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
                         throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
                     int len = input.readInt();
-                    std::vector< T > portables(len);
+                    portables.resize(len, T());
                     if (len > 0) {
                         int offset = input.position();
                         for (int i = 0; i < len; i++) {
@@ -128,10 +106,10 @@ namespace hazelcast {
                             int start = input.readInt();
                             input.position(start);
                             FieldDefinition fd = cd->get(lastFieldName);
-                            read(input, portables[i], fd.getFactoryId(), fd.getClassId(), cd->getVersion());
+                            read(input, portables[i], fd.getFactoryId(), fd.getClassId());
                         }
                     }
-                    return portables;
+//                    return portables;
                 };
 
             private:
@@ -150,22 +128,20 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator >>(PortableReader& portableReader, T& data) {
-                //TODO i probably need to add more here
-                //........
-                //TODO is base of portable(may be and dataSerializable) ???? NOT SURE
-                portableReader.readingFromDataInput();
-                readPortable(portableReader, data);
+            inline void readPortable(PortableReader& portableReader, std::vector<T>& data) {
+                portableReader.readPortable(data);
             };
 
+
             template<typename T>
-            inline void operator >>(PortableReader& portableReader, std::vector<T>& data) {
-                //TODO i probably need to add more here
-                //........
+            inline void operator >>(PortableReader& portableReader, T& data) {
                 portableReader.readingFromDataInput();
-                readPortable(portableReader, data);               //TODO ?!
-//                data = portableReader.readPortableArray< T >(); //TODO !?
+                if (boost::is_base_of<Portable, T>::value)
+                    portableReader.readPortable(data);
+                else
+                    readPortable(portableReader, data);
             };
+
 
         }
     }

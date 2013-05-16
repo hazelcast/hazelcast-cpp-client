@@ -5,8 +5,8 @@
 #define SERVER_PORT "5701"
 
 #include "TestMainPortable.h"
-#include "TestPortableFactory.h"
-#include "TestPortableFactory2.h"
+//#include "TestPortableFactory.h"
+//#include "TestPortableFactory2.h"
 
 TestMainPortable getTestMainPortable() {
     byte byteArray[] = {0, 1, 2};

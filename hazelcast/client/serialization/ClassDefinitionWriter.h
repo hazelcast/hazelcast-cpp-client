@@ -17,7 +17,9 @@
 #include "SerializationContext.h"
 #include <iosfwd>
 #include <string>
+#include "boost/type_traits/is_base_of.hpp"
 #include <boost/shared_ptr.hpp>
+#include "Portable.h"
 
 using namespace std;
 
@@ -48,24 +50,23 @@ namespace hazelcast {
 
                 void writeShort(short value);
 
-                void writeUTF(string str);
+                void writeUTF(const string& str);
 
                 void writeNullPortable(int factoryId, int classId);
 
-                void writeByteArray(std::vector<byte>&);
+                void writeByteArray(const std::vector<byte>&);
 
-                void writeCharArray(std::vector<char>&);
+                void writeCharArray(const std::vector<char>&);
 
-                void writeIntArray(std::vector<int>&);
+                void writeIntArray(const std::vector<int>&);
 
-                void writeLongArray(std::vector<long>&);
+                void writeLongArray(const std::vector<long>&);
 
-                void writeDoubleArray(std::vector<double>&);
+                void writeDoubleArray(const std::vector<double>&);
 
-                void writeFloatArray(std::vector<float>&);
+                void writeFloatArray(const std::vector<float>&);
 
-                void writeShortArray(std::vector<short>&);
-
+                void writeShortArray(const std::vector<short>&);
 
                 template <typename T>
                 void writePortable(T& portable) {
@@ -76,7 +77,7 @@ namespace hazelcast {
                 };
 
                 template <typename T>  //TODO duplicate code because of cyclic dependency look : PortableSerializer
-                void writePortableArray(std::vector<T>& portables) {
+                void writePortableArray(const std::vector<T>& portables) {
                     if (!raw) {
                         int classId = getClassId(portables[0]);
                         int factoryId = getFactoryId(portables[0]);
@@ -125,24 +126,23 @@ namespace hazelcast {
                 int index;
                 bool raw;
                 bool writingPortable;
-                std::string lastFieldName; //TODO needs more thoughts on name
+                std::string lastFieldName;
                 boost::shared_ptr<ClassDefinition> cd;
                 SerializationContext *context;
 
             };
 
             template<typename T>
-            inline void writePortable(ClassDefinitionWriter& classDefinitionWriter, std::vector<T>& data) {
-                //TODO i probably need to add more here
-                //........
+            inline void writePortable(ClassDefinitionWriter& classDefinitionWriter, const std::vector<T>& data) {
                 classDefinitionWriter.writePortableArray(data);
             };
 
             template<typename T>
             inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T& data) {
-                //TODO i probably need to add more here
-                //........
-                writePortable(classDefinitionWriter, data);
+                if (boost::is_base_of<Portable, T>::value)
+                    classDefinitionWriter.writePortable(data);
+                else
+                    writePortable(classDefinitionWriter, data);
             };
 
         }

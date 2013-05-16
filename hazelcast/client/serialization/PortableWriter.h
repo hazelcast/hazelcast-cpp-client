@@ -13,8 +13,9 @@
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
 #include "FieldType.h"
-#include "ClassDefinitionWriter.h"
 #include "SerializationContext.h"
+#include "ClassDefinitionWriter.h"
+#include "ConstantSerializers.h"
 #include <iostream>
 #include <string>
 #include <set>
@@ -29,7 +30,7 @@ namespace hazelcast {
 
             class PortableWriter {
                 template<typename T>
-                friend void operator <<(PortableWriter& portableWriter, T& data);
+                friend void operator <<(PortableWriter& portableWriter, const T& data);
 
                 template<typename T>
                 friend void writePortable(PortableWriter& portableWriter, std::vector<T>& data);
@@ -58,30 +59,16 @@ namespace hazelcast {
 
                 void writeUTF(string str);
 
-                void writeByteArray(std::vector<byte>&);
-
-                void writeCharArray(std::vector<char>&);
-
-                void writeIntArray(std::vector<int>&);
-
-                void writeLongArray(std::vector<long>&);
-
-                void writeDoubleArray(std::vector<double>&);
-
-                void writeFloatArray(std::vector<float>&);
-
-                void writeShortArray(std::vector<short>&);
-
                 void writeNullPortable(int factoryId, int classId);
 
                 template <typename T>
-                void writePortable(T& portable) {
+                void writePortable(const T& portable) {
                     output->writeBoolean(false);
                     write(*output, portable);
                 };
 
                 template <typename T>
-                void writePortableArray(std::vector<T>& values) {
+                void writePortable(const std::vector<T>& values) {
                     int len = values.size();
                     output->writeInt(len);
                     if (len > 0) {
@@ -100,7 +87,7 @@ namespace hazelcast {
                 void setPosition(string fieldName);
 
                 template <typename T>   //TODO duplicate code because of cyclic dependency look : PortableSerializer
-                boost::shared_ptr<ClassDefinition> getClassDefinition(T& p) {
+                boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
                     boost::shared_ptr<ClassDefinition> cd;
 
                     int factoryId = getFactoryId(p);
@@ -109,7 +96,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        writePortable(classDefinitionWriter, p);
+                        hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         context->registerClassDefinition(cd);
                     }
@@ -118,10 +105,10 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                void write(BufferedDataOutput &dataOutput, T& p) {
+                void write(BufferedDataOutput &dataOutput, const T& p) {
                     boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    writePortable(portableWriter, p);
+                    hazelcast::client::serialization::writePortable(portableWriter, p);
                 };
 
                 int index;
@@ -137,20 +124,24 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator <<(PortableWriter& portableWriter, T& data) {
+            inline void writePortable(PortableWriter& portableWriter, const std::vector<T>& data) {
                 //TODO i probably need to add more here
                 //........
-                portableWriter.writingToDataOutput();
-                writePortable(portableWriter, data);
+                portableWriter.writePortable(data);
             };
 
             template<typename T>
-            inline void writePortable(PortableWriter& portableWriter, std::vector<T>& data) {
+            inline void operator <<(PortableWriter& portableWriter, const T& data) {
                 //TODO i probably need to add more here
                 //........
                 portableWriter.writingToDataOutput();
-                writePortable(portableWriter, data);
+                if (boost::is_base_of<Portable, T>::value)
+                    portableWriter.writePortable(data);
+                else {
+                    writePortable(portableWriter, data);
+                }
             };
+
 
         }
     }

@@ -88,7 +88,7 @@ namespace hazelcast {
 
             };
 
-            void ClassDefinitionWriter::writeUTF(string value) {
+            void ClassDefinitionWriter::writeUTF(const string& value) {
                 addField(FieldTypes::TYPE_UTF);
 
             };
@@ -106,40 +106,41 @@ namespace hazelcast {
 
             };
 
-            void ClassDefinitionWriter::writeByteArray(std::vector<byte>& values) {
+            void ClassDefinitionWriter::writeByteArray(const std::vector<byte>& values) {
                 addField(FieldTypes::TYPE_BYTE_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeCharArray(std::vector<char>& values) {
+            void ClassDefinitionWriter::writeCharArray(const std::vector<char>& values) {
                 addField(FieldTypes::TYPE_CHAR_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeIntArray(std::vector<int>& values) {
+            void ClassDefinitionWriter::writeIntArray(const std::vector<int>& values) {
                 addField(FieldTypes::TYPE_INT_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeLongArray(std::vector<long>& values) {
+            void ClassDefinitionWriter::writeLongArray(const std::vector<long>& values) {
                 addField(FieldTypes::TYPE_LONG_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeDoubleArray(std::vector<double>& values) {
+            void ClassDefinitionWriter::writeDoubleArray(const std::vector<double>& values) {
                 addField(FieldTypes::TYPE_DOUBLE_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeFloatArray(std::vector<float>& values) {
+            void ClassDefinitionWriter::writeFloatArray(const std::vector<float>& values) {
                 addField(FieldTypes::TYPE_FLOAT_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeShortArray(std::vector<short>& values) {
+            void ClassDefinitionWriter::writeShortArray(const std::vector<short>& values) {
                 addField(FieldTypes::TYPE_SHORT_ARRAY);
 
             };
+
 
         }
     }

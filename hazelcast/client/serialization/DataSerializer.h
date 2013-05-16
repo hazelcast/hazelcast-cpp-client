@@ -22,6 +22,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &out, T& object) {
+                    out.writeBoolean(true);
                     out.writeInt(getFactoryId(object));
                     out.writeInt(getClassId(object));
                     writePortable(out, object);

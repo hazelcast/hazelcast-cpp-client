@@ -44,25 +44,30 @@ public:
 };
 
 
-inline int getFactoryId(const TestNamedPortable& t) {
-    return 1;
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            inline int getFactoryId(const TestNamedPortable& t) {
+                return 1;
+            }
+
+            inline int getClassId(const TestNamedPortable& t) {
+                return 3;
+            }
+
+            template<typename HzWriter>
+            inline void writePortable(HzWriter& writer, const TestNamedPortable& data) {
+                writer["name"] << data.name;
+                writer["myint"] << data.k;
+            };
+
+            template<typename HzReader>
+            inline void readPortable(HzReader& reader, TestNamedPortable& data) {
+                reader["name"] >> data.name;
+                reader["myint"] >> data.k;
+            };
+
+        }
+    }
 }
-
-inline int getClassId(const TestNamedPortable& t) {
-    return 3;
-}
-
-template<typename HzWriter>
-inline void writePortable(HzWriter& writer, const TestNamedPortable& data) {
-    writer["name"] << data.name;
-    writer["myint"] << data.k;
-};
-
-template<typename HzReader>
-inline void readPortable(HzReader& reader, TestNamedPortable& data) {
-    reader["name"] >> data.name;
-    reader["myint"] >> data.k;
-};
-
-
 #endif

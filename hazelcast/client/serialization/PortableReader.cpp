@@ -18,7 +18,7 @@ namespace hazelcast {
             , cd(cd)
             , readingPortable(false)
             , raw(false)
-            , offset(0) {
+            , offset(input.position()) {
 
             };
 
@@ -78,70 +78,6 @@ namespace hazelcast {
 
             string PortableReader::readUTF() {
                 return input.readUTF();
-            };
-
-            std::vector <byte> PortableReader::readByteArray() {
-                int len = input.readInt();
-                std::vector <byte> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readByte();
-                }
-                return values;
-            };
-
-            std::vector<char> PortableReader::readCharArray() {
-                int len = input.readInt();
-                std::vector<char> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readChar();
-                }
-                return values;
-            };
-
-            std::vector<int> PortableReader::readIntArray() {
-                input.position();
-                int len = input.readInt();
-                std::vector<int> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readInt();
-                }
-                return values;
-            };
-
-            std::vector<long> PortableReader::readLongArray() {
-                int len = input.readInt();
-                std::vector<long> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readLong();
-                }
-                return values;
-            };
-
-            std::vector<double> PortableReader::readDoubleArray() {
-                int len = input.readInt();
-                std::vector<double> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readDouble();
-                }
-                return values;
-            };
-
-            std::vector<float> PortableReader::readFloatArray() {
-                int len = input.readInt();
-                std::vector<float> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readFloat();
-                }
-                return values;
-            };
-
-            std::vector<short> PortableReader::readShortArray() {
-                int len = input.readInt();
-                std::vector<short> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = input.readShort();
-                }
-                return values;
             };
 
             int PortableReader::getPosition(std::string& fieldName) {

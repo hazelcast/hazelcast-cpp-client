@@ -15,6 +15,7 @@
 #include "ClassDefinitionWriter.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
+#include "MorphingPortableReader.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <map>
@@ -81,10 +82,9 @@ namespace hazelcast {
                         PortableReader reader(context, dataInput, cd);
                         readPortable(reader, object);
                     } else {
-                        throw hazelcast::client::HazelcastException("Morphing is not implemented yet!!!");
-//                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
-//                        PortableReader reader(this, dataInput, cd, PortableReader::MORPHING);
-//                        p->readPortable(reader);
+                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
+                        MorphingPortableReader reader(context, dataInput, cd);
+                        readPortable(reader, object);
                     }
                 };
 

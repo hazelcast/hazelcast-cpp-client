@@ -16,6 +16,17 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class ClassDefinitionWriter;
+
+            class MorphingPortableReader;
+
+            class BufferedDataOutput;
+
+            class BufferedDataInput;
+
+            class PortableReader;
+
+            class PortableWriter;
 
             typedef unsigned char byte;
 
@@ -51,251 +62,205 @@ namespace hazelcast {
             };
             /*****************************************************************************/
             /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, byte data) {
-                dataOutput.writeByte(data);
-            };
+            /*****************************************************************************/
+            void writePortable(ClassDefinitionWriter& dataOutput, byte data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, byte& data) {
-                data = dataInput.readByte();
-            };
+            void writePortable(ClassDefinitionWriter& dataOutput, bool data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, char data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, short data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, int data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, long data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, float data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, double data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::string&   data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<byte>&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<char >&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<short >&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<int>&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<long >&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<float >&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<double >&  data);
+            /*****************************************************************************/
+            /*****************************************************************************/
+            void writePortable(BufferedDataOutput& dataOutput, byte data);
+
+            void writePortable(BufferedDataOutput& dataOutput, bool data);
+
+            void writePortable(BufferedDataOutput& dataOutput, char data);
+
+            void writePortable(BufferedDataOutput& dataOutput, short data);
+
+            void writePortable(BufferedDataOutput& dataOutput, int data);
+
+            void writePortable(BufferedDataOutput& dataOutput, long data);
+
+            void writePortable(BufferedDataOutput& dataOutput, float data);
+
+            void writePortable(BufferedDataOutput& dataOutput, double data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::string&   data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<byte>&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<char >&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<short >&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<int>&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<long >&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<float >&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const std::vector<double >&  data);
+            /*****************************************************************************/
+            /*****************************************************************************/
+            void writePortable(PortableWriter& dataOutput, byte data);
+
+            void writePortable(PortableWriter& dataOutput, bool data);
+
+            void writePortable(PortableWriter& dataOutput, char data);
+
+            void writePortable(PortableWriter& dataOutput, short data);
+
+            void writePortable(PortableWriter& dataOutput, int data);
+
+            void writePortable(PortableWriter& dataOutput, long data);
+
+            void writePortable(PortableWriter& dataOutput, float data);
+
+            void writePortable(PortableWriter& dataOutput, double data);
+
+            void writePortable(PortableWriter& dataOutput, const std::string&   data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<byte>&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<char >&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<short >&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<int>&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<long >&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<float >&  data);
+
+            void writePortable(PortableWriter& dataOutput, const std::vector<double >&  data);
 
             /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, bool data) {
-                dataOutput.writeBoolean(data);
-            };
+            void readPortable(PortableReader& portableReader, byte& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, bool& data) {
-                data = dataInput.readBoolean();
-            };
+            void readPortable(PortableReader& portableReader, bool& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const char& data) {
-                dataOutput.writeChar(data);
-            };
+            void readPortable(PortableReader& portableReader, char& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, char& data) {
-                data = dataInput.readChar();
-            };
+            void readPortable(PortableReader& portableReader, short & data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, short data) {
-                dataOutput.writeShort(data);
-            };
+            void readPortable(PortableReader& portableReader, int& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, short & data) {
-                data = dataInput.readShort();
-            };
+            void readPortable(PortableReader& portableReader, long & data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const int& data) {
-                dataOutput.writeInt(data);
-            };
+            void readPortable(PortableReader& portableReader, float & data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, int& data) {
-                data = dataInput.readInt();
-            };
+            void readPortable(PortableReader& portableReader, double & data);
+
+            void readPortable(PortableReader& portableReader, std::string&  data);
+
+            void readPortable(PortableReader& portableReader, std::vector<byte>& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<char >& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<short >& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<int>& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<long >& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<float >& data);
+
+            void readPortable(PortableReader& portableReader, std::vector<double >& data);
 
             /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, long data) {
-                dataOutput.writeLong(data);
-            };
+            void readPortable(MorphingPortableReader& portableReader, byte& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, long & data) {
-                data = dataInput.readLong();
-            };
+            void readPortable(MorphingPortableReader& portableReader, bool& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, float data) {
-                dataOutput.writeFloat(data);
-            };
+            void readPortable(MorphingPortableReader& portableReader, char& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, float & data) {
-                data = dataInput.readFloat();
-            };
+            void readPortable(MorphingPortableReader& portableReader, short & data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, double data) {
-                dataOutput.writeDouble(data);
-            };
+            void readPortable(MorphingPortableReader& portableReader, int& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, double & data) {
-                data = dataInput.readDouble();
-            };
+            void readPortable(MorphingPortableReader& portableReader, long & data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::string&   data) {
-                dataOutput.writeUTF(data);
-            };
+            void readPortable(MorphingPortableReader& portableReader, float & data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::string&  data) {
-                data = dataInput.readUTF();
-            };
+            void readPortable(MorphingPortableReader& portableReader, double & data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::string&  data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<byte>& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<char >& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<short >& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<int>& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<long >& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<float >& data);
+
+            void readPortable(MorphingPortableReader& portableReader, std::vector<double >& data);
+
 
             /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<byte>&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeByte(data[i]);
-                    }
-                }
-            };
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<byte>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readByte();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, byte& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<char >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeChar(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, bool& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<char >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readChar();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, char& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<short >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeShort(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, short & data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<short >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readShort();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, int& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<int>&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeInt(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, long & data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<int>& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readInt();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, float & data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<long >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeLong(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, double & data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<long >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readLong();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, std::string&  data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<float >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeFloat(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, std::vector<byte>& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<float >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readFloat();
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, std::vector<char >& data);
 
-            /*****************************************************************************/
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const std::vector<double >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeDouble(data[i]);
-                    }
-                }
-            };
+            void readPortable(BufferedDataInput& dataInput, std::vector<short >& data);
 
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, std::vector<double >& data) {
-                int size = dataInput.readInt();
-                data.resize(size, 0);
-                for (int i = 0; i < size; i++) {
-                    data[i] = dataInput.readDouble();
-                }
-            };
-            /*****************************************************************************/
+            void readPortable(BufferedDataInput& dataInput, std::vector<int>& data);
+
+            void readPortable(BufferedDataInput& dataInput, std::vector<long >& data);
+
+            void readPortable(BufferedDataInput& dataInput, std::vector<float >& data);
+
+            void readPortable(BufferedDataInput& dataInput, std::vector<double >& data);
         }
     }
 }

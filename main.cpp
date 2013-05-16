@@ -1,7 +1,7 @@
 //
 // server.cpp
-#include "portableTest.h"
 #include "TestMobile.h"
+#include "portableTest.h"
 
 using namespace hazelcast::client::serialization;
 
@@ -14,8 +14,9 @@ int main(int argc, char **argv) {
 //        testRawDataInvalidWrite();
 //        testRawDataInvalidRead();
 //        testDifferentVersions();
-        testCompression();
-        testSerialization();
+//        testCompression();
+//        testSerialization();
+        testSerializationWithDifferentVersions();
 //        testSerializationViaFile();
 
 //        testBinaryClient();
