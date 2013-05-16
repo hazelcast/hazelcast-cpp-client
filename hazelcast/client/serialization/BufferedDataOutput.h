@@ -69,10 +69,18 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator <<(BufferedDataOutput& dataOutput, T data) {
+            inline void operator <<(BufferedDataOutput& dataOutput, T& data) {
                 //TODO some control stuff can be added here : not sure what is needed right now
                 //........
                 writePortable(dataOutput, data);
+            };
+
+            template<typename T>
+            inline void writePortable(BufferedDataOutput& classDefinitionWriter, std::vector<T>& data) {
+                //TODO i probably need to add more here
+                //........
+                writePortable(classDefinitionWriter, data);
+//                classDefinitionWriter.writePortable(data);
             };
 
         }

@@ -13,6 +13,7 @@
 #include "BufferedDataInput.h"
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
+#include "ConstantSerializers.h"
 
 #include <iostream>
 #include <string>
@@ -33,6 +34,9 @@ namespace hazelcast {
             class PortableReader {
                 template<typename T>
                 friend void operator >>(PortableReader& portableReader, T& data);
+
+                template<typename T>
+                friend void operator >>(PortableReader& portableReader, std::vector<T>& data);
 
             public:
 

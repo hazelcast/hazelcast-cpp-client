@@ -61,7 +61,7 @@ namespace hazelcast {
             void writePortable(DataOutput & dataOutput, FieldDefinition const & data) {
                 dataOutput << data.index;
                 dataOutput << data.fieldName;
-                dataOutput << data.type.getId();
+                dataOutput.writeByte(data.type.getId());
                 dataOutput << data.factoryId;
                 dataOutput << data.classId;
 

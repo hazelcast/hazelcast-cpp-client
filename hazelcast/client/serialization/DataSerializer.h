@@ -22,23 +22,19 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &out, T& object) {
-                    out << true;
-                    out << getFactoryId(object);
-                    out << getClassId(object);
+                    out.writeInt(getFactoryId(object));
+                    out.writeInt(getClassId(object));
                     writePortable(out, object);
                 };
 
                 template <typename T>
                 void read(BufferedDataInput& in, T& object) {
-                    bool identified = false;
-                    in >> identified;
+                    bool identified = in.readBoolean();
                     if (!identified) {
                         throw hazelcast::client::HazelcastException("void DataSerializer::read(BufferedDataInput& in, T& object) >  DataSerializable is not identified");
                     }
-                    int factoryId = 0;
-                    in >> factoryId;
-                    int classId = 0;
-                    in >> classId;
+                    int factoryId = in.readInt();
+                    int classId = in.readInt();
                     //TODO factoryId and classId is not used!!!
                     readPortable(in, object);
                 };

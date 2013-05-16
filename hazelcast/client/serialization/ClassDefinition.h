@@ -98,13 +98,13 @@ namespace hazelcast {
 
             template<typename DataOutput>
             void writePortable(DataOutput& dataOutput, const boost::shared_ptr<ClassDefinition> data) {
-                dataOutput << data->getFactoryId();
-                dataOutput << data->getClassId();
-                dataOutput << data->getVersion();
-                dataOutput << data->getFieldCount();
+                dataOutput.writeInt(data->getFactoryId());
+                dataOutput.writeInt(data->getClassId());
+                dataOutput.writeInt(data->getVersion());
+                dataOutput.writeInt(data->getFieldCount());
                 for (vector<FieldDefinition>::const_iterator it = data->fieldDefinitions.begin(); it != data->fieldDefinitions.end(); it++)
                     dataOutput << (*it);
-                dataOutput << ((int) data->nestedClassDefinitions.size());
+                dataOutput .writeInt(int(data->nestedClassDefinitions.size()));
                 for (vector<boost::shared_ptr<ClassDefinition> >::const_iterator it = data->nestedClassDefinitions.begin(); it != data->nestedClassDefinitions.end(); it++)
                     dataOutput << (*it);
             };

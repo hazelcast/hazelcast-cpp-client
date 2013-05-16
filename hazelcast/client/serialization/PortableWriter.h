@@ -29,7 +29,10 @@ namespace hazelcast {
 
             class PortableWriter {
                 template<typename T>
-                friend void operator <<(PortableWriter& portableWriter, T data);
+                friend void operator <<(PortableWriter& portableWriter, T& data);
+
+                template<typename T>
+                friend void writePortable(PortableWriter& portableWriter, std::vector<T>& data);
 
             public:
 
@@ -106,7 +109,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        classDefinitionWriter << p;//TODO 1
+                        writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         context->registerClassDefinition(cd);
                     }
@@ -118,7 +121,7 @@ namespace hazelcast {
                 void write(BufferedDataOutput &dataOutput, T& p) {
                     boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    portableWriter << p; //TODO 1
+                    writePortable(portableWriter, p);
                 };
 
                 int index;
@@ -134,7 +137,15 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator <<(PortableWriter& portableWriter, T data) {
+            inline void operator <<(PortableWriter& portableWriter, T& data) {
+                //TODO i probably need to add more here
+                //........
+                portableWriter.writingToDataOutput();
+                writePortable(portableWriter, data);
+            };
+
+            template<typename T>
+            inline void writePortable(PortableWriter& portableWriter, std::vector<T>& data) {
                 //TODO i probably need to add more here
                 //........
                 portableWriter.writingToDataOutput();

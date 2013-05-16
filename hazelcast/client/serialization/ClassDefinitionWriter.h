@@ -78,10 +78,10 @@ namespace hazelcast {
                 template <typename T>  //TODO duplicate code because of cyclic dependency look : PortableSerializer
                 void writePortableArray(std::vector<T>& portables) {
                     if (!raw) {
-                        int classId = portables[0].getClassId();
-                        int factoryId = portables[0].getFactoryId();
+                        int classId = getClassId(portables[0]);
+                        int factoryId = getFactoryId(portables[0]);
                         for (int i = 1; i < portables.size(); i++) {
-                            if (portables[i].getClassId() != classId) {
+                            if (getClassId(portables[i]) != classId) {
                                 throw hazelcast::client::HazelcastException("Illegal Argument Exception");
                             }
                         }
@@ -132,12 +132,19 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T data) {
+            inline void writePortable(ClassDefinitionWriter& classDefinitionWriter, std::vector<T>& data) {
+                //TODO i probably need to add more here
+                //........
+                classDefinitionWriter.writePortableArray(data);
+            };
+
+            template<typename T>
+            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T& data) {
                 //TODO i probably need to add more here
                 //........
                 writePortable(classDefinitionWriter, data);
-//                classDefinitionWriter.writePortable(data);
             };
+
         }
     }
 }

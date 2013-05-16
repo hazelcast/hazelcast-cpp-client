@@ -6,11 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "Data.h"
-#include "SerializationContext.h"
-#include "ClassDefinition.h"
-#include "SerializationConstants.h"
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
+#include "ConstantSerializers.h"
 
 
 namespace hazelcast {
@@ -109,21 +107,21 @@ namespace hazelcast {
             void Data::writeData(BufferedDataOutput & dataOutput) const {
                 dataOutput << type;
                 if (cd != NULL) {
-                    dataOutput << cd->getClassId();
-                    dataOutput << cd->getFactoryId();
-                    dataOutput << cd->getVersion();
+                    dataOutput.writeInt(cd->getClassId());
+                    dataOutput.writeInt(cd->getFactoryId());
+                    dataOutput.writeInt(cd->getVersion());
                     std::vector<byte> classDefBytes = cd->getBinary();
-                    dataOutput << classDefBytes.size();
-                    dataOutput << classDefBytes;
+                    dataOutput.writeInt(classDefBytes.size());
+                    dataOutput.write(classDefBytes);
                 } else {
-                    dataOutput << NO_CLASS_ID;
+                    dataOutput.writeInt(NO_CLASS_ID);
                 }
                 int len = bufferSize();
-                dataOutput << len;
+                dataOutput.writeInt(len);
                 if (len > 0) {
-                    dataOutput << buffer;
+                    dataOutput.write(buffer);
                 }
-                dataOutput << partitionHash;
+                dataOutput.writeInt(partitionHash);
 
             }
 
@@ -154,7 +152,7 @@ namespace hazelcast {
                 if (size > 0) {
                     std::vector<byte> buffer(size);
                     dataInput >> buffer;
-                    buffer = buffer;
+                    this->buffer = buffer;
                 }
                 dataInput >> partitionHash;
             }
