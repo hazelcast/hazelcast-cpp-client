@@ -15,8 +15,8 @@ int main(int argc, char **argv) {
 //        testRawDataInvalidRead();
 //        testDifferentVersions();
 //        testCompression();
-        testSerialization();
-//        testSerializationWithDifferentVersions();
+//        testSerialization();
+        testSerializationWithDifferentVersions();
 //        testSerializationViaFile();
 
 //        testBinaryClient();

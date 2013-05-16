@@ -81,11 +81,11 @@ namespace hazelcast {
                     if (!raw) {
                         int classId = getClassId(portables[0]);
                         int factoryId = getFactoryId(portables[0]);
-                        for (int i = 1; i < portables.size(); i++) {
-                            if (getClassId(portables[i]) != classId) {
-                                throw hazelcast::client::HazelcastException("Illegal Argument Exception");
-                            }
-                        }
+//                        for (int i = 1; i < portables.size(); i++) { //TODO no meanings in c++
+//                            if (getClassId(portables[i]) != classId) {
+//                                throw hazelcast::client::HazelcastException("Illegal Argument Exception");
+//                            }
+//                        }
                         FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
                         addNestedField(portables[0], fd);
                     }
