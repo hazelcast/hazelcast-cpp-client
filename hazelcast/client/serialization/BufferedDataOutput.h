@@ -9,10 +9,10 @@
 #ifndef HAZELCAST_DATA_OUTPUT
 #define HAZELCAST_DATA_OUTPUT
 
+#include "ConstantSerializers.h"
+#include "../HazelcastException.h"
 #include <vector>
 #include <iosfwd>
-#include "HazelcastException.h"
-#include "ConstantSerializers.h"
 
 namespace hazelcast {
     namespace client {
@@ -73,16 +73,12 @@ namespace hazelcast {
 
             template<typename T>
             inline void writePortable(BufferedDataOutput& out, const std::vector<T>& data) {
-                //TODO i probably need to add more here
-                //........
                 throw hazelcast::client::HazelcastException("template<typename T>\n"
                         "            inline void writePortable(BufferedDataOutput& out, std::vector<T>& data) >> Not supported");
             };
 
             template<typename T>
             inline void operator <<(BufferedDataOutput& dataOutput, const T& data) {
-                //TODO some control stuff can be added here : not sure what is needed right now
-                //........
                 writePortable(dataOutput, data);
             };
         }

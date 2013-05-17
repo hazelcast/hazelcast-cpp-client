@@ -7,7 +7,6 @@
 //
 #include "ClassDefinition.h"
 #include "BufferedDataInput.h"
-#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {

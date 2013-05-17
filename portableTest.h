@@ -2,12 +2,12 @@
 #define PORTABLE_TEST_UTIL
 
 #include "testUtil.h"
-#include "SerializationService.h"
 #include "TestNamedPortableV2.h"
-#include "ClassDefinitionBuilder.h"
 #include "TestRawDataPortable.h"
 #include "TestInvalidReadPortable.h"
 #include "TestInvalidWritePortable.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include <fstream>
 
 void testRawData() {

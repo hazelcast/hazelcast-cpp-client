@@ -11,9 +11,7 @@
 #define __TestInvalidReadPortable_H_
 
 #include <iostream>
-#include "Portable.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/Portable.h"
 
 using namespace hazelcast::client::serialization;
 

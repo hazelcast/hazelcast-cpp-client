@@ -7,7 +7,7 @@
 #ifndef __TestMobile_H_
 #define __TestMobile_H_
 
-#include "DataSerializable.h"
+#include "hazelcast/client/serialization/DataSerializable.h"
 
 
 class TestDataSerializable : public hazelcast::client::serialization::DataSerializable {

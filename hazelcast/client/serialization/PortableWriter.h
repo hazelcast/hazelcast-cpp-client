@@ -11,7 +11,7 @@
 
 #include "BufferedDataOutput.h"
 #include "FieldDefinition.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include "FieldType.h"
 #include "SerializationContext.h"
 #include "ClassDefinitionWriter.h"

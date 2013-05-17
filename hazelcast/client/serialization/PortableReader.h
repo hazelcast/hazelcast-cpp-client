@@ -12,7 +12,7 @@
 #include "ClassDefinition.h"
 #include "BufferedDataInput.h"
 #include "FieldDefinition.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include "ConstantSerializers.h"
 #include "SerializationContext.h"
 #include "boost/type_traits/is_base_of.hpp"

@@ -8,7 +8,6 @@
 
 #include <string>
 #include "BufferedDataOutput.h"
-#include "HazelcastException.h"
 
 namespace hazelcast {
     namespace client {

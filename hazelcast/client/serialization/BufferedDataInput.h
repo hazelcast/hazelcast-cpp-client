@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include <vector>
 #include <string>
 
@@ -88,16 +88,12 @@ namespace hazelcast {
 
             template<typename T>
             inline void readPortable(BufferedDataInput& in, const std::vector<T>& data) {
-                //TODO i probably need to add more here
-                //........
                 throw hazelcast::client::HazelcastException("template<typename T>\n"
                         "            inline void readPortable(BufferedDataInput& in, std::vector<T>& data) >> Not supported");
             };
 
             template<typename T>
             inline void operator >>(BufferedDataInput& dataInput, T& data) {
-                //TODO some control stuff can be added here : not sure what is needed right now
-                //........
                 readPortable(dataInput, data);
             };
         }

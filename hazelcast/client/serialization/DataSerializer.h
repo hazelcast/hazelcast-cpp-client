@@ -7,7 +7,7 @@
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
 #include "ConstantSerializers.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 
 #ifndef HAZELCAST_DATA_SERIALIZER
 #define HAZELCAST_DATA_SERIALIZER

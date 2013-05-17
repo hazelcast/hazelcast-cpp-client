@@ -14,7 +14,7 @@
 #include "BufferedDataInput.h"
 #include "PortableSerializer.h"
 #include "SerializationContext.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include "DataSerializable.h"
 #include "Util.h"
 #include "Data.h"

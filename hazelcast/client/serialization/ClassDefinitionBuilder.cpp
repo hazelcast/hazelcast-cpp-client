@@ -7,7 +7,7 @@
 
 
 #include "ClassDefinitionBuilder.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include "Util.h"
 #include "Data.h"
 
