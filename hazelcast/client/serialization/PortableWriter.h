@@ -86,7 +86,7 @@ namespace hazelcast {
 
                 void setPosition(string fieldName);
 
-                template <typename T>   //TODO duplicate code because of cyclic dependency look : PortableSerializer
+                template <typename T>
                 boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
                     boost::shared_ptr<ClassDefinition> cd;
 

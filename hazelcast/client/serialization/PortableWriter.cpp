@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 if (writingPortable) {
                     writingPortable = false;
-                } else {
+                } else if (!raw) {
                     int pos = output->position();
                     int index = cd->getFieldCount(); // last index
                     output->writeInt(offset + index * sizeof(int), pos);

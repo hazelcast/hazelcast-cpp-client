@@ -143,16 +143,15 @@ namespace hazelcast {
                         dataInput.skipBytes(classDefSize);//TODO msk ???
                     } else {
                         std::vector<byte> classDefBytes(classDefSize);
-                        dataInput >> classDefBytes;
+                        dataInput.readFully(classDefBytes);
                         cd = context->createClassDefinition(factoryId, classDefBytes);
                     }
                 }
                 int size = 0;
                 dataInput >> size;
                 if (size > 0) {
-                    std::vector<byte> buffer(size);
-                    dataInput >> buffer;
-                    this->buffer = buffer;
+                    this->buffer.resize(size, 0);
+                    dataInput.readFully(buffer);
                 }
                 dataInput >> partitionHash;
             }

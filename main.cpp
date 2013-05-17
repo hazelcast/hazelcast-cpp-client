@@ -9,15 +9,15 @@ void testNewDesign();
 
 int main(int argc, char **argv) {
     try{
-//        testRawData();
-//        testRawDataWithoutRegistering();
-//        testRawDataInvalidWrite();
-//        testRawDataInvalidRead();
-//        testDifferentVersions();
-//        testCompression();
-//        testSerialization();
-        testSerializationWithDifferentVersions();
-//        testSerializationViaFile();
+        testDifferentVersions();
+        testRawData();
+        testRawDataWithoutRegistering();
+        testRawDataInvalidWrite();
+        testRawDataInvalidRead();
+        testCompression();
+        testSerialization();
+        testSerializationViaFile();
+        testNewDesign();
 
 //        testBinaryClient();
 //        testMapOperations();
@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
 //        testSpeed();
 //        testPut();
 
-        testNewDesign();
 
         std::cout << "Test are completed successfully" << std::endl;
 //        std::cin >> argc;

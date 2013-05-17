@@ -36,7 +36,7 @@ namespace hazelcast {
             void PortableReader::readingFromDataInput() {
                 if (readingPortable) {
                     readingPortable = false;
-                } else {
+                } else if (!raw) {
                     input.position(offset + cd->getFieldCount() * 4);
                     int pos = input.readInt();
                     input.position(pos);

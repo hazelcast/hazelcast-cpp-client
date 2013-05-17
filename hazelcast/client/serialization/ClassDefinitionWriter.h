@@ -14,12 +14,12 @@
 #include "FieldType.h"
 #include "ConstantSerializers.h"
 #include "ClassDefinition.h"
+#include "Portable.h"
 #include "SerializationContext.h"
-#include <iosfwd>
-#include <string>
 #include "boost/type_traits/is_base_of.hpp"
 #include <boost/shared_ptr.hpp>
-#include "Portable.h"
+#include <string>
+#include <iosfwd>
 
 using namespace std;
 
@@ -70,24 +70,24 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortable(T& portable) {
-                    if (!raw) {
-                        FieldDefinition fd = FieldDefinition(index++, lastFieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
+                    if (writingPortable) {
+                        FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
                         addNestedField(portable, fd);
+                        writingPortable = false;
+                    } else {
+                        throw hazelcast::client::HazelcastException("Can not write portable directly(without using ['fieldName'])");
                     }
                 };
 
-                template <typename T>  //TODO duplicate code because of cyclic dependency look : PortableSerializer
-                void writePortableArray(const std::vector<T>& portables) {
-                    if (!raw) {
+                template <typename T>
+                void writePortable(const std::vector<T>& portables) {
+                    if (writingPortable) {
                         int classId = getClassId(portables[0]);
                         int factoryId = getFactoryId(portables[0]);
-//                        for (int i = 1; i < portables.size(); i++) { //TODO no meanings in c++
-//                            if (getClassId(portables[i]) != classId) {
-//                                throw hazelcast::client::HazelcastException("Illegal Argument Exception");
-//                            }
-//                        }
                         FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
                         addNestedField(portables[0], fd);
+                    } else {
+                        throw hazelcast::client::HazelcastException("Can not write portable directly(without using ['fieldName'])");
                     }
                 };
 
@@ -104,7 +104,7 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(T& p) {
+                boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(const T& p) {
                     boost::shared_ptr<ClassDefinition> cd;
 
                     int factoryId = getFactoryId(p);
@@ -113,7 +113,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        writePortable(p);
+                        hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         context->registerClassDefinition(cd);
                     }
@@ -134,7 +134,7 @@ namespace hazelcast {
 
             template<typename T>
             inline void writePortable(ClassDefinitionWriter& classDefinitionWriter, const std::vector<T>& data) {
-                classDefinitionWriter.writePortableArray(data);
+                classDefinitionWriter.writePortable(data);
             };
 
             template<typename T>

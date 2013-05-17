@@ -76,7 +76,10 @@ namespace hazelcast {
                     K object;
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
-                        portableSerializer.read(dataInput, object, data.cd->getFactoryId(), data.cd->getClassId(), data.cd->getVersion());
+                        int factoryId = data.cd->getFactoryId();
+                        int classId = data.cd->getClassId();
+                        int version = data.cd->getVersion();
+                        portableSerializer.read(dataInput, object, factoryId, classId, version);
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
                         dataSerializer.read(dataInput, object);
                     } else {

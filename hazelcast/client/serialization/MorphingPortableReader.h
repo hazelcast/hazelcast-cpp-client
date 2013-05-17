@@ -13,6 +13,7 @@
 #include "BufferedDataInput.h"
 #include "FieldDefinition.h"
 #include "HazelcastException.h"
+#include "PortableReader.h"
 #include "ConstantSerializers.h"
 #include "SerializationContext.h"
 #include "boost/type_traits/is_base_of.hpp"
@@ -76,7 +77,7 @@ namespace hazelcast {
                 std::vector<short> readShortArray();
 
                 template<typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
+                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
 //                    PortableFactory const *portableFactory;
 //                    if (portableFactories.count(factoryId) != 0) {
@@ -91,9 +92,15 @@ namespace hazelcast {
 //                    }
 
                     boost::shared_ptr<ClassDefinition> cd;
-                    cd = context->lookup(factoryId, classId); // using serializationContext.version
-                    MorphingPortableReader reader(context, dataInput, cd);
-                    hazelcast::client::serialization::readPortable(reader, object);
+                    if (context->getVersion() == dataVersion) {
+                        cd = context->lookup(factoryId, classId); // using serializationContext.version
+                        PortableReader reader(context, dataInput, cd);
+                        hazelcast::client::serialization::readPortable(reader, object);
+                    } else {
+                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
+                        MorphingPortableReader reader(context, dataInput, cd);
+                        hazelcast::client::serialization::readPortable(reader, object);
+                    }
                 };
 
                 template<typename T>
@@ -105,7 +112,7 @@ namespace hazelcast {
                     if (isNull) {
                         return;
                     }
-                    read(input, portable, fd.getFactoryId(), fd.getClassId());
+                    read(input, portable, fd.getFactoryId(), fd.getClassId(), cd->getVersion());
                 };
 
                 template<typename T>
@@ -121,7 +128,7 @@ namespace hazelcast {
                             int start = input.readInt();
                             input.position(start);
                             FieldDefinition fd = cd->get(lastFieldName);
-                            read(input, portables[i], fd.getFactoryId(), fd.getClassId());
+                            read(input, portables[i], fd.getFactoryId(), fd.getClassId(), cd->getVersion());
                         }
                     }
                 };
