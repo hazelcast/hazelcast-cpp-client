@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include "TestNamedPortable.h"
+#include "TestDataSerializable.h"
 
 
 class TestRawDataPortable : public Portable {
@@ -22,17 +23,19 @@ public:
     TestNamedPortable p;
     int k;
     std::string s;
+    TestDataSerializable ds;
 
     TestRawDataPortable() {
 
     }
 
-    TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s) {
+    TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
         this->l = l;
         this->c = c;
         this->p = p;
         this->k = k;
         this->s = s;
+        this->ds = ds;
     }
 
     bool operator ==(TestRawDataPortable& m) {
@@ -42,6 +45,7 @@ public:
         if (c != m.c) return false;
         if (p != m.p) return false;
         if (k != m.k) return false;
+        if (ds != m.ds) return false;
         if (s.compare(m.s) != 0) return false;
         return true;
     };
@@ -70,6 +74,7 @@ namespace hazelcast {
                 writer["p"] << data.p;
                 writer << data.k;
                 writer << data.s;
+                writer << data.ds;
             };
 
             template<typename HzReader>
@@ -79,6 +84,7 @@ namespace hazelcast {
                 reader["p"] >> data.p;
                 reader >> data.k;
                 reader >> data.s;
+                reader >> data.ds;
             };
         }
     }

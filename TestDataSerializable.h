@@ -1,0 +1,66 @@
+//
+// Created by sancar koyunlu on 5/12/13.
+// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
+
+
+#ifndef __TestMobile_H_
+#define __TestMobile_H_
+
+#include "DataSerializable.h"
+
+
+class TestDataSerializable : public hazelcast::client::serialization::DataSerializable {
+public:
+    TestDataSerializable() {
+
+    }
+
+    TestDataSerializable(int i, char c):i(i), c(c) {
+
+    }
+
+    bool operator ==(TestDataSerializable & rhs) {
+        if (this == &rhs)
+            return true;
+        if (i != rhs.i) return false;
+        if (c != rhs.c) return false;
+        return true;
+    };
+
+    bool operator !=(TestDataSerializable& m) {
+        return !(*this == m);
+    };
+
+    int i;
+    char c;
+};
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+
+            inline int getFactoryId(const TestDataSerializable& t) {
+                return 1;
+            }
+
+            inline int getClassId(const TestDataSerializable& t) {
+                return 1;
+            }
+
+            template<typename HzWriter>
+            inline void writePortable(HzWriter& writer, const TestDataSerializable& data) {
+                writer << data.c;
+                writer << data.i;
+            };
+
+            template<typename HzReader>
+            inline void readPortable(HzReader& reader, TestDataSerializable& data) {
+                reader >> data.c;
+                reader >> data.i;
+            };
+        }
+    }
+}
+
+#endif //__TestMobile_H_

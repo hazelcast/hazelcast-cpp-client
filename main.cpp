@@ -1,11 +1,10 @@
 //
 // server.cpp
-#include "TestMobile.h"
+#include "TestDataSerializable.h"
 #include "portableTest.h"
 
 using namespace hazelcast::client::serialization;
 
-void testNewDesign();
 
 int main(int argc, char **argv) {
     try{
@@ -17,7 +16,7 @@ int main(int argc, char **argv) {
         testCompression();
         testSerialization();
         testSerializationViaFile();
-        testNewDesign();
+        testIdentifiedDataSerializable();
 
 //        testBinaryClient();
 //        testMapOperations();
@@ -39,18 +38,3 @@ int main(int argc, char **argv) {
 };
 
 
-void testNewDesign() {
-    SerializationService serializationService(1);
-    Data data;
-    TestMobile np(4, 'k');
-    data = serializationService.toData(np);
-
-    TestMobile tnp1;
-    tnp1 = serializationService.toObject<TestMobile>(data);
-
-    assert(np == tnp1);
-    int x = 4;
-    data = serializationService.toData(x);
-    int y = serializationService.toObject<int>(data);
-    assert(x == y);
-};

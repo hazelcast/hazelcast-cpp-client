@@ -1,14 +1,8 @@
-#ifndef PORTABLETESTUTIL
-#define PORTABLETESTUTIL
-
+#ifndef PORTABLE_TEST_UTIL
+#define PORTABLE_TEST_UTIL
 
 #include "testUtil.h"
-//#include "Socket.h"
-//#include "TestPortableFactory.h"
 #include "SerializationService.h"
-//#include "MapPutOperation.h"
-//#include "OutputSocketStream.h"
-//#include "SimpleMapTest.h"
 #include "TestNamedPortableV2.h"
 #include "ClassDefinitionBuilder.h"
 #include "TestRawDataPortable.h"
@@ -16,15 +10,15 @@
 #include "TestInvalidWritePortable.h"
 #include <fstream>
 
-//
 void testRawData() {
     serialization::SerializationService serializationService(1);
     char charA[] = "test chars";
     std::vector<char> chars(charA, charA + 10);
     std::vector<byte> bytes;
     bytes.resize(5, 0);
+    TestDataSerializable ds(123, 's');
     TestNamedPortable np("named portable", 34567);
-    TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable");
+    TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
     ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
     builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
     serializationService.getSerializationContext()->registerClassDefinition(builder.build());
@@ -35,6 +29,22 @@ void testRawData() {
 
 }
 
+void testIdentifiedDataSerializable() {
+    SerializationService serializationService(1);
+    Data data;
+    TestDataSerializable np(4, 'k');
+    data = serializationService.toData(np);
+
+    TestDataSerializable tnp1;
+    tnp1 = serializationService.toObject<TestDataSerializable>(data);
+
+    assert(np == tnp1);
+    int x = 4;
+    data = serializationService.toData(x);
+    int y = serializationService.toObject<int>(data);
+    assert(x == y);
+};
+
 void testRawDataWithoutRegistering() {
     serialization::SerializationService serializationService(1);
     char charA[] = "test chars";
@@ -42,7 +52,8 @@ void testRawDataWithoutRegistering() {
     std::vector<byte> bytes;
     bytes.resize(5, 0);
     TestNamedPortable np("named portable", 34567);
-    TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable");
+    TestDataSerializable ds(123, 's');
+    TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
     Data data = serializationService.toData(p);
     TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
@@ -226,10 +237,8 @@ void testSerialization() {
     tip1 = serializationService.toObject<TestInnerPortable >(data);
     tip2 = serializationService2.toObject<TestInnerPortable >(data);
 
-
     assert(inner == tip1);
     assert(inner == tip2);
-
 
     TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);

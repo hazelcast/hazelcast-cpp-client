@@ -106,7 +106,7 @@ namespace hazelcast {
                 template<typename T>
                 void readPortable(T& portable) {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
-                        throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
+                        return;
                     FieldDefinition fd = cd->get(lastFieldName);
                     bool isNull = input.readBoolean();
                     if (isNull) {
@@ -118,7 +118,7 @@ namespace hazelcast {
                 template<typename T>
                 void readPortable(std::vector< T >& portables) {
                     if (!cd->isFieldDefinitionExists(lastFieldName))
-                        throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
+                        return;
                     int len = input.readInt();
                     portables.resize(len, T());
                     if (len > 0) {

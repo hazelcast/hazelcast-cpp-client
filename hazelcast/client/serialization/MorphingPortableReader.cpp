@@ -190,7 +190,7 @@ namespace hazelcast {
             string MorphingPortableReader::readUTF() {
 
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    return NULL;
+                    return "";
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_UTF) {
@@ -201,7 +201,7 @@ namespace hazelcast {
 
             std::vector <byte> MorphingPortableReader::readByteArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    return std::vector<byte>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_BYTE_ARRAY) {
@@ -212,7 +212,7 @@ namespace hazelcast {
 
             std::vector<char> MorphingPortableReader::readCharArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    return std::vector<char>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_CHAR_ARRAY) {
@@ -223,7 +223,7 @@ namespace hazelcast {
 
             std::vector<int> MorphingPortableReader::readIntArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    std::vector<int>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_INT_ARRAY) {
@@ -234,7 +234,7 @@ namespace hazelcast {
 
             std::vector<long> MorphingPortableReader::readLongArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    std::vector<long>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_LONG_ARRAY) {
@@ -245,7 +245,7 @@ namespace hazelcast {
 
             std::vector<double> MorphingPortableReader::readDoubleArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    std::vector<double>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_DOUBLE_ARRAY) {
@@ -256,7 +256,7 @@ namespace hazelcast {
 
             std::vector<float> MorphingPortableReader::readFloatArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    std::vector<float>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_FLOAT_ARRAY) {
@@ -267,7 +267,7 @@ namespace hazelcast {
 
             std::vector<short> MorphingPortableReader::readShortArray() {
                 if (!cd->isFieldDefinitionExists(lastFieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::morph* unkownFieldException" + lastFieldName);
+                    std::vector<short>(1, 0);
                 FieldDefinition fd = cd->get(lastFieldName);
 
                 if (fd.getType() != FieldTypes::TYPE_SHORT_ARRAY) {
@@ -282,7 +282,7 @@ namespace hazelcast {
                 }
 
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + fieldName);
+                    return 0;
                 FieldDefinition fd = cd->get(fieldName);
                 input.position(offset + fd.getIndex() * sizeof (int));
                 return input.readInt();
