@@ -3,7 +3,6 @@
 #include "MorphingPortableReader.h"
 #include "BufferedDataOutput.h"
 #include "PortableWriter.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -138,6 +137,10 @@ namespace hazelcast {
             void writePortable(ClassDefinitionWriter& cdw, const std::vector<double >&  data) {
                 cdw.writeDoubleArray(data);
             };
+
+            void writePortable(ClassDefinitionWriter& cdw, const NullPortable&  data) {
+                cdw.writeNullPortable(data.factoryId, data.classId);
+            };
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(BufferedDataOutput& dataOutput, byte data) {
@@ -247,6 +250,10 @@ namespace hazelcast {
                     }
                 }
             };
+
+            void writePortable(BufferedDataOutput& dataOutput, const NullPortable&  data) {
+                throw hazelcast::client::HazelcastException("Write null portable to BufferedDataOutput is not supported!");
+            };
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(PortableWriter& dataOutput, byte data) {
@@ -355,6 +362,10 @@ namespace hazelcast {
                         dataOutput.writeDouble(data[i]);
                     }
                 }
+            };
+
+            void writePortable(PortableWriter& dataOutput, const NullPortable&  data) {
+                dataOutput.writeNullPortable(data.factoryId, data.classId);
             };
             /*****************************************************************************/
             /*****************************************************************************/

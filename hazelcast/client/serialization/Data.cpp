@@ -7,8 +7,6 @@
 //
 #include "Data.h"
 #include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
-#include "ConstantSerializers.h"
 
 
 namespace hazelcast {
@@ -17,7 +15,8 @@ namespace hazelcast {
 
             Data::Data() : partitionHash(-1)
             , buffer(0)
-            , type(SerializationConstants::CONSTANT_TYPE_DATA) {
+            , type(SerializationConstants::CONSTANT_TYPE_DATA)
+            , isError(false) {
 
             };
 
@@ -25,7 +24,8 @@ namespace hazelcast {
                 (*this) = rhs;
             };
 
-            Data::Data(const int type, std::vector<byte> buffer) : partitionHash(-1) {
+            Data::Data(const int type, std::vector<byte> buffer) : partitionHash(-1)
+            , isError(false) {
                 this->type = type;
                 this->buffer = buffer;
             };
@@ -38,6 +38,7 @@ namespace hazelcast {
                 buffer = rhs.buffer;
                 cd = rhs.cd;
                 partitionHash = rhs.partitionHash;
+                isError = rhs.isError;
                 return (*this);
             };
 
@@ -53,6 +54,10 @@ namespace hazelcast {
                 return !((*this) == rhs);
             };
 
+
+            bool Data::isServerError() {
+                return isError;
+            }
 
             void Data::setSerializationContext(SerializationContext *context) {
                 this->context = context;
@@ -103,58 +108,6 @@ namespace hazelcast {
             int Data::getClassId() const {
                 return ID;
             };
-
-            void Data::writeData(BufferedDataOutput & dataOutput) const {
-                dataOutput << type;
-                if (cd != NULL) {
-                    dataOutput.writeInt(cd->getClassId());
-                    dataOutput.writeInt(cd->getFactoryId());
-                    dataOutput.writeInt(cd->getVersion());
-                    std::vector<byte> classDefBytes = cd->getBinary();
-                    dataOutput.writeInt(classDefBytes.size());
-                    dataOutput.write(classDefBytes);
-                } else {
-                    dataOutput.writeInt(NO_CLASS_ID);
-                }
-                int len = bufferSize();
-                dataOutput.writeInt(len);
-                if (len > 0) {
-                    dataOutput.write(buffer);
-                }
-                dataOutput.writeInt(partitionHash);
-
-            }
-
-            void Data::readData(BufferedDataInput & dataInput) {
-                dataInput >> type;
-                int classId = NO_CLASS_ID;
-                dataInput >> classId;
-                if (classId != NO_CLASS_ID) {
-                    int factoryId = 0;
-                    int version = 0;
-                    dataInput >> factoryId;
-                    dataInput >> version;
-
-                    int classDefSize = 0;
-                    dataInput >> classDefSize;
-
-                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                        cd = context->lookup(factoryId, classId, version);
-                        dataInput.skipBytes(classDefSize);//TODO msk ???
-                    } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        dataInput.readFully(classDefBytes);
-                        cd = context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = 0;
-                dataInput >> size;
-                if (size > 0) {
-                    this->buffer.resize(size, 0);
-                    dataInput.readFully(buffer);
-                }
-                dataInput >> partitionHash;
-            }
 
 
         }

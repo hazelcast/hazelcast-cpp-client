@@ -30,13 +30,13 @@ namespace hazelcast {
 
                 ~SerializationContext();
 
-                bool isClassDefinitionExists(int, int) const;
+                bool isClassDefinitionExists(int, int);
 
                 boost::shared_ptr<ClassDefinition> lookup(int, int);
 
-                bool isClassDefinitionExists(int, int, int) const;
+                bool isClassDefinitionExists(int, int, int);
 
-                boost::shared_ptr<ClassDefinition> lookup(int, int, int) const;
+                boost::shared_ptr<ClassDefinition> lookup(int, int, int);
 
                 boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::vector<byte>&);
 
@@ -50,12 +50,12 @@ namespace hazelcast {
 
                 SerializationContext(const SerializationContext&);
 
-                PortableContext *getPortableContext(int factoryId) const;
+                PortableContext& getPortableContext(int factoryId);
 
                 void operator = (const SerializationContext&);
 
                 int contextVersion;
-                std::map<int, PortableContext *> portableContextMap;
+                std::map<int, PortableContext> portableContextMap;
 
             };
 

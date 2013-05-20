@@ -1,26 +1,22 @@
-////
-//// Created by sancar koyunlu on 5/7/13.
-//// Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-//
-//#include "Credentials.h"
-//
-//int Credentials::getFactoryId() {
-//    return -1;
-//}
-//
-//int Credentials::getClassId() {
-//    return 1;
-//}
-//
-//void Credentials::writePortable(hazelcast::client::serialization::PortableWriter & writer) {
-//    writer.writeUTF("principal", "dev");
-//    writer.writeUTF("endpoint", "");
-//    char const *pasw = "dev-pass";
-//    vector<byte> pwd(pasw, pasw + 8);
-//    writer.writeByteArray("pwd", pwd);
-//}
-//
-//void Credentials::readPortable(hazelcast::client::serialization::PortableReader & reader) {
-//
-//}
+// Created by sancar koyunlu on 5/7/13.
+// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
+
+#include "Credentials.h"
+
+
+namespace hazelcast {
+    namespace client {
+        namespace protocol {
+            Credentials::Credentials(std::string principal, std::string endpoint, std::string password)
+            : principal(principal), endpoint(endpoint) {
+                char const *pasw = password.c_str();
+                std::vector<byte> pwd(pasw, pasw + 8); //TODO
+                this->password = pwd;
+            }
+
+
+        }
+    }
+}

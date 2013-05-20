@@ -22,9 +22,9 @@ namespace hazelcast {
 
             HazelcastException(std::string message);
 
-            ~HazelcastException() throw();
+            virtual ~HazelcastException() throw();
 
-            char const *what() const throw();
+            virtual char const *what() const throw();
         };
 
     }

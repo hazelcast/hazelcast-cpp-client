@@ -16,12 +16,11 @@
 #include "ClassDefinition.h"
 #include "Portable.h"
 #include "SerializationContext.h"
-#include "boost/type_traits/is_base_of.hpp"
+#include <boost/type_traits/is_base_of.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <iosfwd>
 
-using namespace std;
 
 namespace hazelcast {
     namespace client {
@@ -69,7 +68,7 @@ namespace hazelcast {
                 void writeShortArray(const std::vector<short>&);
 
                 template <typename T>
-                void writePortable(T& portable) {
+                void writePortable(const T& portable) {
                     if (writingPortable) {
                         FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
                         addNestedField(portable, fd);
@@ -138,7 +137,7 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, T& data) {
+            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const T& data) {
                 if (boost::is_base_of<Portable, T>::value)
                     classDefinitionWriter.writePortable(data);
                 else

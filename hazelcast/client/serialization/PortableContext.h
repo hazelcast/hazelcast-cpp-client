@@ -28,6 +28,8 @@ namespace hazelcast {
             class PortableContext {
             public:
 
+                PortableContext();
+
                 PortableContext(SerializationContext *serializationContext);
 
                 bool isClassDefinitionExists(int, int) const;
@@ -37,6 +39,8 @@ namespace hazelcast {
                 boost::shared_ptr<ClassDefinition> createClassDefinition(std::vector<byte>&);
 
                 void registerClassDefinition(boost::shared_ptr<ClassDefinition> cd);
+
+                void setSerializationContext(SerializationContext *);
 
             private:
                 void compress(std::vector<byte>&);

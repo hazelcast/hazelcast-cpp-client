@@ -15,10 +15,19 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
+
+            PortableContext::PortableContext() {
+
+            };
+
             PortableContext::PortableContext(SerializationContext *serializationContext)
             : serializationContext(serializationContext) {
 
             };
+
+            void PortableContext::setSerializationContext(SerializationContext *context) {
+                this->serializationContext = context;
+            }
 
             bool PortableContext::isClassDefinitionExists(int classId, int version) const {
                 long key = combineToLong(classId, version);

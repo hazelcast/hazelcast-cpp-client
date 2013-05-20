@@ -12,6 +12,7 @@
 #include <vector>
 #include <iosfwd>
 #include <boost/shared_ptr.hpp>
+#include "ProtocolConstants.h"
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 
@@ -50,13 +51,63 @@ namespace hazelcast {
 
                 void setPartitionHash(int partitionHash);
 
+                bool isServerError();
+
                 bool operator ==(const Data&) const;
 
                 bool operator !=(const Data&) const;
 
-                void writeData(BufferedDataOutput&) const;
+                template<typename  Out>
+                void writeData(Out & dataOutput) const {
+                    dataOutput.writeInt(type);
+                    if (cd != NULL) {
+                        dataOutput.writeInt(cd->getClassId());
+                        dataOutput.writeInt(cd->getFactoryId());
+                        dataOutput.writeInt(cd->getVersion());
+                        std::vector<byte> classDefBytes = cd->getBinary();
+                        dataOutput.writeInt(classDefBytes.size());
+                        dataOutput.write(classDefBytes);
+                    } else {
+                        dataOutput.writeInt(NO_CLASS_ID);
+                    }
+                    int len = bufferSize();
+                    dataOutput.writeInt(len);
+                    if (len > 0) {
+                        dataOutput.write(buffer);
+                    }
+                    dataOutput.writeInt(partitionHash);
 
-                void readData(BufferedDataInput&);
+                }
+
+                template<typename  Input>
+                void readData(Input & dataInput) {
+                    type = dataInput.readInt();
+                    int classId = dataInput.readInt();;
+
+                    if (classId != NO_CLASS_ID) {
+                        int factoryId = dataInput.readInt();
+                        isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
+                                && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                        int version = dataInput.readInt();
+
+                        int classDefSize = dataInput.readInt();
+
+                        if (context->isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = context->lookup(factoryId, classId, version);
+                            dataInput.skipBytes(classDefSize);
+                        } else {
+                            std::vector<byte> classDefBytes(classDefSize);
+                            dataInput.readFully(classDefBytes);
+                            cd = context->createClassDefinition(factoryId, classDefBytes);
+                        }
+                    }
+                    int size = dataInput.readInt();;
+                    if (size > 0) {
+                        this->buffer.resize(size, 0);
+                        dataInput.readFully(buffer);
+                    }
+                    partitionHash = dataInput.readInt();;
+                }
 
                 boost::shared_ptr<ClassDefinition> cd;
                 int type;
@@ -64,7 +115,7 @@ namespace hazelcast {
                 static int const NO_CLASS_ID = 0;
             private:
                 SerializationContext *context;
-
+                bool isError;
                 int partitionHash;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
@@ -72,62 +123,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
-            };
-
-            template<typename DataOutput>
-            inline void writePortable(DataOutput& dataOutput, const Data& data) {
-                std::cout << "DATA WRITE PORTABLE IS CALLED" << std::endl;//TODO test
-                dataOutput << data.type;
-                if (data.cd != NULL) {
-                    dataOutput << data.cd->getClassId();
-                    dataOutput << data.cd->getFactoryId();
-                    dataOutput << data.cd->getVersion();
-                    std::vector<byte> classDefBytes = data.cd->getBinary();
-                    dataOutput << classDefBytes.size();
-                    dataOutput << classDefBytes;
-                } else {
-                    dataOutput << data.NO_CLASS_ID;
-                }
-                int len = data.bufferSize();
-                dataOutput << len;
-                if (len > 0) {
-                    dataOutput << data.buffer;
-                }
-                dataOutput << data.partitionHash;
-            };
-
-            template<typename DataInput>
-            inline void readPortable(DataInput& dataInput, Data& data) {
-                std::cout << "DATA READ PORTABLE IS CALLED" << std::endl;//TODO test
-                dataInput >> data.type;
-                int classId = data.NO_CLASS_ID;
-                dataInput >> classId;
-                if (classId != data.NO_CLASS_ID) {
-                    int factoryId = 0;
-                    int version = 0;
-                    dataInput >> factoryId;
-                    dataInput >> version;
-
-                    int classDefSize = 0;
-                    dataInput >> classDefSize;
-
-                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
-                        data.cd = data.context->lookup(factoryId, classId, version);
-                        dataInput.skipBytes(classDefSize);//TODO msk ???
-                    } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        dataInput >> classDefBytes;
-                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = 0;
-                dataInput >> size;
-                if (size > 0) {
-                    std::vector<byte> buffer(size);
-                    dataInput >> buffer;
-                    data.buffer = buffer;
-                }
-                dataInput >> data.partitionHash;
             };
 
         }

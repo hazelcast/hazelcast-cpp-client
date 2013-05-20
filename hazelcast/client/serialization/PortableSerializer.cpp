@@ -6,7 +6,6 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "PortableSerializer.h"
-#include "SerializationService.h"
 
 namespace hazelcast {
     namespace client {

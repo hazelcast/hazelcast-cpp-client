@@ -6,9 +6,60 @@
 #include "TestRawDataPortable.h"
 #include "TestInvalidReadPortable.h"
 #include "TestInvalidWritePortable.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/protocol/AuthenticationRequest.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/protocol/HazelcastServerError.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include <fstream>
+
+void testBinaryClient() {
+    hazelcast::client::Address address(SERVER_ADDRESS, SERVER_PORT);
+    hazelcast::client::protocol::Socket socket(address);
+    SerializationService service(0);
+    ClassDefinitionBuilder cd(-3, 3);
+    boost::shared_ptr<ClassDefinition> ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+    service.getSerializationContext()->registerClassDefinition(ptr);
+
+    hazelcast::client::protocol::Credentials credentials("sancar", "", "dev-pass");
+    hazelcast::client::protocol::AuthenticationRequest ar(credentials);
+    Data data = service.toData(ar);
+    socket.connect();
+    socket.send("CB1", 3);
+    OutputSocketStream output(socket);
+    data.writeData(output);
+
+    data.setSerializationContext(service.getSerializationContext());
+    InputSocketStream input(socket);
+    data.readData(input);
+
+    if (data.isServerError()) {
+        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+        std::cout << "type:" << error.type << std::endl;
+        std::cout << "message:" << error.message << std::endl;
+        std::cout << "details:" << error.details << std::endl;
+    } else {
+        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
+        std::cout << principal.uuid << std::endl;
+        std::cout << principal.ownerUuid << std::endl;
+
+    }
+    data = service.toData(ar);
+    data.writeData(output);
+    data.readData(input);
+    if (data.isServerError()) {
+        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+        std::cout << "type:" << error.type << std::endl;
+        std::cout << "message:" << error.message << std::endl;
+        std::cout << "details:" << error.details << std::endl;
+    } else {
+        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
+        std::cout << principal.uuid << std::endl;
+        std::cout << principal.ownerUuid << std::endl;
+
+    }
+}
 
 void testRawData() {
     serialization::SerializationService serializationService(1);

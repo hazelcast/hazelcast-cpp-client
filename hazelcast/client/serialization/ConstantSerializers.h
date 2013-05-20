@@ -10,6 +10,7 @@
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
 #include "SerializationConstants.h"
+#include "NullPortable.h"
 #include <vector>
 #include <string>
 
@@ -110,6 +111,8 @@ namespace hazelcast {
             void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<float >&  data);
 
             void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<double >&  data);
+
+            void writePortable(ClassDefinitionWriter& dataOutput, const NullPortable&  data);
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(BufferedDataOutput& dataOutput, byte data);
@@ -143,6 +146,8 @@ namespace hazelcast {
             void writePortable(BufferedDataOutput& dataOutput, const std::vector<float >&  data);
 
             void writePortable(BufferedDataOutput& dataOutput, const std::vector<double >&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const NullPortable&  data);
             /*****************************************************************************/
             /*****************************************************************************/
             void writePortable(PortableWriter& dataOutput, byte data);
@@ -176,6 +181,8 @@ namespace hazelcast {
             void writePortable(PortableWriter& dataOutput, const std::vector<float >&  data);
 
             void writePortable(PortableWriter& dataOutput, const std::vector<double >&  data);
+
+            void writePortable(PortableWriter& dataOutput, const NullPortable&  data);
 
             /*****************************************************************************/
             void readPortable(PortableReader& portableReader, byte& data);
