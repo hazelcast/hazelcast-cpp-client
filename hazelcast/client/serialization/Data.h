@@ -9,12 +9,12 @@
 #ifndef HAZELCAST_DATA
 #define HAZELCAST_DATA
 
+#include "ClassDefinition.h"
+#include "SerializationContext.h"
+#include "../protocol/ProtocolConstants.h"
 #include <vector>
 #include <iosfwd>
 #include <boost/shared_ptr.hpp>
-#include "ProtocolConstants.h"
-#include "ClassDefinition.h"
-#include "SerializationContext.h"
 
 namespace hazelcast {
     namespace client {

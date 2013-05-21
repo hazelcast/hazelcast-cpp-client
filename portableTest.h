@@ -122,7 +122,7 @@ void testRawDataInvalidWrite() {
         Data data = serializationService.toData(p);
         TestInvalidWritePortable o = serializationService.toObject<TestInvalidWritePortable>(data);
 
-    }  catch (HazelcastException exception) {
+    }  catch (HazelcastException& exception) {
         std::cout << "Expected exception " << exception.what() << std::endl;
     }
 }

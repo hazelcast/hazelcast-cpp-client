@@ -8,7 +8,7 @@
 
 #include "ClassDefinitionBuilder.h"
 #include "../HazelcastException.h"
-#include "Util.h"
+#include "../util/Util.h"
 #include "Data.h"
 
 namespace hazelcast {

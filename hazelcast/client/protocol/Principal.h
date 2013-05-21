@@ -4,9 +4,9 @@
 #ifndef HAZELCAST_PRINCIPAL
 #define HAZELCAST_PRINCIPAL
 
-#include <string>
-#include "Portable.h"
 #include "ProtocolConstants.h"
+#include "../serialization/Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {

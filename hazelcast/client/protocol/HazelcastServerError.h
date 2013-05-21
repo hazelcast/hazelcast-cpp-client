@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_SERVER_ERROR
 #define HAZELCAST_SERVER_ERROR
 
-#include "Portable.h"
 #include "ProtocolConstants.h"
+#include "../serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,9 +18,9 @@ namespace hazelcast {
             public:
                 HazelcastServerError();
 
-                virtual ~HazelcastServerError() throw();;
+                virtual ~HazelcastServerError();
 
-                virtual char const *what() const throw();;
+                virtual char const *what() const;
 
                 std::string message;
 

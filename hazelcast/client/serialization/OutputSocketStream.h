@@ -12,7 +12,7 @@
 
 #include <string>
 #include <vector>
-#include "Socket.h"
+#include "../protocol/Socket.h"
 
 namespace hazelcast {
     namespace client {

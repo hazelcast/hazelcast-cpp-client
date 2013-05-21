@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_INPUT_SOCKET_STREAM
 #define HAZELCAST_INPUT_SOCKET_STREAM
 
+#include "../protocol/Socket.h"
 #include <vector>
-#include "Socket.h"
 
 namespace hazelcast {
     namespace client {

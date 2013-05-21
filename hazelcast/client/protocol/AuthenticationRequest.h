@@ -8,12 +8,11 @@
 #ifndef HAZELCAST_AUTHENTICATION_REQUEST
 #define HAZELCAST_AUTHENTICATION_REQUEST
 
-
-#include "Portable.h"
 #include "Principal.h"
 #include "Credentials.h"
-#include "NullPortable.h"
 #include "ProtocolConstants.h"
+#include "../serialization/NullPortable.h"
+#include "../serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {

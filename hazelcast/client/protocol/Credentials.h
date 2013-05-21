@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_CREDENTIALS
 #define HAZELCAST_CREDENTIALS
 
-#include "Portable.h"
 #include "ProtocolConstants.h"
+#include "../serialization/Portable.h"
 #include <string>
 #include <vector>
 

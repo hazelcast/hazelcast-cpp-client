@@ -1,6 +1,6 @@
 #include "Socket.h"
-#include "HazelcastException.h"
-#include "errno.h"
+#include "../HazelcastException.h"
+#include <errno.h>
 
 #include <vector>
 #include <iostream>

@@ -4,8 +4,7 @@
 
 
 #include "InputSocketStream.h"
-#include "Socket.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 
 namespace hazelcast {
     namespace client {
