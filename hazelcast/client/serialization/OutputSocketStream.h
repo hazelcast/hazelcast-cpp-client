@@ -12,7 +12,7 @@
 
 #include <string>
 #include <vector>
-#include "../protocol/Socket.h"
+#include "../connection/Socket.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,7 +22,7 @@ namespace hazelcast {
             class OutputSocketStream {
             public:
 
-                OutputSocketStream(hazelcast::client::protocol::Socket& socket);
+                OutputSocketStream(hazelcast::client::connection::Socket& socket);
 
                 virtual void write(const std::vector<byte>& bytes);
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                hazelcast::client::protocol::Socket& socket;
+                hazelcast::client::connection::Socket& socket;
 
                 void writeShortUTF(std::string);
             };

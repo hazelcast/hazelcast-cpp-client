@@ -6,7 +6,7 @@ namespace hazelcast {
         namespace serialization {
 
 
-            OutputSocketStream::OutputSocketStream(hazelcast::client::protocol::Socket & socket):socket(socket) {
+            OutputSocketStream::OutputSocketStream(hazelcast::client::connection::Socket & socket):socket(socket) {
             }
 
             void OutputSocketStream::write(const std::vector<byte>& bytes) {

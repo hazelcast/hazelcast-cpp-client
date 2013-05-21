@@ -13,6 +13,12 @@ namespace hazelcast {
             , reAuth(true) {
 
             };
+
+            void AuthenticationRequest::setReAuth(bool reAuth) {
+                this->reAuth = reAuth;
+            }
+
+
         }
     }
 }

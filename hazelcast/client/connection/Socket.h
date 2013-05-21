@@ -11,7 +11,7 @@ namespace hazelcast {
     typedef unsigned char byte;
 
     namespace client {
-        namespace protocol {
+        namespace connection {
 
             class Socket {
             public:
@@ -27,6 +27,8 @@ namespace hazelcast {
                 void receive(void *buffer, int len);
 
                 int getSocketId() const;
+
+                void close();
 
             private:
 

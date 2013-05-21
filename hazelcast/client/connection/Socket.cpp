@@ -7,7 +7,7 @@
 
 namespace hazelcast {
     namespace client {
-        namespace protocol {
+        namespace connection {
 
             Socket::Socket(Address& address) : address(address) {
                 getInfo();
@@ -19,8 +19,7 @@ namespace hazelcast {
             };
 
             Socket::~Socket() {
-                ::freeaddrinfo(server_info);
-                ::close(socketId);
+                close();
             };
 
             void Socket::connect() {
@@ -42,6 +41,10 @@ namespace hazelcast {
                 }
             };
 
+            void Socket::close() {
+                ::freeaddrinfo(server_info);
+                ::close(socketId);
+            }
 
             int Socket::getSocketId() const {
                 return socketId;

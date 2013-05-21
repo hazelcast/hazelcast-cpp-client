@@ -1,4 +1,4 @@
-//#include "ClientService.h"
+//
 //#include "HazelcastClient.h"
 //
 //using namespace hazelcast::client;

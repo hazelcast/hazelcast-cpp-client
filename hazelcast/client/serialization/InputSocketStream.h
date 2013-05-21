@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_INPUT_SOCKET_STREAM
 #define HAZELCAST_INPUT_SOCKET_STREAM
 
-#include "../protocol/Socket.h"
+#include "../connection/Socket.h"
 #include <vector>
 
 namespace hazelcast {
@@ -24,7 +24,7 @@ namespace hazelcast {
             class InputSocketStream {
             public:
 
-                InputSocketStream(hazelcast::client::protocol::Socket& socket);
+                InputSocketStream(hazelcast::client::connection::Socket& socket);
 
                 void readFully(std::vector<byte>&);
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                 std::string readUTF();
 
             private:
-                hazelcast::client::protocol::Socket& socket;
+                hazelcast::client::connection::Socket& socket;
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 

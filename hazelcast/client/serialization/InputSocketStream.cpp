@@ -10,7 +10,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            InputSocketStream::InputSocketStream(hazelcast::client::protocol::Socket& socket):socket(socket) {
+            InputSocketStream::InputSocketStream(hazelcast::client::connection::Socket& socket):socket(socket) {
             };
 
             InputSocketStream& InputSocketStream::operator = (const InputSocketStream&) {

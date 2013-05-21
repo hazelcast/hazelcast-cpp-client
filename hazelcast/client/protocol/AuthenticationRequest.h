@@ -18,12 +18,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             class AuthenticationRequest : public hazelcast::client::serialization::Portable {
+                template<typename HzWriter>
+                friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::client::protocol::AuthenticationRequest& arr);
+
+                template<typename HzReader>
+                friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::protocol::AuthenticationRequest& arr);
+
             public:
                 AuthenticationRequest(Credentials credential);
 
+                void setReAuth(bool);
+
+            private:
                 Credentials credentials;
                 Principal principal;
                 bool reAuth;
+                bool isPrincipalSet;
             };
 
         }
@@ -45,8 +55,12 @@ namespace hazelcast {
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::AuthenticationRequest& arr) {
                 writer["credentials"] << arr.credentials;
-                NullPortable nullPortable(-3, 3);
-                writer["principal"] << nullPortable;
+                if (!arr.isPrincipalSet) {
+                    NullPortable nullPortable(-3, 3);
+                    writer["principal"] << nullPortable;
+                } else {
+                    writer["principal"] << arr.principal;
+                }
                 writer["reAuth"] << arr.reAuth;
             };
 

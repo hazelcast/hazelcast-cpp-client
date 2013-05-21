@@ -12,17 +12,19 @@
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/protocol/HazelcastServerError.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "Address.h"
+#include "hazelcast/client/connection/Socket.h"
 #include <fstream>
 
 void testBinaryClient() {
     hazelcast::client::Address address(SERVER_ADDRESS, SERVER_PORT);
-    hazelcast::client::protocol::Socket socket(address);
+    hazelcast::client::connection::Socket socket(address);
     SerializationService service(0);
     ClassDefinitionBuilder cd(-3, 3);
     boost::shared_ptr<ClassDefinition> ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
     service.getSerializationContext()->registerClassDefinition(ptr);
 
-    hazelcast::client::protocol::Credentials credentials("sancar", "", "dev-pass");
+    hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");
     hazelcast::client::protocol::AuthenticationRequest ar(credentials);
     Data data = service.toData(ar);
     socket.connect();

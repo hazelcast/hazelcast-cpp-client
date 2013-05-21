@@ -1,33 +1,34 @@
-//#include "ClientConfig.h"
-//
-//namespace hazelcast {
-//    namespace client {
-//
-//        ClientConfig::ClientConfig(const Address& address):address(address) {
-//        };
-//
-//        ClientConfig::ClientConfig(const ClientConfig& rhs)
-//        :address(address)
-//        , groupConfig(groupConfig) {
-//        };
-//
-//        ClientConfig::~ClientConfig() {
-//
-//        };
-//
-//        ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
-//            groupConfig = rhs.groupConfig;
-//            address = rhs.address;
-//            return (*this);
-//        };
-//
-//        GroupConfig& ClientConfig::getGroupConfig() {
-//            return groupConfig;
-//        };
-//
-//        Address ClientConfig::getAddress() const {
-//            return address;
-//        };
-//
-//    }
-//}
+#include "ClientConfig.h"
+
+namespace hazelcast {
+    namespace client {
+
+        ClientConfig::ClientConfig() {
+        };
+
+        ClientConfig::ClientConfig(const ClientConfig& rhs) {
+        };
+
+        ClientConfig::~ClientConfig() {
+            delete credentials;
+        };
+
+        ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
+            groupConfig = rhs.groupConfig;
+            return (*this);
+        };
+
+        GroupConfig& ClientConfig::getGroupConfig() {
+            return groupConfig;
+        };
+
+        hazelcast::client::protocol::Credentials & ClientConfig::getCredentials() {
+            if (credentials == NULL) {
+                credentials = new hazelcast::client::protocol::Credentials(groupConfig.getName(), groupConfig.getPassword());
+            }
+            return *credentials;
+        }
+
+
+    }
+}

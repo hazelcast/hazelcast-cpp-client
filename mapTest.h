@@ -1,3 +1,7 @@
+#include <assert.h>
+#include "testUtil.h"
+#include "Address.h"
+
 //#ifndef MAPTEST
 //#define MAPTEST
 //
@@ -34,7 +38,6 @@
 //};
 //
 //void testMapOperations() {
-//    TestPortableFactory tpf1;
 //    ClientConfig clientConfig(Address(SERVER_ADDRESS, SERVER_PORT));
 //    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
 //    clientConfig.addPortableFactory(999, &tpf1);
@@ -80,9 +83,9 @@
 //
 //        int myints[] = {0, 2, 4, 6};
 //        std::set<int> keySet(myints, myints + sizeof (myints) / sizeof (int));
-//        std::map<int, TestMainPortable> stdMap = imap.getAll(keySet);
+//        std::map<int, TestMainPortable> internalMap = imap.getAll(keySet);
 //        for (int i = 0; i < 8; i += 2) {
-//            TestMainPortable x = stdMap[i];
+//            TestMainPortable x = internalMap[i];
 //            assert(x.i == i * 10);
 //            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 100);
 //        }
@@ -132,7 +135,7 @@
 //        std::cout << e.what() << std::endl;
 //    }
 //};
-//
+
 //void testMapLocksInSequential() {
 //    ClientConfig clientConfig(Address(SERVER_ADDRESS, SERVER_PORT));
 //    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");

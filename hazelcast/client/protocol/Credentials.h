@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace protocol {
             class Credentials : public hazelcast::client::serialization::Portable {
             public:
-                Credentials(std::string principal, std::string endpoint, std::string password);
+                Credentials(std::string principal, std::string password);
 
                 std::string principal;
                 std::string endpoint;

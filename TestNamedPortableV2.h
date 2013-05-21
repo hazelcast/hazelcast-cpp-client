@@ -2,7 +2,6 @@
 #define __Server__TestNamedPortableV2__
 
 
-#include <iostream>
 #include "hazelcast/client/serialization/Portable.h"
 #include "TestNamedPortable.h"
 
