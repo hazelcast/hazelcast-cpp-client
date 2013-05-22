@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
         testSerializationViaFile();
         testIdentifiedDataSerializable();
 
-        testBinaryClient();
+//        testBinaryClient();
 //        testMapOperations();
 //        testMapLocksInSequential();
 //        testMapLocksInParallel();

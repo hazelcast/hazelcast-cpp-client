@@ -3,7 +3,7 @@
 #include "IAtomicLong.h"
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
-#include "ConnectionManager.h"
+#include "connection/ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {

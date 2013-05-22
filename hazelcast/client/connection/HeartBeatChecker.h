@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_HEARTBEAT_CHECKER
 #define HAZELCAST_HEARTBEAT_CHECKER
 
-#include "Data.h"
+#include "../serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

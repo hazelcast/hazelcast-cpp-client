@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_QUEUE_BASED_OBJECT_POOL
 #define HAZELCAST_QUEUE_BASED_OBJECT_POOL
 
-#include "ConcurrentQueue.h"
-#include "HazelcastException.h"
+#include "../util/ConcurrentQueue.h"
+#include "../HazelcastException.h"
 #include "Connection.h"
 
 namespace hazelcast {

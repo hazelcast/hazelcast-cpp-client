@@ -12,7 +12,7 @@
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/protocol/HazelcastServerError.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "Address.h"
+#include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/Socket.h"
 #include <fstream>
 

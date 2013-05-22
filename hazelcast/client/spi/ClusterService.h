@@ -11,8 +11,8 @@
 #include "../protocol/Credentials.h"
 #include "../connection/Connection.h"
 #include "../connection/ConnectionManager.h"
-#include "BufferedDataInput.h"
-#include "HazelcastServerError.h"
+#include "../serialization/BufferedDataInput.h"
+#include "../protocol/HazelcastServerError.h"
 
 namespace hazelcast {
     namespace client {

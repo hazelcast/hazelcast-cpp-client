@@ -3,7 +3,7 @@
 
 #include "Address.h"
 #include "GroupConfig.h"
-#include "Credentials.h"
+#include "protocol/Credentials.h"
 #include <list>
 
 namespace hazelcast {

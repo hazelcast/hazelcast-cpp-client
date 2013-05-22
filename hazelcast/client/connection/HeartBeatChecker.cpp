@@ -4,9 +4,9 @@
 
 
 #include "HeartBeatChecker.h"
-#include "ClientPingRequest.h"
 #include "Connection.h"
-#include "SerializationService.h"
+#include "../protocol/ClientPingRequest.h"
+#include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

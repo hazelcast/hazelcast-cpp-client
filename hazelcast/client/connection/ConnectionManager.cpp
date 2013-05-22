@@ -4,11 +4,11 @@
 
 
 #include "ConnectionManager.h"
-#include "ClientPingRequest.h"
-#include "ClientConfig.h"
-#include "AuthenticationRequest.h"
-#include "HazelcastServerError.h"
-#include "SerializationService.h"
+#include "../ClientConfig.h"
+#include "../protocol/ClientPingRequest.h"
+#include "../protocol/AuthenticationRequest.h"
+#include "../protocol/HazelcastServerError.h"
+#include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

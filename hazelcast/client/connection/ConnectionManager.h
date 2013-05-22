@@ -1,10 +1,6 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
-
-
-
-
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
@@ -14,8 +10,8 @@
 #include "Connection.h"
 #include "HeartBeatChecker.h"
 #include "ConnectionPool.h"
-#include "Credentials.h"
-#include "Principal.h"
+#include "../protocol/Credentials.h"
+#include "../protocol/Principal.h"
 
 namespace hazelcast {
     namespace client {
