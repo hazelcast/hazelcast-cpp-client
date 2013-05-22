@@ -32,17 +32,17 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int);
 
-                boost::shared_ptr<ClassDefinition> lookup(int, int);
+                ClassDefinition* lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                boost::shared_ptr<ClassDefinition> lookup(int, int, int);
+                ClassDefinition* lookup(int, int, int);
 
-                boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::vector<byte>&);
+                ClassDefinition* createClassDefinition(int, std::vector<byte>&);
 
-                void registerNestedDefinitions(boost::shared_ptr<ClassDefinition> cd);
+                void registerNestedDefinitions(ClassDefinition* cd);
 
-                void registerClassDefinition(boost::shared_ptr<ClassDefinition> cd);
+                void registerClassDefinition(ClassDefinition* cd);
 
                 int getVersion();
 

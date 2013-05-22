@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr <ClassDefinition> cd)
+            PortableReader::PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd)
             : input(input)
             , context(serializationContext)
             , cd(cd)

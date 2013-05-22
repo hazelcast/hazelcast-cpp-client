@@ -16,7 +16,7 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
-#include <boost/shared_ptr.hpp>
+
 #include <vector>
 #include <map>
 #include <memory>
@@ -37,8 +37,8 @@ namespace hazelcast {
                 ~PortableSerializer();
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getClassDefinition(T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* getClassDefinition(T& p) {
+                    ClassDefinition* cd;
 
                     int factoryId = getFactoryId(p);
                     int classId = getClassId(p);
@@ -56,7 +56,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &dataOutput, T& p) {
-                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+                    ClassDefinition* cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
                     writePortable(portableWriter, p);
                 };
@@ -76,7 +76,7 @@ namespace hazelcast {
 //                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::client::util::to_string(factoryId));
 //                    }
 
-                    boost::shared_ptr<ClassDefinition> cd;
+                    ClassDefinition* cd;
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);

@@ -47,7 +47,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName()] = fd;
             };
 
-            void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
+            void ClassDefinition::add(ClassDefinition* cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -63,7 +63,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
+            vector<ClassDefinition * >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 

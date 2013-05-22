@@ -40,7 +40,7 @@ namespace hazelcast {
 
             public:
 
-                MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
+                MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition* cd);
 
                 MorphingPortableReader& operator [](std::string fieldName);
 
@@ -91,7 +91,7 @@ namespace hazelcast {
 //                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::client::util::to_string(factoryId));
 //                    }
 
-                    boost::shared_ptr<ClassDefinition> cd;
+                    ClassDefinition* cd;
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);
@@ -143,7 +143,7 @@ namespace hazelcast {
                 bool raw;
                 bool readingPortable;
                 SerializationContext *context;
-                boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* cd;
                 BufferedDataInput& input;
                 std::string lastFieldName;
             };

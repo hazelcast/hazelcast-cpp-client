@@ -37,7 +37,7 @@ namespace hazelcast {
 
             public:
 
-                PortableWriter(SerializationContext *serializationContext, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output);
+                PortableWriter(SerializationContext *serializationContext, ClassDefinition* cd, BufferedDataOutput *output);
 
                 PortableWriter& operator [](std::string fieldName);
 
@@ -87,8 +87,8 @@ namespace hazelcast {
                 void setPosition(string fieldName);
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* getClassDefinition(const T& p) {
+                    ClassDefinition* cd;
 
                     int factoryId = getFactoryId(p);
                     int classId = getClassId(p);
@@ -106,7 +106,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &dataOutput, const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+                    ClassDefinition* cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
                     hazelcast::client::serialization::writePortable(portableWriter, p);
                 };
@@ -119,7 +119,7 @@ namespace hazelcast {
                 BufferedDataOutput *output;
                 int offset;
                 std::set<std::string> writtenFields;
-                boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* cd;
 
             };
 

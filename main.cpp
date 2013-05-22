@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
         std::cout << "Test are completed successfully" << std::endl;
 //        std::cin >> argc;
 
-    } catch (hazelcast::client::HazelcastException exception) {
+    } catch (hazelcast::client::HazelcastException& exception) {
         std::cout << exception.what() << std::endl;
     } catch(void *s){
         std::cout << s << std::endl;

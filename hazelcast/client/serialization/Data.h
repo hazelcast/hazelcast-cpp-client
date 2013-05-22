@@ -14,7 +14,7 @@
 #include "../protocol/ProtocolConstants.h"
 #include <vector>
 #include <iosfwd>
-#include <boost/shared_ptr.hpp>
+
 
 namespace hazelcast {
     namespace client {
@@ -109,7 +109,7 @@ namespace hazelcast {
                     partitionHash = dataInput.readInt();;
                 }
 
-                boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* cd;
                 int type;
                 std::vector<byte> buffer;
                 static int const NO_CLASS_ID = 0;

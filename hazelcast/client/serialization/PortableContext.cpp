@@ -20,6 +20,14 @@ namespace hazelcast {
 
             };
 
+            PortableContext::~PortableContext() {
+                std::map<long, ClassDefinition * >::iterator it;
+                for (it = versionedDefinitions.begin(); versionedDefinitions.end() != it; it++) {
+//                    delete (*it).second;//TODO uncommented because of portableTests are broken!
+                                          //TODO same data cannot register to two serialization
+                }
+            };
+
             PortableContext::PortableContext(SerializationContext *serializationContext)
             : serializationContext(serializationContext) {
 
@@ -34,19 +42,19 @@ namespace hazelcast {
                 return (versionedDefinitions.count(key) > 0);
             };
 
-            boost::shared_ptr<ClassDefinition> PortableContext::lookup(int classId, int version) {
+            ClassDefinition *PortableContext::lookup(int classId, int version) {
                 long key = combineToLong(classId, version);
                 return versionedDefinitions[key];
 
             };
 
-            boost::shared_ptr<ClassDefinition> PortableContext::createClassDefinition(std::vector<byte>& binary) {
+            ClassDefinition *PortableContext::createClassDefinition(std::vector<byte>& binary) {
 
                 std::vector<byte> decompressed = decompress(binary);
 
                 BufferedDataInput dataInput = BufferedDataInput(decompressed);
-                boost::shared_ptr<ClassDefinition> cd(new ClassDefinition);
-                readPortable(dataInput, cd);
+                ClassDefinition *cd = new ClassDefinition;
+                readPortable(dataInput, *cd);
                 cd->setBinary(binary);
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
@@ -60,14 +68,14 @@ namespace hazelcast {
                 return versionedDefinitions[key];
             };
 
-            void PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+            void PortableContext::registerClassDefinition(ClassDefinition *cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
                         BufferedDataOutput output;
-                        writePortable(output, cd);
+                        writePortable(output, *cd);
                         std::vector<byte> binary = output.toByteArray();
                         compress(binary);
                         cd->setBinary(binary);

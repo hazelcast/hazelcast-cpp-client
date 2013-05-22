@@ -21,7 +21,7 @@ void testBinaryClient() {
     hazelcast::client::connection::Socket socket(address);
     SerializationService service(0);
     ClassDefinitionBuilder cd(-3, 3);
-    boost::shared_ptr<ClassDefinition> ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+    ClassDefinition* ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
     service.getSerializationContext()->registerClassDefinition(ptr);
 
     hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");

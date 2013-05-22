@@ -14,8 +14,10 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId) : done(false), index(0) {
-                cd.reset(new ClassDefinition(factoryId, classId, -1));
+            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId)
+            : done(false)
+            , index(0)
+            , cd(new ClassDefinition(factoryId, classId, -1)) {
             }
 
             ClassDefinitionBuilder & ClassDefinitionBuilder::addIntField(string fieldName) {
@@ -150,7 +152,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            boost::shared_ptr<ClassDefinition>  ClassDefinitionBuilder::build() {
+            ClassDefinition *ClassDefinitionBuilder::build() {
                 done = true;
                 return cd;
             }

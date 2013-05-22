@@ -61,12 +61,12 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addPortableArrayField(std::string, int, int);
 
-                boost::shared_ptr<ClassDefinition> build();
+                ClassDefinition* build();
 
             private:
                 void check();
 
-                boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* cd;
                 int index;
                 bool done;
             };

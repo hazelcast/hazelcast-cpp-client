@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableWriter::PortableWriter(SerializationContext *serializationContext, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output)
+            PortableWriter::PortableWriter(SerializationContext *serializationContext, ClassDefinition* cd, BufferedDataOutput *output)
             : context(serializationContext)
             , output(output)
             , index (0)

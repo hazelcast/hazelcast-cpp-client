@@ -17,7 +17,7 @@
 #include "Portable.h"
 #include "SerializationContext.h"
 #include <boost/type_traits/is_base_of.hpp>
-#include <boost/shared_ptr.hpp>
+
 #include <string>
 #include <iosfwd>
 
@@ -90,7 +90,7 @@ namespace hazelcast {
                     }
                 };
 
-                boost::shared_ptr<ClassDefinition> getClassDefinition();
+                ClassDefinition* getClassDefinition();
 
             private:
                 void addField(FieldType const&);
@@ -98,13 +98,13 @@ namespace hazelcast {
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
                     cd->add(fd);
-                    boost::shared_ptr<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
+                    ClassDefinition* nestedCd = getOrBuildClassDefinition(p);
                     cd->add(nestedCd);
                 };
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* getOrBuildClassDefinition(const T& p) {
+                    ClassDefinition* cd;
 
                     int factoryId = getFactoryId(p);
                     int classId = getClassId(p);
@@ -126,7 +126,7 @@ namespace hazelcast {
                 bool raw;
                 bool writingPortable;
                 std::string lastFieldName;
-                boost::shared_ptr<ClassDefinition> cd;
+                ClassDefinition* cd;
                 SerializationContext *context;
 
             };

@@ -6,7 +6,6 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include "ClassDefinitionWriter.h"
 #include "PortableSerializer.h"
 
@@ -25,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            boost::shared_ptr<ClassDefinition>  ClassDefinitionWriter::getClassDefinition() {
+            ClassDefinition*  ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 
