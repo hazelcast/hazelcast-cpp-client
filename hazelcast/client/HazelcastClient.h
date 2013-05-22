@@ -14,6 +14,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace connection {
+            class ConnectionManager;
+        }
 
         class IdGenerator;
 
@@ -25,6 +28,7 @@ namespace hazelcast {
         //TODO  Lock , Topic
 
         class HazelcastClient {
+            friend class ClusterService;
 
         public:
             HazelcastClient(ClientConfig&);
@@ -64,19 +68,21 @@ namespace hazelcast {
 
             ~HazelcastClient();
 
-            ClientConfig& getClientConfig();
-
-        private:
-
             serialization::SerializationService& getSerializationService();
 
-            void setupInitialConnection();
+            ClientConfig& getClientConfig();
+
+            connection::ConnectionManager& getConnectionManager();
+
+        private:
+            class HazelcastClientImpl;
+
+            HazelcastClientImpl *impl;
+
 
             HazelcastClient(const HazelcastClient& rhs);
 
 
-            ClientConfig clientConfig;
-            serialization::SerializationService serializationService;
         };
 
     }

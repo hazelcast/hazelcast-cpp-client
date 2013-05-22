@@ -4,7 +4,6 @@
 
 
 #include "ClusterService.h"
-#include "HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -13,6 +12,14 @@ namespace hazelcast {
             : client(client)
             , credentials(client.getClientConfig().getCredentials()) {
 
+            }
+
+            hazelcast::client::connection::ConnectionManager& ClusterService::getConnectionManager() {
+                return client.getConnectionManager();
+            }
+
+            hazelcast::client::serialization::SerializationService & ClusterService::getSerializationService() {
+                return client.getSerializationService();
             }
 
 

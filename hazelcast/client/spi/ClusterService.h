@@ -6,7 +6,13 @@
 #ifndef HAZELCAST_CLUSTER_SERVICE
 #define HAZELCAST_CLUSTER_SERVICE
 
-#include "Credentials.h"
+#include "../Address.h"
+#include "../HazelcastClient.h"
+#include "../protocol/Credentials.h"
+#include "../connection/Connection.h"
+#include "../connection/ConnectionManager.h"
+#include "BufferedDataInput.h"
+#include "HazelcastServerError.h"
 
 namespace hazelcast {
     namespace client {
@@ -20,6 +26,38 @@ namespace hazelcast {
             class ClusterService {
             public:
                 ClusterService(hazelcast::client::HazelcastClient& client);
+
+                template<typename send_type, typename recv_type>
+                void sendAndReceive(send_type& object, recv_type& response) {
+                    hazelcast::client::connection::Connection& conn = getConnectionManager().getRandomConnection();
+                    return sendAndReceive(conn, object, response);
+                }
+
+                template<typename send_type, typename recv_type>
+                void sendAndReceive(Address address, send_type& object, recv_type& response) {
+                    hazelcast::client::connection::Connection& conn = getConnectionManager().getConnection(address);
+                    return sendAndReceive(conn, object, response);
+                }
+
+                template<typename send_type, typename recv_type>
+                void sendAndReceive(hazelcast::client::connection::Connection& connection, send_type& object, recv_type& response) {
+                    using namespace hazelcast::client::serialization;
+                    SerializationService& serializationService = getSerializationService();
+                    Data request = serializationService.toData(object);
+                    connection.write(request);
+                    Data responseData;
+                    connection.read(responseData);
+                    if (responseData.isServerError()) {
+                        throw  serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(responseData);
+                    } else {
+                        response = serializationService.toObject<recv_type>(responseData);
+
+                    }
+                };
+
+                hazelcast::client::connection::ConnectionManager& getConnectionManager();
+
+                hazelcast::client::serialization::SerializationService& getSerializationService();
 
             private:
                 HazelcastClient& client;

@@ -24,7 +24,26 @@ namespace hazelcast {
             Connection & ConnectionManager::newConnection(Address const & address) {
                 Connection *connection = new Connection(address, serializationService);
                 authenticate(*connection, clientConfig.getCredentials(), false);
+                throw "Not implemented yet";
 //                return ;
+            };
+
+            Connection& ConnectionManager::getRandomConnection() {
+                throw "Not implemented yet";
+//                checkLive();
+//                Address address("", "");// = router.next();
+//                    if (address == null) {
+//                        throw new IOException("LoadBalancer '" + router + "' could not find a address to route to");
+//                    }
+//                return getConnection(address);
+            }
+
+            Connection& ConnectionManager::getConnection(Address address) {
+                throw "Not implemented yet";
+//                checkLive();
+//                Connection *connection = NULL;
+//                poolMap.get(address).take(connection);
+//                return *connection;
             };
 
 

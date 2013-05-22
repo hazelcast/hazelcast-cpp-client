@@ -45,7 +45,7 @@ namespace hazelcast {
 //                return command.get();
             };
 
-            V get(K key) {
+            V& get(K key) {
 //                serialization::Data keyInBytes = clientService.getSerializationService().toData(key);
 //                protocol::MapCommands::GetCommand command(instanceName, keyInBytes);
 //                clientService.getCommandHandler().sendCommand(&command);
