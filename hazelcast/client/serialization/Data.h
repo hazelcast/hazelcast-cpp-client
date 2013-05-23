@@ -12,6 +12,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
+#include "DataSerializable.h"
 #include <vector>
 #include <iosfwd>
 
@@ -22,7 +23,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data {
+            class Data : public DataSerializable{
                 template<typename DataOutput>
                 friend void writePortable(DataOutput& dataOutput, const Data& data);
 
@@ -82,7 +83,7 @@ namespace hazelcast {
                 template<typename  Input>
                 void readData(Input & dataInput) {
                     type = dataInput.readInt();
-                    int classId = dataInput.readInt();;
+                    int classId = dataInput.readInt();
 
                     if (classId != NO_CLASS_ID) {
                         int factoryId = dataInput.readInt();
@@ -101,15 +102,15 @@ namespace hazelcast {
                             cd = context->createClassDefinition(factoryId, classDefBytes);
                         }
                     }
-                    int size = dataInput.readInt();;
+                    int size = dataInput.readInt();
                     if (size > 0) {
                         this->buffer.resize(size, 0);
                         dataInput.readFully(buffer);
                     }
-                    partitionHash = dataInput.readInt();;
+                    partitionHash = dataInput.readInt();
                 }
 
-                ClassDefinition* cd;
+                ClassDefinition *cd;
                 int type;
                 std::vector<byte> buffer;
                 static int const NO_CLASS_ID = 0;
@@ -123,6 +124,57 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
+            };
+
+            template<typename HzWriter>
+            inline void writePortable(HzWriter& dataOutput, const Data& data) {
+                dataOutput.writeInt(data.type);
+                if (data.cd != NULL) {
+                    dataOutput.writeInt(data.cd->getClassId());
+                    dataOutput.writeInt(data.cd->getFactoryId());
+                    dataOutput.writeInt(data.cd->getVersion());
+                    std::vector<byte> classDefBytes = data.cd->getBinary();
+                    dataOutput.writeInt(classDefBytes.size());
+                    dataOutput.write(classDefBytes);
+                } else {
+                    dataOutput.writeInt(data.NO_CLASS_ID);
+                }
+                int len = data.bufferSize();
+                dataOutput.writeInt(len);
+                if (len > 0) {
+                    dataOutput.write(data.buffer);
+                }
+                dataOutput.writeInt(data.partitionHash);
+            };
+
+            template<typename HzReader>
+            inline void readPortable(HzReader& dataInput, Data& data) {
+                data.type = dataInput.readInt();
+                int classId = dataInput.readInt();
+
+                if (classId != data.NO_CLASS_ID) {
+                    int factoryId = dataInput.readInt();
+                    data.isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
+                            && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                    int version = dataInput.readInt();
+
+                    int classDefSize = dataInput.readInt();
+
+                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
+                        data.cd = data.context->lookup(factoryId, classId, version);
+                        dataInput.skipBytes(classDefSize);
+                    } else {
+                        std::vector<byte> classDefBytes(classDefSize);
+                        dataInput.readFully(classDefBytes);
+                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = dataInput.readInt();
+                if (size > 0) {
+                    data.buffer.resize(size, 0);
+                    dataInput.readFully(data.buffer);
+                }
+                data.partitionHash = dataInput.readInt();
             };
 
         }

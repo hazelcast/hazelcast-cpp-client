@@ -23,40 +23,49 @@ namespace hazelcast {
 
                 };
 
-                /*
-                    return true if put is made
-                    returns false if there is already a value , value updated
-                 */
-                bool putIfAbsent(const K& key, V& value) {
+                /**
+                *
+                * @return the previous value associated with the specified key,
+                *         or <tt>null</tt> if there was no mapping for the key
+                * @throws NullPointerException if the specified key or value is null
+                */
+                V *putIfAbsent(const K& key, V& value) {
                     boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
-                    if (internalMap.count(key) > 0) {
-                        internalMap[key] = value;
-                        return true;
+                    if (internalMap.count(&key) > 0) {
+                        return internalMap[&key];
                     } else {
-                        value = internalMap[key];
-                        return false;
+                        internalMap[&key] = &value;
+                        return NULL;
                     }
                 };
 
-                void put(const K& key, V& value) {
+//                void put(const K& key, V& value) {
+//                    boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
+//                    value = internalMap[key];
+//                };
+
+                /**
+                 * Returns the value to which the specified key is mapped,
+                 * or {@code null} if this map contains no mapping for the key.
+                 *
+                 */
+                V *get(const K& key) {
                     boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
-                    value = internalMap[key];
+                    if (internalMap.count(&key) > 0)
+                        return internalMap[&key];
+                    else
+                        return NULL;
                 };
 
-                V& get(const K& key) {
-                    boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
-                    return internalMap[key];
-                };
-
-                V& operator [](const K& key) {
-                    boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
-                    return internalMap[key];
-                };
+//                V& operator [](const K& key) {
+//                    boost::lock_guard<boost::unique_lock<boost::mutex > > lock_guard(mapLock);
+//                    return internalMap[key];
+//                };
 
 
             private:
                 boost::unique_lock<boost::mutex> mapLock;
-                std::map<K, V> internalMap;
+                std::map<K const *, V *> internalMap;
             };
         }
     }

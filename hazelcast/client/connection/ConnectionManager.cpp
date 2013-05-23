@@ -21,31 +21,63 @@ namespace hazelcast {
 
             };
 
-            Connection & ConnectionManager::newConnection(Address const & address) {
+            Connection * ConnectionManager::newConnection(Address const & address) {
                 Connection *connection = new Connection(address, serializationService);
                 authenticate(*connection, clientConfig.getCredentials(), false);
-                throw "Not implemented yet";
-//                return ;
+                return connection;
             };
 
             Connection& ConnectionManager::getRandomConnection() {
-                throw "Not implemented yet";
-//                checkLive();
-//                Address address("", "");// = router.next();
+                checkLive();
+                Address& address = clientConfig.getAddresses().at(0);//TODO implement load balancer and stuff
 //                    if (address == null) {
 //                        throw new IOException("LoadBalancer '" + router + "' could not find a address to route to");
 //                    }
-//                return getConnection(address);
+                return getConnection(address);
             }
 
-            Connection& ConnectionManager::getConnection(Address address) {
-                throw "Not implemented yet";
-//                checkLive();
-//                Connection *connection = NULL;
-//                poolMap.get(address).take(connection);
-//                return *connection;
+            Connection& ConnectionManager::getConnection(const Address& address) {
+                checkLive();
+                ConnectionPool* pool = getConnectionPool(address);
+                Connection* connection = NULL;
+//                try {
+                connection = pool == NULL ? &getRandomConnection() : pool->take();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+                // Could be that this address is dead and that's why pool is not able to create and give a connection.
+                // We will call it again, and hopefully at some time LoadBalancer will give us the right target for the connection.
+                if (connection == NULL) {
+                    checkLive();
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException ignored) {
+//                    }
+                    return getRandomConnection();
+                }
+                if (!heartBeatChecker.checkHeartBeat(*connection)) {
+                    connection->close();
+                    return getRandomConnection();
+                }
+                return *connection;
             };
 
+            ConnectionPool* ConnectionManager::getConnectionPool(const Address& address) {
+                checkLive();
+                ConnectionPool *pool = poolMap.get(address);
+                if (pool == NULL) {
+//                if (client.getClientClusterService().getMember(address) == null){
+//                    return null;
+//                }
+                    pool = new ConnectionPool(address, serializationService);
+                    ConnectionPool *current = poolMap.putIfAbsent(address, *pool);
+                    if (current != NULL) {
+                        delete pool;
+                        return current;
+                    }
+                }
+                return pool;
+            }
 
             void ConnectionManager::authenticate(Connection& connection, const hazelcast::client::protocol::Credentials& credentials, bool reAuth) {
                 hazelcast::client::protocol::AuthenticationRequest auth(credentials);

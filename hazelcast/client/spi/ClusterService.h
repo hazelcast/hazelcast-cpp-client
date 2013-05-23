@@ -7,25 +7,24 @@
 #define HAZELCAST_CLUSTER_SERVICE
 
 #include "../Address.h"
-#include "../HazelcastClient.h"
-#include "../protocol/Credentials.h"
 #include "../connection/Connection.h"
+#include "../connection/ClusterListenerThread.h"
 #include "../connection/ConnectionManager.h"
-#include "../serialization/BufferedDataInput.h"
 #include "../protocol/HazelcastServerError.h"
+#include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
 
         class HazelcastClient;
 
-        class protocol::Credentials;
-
         namespace spi {
 
             class ClusterService {
             public:
                 ClusterService(hazelcast::client::HazelcastClient& client);
+
+                void start();
 
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(send_type& object, recv_type& response) {
@@ -34,7 +33,7 @@ namespace hazelcast {
                 }
 
                 template<typename send_type, typename recv_type>
-                void sendAndReceive(Address address, send_type& object, recv_type& response) {
+                void sendAndReceive(const Address& address, send_type& object, recv_type& response) {
                     hazelcast::client::connection::Connection& conn = getConnectionManager().getConnection(address);
                     return sendAndReceive(conn, object, response);
                 }
@@ -55,13 +54,18 @@ namespace hazelcast {
                     }
                 };
 
+
+            private:
+                hazelcast::client::connection::ClusterListenerThread clusterThread;
+                hazelcast::client::HazelcastClient& hazelcastClient;
+
+                hazelcast::client::connection::Connection *connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses);
+
                 hazelcast::client::connection::ConnectionManager& getConnectionManager();
 
                 hazelcast::client::serialization::SerializationService& getSerializationService();
 
-            private:
-                HazelcastClient& client;
-                hazelcast::client::protocol::Credentials& credentials;
+                hazelcast::client::ClientConfig & getClientConfig();
             };
 
         }

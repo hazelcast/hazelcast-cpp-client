@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include <vector>
 
 using namespace std;
 
@@ -40,6 +41,10 @@ namespace hazelcast {
                 PortableWriter(SerializationContext *serializationContext, ClassDefinition* cd, BufferedDataOutput *output);
 
                 PortableWriter& operator [](std::string fieldName);
+
+                void write(const std::vector<byte>& x) {
+                    throw hazelcast::client::HazelcastException("Unsupported");//TODO
+                }
 
                 void writeInt(int value);
 

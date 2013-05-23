@@ -19,15 +19,16 @@ namespace hazelcast {
                 destroy();
             };
 
-            bool ConnectionPool::take(Connection *t) {
+            Connection* ConnectionPool::take() {
                 if (!active) {
                     return false;
                 }
+                Connection* t;
                 bool b = queue.poll(t);
                 if (b == false) {
                     t = new Connection(address, serializationService);
                 }
-                return true;
+                return t;
             }
 
             void ConnectionPool::release(Connection *e) {

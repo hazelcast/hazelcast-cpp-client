@@ -4,7 +4,7 @@
 #include "Address.h"
 #include "GroupConfig.h"
 #include "protocol/Credentials.h"
-#include <list>
+#include <vector>
 
 namespace hazelcast {
     namespace client {
@@ -16,6 +16,12 @@ namespace hazelcast {
 
             ClientConfig(const ClientConfig&);
 
+            ClientConfig& addAddress(const Address& address);
+
+            ClientConfig& addAddresses(const std::vector<Address>& addresses);
+
+            std::vector<Address>& getAddresses();
+
             ClientConfig& operator = (const ClientConfig&);
 
             ~ClientConfig();
@@ -23,6 +29,10 @@ namespace hazelcast {
             GroupConfig& getGroupConfig();
 
             hazelcast::client::protocol::Credentials& getCredentials();
+
+            int getConnectionAttemptLimit() const;
+
+            int getAttemptPeriod() const;
 
         private:
 
@@ -38,7 +48,7 @@ namespace hazelcast {
              * List of the initial set of addresses.
              * Client will use this list to find a running Member, connect to it.
              */
-            std::list<std::string> addressList;
+            std::vector<Address> addressList;
 
             /**
              * Used to distribute the operations to multiple Endpoints.

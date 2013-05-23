@@ -30,11 +30,13 @@ namespace hazelcast {
             public:
                 ConnectionManager(hazelcast::client::serialization::SerializationService&, hazelcast::client::ClientConfig&);
 
-                Connection& newConnection(const Address& address);
+                Connection* newConnection(const Address& address);
 
                 Connection& getRandomConnection();
 
-                Connection& getConnection(Address address);
+                Connection& getConnection(const Address& address);
+
+                ConnectionPool* getConnectionPool(const Address& address);
 
             private:
                 hazelcast::client::util::ConcurrentMap<Address, ConnectionPool > poolMap;

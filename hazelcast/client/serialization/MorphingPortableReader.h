@@ -44,6 +44,8 @@ namespace hazelcast {
 
                 MorphingPortableReader& operator [](std::string fieldName);
 
+                int skipBytes(int i);
+
                 int readInt();
 
                 long readLong();

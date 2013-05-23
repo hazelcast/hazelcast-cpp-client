@@ -2,22 +2,23 @@
 // server.cpp
 #include "TestDataSerializable.h"
 #include "portableTest.h"
-
+#include "mapTest.h"
 using namespace hazelcast::client::serialization;
 
 
 int main(int argc, char **argv) {
     try{
-        testDifferentVersions();
-        testRawData();
-        testRawDataWithoutRegistering();
-        testRawDataInvalidWrite();
-        testRawDataInvalidRead();
-        testCompression();
-        testSerialization();
-        testSerializationViaFile();
-        testIdentifiedDataSerializable();
+//        testDifferentVersions();
+//        testRawData();
+//        testRawDataWithoutRegistering();
+//        testRawDataInvalidWrite();
+//        testRawDataInvalidRead();
+//        testCompression();
+//        testSerialization();
+//        testSerializationViaFile();
+//        testIdentifiedDataSerializable();
 
+        testPutGetRemove();
 //        testBinaryClient();
 //        testMapOperations();
 //        testMapLocksInSequential();

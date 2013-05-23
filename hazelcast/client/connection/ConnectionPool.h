@@ -20,7 +20,7 @@ namespace hazelcast {
 
                 ~ConnectionPool();
 
-                bool take(Connection *t);
+                Connection* take();
 
                 void release(Connection *t);
 

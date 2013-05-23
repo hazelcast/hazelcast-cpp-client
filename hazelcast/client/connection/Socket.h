@@ -4,7 +4,6 @@
 
 #include "../Address.h"
 #include <netdb.h>
-#include <string>
 
 namespace hazelcast {
 

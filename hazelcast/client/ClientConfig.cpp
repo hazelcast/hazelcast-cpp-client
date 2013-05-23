@@ -3,10 +3,32 @@
 namespace hazelcast {
     namespace client {
 
-        ClientConfig::ClientConfig() {
+        ClientConfig::ClientConfig()
+        : smart(true)
+        , redoOperation(true)
+        , poolSize(100)
+        , connectionTimeout(60000)
+        , connectionAttemptLimit(2)
+        , attemptPeriod(3000) {
         };
 
         ClientConfig::ClientConfig(const ClientConfig& rhs) {
+        };
+
+
+        ClientConfig & ClientConfig::addAddress(const Address  & address) {
+            addressList.push_back(address);
+            return (*this);
+        };
+
+        ClientConfig & ClientConfig::addAddresses(const std::vector<Address>  & addresses) {
+            addressList.insert(addressList.end(), addresses.begin(), addresses.end());
+            return (*this);
+        };
+
+
+        std::vector<Address>  & ClientConfig::getAddresses() {
+            return addressList;
         };
 
         ClientConfig::~ClientConfig() {
@@ -27,8 +49,15 @@ namespace hazelcast {
                 credentials = new hazelcast::client::protocol::Credentials(groupConfig.getName(), groupConfig.getPassword());
             }
             return *credentials;
-        }
+        };
 
+        int ClientConfig::getConnectionAttemptLimit() const {
+            return connectionAttemptLimit;
+        };
+
+        int ClientConfig::getAttemptPeriod() const {
+            return attemptPeriod;
+        };
 
     }
 }

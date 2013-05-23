@@ -13,6 +13,8 @@ namespace hazelcast {
 
             Address(const Address&);
 
+            Address& operator =(const Address&);
+
             std::string getPort() const;
 
             std::string getAddress() const;

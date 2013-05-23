@@ -33,6 +33,10 @@ namespace hazelcast {
 
                 ClassDefinitionWriter& operator [](std::string fieldName);
 
+                void write(const std::vector<byte>& x) {
+                    throw hazelcast::client::HazelcastException("Unsupported");//TODO
+                }
+
                 void writeInt(int value);
 
                 void writeLong(long value);
@@ -90,7 +94,7 @@ namespace hazelcast {
                     }
                 };
 
-                ClassDefinition* getClassDefinition();
+                ClassDefinition *getClassDefinition();
 
             private:
                 void addField(FieldType const&);
@@ -98,13 +102,13 @@ namespace hazelcast {
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
                     cd->add(fd);
-                    ClassDefinition* nestedCd = getOrBuildClassDefinition(p);
+                    ClassDefinition *nestedCd = getOrBuildClassDefinition(p);
                     cd->add(nestedCd);
                 };
 
                 template <typename T>
-                ClassDefinition* getOrBuildClassDefinition(const T& p) {
-                    ClassDefinition* cd;
+                ClassDefinition *getOrBuildClassDefinition(const T& p) {
+                    ClassDefinition *cd;
 
                     int factoryId = getFactoryId(p);
                     int classId = getClassId(p);
@@ -126,7 +130,7 @@ namespace hazelcast {
                 bool raw;
                 bool writingPortable;
                 std::string lastFieldName;
-                ClassDefinition* cd;
+                ClassDefinition *cd;
                 SerializationContext *context;
 
             };

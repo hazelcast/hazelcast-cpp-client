@@ -12,9 +12,16 @@ namespace hazelcast {
 
         };
 
+
+        Address & Address::operator = (Address const & address) {
+            url = address.url;
+            port = address.port;
+            return (*this);
+        };
+
         std::string Address::getPort() const {
             return port;
-        }
+        };
 
         std::string Address::getAddress() const {
             return url;

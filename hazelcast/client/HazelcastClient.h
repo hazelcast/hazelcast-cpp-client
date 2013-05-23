@@ -1,13 +1,12 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include "serialization/SerializationService.h"
-#include "ClientConfig.h"
 #include "IMap.h"
 #include "MultiMap.h"
 #include "IQueue.h"
 #include "ISet.h"
 #include "IList.h"
+#include "ClientContext.h"
 
 #include <memory>
 #include <map>
@@ -17,6 +16,19 @@ namespace hazelcast {
         namespace connection {
             class ConnectionManager;
         }
+
+        namespace serialization {
+            class SerializationService;
+        }
+        namespace spi {
+            class ClientContext;
+
+            class InvocationService;
+
+            class ClusterService;
+        }
+
+        class ClientConfig;
 
         class IdGenerator;
 
@@ -28,14 +40,18 @@ namespace hazelcast {
         //TODO  Lock , Topic
 
         class HazelcastClient {
-            friend class ClusterService;
+            friend class hazelcast::client::spi::ClusterService;
+
+            friend class hazelcast::client::spi::ClientContext;
 
         public:
             HazelcastClient(ClientConfig&);
 
+            ~HazelcastClient();
+
             template<typename K, typename V>
             IMap<K, V> getMap(std::string instanceName) {
-                return IMap<K, V >(instanceName);
+                return IMap<K, V >(instanceName, getClientContext());
             };
 
             template<typename K, typename V>
@@ -66,19 +82,23 @@ namespace hazelcast {
 
             ISemaphore getISemaphore(std::string instanceName);
 
-            ~HazelcastClient();
-
-            serialization::SerializationService& getSerializationService();
 
             ClientConfig& getClientConfig();
-
-            connection::ConnectionManager& getConnectionManager();
 
         private:
             class HazelcastClientImpl;
 
             HazelcastClientImpl *impl;
 
+            spi::ClientContext& getClientContext();
+
+            connection::ConnectionManager& getConnectionManager();
+
+            serialization::SerializationService& getSerializationService();
+
+            spi::InvocationService& getInvocationService();
+
+            spi::ClusterService& getClusterService();
 
             HazelcastClient(const HazelcastClient& rhs);
 

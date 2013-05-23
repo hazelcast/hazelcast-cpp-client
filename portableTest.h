@@ -11,10 +11,46 @@
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/protocol/HazelcastServerError.h"
-#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include <fstream>
+
+void testPutGetRemove() {
+    ClientConfig clientConfig;
+    Address address = Address(SERVER_ADDRESS, SERVER_PORT);
+    clientConfig.addAddress(address);
+    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+
+    try {
+
+        HazelcastClient hazelcastClient(clientConfig);
+        IMap<int, TestMainPortable> iMap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
+        TestMainPortable mainPortable = getTestMainPortable();
+        for (int i = 0; i < 100; i++) {
+            TestMainPortable x = mainPortable;
+            x.i = i * 10;
+            x.p.ii.push_back(i * 100);
+            iMap.put(i, x);
+        }
+
+        for (int i = 0; i < 100; i++) {
+            TestMainPortable *x = iMap.get(i);
+            assert(x->i == i * 10);
+            assert(x->p.ii.at(x->p.ii.size() - 1) == i * 100);
+        }
+
+//        TestMainPortable *pPortable = iMap.remove(9);
+//        TestMainPortable *cportable = iMap.remove(9);
+//        TestMainPortable *temp = iMap.get(9);
+
+
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+};
 
 void testBinaryClient() {
     hazelcast::client::Address address(SERVER_ADDRESS, SERVER_PORT);

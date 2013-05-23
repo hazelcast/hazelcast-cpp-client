@@ -43,6 +43,11 @@ namespace hazelcast {
                 }
             };
 
+
+            int MorphingPortableReader::skipBytes(int i) {
+                throw hazelcast::client::HazelcastException("Not supported");
+            } ;
+
             int MorphingPortableReader::readInt() {
 
                 if (!cd->isFieldDefinitionExists(lastFieldName))

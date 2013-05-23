@@ -44,6 +44,11 @@ namespace hazelcast {
                 }
             };
 
+
+            int PortableReader::skipBytes(int i) {
+                throw hazelcast::client::HazelcastException("Not supported");
+            };
+
             int PortableReader::readInt() {
                 return input.readInt();
             };
