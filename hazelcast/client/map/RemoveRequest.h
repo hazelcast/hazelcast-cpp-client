@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class RemoveRequest {
+            class RemoveRequest : public hazelcast::client::serialization::Portable {
             public:
                 RemoveRequest();
 

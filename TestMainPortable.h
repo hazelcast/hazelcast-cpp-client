@@ -24,7 +24,7 @@ class TestMainPortable : public Portable {
 
 public:
 
-    TestMainPortable() {
+    TestMainPortable():null(true) {
     };
 
     TestMainPortable(const TestMainPortable& rhs) {
@@ -35,6 +35,7 @@ public:
     }
 
     TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p) {
+        null = false;
         this->b = b;
         this->boolean = boolean;
         this->c = c;
@@ -48,6 +49,7 @@ public:
     };
 
     const TestMainPortable& operator = (const TestMainPortable& rhs) {
+        null = rhs.null;
         b = rhs.b;
         boolean = rhs.boolean;
         c = rhs.c;
@@ -63,7 +65,8 @@ public:
 
     bool operator ==(TestMainPortable& m) {
         if (this == &m) return true;
-
+        if(null == true && m.null == true)
+            return true;
         if (b != m.b) return false;
         if (boolean != m.boolean) return false;
         if (c != m.c) return false;
@@ -83,6 +86,7 @@ public:
     TestInnerPortable p;
     int i;
 private:
+    bool null;
     byte b;
     bool boolean;
     char c;
@@ -107,9 +111,6 @@ namespace hazelcast {
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const TestMainPortable& data) {
                 writer["b"] << data.b;
-//                write(writer,"jhjhj",data.b);
-//                writeInt(writer,"dsda",data.b);
-//                writer.writeInt("",data.b);
                 writer["bool"] << data.boolean;
                 writer["c"] << data.c;
                 writer["s"] << data.s;
@@ -123,6 +124,7 @@ namespace hazelcast {
 
             template<typename HzReader>
             inline void readPortable(HzReader& reader, TestMainPortable& data) {
+                data.null = false;
                 reader["b"] >> data.b;
                 reader["bool"] >> data.boolean;
                 reader["c"] >> data.c;

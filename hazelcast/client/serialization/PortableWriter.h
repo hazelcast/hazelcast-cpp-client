@@ -16,7 +16,6 @@
 #include "SerializationContext.h"
 #include "ClassDefinitionWriter.h"
 #include "ConstantSerializers.h"
-#include <iostream>
 #include <string>
 #include <set>
 #include <vector>
@@ -42,9 +41,7 @@ namespace hazelcast {
 
                 PortableWriter& operator [](std::string fieldName);
 
-                void write(const std::vector<byte>& x) {
-                    throw hazelcast::client::HazelcastException("Unsupported");//TODO
-                }
+                void write(const std::vector<byte>& x);
 
                 void writeInt(int value);
 

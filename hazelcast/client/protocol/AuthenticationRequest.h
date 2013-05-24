@@ -27,13 +27,14 @@ namespace hazelcast {
             public:
                 AuthenticationRequest(Credentials credential);
 
+                void setPrincipal(Principal* principal);
+
                 void setReAuth(bool);
 
             private:
                 Credentials credentials;
-                Principal principal;
+                Principal* principal;
                 bool reAuth;
-                bool isPrincipalSet;
             };
 
         }
@@ -55,11 +56,11 @@ namespace hazelcast {
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::AuthenticationRequest& arr) {
                 writer["credentials"] << arr.credentials;
-                if (!arr.isPrincipalSet) {
+                if (arr.principal == NULL) {
                     NullPortable nullPortable(-3, 3);
                     writer["principal"] << nullPortable;
                 } else {
-                    writer["principal"] << arr.principal;
+                    writer["principal"] << *arr.principal;
                 }
                 writer["reAuth"] << arr.reAuth;
             };
@@ -67,7 +68,9 @@ namespace hazelcast {
             template<typename HzReader>
             inline void readPortable(HzReader& reader, hazelcast::client::protocol::AuthenticationRequest& arr) {
                 reader["credentials"] >> arr.credentials;
-                reader["principal"] >> arr.principal;
+                hazelcast::client::protocol::Principal* principal = new hazelcast::client::protocol::Principal();
+                reader["principal"] >> (*principal);
+                arr.principal = principal;
                 reader["reAuth"] >> arr.reAuth;
             };
 

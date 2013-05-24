@@ -29,7 +29,7 @@ namespace hazelcast {
 
             void Socket::send(const void *buffer, int len) {
                 if (::send(socketId, buffer, len, 0) == -1)
-                    throw hazelcast::client::HazelcastException("Socket::send :Error socket send");
+                    throw hazelcast::client::HazelcastException("Socket::send :Error socket send" + std::string(strerror(errno)));
             };
 
             void Socket::receive(void *buffer, int len) {

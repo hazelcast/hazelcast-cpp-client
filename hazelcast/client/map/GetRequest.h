@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
+            class GetRequest : public hazelcast::client::serialization::Portable {
             public:
                 GetRequest();
 

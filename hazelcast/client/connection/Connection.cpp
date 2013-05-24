@@ -15,20 +15,29 @@ namespace hazelcast {
             , inputSocketStream(socket)
             , outputSocketStream(socket)
             , connectionId(CONN_ID++) {
-            }
+                socket.connect();
+            };
+
+            void Connection::write(vector<byte> const& bytes) {
+                outputSocketStream.write(bytes);
+            };
 
             void Connection::write(hazelcast::client::serialization::Data const & data) {
                 data.writeData(outputSocketStream);
-            }
+            };
 
             void Connection::read(hazelcast::client::serialization::Data & data) {
                 data.readData(inputSocketStream);
-            }
+            };
+
+            Address & Connection::getEndpoint() {
+                return endpoint;
+            };
 
             void Connection::close() {
                 socket.close();
                 //TODO may be something with streams
-            }
+            };
 
 
         }

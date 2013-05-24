@@ -9,10 +9,19 @@ namespace hazelcast {
         , poolSize(100)
         , connectionTimeout(60000)
         , connectionAttemptLimit(2)
-        , attemptPeriod(3000) {
+        , attemptPeriod(3000)
+        , credentials(NULL){
         };
 
-        ClientConfig::ClientConfig(const ClientConfig& rhs) {
+        ClientConfig::ClientConfig(const ClientConfig& rhs)
+        : smart(rhs.smart)
+        , redoOperation(rhs.redoOperation)
+        , poolSize(rhs.poolSize)
+        , connectionTimeout(rhs.connectionTimeout)
+        , connectionAttemptLimit(rhs.connectionAttemptLimit)
+        , attemptPeriod(rhs.attemptPeriod)
+        , groupConfig(rhs.groupConfig)
+        , addressList(rhs.addressList){
         };
 
 
@@ -32,7 +41,8 @@ namespace hazelcast {
         };
 
         ClientConfig::~ClientConfig() {
-            delete credentials;
+            if(credentials != NULL)
+                delete credentials;
         };
 
         ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {

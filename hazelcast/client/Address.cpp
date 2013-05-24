@@ -19,6 +19,16 @@ namespace hazelcast {
             return (*this);
         };
 
+        bool Address::operator <(const Address  & rhs) const{
+            if (rhs.url.compare(url) > 1) {
+                return true;
+            } else if (rhs.url.compare(url) < 1) {
+                return false;
+            } else {
+                return rhs.port.compare(port) > 1;
+            }
+        };
+
         std::string Address::getPort() const {
             return port;
         };

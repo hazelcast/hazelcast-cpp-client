@@ -25,11 +25,15 @@ namespace hazelcast {
             public:
                 Connection(const hazelcast::client::Address& address, hazelcast::client::serialization::SerializationService&);
 
+                void write(const vector<byte>& bytes);
+
                 void write(const hazelcast::client::serialization::Data&);
 
                 void read(hazelcast::client::serialization::Data&);
 
                 void close();
+
+                hazelcast::client::Address& getEndpoint();
 
             private:
                 hazelcast::client::Address endpoint;

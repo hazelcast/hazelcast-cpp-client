@@ -29,13 +29,15 @@ namespace hazelcast {
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(send_type& object, recv_type& response) {
                     hazelcast::client::connection::Connection& conn = getConnectionManager().getRandomConnection();
-                    return sendAndReceive(conn, object, response);
+                    sendAndReceive(conn, object, response);
+                    getConnectionManager().releaseConnection(&conn);
                 }
 
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(const Address& address, send_type& object, recv_type& response) {
                     hazelcast::client::connection::Connection& conn = getConnectionManager().getConnection(address);
-                    return sendAndReceive(conn, object, response);
+                    sendAndReceive(conn, object, response);
+                    getConnectionManager().releaseConnection(&conn);
                 }
 
                 template<typename send_type, typename recv_type>
@@ -45,13 +47,16 @@ namespace hazelcast {
                     Data request = serializationService.toData(object);
                     connection.write(request);
                     Data responseData;
+                    responseData.setSerializationContext(serializationService.getSerializationContext());
                     connection.read(responseData);
                     if (responseData.isServerError()) {
-                        throw  serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(responseData);
+                        hazelcast::client::protocol::HazelcastServerError x = serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(responseData);
+                        std::cerr << x.what() << std::endl;
+                        throw  x;
                     } else {
                         response = serializationService.toObject<recv_type>(responseData);
-
                     }
+
                 };
 
 

@@ -23,9 +23,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data : public DataSerializable{
-                template<typename DataOutput>
-                friend void writePortable(DataOutput& dataOutput, const Data& data);
+            class Data : public DataSerializable {
 
                 template<typename DataInput>
                 friend void readPortable(DataInput& dataInput, Data& data);
@@ -114,10 +112,10 @@ namespace hazelcast {
                 int type;
                 std::vector<byte> buffer;
                 static int const NO_CLASS_ID = 0;
+                int partitionHash;
             private:
                 SerializationContext *context;
                 bool isError;
-                int partitionHash;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
 
@@ -126,26 +124,6 @@ namespace hazelcast {
                 int getClassId() const;
             };
 
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& dataOutput, const Data& data) {
-                dataOutput.writeInt(data.type);
-                if (data.cd != NULL) {
-                    dataOutput.writeInt(data.cd->getClassId());
-                    dataOutput.writeInt(data.cd->getFactoryId());
-                    dataOutput.writeInt(data.cd->getVersion());
-                    std::vector<byte> classDefBytes = data.cd->getBinary();
-                    dataOutput.writeInt(classDefBytes.size());
-                    dataOutput.write(classDefBytes);
-                } else {
-                    dataOutput.writeInt(data.NO_CLASS_ID);
-                }
-                int len = data.bufferSize();
-                dataOutput.writeInt(len);
-                if (len > 0) {
-                    dataOutput.write(data.buffer);
-                }
-                dataOutput.writeInt(data.partitionHash);
-            };
 
             template<typename HzReader>
             inline void readPortable(HzReader& dataInput, Data& data) {

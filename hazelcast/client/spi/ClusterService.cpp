@@ -6,6 +6,7 @@
 #include "ClusterService.h"
 #include "../ClientConfig.h"
 #include "../HazelcastClient.h"
+#include "../serialization/ClassDefinitionBuilder.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,6 +17,10 @@ namespace hazelcast {
             }
 
             void ClusterService::start() {
+                hazelcast::client::serialization::ClassDefinitionBuilder cd(-3, 3);
+                hazelcast::client::serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+                hazelcastClient.getSerializationService().getSerializationContext()->registerClassDefinition(ptr);
+
                 hazelcast::client::connection::Connection *f = connectToOne(getClientConfig().getAddresses());
 //                try {
 //                    final Connection connection = f.get(30, TimeUnit.SECONDS);

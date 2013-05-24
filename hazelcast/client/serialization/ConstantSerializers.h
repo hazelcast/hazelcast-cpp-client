@@ -29,6 +29,8 @@ namespace hazelcast {
 
             class PortableWriter;
 
+            class Data;
+
             typedef unsigned char byte;
 
             template<typename T>
@@ -284,6 +286,12 @@ namespace hazelcast {
             void readPortable(BufferedDataInput& dataInput, std::vector<float >& data);
 
             void readPortable(BufferedDataInput& dataInput, std::vector<double >& data);
+
+            void writePortable(ClassDefinitionWriter& cdw, const Data&  data);
+
+            void writePortable(PortableWriter& dataOutput, const Data&  data);
+
+            void writePortable(BufferedDataOutput& dataOutput, const Data& data);
         }
     }
 }

@@ -4,6 +4,9 @@
 
 
 #include "ConnectionPool.h"
+#include "../Address.h"
+#include "Connection.h"
+#include "ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +22,7 @@ namespace hazelcast {
                 destroy();
             };
 
-            Connection* ConnectionPool::take() {
+            Connection* ConnectionPool::take(ConnectionManager* manager) {
                 if (!active) {
                     return false;
                 }
@@ -27,6 +30,7 @@ namespace hazelcast {
                 bool b = queue.poll(t);
                 if (b == false) {
                     t = new Connection(address, serializationService);
+                    manager->authenticate(*t, false);
                 }
                 return t;
             }

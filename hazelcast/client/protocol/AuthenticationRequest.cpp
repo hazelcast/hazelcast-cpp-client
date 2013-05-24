@@ -14,6 +14,10 @@ namespace hazelcast {
 
             };
 
+            void AuthenticationRequest::setPrincipal(Principal *principal) {
+                this->principal = principal;
+            }
+
             void AuthenticationRequest::setReAuth(bool reAuth) {
                 this->reAuth = reAuth;
             }

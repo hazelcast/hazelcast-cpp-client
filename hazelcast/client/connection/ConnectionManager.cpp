@@ -5,6 +5,7 @@
 
 #include "ConnectionManager.h"
 #include "../ClientConfig.h"
+#include "../connection/Connection.h"
 #include "../protocol/ClientPingRequest.h"
 #include "../protocol/AuthenticationRequest.h"
 #include "../protocol/HazelcastServerError.h"
@@ -17,13 +18,21 @@ namespace hazelcast {
             : serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(5, serializationService)
-            , live(true) { //TODO get from config
+            , live(true)  //TODO get from config
+            , principal(NULL) {
 
             };
 
-            Connection * ConnectionManager::newConnection(Address const & address) {
+
+            ConnectionManager::~ConnectionManager() {
+                if (principal != NULL) {
+                    delete principal;
+                }
+            };
+
+            Connection *ConnectionManager::newConnection(Address const & address) {
                 Connection *connection = new Connection(address, serializationService);
-                authenticate(*connection, clientConfig.getCredentials(), false);
+                authenticate(*connection, true);
                 return connection;
             };
 
@@ -38,10 +47,10 @@ namespace hazelcast {
 
             Connection& ConnectionManager::getConnection(const Address& address) {
                 checkLive();
-                ConnectionPool* pool = getConnectionPool(address);
-                Connection* connection = NULL;
+                ConnectionPool *pool = getConnectionPool(address);
+                Connection *connection = NULL;
 //                try {
-                connection = pool == NULL ? &getRandomConnection() : pool->take();
+                connection = pool == NULL ? &getRandomConnection() : pool->take(this);
 //                } catch (Exception e) {
 //                    e.printStackTrace();
 //                }
@@ -62,7 +71,20 @@ namespace hazelcast {
                 return *connection;
             };
 
-            ConnectionPool* ConnectionManager::getConnectionPool(const Address& address) {
+            void ConnectionManager::releaseConnection(Connection *connection) {
+                if (live) {
+                    ConnectionPool *pool = getConnectionPool(connection->getEndpoint());
+                    if (pool != NULL) {
+                        pool->release(connection);
+                    } else {
+                        connection->close();
+                    }
+                } else {
+                    connection->close();
+                }
+            };
+
+            ConnectionPool *ConnectionManager::getConnectionPool(const Address& address) {
                 checkLive();
                 ConnectionPool *pool = poolMap.get(address);
                 if (pool == NULL) {
@@ -79,17 +101,23 @@ namespace hazelcast {
                 return pool;
             }
 
-            void ConnectionManager::authenticate(Connection& connection, const hazelcast::client::protocol::Credentials& credentials, bool reAuth) {
-                hazelcast::client::protocol::AuthenticationRequest auth(credentials);
+            void ConnectionManager::authenticate(Connection& connection, bool reAuth) {
+                connection.write(hazelcast::client::protocol::ProtocolConstants::PROTOCOL);
+                hazelcast::client::protocol::AuthenticationRequest auth(clientConfig.getCredentials());
+                auth.setPrincipal(principal);
                 auth.setReAuth(reAuth);
 
                 connection.write(serializationService.toData(auth));
                 hazelcast::client::serialization::Data data;
+                data.setSerializationContext(serializationService.getSerializationContext());
                 connection.read(data);
                 if (data.isServerError()) {
-                    throw serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+                    hazelcast::client::protocol::HazelcastServerError x = serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+                    throw x;
                 } else {
-                    principal = serializationService.toObject<hazelcast::client::protocol::Principal>(data);
+                    hazelcast::client::protocol::Principal *principal = new hazelcast::client::protocol::Principal();
+                    *principal = serializationService.toObject<hazelcast::client::protocol::Principal>(data);
+                    this->principal = principal;
                 }
             };
 

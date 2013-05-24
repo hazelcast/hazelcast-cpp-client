@@ -4,9 +4,6 @@
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
 #include "ClientConfig.h"
-#include "connection/ConnectionManager.h"
-#include "./spi/ClusterService.h"
-#include "InvocationService.h"
 
 
 namespace hazelcast {
@@ -22,7 +19,7 @@ namespace hazelcast {
             , clusterService(*client)
             , invocationService(clusterService)
             , clientContext(*client) {
-                clusterService.start();
+
             };
 
             ClientConfig clientConfig;
@@ -35,6 +32,7 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig& config)
         :impl(new HazelcastClientImpl(config, this)) {
+            impl->clusterService.start();
         };
 
         HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {

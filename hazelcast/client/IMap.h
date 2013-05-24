@@ -44,28 +44,28 @@ namespace hazelcast {
             bool containsValue(const V& value) {
             };
 
-            V *get(const K& key) {
+            V get(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::GetRequest request(instanceName, keyData);
-                V *value = new V();
-                invoke(request, *value, keyData);
+                V value;
+                invoke(request, value, keyData);
                 return value;
             };
 
-            V *put(const K& key, V& value) {
+            V put(const K& key, V& value) {
                 serialization::Data keyData = toData(key);
-                serialization::Data valueData = toData(key);
+                serialization::Data valueData = toData(value);
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
-                V *oldValue = new V();
-                invoke(request, value, keyData);
+                V oldValue;
+                invoke(request, oldValue, keyData);
                 return oldValue;
             };
 
-            V *remove(const K& key) {
+            V remove(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::RemoveRequest request(instanceName, keyData, 1);
-                V *value = new V();
-                invoke(request, *value, keyData);
+                V value;
+                invoke(request, value, keyData);
                 return value;
             };
 

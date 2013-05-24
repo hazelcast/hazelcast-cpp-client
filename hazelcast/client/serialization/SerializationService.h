@@ -68,7 +68,7 @@ namespace hazelcast {
                 template<typename K>
                 inline K toObject(const Data& data) {
                     if (data.bufferSize() == 0)
-                        throw hazelcast::client::HazelcastException("Empty Data");
+                        return K();
                     int typeID = data.type;
                     BufferedDataInput dataInput(data.buffer);
 

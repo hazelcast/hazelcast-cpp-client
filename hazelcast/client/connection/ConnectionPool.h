@@ -6,21 +6,27 @@
 
 #include "../util/ConcurrentQueue.h"
 #include "../HazelcastException.h"
-#include "Connection.h"
 
 namespace hazelcast {
     namespace client {
+        class Address;
+
         namespace serialization {
             class SerializationService;
         }
+
         namespace connection {
+            class ConnectionManager;
+
+            class Connection;
+
             class ConnectionPool {
             public:
                 ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService&);
 
                 ~ConnectionPool();
 
-                Connection* take();
+                Connection *take(ConnectionManager *manager);
 
                 void release(Connection *t);
 

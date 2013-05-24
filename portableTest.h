@@ -29,23 +29,46 @@ void testPutGetRemove() {
         HazelcastClient hazelcastClient(clientConfig);
         IMap<int, TestMainPortable> iMap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
         TestMainPortable mainPortable = getTestMainPortable();
+        TestMainPortable empty;
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = mainPortable;
             x.i = i * 10;
             x.p.ii.push_back(i * 100);
-            iMap.put(i, x);
+            TestMainPortable oldValue = iMap.put(i, x);
+            assert(oldValue == empty);
         }
 
         for (int i = 0; i < 100; i++) {
-            TestMainPortable *x = iMap.get(i);
-            assert(x->i == i * 10);
-            assert(x->p.ii.at(x->p.ii.size() - 1) == i * 100);
+            TestMainPortable x = iMap.get(i);
+            assert(x.i == i * 10);
+            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 100);
         }
 
-//        TestMainPortable *pPortable = iMap.remove(9);
-//        TestMainPortable *cportable = iMap.remove(9);
-//        TestMainPortable *temp = iMap.get(9);
+        for (int i = 0; i < 50; i++) {
+            TestMainPortable x = iMap.get(i);
+            TestMainPortable p = iMap.remove(i);
+            assert(x == p);
+        }
 
+        for (int i = 0; i < 50; i++) {
+            TestMainPortable x = iMap.get(i);
+            assert(x == empty);
+        }
+
+        for (int i = 50; i < 100; i++) {
+            TestMainPortable x = mainPortable;
+            x.i = i * 20;
+            x.p.ii.push_back(i * 200);
+            TestMainPortable oldValue = iMap.put(i, x);
+            assert(oldValue.i == i * 10);
+            assert(oldValue.p.ii.at(oldValue.p.ii.size() - 1) == i * 100);
+        }
+
+        for (int i = 50; i < 100; i++) {
+            TestMainPortable x = iMap.remove(i);
+            assert(x.i == i * 20);
+            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 200);
+        }
 
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
@@ -57,7 +80,7 @@ void testBinaryClient() {
     hazelcast::client::connection::Socket socket(address);
     SerializationService service(0);
     ClassDefinitionBuilder cd(-3, 3);
-    ClassDefinition* ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+    ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
     service.getSerializationContext()->registerClassDefinition(ptr);
 
     hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");

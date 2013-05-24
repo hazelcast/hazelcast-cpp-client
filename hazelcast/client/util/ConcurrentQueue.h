@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_CONCURRENT_QUEUE
 #define HAZELCAST_CONCURRENT_QUEUE
 
-#include <boost/lockfree/queue.hpp>
+#include <queue>
 
 namespace hazelcast {
     namespace client {
@@ -20,11 +20,17 @@ namespace hazelcast {
                 };
 
                 bool offer(const T& e) {
-                    return queue.push(e);;
+                    queue.push(e);
+                    return true;
                 };
 
                 bool poll(T& e) {
-                    return queue.pop(e);
+                    if (!empty()) {
+                        e = queue.front();
+                        queue.pop();
+                        return true;
+                    } else
+                        return false;
                 };
 
                 bool empty() {
@@ -32,7 +38,7 @@ namespace hazelcast {
                 };
 
             private:
-                boost::lockfree::queue<T> queue;
+                std::queue<T> queue;
             };
         }
     }

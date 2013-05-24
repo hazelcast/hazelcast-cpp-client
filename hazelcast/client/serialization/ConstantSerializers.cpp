@@ -3,6 +3,7 @@
 #include "MorphingPortableReader.h"
 #include "BufferedDataOutput.h"
 #include "PortableWriter.h"
+#include "Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -563,6 +564,33 @@ namespace hazelcast {
                 data = dataInput.readDoubleArray();
             };
             /*****************************************************************************/
+            void writePortable(ClassDefinitionWriter& cdw, const Data&  data) {
+                std::cout << "???" << std::endl;
+            };
+
+            void writePortable(PortableWriter& dataOutput, const Data&  data) {
+                dataOutput.writeInt(data.type);
+                if (data.cd != NULL) {
+                    dataOutput.writeInt(data.cd->getClassId());
+                    dataOutput.writeInt(data.cd->getFactoryId());
+                    dataOutput.writeInt(data.cd->getVersion());
+                    std::vector<byte> classDefBytes = data.cd->getBinary();
+                    dataOutput.writeInt(classDefBytes.size());
+                    dataOutput.write(classDefBytes);
+                } else {
+                    dataOutput.writeInt(data.NO_CLASS_ID);
+                }
+                int len = data.bufferSize();
+                dataOutput.writeInt(len);
+                if (len > 0) {
+                    dataOutput.write(data.buffer);
+                }
+                dataOutput.writeInt(data.partitionHash);
+            };
+
+            void writePortable(BufferedDataOutput& dataOutput, const Data& data) {
+                std::cout << "sdsdasd" << std::endl;
+            };
 
         }
     }

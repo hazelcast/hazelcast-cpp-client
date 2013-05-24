@@ -15,6 +15,8 @@ namespace hazelcast {
 
             Address& operator =(const Address&);
 
+            bool operator <(const Address&) const;
+
             std::string getPort() const;
 
             std::string getAddress() const;

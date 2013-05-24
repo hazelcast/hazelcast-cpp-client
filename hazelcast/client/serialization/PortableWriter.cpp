@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableWriter::PortableWriter(SerializationContext *serializationContext, ClassDefinition* cd, BufferedDataOutput *output)
+            PortableWriter::PortableWriter(SerializationContext *serializationContext, ClassDefinition *cd, BufferedDataOutput *output)
             : context(serializationContext)
             , output(output)
             , index (0)
@@ -46,6 +46,10 @@ namespace hazelcast {
                     output->writeInt(offset + index * sizeof(int), pos);
                     raw = true;
                 }
+            };
+
+            void PortableWriter::write(const vector<byte>  & bytes) {
+                output->write(bytes);
             };
 
             void PortableWriter::writeInt(int value) {
