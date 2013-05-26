@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_REMOVE_REQUEST
 #define HAZELCAST_MAP_REMOVE_REQUEST
 
-#include "Data.h"
+#include "../serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

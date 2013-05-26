@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_PUT_REQUEST
 #define HAZELCAST_MAP_PUT_REQUEST
 
-#include "Data.h"
+#include "../serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

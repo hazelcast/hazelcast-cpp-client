@@ -4,8 +4,8 @@
 
 
 #include "ClientContext.h"
-#include "HazelcastClient.h"
-#include "ClientConfig.h"
+#include "../HazelcastClient.h"
+#include "../ClientConfig.h"
 
 using namespace hazelcast::client;
 
