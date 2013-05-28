@@ -8,9 +8,10 @@
 #define __TestMobile_H_
 
 #include "hazelcast/client/serialization/DataSerializable.h"
+#include "SerializationConstants.h"
 
 
-class TestDataSerializable : public hazelcast::client::serialization::DataSerializable {
+class TestDataSerializable {
 public:
     TestDataSerializable() {
 
@@ -39,6 +40,10 @@ public:
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
+            inline int getTypeId(const TestDataSerializable& x) {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
+            };
 
             inline int getFactoryId(const TestDataSerializable& t) {
                 return 1;

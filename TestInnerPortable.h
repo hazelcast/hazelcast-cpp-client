@@ -10,12 +10,12 @@
 #define Server_TestInnerPortable_h
 
 #include "TestNamedPortable.h"
-#include "hazelcast/client/serialization/Portable.h"
+#include "Data.h"
 #include <vector>
 
 using namespace hazelcast::client;
 
-class TestInnerPortable : public Portable {
+class TestInnerPortable {
     template<typename HzWriter>
     friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestInnerPortable& data);
 

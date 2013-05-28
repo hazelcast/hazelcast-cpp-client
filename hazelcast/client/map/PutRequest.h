@@ -9,14 +9,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class PutRequest : public hazelcast::client::serialization::Portable {
+            class PutRequest {
             public:
-                PutRequest();
+                PutRequest(const std::string& name, hazelcast::client::serialization::Data& key, hazelcast::client::serialization::Data& value, int threadId, long ttl);
 
-                PutRequest(const std::string& name, const hazelcast::client::serialization::Data& key, const hazelcast::client::serialization::Data& value, int threadId, long ttl);
-
-                hazelcast::client::serialization::Data key;
-                hazelcast::client::serialization::Data value;
+                hazelcast::client::serialization::Data& key;
+                hazelcast::client::serialization::Data& value;
                 std::string name;
                 int threadId;
                 long ttl;

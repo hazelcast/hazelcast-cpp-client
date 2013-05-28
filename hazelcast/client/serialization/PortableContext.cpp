@@ -24,7 +24,7 @@ namespace hazelcast {
                 std::map<long, ClassDefinition * >::iterator it;
                 for (it = versionedDefinitions.begin(); versionedDefinitions.end() != it; it++) {
 //                    delete (*it).second;//TODO uncommented because of portableTests are broken!
-                                          //TODO same data cannot register to two serialization
+                    //TODO same data cannot register to two serialization
                 }
             };
 
@@ -48,9 +48,9 @@ namespace hazelcast {
 
             };
 
-            ClassDefinition *PortableContext::createClassDefinition(std::vector<byte>& binary) {
+            ClassDefinition *PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
 
-                std::vector<byte> decompressed = decompress(binary);
+                std::vector<byte> decompressed = decompress(*(binary.get()));
 
                 BufferedDataInput dataInput = BufferedDataInput(decompressed);
                 ClassDefinition *cd = new ClassDefinition;
@@ -76,8 +76,8 @@ namespace hazelcast {
                     if (cd->getBinary().size() == 0) {
                         BufferedDataOutput output;
                         writePortable(output, *cd);
-                        std::vector<byte> binary = output.toByteArray();
-                        compress(binary);
+                        std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
+                        compress(*(binary.get()));
                         cd->setBinary(binary);
                     }
                     long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());

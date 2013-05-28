@@ -4,13 +4,14 @@
 #ifndef HAZELCAST_CLIENT_PING_REQUEST
 #define HAZELCAST_CLIENT_PING_REQUEST
 
-#include "../serialization/DataSerializable.h"
+
 #include "ProtocolConstants.h"
+#include "../serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class ClientPingRequest : public hazelcast::client::serialization::DataSerializable {
+            class ClientPingRequest {
             public:
                 ClientPingRequest();
 
@@ -23,6 +24,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
+            inline int getTypeId(const hazelcast::client::protocol::ClientPingRequest& x) {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
+            };
+
             inline int getFactoryId(const hazelcast::client::protocol::ClientPingRequest& ar) {
                 return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
             }

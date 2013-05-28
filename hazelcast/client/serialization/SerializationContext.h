@@ -11,7 +11,8 @@
 
 #include <map>
 #include <vector>
-#include <boost/shared_array.hpp>
+#include <memory>
+
 
 namespace hazelcast {
     namespace client {
@@ -32,17 +33,17 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int);
 
-                ClassDefinition* lookup(int, int);
+                ClassDefinition *lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                ClassDefinition* lookup(int, int, int);
+                ClassDefinition *lookup(int, int, int);
 
-                ClassDefinition* createClassDefinition(int, std::vector<byte>&);
+                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte>>);
 
-                void registerNestedDefinitions(ClassDefinition* cd);
+                void registerNestedDefinitions(ClassDefinition *cd);
 
-                void registerClassDefinition(ClassDefinition* cd);
+                void registerClassDefinition(ClassDefinition *cd);
 
                 int getVersion();
 

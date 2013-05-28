@@ -1,21 +1,69 @@
+#ifndef MAPTEST
+#define MAPTEST
 
-//#ifndef MAPTEST
-//#define MAPTEST
-//
-//
-//#include <assert.h>
-//#include "testUtil.h"
-//#include "Address.h"
-//#include "Socket.h"
-//#include "TestPortableFactory.h"
-//#include "SerializationService.h"
-//#include "SimpleMapTest.h"
-//#include "OutputSocketStream.h"
-//#include "MapPutOperation.h"
-//#include "testUtil.h"
-//#include <fstream>
-//
-//
+
+#include "TestMainPortable.h"
+#include "testUtil.h"
+#include "SimpleMapTest.h"
+#include <cassert>
+
+void testPutGetRemove() {
+    ClientConfig clientConfig;
+    Address address = Address(SERVER_ADDRESS, SERVER_PORT);
+    clientConfig.addAddress(address);
+    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+
+    try {
+
+        HazelcastClient hazelcastClient(clientConfig);
+        IMap<int, TestMainPortable> iMap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
+        TestMainPortable mainPortable = getTestMainPortable();
+        TestMainPortable empty;
+        for (int i = 0; i < 100; i++) {
+            TestMainPortable x = mainPortable;
+            x.i = i * 10;
+            x.p.ii.push_back(i * 100);
+            TestMainPortable oldValue = iMap.put(i, x);
+            assert(oldValue == empty);
+        }
+
+        for (int i = 0; i < 100; i++) {
+            TestMainPortable x = iMap.get(i);
+            assert(x.i == i * 10);
+            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 100);
+        }
+
+        for (int i = 0; i < 50; i++) {
+            TestMainPortable x = iMap.get(i);
+            TestMainPortable p = iMap.remove(i);
+            assert(x == p);
+        }
+
+        for (int i = 0; i < 50; i++) {
+            TestMainPortable x = iMap.get(i);
+            assert(x == empty);
+        }
+
+        for (int i = 50; i < 100; i++) {
+            TestMainPortable x = mainPortable;
+            x.i = i * 20;
+            x.p.ii.push_back(i * 200);
+            TestMainPortable oldValue = iMap.put(i, x);
+            assert(oldValue.i == i * 10);
+            assert(oldValue.p.ii.at(oldValue.p.ii.size() - 1) == i * 100);
+        }
+
+        for (int i = 50; i < 100; i++) {
+            TestMainPortable x = iMap.remove(i);
+            assert(x.i == i * 20);
+            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 200);
+        }
+
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+};
+
 //void testPut() {
 //    serialization::SerializationService service(1, getPortableFactoryMap());
 //    Data key = service.toData(23);
@@ -32,10 +80,10 @@
 //    data.writeData(output);
 //}
 //
-//void testSpeed() {
-//    SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
-//    s.run();
-//};
+void testSpeed() {
+    SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
+    s.run();
+};
 //
 //void testMapOperations() {
 //    ClientConfig clientConfig(Address(SERVER_ADDRESS, SERVER_PORT));
@@ -185,5 +233,5 @@
 //    }
 //};
 //
-//#endif
-//
+#endif
+

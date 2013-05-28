@@ -15,7 +15,7 @@
 #include "../HazelcastException.h"
 #include "ConstantSerializers.h"
 #include "SerializationContext.h"
-#include <boost/type_traits/is_base_of.hpp>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -26,19 +26,15 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class Portable;
 
             class BufferObjectDataInput;
 
             typedef unsigned char byte;
 
             class PortableReader {
-                template<typename T>
-                friend void operator >>(PortableReader& portableReader, T& data);
-
             public:
 
-                PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition* cd);
+                PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
 
                 PortableReader& operator [](std::string fieldName);
 
@@ -91,7 +87,7 @@ namespace hazelcast {
 //                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::client::util::to_string(factoryId));
 //                    }
 
-                    ClassDefinition* cd;
+                    ClassDefinition *cd;
                     cd = context->lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
                     hazelcast::client::serialization::readPortable(reader, object);
@@ -128,23 +124,24 @@ namespace hazelcast {
 //                    return portables;
                 };
 
+                void readingFromDataInput();
+
             private:
 
                 int getPosition(std::string&);
-
-                void readingFromDataInput();
 
                 int offset;
                 bool raw;
                 bool readingPortable;
                 SerializationContext *context;
-                ClassDefinition* cd;
+                ClassDefinition *cd;
                 BufferedDataInput& input;
                 std::string lastFieldName;
             };
 
             template<typename T>
-            inline void readPortable(PortableReader& portableReader, std::vector<T>& data) {
+            inline void operator >>(PortableReader& portableReader, std::vector<T>& data) {
+                portableReader.readingFromDataInput();
                 portableReader.readPortable(data);
             };
 
@@ -152,7 +149,7 @@ namespace hazelcast {
             template<typename T>
             inline void operator >>(PortableReader& portableReader, T& data) {
                 portableReader.readingFromDataInput();
-                if (boost::is_base_of<Portable, T>::value)
+                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     portableReader.readPortable(data);
                 else
                     readPortable(portableReader, data);

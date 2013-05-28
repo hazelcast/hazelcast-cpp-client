@@ -2,12 +2,11 @@
 #define __Server__TestNamedPortableV2__
 
 
-#include "hazelcast/client/serialization/Portable.h"
 #include "TestNamedPortable.h"
 
 using namespace hazelcast::client::serialization;
 
-class TestNamedPortableV2 : public Portable {
+class TestNamedPortableV2 {
 public:
     TestNamedPortableV2() {
 

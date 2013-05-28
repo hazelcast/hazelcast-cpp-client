@@ -44,9 +44,11 @@ namespace hazelcast {
 
                 ClassDefinition(int factoryId, int classId, int version);
 
+                ~ClassDefinition();
+
                 void add(FieldDefinition&);
 
-                void add(ClassDefinition*);
+                void add(ClassDefinition *);
 
                 bool isFieldDefinitionExists(std::string);
 
@@ -72,9 +74,9 @@ namespace hazelcast {
 
                 int getVersion() const;
 
-                std::vector<byte> getBinary() const;
+                const std::vector<byte>& getBinary() const;
 
-                void setBinary(std::vector<byte>&);
+                void setBinary(std::auto_ptr < std::vector<byte> >);
 
                 void setVersion(int);
 
@@ -89,10 +91,14 @@ namespace hazelcast {
 
                 vector<FieldDefinition> fieldDefinitions;
                 map<string, FieldDefinition> fieldDefinitionsMap;
-                vector<ClassDefinition* > nestedClassDefinitions;
+                vector<ClassDefinition * > nestedClassDefinitions;
 
-                std::vector<byte> binary;
+                std::auto_ptr< std::vector<byte> > binary;
 
+            };
+
+            inline int getTypeId(const ClassDefinition& x) {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 
             template<typename DataOutput>
@@ -104,7 +110,7 @@ namespace hazelcast {
                 for (vector<FieldDefinition>::const_iterator it = data.fieldDefinitions.begin(); it != data.fieldDefinitions.end(); it++)
                     dataOutput << (*it);
                 dataOutput .writeInt(int(data.nestedClassDefinitions.size()));
-                for (vector<ClassDefinition* >::const_iterator it = data.nestedClassDefinitions.begin(); it != data.nestedClassDefinitions.end(); it++)
+                for (vector<ClassDefinition * >::const_iterator it = data.nestedClassDefinitions.begin(); it != data.nestedClassDefinitions.end(); it++)
                     dataOutput << *(*it);
             };
 
@@ -122,7 +128,7 @@ namespace hazelcast {
                 }
                 dataInput >> size;
                 for (int i = 0; i < size; i++) {
-                    ClassDefinition* classDefinition = new ClassDefinition;
+                    ClassDefinition *classDefinition = new ClassDefinition;
                     dataInput >> *classDefinition;
                     data.add(classDefinition);
                 }

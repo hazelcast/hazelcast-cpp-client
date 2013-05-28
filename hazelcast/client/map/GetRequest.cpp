@@ -8,11 +8,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest() {
-
-            };
-
-            GetRequest::GetRequest(const std::string& name, const hazelcast::client::serialization::Data& key)
+            GetRequest::GetRequest(const std::string& name, hazelcast::client::serialization::Data& key)
             :name(name)
             , key(key) {
 

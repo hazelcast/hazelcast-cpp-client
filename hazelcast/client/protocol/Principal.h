@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class Principal : public hazelcast::client::serialization::Portable {
+            class Principal {
             public:
                 Principal();
 

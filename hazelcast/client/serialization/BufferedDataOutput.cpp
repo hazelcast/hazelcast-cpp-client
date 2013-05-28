@@ -13,7 +13,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            BufferedDataOutput::BufferedDataOutput() {
+            BufferedDataOutput::BufferedDataOutput()
+            : outputStream(new std::vector<byte>) {
             };
 
 
@@ -21,7 +22,7 @@ namespace hazelcast {
                 throw hazelcast::client::HazelcastException("BufferedDataOutput::operator [](std::string string) > not supported!!");
             };
 
-            std::vector<byte> BufferedDataOutput::toByteArray() {
+            std::auto_ptr< std::vector<byte> > BufferedDataOutput::toByteArray() {
                 return outputStream;
             };
 
@@ -31,7 +32,7 @@ namespace hazelcast {
             };
 
             void BufferedDataOutput::write(char const *bytes, int length) {
-                outputStream.insert(outputStream.end(), bytes, bytes + (length * sizeof (char)));
+                outputStream->insert(outputStream->end(), bytes, bytes + (length * sizeof (char)));
             };
 
             void BufferedDataOutput::writeBoolean(bool i) {
@@ -39,11 +40,11 @@ namespace hazelcast {
             };
 
             void BufferedDataOutput::writeByte(int n, int i) {
-                outputStream[n] = char(0xff & i);
+                (*outputStream)[n] = char(0xff & i);
             }
 
             void BufferedDataOutput::writeByte(int i) {
-                outputStream.push_back(char(0xff & i));
+                outputStream->push_back(char(0xff & i));
             };
 
             void BufferedDataOutput::writeShort(int v) {
@@ -116,16 +117,16 @@ namespace hazelcast {
             };
 
             int BufferedDataOutput::position() {
-                return outputStream.size();
+                return outputStream->size();
             };
 
             void BufferedDataOutput::position(int newPos) {
-                if (outputStream.size() < newPos)
-                    outputStream.resize(newPos, 0);
+                if (outputStream->size() < newPos)
+                    outputStream->resize(newPos, 0);
             };
 
             void BufferedDataOutput::reset() {
-                outputStream.clear();
+                outputStream->clear();
             };
 
             //private functions

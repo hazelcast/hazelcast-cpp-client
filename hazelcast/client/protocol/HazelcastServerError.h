@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace protocol {
 
 
-            class HazelcastServerError : hazelcast::client::serialization::Portable {
+            class HazelcastServerError {
 
             public:
                 HazelcastServerError();

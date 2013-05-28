@@ -28,10 +28,6 @@ namespace hazelcast {
             SerializationService::~SerializationService() {
             };
 
-            Data SerializationService::toData(Data& data) {
-                return data;
-            };
-
 
         }
     }

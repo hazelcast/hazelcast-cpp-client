@@ -11,11 +11,11 @@
 #define __TestInvalidReadPortable_H_
 
 #include <iostream>
-#include "hazelcast/client/serialization/Portable.h"
+
 
 using namespace hazelcast::client::serialization;
 
-class TestInvalidReadPortable : public Portable {
+class TestInvalidReadPortable {
 public:
 
     TestInvalidReadPortable() {

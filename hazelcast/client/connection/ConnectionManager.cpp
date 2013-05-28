@@ -107,17 +107,19 @@ namespace hazelcast {
                 auth.setPrincipal(principal);
                 auth.setReAuth(reAuth);
 
-                connection.write(serializationService.toData(auth));
+                serialization::Data toData;
+                serializationService.toData(auth, toData);
+                connection.write(toData);
                 hazelcast::client::serialization::Data data;
                 data.setSerializationContext(serializationService.getSerializationContext());
                 connection.read(data);
                 if (data.isServerError()) {
-                    hazelcast::client::protocol::HazelcastServerError x = serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+                    hazelcast::client::protocol::HazelcastServerError x;
+                    serializationService.toObject(data, x);
                     throw x;
                 } else {
-                    hazelcast::client::protocol::Principal *principal = new hazelcast::client::protocol::Principal();
-                    *principal = serializationService.toObject<hazelcast::client::protocol::Principal>(data);
-                    this->principal = principal;
+                    this->principal = new hazelcast::client::protocol::Principal();
+                    serializationService.toObject(data, *principal);
                 }
             };
 

@@ -35,7 +35,7 @@ namespace hazelcast {
                 return isClassDefinitionExists(factoryId, classId, contextVersion);
             };
 
-            ClassDefinition* SerializationContext::lookup(int factoryId, int classId) {
+            ClassDefinition *SerializationContext::lookup(int factoryId, int classId) {
                 return getPortableContext(factoryId).lookup(classId, contextVersion);
             };
 
@@ -43,23 +43,23 @@ namespace hazelcast {
                 return getPortableContext(factoryId).isClassDefinitionExists(classId, version);
             };
 
-            ClassDefinition* SerializationContext::lookup(int factoryId, int classId, int version) {
+            ClassDefinition *SerializationContext::lookup(int factoryId, int classId, int version) {
                 return getPortableContext(factoryId).lookup(classId, version);
             };
 
-            ClassDefinition* SerializationContext::createClassDefinition(int factoryId, std::vector<byte>& binary) {
+            ClassDefinition *SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte>> binary) {
                 return getPortableContext(factoryId).createClassDefinition(binary);
             };
 
-            void SerializationContext::registerNestedDefinitions(ClassDefinition* cd) {
-                vector<ClassDefinition* > nestedDefinitions = cd->getNestedClassDefinitions();
-                for (vector<ClassDefinition* >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
+            void SerializationContext::registerNestedDefinitions(ClassDefinition *cd) {
+                vector<ClassDefinition * > nestedDefinitions = cd->getNestedClassDefinitions();
+                for (vector<ClassDefinition * >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
                     registerClassDefinition(*it);
                     registerNestedDefinitions(*it);
                 }
             };
 
-            void SerializationContext::registerClassDefinition(ClassDefinition* cd) {
+            void SerializationContext::registerClassDefinition(ClassDefinition *cd) {
                 getPortableContext(cd->getFactoryId()).registerClassDefinition(cd);
             };
 

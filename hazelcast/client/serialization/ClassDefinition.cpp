@@ -5,6 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include <iostream>
 #include "ClassDefinition.h"
 #include "BufferedDataInput.h"
 
@@ -12,13 +13,15 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ClassDefinition::ClassDefinition() : factoryId(0), classId(0), version(-1) {
-
+            ClassDefinition::ClassDefinition() : factoryId(0), classId(0), version(-1), binary(new std::vector<byte>) {
             };
 
             ClassDefinition::ClassDefinition(int factoryId, int classId, int version)
-            : factoryId(factoryId), classId(classId), version(version) {
+            : factoryId(factoryId), classId(classId), version(version)
+            , binary(new std::vector<byte>) {
+            };
 
+            ClassDefinition::~ClassDefinition() {
             };
 
             ClassDefinition::ClassDefinition(const ClassDefinition& rhs)
@@ -27,8 +30,7 @@ namespace hazelcast {
             , version(rhs.version)
             , fieldDefinitions(rhs.fieldDefinitions)
             , fieldDefinitionsMap(rhs.fieldDefinitionsMap)
-            , nestedClassDefinitions(rhs.nestedClassDefinitions)
-            , binary(rhs.binary) {
+            , nestedClassDefinitions(rhs.nestedClassDefinitions) {
             };
 
             ClassDefinition& ClassDefinition::operator = (const ClassDefinition& rhs) {
@@ -38,7 +40,6 @@ namespace hazelcast {
                 fieldDefinitions = rhs.fieldDefinitions;
                 fieldDefinitionsMap = rhs.fieldDefinitionsMap;
                 nestedClassDefinitions = rhs.nestedClassDefinitions;
-                binary = rhs.binary;
                 return (*this);
             };
 
@@ -47,7 +48,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName()] = fd;
             };
 
-            void ClassDefinition::add(ClassDefinition* cd) {
+            void ClassDefinition::add(ClassDefinition *cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -120,12 +121,12 @@ namespace hazelcast {
                 this->version = version;
             };
 
-            std::vector<byte> ClassDefinition::getBinary() const {
-                return binary;
+            const std::vector<byte>& ClassDefinition::getBinary() const {
+                return *(binary.get());
             };
 
-            void ClassDefinition::setBinary(std::vector<byte>& binary) {
-                this->binary = binary;
+            void ClassDefinition::setBinary(std::auto_ptr < std::vector<byte> > binary) {
+                this->binary.reset(binary.release());
             };
 
         }

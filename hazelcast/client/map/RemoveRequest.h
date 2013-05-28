@@ -9,13 +9,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class RemoveRequest : public hazelcast::client::serialization::Portable {
+            class RemoveRequest {
             public:
-                RemoveRequest();
+                RemoveRequest(const std::string& name, hazelcast::client::serialization::Data& key, int threadId);
 
-                RemoveRequest(const std::string& name, const hazelcast::client::serialization::Data& key, int threadId);
-
-                hazelcast::client::serialization::Data key;
+                hazelcast::client::serialization::Data& key;
                 std::string name;
                 int threadId;
             };

@@ -44,17 +44,19 @@ namespace hazelcast {
                 void sendAndReceive(hazelcast::client::connection::Connection& connection, send_type& object, recv_type& response) {
                     using namespace hazelcast::client::serialization;
                     SerializationService& serializationService = getSerializationService();
-                    Data request = serializationService.toData(object);
+                    Data request;
+                    serializationService.toData(object, request);
                     connection.write(request);
                     Data responseData;
                     responseData.setSerializationContext(serializationService.getSerializationContext());
                     connection.read(responseData);
                     if (responseData.isServerError()) {
-                        hazelcast::client::protocol::HazelcastServerError x = serializationService.toObject<hazelcast::client::protocol::HazelcastServerError>(responseData);
+                        hazelcast::client::protocol::HazelcastServerError x;
+                        serializationService.toObject(responseData, x);
                         std::cerr << x.what() << std::endl;
                         throw  x;
                     } else {
-                        response = serializationService.toObject<recv_type>(responseData);
+                        serializationService.toObject(responseData, response);
                     }
 
                 };

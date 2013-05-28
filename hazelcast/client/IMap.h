@@ -2,14 +2,14 @@
 #define HAZELCAST_IMAP
 
 
+#include "map/GetRequest.h"
+#include "map/PutRequest.h"
+#include "map/RemoveRequest.h"
 #include "HazelcastException.h"
 #include "serialization/Data.h"
 #include "serialization/SerializationService.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
-#include "map/GetRequest.h"
-#include "map/PutRequest.h"
-#include "map/RemoveRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -45,7 +45,8 @@ namespace hazelcast {
             };
 
             V get(const K& key) {
-                serialization::Data keyData = toData(key);
+                serialization::Data keyData;
+                toData(key, keyData);
                 map::GetRequest request(instanceName, keyData);
                 V value;
                 invoke(request, value, keyData);
@@ -53,16 +54,22 @@ namespace hazelcast {
             };
 
             V put(const K& key, V& value) {
-                serialization::Data keyData = toData(key);
-                serialization::Data valueData = toData(value);
+                serialization::Data keyData;
+                toData(key, keyData);
+                serialization::Data valueData;
+                toData(value, valueData);
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
                 V oldValue;
+//                serialization::Data debugData;//TODO 3 TEST LINES
+//                toData(request, debugData);
+//                toObject(debugData, oldValue);
                 invoke(request, oldValue, keyData);
                 return oldValue;
             };
 
             V remove(const K& key) {
-                serialization::Data keyData = toData(key);
+                serialization::Data keyData;
+                toData(key, keyData);
                 map::RemoveRequest request(instanceName, keyData, 1);
                 V value;
                 invoke(request, value, keyData);
@@ -128,14 +135,14 @@ namespace hazelcast {
 
         private:
             template<typename T>
-            hazelcast::client::serialization::Data toData(const T& object) {
-                return context.getSerializationService().toData(object);
+            void toData(const T& object, serialization::Data& data) {
+                return context.getSerializationService().toData(object, data);
             };
 
 //
             template<typename T>
-            T toObject(const hazelcast::client::serialization::Data& data) {
-                return context.getSerializationService().toObject(data);
+            void toObject(const serialization::Data& data, T& object) {
+                context.getSerializationService().toObject(data, object);
             };
 
 //

@@ -15,7 +15,7 @@ namespace hazelcast {
         typedef unsigned char byte;
 
         namespace protocol {
-            class Credentials : public hazelcast::client::serialization::Portable {
+            class Credentials {
             public:
                 Credentials(std::string principal, std::string password);
 

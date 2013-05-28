@@ -8,11 +8,8 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            RemoveRequest::RemoveRequest() {
 
-            };
-
-            RemoveRequest::RemoveRequest(const std::string& name, const hazelcast::client::serialization::Data& key, int threadId)
+            RemoveRequest::RemoveRequest(const std::string& name, hazelcast::client::serialization::Data& key, int threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {

@@ -10,12 +10,12 @@
 #define Server_TestMainPortable_h
 
 #include "TestInnerPortable.h"
-#include "hazelcast/client/serialization/Portable.h"
+
 #include <string>
 
 using namespace hazelcast::client::serialization;
 
-class TestMainPortable : public Portable {
+class TestMainPortable {
     template<typename HzWriter>
     friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestMainPortable& data);
 
@@ -65,7 +65,7 @@ public:
 
     bool operator ==(TestMainPortable& m) {
         if (this == &m) return true;
-        if(null == true && m.null == true)
+        if (null == true && m.null == true)
             return true;
         if (b != m.b) return false;
         if (boolean != m.boolean) return false;

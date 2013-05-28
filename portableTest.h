@@ -18,62 +18,6 @@
 #include "hazelcast/client/serialization/SerializationService.h"
 #include <fstream>
 
-void testPutGetRemove() {
-    ClientConfig clientConfig;
-    Address address = Address(SERVER_ADDRESS, SERVER_PORT);
-    clientConfig.addAddress(address);
-    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-
-    try {
-
-        HazelcastClient hazelcastClient(clientConfig);
-        IMap<int, TestMainPortable> iMap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
-        TestMainPortable mainPortable = getTestMainPortable();
-        TestMainPortable empty;
-        for (int i = 0; i < 100; i++) {
-            TestMainPortable x = mainPortable;
-            x.i = i * 10;
-            x.p.ii.push_back(i * 100);
-            TestMainPortable oldValue = iMap.put(i, x);
-            assert(oldValue == empty);
-        }
-
-        for (int i = 0; i < 100; i++) {
-            TestMainPortable x = iMap.get(i);
-            assert(x.i == i * 10);
-            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 100);
-        }
-
-        for (int i = 0; i < 50; i++) {
-            TestMainPortable x = iMap.get(i);
-            TestMainPortable p = iMap.remove(i);
-            assert(x == p);
-        }
-
-        for (int i = 0; i < 50; i++) {
-            TestMainPortable x = iMap.get(i);
-            assert(x == empty);
-        }
-
-        for (int i = 50; i < 100; i++) {
-            TestMainPortable x = mainPortable;
-            x.i = i * 20;
-            x.p.ii.push_back(i * 200);
-            TestMainPortable oldValue = iMap.put(i, x);
-            assert(oldValue.i == i * 10);
-            assert(oldValue.p.ii.at(oldValue.p.ii.size() - 1) == i * 100);
-        }
-
-        for (int i = 50; i < 100; i++) {
-            TestMainPortable x = iMap.remove(i);
-            assert(x.i == i * 20);
-            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 200);
-        }
-
-    } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
-    }
-};
 
 void testBinaryClient() {
     hazelcast::client::Address address(SERVER_ADDRESS, SERVER_PORT);
@@ -85,7 +29,8 @@ void testBinaryClient() {
 
     hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");
     hazelcast::client::protocol::AuthenticationRequest ar(credentials);
-    Data data = service.toData(ar);
+    Data data;
+    service.toData(ar, data);
     socket.connect();
     socket.send("CB1", 3);
     OutputSocketStream output(socket);
@@ -96,26 +41,30 @@ void testBinaryClient() {
     data.readData(input);
 
     if (data.isServerError()) {
-        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+        hazelcast::client::protocol::HazelcastServerError error;
+        service.toObject(data, error);
         std::cout << "type:" << error.type << std::endl;
         std::cout << "message:" << error.message << std::endl;
         std::cout << "details:" << error.details << std::endl;
     } else {
-        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
+        hazelcast::client::protocol::Principal principal;
+        service.toObject(data, principal);
         std::cout << principal.uuid << std::endl;
         std::cout << principal.ownerUuid << std::endl;
 
     }
-    data = service.toData(ar);
+    service.toData(ar, data);
     data.writeData(output);
     data.readData(input);
     if (data.isServerError()) {
-        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
+        hazelcast::client::protocol::HazelcastServerError error;
+        service.toObject(data, error);
         std::cout << "type:" << error.type << std::endl;
         std::cout << "message:" << error.message << std::endl;
         std::cout << "details:" << error.details << std::endl;
     } else {
-        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
+        hazelcast::client::protocol::Principal principal;
+        service.toObject(data, principal);
         std::cout << principal.uuid << std::endl;
         std::cout << principal.ownerUuid << std::endl;
 
@@ -135,8 +84,10 @@ void testRawData() {
     builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
     serializationService.getSerializationContext()->registerClassDefinition(builder.build());
 
-    Data data = serializationService.toData(p);
-    TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
+    Data data;
+    serializationService.toData(p, data);
+    TestRawDataPortable x;
+    serializationService.toObject(data, x);
     assert(p == x);
 
 }
@@ -145,15 +96,16 @@ void testIdentifiedDataSerializable() {
     SerializationService serializationService(1);
     Data data;
     TestDataSerializable np(4, 'k');
-    data = serializationService.toData(np);
+    serializationService.toData(np, data);
 
     TestDataSerializable tnp1;
-    tnp1 = serializationService.toObject<TestDataSerializable>(data);
+    serializationService.toObject(data, tnp1);
 
     assert(np == tnp1);
     int x = 4;
-    data = serializationService.toData(x);
-    int y = serializationService.toObject<int>(data);
+    serializationService.toData(x, data);
+    int y;
+    serializationService.toObject(data, y);
     assert(x == y);
 };
 
@@ -167,8 +119,10 @@ void testRawDataWithoutRegistering() {
     TestDataSerializable ds(123, 's');
     TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
-    Data data = serializationService.toData(p);
-    TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
+    Data data;
+    serializationService.toData(p, data);
+    TestRawDataPortable x;
+    serializationService.toObject<TestRawDataPortable>(data, x);
     assert(p == x);
 
 }
@@ -180,8 +134,10 @@ void testRawDataInvalidWrite() {
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext()->registerClassDefinition(builder.build());
     try{
-        Data data = serializationService.toData(p);
-        TestInvalidWritePortable o = serializationService.toObject<TestInvalidWritePortable>(data);
+        Data data;
+        serializationService.toData(p, data);
+        TestInvalidWritePortable o;
+        serializationService.toObject(data, o);
 
     }  catch (HazelcastException& exception) {
         std::cout << "Expected exception " << exception.what() << std::endl;
@@ -195,8 +151,10 @@ void testRawDataInvalidRead() {
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext()->registerClassDefinition(builder.build());
     try{
-        Data data = serializationService.toData(p);
-        serializationService.toObject<TestInvalidReadPortable>(data);
+        Data data;
+        serializationService.toData(p, data);
+        TestInvalidReadPortable tip;
+        serializationService.toObject(data, tip);
 
     }  catch (HazelcastException& exception) {
         std::cout << "Expected exception " << exception.what() << std::endl;
@@ -209,17 +167,21 @@ void testDifferentVersions() {
     serialization::SerializationService serializationService2(2);
 
     TestNamedPortable p1("portable-v1", 111);
-    Data data = serializationService.toData(p1);
+    Data data;
+    serializationService.toData(p1, data);
 
     TestNamedPortableV2 p2("portable-v2", 123);
-    Data data2 = serializationService2.toData(p2);
+    Data data2;
+    serializationService2.toData(p2, data2);
 
-    TestNamedPortableV2 t2 = serializationService2.toObject<TestNamedPortableV2>(data);
+    TestNamedPortableV2 t2;
+    serializationService2.toObject(data, t2);
     assert(t2.name.compare("portable-v1") == 0);
     assert(t2.k == 111);
     assert(t2.v == 0);
 
-    TestNamedPortable t1 = serializationService.toObject<TestNamedPortable>(data2);
+    TestNamedPortable t1;
+    serializationService.toObject(data2, t1);
     assert(t1.name.compare("portable-v2") == 0);
     assert(t1.k == 123 * 10);
 
@@ -229,19 +191,21 @@ void testCompression() {
     serialization::SerializationService serializationService1(1);
     TestMainPortable mainPortable = getTestMainPortable();
 
-    Data data = serializationService1.toData(mainPortable);
+    Data data;
+    serializationService1.toData(mainPortable, data);
 
     BufferedDataOutput out;
     data.writeData(out);
 
-    vector<byte> xxx = out.toByteArray();
+    std::auto_ptr< vector<byte> > xxx = out.toByteArray();
 
     serialization::SerializationService serializationService2(1);
-    serialization::BufferedDataInput dataInput(xxx);
+    serialization::BufferedDataInput dataInput(*(xxx.get()));
     Data newData;
     newData.setSerializationContext(serializationService2.getSerializationContext());
     newData.readData(dataInput);
-    TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
+    TestMainPortable returnedPortable;
+    serializationService2.toObject<TestMainPortable >(newData, returnedPortable);
     assert(returnedPortable == mainPortable);
 };
 
@@ -249,10 +213,11 @@ void testCompression() {
 int write() {
     serialization::SerializationService serializationService(1);
     TestMainPortable mainPortable = getTestMainPortable();
-    Data data = serializationService.toData(mainPortable);
+    Data data;
+    serializationService.toData(mainPortable, data);
     BufferedDataOutput out;
     data.writeData(out);
-    std::vector<byte> outBuffer = out.toByteArray();
+    std::vector<byte>& outBuffer = *(out.toByteArray().get());
     int size = outBuffer.size();
     ofstream outfile;
     outfile.open("./text.txt", std::ios_base::out);
@@ -283,7 +248,7 @@ void read(int size) {
     data.readData(dataInput);
 
     TestMainPortable tmp1;
-    tmp1 = serializationService.toObject<TestMainPortable >(data);
+    serializationService.toObject(data, tmp1);
 
     TestMainPortable mainPortable = getTestMainPortable();
     assert(mainPortable == tmp1);
@@ -301,19 +266,23 @@ void testSerialization() {
     serialization::Data data;
 
     int x = 3;
-    data = serializationService.toData(x);
-    assert(x == serializationService.toObject<int>(data));
+    serializationService.toData(x, data);
+    int rx;
+    serializationService.toObject(data, rx);
+    assert(x == rx);
 
     short f = 3.2;
-    data = serializationService.toData(f);
-    assert(f == serializationService.toObject<short>(data));
+    serializationService.toData(f, data);
+    short rf;
+    serializationService.toObject(data, rf);
+    assert(f == rf);
 
     TestNamedPortable np("name", 5);
-    data = serializationService.toData(np);
+    serializationService.toData(np, data);
 
     TestNamedPortable tnp1, tnp2;
-    tnp1 = serializationService.toObject<TestNamedPortable >(data);
-    tnp2 = serializationService2.toObject<TestNamedPortable >(data);
+    serializationService.toObject(data, tnp1);
+    serializationService2.toObject(data, tnp2);
 
     assert(np == tnp1);
     assert(np == tnp2);
@@ -343,22 +312,22 @@ void testSerialization() {
 
     TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
 
-    data = serializationService.toData(inner);
+    serializationService.toData(inner, data);
 
     TestInnerPortable tip1, tip2;
-    tip1 = serializationService.toObject<TestInnerPortable >(data);
-    tip2 = serializationService2.toObject<TestInnerPortable >(data);
+    serializationService.toObject(data, tip1);
+    serializationService2.toObject(data, tip2);
 
     assert(inner == tip1);
     assert(inner == tip2);
 
     TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);
-    data = serializationService.toData(main);
+    serializationService.toData(main, data);
 
     TestMainPortable tmp1, tmp2;
-    tmp1 = serializationService.toObject<TestMainPortable >(data);
-    tmp2 = serializationService2.toObject<TestMainPortable >(data);
+    serializationService.toObject(data, tmp1);
+    serializationService2.toObject(data, tmp2);
     assert(main == tmp1);
     assert(main == tmp2);
 

@@ -15,7 +15,7 @@
 #include "TestDataSerializable.h"
 
 
-class TestRawDataPortable : public Portable {
+class TestRawDataPortable {
 public:
 
     long l;

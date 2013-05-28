@@ -15,7 +15,7 @@ namespace hazelcast {
             :serializationService(serializationService)
             , timeout(timeout) {
                 hazelcast::client::protocol::ClientPingRequest clientPingRequest;
-                ping = serializationService.toData(clientPingRequest);
+                serializationService.toData(clientPingRequest, ping);
             }
 
 

@@ -10,6 +10,7 @@
 #define HAZELCAST_FIELD_DEFINITION
 
 #include "FieldType.h"
+#include "SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
@@ -55,6 +56,10 @@ namespace hazelcast {
                 FieldType type;
                 int classId;
                 int factoryId;
+            };
+
+            inline int getTypeId(const FieldDefinition& x) {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 
             template <typename DataOutput>

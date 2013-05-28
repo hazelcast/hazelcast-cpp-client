@@ -14,10 +14,10 @@ namespace hazelcast {
         namespace serialization {
 
             Data::Data() : partitionHash(-1)
-            , buffer(0)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
             , isError(false)
-            , cd(NULL){
+            , cd(NULL)
+            , buffer(new std::vector<byte>) {
 
             };
 
@@ -25,11 +25,11 @@ namespace hazelcast {
                 (*this) = rhs;
             };
 
-            Data::Data(const int type, std::vector<byte> buffer) : partitionHash(-1)
+            Data::Data(const int type, std::auto_ptr <std::vector<byte>> buffer) : partitionHash(-1)
             , isError(false)
-            , cd(NULL){
+            , cd(NULL)
+            , buffer(buffer) {
                 this->type = type;
-                this->buffer = buffer;
             };
 
             Data::~Data() {
@@ -37,10 +37,11 @@ namespace hazelcast {
 
             Data& Data::operator = (const Data& rhs) {
                 type = rhs.type;
-                buffer = rhs.buffer;
                 cd = rhs.cd;
                 partitionHash = rhs.partitionHash;
                 isError = rhs.isError;
+                buffer.reset(new std::vector<byte >);
+                *(buffer.get()) = *(rhs.buffer.get());
                 return (*this);
             };
 
@@ -48,7 +49,7 @@ namespace hazelcast {
                 if (type != rhs.type) return false;
                 if (cd != rhs.cd) return false;
                 if (partitionHash != rhs.partitionHash) return false;
-                if (buffer != rhs.buffer) return false;
+                if (*(buffer.get()) != *(rhs.buffer).get()) return false;
                 return true;
             };
 
@@ -66,7 +67,7 @@ namespace hazelcast {
             };
 
             int Data::bufferSize() const {
-                return buffer.size();
+                return buffer->size();
             };
 
             /**
@@ -101,6 +102,18 @@ namespace hazelcast {
 
             void Data::setPartitionHash(int partitionHash) {
                 this->partitionHash = partitionHash;
+            };
+
+            int Data::getType() {
+                return type;
+            };
+
+            void Data::setType(int type) {
+                this->type = type;
+            };
+
+            void Data::setBuffer(auto_ptr<vector<unsigned char> > buffer) {
+                this->buffer = buffer;
             };
 
             int Data::getFactoryId() const {

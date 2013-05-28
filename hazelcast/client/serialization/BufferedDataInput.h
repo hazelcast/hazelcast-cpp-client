@@ -10,6 +10,7 @@
 #define HAZELCAST_DATA_INPUT
 
 #include "../HazelcastException.h"
+#include "ConstantSerializers.h"
 #include <vector>
 #include <string>
 
@@ -87,7 +88,7 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void readPortable(BufferedDataInput& in, const std::vector<T>& data) {
+            inline void operator >>(BufferedDataInput& in, std::vector<T>& data) {
                 throw hazelcast::client::HazelcastException("template<typename T>\n"
                         "            inline void readPortable(BufferedDataInput& in, std::vector<T>& data) >> Not supported");
             };

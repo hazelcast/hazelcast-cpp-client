@@ -29,15 +29,9 @@ namespace hazelcast {
             class ClassDefinition;
 
             class PortableWriter {
-                template<typename T>
-                friend void operator <<(PortableWriter& portableWriter, const T& data);
-
-                template<typename T>
-                friend void writePortable(PortableWriter& portableWriter, std::vector<T>& data);
-
             public:
 
-                PortableWriter(SerializationContext *serializationContext, ClassDefinition* cd, BufferedDataOutput *output);
+                PortableWriter(SerializationContext *serializationContext, ClassDefinition *cd, BufferedDataOutput *output);
 
                 PortableWriter& operator [](std::string fieldName);
 
@@ -83,14 +77,15 @@ namespace hazelcast {
                     }
                 };
 
-            private:
                 void writingToDataOutput();
+
+            private:
 
                 void setPosition(string fieldName);
 
                 template <typename T>
-                ClassDefinition* getClassDefinition(const T& p) {
-                    ClassDefinition* cd;
+                ClassDefinition *getClassDefinition(const T& p) {
+                    ClassDefinition *cd;
 
                     int factoryId = getFactoryId(p);
                     int classId = getClassId(p);
@@ -108,7 +103,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &dataOutput, const T& p) {
-                    ClassDefinition* cd = getClassDefinition(p);
+                    ClassDefinition *cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
                     hazelcast::client::serialization::writePortable(portableWriter, p);
                 };
@@ -121,19 +116,20 @@ namespace hazelcast {
                 BufferedDataOutput *output;
                 int offset;
                 std::set<std::string> writtenFields;
-                ClassDefinition* cd;
+                ClassDefinition *cd;
 
             };
 
             template<typename T>
-            inline void writePortable(PortableWriter& portableWriter, const std::vector<T>& data) {
+            inline void operator <<(PortableWriter& portableWriter, const std::vector<T>& data) {
+                portableWriter.writingToDataOutput();
                 portableWriter.writePortable(data);
             };
 
             template<typename T>
             inline void operator <<(PortableWriter& portableWriter, const T& data) {
                 portableWriter.writingToDataOutput();
-                if (boost::is_base_of<Portable, T>::value)
+                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     portableWriter.writePortable(data);
                 else {
                     writePortable(portableWriter, data);

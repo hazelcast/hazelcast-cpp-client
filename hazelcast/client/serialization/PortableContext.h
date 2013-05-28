@@ -13,7 +13,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include <boost/shared_array.hpp>
+
 
 namespace hazelcast {
     namespace client {
@@ -38,9 +38,9 @@ namespace hazelcast {
 
                 ClassDefinition *lookup(int, int);
 
-                ClassDefinition *createClassDefinition(std::vector<byte>&);
+                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte>>);
 
-                void registerClassDefinition(ClassDefinition* cd);
+                void registerClassDefinition(ClassDefinition *cd);
 
                 void setSerializationContext(SerializationContext *);
 

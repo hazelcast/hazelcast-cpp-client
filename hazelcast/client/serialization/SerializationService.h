@@ -19,7 +19,6 @@
 #include "../util/Util.h"
 #include "Data.h"
 #include "DataSerializer.h"
-#include <boost/type_traits/is_base_of.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -36,43 +35,30 @@ namespace hazelcast {
                 ~SerializationService();
 
                 template<typename K>
-                Data toData(K& object) {
+                void toData(K& object, Data& data) {
                     BufferedDataOutput output;
-                    int typeID;
-                    if (boost::is_base_of<Portable, K>::value) {
-                        typeID = SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                    } else if (boost::is_base_of<DataSerializable, K>::value) {
-                        typeID = SerializationConstants::CONSTANT_TYPE_DATA;
-                    } else {
-                        typeID = getTypeId(object);
-                    }
+                    int typeID = getTypeId(object);
+                    data.setType(typeID);
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         portableSerializer.write(output, object);
+                        int factoryId = getFactoryId(object);
+                        int classId = getClassId(object);
+                        data.cd = serializationContext.lookup(factoryId, classId);
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
                         dataSerializer.write(output, object);
                     } else {
                         writePortable(output, object);
                     }
-                    Data data(typeID, output.toByteArray());
-
-                    if (boost::is_base_of<Portable, K>::value) {
-                        int factoryId = getFactoryId(object);
-                        int classId = getClassId(object);
-                        data.cd = serializationContext.lookup(factoryId, classId);
-                    }
-                    return data;
+                    data.setBuffer(output.toByteArray());
                 };
 
-                Data toData(Data&);
-
                 template<typename K>
-                inline K toObject(const Data& data) {
+                inline void toObject(const Data& data, K & object) {
                     if (data.bufferSize() == 0)
-                        return K();
+                        return;
                     int typeID = data.type;
-                    BufferedDataInput dataInput(data.buffer);
+                    BufferedDataInput dataInput(*(data.buffer.get()));
 
-                    K object;
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         serializationContext.registerClassDefinition(data.cd);
                         int factoryId = data.cd->getFactoryId();
@@ -84,7 +70,6 @@ namespace hazelcast {
                     } else {
                         readPortable(dataInput, object);
                     }
-                    return object;
                 };
 
                 SerializationContext *getSerializationContext() {

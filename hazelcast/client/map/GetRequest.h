@@ -9,13 +9,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest : public hazelcast::client::serialization::Portable {
+            class GetRequest {
             public:
-                GetRequest();
+                GetRequest(const std::string& name, hazelcast::client::serialization::Data& key);
 
-                GetRequest(const std::string& name, const hazelcast::client::serialization::Data& key);
-
-                hazelcast::client::serialization::Data key;
+                hazelcast::client::serialization::Data& key;
                 std::string name;
             };
         }

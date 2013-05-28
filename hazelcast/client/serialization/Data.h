@@ -12,7 +12,6 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
-#include "DataSerializable.h"
 #include <vector>
 #include <iosfwd>
 
@@ -23,7 +22,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data : public DataSerializable {
+            class Data {
 
                 template<typename DataInput>
                 friend void readPortable(DataInput& dataInput, Data& data);
@@ -32,13 +31,9 @@ namespace hazelcast {
 
                 Data();
 
-                Data(const Data&);
-
-                Data(const int type, std::vector<byte> bytes);
+                Data(const int type, std::auto_ptr <std::vector<byte>> bytes);
 
                 ~Data();
-
-                Data& operator = (const Data&);
 
                 void setSerializationContext(SerializationContext *context);
 
@@ -49,6 +44,12 @@ namespace hazelcast {
                 int getPartitionHash();
 
                 void setPartitionHash(int partitionHash);
+
+                int getType();
+
+                void setType(int type);
+
+                void setBuffer(std::auto_ptr< std::vector<byte> > buffer);
 
                 bool isServerError();
 
@@ -63,7 +64,8 @@ namespace hazelcast {
                         dataOutput.writeInt(cd->getClassId());
                         dataOutput.writeInt(cd->getFactoryId());
                         dataOutput.writeInt(cd->getVersion());
-                        std::vector<byte> classDefBytes = cd->getBinary();
+                        const std::vector<byte>& classDefBytes = cd->getBinary();
+
                         dataOutput.writeInt(classDefBytes.size());
                         dataOutput.write(classDefBytes);
                     } else {
@@ -72,7 +74,7 @@ namespace hazelcast {
                     int len = bufferSize();
                     dataOutput.writeInt(len);
                     if (len > 0) {
-                        dataOutput.write(buffer);
+                        dataOutput.write(*(buffer.get()));
                     }
                     dataOutput.writeInt(partitionHash);
 
@@ -95,35 +97,46 @@ namespace hazelcast {
                             cd = context->lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);
                         } else {
-                            std::vector<byte> classDefBytes(classDefSize);
-                            dataInput.readFully(classDefBytes);
+                            std::auto_ptr< std::vector<byte>> classDefBytes (new std::vector<byte> (classDefSize));
+                            dataInput.readFully(*(classDefBytes.get()));
                             cd = context->createClassDefinition(factoryId, classDefBytes);
                         }
                     }
                     int size = dataInput.readInt();
                     if (size > 0) {
-                        this->buffer.resize(size, 0);
-                        dataInput.readFully(buffer);
+                        this->buffer->resize(size, 0);
+                        dataInput.readFully(*(buffer.get()));
                     }
                     partitionHash = dataInput.readInt();
                 }
 
                 ClassDefinition *cd;
                 int type;
-                std::vector<byte> buffer;
+                std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
                 int partitionHash;
+
+
             private:
+                Data(const Data&);
+
+                Data& operator = (const Data&);
+
                 SerializationContext *context;
                 bool isError;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
+
 
                 int getFactoryId() const;
 
                 int getClassId() const;
             };
 
+
+            inline int getTypeId(const Data& x) {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
+            };
 
             template<typename HzReader>
             inline void readPortable(HzReader& dataInput, Data& data) {
@@ -142,15 +155,15 @@ namespace hazelcast {
                         data.cd = data.context->lookup(factoryId, classId, version);
                         dataInput.skipBytes(classDefSize);
                     } else {
-                        std::vector<byte> classDefBytes(classDefSize);
-                        dataInput.readFully(classDefBytes);
+                        std::auto_ptr< std::vector<byte>> classDefBytes (new std::vector<byte> (classDefSize));
+                        dataInput.readFully(*(classDefBytes.get()));
                         data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
                     }
                 }
                 int size = dataInput.readInt();
                 if (size > 0) {
-                    data.buffer.resize(size, 0);
-                    dataInput.readFully(data.buffer);
+                    data.buffer->resize(size, 0);
+                    dataInput.readFully(*(data.buffer.get()));
                 }
                 data.partitionHash = dataInput.readInt();
             };

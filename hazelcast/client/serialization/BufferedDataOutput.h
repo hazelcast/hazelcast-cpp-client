@@ -27,44 +27,44 @@ namespace hazelcast {
 
                 BufferedDataOutput& operator [](std::string);
 
-                virtual std::vector<byte> toByteArray();
+                std::auto_ptr< std::vector<byte> > toByteArray();
 
-                virtual void write(const std::vector<byte>& bytes);
+                void write(const std::vector<byte>& bytes);
 
-                virtual void write(char const *bytes, int length);
+                void write(char const *bytes, int length);
 
-                virtual void writeBoolean(bool b);
+                void writeBoolean(bool b);
 
-                virtual void writeByte(int i);
+                void writeByte(int i);
 
-                virtual void writeByte(int n, int i);
+                void writeByte(int n, int i);
 
-                virtual void writeShort(int i);
+                void writeShort(int i);
 
-                virtual void writeChar(int i);
+                void writeChar(int i);
 
-                virtual void writeInt(int i);
+                void writeInt(int i);
 
-                virtual void writeLong(long l);
+                void writeLong(long l);
 
-                virtual void writeFloat(float v);
+                void writeFloat(float v);
 
-                virtual void writeDouble(double v);
+                void writeDouble(double v);
 
-                virtual void writeUTF(std::string s);
+                void writeUTF(std::string s);
 
-                virtual void writeInt(int index, int v);
+                void writeInt(int index, int v);
 
-                virtual int position();
+                int position();
 
-                virtual void position(int newPos);
+                void position(int newPos);
 
-                virtual void reset();
+                void reset();
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                std::vector<byte> outputStream;
+                std::auto_ptr< std::vector<byte> > outputStream;
 
                 void writeShortUTF(std::string);
 
@@ -72,7 +72,7 @@ namespace hazelcast {
 
 
             template<typename T>
-            inline void writePortable(BufferedDataOutput& out, const std::vector<T>& data) {
+            inline void operator <<(BufferedDataOutput& out, const std::vector<T>& data) {
                 throw hazelcast::client::HazelcastException("template<typename T>\n"
                         "            inline void writePortable(BufferedDataOutput& out, std::vector<T>& data) >> Not supported");
             };

@@ -16,8 +16,6 @@
 #include "ClassDefinition.h"
 #include "Portable.h"
 #include "SerializationContext.h"
-#include <boost/type_traits/is_base_of.hpp>
-
 #include <string>
 #include <iosfwd>
 
@@ -136,13 +134,13 @@ namespace hazelcast {
             };
 
             template<typename T>
-            inline void writePortable(ClassDefinitionWriter& classDefinitionWriter, const std::vector<T>& data) {
+            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const std::vector<T>& data) {
                 classDefinitionWriter.writePortable(data);
             };
 
             template<typename T>
             inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const T& data) {
-                if (boost::is_base_of<Portable, T>::value)
+                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     classDefinitionWriter.writePortable(data);
                 else
                     writePortable(classDefinitionWriter, data);
