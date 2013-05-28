@@ -21,11 +21,11 @@ namespace hazelcast {
             };
 
             PortableContext::~PortableContext() {
-                std::map<long, ClassDefinition * >::iterator it;
-                for (it = versionedDefinitions.begin(); versionedDefinitions.end() != it; it++) {
+//                std::map<long, ClassDefinition * >::iterator it;
+//                for (it = versionedDefinitions.begin(); versionedDefinitions.end() != it; it++) {
 //                    delete (*it).second;//TODO uncommented because of portableTests are broken!
-                    //TODO same data cannot register to two serialization
-                }
+                //TODO same data cannot register to two serialization
+//                }
             };
 
             PortableContext::PortableContext(SerializationContext *serializationContext)
@@ -39,12 +39,12 @@ namespace hazelcast {
 
             bool PortableContext::isClassDefinitionExists(int classId, int version) const {
                 long key = combineToLong(classId, version);
-                return (versionedDefinitions.count(key) > 0);
+                return (versionedDefinitions.containsKey(key));
             };
 
             ClassDefinition *PortableContext::lookup(int classId, int version) {
                 long key = combineToLong(classId, version);
-                return versionedDefinitions[key];
+                return versionedDefinitions.get(key);
 
             };
 
@@ -59,16 +59,16 @@ namespace hazelcast {
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
-                if (versionedDefinitions.count(key) == 0) {
+                if (versionedDefinitions.containsKey(key) == 0) {
                     serializationContext->registerNestedDefinitions(cd);
-                    versionedDefinitions[key] = cd;
-                    return cd;
+                    ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(key, cd);
+                    return pDefinition == NULL ? cd : pDefinition;
                 }
 
-                return versionedDefinitions[key];
+                return versionedDefinitions.get(key);
             };
 
-            void PortableContext::registerClassDefinition(ClassDefinition *cd) {
+            ClassDefinition *PortableContext::registerClassDefinition(ClassDefinition *cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
@@ -81,7 +81,8 @@ namespace hazelcast {
                         cd->setBinary(binary);
                     }
                     long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    versionedDefinitions[versionedClassId] = cd;
+                    ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    return pDefinition == NULL ? cd : pDefinition;
                 }
             };
 

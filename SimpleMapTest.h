@@ -5,6 +5,7 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
+#include "Thread.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -56,17 +57,16 @@ public:
     };
 } stats;
 
-void printStats() {
+void *printStats(void *) {
     while (true) {
         try {
-            boost::chrono::milliseconds duration(STATS_SECONDS * 1000);
-            boost::this_thread::sleep_for(duration);
+            sleep(STATS_SECONDS);
             Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
-            return;
+            return NULL;
         }
     }
 };
@@ -116,20 +116,16 @@ public:
         clientConfig.addAddress(Address(server_address, server_port));
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
 
-        boost::thread monitor(printStats);
+        hazelcast::util::Thread monitor(printStats);
         try {
             HazelcastClient hazelcastClient(clientConfig);
             IMap<std::string, vector<char> > map = hazelcastClient.getMap<std::string, vector<char > >("default");
             op(map);
-//            for (int i = 0; i < THREAD_COUNT; i++) {
-//                boost::thread(boost::bind(&SimpleMapTest::op, this, map));
-//            }
-
-            monitor.join();
 
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
         }
+        monitor.join();
     }
 
 

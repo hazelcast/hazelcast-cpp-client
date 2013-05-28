@@ -92,11 +92,9 @@ namespace hazelcast {
 //                    return null;
 //                }
                     pool = new ConnectionPool(address, serializationService);
-                    ConnectionPool *current = poolMap.putIfAbsent(address, *pool);
-                    if (current != NULL) {
-                        delete pool;
-                        return current;
-                    }
+
+                    ConnectionPool *pPool = poolMap.putIfAbsent(address, pool);
+                    return pPool == NULL ? pool : pPool;
                 }
                 return pool;
             }

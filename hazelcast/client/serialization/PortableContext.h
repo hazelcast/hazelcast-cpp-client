@@ -13,6 +13,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "../../util/ConcurrentMap.h"
 
 
 namespace hazelcast {
@@ -40,7 +41,7 @@ namespace hazelcast {
 
                 ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte>>);
 
-                void registerClassDefinition(ClassDefinition *cd);
+                ClassDefinition *registerClassDefinition(ClassDefinition *cd);
 
                 void setSerializationContext(SerializationContext *);
 
@@ -53,7 +54,8 @@ namespace hazelcast {
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                std::map<long, ClassDefinition * > versionedDefinitions;
+                hazelcast::util::ConcurrentMap<long, ClassDefinition> versionedDefinitions;
+//                std::map<long, ClassDefinition * > versionedDefinitions;
                 SerializationContext *serializationContext;
             };
         }

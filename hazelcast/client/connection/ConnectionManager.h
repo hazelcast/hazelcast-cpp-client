@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include "../util/ConcurrentMap.h"
+#include "../../util/ConcurrentMap.h"
 #include "HeartBeatChecker.h"
 #include "ConnectionPool.h"
 
@@ -38,14 +38,14 @@ namespace hazelcast {
 
                 Connection& getConnection(const Address& address);
 
-                void releaseConnection(Connection* connection);
+                void releaseConnection(Connection *connection);
 
                 ConnectionPool *getConnectionPool(const Address& address);
 
                 void authenticate(Connection& connection, bool reAuth);
 
             private:
-                hazelcast::client::util::ConcurrentMap<Address, ConnectionPool > poolMap;
+                hazelcast::util::ConcurrentMap<Address, ConnectionPool > poolMap;
                 hazelcast::client::serialization::SerializationService& serializationService;
                 hazelcast::client::ClientConfig& clientConfig;
                 hazelcast::client::protocol::Principal *principal;

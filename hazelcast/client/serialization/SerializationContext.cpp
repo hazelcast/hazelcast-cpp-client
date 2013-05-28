@@ -59,8 +59,8 @@ namespace hazelcast {
                 }
             };
 
-            void SerializationContext::registerClassDefinition(ClassDefinition *cd) {
-                getPortableContext(cd->getFactoryId()).registerClassDefinition(cd);
+            ClassDefinition *SerializationContext::registerClassDefinition(ClassDefinition *cd) {
+                return getPortableContext(cd->getFactoryId()).registerClassDefinition(cd);
             };
 
             int SerializationContext::getVersion() {
@@ -75,9 +75,15 @@ namespace hazelcast {
 //                    throw hazelcast::client::HazelcastException(message);
 //                }
 //                return portableContextMap.at(factoryId);
-                PortableContext& temp = portableContextMap[factoryId];
-                temp.setSerializationContext(this);
-                return temp;
+                PortableContext *value = portableContextMap.get(factoryId);
+                if (value == NULL) {
+                    value = new PortableContext(this);
+                    PortableContext *current = portableContextMap.putIfAbsent(factoryId, value);
+                    value = current == NULL ? value : current;
+                }
+//                PortableContext* temp = portableContextMap.get(factoryId);
+//                temp->setSerializationContext(this);
+                return (*value);
             };
         }
     }

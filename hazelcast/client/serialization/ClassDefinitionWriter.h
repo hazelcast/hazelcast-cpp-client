@@ -116,7 +116,7 @@ namespace hazelcast {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
                         hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
-                        context->registerClassDefinition(cd);
+                        cd = context->registerClassDefinition(cd);
                     }
 
                     return cd;

@@ -3,12 +3,8 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "QueueBasedObjectPool.h"
-
 namespace hazelcast {
-    namespace client {
-        namespace util {
+    namespace util {
 
-        }
     }
 }

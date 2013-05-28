@@ -10,14 +10,12 @@
 #include <sstream>
 
 namespace hazelcast {
-    namespace client {
-        namespace util {
-            std::string to_string(int value) {
-                std::stringstream s;
-                s << value;
-                return s.str();
-            };
-        }
+    namespace util {
+        std::string to_string(int value) {
+            std::stringstream s;
+            s << value;
+            return s.str();
+        };
     }
 }
 

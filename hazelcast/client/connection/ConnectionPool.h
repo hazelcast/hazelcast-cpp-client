@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_BASED_OBJECT_POOL
 #define HAZELCAST_QUEUE_BASED_OBJECT_POOL
 
-#include "../util/ConcurrentQueue.h"
+#include "../../util/ConcurrentQueue.h"
 #include "../HazelcastException.h"
 
 namespace hazelcast {
@@ -34,7 +34,7 @@ namespace hazelcast {
 
             private:
                 volatile bool active;
-                hazelcast::client::util::ConcurrentQueue<Connection *> queue;
+                hazelcast::util::ConcurrentQueue<Connection *> queue;
                 hazelcast::client::serialization::SerializationService& serializationService;
                 const Address& address;
             };

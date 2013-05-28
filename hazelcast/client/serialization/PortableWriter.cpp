@@ -7,7 +7,7 @@
 //
 
 #include "PortableWriter.h"
-#include "../util/Util.h"
+#include "../../util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -99,9 +99,9 @@ namespace hazelcast {
                     error += "HazelcastSerializationException( Invalid field name: '";
                     error += fieldName;
                     error += "' for ClassDefinition {id: "; //TODO add factory ID
-                    error += hazelcast::client::util::to_string(cd->getClassId());
+                    error += hazelcast::util::to_string(cd->getClassId());
                     error += ", version: ";
-                    error += hazelcast::client::util::to_string(cd->getVersion());
+                    error += hazelcast::util::to_string(cd->getVersion());
                     error += "}";
 
                     throw hazelcast::client::HazelcastException(error);

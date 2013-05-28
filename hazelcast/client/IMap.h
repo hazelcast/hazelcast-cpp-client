@@ -60,10 +60,14 @@ namespace hazelcast {
                 toData(value, valueData);
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
                 V oldValue;
-//                serialization::Data debugData;//TODO 3 TEST LINES
-//                toData(request, debugData);
-//                toObject(debugData, oldValue);
-                invoke(request, oldValue, keyData);
+                serialization::Data debugData;//TODO 3 TEST LINES
+//                clock_t time1 = clock();
+                toData(request, debugData);
+//                clock_t time2 = clock();
+                toObject(debugData, oldValue);
+//                clock_t time3 = clock();
+//                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
+//                invoke(request, oldValue, keyData);
                 return oldValue;
             };
 

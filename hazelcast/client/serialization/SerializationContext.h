@@ -12,6 +12,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include "ConcurrentMap.h"
 
 
 namespace hazelcast {
@@ -43,7 +44,7 @@ namespace hazelcast {
 
                 void registerNestedDefinitions(ClassDefinition *cd);
 
-                void registerClassDefinition(ClassDefinition *cd);
+                ClassDefinition *registerClassDefinition(ClassDefinition *cd);
 
                 int getVersion();
 
@@ -56,7 +57,7 @@ namespace hazelcast {
                 void operator = (const SerializationContext&);
 
                 int contextVersion;
-                std::map<int, PortableContext> portableContextMap;
+                hazelcast::util::ConcurrentMap<int, PortableContext> portableContextMap;
 
             };
 

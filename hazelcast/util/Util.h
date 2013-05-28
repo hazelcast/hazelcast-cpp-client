@@ -7,18 +7,16 @@
 
 
 
-#ifndef HAZELCAST_STRING_UTIL
-#define HAZELCAST_STRING_UTIL
+#ifndef HAZELCAST_UTIL_FUNCTIONS
+#define HAZELCAST_UTIL_FUNCTIONS
 
 #include <string>
 
 namespace hazelcast {
-    namespace client {
-        namespace util {
-            std::string to_string(int);
-        }
+    namespace util {
+        std::string to_string(int);
     }
 }
 
 
-#endif //HAZELCAST_STRING_UTIL
+#endif //HAZELCAST_UTIL_FUNCTIONS
