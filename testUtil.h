@@ -2,7 +2,7 @@
 #define TEST_UTIL
 
 #define SERVER_ADDRESS "192.168.2.22"
-#define SERVER_PORT "5701"
+#define SERVER_PORT 5701
 
 #include "TestMainPortable.h"
 //#include "TestPortableFactory.h"

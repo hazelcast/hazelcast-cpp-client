@@ -34,7 +34,7 @@ namespace hazelcast {
             }
 
             inline int getClassId(const hazelcast::client::protocol::ClientPingRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::CLIENT_PING_REQUEST_ID;
+                return hazelcast::client::protocol::ProtocolConstants::PING;
             }
 
 

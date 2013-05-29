@@ -1,8 +1,8 @@
-//#include "SerializationService.h"
 //
 //#ifndef HAZELCAST_CLIENT_SERVICE
 //#define HAZELCAST_CLIENT_SERVICE
 //
+//#include "SerializationService.h"
 //namespace hazelcast {
 //    namespace client {
 //

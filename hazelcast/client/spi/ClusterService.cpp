@@ -7,12 +7,14 @@
 #include "../ClientConfig.h"
 #include "../HazelcastClient.h"
 #include "../serialization/ClassDefinitionBuilder.h"
+#include "../../util/Thread.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
             ClusterService::ClusterService(hazelcast::client::HazelcastClient & hazelcastClient)
-            : hazelcastClient(hazelcastClient) {
+            : hazelcastClient(hazelcastClient)
+            , clusterThread(hazelcastClient.getConnectionManager(), hazelcastClient.getClientConfig(), *this) {
 
             }
 
@@ -23,21 +25,21 @@ namespace hazelcast {
 
                 hazelcast::client::connection::Connection *f = connectToOne(getClientConfig().getAddresses());
 //                try {
-//                    final Connection connection = f.get(30, TimeUnit.SECONDS);
+//                    final Connection connection = f.get(30, TimeUnit.SECONDS);//TODO
                 clusterThread.setInitialConnection(f);
 //                } catch (Exception e) {
 //                    throw new ClientException(e);
 //                }
-                clusterThread.start();
+                hazelcast::util::Thread(hazelcast::client::connection::ClusterListenerThread::run, &clusterThread);
 //
 //                // TODO: replace with a better wait-notify
-//                while (membersRef.get() == null) {
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException e) {
-//                        throw new ClientException(e);
-//                    }
-//                }
+                while (membersRef.get() == NULL) {
+                    try {
+                        sleep(1);
+                    } catch (void* ) {
+                        throw  hazelcast::client::HazelcastException("ClusterService::start");
+                    }
+                }
             }
 
             hazelcast::client::connection::Connection *ClusterService::connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses) {
@@ -49,7 +51,7 @@ namespace hazelcast {
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            std::cout << "Trying to connect: " + (*it).getAddress() + ":" + (*it).getPort() << std::endl;
+                            std::cout << "Trying to connect: " + (*it).getHost() + ":" + hazelcast::util::to_string((*it).getPort()) << std::endl;
                             return getConnectionManager().newConnection((*it));
                         } catch (hazelcast::client::HazelcastException& ignored) {
                         }

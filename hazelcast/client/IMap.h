@@ -7,9 +7,9 @@
 #include "map/RemoveRequest.h"
 #include "HazelcastException.h"
 #include "serialization/Data.h"
-#include "serialization/SerializationService.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
+#include "serialization/SerializationService.h"
 #include <string>
 #include <map>
 #include <set>

@@ -11,6 +11,7 @@
 #include "../connection/ClusterListenerThread.h"
 #include "../connection/ConnectionManager.h"
 #include "../protocol/HazelcastServerError.h"
+#include "../../util/AtomicPointer.h"
 #include "../serialization/SerializationService.h"
 
 namespace hazelcast {
@@ -62,11 +63,16 @@ namespace hazelcast {
                 };
 
 
+                friend class hazelcast::client::connection::ClusterListenerThread;
+
             private:
+
                 hazelcast::client::connection::ClusterListenerThread clusterThread;
                 hazelcast::client::HazelcastClient& hazelcastClient;
+                hazelcast::util::AtomicPointer< std::map<std::string, hazelcast::client::connection::Member > > membersRef;
 
                 hazelcast::client::connection::Connection *connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses);
+
 
                 hazelcast::client::connection::ConnectionManager& getConnectionManager();
 

@@ -3,7 +3,6 @@
 //// Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 //
-//#include <boost/thread/lock_guard.hpp>
 //#include "SocketPool.h"
 //
 //namespace hazelcast {
@@ -28,7 +27,6 @@
 //            }
 //
 //            Socket *SocketPool::pop() {
-//                boost::lock_guard<boost::mutex> guard(mutex);
 //                if (!pool.empty()) {
 //                    Socket *socket = pool.front();
 //                    poppedSockets[socket->getSocketId()] = socket;
@@ -42,7 +40,6 @@
 //            }
 //
 //            void SocketPool::push(Socket *socket) {
-//                boost::lock_guard<boost::mutex> guard(mutex);
 //                pool.push(socket);
 //                poppedSockets.erase(socket->getSocketId());
 //            }

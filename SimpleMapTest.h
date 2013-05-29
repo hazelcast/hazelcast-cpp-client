@@ -6,13 +6,10 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
 #include "Thread.h"
+#import "AtomicInteger.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
-#include <boost/chrono.hpp>
 
 using namespace hazelcast::client;
 
@@ -31,29 +28,28 @@ public:
 
     Stats(const Stats& rhs) {
         Stats newOne;
-        getCount.store(rhs.getCount.load());
-        putCount.store(rhs.putCount.load());
-        removeCount.store(rhs.removeCount.load());
-
+        getCount = rhs.getCount;
+        putCount = rhs.putCount;
+        removeCount = rhs.removeCount;
     };
 
     Stats getAndReset() {
         Stats newOne(*this);
-        putCount.store(0);
-        getCount.store(0);
-        removeCount.store(0);
+        getCount = 0;
+        putCount = 0;
+        removeCount = 0;
         return newOne;
     };
-    boost::atomic<long> getCount;
-    boost::atomic<long> putCount;
-    boost::atomic<long> removeCount;
+    hazelcast::util::AtomicInteger getCount;
+    hazelcast::util::AtomicInteger putCount;
+    hazelcast::util::AtomicInteger removeCount;
 
     void print() {
-        std::cout << "Total = " << total() << ", puts = " << putCount.load() << " , gets = " << getCount.load() << " , removes = " << removeCount.load() << std::endl;
+        std::cout << "Total = " << total() << ", puts = " << putCount.get() << " , gets = " << getCount.get() << " , removes = " << removeCount.get() << std::endl;
     };
 
-    long total() {
-        return getCount.load() + putCount.load() + removeCount.load();
+    int total() {
+        return getCount.get() + putCount.get() + removeCount.get();
     };
 } stats;
 
@@ -74,9 +70,9 @@ void *printStats(void *) {
 class SimpleMapTest {
 public:
     std::string server_address;
-    std::string server_port;
+    int server_port;
 
-    SimpleMapTest(std::string address, std::string port) {
+    SimpleMapTest(std::string address, int port) {
         server_address = address;
         server_port = port;
     };
@@ -92,13 +88,13 @@ public:
             int operation = ((int) (rand() % 100));
             if (operation < GET_PERCENTAGE) {
                 map.get(key);
-                stats.getCount++;
+                ++stats.getCount;
             } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
                 map.put(key, value);
-                stats.putCount++;
+                ++stats.putCount;
             } else {
                 map.remove(key);
-                stats.removeCount++;
+                ++stats.removeCount;
             }
         }
     }

@@ -4,37 +4,38 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address(std::string url, std::string port) : url(url), port(port) {
+        Address::Address(std::string url, int port) : host(url), port(port), type(IPv4) {
 
         };
 
-        Address::Address(const Address& address): url(address.url), port(address.port) {
+        Address::Address(const Address& address): host(address.host), port(address.port), type(address.type) {
 
         };
 
 
         Address & Address::operator = (Address const & address) {
-            url = address.url;
+            host = address.host;
             port = address.port;
+            type = address.type;
             return (*this);
         };
 
-        bool Address::operator <(const Address  & rhs) const{
-            if (rhs.url.compare(url) > 1) {
+        bool Address::operator <(const Address  & rhs) const {
+            if (rhs.host.compare(host) > 1) {
                 return true;
-            } else if (rhs.url.compare(url) < 1) {
+            } else if (rhs.host.compare(host) < 1) {
                 return false;
             } else {
-                return rhs.port.compare(port) > 1;
+                return rhs.port > port;
             }
         };
 
-        std::string Address::getPort() const {
+        int Address::getPort() const {
             return port;
         };
 
-        std::string Address::getAddress() const {
-            return url;
+        std::string Address::getHost() const {
+            return host;
         };
 
     }

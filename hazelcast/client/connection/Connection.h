@@ -33,7 +33,9 @@ namespace hazelcast {
 
                 void close();
 
-                hazelcast::client::Address& getEndpoint();
+                const hazelcast::client::Address& getEndpoint() const;
+
+                const Socket& getSocket() const;
 
             private:
                 hazelcast::client::Address endpoint;
@@ -46,5 +48,11 @@ namespace hazelcast {
         }
     }
 }
+
+inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::connection::Connection &a) {
+    return strm << std::string("Connection [") << a.getEndpoint()
+            << std::string(" -> ") << a.getSocket().getHost() << std::string(":")
+            << hazelcast::util::to_string(a.getSocket().getPort()) << std::string("]");
+};
 
 #endif //HAZELCAST_CONNECTION

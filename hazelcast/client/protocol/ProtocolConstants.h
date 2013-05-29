@@ -19,7 +19,11 @@ namespace hazelcast {
                 int const PRINCIPAL_ID = 3;
 
                 int const DATA_FACTORY_ID = 0;
-                int const CLIENT_PING_REQUEST_ID = 9;
+                int const ADDRESS_ID = 1;
+                int const MEMBER_ID = 2;
+                int const ADD_MS_LISTENER = 7;
+                int const MEMBERSHIP_EVENT = 8;
+                int const PING = 9;
 
                 const byte protocol_bytes[3] = {'C', 'B', '1'};
                 std::vector<byte> const PROTOCOL(protocol_bytes, protocol_bytes + 3);

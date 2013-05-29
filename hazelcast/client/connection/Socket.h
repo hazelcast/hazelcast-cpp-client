@@ -25,6 +25,10 @@ namespace hazelcast {
 
                 void receive(void *buffer, int len);
 
+                std::string getHost() const;
+
+                int getPort() const;
+
                 int getSocketId() const;
 
                 void close();

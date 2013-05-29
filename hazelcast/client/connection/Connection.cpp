@@ -30,7 +30,12 @@ namespace hazelcast {
                 data.readData(inputSocketStream);
             };
 
-            Address & Connection::getEndpoint() {
+
+            Socket const & Connection::getSocket() const {
+                return socket;
+            }
+
+            const Address & Connection::getEndpoint() const {
                 return endpoint;
             };
 

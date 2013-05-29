@@ -2,9 +2,8 @@
 //// Created by sancar koyunlu on 5/9/13.
 //// Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-//#include <boost/thread/pthread/mutex.hpp>
-//#include "SerializationService.h"
 //#include "Socket.h"
+//#include "SerializationService.h"
 //
 //#ifndef HAZELCAST_CLIENT_SOCKET_POOL
 //#define HAZELCAST_CLIENT_SOCKET_POOL
@@ -29,7 +28,6 @@
 //
 //                //To avoid danging pointers in case of exception
 //                std::map<int/* socketID*/ ,Socket *> poppedSockets;
-//                boost::mutex mutex;
 //                Address address;
 //                long clientId;
 //            };

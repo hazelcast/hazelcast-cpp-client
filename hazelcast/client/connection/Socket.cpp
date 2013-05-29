@@ -2,7 +2,6 @@
 #include "../HazelcastException.h"
 #include <errno.h>
 
-#include <vector>
 #include <iostream>
 
 namespace hazelcast {
@@ -41,6 +40,15 @@ namespace hazelcast {
                 }
             };
 
+
+            std::string Socket::getHost() const {
+                return address.getHost();
+            }
+
+            int Socket::getPort() const {
+                return address.getPort();
+            }
+
             void Socket::close() {
                 ::freeaddrinfo(server_info);
                 ::close(socketId);
@@ -58,7 +66,7 @@ namespace hazelcast {
                 hints.ai_flags = AI_PASSIVE;
 
                 int status;
-                if ((status = getaddrinfo(address.getAddress().c_str(), address.getPort().c_str(), &hints, &server_info)) != 0) {
+                if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &server_info)) != 0) {
                     std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
                 }
 

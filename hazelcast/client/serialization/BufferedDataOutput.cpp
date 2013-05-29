@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace serialization {
 
             BufferedDataOutput::BufferedDataOutput()
-            : outputStream(new std::vector<byte>) {
+            : outputStream(new std::vector<byte>()) {
             };
 
 
