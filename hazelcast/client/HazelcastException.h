@@ -20,7 +20,7 @@ namespace hazelcast {
 
         public:
 
-            HazelcastException(std::string message);
+            HazelcastException(::std::string message);
 
             virtual ~HazelcastException() throw();
 

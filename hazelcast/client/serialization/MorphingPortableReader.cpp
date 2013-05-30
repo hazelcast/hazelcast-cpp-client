@@ -46,7 +46,11 @@ namespace hazelcast {
 
             int MorphingPortableReader::skipBytes(int i) {
                 throw hazelcast::client::HazelcastException("Not supported");
-            } ;
+            };
+            
+            void MorphingPortableReader::readFully(std::vector<byte> &bytes){
+                input.readFully(bytes);
+            };
 
             int MorphingPortableReader::readInt() {
 

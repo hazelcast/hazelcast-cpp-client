@@ -5,13 +5,22 @@
 
 #include "Member.h"
 
+
 namespace hazelcast {
     namespace client {
         namespace connection {
             Member::Member():address("", 0) { //TODO
 
             };
-
+            
+            bool Member::operator==(const Member & rhs) const{
+                return address == rhs.address;
+            };
+            
+            int Member::operator <(const Member& rhs) const{
+                return address < rhs.address;
+            };
+            
             Address Member::getAddress() const {
                 return address;
             };

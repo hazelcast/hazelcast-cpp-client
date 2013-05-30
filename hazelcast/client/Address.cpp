@@ -20,13 +20,23 @@ namespace hazelcast {
             return (*this);
         };
 
-        bool Address::operator <(const Address  & rhs) const {
+        bool Address::operator==(const hazelcast::client::Address & rhs) const{
             if (rhs.host.compare(host) > 1) {
                 return true;
             } else if (rhs.host.compare(host) < 1) {
                 return false;
             } else {
-                return rhs.port > port;
+                return rhs.port == port;
+            }
+        };
+        
+        int Address::operator <(const Address  & rhs) const {
+            if (rhs.host.compare(host) > 1) {
+                return 1;
+            } else if (rhs.host.compare(host) < 1) {
+                return -1;
+            } else {
+                return rhs.port - port;
             }
         };
 

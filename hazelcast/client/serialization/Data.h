@@ -12,6 +12,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
+#include "ConstantSerializers.h"
 #include <vector>
 #include <iosfwd>
 
@@ -22,10 +23,9 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data {
-
-                template<typename DataInput>
-                friend void readPortable(DataInput& dataInput, Data& data);
+            class Data {        
+                friend void readPortable(PortableReader& dataInput, Data& data);
+                friend void readPortable(MorphingPortableReader& portableReader , Data& data);
 
             public:
 
@@ -136,36 +136,6 @@ namespace hazelcast {
 
             inline int getTypeId(const Data& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& dataInput, Data& data) {
-                data.type = dataInput.readInt();
-                int classId = dataInput.readInt();
-
-                if (classId != data.NO_CLASS_ID) {
-                    int factoryId = dataInput.readInt();
-                    data.isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                            && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
-                    int version = dataInput.readInt();
-
-                    int classDefSize = dataInput.readInt();
-
-                    if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
-                        data.cd = data.context->lookup(factoryId, classId, version);
-                        dataInput.skipBytes(classDefSize);
-                    } else {
-                        std::auto_ptr< std::vector<byte>> classDefBytes (new std::vector<byte> (classDefSize));
-                        dataInput.readFully(*(classDefBytes.get()));
-                        data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
-                    }
-                }
-                int size = dataInput.readInt();
-                if (size > 0) {
-                    data.buffer->resize(size, 0);
-                    dataInput.readFully(*(data.buffer.get()));
-                }
-                data.partitionHash = dataInput.readInt();
             };
 
         }

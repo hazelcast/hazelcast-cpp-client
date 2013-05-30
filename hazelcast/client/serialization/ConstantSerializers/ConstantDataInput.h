@@ -50,6 +50,8 @@ namespace hazelcast {
             void readPortable(BufferedDataInput& dataInput, std::vector<float >& data);
 
             void readPortable(BufferedDataInput& dataInput, std::vector<double >& data);
+            
+            void readPortable(BufferedDataInput& dataInput, Data& data);
 
             void operator >>(BufferedDataInput& dataInput, byte& data);
 
@@ -82,6 +84,8 @@ namespace hazelcast {
             void operator >>(BufferedDataInput& dataInput, std::vector<float >& data);
 
             void operator >>(BufferedDataInput& dataInput, std::vector<double >& data);
+            
+            void operator >>(BufferedDataInput& dataInput, Data& data);
 
         }
     }

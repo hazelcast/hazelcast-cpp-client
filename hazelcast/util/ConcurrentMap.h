@@ -8,6 +8,7 @@
 #define HAZELCAST_CONCURRENT_MAP
 
 #include <map>
+#include <vector>
 
 namespace hazelcast {
     namespace util {
@@ -15,27 +16,27 @@ namespace hazelcast {
         class ConcurrentMap {
         public:
             ConcurrentMap() {
-
+                
             };
-
+            
             ~ConcurrentMap() {
                 typename std::map<K, V *>::iterator it;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-//                    delete it->second; //TODO uncomment on release
+                    //                    delete it->second; //TODO uncomment on release
                 }
             };
-
-
+            
+            
             bool containsKey(const K& key) const {
                 return internalMap.count(key) > 0;
             };
-
+            
             /**
-            *
-            * @return the previous value associated with the specified key,
-            *         or <tt>null</tt> if there was no mapping for the key
-            * @throws NullPointerException if the specified key or value is null
-            */
+             *
+             * @return the previous value associated with the specified key,
+             *         or <tt>null</tt> if there was no mapping for the key
+             * @throws NullPointerException if the specified key or value is null
+             */
             V *putIfAbsent(const K& key, V *value) {
                 if (internalMap.count(key) > 0) {
                     delete value;
@@ -45,11 +46,16 @@ namespace hazelcast {
                     return NULL;
                 }
             };
-
-//                void put(const K& key, V& value) {
-//                    value = internalMap[key];
-//                };
-
+            
+            void put(const K& key, V* value) {
+                V* tempValue;
+                if (internalMap.count(key) > 0) {
+                    tempValue = internalMap[key];
+                }
+                internalMap[key] = value;
+                delete tempValue;
+            };
+            
             /**
              * Returns the value to which the specified key is mapped,
              * or {@code null} if this map contains no mapping for the key.
@@ -61,12 +67,32 @@ namespace hazelcast {
                 else
                     return NULL;
             };
-
-//                V& operator [](const K& key) {
-//                    return internalMap[key];
-//                };
-
-
+            
+            V* remove(const K& key){
+                if (internalMap.count(key) > 0){
+                    V* value = internalMap[key];
+                    internalMap.erase(internalMap.find(key));
+                    return value;
+                }
+                else
+                    return NULL;
+            };
+            
+            std::vector<V*> values(){
+                std::vector<V*> val(internalMap.size());
+                typename std::map<K, V *>::iterator it;
+                int i = 0;
+                for (it = internalMap.begin(); it != internalMap.end(); ++it) {
+                    val[i++] = it->second;
+                }
+                return val;
+            };
+            
+            //                V& operator [](const K& key) {
+            //                    return internalMap[key];
+            //                };
+            
+            
         private:
             std::map<K, V *> internalMap;
         };

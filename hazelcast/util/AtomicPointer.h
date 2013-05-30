@@ -18,23 +18,24 @@ namespace hazelcast {
             AtomicPointer() {
                 __sync_lock_test_and_set(&pointer, NULL);
             };
-
+            
             AtomicPointer(T *p) {
                 __sync_lock_test_and_set(&pointer, p);
             };
-
+            
             T *get() {
                 return __sync_fetch_and_add(&pointer, 0);
             };
-
-            void *set(T *p) {
-                __sync_lock_test_and_set(&pointer, p);
+            
+            T* set(T *p) {
+                
+                return __sync_lock_test_and_set(&pointer, p);
             };
-
+            
         private:
             T *pointer;
         };
-
+        
     }
 }
 

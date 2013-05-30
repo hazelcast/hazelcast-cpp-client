@@ -5,6 +5,7 @@
 
 #include "ConstantsPortableReader.h"
 #include "PortableReader.h"
+#include "Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -73,6 +74,36 @@ namespace hazelcast {
 
             void readPortable(PortableReader& portableReader, std::vector<double >& data) {
                 data = portableReader.readDoubleArray();
+            };
+            
+            void readPortable(PortableReader& portableReader , Data& data){                            
+                    data.type = portableReader.readInt();
+                    int classId = portableReader.readInt();
+                    
+                    if (classId != data.NO_CLASS_ID) {
+                        int factoryId = portableReader.readInt();
+                        data.isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
+                        && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                        int version = portableReader.readInt();
+                        
+                        int classDefSize = portableReader.readInt();
+                        
+                        if (data.context->isClassDefinitionExists(factoryId, classId, version)) {
+                            data.cd = data.context->lookup(factoryId, classId, version);
+                            portableReader.skipBytes(classDefSize);
+                        } else {
+                            std::auto_ptr< std::vector<byte>> classDefBytes (new std::vector<byte> (classDefSize));
+                            portableReader.readFully(*(classDefBytes.get()));
+                            data.cd = data.context->createClassDefinition(factoryId, classDefBytes);
+                        }
+                    }
+                    int size = portableReader.readInt();
+                    if (size > 0) {
+                        data.buffer->resize(size, 0);
+                        portableReader.readFully(*(data.buffer.get()));
+                    }
+                    data.partitionHash = portableReader.readInt();
+
             };
 
             void operator >>(PortableReader& portableReader, byte& data) {
@@ -153,6 +184,11 @@ namespace hazelcast {
             void operator >>(PortableReader& portableReader, std::vector<double >& data) {
                 portableReader.readingFromDataInput();
                 data = portableReader.readDoubleArray();
+            };
+            
+            void operator >>(PortableReader& portableReader, Data& data) {
+                portableReader.readingFromDataInput();
+                readPortable(portableReader, data);
             };
 
         }

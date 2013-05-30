@@ -73,6 +73,10 @@ namespace hazelcast {
             void readPortable(BufferedDataInput& dataInput, std::vector<double >& data) {
                 data = dataInput.readDoubleArray();
             };
+            
+            void readPortable(BufferedDataInput& dataInput, Data& data){
+                
+            };
 
             void operator >>(BufferedDataInput& dataInput, byte& data) {
                 data = dataInput.readByte();
@@ -136,6 +140,10 @@ namespace hazelcast {
 
             void operator >>(BufferedDataInput& dataInput, std::vector<double >& data) {
                 data = dataInput.readDoubleArray();
+            };
+            
+            void operator >>(BufferedDataInput& dataInput, Data& data) {
+                
             };
         }
     }

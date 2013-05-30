@@ -10,6 +10,13 @@ namespace hazelcast {
         SerializableCollection::SerializableCollection() {
 
         };
+        
+        SerializableCollection::~SerializableCollection(){
+            vector<hazelcast::client::serialization::Data *>::iterator it;
+            for (it = datas.begin(); it != datas.end(); ++it) {
+                delete (*it);
+            }
+        };
 
         vector<hazelcast::client::serialization::Data *>  SerializableCollection::getCollection() const {
             return datas;

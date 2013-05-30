@@ -39,6 +39,8 @@ namespace hazelcast {
                 PortableReader& operator [](std::string fieldName);
 
                 int skipBytes(int i);
+                
+                void readFully(std::vector<byte>&);
 
                 int readInt();
 
@@ -121,7 +123,6 @@ namespace hazelcast {
                             read(input, portables[i], fd.getFactoryId(), fd.getClassId());
                         }
                     }
-//                    return portables;
                 };
 
                 void readingFromDataInput();

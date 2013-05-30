@@ -11,20 +11,20 @@ void *increment(void *x) {
     for (int i = 0; i < 10000; i++)
         __sync_fetch_and_add(f, 1);
     std::cout << ".";
-
+    return NULL;
 };
 
 int main(int argc, char **argv) {
     try{
-//        testDifferentVersions();
-//        testRawData();
-//        testRawDataWithoutRegistering();
-//        testRawDataInvalidWrite();
-//        testRawDataInvalidRead();
-//        testCompression();
-//        testSerialization();
-//        testSerializationViaFile();
-//        testIdentifiedDataSerializable();
+        testDifferentVersions();
+        testRawData();
+        testRawDataWithoutRegistering();
+        testRawDataInvalidWrite();
+        testRawDataInvalidRead();
+        testCompression();
+        testSerialization();
+        testSerializationViaFile();
+        testIdentifiedDataSerializable();
 
 //        testPutGetRemove();
 //        testBinaryClient();

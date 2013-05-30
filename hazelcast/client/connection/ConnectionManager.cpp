@@ -97,7 +97,14 @@ namespace hazelcast {
                     return pPool == NULL ? pool : pPool;
                 }
                 return pool;
-            }
+            };
+            
+            void ConnectionManager::removeConnectionPool(const hazelcast::client::Address &address){
+                    ConnectionPool* pool = poolMap.remove(address);
+                    if (pool != NULL){                        
+                        pool->destroy();
+                    }
+            };
 
             void ConnectionManager::authenticate(Connection& connection, bool reAuth) {
                 connection.write(hazelcast::client::protocol::ProtocolConstants::PROTOCOL);

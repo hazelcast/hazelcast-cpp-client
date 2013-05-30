@@ -26,7 +26,9 @@ namespace hazelcast {
 
             Address& operator = (const Address&);
 
-            bool operator <(const Address&) const;
+            bool operator == (const Address&) const;//TODO
+            
+            int operator <(const Address&) const;//TODO
 
             int getPort() const;
 
@@ -67,31 +69,31 @@ namespace hazelcast {
 
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const hazelcast::client::Address& address) {
-//                writer << address.port;
-//                writer << address.type;
-//                int size = address.host.size();
-//                writer << size;
-//                if (size != 0) {
-//                    std::vector<char> temp(size);
-//                    char const *str = address.host.c_str();
-//                    temp.insert(temp.begin(), str, str + size);
-//                    writer << str;
-//                }
+                writer << address.port;
+                writer << address.type;
+                int size = address.host.size();
+                writer << size;
+                if (size != 0) {
+                    std::vector<char> temp(size);
+                    char const *str = address.host.c_str();
+                    temp.insert(temp.begin(), str, str + size);
+                    writer << str;
+                }
             };
 
             template<typename HzReader>
             inline void readPortable(HzReader& reader, hazelcast::client::Address& address) {
-//                reader >> address.port;
-//                reader >> address.type;
-//                int size;
-//                reader >> size;
-//                if (size != 0) {
-//                    std::vector<char> temp(size);
-//                    reader >> temp;
-//                    std::ostringstream oss;
-//                    std::copy(temp.begin(), temp.end(), std::ostream_iterator<int>(oss));
-//                    address.host = oss.str();
-//                }
+                reader >> address.port;
+                reader >> address.type;
+                int size;
+                reader >> size;
+                if (size != 0) {
+                    std::vector<char> temp(size);
+                    reader >> temp;
+                    std::ostringstream oss;
+                    std::copy(temp.begin(), temp.end(), std::ostream_iterator<int>(oss));
+                    address.host = oss.str();
+                }
             };
 
         }

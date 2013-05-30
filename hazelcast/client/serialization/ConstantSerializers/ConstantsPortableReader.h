@@ -50,6 +50,8 @@ namespace hazelcast {
             void readPortable(PortableReader& portableReader, std::vector<float >& data);
 
             void readPortable(PortableReader& portableReader, std::vector<double >& data);
+            
+            void readPortable(PortableReader& portableReader, Data& data);
 
             void operator >>(PortableReader& portableReader, byte& data);
 
@@ -83,7 +85,7 @@ namespace hazelcast {
 
             void operator >>(PortableReader& portableReader, std::vector<double >& data);
 
-
+            void operator >>(PortableReader& portableReader, Data& data);
         }
     }
 }

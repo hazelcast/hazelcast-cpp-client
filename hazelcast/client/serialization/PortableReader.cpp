@@ -48,6 +48,10 @@ namespace hazelcast {
             int PortableReader::skipBytes(int i) {
                 throw hazelcast::client::HazelcastException("Not supported");
             };
+            
+            void PortableReader::readFully(std::vector<byte>& bytes){
+                input.readFully(bytes);
+            };
 
             int PortableReader::readInt() {
                 return input.readInt();

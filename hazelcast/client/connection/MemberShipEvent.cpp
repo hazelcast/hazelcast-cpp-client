@@ -8,6 +8,11 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
+            
+            MembershipEvent::MembershipEvent(){
+                
+            };
+            
             MembershipEvent::MembershipEvent(Member const & member, int eventType)
             : member(member)
             , eventType(eventType) {

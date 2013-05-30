@@ -68,7 +68,7 @@ namespace hazelcast {
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
                         dataSerializer.read(dataInput, object);
                     } else {
-                        readPortable(dataInput, object);
+                        hazelcast::client::serialization::readPortable(dataInput, object);
                     }
                 };
 

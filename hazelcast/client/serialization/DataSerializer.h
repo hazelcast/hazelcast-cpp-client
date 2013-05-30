@@ -2,15 +2,13 @@
 // Created by sancar koyunlu on 5/15/13.
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
-
+#ifndef HAZELCAST_DATA_SERIALIZER
+#define HAZELCAST_DATA_SERIALIZER
 
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
 #include "ConstantSerializers.h"
 #include "../HazelcastException.h"
-
-#ifndef HAZELCAST_DATA_SERIALIZER
-#define HAZELCAST_DATA_SERIALIZER
 
 namespace hazelcast {
     namespace client {
@@ -34,10 +32,10 @@ namespace hazelcast {
                     if (!identified) {
                         throw hazelcast::client::HazelcastException("void DataSerializer::read(BufferedDataInput& in, T& object) >  DataSerializable is not identified");
                     }
-                    int factoryId = in.readInt();
-                    int classId = in.readInt();
+                    in.readInt(); //factoryId
+                    in.readInt(); //classId
                     //TODO factoryId and classId is not used!!!
-                    readPortable(in, object);
+                    hazelcast::client::serialization::readPortable(in, object);
                 };
             };
         }
