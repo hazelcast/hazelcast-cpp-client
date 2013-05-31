@@ -10,7 +10,7 @@
 #define Server_TestInnerPortable_h
 
 #include "TestNamedPortable.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 
 using namespace hazelcast::client;

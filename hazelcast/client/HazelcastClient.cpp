@@ -4,7 +4,7 @@
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
 #include "ClientConfig.h"
-
+#include "Cluster.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,21 +18,26 @@ namespace hazelcast {
             , connectionManager(serializationService, clientConfig)
             , clusterService(*client)
             , invocationService(clusterService)
-            , clientContext(*client) {
-
+            , clientContext(*client)
+            , cluster(clusterService) {
+                LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
+                loadBalancer->init(cluster);
             };
 
             ClientConfig clientConfig;
+            Cluster cluster;
             serialization::SerializationService serializationService;
             connection::ConnectionManager connectionManager;
             spi::ClusterService clusterService;
             spi::InvocationService invocationService;
             spi::ClientContext clientContext;
+
         };
 
         HazelcastClient::HazelcastClient(ClientConfig& config)
         :impl(new HazelcastClientImpl(config, this)) {
             impl->clusterService.start();
+
         };
 
         HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {

@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 #include <memory>
-#include "ConcurrentMap.h"
+#include "../../util/ConcurrentMap.h"
 
 
 namespace hazelcast {

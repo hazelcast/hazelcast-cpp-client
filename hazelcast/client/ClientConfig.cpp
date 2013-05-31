@@ -1,4 +1,5 @@
 #include "ClientConfig.h"
+#include "impl/RoundRobinLB.h"
 
 namespace hazelcast {
     namespace client {
@@ -10,7 +11,8 @@ namespace hazelcast {
         , connectionTimeout(60000)
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
-        , credentials(NULL){
+        , credentials(NULL)
+        , loadBalancer(dynamic_cast<LoadBalancer *>(new impl::RoundRobinLB)) {
         };
 
         ClientConfig::ClientConfig(const ClientConfig& rhs)
@@ -21,7 +23,7 @@ namespace hazelcast {
         , connectionAttemptLimit(rhs.connectionAttemptLimit)
         , attemptPeriod(rhs.attemptPeriod)
         , groupConfig(rhs.groupConfig)
-        , addressList(rhs.addressList){
+        , addressList(rhs.addressList) {
         };
 
 
@@ -41,7 +43,7 @@ namespace hazelcast {
         };
 
         ClientConfig::~ClientConfig() {
-            if(credentials != NULL)
+            if (credentials != NULL)
                 delete credentials;
         };
 
@@ -67,6 +69,14 @@ namespace hazelcast {
 
         int ClientConfig::getAttemptPeriod() const {
             return attemptPeriod;
+        };
+
+        LoadBalancer *const ClientConfig::getLoadBalancer() const {
+            return loadBalancer;
+        };
+
+        void ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
+            this->loadBalancer = loadBalancer;
         };
 
     }

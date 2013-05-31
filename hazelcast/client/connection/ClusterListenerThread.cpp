@@ -5,10 +5,9 @@
 #include "MembershipEvent.h"
 #include "../protocol/AddMembershipListenerRequest.h"
 #include "../../util/SerializableCollection.h"
-#include "ClientConfig.h"
+#include "../ClientConfig.h"
 #include "../spi/ClusterService.h"
-#include "../spi/MembershipListener.h"
-#include "ClusterListenerThread.h"
+#include "../MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,19 +17,19 @@ namespace hazelcast {
             , clientConfig(clientConfig)
             , clusterService(clusterService)
             , conn(NULL) {
-                
+
             };
-            
+
             void ClusterListenerThread::setInitialConnection(hazelcast::client::connection::Connection *connection) {
                 this->conn = connection;
             };
-            
+
             void *ClusterListenerThread::run(void *input) {
                 static_cast<ClusterListenerThread *>(input)->runImpl();
                 return NULL;
-                
+
             };
-            
+
             void ClusterListenerThread::runImpl() {
                 while (true) {
                     try {
@@ -41,9 +40,9 @@ namespace hazelcast {
                         loadInitialMemberList();
                         listenMembershipEvents();
                     } catch (hazelcast::client::HazelcastException& e) {
-                        //                        if (client.getLifecycleService().isRunning()) {
-                        //                            e.printStackTrace();
-                        //                        }
+//                        if (client.getLifecycleService().isRunning()) {
+//                            e.printStackTrace();
+//                        }
                         std::cout << *conn << " FAILED..." << std::endl;
                         conn->close();
                     }
@@ -54,7 +53,7 @@ namespace hazelcast {
                     }
                 }
             };
-            
+
             Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;
                 if (!members.empty()) {
@@ -63,10 +62,10 @@ namespace hazelcast {
                 }
                 vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(addresses.end(), configAddresses.begin(), configAddresses.end());
-                //                std::cout << "Possible addresses: " << addresses << std::endl;
+//                std::cout << "Possible addresses: " << addresses << std::endl;
                 return clusterService.connectToOne(addresses);
             };
-            
+
             void ClusterListenerThread::loadInitialMemberList() {
                 hazelcast::client::protocol::AddMembershipListenerRequest request;
                 hazelcast::util::SerializableCollection coll;
@@ -84,11 +83,9 @@ namespace hazelcast {
                     serializationService.toObject(*data, member);
                     members.push_back(member);
                 }
-                //                System.err.println("members = " + members);
                 updateMembersRef();
                 std::vector<MembershipEvent> events;
                 for (Member member : members) {
-                    Member former;
                     if (prevMembers.count(member.getUuid()) > 0) {
                         prevMembers.erase(member.getUuid());
                     } else {
@@ -103,7 +100,7 @@ namespace hazelcast {
                     fireMembershipEvent(event);
                 }
             };
-            
+
             void ClusterListenerThread::listenMembershipEvents() {
                 serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 while (true) {
@@ -123,32 +120,30 @@ namespace hazelcast {
                     fireMembershipEvent(event);
                 }
             };
-            
-            
+
+
             void ClusterListenerThread::fireMembershipEvent(MembershipEvent & event) {
-                //                    client.getClientExecutionService().execute(new Runnable() {
-                //                        public void run() {
-                for (hazelcast::client::spi::MembershipListener* listener : clusterService.listeners.values()) {
+                //TODO give this job to another thread
+                for (hazelcast::client::MembershipListener *listener : clusterService.listeners.values()) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         listener->memberAdded(event);
                     } else {
                         listener->memberRemoved(event);
                     }
                 }
-                //                        }
-                //                    });
             };
-            
+
             void ClusterListenerThread::updateMembersRef() {
-                std::map<hazelcast::client::Address,Member>* map = new std::map<hazelcast::client::Address,Member>;
-                
+                std::map<hazelcast::client::Address, Member> *map = new std::map<hazelcast::client::Address, Member>;
+                std::cout << "Members" << std::endl;
                 for (Member member : members) {
+                    std::cout << "\t" << member.getAddress() << std::endl;
                     (*map)[member.getAddress()] = member;
                 }
                 delete clusterService.membersRef.set(map);
-                
+
             };
-            
+
             std::vector<Address> ClusterListenerThread::getClusterAddresses() const {
                 std::vector<Address> socketAddresses;
                 for (Member member : members) {
@@ -157,7 +152,7 @@ namespace hazelcast {
                 //                Collections.shuffle(socketAddresses);
                 return socketAddresses;
             };
-            
+
             vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
                 vector<Address>  & configAddresses = clientConfig.getAddresses();
@@ -167,8 +162,8 @@ namespace hazelcast {
                 //                Collections.shuffle(socketAddresses);
                 return socketAddresses;
             };
-            
-            
+
+
         }
     }
 }

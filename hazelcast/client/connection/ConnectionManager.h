@@ -20,10 +20,8 @@ namespace hazelcast {
 
             class Credentials;
         }
-        
-        namespace spi{
-            class MembershipListener;
-        }
+
+        class MembershipListener;
 
         class ClientConfig;
 
@@ -45,13 +43,13 @@ namespace hazelcast {
                 void releaseConnection(Connection *connection);
 
                 ConnectionPool *getConnectionPool(const hazelcast::client::Address& address);
-                
+
                 void removeConnectionPool(const hazelcast::client::Address& address);
 
                 void authenticate(Connection& connection, bool reAuth);
 
             private:
-                hazelcast::util::ConcurrentMap<Address, ConnectionPool > poolMap;                
+                hazelcast::util::ConcurrentMap<Address, ConnectionPool > poolMap;
                 hazelcast::client::serialization::SerializationService& serializationService;
                 hazelcast::client::ClientConfig& clientConfig;
                 hazelcast::client::protocol::Principal *principal;

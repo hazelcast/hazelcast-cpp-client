@@ -16,31 +16,31 @@
 
 namespace hazelcast {
     namespace client {
-        
+
         class HazelcastClient;
-        
+
         namespace spi {
-            
+
             class ClusterService {
             public:
                 ClusterService(hazelcast::client::HazelcastClient& client);
-                
+
                 void start();
-                
+
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(send_type& object, recv_type& response) {
                     hazelcast::client::connection::Connection& conn = getConnectionManager().getRandomConnection();
                     sendAndReceive(conn, object, response);
                     getConnectionManager().releaseConnection(&conn);
                 }
-                
+
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(const Address& address, send_type& object, recv_type& response) {
                     hazelcast::client::connection::Connection& conn = getConnectionManager().getConnection(address);
                     sendAndReceive(conn, object, response);
                     getConnectionManager().releaseConnection(&conn);
                 }
-                
+
                 template<typename send_type, typename recv_type>
                 void sendAndReceive(hazelcast::client::connection::Connection& connection, send_type& object, recv_type& response) {
                     using namespace hazelcast::client::serialization;
@@ -59,32 +59,34 @@ namespace hazelcast {
                     } else {
                         serializationService.toObject(responseData, response);
                     }
-                    
+
                 };
-                
-                std::string addMembershipListener(MembershipListener* listener);
-                
-                bool removeMembershipListener(const std::string& registrationId);
-                
-                
+
+                void addMembershipListener(MembershipListener *listener);
+
+                bool removeMembershipListener(MembershipListener *listener);
+
+                std::vector<hazelcast::client::connection::Member> getMemberList();
+
                 friend class hazelcast::client::connection::ClusterListenerThread;
-                
+
             private:
-                
+
                 hazelcast::client::connection::ClusterListenerThread clusterThread;
                 hazelcast::client::HazelcastClient& hazelcastClient;
                 hazelcast::util::AtomicPointer< std::map<hazelcast::client::Address, hazelcast::client::connection::Member > > membersRef;
-                hazelcast::util::ConcurrentMap<std::string, hazelcast::client::spi::MembershipListener> listeners;    
+                hazelcast::util::ConcurrentMap< hazelcast::client::MembershipListener *, hazelcast::client::MembershipListener> listeners;
+
                 hazelcast::client::connection::Connection *connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses);
-                
-                
+
+
                 hazelcast::client::connection::ConnectionManager& getConnectionManager();
-                
+
                 hazelcast::client::serialization::SerializationService& getSerializationService();
-                
+
                 hazelcast::client::ClientConfig & getClientConfig();
             };
-            
+
         }
     }
 }

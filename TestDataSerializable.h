@@ -8,7 +8,7 @@
 #define __TestMobile_H_
 
 #include "hazelcast/client/serialization/DataSerializable.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 
 class TestDataSerializable {

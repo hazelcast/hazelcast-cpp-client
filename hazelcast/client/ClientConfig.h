@@ -4,6 +4,7 @@
 #include "Address.h"
 #include "GroupConfig.h"
 #include "protocol/Credentials.h"
+#include "LoadBalancer.h"
 #include <vector>
 
 namespace hazelcast {
@@ -16,6 +17,8 @@ namespace hazelcast {
 
             ClientConfig(const ClientConfig&);
 
+            ~ClientConfig();
+
             ClientConfig& addAddress(const Address& address);
 
             ClientConfig& addAddresses(const std::vector<Address>& addresses);
@@ -24,8 +27,6 @@ namespace hazelcast {
 
             ClientConfig& operator = (const ClientConfig&);
 
-            ~ClientConfig();
-
             GroupConfig& getGroupConfig();
 
             hazelcast::client::protocol::Credentials& getCredentials();
@@ -33,6 +34,10 @@ namespace hazelcast {
             int getConnectionAttemptLimit() const;
 
             int getAttemptPeriod() const;
+
+            LoadBalancer *const getLoadBalancer() const;
+
+            void setLoadBalancer(LoadBalancer *loadBalancer);
 
         private:
 
@@ -53,7 +58,7 @@ namespace hazelcast {
             /**
              * Used to distribute the operations to multiple Endpoints.
              */
-//            LoadBalancer loadBalancer = new RoundRobinLB();
+            LoadBalancer *loadBalancer;
 
             /**
              * List of listeners that Hazelcast will automatically add as a part of initialization process.

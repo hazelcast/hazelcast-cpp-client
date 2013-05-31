@@ -16,15 +16,15 @@ void *increment(void *x) {
 
 int main(int argc, char **argv) {
     try{
-        testDifferentVersions();
-        testRawData();
-        testRawDataWithoutRegistering();
-        testRawDataInvalidWrite();
-        testRawDataInvalidRead();
-        testCompression();
-        testSerialization();
-        testSerializationViaFile();
-        testIdentifiedDataSerializable();
+//        testDifferentVersions();
+//        testRawData();
+//        testRawDataWithoutRegistering();
+//        testRawDataInvalidWrite();
+//        testRawDataInvalidRead();
+//        testCompression();
+//        testSerialization();
+//        testSerializationViaFile();
+//        testIdentifiedDataSerializable();
 
 //        testPutGetRemove();
 //        testBinaryClient();

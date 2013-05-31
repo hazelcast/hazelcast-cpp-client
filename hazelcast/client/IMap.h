@@ -62,12 +62,12 @@ namespace hazelcast {
                 V oldValue;
                 serialization::Data debugData;//TODO 3 TEST LINES
 //                clock_t time1 = clock();
-                toData(request, debugData);
+//                toData(request, debugData);
 //                clock_t time2 = clock();
-                toObject(debugData, oldValue);
+//                toObject(debugData, oldValue);
 //                clock_t time3 = clock();
 //                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
-//                invoke(request, oldValue, keyData);
+                invoke(request, oldValue, keyData);
                 return oldValue;
             };
 

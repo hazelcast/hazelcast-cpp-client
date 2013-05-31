@@ -5,8 +5,8 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
-#include "Thread.h"
-#import "AtomicInteger.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/AtomicInteger.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
