@@ -4,7 +4,7 @@
 
 
 #include "ConstantDataOutput.h"
-#include "BufferedDataOutput.h"
+#include "../BufferedDataOutput.h"
 
 namespace hazelcast {
     namespace client {

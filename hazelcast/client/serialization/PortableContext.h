@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 ClassDefinition *lookup(int, int);
 
-                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte>>);
+                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte> >);
 
                 ClassDefinition *registerClassDefinition(ClassDefinition *cd);
 

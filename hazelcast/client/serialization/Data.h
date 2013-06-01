@@ -23,15 +23,16 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data {        
+            class Data {
                 friend void readPortable(PortableReader& dataInput, Data& data);
-                friend void readPortable(MorphingPortableReader& portableReader , Data& data);
+
+                friend void readPortable(MorphingPortableReader& portableReader, Data& data);
 
             public:
 
                 Data();
 
-                Data(const int type, std::auto_ptr <std::vector<byte>> bytes);
+                Data(const int type, std::auto_ptr <std::vector<byte> > bytes);
 
                 ~Data();
 
@@ -97,7 +98,7 @@ namespace hazelcast {
                             cd = context->lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);
                         } else {
-                            std::auto_ptr< std::vector<byte>> classDefBytes (new std::vector<byte> (classDefSize));
+                            std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                             dataInput.readFully(*(classDefBytes.get()));
                             cd = context->createClassDefinition(factoryId, classDefBytes);
                         }

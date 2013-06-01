@@ -25,7 +25,7 @@ namespace hazelcast {
                 (*this) = rhs;
             };
 
-            Data::Data(const int type, std::auto_ptr <std::vector<byte>> buffer) : partitionHash(-1)
+            Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer) : partitionHash(-1)
             , isError(false)
             , cd(NULL)
             , buffer(buffer) {

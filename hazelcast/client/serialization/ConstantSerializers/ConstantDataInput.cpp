@@ -4,7 +4,7 @@
 
 
 #include "ConstantDataInput.h"
-#include "BufferedDataInput.h"
+#include "../BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -73,9 +73,9 @@ namespace hazelcast {
             void readPortable(BufferedDataInput& dataInput, std::vector<double >& data) {
                 data = dataInput.readDoubleArray();
             };
-            
-            void readPortable(BufferedDataInput& dataInput, Data& data){
-                
+
+            void readPortable(BufferedDataInput& dataInput, Data& data) {
+
             };
 
             void operator >>(BufferedDataInput& dataInput, byte& data) {
@@ -141,9 +141,9 @@ namespace hazelcast {
             void operator >>(BufferedDataInput& dataInput, std::vector<double >& data) {
                 data = dataInput.readDoubleArray();
             };
-            
+
             void operator >>(BufferedDataInput& dataInput, Data& data) {
-                
+
             };
         }
     }

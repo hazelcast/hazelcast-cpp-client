@@ -22,11 +22,11 @@ namespace hazelcast {
                 destroy();
             };
 
-            Connection* ConnectionPool::take(ConnectionManager* manager) {
+            Connection *ConnectionPool::take(ConnectionManager *manager) {
                 if (!active) {
-                    return false;
+                    return NULL;
                 }
-                Connection* t;
+                Connection *t;
                 bool b = queue.poll(t);
                 if (b == false) {
                     t = new Connection(address, serializationService);

@@ -6,7 +6,7 @@
 #ifndef HAZElCAST_CLUSTER
 #define HAZElCAST_CLUSTER
 
-#include "Member.h"
+#include "connection/Member.h"
 #include <vector>
 
 namespace hazelcast {

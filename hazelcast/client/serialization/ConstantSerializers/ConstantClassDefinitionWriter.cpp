@@ -4,8 +4,8 @@
 
 
 #include "ConstantClassDefinitionWriter.h"
-#include "ClassDefinitionWriter.h"
-#include "NullPortable.h"
+#include "../ClassDefinitionWriter.h"
+#include "../NullPortable.h"
 
 namespace hazelcast {
     namespace client {

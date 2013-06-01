@@ -4,8 +4,8 @@
 
 
 
-#ifndef __ConstantsMorphingPortableReader_H_
-#define __ConstantsMorphingPortableReader_H_
+#ifndef HAZELCAST_CONSTANT_MPR
+#define HAZELCAST_CONSTANT_MPR
 
 #include <vector>
 #include <string>
@@ -50,7 +50,7 @@ namespace hazelcast {
             void readPortable(MorphingPortableReader& portableReader, std::vector<float >& data);
 
             void readPortable(MorphingPortableReader& portableReader, std::vector<double >& data);
-            
+
             void readPortable(MorphingPortableReader& portableReader, Data& data);
 
             void operator >>(MorphingPortableReader& portableReader, byte& data);
@@ -91,4 +91,4 @@ namespace hazelcast {
 }
 
 
-#endif //__ConstantsMorphingPortableReader_H_
+#endif //HAZELCAST_CONSTANT_MPR

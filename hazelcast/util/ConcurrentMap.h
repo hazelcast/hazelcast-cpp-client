@@ -51,9 +51,11 @@ namespace hazelcast {
                 V *tempValue;
                 if (internalMap.count(key) > 0) {
                     tempValue = internalMap[key];
+                    internalMap[key] = value;
+                    delete tempValue;
+                } else {
+                    internalMap[key] = value;
                 }
-                internalMap[key] = value;
-                delete tempValue;
             };
 
             /**

@@ -8,6 +8,7 @@
 #include "../HazelcastClient.h"
 #include "../serialization/ClassDefinitionBuilder.h"
 #include "../../util/Thread.h"
+#include "../MembershipListener.h"
 
 namespace hazelcast {
     namespace client {

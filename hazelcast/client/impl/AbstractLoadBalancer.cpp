@@ -21,8 +21,8 @@ namespace hazelcast {
             void AbstractLoadBalancer::setMembersRef() {
                 std::vector<hazelcast::client::connection::Member> memberSet = cluster->getMembers();
                 std::vector<connection::Member> *members = new std::vector<hazelcast::client::connection::Member>;
-                for (connection::Member member : memberSet) {
-                    members->push_back(member);
+                for (std::vector<connection::Member>::iterator it = members->begin(); it != memberSet.end(); ++it) {
+                    members->push_back((*it));
                 }
                 membersRef.set(members);
             };

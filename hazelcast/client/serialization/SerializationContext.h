@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 ClassDefinition *lookup(int, int, int);
 
-                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte>>);
+                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
                 void registerNestedDefinitions(ClassDefinition *cd);
 

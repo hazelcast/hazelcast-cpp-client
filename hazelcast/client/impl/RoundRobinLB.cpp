@@ -5,7 +5,7 @@
 
 #include "RoundRobinLB.h"
 #include "../Cluster.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 
 namespace hazelcast {
     namespace client {

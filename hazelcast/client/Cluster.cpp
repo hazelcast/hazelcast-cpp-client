@@ -4,7 +4,7 @@
 
 
 #include "Cluster.h"
-#include "ClusterService.h"
+#include "spi/ClusterService.h"
 #include "MembershipListener.h"
 
 namespace hazelcast {

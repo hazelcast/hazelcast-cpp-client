@@ -84,6 +84,7 @@ namespace hazelcast {
                     ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
                     return pDefinition == NULL ? cd : pDefinition;
                 }
+                return lookup(cd->getClassId(), cd->getVersion());
             };
 
             void PortableContext::compress(std::vector<byte>& binary) {

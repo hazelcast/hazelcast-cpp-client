@@ -73,31 +73,36 @@ namespace hazelcast {
                 serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 std::map<std::string, Member> prevMembers;
                 if (!members.empty()) {
-                    for (Member member : members) {
-                        prevMembers[member.getUuid()] = member;
+                    for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                        prevMembers[(*it).getUuid()] = *it;
                     }
                     members.clear();
                 }
-                for (hazelcast::client::serialization::Data *data : coll.getCollection()) {
+
+                vector<serialization::Data *> collection = coll.getCollection();
+                for (vector<serialization::Data *> ::iterator it = collection.begin(); it != collection.end(); ++it) {
                     Member member;
-                    serializationService.toObject(*data, member);
+                    serializationService.toObject(*(*it), member);
                     members.push_back(member);
                 }
                 updateMembersRef();
                 std::vector<MembershipEvent> events;
-                for (Member member : members) {
-                    if (prevMembers.count(member.getUuid()) > 0) {
-                        prevMembers.erase(member.getUuid());
+
+                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                    if (prevMembers.count((*it).getUuid()) > 0) {
+                        prevMembers.erase((*it).getUuid());
                     } else {
-                        events.push_back(MembershipEvent(member, MembershipEvent::MEMBER_ADDED));
+                        events.push_back(MembershipEvent((*it), MembershipEvent::MEMBER_ADDED));
                     }
                 }
-                std::map< std::string, Member >::iterator it;
-                for (it = prevMembers.begin(); it != prevMembers.end(); ++it) {
+
+                for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
                     events.push_back(MembershipEvent(it->second, MembershipEvent::MEMBER_REMOVED));
                 }
-                for (MembershipEvent event : events) {
-                    fireMembershipEvent(event);
+
+
+                for (std::vector<MembershipEvent>::iterator it = events.begin(); it != events.end(); ++it) {
+                    fireMembershipEvent((*it));
                 }
             };
 
@@ -124,11 +129,13 @@ namespace hazelcast {
 
             void ClusterListenerThread::fireMembershipEvent(MembershipEvent & event) {
                 //TODO give this job to another thread
-                for (hazelcast::client::MembershipListener *listener : clusterService.listeners.values()) {
+                vector<MembershipListener *> values = clusterService.listeners.values();
+
+                for (vector<MembershipListener *>::iterator it = values.begin(); it != values.end(); ++it) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                        listener->memberAdded(event);
+                        (*it)->memberAdded(event);
                     } else {
-                        listener->memberRemoved(event);
+                        (*it)->memberRemoved(event);
                     }
                 }
             };
@@ -136,9 +143,9 @@ namespace hazelcast {
             void ClusterListenerThread::updateMembersRef() {
                 std::map<hazelcast::client::Address, Member> *map = new std::map<hazelcast::client::Address, Member>;
                 std::cout << "Members" << std::endl;
-                for (Member member : members) {
-                    std::cout << "\t" << member.getAddress() << std::endl;
-                    (*map)[member.getAddress()] = member;
+                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                    std::cout << "\t" << (*it).getAddress() << std::endl;
+                    (*map)[(*it).getAddress()] = (*it);
                 }
                 delete clusterService.membersRef.set(map);
 
@@ -146,8 +153,8 @@ namespace hazelcast {
 
             std::vector<Address> ClusterListenerThread::getClusterAddresses() const {
                 std::vector<Address> socketAddresses;
-                for (Member member : members) {
-                    socketAddresses.push_back(member.getAddress());
+                for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
+                    socketAddresses.push_back((*it).getAddress());
                 }
                 //                Collections.shuffle(socketAddresses);
                 return socketAddresses;
@@ -155,9 +162,10 @@ namespace hazelcast {
 
             vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
-                vector<Address>  & configAddresses = clientConfig.getAddresses();
-                for (Address address : configAddresses) {
-                    socketAddresses.push_back(address);
+                std::vector<Address>  & configAddresses = clientConfig.getAddresses();
+
+                for (std::vector<Address>::iterator it = configAddresses.begin(); it != configAddresses.end(); ++it) {
+                    socketAddresses.push_back((*it));
                 }
                 //                Collections.shuffle(socketAddresses);
                 return socketAddresses;

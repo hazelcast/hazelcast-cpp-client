@@ -14,12 +14,13 @@ namespace hazelcast {
         class SerializableCollection {
             template<typename HzWriter>
             friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::util::SerializableCollection& ar);
-            
+
             template<typename HzReader>
             friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::util::SerializableCollection& ar);
+
         public:
             SerializableCollection();
-            
+
             ~SerializableCollection();
 
             std::vector<hazelcast::client::serialization::Data *> getCollection() const;
@@ -36,38 +37,38 @@ namespace hazelcast {
             inline int getTypeId(const hazelcast::util::SerializableCollection& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
-            
+
             inline int getFactoryId(const hazelcast::util::SerializableCollection& ar) {
                 return hazelcast::client::protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             }
-            
+
             inline int getClassId(const hazelcast::util::SerializableCollection& ar) {
                 return hazelcast::client::protocol::SpiConstants::COLLECTION;
             }
-            
-            
+
+
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const hazelcast::util::SerializableCollection& ar) {
                 writer << ar.datas.size();
-                for (Data* data : ar.datas) {
-                    writer << (*data);
+                for (std::vector< Data * >::const_iterator it = ar.datas.begin(); it != ar.datas.end(); ++it) {
+                    writer << *(*it);
 //                    data->writeData(writer);
                 }
             };
-            
+
             template<typename HzReader>
             inline void readPortable(HzReader& reader, hazelcast::util::SerializableCollection& ar) {
                 int size;
                 reader >> size;
-                if(size == -1 )
+                if (size == -1)
                     return;
-                for (int i = 0; i < size ; i++) {
-                    Data* data = new Data();
+                for (int i = 0; i < size; i++) {
+                    Data *data = new Data();
                     reader >> (*data);
 //                    ar.datas.push_back(data);
                 }
             };
-            
+
         }
     }
 }

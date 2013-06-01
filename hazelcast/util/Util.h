@@ -25,6 +25,7 @@ namespace hazelcast {
             for (it = m.begin(); it != m.end(); it++) {
                 v.push_back(it->second);
             }
+            return v;
         };
 
     }

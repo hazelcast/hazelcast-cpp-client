@@ -47,7 +47,7 @@ namespace hazelcast {
                 return getPortableContext(factoryId).lookup(classId, version);
             };
 
-            ClassDefinition *SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte>> binary) {
+            ClassDefinition *SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte> > binary) {
                 return getPortableContext(factoryId).createClassDefinition(binary);
             };
 
