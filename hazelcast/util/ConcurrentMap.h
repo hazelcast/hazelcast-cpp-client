@@ -82,12 +82,20 @@ namespace hazelcast {
 
             std::vector<V *> values() {
                 std::vector<V *> val(internalMap.size());
-                typename std::map<K, V *>::iterator it;
                 int i = 0;
-                for (it = internalMap.begin(); it != internalMap.end(); ++it) {
+                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
                     val[i++] = it->second;
                 }
                 return val;
+            };
+
+            std::vector<K> keys() {
+                std::vector<K> k(internalMap.size());
+                int i = 0;
+                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
+                    k[i++] = it->first;
+                }
+                return k;
             };
 
         private:

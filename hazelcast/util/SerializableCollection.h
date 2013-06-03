@@ -51,8 +51,8 @@ namespace hazelcast {
             inline void writePortable(HzWriter& writer, const hazelcast::util::SerializableCollection& ar) {
                 writer << ar.datas.size();
                 for (std::vector< Data * >::const_iterator it = ar.datas.begin(); it != ar.datas.end(); ++it) {
-                    writer << *(*it);
-//                    data->writeData(writer);
+//                    writer << *(*it);
+                    (*it)->writeData(writer);
                 }
             };
 
@@ -64,8 +64,9 @@ namespace hazelcast {
                     return;
                 for (int i = 0; i < size; i++) {
                     Data *data = new Data();
-                    reader >> (*data);
-//                    ar.datas.push_back(data);
+                    data->readData(reader);
+//                    reader >> (*data);
+                    ar.datas.push_back(data);
                 }
             };
 

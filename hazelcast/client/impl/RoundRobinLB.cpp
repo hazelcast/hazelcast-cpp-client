@@ -19,7 +19,7 @@ namespace hazelcast {
                 cluster.addMembershipListener(this);
             };
 
-            const hazelcast::client::connection::Member  & RoundRobinLB::next() {
+            const hazelcast::client::connection::Member& RoundRobinLB::next() {
                 std::vector<hazelcast::client::connection::Member> members = getMembers();
                 if (members.size() == 0) {
                     throw hazelcast::client::HazelcastException("No member in member list!!");

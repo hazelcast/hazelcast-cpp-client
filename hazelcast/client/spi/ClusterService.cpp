@@ -7,7 +7,6 @@
 #include "../ClientConfig.h"
 #include "../HazelcastClient.h"
 #include "../serialization/ClassDefinitionBuilder.h"
-#include "../../util/Thread.h"
 #include "../MembershipListener.h"
 
 namespace hazelcast {
@@ -26,8 +25,7 @@ namespace hazelcast {
 
                 hazelcast::client::connection::Connection *connection = connectToOne(getClientConfig().getAddresses());
                 clusterThread.setInitialConnection(connection);
-                hazelcast::util::Thread(hazelcast::client::connection::ClusterListenerThread::run, &clusterThread);
-
+                clusterThread.start();
                 while (membersRef.get() == NULL) {
                     try {
                         sleep(1);
@@ -71,7 +69,8 @@ namespace hazelcast {
             };
 
             void ClusterService::addMembershipListener(MembershipListener *listener) {
-                listeners.put(listener, listener);
+                static bool dummyBool = true;
+                listeners.put(listener, &dummyBool);
             };
 
             bool ClusterService::removeMembershipListener(MembershipListener *listener) {
@@ -79,7 +78,7 @@ namespace hazelcast {
             };
 
             vector<connection::Member>  ClusterService::getMemberList() {
-                return hazelcast::util::values(*(membersRef.get()));
+                return hazelcast::util::values(membersRef.get());
             };
 
             hazelcast::client::connection::ConnectionManager& ClusterService::getConnectionManager() {

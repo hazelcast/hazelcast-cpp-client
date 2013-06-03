@@ -27,8 +27,8 @@ namespace hazelcast {
             Address& operator = (const Address&);
 
             bool operator == (const Address&) const;//TODO
-            
-            int operator <(const Address&) const;//TODO
+
+            bool operator <(const Address&) const;//TODO
 
             int getPort() const;
 
@@ -88,10 +88,10 @@ namespace hazelcast {
                 int size;
                 reader >> size;
                 if (size != 0) {
-                    std::vector<char> temp(size);
-                    reader >> temp;
+                    std::vector<byte> temp(size);
+                    reader.readFully(temp);
                     std::ostringstream oss;
-                    std::copy(temp.begin(), temp.end(), std::ostream_iterator<int>(oss));
+                    std::copy(temp.begin(), temp.end(), std::ostream_iterator<byte>(oss));
                     address.host = oss.str();
                 }
             };

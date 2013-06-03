@@ -20,7 +20,7 @@ namespace hazelcast {
             , invocationService(clusterService)
             , clientContext(*client)
             , cluster(clusterService) {
-                LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
+                LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
 

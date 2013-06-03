@@ -15,7 +15,7 @@ namespace hazelcast {
 
             ClientConfig();
 
-            ClientConfig(const ClientConfig&);
+            ClientConfig(ClientConfig&);
 
             ~ClientConfig();
 
@@ -58,7 +58,7 @@ namespace hazelcast {
             /**
              * Used to distribute the operations to multiple Endpoints.
              */
-            LoadBalancer *loadBalancer;
+            std::auto_ptr<LoadBalancer> loadBalancer;
 
             /**
              * List of listeners that Hazelcast will automatically add as a part of initialization process.

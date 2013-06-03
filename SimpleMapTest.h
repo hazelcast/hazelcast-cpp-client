@@ -113,6 +113,7 @@ public:
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
 
         hazelcast::util::Thread monitor(printStats);
+        monitor.start();
         try {
             HazelcastClient hazelcastClient(clientConfig);
             IMap<std::string, vector<char> > map = hazelcastClient.getMap<std::string, vector<char > >("default");

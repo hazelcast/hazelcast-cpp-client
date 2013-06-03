@@ -15,16 +15,26 @@ namespace hazelcast {
         public:
             Thread(void *(*runnable)(void *));
 
-            Thread(void *(*runnable)(void *), void *param);
+            Thread(void *(*runnable)(void *), void *parameters);
 
-            Thread(void *(*runnable)(void *), pthread_attr_t const *, void *param);
+            Thread(void *(*runnable)(void *), pthread_attr_t const *, void *parameters);
 
-            void join();
+            virtual void start();
 
-            ~Thread();
+            virtual void join();
+
+            virtual void detach();
+
+            virtual ~Thread();
 
         private:
             pthread_t thread;
+
+            void *(*runnable)(void *);
+
+            void *parameters;
+
+            pthread_attr_t const *attributes;
 
             Thread(const Thread&);
 

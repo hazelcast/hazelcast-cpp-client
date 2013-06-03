@@ -75,7 +75,7 @@ namespace hazelcast {
                 hazelcast::client::connection::ClusterListenerThread clusterThread;
                 hazelcast::client::HazelcastClient& hazelcastClient;
                 hazelcast::util::AtomicPointer< std::map<hazelcast::client::Address, hazelcast::client::connection::Member > > membersRef;
-                hazelcast::util::ConcurrentMap< hazelcast::client::MembershipListener *, hazelcast::client::MembershipListener> listeners;
+                hazelcast::util::ConcurrentMap< hazelcast::client::MembershipListener *, bool> listeners;
 
                 hazelcast::client::connection::Connection *connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses);
 

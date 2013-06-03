@@ -15,7 +15,7 @@ namespace hazelcast {
         , loadBalancer(dynamic_cast<LoadBalancer *>(new impl::RoundRobinLB)) {
         };
 
-        ClientConfig::ClientConfig(const ClientConfig& rhs)
+        ClientConfig::ClientConfig(ClientConfig& rhs)
         : smart(rhs.smart)
         , redoOperation(rhs.redoOperation)
         , poolSize(rhs.poolSize)
@@ -23,9 +23,14 @@ namespace hazelcast {
         , connectionAttemptLimit(rhs.connectionAttemptLimit)
         , attemptPeriod(rhs.attemptPeriod)
         , groupConfig(rhs.groupConfig)
-        , addressList(rhs.addressList) {
+        , addressList(rhs.addressList)
+        , loadBalancer(rhs.loadBalancer.release()) {
         };
 
+        ClientConfig::~ClientConfig() {
+            if (credentials != NULL)
+                delete credentials;
+        };
 
         ClientConfig & ClientConfig::addAddress(const Address  & address) {
             addressList.push_back(address);
@@ -40,11 +45,6 @@ namespace hazelcast {
 
         std::vector<Address>  & ClientConfig::getAddresses() {
             return addressList;
-        };
-
-        ClientConfig::~ClientConfig() {
-            if (credentials != NULL)
-                delete credentials;
         };
 
         ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
@@ -72,11 +72,11 @@ namespace hazelcast {
         };
 
         LoadBalancer *const ClientConfig::getLoadBalancer() const {
-            return loadBalancer;
+            return loadBalancer.get();
         };
 
         void ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
-            this->loadBalancer = loadBalancer;
+            this->loadBalancer.reset(loadBalancer);
         };
 
     }

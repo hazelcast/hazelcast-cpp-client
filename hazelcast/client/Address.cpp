@@ -4,11 +4,13 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address(std::string url, int port) : host(url), port(port), type(IPv4) {
+        Address::Address(std::string url, int port)
+        : host(url), port(port), type(IPv4) {
 
         };
 
-        Address::Address(const Address& address): host(address.host), port(address.port), type(address.type) {
+        Address::Address(const Address& rhs)
+        : host(rhs.host), port(rhs.port), type(rhs.type) {
 
         };
 
@@ -20,7 +22,7 @@ namespace hazelcast {
             return (*this);
         };
 
-        bool Address::operator==(const hazelcast::client::Address & rhs) const{
+        bool Address::operator ==(const hazelcast::client::Address& rhs) const {
             if (rhs.host.compare(host) > 1) {
                 return true;
             } else if (rhs.host.compare(host) < 1) {
@@ -29,14 +31,15 @@ namespace hazelcast {
                 return rhs.port == port;
             }
         };
-        
-        int Address::operator <(const Address  & rhs) const {
-            if (rhs.host.compare(host) > 1) {
-                return 1;
-            } else if (rhs.host.compare(host) < 1) {
-                return -1;
+
+        bool Address::operator <(const Address& rhs) const {
+            int cmpResult = host.compare(rhs.host);
+            if (cmpResult > 1) {
+                return true;
+            } else if (cmpResult < 1) {
+                return false;
             } else {
-                return rhs.port - port;
+                return port < rhs.port;
             }
         };
 

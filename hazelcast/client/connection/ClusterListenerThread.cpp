@@ -13,11 +13,12 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, hazelcast::client::ClientConfig& clientConfig, hazelcast::client::spi::ClusterService& clusterService)
-            : connectionManager(connectionMgr)
+            : Thread::Thread(hazelcast::client::connection::ClusterListenerThread::run, this)
+            , connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
             , conn(NULL) {
-
+                ;
             };
 
             void ClusterListenerThread::setInitialConnection(hazelcast::client::connection::Connection *connection) {
@@ -80,7 +81,7 @@ namespace hazelcast {
                 }
 
                 vector<serialization::Data *> collection = coll.getCollection();
-                for (vector<serialization::Data *> ::iterator it = collection.begin(); it != collection.end(); ++it) {
+                for (vector<serialization::Data *>::iterator it = collection.begin(); it != collection.end(); ++it) {
                     Member member;
                     serializationService.toObject(*(*it), member);
                     members.push_back(member);
@@ -121,32 +122,39 @@ namespace hazelcast {
                         members.erase(std::find(members.begin(), members.end(), member));
                     }
                     updateMembersRef();
-                    connectionManager.removeConnectionPool(member.getAddress());
+//                    connectionManager.removeConnectionPool(member.getAddress());
                     fireMembershipEvent(event);
                 }
             };
 
 
             void ClusterListenerThread::fireMembershipEvent(MembershipEvent & event) {
-                //TODO give this job to another thread
-                vector<MembershipListener *> values = clusterService.listeners.values();
-
-                for (vector<MembershipListener *>::iterator it = values.begin(); it != values.end(); ++it) {
-                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                        (*it)->memberAdded(event);
-                    } else {
-                        (*it)->memberRemoved(event);
-                    }
+                MembershipListener *listener = dynamic_cast<MembershipListener *>(clusterService.getClientConfig().getLoadBalancer());
+                if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+                    listener->memberAdded(event);
+                } else {
+                    listener->memberRemoved(event);
                 }
+                //TODO give this job to another thread
+//                vector<MembershipListener *> listeners = clusterService.listeners.keys();
+//
+//                for (vector<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+//                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+//                        (*it)->memberAdded(event);
+//                    } else {
+//                        (*it)->memberRemoved(event);
+//                    }
+//                }
             };
 
             void ClusterListenerThread::updateMembersRef() {
                 std::map<hazelcast::client::Address, Member> *map = new std::map<hazelcast::client::Address, Member>;
-                std::cout << "Members" << std::endl;
+                std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                    std::cout << "\t" << (*it).getAddress() << std::endl;
+                    std::cerr << "\t" << (*it) << std::endl;
                     (*map)[(*it).getAddress()] = (*it);
                 }
+                std::cerr << "}" << std::endl;
                 delete clusterService.membersRef.set(map);
 
             };

@@ -12,22 +12,38 @@ namespace hazelcast {
             Member::Member():address("", 0) { //TODO
 
             };
-            
-            bool Member::operator==(const Member & rhs) const{
+
+            Member::Member(Member const & rhs)
+            :address(rhs.address)
+            , uuid(rhs.uuid) {
+
+            };
+
+            Member::~Member() {
+
+            };
+
+            Member & Member::operator = (Member const & rhs) {
+                address = rhs.address;
+                uuid = rhs.uuid;
+                return (*this);
+            };
+
+            bool Member::operator ==(const Member & rhs) const {
                 return address == rhs.address;
             };
-            
-            int Member::operator <(const Member& rhs) const{
+
+            int Member::operator <(const Member& rhs) const {
                 return address < rhs.address;
             };
-            
+
             Address Member::getAddress() const {
                 return address;
             };
 
             std::string Member::getUuid() const {
                 return uuid;
-            }
+            };
         }
     }
 }

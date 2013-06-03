@@ -6,6 +6,7 @@
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
 #include "Member.h"
+#include "../../util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,7 +25,7 @@ namespace hazelcast {
 
             class MembershipEvent;
 
-            class ClusterListenerThread {
+            class ClusterListenerThread : public hazelcast::util::Thread {
             public:
                 ClusterListenerThread(ConnectionManager& connMgr, hazelcast::client::ClientConfig& clientConfig, hazelcast::client::spi::ClusterService&);
 

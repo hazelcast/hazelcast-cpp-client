@@ -60,7 +60,7 @@ namespace hazelcast {
                 toData(value, valueData);
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
                 V oldValue;
-                serialization::Data debugData;//TODO 3 TEST LINES
+//                serialization::Data debugData;//TODO 3 TEST LINES
 //                clock_t time1 = clock();
 //                toData(request, debugData);
 //                clock_t time2 = clock();
