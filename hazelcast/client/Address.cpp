@@ -4,6 +4,9 @@
 namespace hazelcast {
     namespace client {
 
+        Address::Address() {
+        };
+
         Address::Address(std::string url, int port)
         : host(url), port(port), type(IPv4) {
 

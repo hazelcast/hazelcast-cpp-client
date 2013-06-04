@@ -20,6 +20,8 @@ namespace hazelcast {
 
         public:
             //TODO type IPV4 IPV6
+            Address();
+
             Address(std::string url, int port);
 
             Address(const Address&);

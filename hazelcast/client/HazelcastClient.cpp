@@ -1,10 +1,11 @@
-#include "HazelcastClient.h"
 #include "IdGenerator.h"
 #include "IAtomicLong.h"
 #include "ICountDownLatch.h"
+#include "spi/PartitionService.h"
 #include "ISemaphore.h"
-#include "ClientConfig.h"
 #include "Cluster.h"
+#include "ClientConfig.h"
+#include "HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,9 +20,11 @@ namespace hazelcast {
             , clusterService(*client)
             , invocationService(clusterService)
             , clientContext(*client)
-            , cluster(clusterService) {
+            , cluster(clusterService)
+            , partitionService(clusterService, serializationService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
+                partitionService.start();
             };
 
             ClientConfig clientConfig;
@@ -31,6 +34,7 @@ namespace hazelcast {
             spi::ClusterService clusterService;
             spi::InvocationService invocationService;
             spi::ClientContext clientContext;
+            spi::PartitionService partitionService;
 
         };
 
@@ -42,15 +46,15 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {
 
-        }
+        };
 
         HazelcastClient::~HazelcastClient() {
             delete impl;
-        }
+        };
 
         serialization::SerializationService& HazelcastClient::getSerializationService() {
             return impl->serializationService;
-        }
+        };
 
 
         ClientConfig& HazelcastClient::getClientConfig() {
@@ -59,20 +63,24 @@ namespace hazelcast {
 
         connection::ConnectionManager & HazelcastClient::getConnectionManager() {
             return impl->connectionManager;
-        }
+        };
 
         spi::InvocationService & HazelcastClient::getInvocationService() {
             return impl->invocationService;
-        }
+        };
 
         spi::ClusterService & HazelcastClient::getClusterService() {
             return impl->clusterService;
-        }
+        };
 
+
+        spi::PartitionService & HazelcastClient::getPartitionService() {
+            return impl->partitionService;
+        };
 
         spi::ClientContext & HazelcastClient::getClientContext() {
             return impl->clientContext;
-        }
+        };
 
         IdGenerator HazelcastClient::getIdGenerator(std::string instanceName) {
             return IdGenerator(instanceName);

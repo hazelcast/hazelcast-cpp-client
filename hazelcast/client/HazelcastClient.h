@@ -25,6 +25,8 @@ namespace hazelcast {
             class InvocationService;
 
             class ClusterService;
+
+            class PartitionService;
         }
 
         class ClientConfig;
@@ -98,6 +100,8 @@ namespace hazelcast {
             spi::InvocationService& getInvocationService();
 
             spi::ClusterService& getClusterService();
+
+            spi::PartitionService& getPartitionService();
 
             HazelcastClient(const HazelcastClient& rhs);
 

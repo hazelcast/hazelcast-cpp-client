@@ -60,7 +60,7 @@ namespace hazelcast {
 
             bool Data::isServerError() {
                 return isError;
-            }
+            };
 
             void Data::setSerializationContext(SerializationContext *context) {
                 this->context = context;
@@ -96,7 +96,24 @@ namespace hazelcast {
                 return total;
             };
 
+
+            int Data::hashCode() {
+                if (buffer.get() == NULL) return INT_MIN;
+                // FNV (Fowler/Noll/Vo) Hash "1a"
+                const int prime = 0x01000193;
+                int hash = 0x811c9dc5;
+                for (int i = buffer->size() - 1; i >= 0; i--) {
+                    hash = (hash ^ (*buffer)[i]) * prime;
+                }
+                return hash;
+            };
+
             int Data::getPartitionHash() {
+                if (partitionHash == -1) {
+                    if (buffer.get() != NULL) {
+                        partitionHash = hashCode();
+                    }
+                }
                 return partitionHash;
             };
 

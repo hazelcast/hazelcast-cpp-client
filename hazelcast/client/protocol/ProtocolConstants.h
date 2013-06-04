@@ -18,6 +18,11 @@ namespace hazelcast {
                 int const AUTHENTICATION_REQUEST_ID = 2;
                 int const PRINCIPAL_ID = 3;
 
+                int const PARTITION_DS_FACTORY = -2;
+                int const GET_PARTITIONS = 1;
+                int const PARTITIONS = 2;
+                int const ADD_LISTENER = 3;
+
                 int const DATA_FACTORY_ID = 0;
                 int const ADDRESS_ID = 1;
                 int const MEMBER_ID = 2;

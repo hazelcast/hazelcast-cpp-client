@@ -62,6 +62,8 @@ namespace hazelcast {
 
                 };
 
+                hazelcast::client::Address getMasterAddress();
+
                 void addMembershipListener(MembershipListener *listener);
 
                 bool removeMembershipListener(MembershipListener *listener);

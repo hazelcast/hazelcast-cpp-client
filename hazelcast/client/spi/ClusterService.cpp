@@ -68,6 +68,12 @@ namespace hazelcast {
                 throw  hazelcast::client::HazelcastException("Unable to connect to any address in the config!");
             };
 
+
+            Address ClusterService::getMasterAddress() {
+                vector<connection::Member> list = getMemberList();
+                return list[0].getAddress();
+            }
+
             void ClusterService::addMembershipListener(MembershipListener *listener) {
                 static bool dummyBool = true;
                 listeners.put(listener, &dummyBool);
