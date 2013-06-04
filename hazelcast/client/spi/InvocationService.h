@@ -6,6 +6,7 @@
 #define HAZELCAST_INVOCATION_SERVICE
 
 #include "ClusterService.h"
+#include "PartitionService.h"
 
 namespace hazelcast {
     namespace client {
@@ -13,7 +14,7 @@ namespace hazelcast {
 
             class InvocationService {
             public:
-                InvocationService(ClusterService& clusterService);
+                InvocationService(ClusterService& clusterService, PartitionService& partitionService);
 
                 template<typename Request, typename Response>
                 void invokeOnRandomTarget(const Request& request, Response& response) {
@@ -22,13 +23,12 @@ namespace hazelcast {
 
 
                 template<typename Request, typename Response>
-                void invokeOnKeyOwner(const Request& request, Response& response, const hazelcast::client::serialization::Data&) {
-                    //    ClientPartitionServiceImpl partitionService = (ClientPartitionServiceImpl) client.getClientPartitionService();
-                    //    final Address owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
-                    //    if (owner != null) {
-                    //        return invokeOnTarget(request, owner);
-                    //    }
-                    //    return invokeOnRandomTarget(request);
+                void invokeOnKeyOwner(const Request& request, Response& response, const hazelcast::client::serialization::Data& key) {
+                    Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
+                    if (owner != NULL) {
+                        invokeOnTarget(request, response, *owner);
+                    }
+                    invokeOnRandomTarget(request, response);
                 };
 
             private :
@@ -38,6 +38,7 @@ namespace hazelcast {
                 };
 
                 ClusterService& clusterService;
+                PartitionService& partitionService;
             };
 
         }

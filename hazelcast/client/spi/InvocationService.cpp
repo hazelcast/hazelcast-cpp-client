@@ -8,8 +8,9 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            InvocationService::InvocationService(ClusterService & clusterService)
-            : clusterService(clusterService) {
+            InvocationService::InvocationService(ClusterService & clusterService, PartitionService& partitionService)
+            : clusterService(clusterService)
+            , partitionService(partitionService) {
 
             }
 

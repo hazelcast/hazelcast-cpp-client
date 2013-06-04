@@ -48,6 +48,7 @@ namespace hazelcast {
 
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const TestInvalidWritePortable& data) {
+                //TODO convert std::string to const char*
                 writer["l"] << data.l;
                 writer << data.i;
                 writer["s"] << data.s;

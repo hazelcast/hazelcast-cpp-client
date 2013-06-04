@@ -143,18 +143,16 @@ namespace hazelcast {
                 return context.getSerializationService().toData(object, data);
             };
 
-//
             template<typename T>
             void toObject(const serialization::Data& data, T& object) {
                 context.getSerializationService().toObject(data, object);
             };
 
-//
             template<typename Request, typename Response>
             void invoke(const Request& request, Response& response, const hazelcast::client::serialization::Data&  keyData) {
 //                try {
-//                context.getInvocationService().invokeOnKeyOwner(request, response, keyData); //TODO real one
-                context.getInvocationService().invokeOnRandomTarget(request, response); //TODO delete line later
+                context.getInvocationService().invokeOnKeyOwner(request, response, keyData); //TODO real one
+//                context.getInvocationService().invokeOnRandomTarget(request, response); //TODO delete line later
 //                } catch (Exception e) {
 //                    throw ExceptionUtil.rethrow(e);
 //                }

@@ -18,23 +18,23 @@ namespace hazelcast {
             , serializationService(0)
             , connectionManager(serializationService, clientConfig)
             , clusterService(*client)
-            , invocationService(clusterService)
+            , partitionService(clusterService, serializationService)
+            , invocationService(clusterService, partitionService)
             , clientContext(*client)
-            , cluster(clusterService)
-            , partitionService(clusterService, serializationService) {
+            , cluster(clusterService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
                 partitionService.start();
             };
 
             ClientConfig clientConfig;
-            Cluster cluster;
             serialization::SerializationService serializationService;
             connection::ConnectionManager connectionManager;
             spi::ClusterService clusterService;
+            spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ClientContext clientContext;
-            spi::PartitionService partitionService;
+            Cluster cluster;
 
         };
 
