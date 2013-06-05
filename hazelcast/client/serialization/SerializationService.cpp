@@ -25,6 +25,11 @@ namespace hazelcast {
             , portableSerializer(&serializationContext) {
             };
 
+
+            SerializationContext & SerializationService::getSerializationContext() {
+                return serializationContext;
+            };
+
             SerializationService::~SerializationService() {
             };
 

@@ -6,7 +6,6 @@
 #include "ConnectionManager.h"
 #include "../ClientConfig.h"
 #include "../connection/Connection.h"
-#include "../protocol/ClientPingRequest.h"
 #include "../protocol/AuthenticationRequest.h"
 #include "../protocol/HazelcastServerError.h"
 #include "../serialization/SerializationService.h"
@@ -14,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(hazelcast::client::serialization::SerializationService& serializationService, hazelcast::client::ClientConfig& clientConfig)
+            ConnectionManager::ConnectionManager(serialization::SerializationService& serializationService, ClientConfig& clientConfig)
             : serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(5, serializationService)
@@ -98,39 +97,35 @@ namespace hazelcast {
                 }
                 return pool;
             };
-            
-            void ConnectionManager::removeConnectionPool(const hazelcast::client::Address &address){
-                    ConnectionPool* pool = poolMap.remove(address);
-                    if (pool != NULL){                        
-                        pool->destroy();
-                    }
+
+            void ConnectionManager::removeConnectionPool(const Address &address) {
+                ConnectionPool *pool = poolMap.remove(address);
+                if (pool != NULL) {
+                    pool->destroy();
+                }
             };
 
             void ConnectionManager::authenticate(Connection& connection, bool reAuth) {
-                connection.write(hazelcast::client::protocol::ProtocolConstants::PROTOCOL);
-                hazelcast::client::protocol::AuthenticationRequest auth(clientConfig.getCredentials());
+                connection.write(protocol::ProtocolConstants::PROTOCOL);
+                protocol::AuthenticationRequest auth(clientConfig.getCredentials());
                 auth.setPrincipal(principal);
                 auth.setReAuth(reAuth);
 
-                serialization::Data toData;
-                serializationService.toData(auth, toData);
+                serialization::Data toData = serializationService.toData(auth);
                 connection.write(toData);
-                hazelcast::client::serialization::Data data;
-                data.setSerializationContext(serializationService.getSerializationContext());
-                connection.read(data);
+                serialization::Data data = connection.read(serializationService.getSerializationContext());;
+
                 if (data.isServerError()) {
-                    hazelcast::client::protocol::HazelcastServerError x;
-                    serializationService.toObject(data, x);
+                    protocol::HazelcastServerError x = serializationService.toObject<protocol::HazelcastServerError>(data);
                     throw x;
                 } else {
-                    this->principal = new hazelcast::client::protocol::Principal();
-                    serializationService.toObject(data, *principal);
+                    this->principal = new protocol::Principal(serializationService.toObject<protocol::Principal>(data));
                 }
             };
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw hazelcast::client::HazelcastException("Instance not active!");
+                    throw HazelcastException("Instance not active!");
                 }
             }
 

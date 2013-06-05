@@ -105,6 +105,8 @@ namespace hazelcast {
 
             HazelcastClient(const HazelcastClient& rhs);
 
+            //TODO assignment
+
 
         };
 

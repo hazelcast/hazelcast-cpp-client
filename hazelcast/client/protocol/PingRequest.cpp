@@ -3,12 +3,12 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "ClientPingRequest.h"
+#include "PingRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            ClientPingRequest::ClientPingRequest() {
+            PingRequest::PingRequest() {
 
             }
         }

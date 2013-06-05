@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_PARTITION_RESPONSE
 #define HAZELCAST_PARTITION_RESPONSE
 
-#include <vector>
 #include "../Address.h"
+#include <vector>
 
 namespace hazelcast {
     namespace client {

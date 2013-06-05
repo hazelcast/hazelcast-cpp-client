@@ -5,7 +5,6 @@
 #define HAZELCAST_SERVER_ERROR
 
 #include "ProtocolConstants.h"
-#include "../serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {

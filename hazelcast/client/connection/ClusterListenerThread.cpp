@@ -12,8 +12,8 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, hazelcast::client::ClientConfig& clientConfig, hazelcast::client::spi::ClusterService& clusterService)
-            : Thread::Thread(hazelcast::client::connection::ClusterListenerThread::run, this)
+            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService)
+            : Thread::Thread(connection::ClusterListenerThread::run, this)
             , connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
@@ -21,7 +21,7 @@ namespace hazelcast {
                 ;
             };
 
-            void ClusterListenerThread::setInitialConnection(hazelcast::client::connection::Connection *connection) {
+            void ClusterListenerThread::setInitialConnection(connection::Connection *connection) {
                 this->conn = connection;
             };
 
@@ -40,7 +40,7 @@ namespace hazelcast {
                         }
                         loadInitialMemberList();
                         listenMembershipEvents();
-                    } catch (hazelcast::client::HazelcastException& e) {
+                    } catch (HazelcastException& e) {
 //                        if (client.getLifecycleService().isRunning()) {
 //                            e.printStackTrace();
 //                        }
@@ -68,9 +68,9 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::loadInitialMemberList() {
-                hazelcast::client::protocol::AddMembershipListenerRequest request;
-                hazelcast::util::SerializableCollection coll;
-                clusterService.sendAndReceive(*conn, request, coll);
+                protocol::AddMembershipListenerRequest request;
+                util::SerializableCollection coll = clusterService.sendAndReceive<util::SerializableCollection>(*conn, request);
+
                 serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 std::map<std::string, Member> prevMembers;
                 if (!members.empty()) {
@@ -82,8 +82,8 @@ namespace hazelcast {
 
                 vector<serialization::Data *> collection = coll.getCollection();
                 for (vector<serialization::Data *>::iterator it = collection.begin(); it != collection.end(); ++it) {
-                    Member member;
-                    serializationService.toObject(*(*it), member);
+                    Member member = serializationService.toObject<Member>(*(*it));
+
                     members.push_back(member);
                 }
                 updateMembersRef();
@@ -110,10 +110,8 @@ namespace hazelcast {
             void ClusterListenerThread::listenMembershipEvents() {
                 serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 while (true) {
-                    hazelcast::client::serialization::Data data;
-                    conn->read(data);
-                    MembershipEvent event;
-                    serializationService.toObject(data, event);
+                    serialization::Data data = conn->read(serializationService.getSerializationContext());
+                    MembershipEvent event = serializationService.toObject<MembershipEvent>(data);
                     Member member = event.getMember();
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
@@ -122,7 +120,7 @@ namespace hazelcast {
                         members.erase(std::find(members.begin(), members.end(), member));
                     }
                     updateMembersRef();
-//                    connectionManager.removeConnectionPool(member.getAddress());
+//                    connectionManager.removeConnectionPool(member.getAddress());//TODO why remove
                     fireMembershipEvent(event);
                 }
             };
@@ -148,7 +146,7 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<hazelcast::client::Address, Member> *map = new std::map<hazelcast::client::Address, Member>;
+                std::map<Address, Member> *map = new std::map<Address, Member>;
                 std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                     std::cerr << "\t" << (*it) << std::endl;

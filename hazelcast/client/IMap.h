@@ -45,21 +45,17 @@ namespace hazelcast {
             };
 
             V get(const K& key) {
-                serialization::Data keyData;
-                toData(key, keyData);
+                serialization::Data keyData = toData(key);
                 map::GetRequest request(instanceName, keyData);
-                V value;
-                invoke(request, value, keyData);
+                V value = invoke<V>(request, keyData);
                 return value;
             };
 
             V put(const K& key, V& value) {
-                serialization::Data keyData;
-                toData(key, keyData);
-                serialization::Data valueData;
-                toData(value, valueData);
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
-                V oldValue;
 //                serialization::Data debugData;//TODO 3 TEST LINES
 //                clock_t time1 = clock();
 //                toData(request, debugData);
@@ -67,16 +63,15 @@ namespace hazelcast {
 //                toObject(debugData, oldValue);
 //                clock_t time3 = clock();
 //                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
-                invoke(request, oldValue, keyData);
+                V oldValue = invoke<V>(request, keyData);
                 return oldValue;
             };
 
             V remove(const K& key) {
-                serialization::Data keyData;
-                toData(key, keyData);
+                serialization::Data keyData = toData(key);
+
                 map::RemoveRequest request(instanceName, keyData, 1);
-                V value;
-                invoke(request, value, keyData);
+                V value = invoke<V>(request, keyData);
                 return value;
             };
 
@@ -139,20 +134,20 @@ namespace hazelcast {
 
         private:
             template<typename T>
-            void toData(const T& object, serialization::Data& data) {
-                return context.getSerializationService().toData(object, data);
+            serialization::Data toData(const T& object) {
+                return context.getSerializationService().toData(object);
             };
 
             template<typename T>
-            void toObject(const serialization::Data& data, T& object) {
-                context.getSerializationService().toObject(data, object);
+            T toObject(const serialization::Data& data) {
+                return context.getSerializationService().template toObject<T>(data);
             };
 
             template<typename Request, typename Response>
-            void invoke(const Request& request, Response& response, const hazelcast::client::serialization::Data&  keyData) {
+            Response invoke(const Request& request, hazelcast::client::serialization::Data&  keyData) {
 //                try {
-                context.getInvocationService().invokeOnKeyOwner(request, response, keyData); //TODO real one
-//                context.getInvocationService().invokeOnRandomTarget(request, response); //TODO delete line later
+                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
+//              return context.getInvocationService().template invokeOnRandomTarget<Response>(request, response); //TODO delete line later
 //                } catch (Exception e) {
 //                    throw ExceptionUtil.rethrow(e);
 //                }
@@ -160,9 +155,9 @@ namespace hazelcast {
 
 //
             template<typename Request, typename Response>
-            void invoke(const Request& request, Response& response) {
+            Response invoke(const Request& request) {
 //                try {
-                context.getInvocationService().invokeOnRandomTarget(request, response);
+                return context.getInvocationService().template invokeOnRandomTarget<Response>(request);
 //                } catch (Exception e) {
 //                    throw ExceptionUtil.rethrow(e);
 //                }

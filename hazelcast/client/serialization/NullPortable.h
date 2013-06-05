@@ -5,8 +5,6 @@
 #ifndef HAZELCAST_NULL_PORTABLE
 #define HAZELCAST_NULL_PORTABLE
 
-#include "Portable.h"
-
 namespace hazelcast {
     namespace client {
         namespace serialization {

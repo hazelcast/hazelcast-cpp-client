@@ -5,7 +5,7 @@
 #define HAZELCAST_PRINCIPAL
 
 #include "ProtocolConstants.h"
-#include "../serialization/Portable.h"
+#include "../serialization/SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
@@ -28,23 +28,23 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getFactoryId(const hazelcast::client::protocol::Principal& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
+            inline int getFactoryId(const protocol::Principal& ar) {
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
             }
 
-            inline int getClassId(const hazelcast::client::protocol::Principal& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::PRINCIPAL_ID;;
+            inline int getClassId(const protocol::Principal& ar) {
+                return protocol::ProtocolConstants::PRINCIPAL_ID;;
             }
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::Principal& data) {
+            inline void writePortable(HzWriter& writer, const protocol::Principal& data) {
                 writer ["uuid"] << data.uuid;
                 writer ["ownerUuid"] << data.ownerUuid;
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::protocol::Principal& data) {
+            inline void readPortable(HzReader& reader, protocol::Principal& data) {
                 reader ["uuid"] >> data.uuid;
                 reader ["ownerUuid"] >> data.ownerUuid;
             };

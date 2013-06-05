@@ -13,7 +13,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            Data::Data() : partitionHash(-1)
+            Data::Data()
+            : partitionHash(-1)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
             , isError(false)
             , cd(NULL)
@@ -21,8 +22,13 @@ namespace hazelcast {
 
             };
 
-            Data::Data(const Data& rhs) {
-                (*this) = rhs;
+            Data::Data(const Data& rhs)
+            : partitionHash(rhs.partitionHash)
+            , type(rhs.type)
+            , isError(rhs.isError)
+            , cd(rhs.cd)
+            , buffer(rhs.buffer.release()) {
+
             };
 
             Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer) : partitionHash(-1)
@@ -36,12 +42,11 @@ namespace hazelcast {
             };
 
             Data& Data::operator = (const Data& rhs) {
-                type = rhs.type;
-                cd = rhs.cd;
                 partitionHash = rhs.partitionHash;
+                type = rhs.type;
                 isError = rhs.isError;
-                buffer.reset(new std::vector<byte >);
-                *(buffer.get()) = *(rhs.buffer.get());
+                cd = rhs.cd;
+                buffer = rhs.buffer;
                 return (*this);
             };
 
@@ -60,10 +65,6 @@ namespace hazelcast {
 
             bool Data::isServerError() {
                 return isError;
-            };
-
-            void Data::setSerializationContext(SerializationContext *context) {
-                this->context = context;
             };
 
             int Data::bufferSize() const {

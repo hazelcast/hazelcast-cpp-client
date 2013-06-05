@@ -15,7 +15,6 @@
 #include "PortableSerializer.h"
 #include "SerializationContext.h"
 #include "../HazelcastException.h"
-#include "DataSerializable.h"
 #include "../../util/Util.h"
 #include "Data.h"
 #include "DataSerializer.h"
@@ -35,7 +34,8 @@ namespace hazelcast {
                 ~SerializationService();
 
                 template<typename K>
-                void toData(K& object, Data& data) {
+                Data toData(K& object) {
+                    Data data;
                     BufferedDataOutput output;
                     int typeID = getTypeId(object);
                     data.setType(typeID);
@@ -50,12 +50,14 @@ namespace hazelcast {
                         writePortable(output, object);
                     }
                     data.setBuffer(output.toByteArray());
+                    return data;
                 };
 
                 template<typename K>
-                inline void toObject(const Data& data, K & object) {
+                inline K toObject(const Data& data) {
+                    K object;
                     if (data.bufferSize() == 0)
-                        return;
+                        return object;
                     int typeID = data.type;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
@@ -70,11 +72,10 @@ namespace hazelcast {
                     } else {
                         hazelcast::client::serialization::readPortable(dataInput, object);
                     }
+                    return object;
                 };
 
-                SerializationContext *getSerializationContext() {
-                    return &serializationContext;
-                }
+                SerializationContext& getSerializationContext();
 
             private:
 

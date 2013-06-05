@@ -5,6 +5,7 @@
 #include "GroupConfig.h"
 #include "protocol/Credentials.h"
 #include "LoadBalancer.h"
+#include "impl/RoundRobinLB.h"
 #include <vector>
 
 namespace hazelcast {
@@ -15,8 +16,6 @@ namespace hazelcast {
 
             ClientConfig();
 
-            ClientConfig(ClientConfig&);
-
             ~ClientConfig();
 
             ClientConfig& addAddress(const Address& address);
@@ -25,19 +24,19 @@ namespace hazelcast {
 
             std::vector<Address>& getAddresses();
 
-            ClientConfig& operator = (const ClientConfig&);
-
             GroupConfig& getGroupConfig();
 
-            hazelcast::client::protocol::Credentials& getCredentials();
+            protocol::Credentials& getCredentials();
 
             int getConnectionAttemptLimit() const;
 
             int getAttemptPeriod() const;
 
-            LoadBalancer *const getLoadBalancer() const;
+            LoadBalancer *const getLoadBalancer();
 
             void setLoadBalancer(LoadBalancer *loadBalancer);
+
+            void setCredentials(protocol::Credentials *credentials);
 
         private:
 
@@ -58,7 +57,9 @@ namespace hazelcast {
             /**
              * Used to distribute the operations to multiple Endpoints.
              */
-            std::auto_ptr<LoadBalancer> loadBalancer;
+            LoadBalancer* loadBalancer;
+
+            impl::RoundRobinLB defaultLoadBalancer;
 
             /**
              * List of listeners that Hazelcast will automatically add as a part of initialization process.
@@ -122,7 +123,11 @@ namespace hazelcast {
             /**
              * Can be used instead of {@link GroupConfig} in Hazelcast EE.
              */
-            hazelcast::client::protocol::Credentials *credentials;
+            protocol::Credentials *credentials;
+
+            protocol::Credentials defaultCredentials;
+
+            bool isDefaultCredentialsInitiliazed;
         };
 
     }

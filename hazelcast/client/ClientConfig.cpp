@@ -1,5 +1,4 @@
 #include "ClientConfig.h"
-#include "impl/RoundRobinLB.h"
 
 namespace hazelcast {
     namespace client {
@@ -12,24 +11,12 @@ namespace hazelcast {
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
         , credentials(NULL)
-        , loadBalancer(dynamic_cast<LoadBalancer *>(new impl::RoundRobinLB)) {
+        , loadBalancer(NULL)
+        , isDefaultCredentialsInitiliazed(false) {
         };
 
-        ClientConfig::ClientConfig(ClientConfig& rhs)
-        : smart(rhs.smart)
-        , redoOperation(rhs.redoOperation)
-        , poolSize(rhs.poolSize)
-        , connectionTimeout(rhs.connectionTimeout)
-        , connectionAttemptLimit(rhs.connectionAttemptLimit)
-        , attemptPeriod(rhs.attemptPeriod)
-        , groupConfig(rhs.groupConfig)
-        , addressList(rhs.addressList)
-        , loadBalancer(rhs.loadBalancer.release()) {
-        };
 
         ClientConfig::~ClientConfig() {
-            if (credentials != NULL)
-                delete credentials;
         };
 
         ClientConfig & ClientConfig::addAddress(const Address  & address) {
@@ -47,21 +34,10 @@ namespace hazelcast {
             return addressList;
         };
 
-        ClientConfig& ClientConfig::operator = (const ClientConfig& rhs) {
-            groupConfig = rhs.groupConfig;
-            return (*this);
-        };
-
         GroupConfig& ClientConfig::getGroupConfig() {
             return groupConfig;
         };
 
-        hazelcast::client::protocol::Credentials & ClientConfig::getCredentials() {
-            if (credentials == NULL) {
-                credentials = new hazelcast::client::protocol::Credentials(groupConfig.getName(), groupConfig.getPassword());
-            }
-            return *credentials;
-        };
 
         int ClientConfig::getConnectionAttemptLimit() const {
             return connectionAttemptLimit;
@@ -71,13 +47,32 @@ namespace hazelcast {
             return attemptPeriod;
         };
 
-        LoadBalancer *const ClientConfig::getLoadBalancer() const {
-            return loadBalancer.get();
+        LoadBalancer *const ClientConfig::getLoadBalancer() {
+            if (loadBalancer == NULL)
+                return &defaultLoadBalancer;
+            return loadBalancer;
         };
 
         void ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
-            this->loadBalancer.reset(loadBalancer);
+            this->loadBalancer = loadBalancer;
         };
+
+        protocol::Credentials & ClientConfig::getCredentials() {
+            if (credentials == NULL) {
+                if (isDefaultCredentialsInitiliazed)
+                    return defaultCredentials;
+                defaultCredentials.setPrincipal(groupConfig.getName());
+                defaultCredentials.setPassword(groupConfig.getPassword());
+                isDefaultCredentialsInitiliazed = true;
+                return defaultCredentials;
+            }
+            return *credentials;
+        };
+
+        void ClientConfig::setCredentials(protocol::Credentials *credentials) {
+            this->credentials = credentials;
+        };
+
 
     }
 }

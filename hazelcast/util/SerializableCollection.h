@@ -8,6 +8,7 @@
 #define HAZELCAST_SERIALIZABLE_CONNECTION
 
 #include "../client/serialization/Data.h"
+#import "mintomic_msvc.h"
 
 namespace hazelcast {
     namespace util {
@@ -64,8 +65,8 @@ namespace hazelcast {
                     return;
                 for (int i = 0; i < size; i++) {
                     Data *data = new Data();
-                    data->readData(reader);
-//                    reader >> (*data);
+//                    data->readData(reader);//TODO may not work
+                    reader >> (*data);
                     ar.datas.push_back(data);
                 }
             };

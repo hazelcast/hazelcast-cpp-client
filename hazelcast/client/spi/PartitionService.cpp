@@ -70,14 +70,13 @@ namespace hazelcast {
                 }
             };
 
-            hazelcast::client::impl::PartitionsResponse PartitionService::getPartitionsFrom(Address const & address) {
-                hazelcast::client::impl::PartitionsResponse partitionResponse;
-                hazelcast::client::impl::GetPartitionsRequest getPartitionsRequest;
-                clusterService.sendAndReceive(address, getPartitionsRequest, partitionResponse);
+            impl::PartitionsResponse PartitionService::getPartitionsFrom(Address const & address) {
+                impl::GetPartitionsRequest getPartitionsRequest;
+                impl::PartitionsResponse partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
                 return partitionResponse;
             };
 
-            void PartitionService::processPartitionResponse(hazelcast::client::impl::PartitionsResponse & response) {
+            void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
                 vector<Address> members = response.getMembers();
                 vector<int> ownerIndexes = response.getOwnerIndexes();
                 if (partitionCount == 0) {
@@ -96,7 +95,7 @@ namespace hazelcast {
                 vector<connection::Member> memberList = clusterService.getMemberList();
                 for (vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
-                    hazelcast::client::impl::PartitionsResponse response = getPartitionsFrom(target);
+                    impl::PartitionsResponse response = getPartitionsFrom(target);
                     if (!response.isEmpty()) {
                         processPartitionResponse(response);
                         return;

@@ -22,9 +22,9 @@ namespace hazelcast {
 
             };
 
-            virtual void memberAdded(const hazelcast::client::connection::MembershipEvent& event) = 0;
+            virtual void memberAdded(const connection::MembershipEvent& event) = 0;
 
-            virtual void memberRemoved(const hazelcast::client::connection::MembershipEvent& event) = 0;
+            virtual void memberRemoved(const connection::MembershipEvent& event) = 0;
         };
     }
 }

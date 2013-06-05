@@ -12,7 +12,6 @@
 #include "Credentials.h"
 #include "ProtocolConstants.h"
 #include "../serialization/NullPortable.h"
-#include "../serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {

@@ -23,26 +23,26 @@ namespace hazelcast {
 
             class Connection {
             public:
-                Connection(const hazelcast::client::Address& address, hazelcast::client::serialization::SerializationService&);
+                Connection(const Address& address, serialization::SerializationService&);
 
                 void write(const vector<byte>& bytes);
 
-                void write(const hazelcast::client::serialization::Data&);
+                void write(const serialization::Data&);
 
-                void read(hazelcast::client::serialization::Data&);
+                serialization::Data read(serialization::SerializationContext & serializationContext);
 
                 void close();
 
-                const hazelcast::client::Address& getEndpoint() const;
+                const Address& getEndpoint() const;
 
                 const Socket& getSocket() const;
 
             private:
-                hazelcast::client::Address endpoint;
-                hazelcast::client::serialization::SerializationService& serializationService;
+                Address endpoint;
+                serialization::SerializationService& serializationService;
                 Socket socket;
-                hazelcast::client::serialization::InputSocketStream inputSocketStream;
-                hazelcast::client::serialization::OutputSocketStream outputSocketStream;
+                serialization::InputSocketStream inputSocketStream;
+                serialization::OutputSocketStream outputSocketStream;
                 int connectionId;
             };
         }

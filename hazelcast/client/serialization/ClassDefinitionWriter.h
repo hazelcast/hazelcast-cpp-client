@@ -14,7 +14,6 @@
 #include "FieldType.h"
 #include "ConstantSerializers.h"
 #include "ClassDefinition.h"
-#include "Portable.h"
 #include "SerializationContext.h"
 #include <string>
 #include <iosfwd>

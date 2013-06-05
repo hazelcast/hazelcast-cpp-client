@@ -16,25 +16,25 @@ namespace hazelcast {
             public:
                 InvocationService(ClusterService& clusterService, PartitionService& partitionService);
 
-                template<typename Request, typename Response>
-                void invokeOnRandomTarget(const Request& request, Response& response) {
-                    clusterService.sendAndReceive(request, response);
+                template<typename Response, typename Request >
+                Response invokeOnRandomTarget(const Request& request) {
+                    return clusterService.sendAndReceive(request);
                 };
 
 
-                template<typename Request, typename Response>
-                void invokeOnKeyOwner(const Request& request, Response& response, const hazelcast::client::serialization::Data& key) {
+                template<typename Response, typename Request >
+                Response invokeOnKeyOwner(const Request& request, hazelcast::client::serialization::Data& key) {
                     Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
-                        invokeOnTarget(request, response, *owner);
+                        return invokeOnTarget<Response>(request, *owner);
                     }
-                    invokeOnRandomTarget(request, response);
+                    return invokeOnRandomTarget<Response>(request);
                 };
 
             private :
-                template<typename Request, typename Response>
-                void invokeOnTarget(const Request& request, Response& response, const Address& target) {
-                    clusterService.sendAndReceive(target, request, response);
+                template<typename Response, typename Request >
+                Response invokeOnTarget(const Request& request, const Address& target) {
+                    return clusterService.sendAndReceive<Response>(target, request);
                 };
 
                 ClusterService& clusterService;

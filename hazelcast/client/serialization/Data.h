@@ -34,9 +34,11 @@ namespace hazelcast {
 
                 Data(const int type, std::auto_ptr <std::vector<byte> > bytes);
 
-                ~Data();
+                Data(const Data&);
 
-                void setSerializationContext(SerializationContext *context);
+                Data& operator = (const Data&);
+
+                ~Data();
 
                 int bufferSize() const;
 
@@ -84,25 +86,25 @@ namespace hazelcast {
                 }
 
                 template<typename  Input>
-                void readData(Input & dataInput) {
+                void readData(Input & dataInput, SerializationContext& serializationContext) {
                     type = dataInput.readInt();
                     int classId = dataInput.readInt();
 
                     if (classId != NO_CLASS_ID) {
                         int factoryId = dataInput.readInt();
                         isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                                && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                        && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
 
-                        if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = context->lookup(factoryId, classId, version);
+                        if (serializationContext.isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = serializationContext.lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);
                         } else {
                             std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                             dataInput.readFully(*(classDefBytes.get()));
-                            cd = context->createClassDefinition(factoryId, classDefBytes);
+                            cd = serializationContext.createClassDefinition(factoryId, classDefBytes);
                         }
                     }
                     int size = dataInput.readInt();
@@ -115,17 +117,13 @@ namespace hazelcast {
 
                 ClassDefinition *cd;
                 int type;
-                std::auto_ptr< std::vector<byte> > buffer;
+                mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
                 int partitionHash;
 
 
             private:
-                Data(const Data&);
 
-                Data& operator = (const Data&);
-
-                SerializationContext *context;
                 bool isError;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;

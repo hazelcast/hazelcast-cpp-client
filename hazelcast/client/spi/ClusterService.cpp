@@ -21,7 +21,7 @@ namespace hazelcast {
             void ClusterService::start() {
                 hazelcast::client::serialization::ClassDefinitionBuilder cd(-3, 3);
                 hazelcast::client::serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
-                hazelcastClient.getSerializationService().getSerializationContext()->registerClassDefinition(ptr);
+                hazelcastClient.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
                 hazelcast::client::connection::Connection *connection = connectToOne(getClientConfig().getAddresses());
                 clusterThread.setInitialConnection(connection);

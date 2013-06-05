@@ -13,6 +13,7 @@
 #include "../protocol/HazelcastServerError.h"
 #include "../../util/AtomicPointer.h"
 #include "../serialization/SerializationService.h"
+#import "mintomic_msvc.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,70 +24,69 @@ namespace hazelcast {
 
             class ClusterService {
             public:
-                ClusterService(hazelcast::client::HazelcastClient& client);
+                ClusterService(HazelcastClient& client);
 
                 void start();
 
-                template<typename send_type, typename recv_type>
-                void sendAndReceive(send_type& object, recv_type& response) {
-                    hazelcast::client::connection::Connection& conn = getConnectionManager().getRandomConnection();
-                    sendAndReceive(conn, object, response);
+                template< typename recv_type, typename send_type>
+                recv_type sendAndReceive(send_type& object) {
+                    recv_type response;
+                    connection::Connection& conn = getConnectionManager().getRandomConnection();
+                    response = sendAndReceive<recv_type>(conn, object);
                     getConnectionManager().releaseConnection(&conn);
+                    return response;
                 }
 
-                template<typename send_type, typename recv_type>
-                void sendAndReceive(const Address& address, send_type& object, recv_type& response) {
-                    hazelcast::client::connection::Connection& conn = getConnectionManager().getConnection(address);
-                    sendAndReceive(conn, object, response);
+                template< typename recv_type, typename send_type>
+                recv_type sendAndReceive(const Address& address, send_type& object) {
+                    connection::Connection& conn = getConnectionManager().getConnection(address);
+                    recv_type response = sendAndReceive<recv_type>(conn, object);
                     getConnectionManager().releaseConnection(&conn);
+                    return response;
                 }
 
-                template<typename send_type, typename recv_type>
-                void sendAndReceive(hazelcast::client::connection::Connection& connection, send_type& object, recv_type& response) {
-                    using namespace hazelcast::client::serialization;
-                    SerializationService& serializationService = getSerializationService();
-                    Data request;
-                    serializationService.toData(object, request);
+                template< typename recv_type, typename send_type>
+                recv_type sendAndReceive(connection::Connection& connection, send_type& object) {
+                    serialization::SerializationService& serializationService = getSerializationService();
+                    serialization::Data request = serializationService.toData(object);
                     connection.write(request);
-                    Data responseData;
-                    responseData.setSerializationContext(serializationService.getSerializationContext());
-                    connection.read(responseData);
+                    serialization::Data responseData = connection.read(serializationService.getSerializationContext());
                     if (responseData.isServerError()) {
-                        hazelcast::client::protocol::HazelcastServerError x;
-                        serializationService.toObject(responseData, x);
+                        protocol::HazelcastServerError x = serializationService.toObject<protocol::HazelcastServerError>(responseData);
                         std::cerr << x.what() << std::endl;
                         throw  x;
-                    } else {
-                        serializationService.toObject(responseData, response);
                     }
+                    recv_type response = serializationService.toObject<recv_type>(responseData);
+
+                    return response;
 
                 };
 
-                hazelcast::client::Address getMasterAddress();
+                Address getMasterAddress();
 
                 void addMembershipListener(MembershipListener *listener);
 
                 bool removeMembershipListener(MembershipListener *listener);
 
-                std::vector<hazelcast::client::connection::Member> getMemberList();
+                std::vector<connection::Member> getMemberList();
 
-                friend class hazelcast::client::connection::ClusterListenerThread;
+                friend class connection::ClusterListenerThread;
 
             private:
 
-                hazelcast::client::connection::ClusterListenerThread clusterThread;
-                hazelcast::client::HazelcastClient& hazelcastClient;
-                hazelcast::util::AtomicPointer< std::map<hazelcast::client::Address, hazelcast::client::connection::Member > > membersRef;
-                hazelcast::util::ConcurrentMap< hazelcast::client::MembershipListener *, bool> listeners;
+                connection::ClusterListenerThread clusterThread;
+                HazelcastClient& hazelcastClient;
+                util::AtomicPointer< std::map<Address, connection::Member > > membersRef;
+                util::ConcurrentMap< MembershipListener *, bool> listeners;
 
-                hazelcast::client::connection::Connection *connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses);
+                connection::Connection *connectToOne(const std::vector<Address>& socketAddresses);
 
 
-                hazelcast::client::connection::ConnectionManager& getConnectionManager();
+                connection::ConnectionManager& getConnectionManager();
 
-                hazelcast::client::serialization::SerializationService& getSerializationService();
+                serialization::SerializationService& getSerializationService();
 
-                hazelcast::client::ClientConfig & getClientConfig();
+                ClientConfig & getClientConfig();
             };
 
         }

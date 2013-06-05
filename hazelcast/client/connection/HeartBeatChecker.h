@@ -9,6 +9,7 @@
 #define HAZELCAST_HEARTBEAT_CHECKER
 
 #include "../serialization/Data.h"
+#include "../protocol/PingRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,14 +22,15 @@ namespace hazelcast {
 
             class HeartBeatChecker {
             public:
-                HeartBeatChecker(int timeout, hazelcast::client::serialization::SerializationService& serializationService);
+                HeartBeatChecker(int timeout, serialization::SerializationService& serializationService);
 
                 bool checkHeartBeat(const Connection& connection);
 
             private:
                 int timeout;
-                hazelcast::client::serialization::Data ping;
-                hazelcast::client::serialization::SerializationService& serializationService;
+                protocol::PingRequest pingRequest;
+                serialization::Data ping;
+                serialization::SerializationService& serializationService;
             };
 
         }

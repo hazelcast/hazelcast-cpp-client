@@ -5,17 +5,15 @@
 
 #include "HeartBeatChecker.h"
 #include "Connection.h"
-#include "../protocol/ClientPingRequest.h"
 #include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            HeartBeatChecker::HeartBeatChecker(int timeout, hazelcast::client::serialization::SerializationService& serializationService)
+            HeartBeatChecker::HeartBeatChecker(int timeout, serialization::SerializationService& serializationService)
             :serializationService(serializationService)
-            , timeout(timeout) {
-                hazelcast::client::protocol::ClientPingRequest clientPingRequest;
-                serializationService.toData(clientPingRequest, ping);
+            , timeout(timeout)
+            , ping(serializationService.toData(pingRequest)){
             }
 
 

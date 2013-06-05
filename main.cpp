@@ -1,6 +1,27 @@
 #include "TestDataSerializable.h"
 #include "portableTest.h"
-#include "mapTest.h"
+#include <mintomic/mintomic.h>
+#include <mintpack/timewaster.h>
+#include <mintpack/threadsynchronizer.h>
+
+
+static mint_atomic32_t g_sharedInt;
+
+static void threadFunc(int threadNum) {
+    TimeWaster tw(threadNum);
+
+    for (int i = 0; i < 10000000; i++) {
+        mint_fetch_add_32_relaxed(&g_sharedInt, 1);
+        tw.wasteRandomCycles();
+    }
+}
+
+bool testFunc(int numThreads) {
+    g_sharedInt._nonatomic = 0;
+    ThreadSynchronizer threads(numThreads);
+    threads.run(threadFunc);
+    return g_sharedInt._nonatomic == (uint32_t) 10000000 * numThreads;
+}
 
 void *increment(void *x) {
     int *f = (int *) x;
@@ -12,6 +33,7 @@ void *increment(void *x) {
 
 int main(int argc, char **argv) {
     try{
+        std::cout << testFunc(2) << std::endl;
 //        testDifferentVersions();
 //        testRawData();
 //        testRawDataWithoutRegistering();
@@ -27,7 +49,7 @@ int main(int argc, char **argv) {
 //        testMapOperations();
 //        testMapLocksInSequential();
 //        testMapLocksInParallel();
-        testSpeed();
+//        testSpeed();
 //        testPut();
 //        int num = 0;
 //

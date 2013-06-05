@@ -8,7 +8,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address & address, hazelcast::client::serialization::SerializationService & serializationService)
+            Connection::Connection(const Address & address, serialization::SerializationService & serializationService)
             : endpoint(address)
             , serializationService(serializationService)
             , socket(endpoint)
@@ -22,18 +22,20 @@ namespace hazelcast {
                 outputSocketStream.write(bytes);
             };
 
-            void Connection::write(hazelcast::client::serialization::Data const & data) {
+            void Connection::write(serialization::Data const & data) {
                 data.writeData(outputSocketStream);
             };
 
-            void Connection::read(hazelcast::client::serialization::Data & data) {
-                data.readData(inputSocketStream);
+            serialization::Data Connection::read(serialization::SerializationContext & serializationContext) {
+                serialization::Data data;
+                data.readData(inputSocketStream, serializationContext);
+                return data;
             };
 
 
             Socket const & Connection::getSocket() const {
                 return socket;
-            }
+            };
 
             const Address & Connection::getEndpoint() const {
                 return endpoint;

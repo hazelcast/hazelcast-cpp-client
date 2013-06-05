@@ -13,3 +13,9 @@
 *.lai
 *.la
 *.a
+
+#dependency files
+*.d
+
+#test resources
+*.txt

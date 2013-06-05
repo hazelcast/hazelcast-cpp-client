@@ -9,12 +9,30 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
+            Credentials::Credentials() {
+
+            };
+
             Credentials::Credentials(std::string principal, std::string password)
             : principal(principal) {
                 char const *pasw = password.c_str();
                 std::vector<byte> pwd(pasw, pasw + 8); //TODO
                 this->password = pwd;
-            }
+            };
+
+            void Credentials::setPrincipal(std::string const & principal) {
+                this->principal = principal;
+            };
+
+            void Credentials::setEndPoint(std::string const & endPoint) {
+                this->endpoint = endPoint;
+            };
+
+            void Credentials::setPassword(std::string const & password) {
+                char const *pasw = password.c_str();
+                std::vector<byte> pwd(pasw, pasw + 8); //TODO
+                this->password = pwd;
+            };
 
 
         }

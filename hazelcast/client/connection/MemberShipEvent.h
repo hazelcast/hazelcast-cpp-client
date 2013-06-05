@@ -21,9 +21,10 @@ namespace hazelcast {
                 friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::connection::MembershipEvent& ar);
                 
             public:
-                static const int MEMBER_ADDED = 1;
-                
-                static const int MEMBER_REMOVED = 3;
+                enum {
+                    MEMBER_ADDED = 1,
+                    MEMBER_REMOVED = 3,
+                };
                 
                 MembershipEvent();
                 

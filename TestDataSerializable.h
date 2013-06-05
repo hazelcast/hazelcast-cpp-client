@@ -7,7 +7,6 @@
 #ifndef __TestMobile_H_
 #define __TestMobile_H_
 
-#include "hazelcast/client/serialization/DataSerializable.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
 
 
@@ -41,6 +40,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            //TODO name getSerializerID
             inline int getTypeId(const TestDataSerializable& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };

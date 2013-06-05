@@ -5,7 +5,7 @@
 #define HAZELCAST_CREDENTIALS
 
 #include "ProtocolConstants.h"
-#include "../serialization/Portable.h"
+#include "../serialization/ConstantSerializers.h"
 #include <string>
 #include <vector>
 
@@ -16,9 +16,24 @@ namespace hazelcast {
 
         namespace protocol {
             class Credentials {
+                template<typename HzWriter>
+                friend void serialization::writePortable(HzWriter& writer, const hazelcast::client::protocol::Credentials& data);
+
+                template<typename HzReader>
+                friend void serialization::readPortable(HzReader& reader, hazelcast::client::protocol::Credentials& data);
+                
             public:
+                Credentials();
+
                 Credentials(std::string principal, std::string password);
 
+                void setPrincipal(const std::string& principal);
+
+                void setEndPoint(const std::string& endPoint);
+
+                void setPassword(const std::string& password);
+
+            private:
                 std::string principal;
                 std::string endpoint;
                 std::vector<byte> password;
@@ -31,17 +46,17 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getFactoryId(const hazelcast::client::protocol::Credentials& ar) {
-                return hazelcast::client::protocol::SpiConstants::SPI_PORTABLE_FACTORY;
+            inline int getFactoryId(const protocol::Credentials& ar) {
+                return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             };
 
-            inline int getClassId(const hazelcast::client::protocol::Credentials& ar) {
-                return hazelcast::client::protocol::SpiConstants::CREDENTIALS_ID;
+            inline int getClassId(const protocol::Credentials& ar) {
+                return protocol::SpiConstants::CREDENTIALS_ID;
             };
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::Credentials& data) {
+            inline void writePortable(HzWriter& writer, const ::hazelcast::client::protocol::Credentials& data) {
                 writer["principal"] << data.principal; //dev
                 writer["endpoint"] << data.endpoint; //""
                 writer["pwd"] << data.password; //dev-pass
@@ -50,7 +65,7 @@ namespace hazelcast {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::protocol::Credentials& data) {
+            inline void readPortable(HzReader& reader, ::hazelcast::client::protocol::Credentials& data) {
                 reader["principal"] >> data.principal; //dev
                 reader["endpoint"] >> data.endpoint; //""
                 reader["pwd"] >> data.password; //dev-pass
