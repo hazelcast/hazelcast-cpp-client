@@ -18,10 +18,10 @@ namespace hazelcast {
         namespace protocol {
             class AuthenticationRequest {
                 template<typename HzWriter>
-                friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::client::protocol::AuthenticationRequest& arr);
+                friend void serialization::writePortable(HzWriter& writer, const protocol::AuthenticationRequest& arr);
 
                 template<typename HzReader>
-                friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::protocol::AuthenticationRequest& arr);
+                friend void serialization::readPortable(HzReader& reader, protocol::AuthenticationRequest& arr);
 
             public:
                 AuthenticationRequest(Credentials credential);
@@ -43,17 +43,22 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getFactoryId(const hazelcast::client::protocol::AuthenticationRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
+
+            inline int getTypeSerializerId(const protocol::AuthenticationRequest& x) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
+
+            inline int getFactoryId(const protocol::AuthenticationRequest& ar) {
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
 
-            inline int getClassId(const hazelcast::client::protocol::AuthenticationRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
+            inline int getClassId(const protocol::AuthenticationRequest& ar) {
+                return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
             }
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::AuthenticationRequest& arr) {
+            inline void writePortable(HzWriter& writer, const protocol::AuthenticationRequest& arr) {
                 writer["credentials"] << arr.credentials;
                 if (arr.principal == NULL) {
                     NullPortable nullPortable(-3, 3);
@@ -65,9 +70,9 @@ namespace hazelcast {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::protocol::AuthenticationRequest& arr) {
+            inline void readPortable(HzReader& reader, protocol::AuthenticationRequest& arr) {
                 reader["credentials"] >> arr.credentials;
-                hazelcast::client::protocol::Principal *principal = new hazelcast::client::protocol::Principal();
+                protocol::Principal *principal = new protocol::Principal();
                 reader["principal"] >> (*principal);
                 arr.principal = principal;
                 reader["reAuth"] >> arr.reAuth;

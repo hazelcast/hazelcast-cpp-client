@@ -10,7 +10,6 @@
 #define Server_TestMainPortable_h
 
 #include "TestInnerPortable.h"
-
 #include <string>
 
 using namespace hazelcast::client::serialization;
@@ -100,6 +99,11 @@ private:
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
+            inline int getTypeSerializerId(const TestMainPortable& x) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
+
             inline int getFactoryId(const TestMainPortable& t) {
                 return 1;
             }

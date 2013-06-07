@@ -9,12 +9,13 @@
 #include "BufferedDataInput.h"
 #include "ConstantSerializers.h"
 #include "../HazelcastException.h"
+#include "TypeSerializer.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class DataSerializer {
+            class DataSerializer : public TypeSerializer {
             public:
                 DataSerializer();
 
@@ -37,6 +38,10 @@ namespace hazelcast {
                     //TODO factoryId and classId is not used!!!
                     hazelcast::client::serialization::readPortable(in, object);
                 };
+
+                ~DataSerializer();
+
+                int getTypeId();
             };
         }
     }

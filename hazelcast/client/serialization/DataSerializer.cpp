@@ -11,6 +11,14 @@ namespace hazelcast {
             DataSerializer::DataSerializer() {
 
             };
+
+            DataSerializer::~DataSerializer() {
+
+            }
+
+            int DataSerializer::getTypeId() {
+                return SerializationConstants::CONSTANT_TYPE_DATA;
+            }
         }
     }
 }

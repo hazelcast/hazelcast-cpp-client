@@ -22,17 +22,17 @@ namespace hazelcast {
 
             template<typename T>
             int getTypeSerializerId(const T& t) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                return t.getTypeSerializerId();
             };
 
             template<typename T>
             int getFactoryId(const T& t) {
-                return 0;
+                return t.getFactoryId();
             }
 
             template<typename T>
             int getClassId(const T& t) {
-                return 0;
+                return t.getClassId();
             }
 
             int getTypeSerializerId(byte data);
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             int getTypeSerializerId(double data);
 
-            int getTypeSerializerId(const std::string&   data);
+            int getTypeSerializerId(const std::string& data);
 
             int getTypeSerializerId(const std::vector<byte>&  data);
 
@@ -66,6 +66,70 @@ namespace hazelcast {
             int getTypeSerializerId(const std::vector<float >&  data);
 
             int getTypeSerializerId(const std::vector<double >&  data);
+
+            int getClassId(byte data);
+
+            int getClassId(bool data);
+
+            int getClassId(char data);
+
+            int getClassId(short data);
+
+            int getClassId(int data);
+
+            int getClassId(long data);
+
+            int getClassId(float data);
+
+            int getClassId(double data);
+
+            int getClassId(const std::string& data);
+
+            int getClassId(const std::vector<byte>&  data);
+
+            int getClassId(const std::vector<char >&  data);
+
+            int getClassId(const std::vector<short >&  data);
+
+            int getClassId(const std::vector<int>&  data);
+
+            int getClassId(const std::vector<long >&  data);
+
+            int getClassId(const std::vector<float >&  data);
+
+            int getClassId(const std::vector<double >&  data);
+
+            int getFactoryId(byte data);
+
+            int getFactoryId(bool data);
+
+            int getFactoryId(char data);
+
+            int getFactoryId(short data);
+
+            int getFactoryId(int data);
+
+            int getFactoryId(long data);
+
+            int getFactoryId(float data);
+
+            int getFactoryId(double data);
+
+            int getFactoryId(const std::string& data);
+
+            int getFactoryId(const std::vector<byte>&  data);
+
+            int getFactoryId(const std::vector<char >&  data);
+
+            int getFactoryId(const std::vector<short >&  data);
+
+            int getFactoryId(const std::vector<int>&  data);
+
+            int getFactoryId(const std::vector<long >&  data);
+
+            int getFactoryId(const std::vector<float >&  data);
+
+            int getFactoryId(const std::vector<double >&  data);
 
         }
     }

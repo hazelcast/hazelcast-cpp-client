@@ -11,10 +11,10 @@ namespace hazelcast {
         namespace map {
             class PutRequest {
             public:
-                PutRequest(const std::string& name, hazelcast::client::serialization::Data& key, hazelcast::client::serialization::Data& value, int threadId, long ttl);
+                PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 
-                hazelcast::client::serialization::Data& key;
-                hazelcast::client::serialization::Data& value;
+                serialization::Data& key;
+                serialization::Data& value;
                 std::string name;
                 int threadId;
                 long ttl;
@@ -26,17 +26,21 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getFactoryId(const hazelcast::client::map::PutRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::CLIENT_MAP_FACTORY_ID;
+            inline int getTypeSerializerId(const map::PutRequest& x) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
+
+            inline int getFactoryId(const map::PutRequest& ar) {
+                return protocol::ProtocolConstants::CLIENT_MAP_FACTORY_ID;
             }
 
-            inline int getClassId(const hazelcast::client::map::PutRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::MAP_PUT_ID;
+            inline int getClassId(const map::PutRequest& ar) {
+                return protocol::ProtocolConstants::MAP_PUT_ID;
             }
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::map::PutRequest& arr) {
+            inline void writePortable(HzWriter& writer, const map::PutRequest& arr) {
                 writer["n"] << arr.name;
                 writer["t"] << arr.threadId;
                 writer["ttl"] << arr.ttl;
@@ -45,7 +49,7 @@ namespace hazelcast {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::map::PutRequest& arr) {
+            inline void readPortable(HzReader& reader, map::PutRequest& arr) {
                 reader["n"] >> arr.name;
                 reader["t"] >> arr.threadId;
                 reader["ttl"] >> arr.ttl;

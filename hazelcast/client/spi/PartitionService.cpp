@@ -86,7 +86,8 @@ namespace hazelcast {
                     int ownerIndex = ownerIndexes[partitionId];
                     if (ownerIndex > -1) {
                         Address *address = new Address(members[ownerIndex]);
-                        partitions.put(partitionId, address);
+                        Address *pAddress = partitions.put(partitionId, address);
+                        if (pAddress) delete pAddress;
                     }
                 }
             };

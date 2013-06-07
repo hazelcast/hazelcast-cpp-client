@@ -18,6 +18,9 @@ namespace hazelcast {
             PortableSerializer::~PortableSerializer() {
             };
 
+            int PortableSerializer::getTypeId() {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            }
         }
     }
 }

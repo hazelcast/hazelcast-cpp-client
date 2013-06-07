@@ -62,9 +62,9 @@ namespace hazelcast {
                 if (versionedDefinitions.containsKey(key) == 0) {
                     serializationContext->registerNestedDefinitions(cd);
                     ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(key, cd);
+                    if (pDefinition) delete cd;
                     return pDefinition == NULL ? cd : pDefinition;
                 }
-
                 return versionedDefinitions.get(key);
             };
 
@@ -82,6 +82,7 @@ namespace hazelcast {
                     }
                     long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
                     ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    if (pDefinition) delete cd;
                     return pDefinition == NULL ? cd : pDefinition;
                 }
                 return lookup(cd->getClassId(), cd->getVersion());

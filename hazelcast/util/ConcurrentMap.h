@@ -20,12 +20,7 @@ namespace hazelcast {
             };
 
             ~ConcurrentMap() {
-                typename std::map<K, V *>::iterator it;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    //                    delete it->second; //TODO uncomment on release
-                }
             };
-
 
             bool containsKey(const K& key) const {
                 return internalMap.count(key) > 0;
@@ -35,11 +30,9 @@ namespace hazelcast {
              *
              * @return the previous value associated with the specified key,
              *         or <tt>null</tt> if there was no mapping for the key
-             * @throws NullPointerException if the specified key or value is null
              */
             V *putIfAbsent(const K& key, V *value) {
                 if (internalMap.count(key) > 0) {
-                    delete value;
                     return internalMap[key];
                 } else {
                     internalMap[key] = value;
@@ -47,14 +40,14 @@ namespace hazelcast {
                 }
             };
 
-            void put(const K& key, V *value) {
-                V *tempValue;
+            V *put(const K& key, V *value) {
                 if (internalMap.count(key) > 0) {
-                    tempValue = internalMap[key];
+                    V *tempValue = internalMap[key];
                     internalMap[key] = value;
-                    delete tempValue;
+                    return tempValue;
                 } else {
                     internalMap[key] = value;
+                    return NULL;
                 }
             };
 

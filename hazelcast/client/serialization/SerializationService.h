@@ -18,6 +18,7 @@
 #include "../../util/Util.h"
 #include "Data.h"
 #include "DataSerializer.h"
+#include "TypeSerializer.h"
 #include <iosfwd>
 #include <string>
 
@@ -77,13 +78,178 @@ namespace hazelcast {
 
                 SerializationContext& getSerializationContext();
 
+                void registerSerializer(int, TypeSerializer *);
+
+                Data toData(byte);
+
+                Data toData(bool);
+
+                Data toData(char);
+
+                Data toData(short);
+
+                Data toData(int);
+
+                Data toData(long);
+
+                Data toData(float);
+
+                Data toData(double);
+
+                Data toData(const std::vector<byte>&);
+
+                Data toData(const std::vector<char>&);
+
+                Data toData(const std::vector<short>&);
+
+                Data toData(const std::vector<int>&);
+
+                Data toData(const std::vector<long>&);
+
+                Data toData(const std::vector<float>&);
+
+                Data toData(const std::vector<double>&);
+
+                Data toData(const std::string&);
+
             private:
 
                 SerializationService(const SerializationService&);
 
+                util::ConcurrentMap<int, serialization::TypeSerializer > typeSerializers;
                 SerializationContext serializationContext;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
+
+                TypeSerializer *serializerFor(int id);
+            };
+
+            template<>
+            inline byte SerializationService::toObject(const Data& data) {
+                byte object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline bool SerializationService::toObject(const Data& data) {
+                bool object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline char SerializationService::toObject(const Data& data) {
+                char object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline short SerializationService::toObject(const Data& data) {
+                short object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline int SerializationService::toObject(const Data& data) {
+                int object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline long SerializationService::toObject(const Data& data) {
+                long object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline float SerializationService::toObject(const Data& data) {
+                float object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline double SerializationService::toObject(const Data& data) {
+                double object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<byte> SerializationService::toObject(const Data& data) {
+                std::vector<byte> object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<char> SerializationService::toObject(const Data& data) {
+                std::vector<char> object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<short> SerializationService::toObject(const Data& data) {
+                std::vector<short > object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<int> SerializationService::toObject(const Data& data) {
+                std::vector<int> object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<long> SerializationService::toObject(const Data& data) {
+                std::vector<long> object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<float> SerializationService::toObject(const Data& data) {
+                std::vector<float> object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::vector<double> SerializationService::toObject(const Data& data) {
+                std::vector<double > object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
+            };
+
+            template<>
+            inline std::string SerializationService::toObject(const Data& data) {
+                std::string object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                readPortable(dataInput, object);
+                return object;
             };
         }
     }

@@ -79,6 +79,7 @@ namespace hazelcast {
                 if (value == NULL) {
                     value = new PortableContext(this);
                     PortableContext *current = portableContextMap.putIfAbsent(factoryId, value);
+                    if (current) delete value;
                     value = current == NULL ? value : current;
                 }
 //                PortableContext* temp = portableContextMap.get(factoryId);

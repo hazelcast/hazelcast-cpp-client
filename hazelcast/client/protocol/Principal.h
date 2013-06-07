@@ -28,6 +28,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
+            inline int getTypeSerializerId(const protocol::Principal& x) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
+
             inline int getFactoryId(const protocol::Principal& ar) {
                 return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
             }

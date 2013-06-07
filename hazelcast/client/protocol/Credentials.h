@@ -17,11 +17,11 @@ namespace hazelcast {
         namespace protocol {
             class Credentials {
                 template<typename HzWriter>
-                friend void serialization::writePortable(HzWriter& writer, const hazelcast::client::protocol::Credentials& data);
+                friend void serialization::writePortable(HzWriter& writer, const protocol::Credentials& data);
 
                 template<typename HzReader>
-                friend void serialization::readPortable(HzReader& reader, hazelcast::client::protocol::Credentials& data);
-                
+                friend void serialization::readPortable(HzReader& reader, protocol::Credentials& data);
+
             public:
                 Credentials();
 
@@ -46,6 +46,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            inline int getTypeSerializerId(const protocol::Credentials& x) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            };
+
             inline int getFactoryId(const protocol::Credentials& ar) {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             };
@@ -56,7 +60,7 @@ namespace hazelcast {
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const ::hazelcast::client::protocol::Credentials& data) {
+            inline void writePortable(HzWriter& writer, const protocol::Credentials& data) {
                 writer["principal"] << data.principal; //dev
                 writer["endpoint"] << data.endpoint; //""
                 writer["pwd"] << data.password; //dev-pass
@@ -65,7 +69,7 @@ namespace hazelcast {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, ::hazelcast::client::protocol::Credentials& data) {
+            inline void readPortable(HzReader& reader, protocol::Credentials& data) {
                 reader["principal"] >> data.principal; //dev
                 reader["endpoint"] >> data.endpoint; //""
                 reader["pwd"] >> data.password; //dev-pass
