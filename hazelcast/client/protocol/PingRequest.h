@@ -25,7 +25,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getTypeId(const hazelcast::client::protocol::PingRequest& x) {
+            inline int getTypeSerializerId(const hazelcast::client::protocol::PingRequest& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

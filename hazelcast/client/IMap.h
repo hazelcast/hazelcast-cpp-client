@@ -56,14 +56,13 @@ namespace hazelcast {
                 serialization::Data valueData = toData(value);
 
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
-//                serialization::Data debugData;//TODO 3 TEST LINES
 //                clock_t time1 = clock();
-//                toData(request, debugData);
+                serialization::Data debugData = toData(request);
 //                clock_t time2 = clock();
-//                toObject(debugData, oldValue);
+                V oldValue = toObject<V>(debugData);
 //                clock_t time3 = clock();
 //                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
-                V oldValue = invoke<V>(request, keyData);
+//                V oldValue = invoke<V>(request, keyData);
                 return oldValue;
             };
 
@@ -117,7 +116,7 @@ namespace hazelcast {
             std::vector< std::pair<K, V> > entrySet() {
             };
 
-            void lock(const K& key) throw (hazelcast::client::HazelcastException) {
+            void lock(const K& key) throw (HazelcastException) {
             };
 
             bool isLocked(const K& key) {
@@ -143,8 +142,8 @@ namespace hazelcast {
                 return context.getSerializationService().template toObject<T>(data);
             };
 
-            template<typename Request, typename Response>
-            Response invoke(const Request& request, hazelcast::client::serialization::Data&  keyData) {
+            template<typename Response, typename Request>
+            Response invoke(const Request& request, serialization::Data&  keyData) {
 //                try {
                 return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
 //              return context.getInvocationService().template invokeOnRandomTarget<Response>(request, response); //TODO delete line later
@@ -154,7 +153,7 @@ namespace hazelcast {
             };
 
 //
-            template<typename Request, typename Response>
+            template<typename Response, typename Request>
             Response invoke(const Request& request) {
 //                try {
                 return context.getInvocationService().template invokeOnRandomTarget<Response>(request);

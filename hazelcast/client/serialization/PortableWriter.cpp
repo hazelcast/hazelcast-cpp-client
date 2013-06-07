@@ -84,7 +84,7 @@ namespace hazelcast {
                 output->writeShort(value);
             };
 
-            void PortableWriter::writeUTF(string value) {
+            void PortableWriter::writeUTF(const string& value) {
                 output->writeUTF(value);
             };
 
@@ -92,7 +92,7 @@ namespace hazelcast {
                 output->writeBoolean(true);
             };
 
-            void PortableWriter::setPosition(string fieldName) {
+            void PortableWriter::setPosition(const string& fieldName) {
                 if (raw) throw HazelcastException("Cannot write Portable fields after getRawDataOutput() is called!");
                 if (!cd->isFieldDefinitionExists(fieldName)) {
                     std::string error;

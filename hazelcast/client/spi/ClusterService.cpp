@@ -7,7 +7,6 @@
 #include "../ClientConfig.h"
 #include "../HazelcastClient.h"
 #include "../serialization/ClassDefinitionBuilder.h"
-#include "../MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -56,10 +55,9 @@ namespace hazelcast {
                     std::cerr << "Unable to get alive cluster connection, try in " << std::max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
-                    //
                     if (remainingTime > 0) {
 //                    try {
-//                        Thread.sleep(remainingTime);
+                        sleep(remainingTime);
 //                    } catch (InterruptedException e) {
 //                        break;
 //                    }

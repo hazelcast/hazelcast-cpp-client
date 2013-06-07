@@ -21,7 +21,7 @@ namespace hazelcast {
             typedef unsigned char byte;
 
             template<typename T>
-            int getTypeId(const T& t) {
+            int getTypeSerializerId(const T& t) {
                 return SerializationConstants::CONSTANT_TYPE_PORTABLE;
             };
 
@@ -35,37 +35,37 @@ namespace hazelcast {
                 return 0;
             }
 
-            int getTypeId(byte data);
+            int getTypeSerializerId(byte data);
 
-            int getTypeId(bool data);
+            int getTypeSerializerId(bool data);
 
-            int getTypeId(char data);
+            int getTypeSerializerId(char data);
 
-            int getTypeId(short data);
+            int getTypeSerializerId(short data);
 
-            int getTypeId(int data);
+            int getTypeSerializerId(int data);
 
-            int getTypeId(long data);
+            int getTypeSerializerId(long data);
 
-            int getTypeId(float data);
+            int getTypeSerializerId(float data);
 
-            int getTypeId(double data);
+            int getTypeSerializerId(double data);
 
-            int getTypeId(const std::string&   data);
+            int getTypeSerializerId(const std::string&   data);
 
-            int getTypeId(const std::vector<byte>&  data);
+            int getTypeSerializerId(const std::vector<byte>&  data);
 
-            int getTypeId(const std::vector<char >&  data);
+            int getTypeSerializerId(const std::vector<char >&  data);
 
-            int getTypeId(const std::vector<short >&  data);
+            int getTypeSerializerId(const std::vector<short >&  data);
 
-            int getTypeId(const std::vector<int>&  data);
+            int getTypeSerializerId(const std::vector<int>&  data);
 
-            int getTypeId(const std::vector<long >&  data);
+            int getTypeSerializerId(const std::vector<long >&  data);
 
-            int getTypeId(const std::vector<float >&  data);
+            int getTypeSerializerId(const std::vector<float >&  data);
 
-            int getTypeId(const std::vector<double >&  data);
+            int getTypeSerializerId(const std::vector<double >&  data);
 
         }
     }

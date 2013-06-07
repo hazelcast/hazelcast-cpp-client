@@ -13,6 +13,7 @@
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
 #include "ConstantSerializers.h"
+#include "HazelcastException.h"
 #include <vector>
 #include <iosfwd>
 
@@ -93,7 +94,7 @@ namespace hazelcast {
                     if (classId != NO_CLASS_ID) {
                         int factoryId = dataInput.readInt();
                         isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                        && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                                && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
@@ -106,6 +107,22 @@ namespace hazelcast {
                             dataInput.readFully(*(classDefBytes.get()));
                             cd = serializationContext.createClassDefinition(factoryId, classDefBytes);
                         }
+                    }
+                    int size = dataInput.readInt();
+                    if (size > 0) {
+                        this->buffer->resize(size, 0);
+                        dataInput.readFully(*(buffer.get()));
+                    }
+                    partitionHash = dataInput.readInt();
+                }
+
+                template<typename  Input>
+                void readData(Input & dataInput) {
+                    type = dataInput.readInt();
+                    int classId = dataInput.readInt();
+
+                    if (classId != NO_CLASS_ID) {
+                        throw client::HazelcastException("It is not pure data");
                     }
                     int size = dataInput.readInt();
                     if (size > 0) {
@@ -135,7 +152,7 @@ namespace hazelcast {
             };
 
 
-            inline int getTypeId(const Data& x) {
+            inline int getTypeSerializerId(const Data& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

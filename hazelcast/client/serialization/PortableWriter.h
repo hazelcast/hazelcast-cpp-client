@@ -53,7 +53,7 @@ namespace hazelcast {
 
                 void writeShort(short value);
 
-                void writeUTF(string str);
+                void writeUTF(const string& str);
 
                 void writeNullPortable(int factoryId, int classId);
 
@@ -81,7 +81,7 @@ namespace hazelcast {
 
             private:
 
-                void setPosition(string fieldName);
+                void setPosition(const string& fieldName);
 
                 template <typename T>
                 ClassDefinition *getClassDefinition(const T& p) {
@@ -129,7 +129,7 @@ namespace hazelcast {
             template<typename T>
             inline void operator <<(PortableWriter& portableWriter, const T& data) {
                 portableWriter.writingToDataOutput();
-                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
+                if (getTypeSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     portableWriter.writePortable(data);
                 else {
                     writePortable(portableWriter, data);

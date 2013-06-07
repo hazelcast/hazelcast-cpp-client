@@ -37,7 +37,7 @@ namespace hazelcast {
                 Data toData(K& object) {
                     Data data;
                     BufferedDataOutput output;
-                    int typeID = getTypeId(object);
+                    int typeID = getTypeSerializerId(object);
                     data.setType(typeID);
                     if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
                         portableSerializer.write(output, object);

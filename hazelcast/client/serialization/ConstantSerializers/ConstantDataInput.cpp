@@ -143,7 +143,6 @@ namespace hazelcast {
             };
 
             void operator >>(BufferedDataInput& dataInput, Data& data) {
-
             };
         }
     }

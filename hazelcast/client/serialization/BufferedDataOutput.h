@@ -51,7 +51,7 @@ namespace hazelcast {
 
                 void writeDouble(double v);
 
-                void writeUTF(std::string s);
+                void writeUTF(const std::string& s);
 
                 void writeInt(int index, int v);
 
@@ -66,7 +66,7 @@ namespace hazelcast {
             private:
                 std::auto_ptr< std::vector<byte> > outputStream;
 
-                void writeShortUTF(std::string);
+                void writeShortUTF(const std::string&);
 
             };
 

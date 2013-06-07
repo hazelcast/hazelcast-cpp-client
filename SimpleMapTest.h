@@ -79,7 +79,7 @@ public:
 
     void op(IMap<std::string, vector<char> >& map) {
         while (true) {
-            char temp[20];
+            char temp[1000];
             int size = sprintf(temp, "%d", (int) (rand() % ENTRY_COUNT));
             std::string key(temp, size);
 

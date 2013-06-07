@@ -139,7 +139,7 @@ namespace hazelcast {
 
             template<typename T>
             inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const T& data) {
-                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
+                if (getTypeSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     classDefinitionWriter.writePortable(data);
                 else
                     writePortable(classDefinitionWriter, data);

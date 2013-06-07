@@ -18,7 +18,7 @@ namespace hazelcast {
 
                 template<typename Response, typename Request >
                 Response invokeOnRandomTarget(const Request& request) {
-                    return clusterService.sendAndReceive(request);
+                    return clusterService.sendAndReceive<Response>(request);
                 };
 
 

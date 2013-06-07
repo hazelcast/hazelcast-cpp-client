@@ -39,7 +39,7 @@ namespace hazelcast {
                 MorphingPortableReader& operator [](std::string fieldName);
 
                 int skipBytes(int i);
-                
+
                 void readFully(std::vector<byte>&);
 
                 int readInt();
@@ -156,7 +156,7 @@ namespace hazelcast {
             template<typename T>
             inline void operator >>(MorphingPortableReader& portableReader, T& data) {
                 portableReader.readingFromDataInput();
-                if (getTypeId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
+                if (getTypeSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     portableReader.readPortable(data);
                 else
                     readPortable(portableReader, data);

@@ -24,7 +24,6 @@ namespace hazelcast {
             , cluster(clusterService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
-                partitionService.start();
             };
 
             ClientConfig clientConfig;
@@ -41,6 +40,7 @@ namespace hazelcast {
         HazelcastClient::HazelcastClient(ClientConfig& config)
         :impl(new HazelcastClientImpl(config, this)) {
             impl->clusterService.start();
+            impl->partitionService.start();
 
         };
 

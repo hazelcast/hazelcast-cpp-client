@@ -13,27 +13,28 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            
+
             class MembershipEvent {
                 template<typename HzWriter>
                 friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::client::connection::MembershipEvent& ar);
+
                 template<typename HzReader>
                 friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::connection::MembershipEvent& ar);
-                
+
             public:
                 enum {
                     MEMBER_ADDED = 1,
                     MEMBER_REMOVED = 3,
                 };
-                
+
                 MembershipEvent();
-                
+
                 MembershipEvent(const Member& member, int eventType);
-                
+
                 Member getMember() const;
-                
+
                 int getEventType() const;
-                
+
             private:
                 Member member;
                 int eventType;
@@ -45,31 +46,31 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getTypeId(const hazelcast::client::connection::MembershipEvent& x) {
+            inline int getTypeSerializerId(const hazelcast::client::connection::MembershipEvent& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
-            
+
             inline int getFactoryId(const hazelcast::client::connection::MembershipEvent& ar) {
                 return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
             };
-            
+
             inline int getClassId(const hazelcast::client::connection::MembershipEvent& ar) {
                 return hazelcast::client::protocol::ProtocolConstants::MEMBERSHIP_EVENT;
             };
-            
-            
+
+
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const hazelcast::client::connection::MembershipEvent& ar) {
                 writer << ar.member;
                 writer << ar.eventType;
             };
-            
+
             template<typename HzReader>
             inline void readPortable(HzReader& reader, hazelcast::client::connection::MembershipEvent& ar) {
                 reader >> ar.member;
                 reader >> ar.eventType;
             };
-            
+
         }
     }
 }

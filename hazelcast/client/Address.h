@@ -56,7 +56,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getTypeId(const hazelcast::client::Address& x) {
+            inline int getTypeSerializerId(const hazelcast::client::Address& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

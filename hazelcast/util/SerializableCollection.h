@@ -35,7 +35,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getTypeId(const hazelcast::util::SerializableCollection& x) {
+            inline int getTypeSerializerId(const hazelcast::util::SerializableCollection& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 
@@ -65,8 +65,7 @@ namespace hazelcast {
                     return;
                 for (int i = 0; i < size; i++) {
                     Data *data = new Data();
-//                    data->readData(reader);//TODO may not work
-                    reader >> (*data);
+                    data->readData(reader);
                     ar.datas.push_back(data);
                 }
             };

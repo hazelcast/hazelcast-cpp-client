@@ -50,21 +50,21 @@ namespace hazelcast {
 
                 void add(ClassDefinition *);
 
-                bool isFieldDefinitionExists(std::string);
+                bool isFieldDefinitionExists(const std::string&);
 
-                const FieldDefinition& get(std::string);
+                const FieldDefinition& get(const std::string&);
 
                 const FieldDefinition& get(int);
 
                 vector<ClassDefinition * > &getNestedClassDefinitions();
 
-                bool hasField(std::string& fieldName) const;
+                bool hasField(const std::string& fieldName) const;
 
                 std::vector<std::string> getFieldNames() const;
 
-                FieldType getFieldType(std::string fieldName) const;
+                FieldType getFieldType(const std::string& fieldName) const;
 
-                int getFieldClassId(std::string fieldName) const;
+                int getFieldClassId(const std::string& fieldName) const;
 
                 int getFieldCount() const;
 
@@ -97,7 +97,7 @@ namespace hazelcast {
 
             };
 
-            inline int getTypeId(const ClassDefinition& x) {
+            inline int getTypeSerializerId(const ClassDefinition& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

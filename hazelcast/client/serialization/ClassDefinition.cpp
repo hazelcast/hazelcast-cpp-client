@@ -52,11 +52,11 @@ namespace hazelcast {
                 nestedClassDefinitions.push_back(cd);
             };
 
-            bool ClassDefinition::isFieldDefinitionExists(std::string name) {
+            bool ClassDefinition::isFieldDefinitionExists(const std::string& name) {
                 return (fieldDefinitionsMap.count(name) > 0);
             }
 
-            const FieldDefinition& ClassDefinition::get(std::string name) {
+            const FieldDefinition& ClassDefinition::get(const std::string& name) {
                 return fieldDefinitionsMap[name];
             };
 
@@ -69,7 +69,7 @@ namespace hazelcast {
             };
 
 
-            bool ClassDefinition::hasField(string & fieldName) const {
+            bool ClassDefinition::hasField(const string & fieldName) const {
                 return fieldDefinitionsMap.count(fieldName) != 0;
             }
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                 return fieldNames;
             }
 
-            FieldType ClassDefinition::getFieldType(std::string fieldName) const {
+            FieldType ClassDefinition::getFieldType(const std::string& fieldName) const {
                 if (hasField(fieldName)) {
                     FieldDefinition x = fieldDefinitionsMap.at(fieldName);
                     FieldType a = x.getType();
@@ -91,7 +91,7 @@ namespace hazelcast {
                 }
             }
 
-            int ClassDefinition::getFieldClassId(std::string fieldName) const {
+            int ClassDefinition::getFieldClassId(const std::string& fieldName) const {
                 if (hasField(fieldName)) {
                     return fieldDefinitionsMap.at(fieldName).getClassId();
                 } else {

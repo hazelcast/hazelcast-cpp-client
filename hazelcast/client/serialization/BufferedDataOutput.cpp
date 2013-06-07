@@ -93,7 +93,7 @@ namespace hazelcast {
                 writeLong(u.l);
             };
 
-            void BufferedDataOutput::writeUTF(std::string str) {
+            void BufferedDataOutput::writeUTF(const std::string& str) {
                 bool isNull = str.empty();
                 writeBoolean(isNull);
                 if (isNull)
@@ -131,7 +131,7 @@ namespace hazelcast {
 
             //private functions
 
-            void BufferedDataOutput::writeShortUTF(std::string str) {
+            void BufferedDataOutput::writeShortUTF(const std::string& str) {
                 int stringLen = (int) str.length();
                 int utfLength = 0;
                 int count = 0;
