@@ -13,7 +13,7 @@
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
 #include "ConstantSerializers.h"
-#include "HazelcastException.h"
+#include "../HazelcastException.h"
 #include <vector>
 #include <iosfwd>
 

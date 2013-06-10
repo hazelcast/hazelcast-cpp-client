@@ -29,7 +29,7 @@ namespace hazelcast {
 
                 BufferedDataInput(const std::vector<byte>&);
 
-                BufferedDataInput& operator [](std::string);
+                BufferedDataInput& operator [](const std::string&);
 
                 ~BufferedDataInput();
 

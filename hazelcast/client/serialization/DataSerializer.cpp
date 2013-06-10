@@ -16,9 +16,6 @@ namespace hazelcast {
 
             }
 
-            int DataSerializer::getTypeId() {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            }
         }
     }
 }

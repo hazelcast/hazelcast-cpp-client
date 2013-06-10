@@ -17,8 +17,6 @@ namespace hazelcast {
             SerializationService::SerializationService(int version)
             : serializationContext(version)
             , portableSerializer(&serializationContext) {
-                registerSerializer(portableSerializer.getTypeId(), &portableSerializer);
-                registerSerializer(dataSerializer.getTypeId(), &dataSerializer);
             };
 
             SerializationService::SerializationService(SerializationService const & rhs)
@@ -34,16 +32,6 @@ namespace hazelcast {
             SerializationService::~SerializationService() {
             };
 
-            TypeSerializer *SerializationService::serializerFor(int id) {
-                return typeSerializers.get(id);
-            }
-
-            void SerializationService::registerSerializer(int id, TypeSerializer *serializer) {
-                TypeSerializer *pSerializer = typeSerializers.putIfAbsent(id, serializer);
-                if (pSerializer) {
-                    throw HazelcastException("A serializaer is already registered for type id" + util::to_string(id));
-                }
-            };
 
             Data SerializationService::toData(byte object) {
                 BufferedDataOutput output;

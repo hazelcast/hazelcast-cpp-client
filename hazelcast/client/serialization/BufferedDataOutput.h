@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 BufferedDataOutput();
 
-                BufferedDataOutput& operator [](std::string);
+                BufferedDataOutput& operator [](const std::string&);
 
                 std::auto_ptr< std::vector<byte> > toByteArray();
 

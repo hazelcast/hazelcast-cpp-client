@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            MorphingPortableReader::MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition* cd)
+            MorphingPortableReader::MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd)
             : input(input)
             , context(serializationContext)
             , cd(cd)
@@ -21,7 +21,7 @@ namespace hazelcast {
 
             };
 
-            MorphingPortableReader & MorphingPortableReader::operator [](std::string fieldName) {
+            MorphingPortableReader & MorphingPortableReader::operator [](const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
                 }
@@ -31,7 +31,6 @@ namespace hazelcast {
                 return *this;
             }
 
-            //TODO need more thought on above and below functions
             void MorphingPortableReader::readingFromDataInput() {
                 if (readingPortable) {
                     readingPortable = false;
@@ -47,8 +46,8 @@ namespace hazelcast {
             int MorphingPortableReader::skipBytes(int i) {
                 throw hazelcast::client::HazelcastException("Not supported");
             };
-            
-            void MorphingPortableReader::readFully(std::vector<byte> &bytes){
+
+            void MorphingPortableReader::readFully(std::vector<byte> &bytes) {
                 input.readFully(bytes);
             };
 
@@ -284,7 +283,7 @@ namespace hazelcast {
                 return input.readShortArray();
             };
 
-            int MorphingPortableReader::getPosition(std::string& fieldName) {
+            int MorphingPortableReader::getPosition(const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");
                 }

@@ -12,19 +12,6 @@ namespace hazelcast {
 
         };
 
-        Address::Address(const Address& rhs)
-        : host(rhs.host), port(rhs.port), type(rhs.type) {
-
-        };
-
-
-        Address & Address::operator = (Address const & address) {
-            host = address.host;
-            port = address.port;
-            type = address.type;
-            return (*this);
-        };
-
         bool Address::operator ==(const hazelcast::client::Address& rhs) const {
             if (rhs.host.compare(host) > 1) {
                 return true;

@@ -8,7 +8,6 @@
 #define HAZELCAST_SERIALIZABLE_CONNECTION
 
 #include "../client/serialization/Data.h"
-#import "mintomic_msvc.h"
 
 namespace hazelcast {
     namespace util {

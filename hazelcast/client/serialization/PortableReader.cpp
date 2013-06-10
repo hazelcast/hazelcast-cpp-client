@@ -22,7 +22,7 @@ namespace hazelcast {
 
             };
 
-            PortableReader & PortableReader::operator [](std::string fieldName) {
+            PortableReader & PortableReader::operator [](const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
                 }
@@ -32,7 +32,6 @@ namespace hazelcast {
                 return *this;
             }
 
-            //TODO need more thought on above and below functions
             void PortableReader::readingFromDataInput() {
                 if (readingPortable) {
                     readingPortable = false;
@@ -48,8 +47,8 @@ namespace hazelcast {
             int PortableReader::skipBytes(int i) {
                 throw hazelcast::client::HazelcastException("Not supported");
             };
-            
-            void PortableReader::readFully(std::vector<byte>& bytes){
+
+            void PortableReader::readFully(std::vector<byte>& bytes) {
                 input.readFully(bytes);
             };
 
@@ -117,7 +116,7 @@ namespace hazelcast {
                 return input.readShortArray();
             };
 
-            int PortableReader::getPosition(std::string& fieldName) {
+            int PortableReader::getPosition(const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");
                 }

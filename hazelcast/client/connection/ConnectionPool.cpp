@@ -4,17 +4,18 @@
 
 
 #include "ConnectionPool.h"
-#include "../Address.h"
 #include "Connection.h"
 #include "ConnectionManager.h"
+
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionPool::ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService& serializationService)
+            ConnectionPool::ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService& serializationService, ConnectionManager &connectionManager)
             : address(address)
             , active(true)
-            , serializationService(serializationService) {
+            , serializationService(serializationService)
+            , connectionManager(connectionManager) {
 
             };
 
@@ -22,7 +23,7 @@ namespace hazelcast {
                 destroy();
             };
 
-            Connection *ConnectionPool::take(ConnectionManager *manager) {
+            Connection *ConnectionPool::take() {
                 if (!active) {
                     return NULL;
                 }
@@ -30,7 +31,8 @@ namespace hazelcast {
                 bool b = queue.poll(t);
                 if (b == false) {
                     t = new Connection(address, serializationService);
-                    manager->authenticate(*t, false);
+
+                    connectionManager.authenticate(*t, false);
                 }
                 return t;
             }

@@ -57,12 +57,12 @@ namespace hazelcast {
 
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
 //                clock_t time1 = clock();
-                serialization::Data debugData = toData(request);
+//                serialization::Data debugData = toData(request);
 //                clock_t time2 = clock();
-                V oldValue = toObject<V>(debugData);
+//                V oldValue = toObject<V>(debugData);
 //                clock_t time3 = clock();
 //                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
-//                V oldValue = invoke<V>(request, keyData);
+                V oldValue = invoke<V>(request, keyData);
                 return oldValue;
             };
 
@@ -145,8 +145,8 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request, serialization::Data&  keyData) {
 //                try {
-                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
-//              return context.getInvocationService().template invokeOnRandomTarget<Response>(request, response); //TODO delete line later
+//                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
+                return context.getInvocationService().template invokeOnRandomTarget<Response>(request); //TODO delete line later
 //                } catch (Exception e) {
 //                    throw ExceptionUtil.rethrow(e);
 //                }

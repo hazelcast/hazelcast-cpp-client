@@ -18,7 +18,7 @@ namespace hazelcast {
             };
 
 
-            BufferedDataOutput& BufferedDataOutput::operator [](std::string string) {
+            BufferedDataOutput& BufferedDataOutput::operator [](const std::string& string) {
                 throw hazelcast::client::HazelcastException("BufferedDataOutput::operator [](std::string string) > not supported!!");
             };
 

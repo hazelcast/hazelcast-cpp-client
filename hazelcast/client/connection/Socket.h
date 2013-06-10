@@ -15,7 +15,7 @@ namespace hazelcast {
             class Socket {
             public:
 
-                Socket(::hazelcast::client::Address& address);
+                Socket(const Address& address);
 
                 ~Socket();
 
@@ -37,9 +37,9 @@ namespace hazelcast {
 
                 Socket(const Socket& rhs);
 
-                void getInfo();
+                void getInfo(const Address& address);
 
-                ::hazelcast::client::Address address;
+                Address address;
                 struct addrinfo *server_info;
                 int socketId;
 

@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class DataSerializer : public TypeSerializer {
+            class DataSerializer {
             public:
                 DataSerializer();
 
@@ -41,7 +41,6 @@ namespace hazelcast {
 
                 ~DataSerializer();
 
-                int getTypeId();
             };
         }
     }

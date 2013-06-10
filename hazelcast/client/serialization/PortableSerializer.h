@@ -16,7 +16,6 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
-#include "TypeSerializer.h"
 
 #include <vector>
 #include <map>
@@ -30,7 +29,7 @@ namespace hazelcast {
 
             class BufferedDataOutput;
 
-            class PortableSerializer : public TypeSerializer {
+            class PortableSerializer {
             public:
 
                 PortableSerializer(SerializationContext *const serializationContext);
@@ -64,18 +63,6 @@ namespace hazelcast {
 
                 template <typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
-                    //TODO portable factory!!!!
-//                    PortableFactory const *portableFactory;
-//                    if (portableFactories.count(factoryId) != 0) {
-//                        portableFactory = portableFactories.at(factoryId);
-//                    } else {
-//                        throw hazelcast::client::HazelcastException("Could not find PortableFactory for factoryId: " + hazelcast::util::to_string(factoryId));
-//                    }
-//
-//                    std::auto_ptr<Portable> p(portableFactory->create(classId));
-//                    if (p.get() == NULL) {
-//                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::util::to_string(factoryId));
-//                    }
 
                     ClassDefinition *cd;
                     if (context->getVersion() == dataVersion) {
@@ -88,8 +75,6 @@ namespace hazelcast {
                         readPortable(reader, object);
                     }
                 };
-
-                int getTypeId();
 
             private:
                 SerializationContext *const context;

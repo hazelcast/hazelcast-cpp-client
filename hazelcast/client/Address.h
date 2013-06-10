@@ -24,13 +24,9 @@ namespace hazelcast {
 
             Address(std::string url, int port);
 
-            Address(const Address&);
+            bool operator == (const Address&) const;
 
-            Address& operator = (const Address&);
-
-            bool operator == (const Address&) const;//TODO
-
-            bool operator <(const Address&) const;//TODO
+            bool operator <(const Address&) const;
 
             int getPort() const;
 

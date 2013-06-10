@@ -26,7 +26,7 @@ namespace hazelcast {
             };
 
 
-            PortableWriter& PortableWriter::operator [](std::string fieldName) {
+            PortableWriter& PortableWriter::operator [](const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
                 }
@@ -35,7 +35,6 @@ namespace hazelcast {
                 return *this;
             };
 
-            //TODO need more thought on above and below functions
             void PortableWriter::writingToDataOutput() {
 
                 if (writingPortable) {

@@ -33,7 +33,7 @@ namespace hazelcast {
 
                 PortableWriter(SerializationContext *serializationContext, ClassDefinition *cd, BufferedDataOutput *output);
 
-                PortableWriter& operator [](std::string fieldName);
+                PortableWriter& operator [](const std::string& fieldName);
 
                 void write(const std::vector<byte>& x);
 

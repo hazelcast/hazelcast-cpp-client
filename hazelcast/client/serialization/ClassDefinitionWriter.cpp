@@ -24,11 +24,11 @@ namespace hazelcast {
             };
 
 
-            ClassDefinition*  ClassDefinitionWriter::getClassDefinition() {
+            ClassDefinition *ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 
-            ClassDefinitionWriter& ClassDefinitionWriter::operator [](std::string fieldName) {
+            ClassDefinitionWriter& ClassDefinitionWriter::operator [](const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
                 }
@@ -37,7 +37,6 @@ namespace hazelcast {
                 return *this;
             };
 
-            //TODO need more thought on above and below functions
             void ClassDefinitionWriter::addField(FieldType const & fieldType) {
                 if (writingPortable) {
                     FieldDefinition fd(index++, lastFieldName, fieldType);

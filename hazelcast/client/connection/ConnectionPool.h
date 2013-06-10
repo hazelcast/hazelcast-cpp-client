@@ -6,10 +6,11 @@
 
 #include "../../util/ConcurrentQueue.h"
 #include "../HazelcastException.h"
+#include "../../util/Lock.h"
+#include "../Address.h"
 
 namespace hazelcast {
     namespace client {
-        class Address;
 
         namespace serialization {
             class SerializationService;
@@ -22,11 +23,11 @@ namespace hazelcast {
 
             class ConnectionPool {
             public:
-                ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService&);
+                ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService&, ConnectionManager &connectionManager);
 
                 ~ConnectionPool();
 
-                Connection *take(ConnectionManager *manager);
+                Connection *take();
 
                 void release(Connection *t);
 
@@ -36,7 +37,9 @@ namespace hazelcast {
                 volatile bool active;
                 hazelcast::util::ConcurrentQueue<Connection *> queue;
                 hazelcast::client::serialization::SerializationService& serializationService;
-                const Address& address;
+                ConnectionManager &connectionManager;
+                Address address;
+
             };
         }
     }

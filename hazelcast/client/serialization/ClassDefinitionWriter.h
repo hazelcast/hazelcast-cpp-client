@@ -28,7 +28,7 @@ namespace hazelcast {
 
                 ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext);
 
-                ClassDefinitionWriter& operator [](std::string fieldName);
+                ClassDefinitionWriter& operator [](const std::string& fieldName);
 
                 void write(const std::vector<byte>& x) {
                     throw hazelcast::client::HazelcastException("Unsupported");//TODO

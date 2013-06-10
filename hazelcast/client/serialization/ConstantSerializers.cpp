@@ -69,99 +69,131 @@ namespace hazelcast {
             };
 
             int getClassId(byte data) {
+                return -1;
             };
 
             int getClassId(bool data) {
+                return -1;
             };
 
             int getClassId(char data) {
+                return -1;
             };
 
             int getClassId(short data) {
+                return -1;
             };
 
             int getClassId(int data) {
+                return -1;
             };
 
             int getClassId(long data) {
+                return -1;
             };
 
             int getClassId(float data) {
+                return -1;
             };
 
             int getClassId(double data) {
+                return -1;
             };
 
             int getClassId(const std::string& data) {
+                return -1;
             };
 
             int getClassId(const std::vector<byte>&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<char >&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<short >&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<int>&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<long >&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<float >&  data) {
+                return -1;
             };
 
             int getClassId(const std::vector<double >&  data) {
+                return -1;
             };
 
             int getFactoryId(byte data) {
+                return -1;
             };
 
             int getFactoryId(bool data) {
+                return -1;
             };
 
             int getFactoryId(char data) {
+                return -1;
             };
 
             int getFactoryId(short data) {
+                return -1;
             };
 
             int getFactoryId(int data) {
+                return -1;
             };
 
             int getFactoryId(long data) {
+                return -1;
             };
 
             int getFactoryId(float data) {
+                return -1;
             };
 
             int getFactoryId(double data) {
+                return -1;
             };
 
             int getFactoryId(const std::string& data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<byte>&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<char >&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<short >&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<int>&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<long >&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<float >&  data) {
+                return -1;
             };
 
             int getFactoryId(const std::vector<double >&  data) {
+                return -1;
             };
 
 

@@ -7,7 +7,9 @@
 #ifndef HAZELCAST_CONCURRENT_QUEUE
 #define HAZELCAST_CONCURRENT_QUEUE
 
+#include "Lock.h"
 #include <queue>
+#include <iostream>
 
 namespace hazelcast {
     namespace util {
@@ -19,25 +21,32 @@ namespace hazelcast {
             };
 
             bool offer(const T& e) {
-                queue.push(e);
+//                mutex.lock();
+                internalQueue.push(e);
+//                mutex.unlock();
                 return true;
             };
 
             bool poll(T& e) {
+//                mutex.lock();
+                bool success = true;
                 if (!empty()) {
-                    e = queue.front();
-                    queue.pop();
-                    return true;
-                } else
-                    return false;
+                    e = internalQueue.front();
+                    internalQueue.pop();
+                } else {
+                    success = false;
+                }
+//                mutex.unlock();
+                return success;
             };
 
             bool empty() {
-                return queue.empty();
+                return internalQueue.empty();
             };
 
         private:
-            std::queue<T> queue;
+//            util::Lock mutex;
+            std::queue<T> internalQueue;
         };
     }
 }

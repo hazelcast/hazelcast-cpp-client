@@ -3,6 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "../Address.h"
 #include "../impl/GetPartitionsRequest.h"
 #include "../impl/PartitionsResponse.h"
 #include "PartitionService.h"
@@ -55,7 +56,8 @@ namespace hazelcast {
             void PartitionService::runListener() {
                 while (true) {
                     sleep(10);
-                    impl::PartitionsResponse partitionResponse = getPartitionsFrom(clusterService.getMasterAddress());
+                    Address masterAddress = clusterService.getMasterAddress();
+                    impl::PartitionsResponse partitionResponse = getPartitionsFrom(masterAddress);
                     if (!partitionResponse.isEmpty()) {
                         processPartitionResponse(partitionResponse);
                     }
@@ -70,7 +72,7 @@ namespace hazelcast {
                 }
             };
 
-            impl::PartitionsResponse PartitionService::getPartitionsFrom(Address const & address) {
+            impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address  & address) {
                 impl::GetPartitionsRequest getPartitionsRequest;
                 impl::PartitionsResponse partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
                 return partitionResponse;

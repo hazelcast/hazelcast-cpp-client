@@ -3,7 +3,8 @@ CC=clang++
 OUT=hazelcastClient.out
 RM=rm -f
 
-OBJS=./obj/hazelcast/util/Thread.o ./obj/hazelcast/client/protocol/Credentials.o ./obj/hazelcast/client/connection/ClusterListenerThread.o ./obj/hazelcast/client/serialization/ConstantSerializers.o ./obj/hazelcast/util/AtomicInteger.o ./obj/hazelcast/client/ISemaphore.o ./obj/hazelcast/client/HazelcastException.o ./obj/hazelcast/client/serialization/BufferedDataInput.o ./obj/hazelcast/client/serialization/PortableContext.o ./obj/hazelcast/client/serialization/PortableWriter.o ./obj/hazelcast/client/impl/AbstractLoadBalancer.o ./obj/hazelcast/client/serialization/SerializationService.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/IdGenerator.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/map/RemoveRequest.o ./obj/hazelcast/client/connection/HeartBeatChecker.o ./obj/hazelcast/client/spi/ClusterService.o ./obj/hazelcast/client/connection/Member.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantsPortableReader.o ./obj/hazelcast/client/ICountDownLatch.o ./obj/hazelcast/client/protocol/ClientPingRequest.o ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/protocol/SocketPool.o ./obj/hazelcast/client/connection/Connection.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantPortableWriter.o ./obj/hazelcast/client/serialization/NullPortable.o ./obj/hazelcast/client/protocol/AuthenticationRequest.o ./obj/hazelcast/client/protocol/HazelcastServerError.o ./obj/hazelcast/util/ConcurrentQueue.o ./obj/hazelcast/client/connection/Socket.o ./obj/hazelcast/client/serialization/BufferedDataOutput.o ./obj/hazelcast/client/serialization/InputSocketStream.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantsMorphingPortableReader.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/map/PutRequest.o ./obj/hazelcast/client/map/GetRequest.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.o ./obj/hazelcast/client/IAtomicLong.o ./obj/hazelcast/util/Lock.o ./obj/hazelcast/client/serialization/ClassDefinitionBuilder.o ./obj/hazelcast/client/Address.o ./obj/hazelcast/client/serialization/DataSerializer.o ./obj/hazelcast/util/Util.o ./obj/hazelcast/util/ConcurrentMap.o ./obj/hazelcast/client/Cluster.o ./obj/hazelcast/client/spi/ClientContext.o ./obj/hazelcast/client/connection/MembershipEvent.o ./obj/hazelcast/client/protocol/Principal.o ./obj/hazelcast/client/connection/ConnectionManager.o ./obj/hazelcast/client/serialization/OutputSocketStream.o ./obj/hazelcast/client/serialization/ClassDefinition.o ./obj/hazelcast/client/spi/InvocationService.o ./obj/main.o ./obj/hazelcast/client/connection/ConnectionPool.o ./obj/hazelcast/client/serialization/SerializationContext.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantClassDefinitionWriter.o ./obj/hazelcast/client/impl/RoundRobinLB.o ./obj/hazelcast/util/SerializableCollection.o ./obj/hazelcast/client/protocol/AddMembershipListenerRequest.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantDataInput.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/serialization/PortableSerializer.o 
+OBJS=./obj/hazelcast/util/Thread.o ./obj/hazelcast/client/protocol/Credentials.o ./obj/hazelcast/client/connection/ClusterListenerThread.o ./obj/hazelcast/client/serialization/ConstantSerializers.o ./obj/hazelcast/util/AtomicInteger.o ./obj/hazelcast/client/ISemaphore.o ./obj/hazelcast/client/HazelcastException.o ./obj/hazelcast/client/serialization/BufferedDataInput.o ./obj/hazelcast/client/serialization/PortableContext.o ./obj/hazelcast/client/serialization/PortableWriter.o ./obj/hazelcast/client/impl/AbstractLoadBalancer.o ./obj/hazelcast/client/connection/MemberShipEvent.o ./obj/hazelcast/client/serialization/SerializationService.o ./obj/hazelcast/client/serialization/PortableReader.o ./obj/hazelcast/client/IdGenerator.o ./obj/hazelcast/client/serialization/FieldDefinition.o ./obj/hazelcast/client/map/RemoveRequest.o ./obj/hazelcast/client/connection/HeartBeatChecker.o ./obj/hazelcast/client/spi/ClusterService.o ./obj/hazelcast/client/impl/GetPartitionsRequest.o ./obj/hazelcast/client/connection/Member.o ./obj/hazelcast/client/ClientConfig.o ./obj/hazelcast/client/serialization/Data.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantsPortableReader.o ./obj/hazelcast/client/ICountDownLatch.o ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ./obj/hazelcast/client/HazelcastClient.o ./obj/hazelcast/client/protocol/SocketPool.o ./obj/hazelcast/client/connection/Connection.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantPortableWriter.o ./obj/hazelcast/client/serialization/NullPortable.o ./obj/hazelcast/client/spi/PartitionService.o ./obj/hazelcast/client/protocol/AuthenticationRequest.o ./obj/hazelcast/client/protocol/HazelcastServerError.o ./obj/hazelcast/util/ConcurrentQueue.o ./obj/hazelcast/client/connection/Socket.o ./obj/hazelcast/client/serialization/BufferedDataOutput.o ./obj/hazelcast/client/serialization/InputSocketStream.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantsMorphingPortableReader.o ./obj/hazelcast/client/serialization/MorphingPortableReader.o ./obj/hazelcast/client/map/PutRequest.o ./obj/hazelcast/client/map/GetRequest.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.o ./obj/hazelcast/client/impl/PartitionsResponse.o ./obj/hazelcast/client/IAtomicLong.o ./obj/hazelcast/util/Lock.o ./obj/hazelcast/client/serialization/ClassDefinitionBuilder.o ./obj/hazelcast/client/Address.o ./obj/hazelcast/client/serialization/DataSerializer.o ./obj/hazelcast/util/Util.o ./obj/hazelcast/util/ConcurrentMap.o ./obj/hazelcast/client/Cluster.o ./obj/hazelcast/client/spi/ClientContext.o ./obj/hazelcast/client/protocol/Principal.o ./obj/hazelcast/client/connection/ConnectionManager.o ./obj/hazelcast/client/serialization/OutputSocketStream.o ./obj/hazelcast/client/serialization/ClassDefinition.o ./obj/hazelcast/client/spi/InvocationService.o ./obj/hazelcast/client/protocol/PingRequest.o ./obj/main.o ./obj/hazelcast/client/connection/ConnectionPool.o ./obj/hazelcast/client/serialization/SerializationContext.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantClassDefinitionWriter.o ./obj/hazelcast/client/impl/RoundRobinLB.o ./obj/hazelcast/util/SerializableCollection.o ./obj/hazelcast/client/protocol/AddMembershipListenerRequest.o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantDataInput.o ./obj/hazelcast/client/GroupConfig.o ./obj/hazelcast/client/serialization/PortableSerializer.o 
+DS=hazelcast/util/Thread.d hazelcast/client/protocol/Credentials.d hazelcast/client/connection/ClusterListenerThread.d hazelcast/client/serialization/ConstantSerializers.d hazelcast/util/AtomicInteger.d hazelcast/client/ISemaphore.d hazelcast/client/HazelcastException.d hazelcast/client/serialization/BufferedDataInput.d hazelcast/client/serialization/PortableContext.d hazelcast/client/serialization/PortableWriter.d hazelcast/client/impl/AbstractLoadBalancer.d hazelcast/client/connection/MemberShipEvent.d hazelcast/client/serialization/SerializationService.d hazelcast/client/serialization/PortableReader.d hazelcast/client/IdGenerator.d hazelcast/client/serialization/FieldDefinition.d hazelcast/client/map/RemoveRequest.d hazelcast/client/connection/HeartBeatChecker.d hazelcast/client/spi/ClusterService.d hazelcast/client/impl/GetPartitionsRequest.d hazelcast/client/connection/Member.d hazelcast/client/ClientConfig.d hazelcast/client/serialization/Data.d hazelcast/client/serialization/ConstantSerializers/ConstantsPortableReader.d hazelcast/client/ICountDownLatch.d hazelcast/client/serialization/ClassDefinitionWriter.d hazelcast/client/HazelcastClient.d hazelcast/client/protocol/SocketPool.d hazelcast/client/connection/Connection.d hazelcast/client/serialization/ConstantSerializers/ConstantPortableWriter.d hazelcast/client/serialization/NullPortable.d hazelcast/client/spi/PartitionService.d hazelcast/client/protocol/AuthenticationRequest.d hazelcast/client/protocol/HazelcastServerError.d hazelcast/util/ConcurrentQueue.d hazelcast/client/connection/Socket.d hazelcast/client/serialization/BufferedDataOutput.d hazelcast/client/serialization/InputSocketStream.d hazelcast/client/serialization/ConstantSerializers/ConstantsMorphingPortableReader.d hazelcast/client/serialization/MorphingPortableReader.d hazelcast/client/map/PutRequest.d hazelcast/client/map/GetRequest.d hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.d hazelcast/client/impl/PartitionsResponse.d hazelcast/client/IAtomicLong.d hazelcast/util/Lock.d hazelcast/client/serialization/ClassDefinitionBuilder.d hazelcast/client/Address.d hazelcast/client/serialization/DataSerializer.d hazelcast/util/Util.d hazelcast/util/ConcurrentMap.d hazelcast/client/Cluster.d hazelcast/client/spi/ClientContext.d hazelcast/client/protocol/Principal.d hazelcast/client/connection/ConnectionManager.d hazelcast/client/serialization/OutputSocketStream.d hazelcast/client/serialization/ClassDefinition.d hazelcast/client/spi/InvocationService.d hazelcast/client/protocol/PingRequest.d main.d hazelcast/client/connection/ConnectionPool.d hazelcast/client/serialization/SerializationContext.d hazelcast/client/serialization/ConstantSerializers/ConstantClassDefinitionWriter.d hazelcast/client/impl/RoundRobinLB.d hazelcast/util/SerializableCollection.d hazelcast/client/protocol/AddMembershipListenerRequest.d hazelcast/client/serialization/ConstantSerializers/ConstantDataInput.d hazelcast/client/GroupConfig.d hazelcast/client/serialization/PortableSerializer.d 
 
 CFLAGS=
 LFLAGS= /usr/local/lib/libz.a
@@ -70,6 +71,11 @@ $(OUT): $(OBJS)
 	$(CC) $(CFLAGS) -c hazelcast/client/impl/AbstractLoadBalancer.cpp -o ./obj/hazelcast/client/impl/AbstractLoadBalancer.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/impl/AbstractLoadBalancer.cpp > hazelcast/client/impl/AbstractLoadBalancer.d
 
+./obj/hazelcast/client/connection/MemberShipEvent.o: hazelcast/client/connection/MemberShipEvent.cpp
+	echo "Compiling hazelcast/client/connection/MemberShipEvent.cpp  to ./obj/hazelcast/client/connection/MemberShipEvent.o ..."
+	$(CC) $(CFLAGS) -c hazelcast/client/connection/MemberShipEvent.cpp -o ./obj/hazelcast/client/connection/MemberShipEvent.o
+	$(CC) $(CFLAGS) -MM hazelcast/client/connection/MemberShipEvent.cpp > hazelcast/client/connection/MemberShipEvent.d
+
 ./obj/hazelcast/client/serialization/SerializationService.o: hazelcast/client/serialization/SerializationService.cpp
 	echo "Compiling hazelcast/client/serialization/SerializationService.cpp  to ./obj/hazelcast/client/serialization/SerializationService.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/serialization/SerializationService.cpp -o ./obj/hazelcast/client/serialization/SerializationService.o
@@ -105,6 +111,11 @@ $(OUT): $(OBJS)
 	$(CC) $(CFLAGS) -c hazelcast/client/spi/ClusterService.cpp -o ./obj/hazelcast/client/spi/ClusterService.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/spi/ClusterService.cpp > hazelcast/client/spi/ClusterService.d
 
+./obj/hazelcast/client/impl/GetPartitionsRequest.o: hazelcast/client/impl/GetPartitionsRequest.cpp
+	echo "Compiling hazelcast/client/impl/GetPartitionsRequest.cpp  to ./obj/hazelcast/client/impl/GetPartitionsRequest.o ..."
+	$(CC) $(CFLAGS) -c hazelcast/client/impl/GetPartitionsRequest.cpp -o ./obj/hazelcast/client/impl/GetPartitionsRequest.o
+	$(CC) $(CFLAGS) -MM hazelcast/client/impl/GetPartitionsRequest.cpp > hazelcast/client/impl/GetPartitionsRequest.d
+
 ./obj/hazelcast/client/connection/Member.o: hazelcast/client/connection/Member.cpp
 	echo "Compiling hazelcast/client/connection/Member.cpp  to ./obj/hazelcast/client/connection/Member.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/connection/Member.cpp -o ./obj/hazelcast/client/connection/Member.o
@@ -129,11 +140,6 @@ $(OUT): $(OBJS)
 	echo "Compiling hazelcast/client/ICountDownLatch.cpp  to ./obj/hazelcast/client/ICountDownLatch.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/ICountDownLatch.cpp -o ./obj/hazelcast/client/ICountDownLatch.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/ICountDownLatch.cpp > hazelcast/client/ICountDownLatch.d
-
-./obj/hazelcast/client/protocol/ClientPingRequest.o: hazelcast/client/protocol/ClientPingRequest.cpp
-	echo "Compiling hazelcast/client/protocol/ClientPingRequest.cpp  to ./obj/hazelcast/client/protocol/ClientPingRequest.o ..."
-	$(CC) $(CFLAGS) -c hazelcast/client/protocol/ClientPingRequest.cpp -o ./obj/hazelcast/client/protocol/ClientPingRequest.o
-	$(CC) $(CFLAGS) -MM hazelcast/client/protocol/ClientPingRequest.cpp > hazelcast/client/protocol/ClientPingRequest.d
 
 ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o: hazelcast/client/serialization/ClassDefinitionWriter.cpp
 	echo "Compiling hazelcast/client/serialization/ClassDefinitionWriter.cpp  to ./obj/hazelcast/client/serialization/ClassDefinitionWriter.o ..."
@@ -164,6 +170,11 @@ $(OUT): $(OBJS)
 	echo "Compiling hazelcast/client/serialization/NullPortable.cpp  to ./obj/hazelcast/client/serialization/NullPortable.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/serialization/NullPortable.cpp -o ./obj/hazelcast/client/serialization/NullPortable.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/serialization/NullPortable.cpp > hazelcast/client/serialization/NullPortable.d
+
+./obj/hazelcast/client/spi/PartitionService.o: hazelcast/client/spi/PartitionService.cpp
+	echo "Compiling hazelcast/client/spi/PartitionService.cpp  to ./obj/hazelcast/client/spi/PartitionService.o ..."
+	$(CC) $(CFLAGS) -c hazelcast/client/spi/PartitionService.cpp -o ./obj/hazelcast/client/spi/PartitionService.o
+	$(CC) $(CFLAGS) -MM hazelcast/client/spi/PartitionService.cpp > hazelcast/client/spi/PartitionService.d
 
 ./obj/hazelcast/client/protocol/AuthenticationRequest.o: hazelcast/client/protocol/AuthenticationRequest.cpp
 	echo "Compiling hazelcast/client/protocol/AuthenticationRequest.cpp  to ./obj/hazelcast/client/protocol/AuthenticationRequest.o ..."
@@ -220,6 +231,11 @@ $(OUT): $(OBJS)
 	$(CC) $(CFLAGS) -c hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.cpp -o ./obj/hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.cpp > hazelcast/client/serialization/ConstantSerializers/ConstantDataOutput.d
 
+./obj/hazelcast/client/impl/PartitionsResponse.o: hazelcast/client/impl/PartitionsResponse.cpp
+	echo "Compiling hazelcast/client/impl/PartitionsResponse.cpp  to ./obj/hazelcast/client/impl/PartitionsResponse.o ..."
+	$(CC) $(CFLAGS) -c hazelcast/client/impl/PartitionsResponse.cpp -o ./obj/hazelcast/client/impl/PartitionsResponse.o
+	$(CC) $(CFLAGS) -MM hazelcast/client/impl/PartitionsResponse.cpp > hazelcast/client/impl/PartitionsResponse.d
+
 ./obj/hazelcast/client/IAtomicLong.o: hazelcast/client/IAtomicLong.cpp
 	echo "Compiling hazelcast/client/IAtomicLong.cpp  to ./obj/hazelcast/client/IAtomicLong.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/IAtomicLong.cpp -o ./obj/hazelcast/client/IAtomicLong.o
@@ -265,11 +281,6 @@ $(OUT): $(OBJS)
 	$(CC) $(CFLAGS) -c hazelcast/client/spi/ClientContext.cpp -o ./obj/hazelcast/client/spi/ClientContext.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/spi/ClientContext.cpp > hazelcast/client/spi/ClientContext.d
 
-./obj/hazelcast/client/connection/MembershipEvent.o: hazelcast/client/connection/MembershipEvent.cpp
-	echo "Compiling hazelcast/client/connection/MembershipEvent.cpp  to ./obj/hazelcast/client/connection/MembershipEvent.o ..."
-	$(CC) $(CFLAGS) -c hazelcast/client/connection/MembershipEvent.cpp -o ./obj/hazelcast/client/connection/MembershipEvent.o
-	$(CC) $(CFLAGS) -MM hazelcast/client/connection/MembershipEvent.cpp > hazelcast/client/connection/MembershipEvent.d
-
 ./obj/hazelcast/client/protocol/Principal.o: hazelcast/client/protocol/Principal.cpp
 	echo "Compiling hazelcast/client/protocol/Principal.cpp  to ./obj/hazelcast/client/protocol/Principal.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/protocol/Principal.cpp -o ./obj/hazelcast/client/protocol/Principal.o
@@ -294,6 +305,11 @@ $(OUT): $(OBJS)
 	echo "Compiling hazelcast/client/spi/InvocationService.cpp  to ./obj/hazelcast/client/spi/InvocationService.o ..."
 	$(CC) $(CFLAGS) -c hazelcast/client/spi/InvocationService.cpp -o ./obj/hazelcast/client/spi/InvocationService.o
 	$(CC) $(CFLAGS) -MM hazelcast/client/spi/InvocationService.cpp > hazelcast/client/spi/InvocationService.d
+
+./obj/hazelcast/client/protocol/PingRequest.o: hazelcast/client/protocol/PingRequest.cpp
+	echo "Compiling hazelcast/client/protocol/PingRequest.cpp  to ./obj/hazelcast/client/protocol/PingRequest.o ..."
+	$(CC) $(CFLAGS) -c hazelcast/client/protocol/PingRequest.cpp -o ./obj/hazelcast/client/protocol/PingRequest.o
+	$(CC) $(CFLAGS) -MM hazelcast/client/protocol/PingRequest.cpp > hazelcast/client/protocol/PingRequest.d
 
 ./obj/main.o: main.cpp
 	echo "Compiling main.cpp  to ./obj/main.o ..."
@@ -348,5 +364,6 @@ $(OUT): $(OBJS)
 clean:
 	$(RM) $(OUT)
 	$(RM) $(OBJS)
+	$(RM) $(DS)
 
 .SILENT:

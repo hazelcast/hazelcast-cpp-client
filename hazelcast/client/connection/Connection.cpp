@@ -11,10 +11,13 @@ namespace hazelcast {
             Connection::Connection(const Address & address, serialization::SerializationService & serializationService)
             : endpoint(address)
             , serializationService(serializationService)
-            , socket(endpoint)
+            , socket(address)
             , inputSocketStream(socket)
             , outputSocketStream(socket)
             , connectionId(CONN_ID++) {
+            };
+
+            void Connection::connect() {
                 socket.connect();
             };
 

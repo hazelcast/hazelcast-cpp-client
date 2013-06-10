@@ -49,7 +49,7 @@ namespace hazelcast {
                 ConnectionPool *pool = getConnectionPool(address);
                 Connection *connection = NULL;
 //                try {
-                connection = pool == NULL ? &getRandomConnection() : pool->take(this);
+                connection = pool == NULL ? &getRandomConnection() : pool->take();
 //                } catch (Exception e) {
 //                    e.printStackTrace();
 //                }
@@ -58,7 +58,7 @@ namespace hazelcast {
                 if (connection == NULL) {
                     checkLive();
 //                    try {
-//                        Thread.sleep(1000);
+                    sleep(1);
 //                    } catch (InterruptedException ignored) {
 //                    }
                     return getRandomConnection();
@@ -90,7 +90,7 @@ namespace hazelcast {
 //                if (client.getClientClusterService().getMember(address) == null){
 //                    return null;
 //                }
-                    pool = new ConnectionPool(address, serializationService);
+                    pool = new ConnectionPool(address, serializationService, *this);
 
                     ConnectionPool *pPool = poolMap.putIfAbsent(address, pool);
                     if (pPool) delete pool;
@@ -107,6 +107,7 @@ namespace hazelcast {
             };
 
             void ConnectionManager::authenticate(Connection& connection, bool reAuth) {
+                connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());
                 auth.setPrincipal(principal);

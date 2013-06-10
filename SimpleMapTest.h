@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 2;
+int THREAD_COUNT = 1;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
@@ -78,13 +78,11 @@ public:
     };
 
     void op(IMap<std::string, vector<char> >& map) {
+        char temp[VALUE_SIZE];
         while (true) {
-            char temp[1000];
-            int size = sprintf(temp, "%d", (int) (rand() % ENTRY_COUNT));
-            std::string key(temp, size);
+            std::string key = hazelcast::util::to_string(rand() % ENTRY_COUNT);
+            std::vector<char> value(temp, temp + VALUE_SIZE);
 
-            size = sprintf(temp, "%d", (int) time(NULL));
-            std::vector<char> value(temp, temp + size);
             int operation = ((int) (rand() % 100));
             if (operation < GET_PERCENTAGE) {
                 map.get(key);

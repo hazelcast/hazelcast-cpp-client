@@ -13,7 +13,6 @@
 #include "../protocol/HazelcastServerError.h"
 #include "../../util/AtomicPointer.h"
 #include "../serialization/SerializationService.h"
-#import "mintomic_msvc.h"
 
 namespace hazelcast {
     namespace client {

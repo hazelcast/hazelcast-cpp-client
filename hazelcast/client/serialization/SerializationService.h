@@ -48,7 +48,7 @@ namespace hazelcast {
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
                         dataSerializer.write(output, object);
                     } else {
-                        writePortable(output, object);
+                        throw HazelcastException("Not supported");
                     }
                     data.setBuffer(output.toByteArray());
                     return data;
@@ -71,14 +71,12 @@ namespace hazelcast {
                     } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
                         dataSerializer.read(dataInput, object);
                     } else {
-                        hazelcast::client::serialization::readPortable(dataInput, object);
+                        throw HazelcastException("Not supported");
                     }
                     return object;
                 };
 
                 SerializationContext& getSerializationContext();
-
-                void registerSerializer(int, TypeSerializer *);
 
                 Data toData(byte);
 
@@ -116,12 +114,10 @@ namespace hazelcast {
 
                 SerializationService(const SerializationService&);
 
-                util::ConcurrentMap<int, serialization::TypeSerializer > typeSerializers;
                 SerializationContext serializationContext;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
 
-                TypeSerializer *serializerFor(int id);
             };
 
             template<>

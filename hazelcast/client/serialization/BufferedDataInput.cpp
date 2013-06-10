@@ -23,7 +23,7 @@ namespace hazelcast {
                 };
             };
 
-            BufferedDataInput& BufferedDataInput::operator [](std::string string) {
+            BufferedDataInput& BufferedDataInput::operator [](const std::string& string) {
                 throw hazelcast::client::HazelcastException("BufferedDataInput::operator [](std::string string) > not supported!!");
             };
 

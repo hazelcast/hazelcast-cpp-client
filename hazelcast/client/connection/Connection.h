@@ -25,6 +25,8 @@ namespace hazelcast {
             public:
                 Connection(const Address& address, serialization::SerializationService&);
 
+                void connect();
+
                 void write(const vector<byte>& bytes);
 
                 void write(const serialization::Data&);

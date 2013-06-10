@@ -8,8 +8,8 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            Socket::Socket(Address& address) : address(address) {
-                getInfo();
+            Socket::Socket(const Address& address) : address(address) {
+                getInfo(address);
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
             };
 
@@ -58,7 +58,7 @@ namespace hazelcast {
                 return socketId;
             }
 
-            void Socket::getInfo() {
+            void Socket::getInfo(const Address& address) {
                 struct addrinfo hints;
                 std::memset(&hints, 0, sizeof (hints));
                 hints.ai_family = AF_UNSPEC;
@@ -67,7 +67,7 @@ namespace hazelcast {
 
                 int status;
                 if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &server_info)) != 0) {
-                    std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
+                    std::cerr << address << "getaddrinfo error: " << gai_strerror(status) << std::endl;
                 }
 
             };
