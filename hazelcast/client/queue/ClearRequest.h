@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_PEEK_REQUEST
-#define HAZELCAST_QUEUE_PEEK_REQUEST
+#ifndef HAZELCAST_QUEUE_CLEAR_REQUEST
+#define HAZELCAST_QUEUE_CLEAR_REQUEST
 
 #include "../serialization/SerializationConstants.h"
 #include "RequestIDs.h"
@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PeekRequest {
+            class ClearRequest {
             public:
-                PeekRequest(const std::string& name)
+                ClearRequest(const std::string& name)
                 :name(name) {
 
                 };
@@ -27,7 +27,7 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::PEEK;
+                    return queue::RequestIDs::CLEAR;
                 };
 
                 template<typename HzWriter>
@@ -46,4 +46,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_MAP_PUT_REQUEST
+#endif //HAZELCAST_QUEUE_CLEAR_REQUEST

@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_PEEK_REQUEST
-#define HAZELCAST_QUEUE_PEEK_REQUEST
+#ifndef HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
+#define HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 
 #include "../serialization/SerializationConstants.h"
 #include "RequestIDs.h"
@@ -27,7 +27,7 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::PEEK;
+                    return queue::RequestIDs::REMAINING_CAPACITY;
                 };
 
                 template<typename HzWriter>
@@ -46,4 +46,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_MAP_PUT_REQUEST
+#endif //HAZELCAST_REMAINING_CAPACITY_REQUEST

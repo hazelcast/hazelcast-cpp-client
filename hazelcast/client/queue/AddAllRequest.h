@@ -1,20 +1,21 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_PEEK_REQUEST
-#define HAZELCAST_QUEUE_PEEK_REQUEST
+#ifndef HAZELCAST_QUEUE_OFFER_REQUEST
+#define HAZELCAST_QUEUE_OFFER_REQUEST
 
-#include "../serialization/SerializationConstants.h"
+#include "../serialization/Data.h"
 #include "RequestIDs.h"
-#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PeekRequest {
+            class AddAllRequest {
             public:
-                PeekRequest(const std::string& name)
-                :name(name) {
+
+                AddAllRequest(const std::string& name, std::vector<serialization::Data>& data)
+                :name(name)
+                , dataList(dataList) {
 
                 };
 
@@ -27,23 +28,26 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::PEEK;
-                };
+                    return queue::RequestIDs::ADD_ALL;
+                }
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
+//                    writer << dataList; TODO add vector<Data> to serialization
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
+//                    reader >> dataList; TODO add vector<Data> to serialization
                 };
             private:
+                std::vector<serialization::Data>& dataList;
                 std::string name;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_PUT_REQUEST
+#endif //HAZELCAST_OFFER_REQUEST

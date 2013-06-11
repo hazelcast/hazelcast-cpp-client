@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_OFFER_REQUEST
-#define HAZELCAST_OFFER_REQUEST
+#ifndef HAZELCAST_QUEUE_OFFER_REQUEST
+#define HAZELCAST_QUEUE_OFFER_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -60,4 +60,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_MAP_PUT_REQUEST
+#endif //HAZELCAST_OFFER_REQUEST
