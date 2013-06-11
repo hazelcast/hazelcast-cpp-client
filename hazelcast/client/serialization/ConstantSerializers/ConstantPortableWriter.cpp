@@ -12,45 +12,53 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            void writePortable(PortableWriter& dataOutput, byte data) {
+            void operator <<(PortableWriter& dataOutput, byte data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeByte(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, bool data) {
+            void operator <<(PortableWriter& dataOutput, bool data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeBoolean(data);
             };
 
-
-            void writePortable(PortableWriter& dataOutput, char data) {
+            void operator <<(PortableWriter& dataOutput, char data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeChar(data);
             };
 
-
-            void writePortable(PortableWriter& dataOutput, short data) {
+            void operator <<(PortableWriter& dataOutput, short data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeShort(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, int data) {
+            void operator <<(PortableWriter& dataOutput, int data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeInt(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, long data) {
+            void operator <<(PortableWriter& dataOutput, long data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeLong(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, float data) {
+            void operator <<(PortableWriter& dataOutput, float data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeFloat(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, double data) {
+            void operator <<(PortableWriter& dataOutput, double data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeDouble(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::string&   data) {
+            void operator <<(PortableWriter& dataOutput, const std::string&   data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeUTF(data);
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<byte>&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<byte>&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -60,7 +68,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<char >&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<char >&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -70,7 +79,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<short >&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<short >&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -80,7 +90,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<int>&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<int>&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -90,7 +101,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<long >&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<long >&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -100,7 +112,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<float >&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<float >&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -110,7 +123,8 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const std::vector<double >&  data) {
+            void operator <<(PortableWriter& dataOutput, const std::vector<double >&  data) {
+                dataOutput.writingToDataOutput();
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
@@ -120,12 +134,13 @@ namespace hazelcast {
                 }
             };
 
-            void writePortable(PortableWriter& dataOutput, const NullPortable&  data) {
+            void operator <<(PortableWriter& dataOutput, const NullPortable&  data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeNullPortable(data.factoryId, data.classId);
             };
 
-
-            void writePortable(PortableWriter& dataOutput, const Data&  data) {
+            void operator <<(PortableWriter& dataOutput, const Data&  data) {
+                dataOutput.writingToDataOutput();
                 dataOutput.writeInt(data.type);
                 if (data.cd != NULL) {
                     dataOutput.writeInt(data.cd->getClassId());
@@ -143,97 +158,6 @@ namespace hazelcast {
                     dataOutput.write(*(data.buffer.get()));
                 }
                 dataOutput.writeInt(data.partitionHash);
-            };
-
-
-            void operator <<(PortableWriter& dataOutput, byte data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, bool data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, char data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, short data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, int data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, long data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, float data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, double data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::string&   data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<byte>&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<char >&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<short >&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<int>&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<long >&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<float >&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const std::vector<double >&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const NullPortable&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
-            };
-
-            void operator <<(PortableWriter& dataOutput, const Data&  data) {
-                dataOutput.writingToDataOutput();
-                writePortable(dataOutput, data);
             };
 
         }

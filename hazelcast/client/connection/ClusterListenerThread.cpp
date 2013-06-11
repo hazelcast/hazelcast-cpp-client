@@ -3,11 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "MembershipEvent.h"
-#include "../protocol/AddMembershipListenerRequest.h"
 #include "../../util/SerializableCollection.h"
+#include "../protocol/AddMembershipListenerRequest.h"
 #include "../ClientConfig.h"
 #include "../spi/ClusterService.h"
-#include "../MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -63,7 +62,6 @@ namespace hazelcast {
                 }
                 vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(addresses.end(), configAddresses.begin(), configAddresses.end());
-//                std::cout << "Possible addresses: " << addresses << std::endl;
                 return clusterService.connectToOne(addresses);
             };
 
@@ -120,29 +118,22 @@ namespace hazelcast {
                         members.erase(std::find(members.begin(), members.end(), member));
                     }
                     updateMembersRef();
-//                    connectionManager.removeConnectionPool(member.getAddress());//TODO why remove
+//                    connectionManager.removeConnectionPool(member.getAddress());
                     fireMembershipEvent(event);
                 }
             };
 
 
             void ClusterListenerThread::fireMembershipEvent(MembershipEvent & event) {
-                MembershipListener *listener = dynamic_cast<MembershipListener *>(clusterService.getClientConfig().getLoadBalancer());
-                if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                    listener->memberAdded(event);
-                } else {
-                    listener->memberRemoved(event);
+                vector<MembershipListener *> listeners = clusterService.listeners.keys();
+
+                for (vector<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+                        (*it)->memberAdded(event);
+                    } else {
+                        (*it)->memberRemoved(event);
+                    }
                 }
-                //TODO give this job to another thread
-//                vector<MembershipListener *> listeners = clusterService.listeners.keys();
-//
-//                for (vector<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-//                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-//                        (*it)->memberAdded(event);
-//                    } else {
-//                        (*it)->memberRemoved(event);
-//                    }
-//                }
             };
 
             void ClusterListenerThread::updateMembersRef() {

@@ -1,20 +1,27 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_POLL_REQUEST
+#define HAZELCAST_POLL_REQUEST
 
-#include "../serialization/Data.h"
+#include "../serialization/SerializationConstants.h"
 #include "RequestIDs.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace map {
-            class GetRequest {
+        namespace queue {
+            class PollRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                PollRequest(const std::string& name, long timeout)
                 :name(name)
-                , key(key) {
+                , timeoutInMillis(timeout) {
+
+                };
+
+                PollRequest(const std::string& name)
+                :name(name)
+                , timeoutInMillis(0) {
 
                 };
 
@@ -23,31 +30,30 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return queue::RequestIDs::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
-                }
-
+                    return queue::RequestIDs::POLL;
+                };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
-                    writer << key;
+                    writer["t"] << timeoutInMillis;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
-                    reader >> key;
+                    reader["t"] >> timeoutInMillis;
                 };
             private:
-                serialization::Data& key;
                 std::string name;
+                long timeoutInMillis;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_POLL_REQUEST

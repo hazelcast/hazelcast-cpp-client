@@ -8,10 +8,6 @@ namespace hazelcast {
         typedef unsigned char byte;
         namespace protocol {
             namespace ProtocolConstants {
-                int const CLIENT_MAP_FACTORY_ID = -10;
-                int const MAP_GET_ID = 1;
-                int const MAP_PUT_ID = 2;
-                int const MAP_REMOVE_ID = 9;
 
                 int const CLIENT_PORTABLE_FACTORY = -3;
                 int const HAZELCAST_SERVER_ERROR_ID = 1;

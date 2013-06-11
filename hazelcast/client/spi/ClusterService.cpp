@@ -11,41 +11,40 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClusterService::ClusterService(hazelcast::client::HazelcastClient & hazelcastClient)
+            ClusterService::ClusterService(HazelcastClient & hazelcastClient)
             : hazelcastClient(hazelcastClient)
             , clusterThread(hazelcastClient.getConnectionManager(), hazelcastClient.getClientConfig(), *this) {
 
             }
 
             void ClusterService::start() {
-                hazelcast::client::serialization::ClassDefinitionBuilder cd(-3, 3);
-                hazelcast::client::serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+                serialization::ClassDefinitionBuilder cd(-3, 3);
+                serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
                 hazelcastClient.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
-                hazelcast::client::connection::Connection *connection = connectToOne(getClientConfig().getAddresses());
+                connection::Connection *connection = connectToOne(getClientConfig().getAddresses());
                 clusterThread.setInitialConnection(connection);
                 clusterThread.start();
                 while (membersRef.get() == NULL) {
                     try {
                         sleep(1);
                     } catch (void* ) {
-                        throw  hazelcast::client::HazelcastException("ClusterService::start");
+                        throw  HazelcastException("ClusterService::start");
                     }
                 }
             }
 
-            hazelcast::client::connection::Connection *ClusterService::connectToOne(const std::vector<hazelcast::client::Address>& socketAddresses) {
+            connection::Connection *ClusterService::connectToOne(const std::vector<Address>& socketAddresses) {
                 const int connectionAttemptLimit = getClientConfig().getConnectionAttemptLimit();
-                //            final ManagerAuthenticator authenticator = new ManagerAuthenticator();
                 int attempt = 0;
                 while (true) {
                     time_t tryStartTime = std::time(NULL);
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            std::cout << "Trying to connect: " + (*it).getHost() + ":" + hazelcast::util::to_string((*it).getPort()) << std::endl;
+                            std::cout << "Trying to connect: " + (*it).getHost() + ":" + util::to_string((*it).getPort()) << std::endl;
                             return getConnectionManager().newConnection((*it));
-                        } catch (hazelcast::client::HazelcastException& ignored) {
+                        } catch (HazelcastException& ignored) {
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -56,14 +55,10 @@ namespace hazelcast {
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
                     if (remainingTime > 0) {
-//                    try {
                         sleep(remainingTime);
-//                    } catch (InterruptedException e) {
-//                        break;
-//                    }
                     }
                 }
-                throw  hazelcast::client::HazelcastException("Unable to connect to any address in the config!");
+                throw  HazelcastException("Unable to connect to any address in the config!");
             };
 
 
@@ -82,18 +77,18 @@ namespace hazelcast {
             };
 
             vector<connection::Member>  ClusterService::getMemberList() {
-                return hazelcast::util::values(membersRef.get());
+                return util::values(membersRef.get());
             };
 
-            hazelcast::client::connection::ConnectionManager& ClusterService::getConnectionManager() {
+            connection::ConnectionManager& ClusterService::getConnectionManager() {
                 return hazelcastClient.getConnectionManager();
             };
 
-            hazelcast::client::serialization::SerializationService & ClusterService::getSerializationService() {
+            serialization::SerializationService & ClusterService::getSerializationService() {
                 return hazelcastClient.getSerializationService();
             };
 
-            hazelcast::client::ClientConfig & ClusterService::getClientConfig() {
+            ClientConfig & ClusterService::getClientConfig() {
                 return hazelcastClient.getClientConfig();
             };
 

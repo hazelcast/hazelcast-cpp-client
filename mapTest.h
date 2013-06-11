@@ -19,6 +19,11 @@ void testPutGetRemove() {
         IMap<int, TestMainPortable> iMap = hazelcastClient.getMap<int, TestMainPortable >("sancar");
         TestMainPortable mainPortable = getTestMainPortable();
         TestMainPortable empty;
+
+        for (int i = 0; i < 100; i++) {
+            iMap.remove(i);
+        }
+
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = mainPortable;
             x.i = i * 10;

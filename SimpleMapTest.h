@@ -88,7 +88,8 @@ public:
                 map.get(key);
                 ++stats.getCount;
             } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                map.put(key, value);
+                vector<char> vector1 = map.put(key, value);
+//                std::cout << key << std::endl;
                 ++stats.putCount;
             } else {
                 map.remove(key);

@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_MAP_CONTAINS_KEY_R
+#define HAZELCAST_MAP_CONTAINS_KEY_R
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,12 +10,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
+            class ContainsKeyRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                ContainsKeyRequest(const std::string& name, serialization::Data& key)
                 :name(name)
                 , key(key) {
-
                 };
 
                 int getTypeSerializerId() const {
@@ -27,9 +26,8 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return map::RequestIDs::CONTAINS_KEY;
                 }
-
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
@@ -50,4 +48,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_MAP_PUT_REQUEST

@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_MAP_PUT_IF_ABSENT_REQUEST
+#define HAZELCAST_MAP_PUT_IF_ABSENT_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,11 +10,14 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
+            class PutIfAbsentRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                PutIfAbsentRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
                 :name(name)
-                , key(key) {
+                , key(key)
+                , value(value)
+                , threadId(threadId)
+                , ttl(ttl) {
 
                 };
 
@@ -27,27 +30,35 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return map::RequestIDs::PUT_IF_ABSENT;
                 }
-
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
+                    writer["t"] << threadId;
+                    writer["ttl"] << ttl;
                     writer << key;
+                    writer << value;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
+                    reader["t"] >> threadId;
+                    reader["ttl"] >> ttl;
                     reader >> key;
+                    reader >> value;
                 };
             private:
                 serialization::Data& key;
+                serialization::Data& value;
                 std::string name;
+                int threadId;
+                long ttl;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_MAP_PUT_REQUEST

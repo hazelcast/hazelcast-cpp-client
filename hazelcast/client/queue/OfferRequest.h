@@ -1,20 +1,28 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_OFFER_REQUEST
+#define HAZELCAST_OFFER_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
 
 namespace hazelcast {
     namespace client {
-        namespace map {
-            class GetRequest {
+        namespace queue {
+            class OfferRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                OfferRequest(const std::string& name, serialization::Data& data, long timeout)
                 :name(name)
-                , key(key) {
+                , timeoutInMillis(timeout)
+                , data(data) {
+
+                };
+
+                OfferRequest(const std::string& name, serialization::Data& data)
+                :name(name)
+                , timeoutInMillis(0)
+                , data(data) {
 
                 };
 
@@ -23,31 +31,33 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return queue::RequestIDs::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return queue::RequestIDs::OFFER;
                 }
-
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
-                    writer << key;
+                    writer["t"] << timeoutInMillis;
+                    writer << data;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
-                    reader >> key;
+                    reader["t"] >> timeoutInMillis;
+                    reader >> data;
                 };
             private:
-                serialization::Data& key;
+                serialization::Data& data;
                 std::string name;
+                long timeoutInMillis;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_MAP_PUT_REQUEST

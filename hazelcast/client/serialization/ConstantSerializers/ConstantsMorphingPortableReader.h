@@ -19,40 +19,6 @@ namespace hazelcast {
 
             class MorphingPortableReader;
 
-            void readPortable(MorphingPortableReader& portableReader, byte& data);
-
-            void readPortable(MorphingPortableReader& portableReader, bool& data);
-
-            void readPortable(MorphingPortableReader& portableReader, char& data);
-
-            void readPortable(MorphingPortableReader& portableReader, short & data);
-
-            void readPortable(MorphingPortableReader& portableReader, int& data);
-
-            void readPortable(MorphingPortableReader& portableReader, long & data);
-
-            void readPortable(MorphingPortableReader& portableReader, float & data);
-
-            void readPortable(MorphingPortableReader& portableReader, double & data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::string&  data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<byte>& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<char >& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<short >& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<int>& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<long >& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<float >& data);
-
-            void readPortable(MorphingPortableReader& portableReader, std::vector<double >& data);
-
-            void readPortable(MorphingPortableReader& portableReader, Data& data);
-
             void operator >>(MorphingPortableReader& portableReader, byte& data);
 
             void operator >>(MorphingPortableReader& portableReader, bool& data);

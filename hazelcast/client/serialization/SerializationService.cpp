@@ -35,7 +35,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(byte object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -43,7 +43,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(bool object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(char object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -59,7 +59,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(short object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -67,7 +67,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(int object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -75,7 +75,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(long object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -83,7 +83,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(float object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -91,7 +91,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(double object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -99,7 +99,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<byte> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -107,7 +107,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<char> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -115,7 +115,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<short> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -123,7 +123,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<int> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -131,7 +131,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<long> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -139,7 +139,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<float> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -147,7 +147,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(vector<double> const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;
@@ -155,7 +155,7 @@ namespace hazelcast {
 
             Data SerializationService::toData(string const & object) {
                 BufferedDataOutput output;
-                writePortable(output, object);
+                output << object;
                 Data data;
                 data.setBuffer(output.toByteArray());
                 return data;

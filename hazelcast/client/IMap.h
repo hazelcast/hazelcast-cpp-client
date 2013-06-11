@@ -145,8 +145,8 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request, serialization::Data&  keyData) {
 //                try {
-//                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
-                return context.getInvocationService().template invokeOnRandomTarget<Response>(request); //TODO delete line later
+                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
+//                return context.getInvocationService().template invokeOnRandomTarget<Response>(request); //TODO delete line later
 //                } catch (Exception e) {
 //                    throw ExceptionUtil.rethrow(e);
 //                }

@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_MAP_GET_ALL_REQUEST
+#define HAZELCAST_MAP_GET_ALL_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,11 +10,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
+            class GetAllRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                GetAllRequest(const std::string& name, std::vector<serialization::Data>& keys)
                 :name(name)
-                , key(key) {
+                , keys(keys) {
 
                 };
 
@@ -27,27 +27,36 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return map::RequestIDs::GET_ALL;
                 }
-
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
-                    writer << key;
+                    writer["size"] << keys.size();
+                    std::vector<serialization::Data>::iterator it;
+                    for (it = keys.begin(); it != keys.end(); ++it) {
+                        writer << (*it);
+                    }
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
-                    reader >> key;
+                    int size;
+                    reader["size"] >> size;
+                    keys.resize(size);
+                    for (int i = 0; i < size; i++) {
+                        reader >> keys[i];
+                    }
+
                 };
             private:
-                serialization::Data& key;
+                std::vector<serialization::Data> keys;
                 std::string name;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_MAP_GET_ALL_REQUEST

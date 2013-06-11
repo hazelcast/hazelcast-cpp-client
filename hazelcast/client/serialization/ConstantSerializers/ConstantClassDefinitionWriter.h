@@ -21,42 +21,6 @@ namespace hazelcast {
 
             class NullPortable;
 
-            void writePortable(ClassDefinitionWriter& dataOutput, byte data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, bool data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, char data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, short data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, int data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, long data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, float data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, double data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::string&   data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<byte>&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<char >&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<short >&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<int>&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<long >&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<float >&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const std::vector<double >&  data);
-
-            void writePortable(ClassDefinitionWriter& dataOutput, const NullPortable&  data);
-
-            void writePortable(ClassDefinitionWriter& cdw, const Data&  data);
-
             void operator <<(ClassDefinitionWriter& dataOutput, byte data);
 
             void operator <<(ClassDefinitionWriter& dataOutput, bool data);

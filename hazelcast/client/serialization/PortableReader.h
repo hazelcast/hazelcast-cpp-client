@@ -77,18 +77,6 @@ namespace hazelcast {
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
 
-//                    PortableFactory const *portableFactory;
-//                    if (portableFactories.count(factoryId) != 0) {
-//                        portableFactory = portableFactories.at(factoryId);
-//                    } else {
-//                        throw hazelcast::client::HazelcastException("Could not find PortableFactory for factoryId: " + hazelcast::util::to_string(factoryId));
-//                    }
-//
-//                    std::auto_ptr<Portable> p(portableFactory->create(classId));
-//                    if (p.get() == NULL) {
-//                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::util::to_string(factoryId));
-//                    }
-
                     ClassDefinition *cd;
                     cd = context->lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);

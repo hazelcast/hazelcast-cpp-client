@@ -21,14 +21,14 @@ namespace hazelcast {
             };
 
             bool offer(const T& e) {
-//                mutex.lock();
+                mutex.lock();
                 internalQueue.push(e);
-//                mutex.unlock();
+                mutex.unlock();
                 return true;
             };
 
             bool poll(T& e) {
-//                mutex.lock();
+                mutex.lock();
                 bool success = true;
                 if (!empty()) {
                     e = internalQueue.front();
@@ -36,7 +36,7 @@ namespace hazelcast {
                 } else {
                     success = false;
                 }
-//                mutex.unlock();
+                mutex.unlock();
                 return success;
             };
 
@@ -45,7 +45,7 @@ namespace hazelcast {
             };
 
         private:
-//            util::Lock mutex;
+            util::Lock mutex;
             std::queue<T> internalQueue;
         };
     }

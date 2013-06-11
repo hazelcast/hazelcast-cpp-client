@@ -21,6 +21,30 @@ public:
     TestNamedPortable(std::string name, int k):name(name), k(k) {
     };
 
+    inline int getTypeSerializerId() const {
+        return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+    };
+
+    inline int getFactoryId() const {
+        return 1;
+    }
+
+    inline int getClassId() const {
+        return 3;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const {
+        writer["name"] << name;
+        writer["myint"] << k;
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        reader["name"] >> name;
+        reader["myint"] >> k;
+    };
+
     virtual ~TestNamedPortable() {
 
     };
@@ -43,35 +67,4 @@ public:
 };
 
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const TestNamedPortable& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const TestNamedPortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestNamedPortable& t) {
-                return 3;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestNamedPortable& data) {
-                writer["name"] << data.name;
-                writer["myint"] << data.k;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestNamedPortable& data) {
-                reader["name"] >> data.name;
-                reader["myint"] >> data.k;
-            };
-
-        }
-    }
-}
 #endif

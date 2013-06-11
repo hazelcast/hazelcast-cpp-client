@@ -19,40 +19,6 @@ namespace hazelcast {
 
             class BufferedDataInput;
 
-            void readPortable(BufferedDataInput& dataInput, byte& data);
-
-            void readPortable(BufferedDataInput& dataInput, bool& data);
-
-            void readPortable(BufferedDataInput& dataInput, char& data);
-
-            void readPortable(BufferedDataInput& dataInput, short & data);
-
-            void readPortable(BufferedDataInput& dataInput, int& data);
-
-            void readPortable(BufferedDataInput& dataInput, long & data);
-
-            void readPortable(BufferedDataInput& dataInput, float & data);
-
-            void readPortable(BufferedDataInput& dataInput, double & data);
-
-            void readPortable(BufferedDataInput& dataInput, std::string&  data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<byte>& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<char >& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<short >& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<int>& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<long >& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<float >& data);
-
-            void readPortable(BufferedDataInput& dataInput, std::vector<double >& data);
-            
-            void readPortable(BufferedDataInput& dataInput, Data& data);
-
             void operator >>(BufferedDataInput& dataInput, byte& data);
 
             void operator >>(BufferedDataInput& dataInput, bool& data);
@@ -84,7 +50,7 @@ namespace hazelcast {
             void operator >>(BufferedDataInput& dataInput, std::vector<float >& data);
 
             void operator >>(BufferedDataInput& dataInput, std::vector<double >& data);
-            
+
             void operator >>(BufferedDataInput& dataInput, Data& data);
 
         }

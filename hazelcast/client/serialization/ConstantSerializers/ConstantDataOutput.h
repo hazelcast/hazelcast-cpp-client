@@ -21,42 +21,6 @@ namespace hazelcast {
 
             class NullPortable;
 
-            void writePortable(BufferedDataOutput& dataOutput, byte data);
-
-            void writePortable(BufferedDataOutput& dataOutput, bool data);
-
-            void writePortable(BufferedDataOutput& dataOutput, char data);
-
-            void writePortable(BufferedDataOutput& dataOutput, short data);
-
-            void writePortable(BufferedDataOutput& dataOutput, int data);
-
-            void writePortable(BufferedDataOutput& dataOutput, long data);
-
-            void writePortable(BufferedDataOutput& dataOutput, float data);
-
-            void writePortable(BufferedDataOutput& dataOutput, double data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::string&   data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<byte>&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<char >&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<short >&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<int>&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<long >&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<float >&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const std::vector<double >&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const NullPortable&  data);
-
-            void writePortable(BufferedDataOutput& dataOutput, const Data& data);
-
             void operator <<(BufferedDataOutput& dataOutput, byte data);
 
             void operator <<(BufferedDataOutput& dataOutput, bool data);

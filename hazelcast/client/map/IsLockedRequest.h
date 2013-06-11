@@ -1,20 +1,23 @@
 //
-// Created by sancar koyunlu on 5/23/13.
+// Created by sancar koyunlu on 6/11/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
 
-#include "../serialization/Data.h"
+
+#ifndef HAZELCAST_MAP_IS_LOCKED_REQUEST
+#define HAZELCASTMAP_IS_LOCKED_REQUEST
+
 #include "RequestIDs.h"
+#include "../serialization/SerializationConstants.h"
+#include "../serialization/Data.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
-            public:
-                GetRequest(std::string& name, serialization::Data& key)
-                :name(name)
-                , key(key) {
+            class IsLockedRequest {
+                IsLockedRequest(const std::string& name, serialization::Data& key)
+                :key(key),
+                name(name) {
 
                 };
 
@@ -27,27 +30,27 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return map::RequestIDs::IS_LOCKED;
                 }
 
-
                 template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
+                inline void writePortable(HzWriter& writer) const {
+                    writer["name"] << name;
                     writer << key;
                 };
 
                 template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
+                inline void readPortable(HzReader& reader) {
+                    reader["name"] >> name;
                     reader >> key;
                 };
             private:
-                serialization::Data& key;
                 std::string name;
+                serialization::Data& key;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+
+#endif //MAP_CLEAR_REQUEST

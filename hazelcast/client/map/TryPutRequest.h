@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_MAP_GET_REQUEST
-#define HAZELCAST_MAP_GET_REQUEST
+#ifndef HAZELCAST_MAP_TRY_PUT_REQUEST
+#define HAZELCAST_MAP_TRY_PUT_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,11 +10,15 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetRequest {
+            class TryPutRequest {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
+                TryPutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long timeout)
                 :name(name)
-                , key(key) {
+                , key(key)
+                , value(value)
+                , threadId(threadId)
+                , ttl(-1)
+                , timeout(timeout) {
 
                 };
 
@@ -27,27 +31,38 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::GET;
+                    return map::RequestIDs::TRY_PUT;
                 }
-
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
+                    writer["timeout"] << timeout;
                     writer["n"] << name;
+                    writer["t"] << threadId;
+                    writer["ttl"] << ttl;
                     writer << key;
+                    writer << value;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
+                    reader["timeout"] >> timeout;
                     reader["n"] >> name;
+                    reader["t"] >> threadId;
+                    reader["ttl"] >> ttl;
                     reader >> key;
+                    reader >> value;
                 };
             private:
                 serialization::Data& key;
+                serialization::Data& value;
                 std::string name;
+                int threadId;
+                long ttl;
+                long timeout;
             };
         }
     }
 }
 
-#endif //HAZELCAST_MAP_GET_REQUEST
+#endif //HAZELCAST_MAP_PUT_REQUEST

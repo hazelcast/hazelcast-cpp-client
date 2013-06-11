@@ -19,40 +19,6 @@ namespace hazelcast {
 
             class PortableReader;
 
-            void readPortable(PortableReader& portableReader, byte& data);
-
-            void readPortable(PortableReader& portableReader, bool& data);
-
-            void readPortable(PortableReader& portableReader, char& data);
-
-            void readPortable(PortableReader& portableReader, short & data);
-
-            void readPortable(PortableReader& portableReader, int& data);
-
-            void readPortable(PortableReader& portableReader, long & data);
-
-            void readPortable(PortableReader& portableReader, float & data);
-
-            void readPortable(PortableReader& portableReader, double & data);
-
-            void readPortable(PortableReader& portableReader, std::string&  data);
-
-            void readPortable(PortableReader& portableReader, std::vector<byte>& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<char >& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<short >& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<int>& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<long >& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<float >& data);
-
-            void readPortable(PortableReader& portableReader, std::vector<double >& data);
-            
-            void readPortable(PortableReader& portableReader, Data& data);
-
             void operator >>(PortableReader& portableReader, byte& data);
 
             void operator >>(PortableReader& portableReader, bool& data);

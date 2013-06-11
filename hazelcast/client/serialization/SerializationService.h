@@ -124,7 +124,7 @@ namespace hazelcast {
             inline byte SerializationService::toObject(const Data& data) {
                 byte object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -132,7 +132,7 @@ namespace hazelcast {
             inline bool SerializationService::toObject(const Data& data) {
                 bool object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -140,7 +140,7 @@ namespace hazelcast {
             inline char SerializationService::toObject(const Data& data) {
                 char object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -148,7 +148,7 @@ namespace hazelcast {
             inline short SerializationService::toObject(const Data& data) {
                 short object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -156,7 +156,7 @@ namespace hazelcast {
             inline int SerializationService::toObject(const Data& data) {
                 int object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -164,7 +164,7 @@ namespace hazelcast {
             inline long SerializationService::toObject(const Data& data) {
                 long object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -172,7 +172,7 @@ namespace hazelcast {
             inline float SerializationService::toObject(const Data& data) {
                 float object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -180,7 +180,7 @@ namespace hazelcast {
             inline double SerializationService::toObject(const Data& data) {
                 double object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -188,7 +188,7 @@ namespace hazelcast {
             inline std::vector<byte> SerializationService::toObject(const Data& data) {
                 std::vector<byte> object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -196,7 +196,7 @@ namespace hazelcast {
             inline std::vector<char> SerializationService::toObject(const Data& data) {
                 std::vector<char> object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -204,7 +204,7 @@ namespace hazelcast {
             inline std::vector<short> SerializationService::toObject(const Data& data) {
                 std::vector<short > object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -212,7 +212,7 @@ namespace hazelcast {
             inline std::vector<int> SerializationService::toObject(const Data& data) {
                 std::vector<int> object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -220,7 +220,7 @@ namespace hazelcast {
             inline std::vector<long> SerializationService::toObject(const Data& data) {
                 std::vector<long> object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -228,7 +228,7 @@ namespace hazelcast {
             inline std::vector<float> SerializationService::toObject(const Data& data) {
                 std::vector<float> object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -236,7 +236,7 @@ namespace hazelcast {
             inline std::vector<double> SerializationService::toObject(const Data& data) {
                 std::vector<double > object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
 
@@ -244,7 +244,7 @@ namespace hazelcast {
             inline std::string SerializationService::toObject(const Data& data) {
                 std::string object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                readPortable(dataInput, object);
+                dataInput >> object;
                 return object;
             };
         }
