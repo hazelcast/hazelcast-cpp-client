@@ -1,5 +1,6 @@
 #include "TestDataSerializable.h"
 #include "portableTest.h"
+#include "mapTest.h"
 
 int main(int argc, char **argv) {
     try{
@@ -14,7 +15,7 @@ int main(int argc, char **argv) {
         testSerializationViaFile();
         testIdentifiedDataSerializable();
 
-//        testPutGetRemove();
+        testPutGetRemove();
 //        testBinaryClient();
 //        testMapOperations();
 //        testMapLocksInSequential();

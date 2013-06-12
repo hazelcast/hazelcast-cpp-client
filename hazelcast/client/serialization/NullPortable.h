@@ -10,7 +10,11 @@ namespace hazelcast {
         namespace serialization {
             class NullPortable {
             public:
-                NullPortable(int factoryId, int classId);
+                NullPortable(int factoryId, int classId)
+                :factoryId(factoryId)
+                , classId(classId) {
+
+                }
 
                 int factoryId;
                 int classId;
