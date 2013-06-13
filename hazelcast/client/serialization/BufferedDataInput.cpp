@@ -11,43 +11,33 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            BufferedDataInput::BufferedDataInput(const std::vector<byte>& rhsBuffer) {
-                int size = rhsBuffer.size();
-                try {
-                    beg = new byte[size];
-                    ptr = beg;
-                    for (int i = 0; i < size; i++)
-                        beg[i] = rhsBuffer[i];
-                } catch (std::exception& e) {
-                    delete [] beg;
-                };
+            BufferedDataInput::BufferedDataInput(const std::vector<byte>& rhsBuffer)
+            :buffer(rhsBuffer)
+            , pos(0) {
             };
 
             BufferedDataInput& BufferedDataInput::operator [](const std::string& string) {
                 throw hazelcast::client::HazelcastException("BufferedDataInput::operator [](std::string string) > not supported!!");
             };
 
-            BufferedDataInput::~BufferedDataInput() {
-                delete [] beg;
+
+            BufferedDataInput::BufferedDataInput(BufferedDataInput const & param)
+            :buffer(param.buffer) {
+                //private
             };
 
             BufferedDataInput& BufferedDataInput::operator = (const BufferedDataInput&) {
+                //private
                 return *this;
             };
 
             void BufferedDataInput::readFully(std::vector<byte>& bytes) {
-                byte temp[bytes.size()];
-                readFully(temp, 0, bytes.size());
-                bytes = std::vector<byte >(temp, temp + bytes.size());
-            };
-
-            void BufferedDataInput::readFully(byte *bytes, int off, int len) {
-                memcpy(bytes + off, ptr, sizeof (byte) * len);
-                ptr += sizeof (byte) * len;
+                bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
+                pos += bytes.size();
             };
 
             int BufferedDataInput::skipBytes(int i) {
-                ptr += i;
+                pos += i;
                 return i;
             };
 
@@ -56,10 +46,7 @@ namespace hazelcast {
             };
 
             byte BufferedDataInput::readByte() {
-                byte b;
-                memcpy(&b, ptr, sizeof (byte));
-                ptr += sizeof (byte);
-                return b;
+                return buffer[pos++];
             };
 
             short BufferedDataInput::readShort() {
@@ -140,22 +127,22 @@ namespace hazelcast {
             };
 
             int BufferedDataInput::position() {
-                return int(ptr - beg);
+                return pos;
             };
 
             void BufferedDataInput::position(int newPos) {
-                ptr = beg + newPos;
+                pos = newPos;
             };
             //private functions
 
             std::string BufferedDataInput::readShortUTF() {
                 short utflen = readShort();
-                byte bytearr[utflen];
+                std::vector<byte> bytearr(utflen);
                 char chararr[utflen];
                 int c, char2, char3;
                 int count = 0;
                 int chararr_count = 0;
-                readFully(bytearr, 0, utflen);
+                readFully(bytearr);
 
                 while (count < utflen) {
                     c = bytearr[count] & 0xff;

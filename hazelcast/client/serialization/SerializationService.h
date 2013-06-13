@@ -56,9 +56,9 @@ namespace hazelcast {
 
                 template<typename K>
                 inline K toObject(const Data& data) {
+                    checkServerError(data);
                     K object;
-                    if (data.bufferSize() == 0)
-                        return object;
+                    if (data.bufferSize() == 0) return object;
                     int typeID = data.type;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
@@ -114,6 +114,8 @@ namespace hazelcast {
 
                 SerializationService(const SerializationService&);
 
+                void checkServerError(const Data& data);
+
                 SerializationContext serializationContext;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
@@ -122,7 +124,9 @@ namespace hazelcast {
 
             template<>
             inline byte SerializationService::toObject(const Data& data) {
-                byte object;
+                checkServerError(data);
+                byte object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -130,7 +134,9 @@ namespace hazelcast {
 
             template<>
             inline bool SerializationService::toObject(const Data& data) {
-                bool object;
+                checkServerError(data);
+                bool object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -138,15 +144,19 @@ namespace hazelcast {
 
             template<>
             inline char SerializationService::toObject(const Data& data) {
-                char object;
+                checkServerError(data);
+                char object = 0;
                 BufferedDataInput dataInput(*(data.buffer.get()));
+                if (data.bufferSize() == 0) return object;
                 dataInput >> object;
                 return object;
             };
 
             template<>
             inline short SerializationService::toObject(const Data& data) {
-                short object;
+                checkServerError(data);
+                short object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -154,7 +164,9 @@ namespace hazelcast {
 
             template<>
             inline int SerializationService::toObject(const Data& data) {
-                int object;
+                checkServerError(data);
+                int object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -162,7 +174,9 @@ namespace hazelcast {
 
             template<>
             inline long SerializationService::toObject(const Data& data) {
-                long object;
+                checkServerError(data);
+                long object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -170,7 +184,9 @@ namespace hazelcast {
 
             template<>
             inline float SerializationService::toObject(const Data& data) {
-                float object;
+                checkServerError(data);
+                float object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -178,7 +194,9 @@ namespace hazelcast {
 
             template<>
             inline double SerializationService::toObject(const Data& data) {
-                double object;
+                checkServerError(data);
+                double object = 0;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -186,7 +204,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<byte> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<byte> object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -194,7 +214,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<char> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<char> object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -202,7 +224,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<short> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<short > object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -210,7 +234,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<int> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<int> object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -218,7 +244,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<long> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<long> object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -226,7 +254,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<float> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<float> object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -234,7 +264,9 @@ namespace hazelcast {
 
             template<>
             inline std::vector<double> SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::vector<double > object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;
@@ -242,7 +274,9 @@ namespace hazelcast {
 
             template<>
             inline std::string SerializationService::toObject(const Data& data) {
+                checkServerError(data);
                 std::string object;
+                if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
                 dataInput >> object;
                 return object;

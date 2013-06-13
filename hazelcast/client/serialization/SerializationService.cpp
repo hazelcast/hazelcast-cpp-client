@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include "../protocol/HazelcastServerError.h"
 #include "SerializationService.h"
 
 using namespace std;
@@ -32,6 +33,12 @@ namespace hazelcast {
             SerializationService::~SerializationService() {
             };
 
+
+            void SerializationService::checkServerError(const Data & data) {
+                if (data.isServerError()) {
+                    throw toObject<protocol::HazelcastServerError>(data);
+                }
+            };
 
             Data SerializationService::toData(byte object) {
                 BufferedDataOutput output;

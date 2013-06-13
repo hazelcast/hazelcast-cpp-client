@@ -52,7 +52,7 @@ namespace hazelcast {
 
                 std::vector<byte> decompressed = decompress(*(binary.get()));
 
-                BufferedDataInput dataInput = BufferedDataInput(decompressed);
+                BufferedDataInput dataInput(decompressed);
                 ClassDefinition *cd = new ClassDefinition;
                 readPortable(dataInput, *cd);
                 cd->setBinary(binary);

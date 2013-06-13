@@ -62,7 +62,7 @@ namespace hazelcast {
             };
 
 
-            bool Data::isServerError() {
+            bool Data::isServerError() const {
                 return isError;
             };
 

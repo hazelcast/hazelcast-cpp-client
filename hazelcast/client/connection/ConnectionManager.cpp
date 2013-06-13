@@ -115,14 +115,12 @@ namespace hazelcast {
 
                 serialization::Data toData = serializationService.toData(auth);
                 connection.write(toData);
-                serialization::Data data = connection.read(serializationService.getSerializationContext());;
+                serialization::Data data1 = connection.read(serializationService.getSerializationContext());
+                Address address = serializationService.toObject<Address>(data1);
+                connection.setEndpoint(address);
+                serialization::Data data2 = connection.read(serializationService.getSerializationContext());
 
-                if (data.isServerError()) {
-                    protocol::HazelcastServerError x = serializationService.toObject<protocol::HazelcastServerError>(data);
-                    throw x;
-                } else {
-                    this->principal = new protocol::Principal(serializationService.toObject<protocol::Principal>(data));
-                }
+                this->principal = new protocol::Principal(serializationService.toObject<protocol::Principal>(data2));
             };
 
             void ConnectionManager::checkLive() {

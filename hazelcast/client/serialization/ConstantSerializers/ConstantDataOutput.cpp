@@ -50,27 +50,28 @@ namespace hazelcast {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeByte(data[i]);
                     }
                 }
             };
 
             void operator <<(BufferedDataOutput& dataOutput, const std::vector<char >&  data) {
-                int size = data.size();
-                dataOutput.writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        dataOutput.writeChar(data[i]);
-                    }
-                }
+                dataOutput.writeCharArray(data);
+//                int size = data.size();
+//                dataOutput.writeInt(size);
+//                if (size > 0) {
+//                    for (int i = 0; i < size; ++i) {
+//                        dataOutput.writeChar(data[i]);
+//                    }
+//                }
             };
 
             void operator <<(BufferedDataOutput& dataOutput, const std::vector<short >&  data) {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeShort(data[i]);
                     }
                 }
@@ -80,7 +81,7 @@ namespace hazelcast {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeInt(data[i]);
                     }
                 }
@@ -90,7 +91,7 @@ namespace hazelcast {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeLong(data[i]);
                     }
                 }
@@ -100,7 +101,7 @@ namespace hazelcast {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeFloat(data[i]);
                     }
                 }
@@ -110,7 +111,7 @@ namespace hazelcast {
                 int size = data.size();
                 dataOutput.writeInt(size);
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 0; i < size; ++i) {
                         dataOutput.writeDouble(data[i]);
                     }
                 }

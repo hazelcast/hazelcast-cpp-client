@@ -9,8 +9,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             Connection::Connection(const Address & address, serialization::SerializationService & serializationService)
-            : endpoint(address)
-            , serializationService(serializationService)
+            : serializationService(serializationService)
             , socket(address)
             , inputSocketStream(socket)
             , outputSocketStream(socket)
@@ -42,6 +41,11 @@ namespace hazelcast {
 
             const Address & Connection::getEndpoint() const {
                 return endpoint;
+            };
+
+
+            void Connection::setEndpoint(Address & address) {
+                endpoint = address;
             };
 
             void Connection::close() {

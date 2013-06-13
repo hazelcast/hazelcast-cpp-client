@@ -56,14 +56,9 @@ namespace hazelcast {
                 serialization::Data valueData = toData(value);
 
                 map::PutRequest request(instanceName, keyData, valueData, 1, 0);
-//                clock_t time1 = clock();
 //                serialization::Data debugData = toData(request);
-//                clock_t time2 = clock();
-//                V oldValue = toObject<V>(debugData);
-//                clock_t time3 = clock();
-//                cout <<  time2 - time1 << "_" <<  time3 - time2  <<  endl;
-                V oldValue = invoke<V>(request, keyData);
-                return oldValue;
+//                return toObject<V>(debugData);
+                return invoke<V>(request, keyData);
             };
 
             V remove(const K& key) {

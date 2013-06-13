@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include <string>
 #include "BufferedDataOutput.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -15,8 +15,18 @@ namespace hazelcast {
 
             BufferedDataOutput::BufferedDataOutput()
             : outputStream(new std::vector<byte>()) {
+                outputStream->reserve(DEFAULT_SIZE);
             };
 
+
+            BufferedDataOutput::BufferedDataOutput(BufferedDataOutput const & rhs) {
+                //private
+            };
+
+            BufferedDataOutput & BufferedDataOutput::operator = (BufferedDataOutput const & rhs) {
+                //private
+                return *this;
+            };
 
             BufferedDataOutput& BufferedDataOutput::operator [](const std::string& string) {
                 throw hazelcast::client::HazelcastException("BufferedDataOutput::operator [](std::string string) > not supported!!");
@@ -27,8 +37,12 @@ namespace hazelcast {
             };
 
             void BufferedDataOutput::write(const std::vector<byte>& bytes) {
-                for (int i = 0; i < bytes.size(); i++)
-                    writeByte(bytes[i]);
+                outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
+            };
+
+            void BufferedDataOutput::writeCharArray(const std::vector<char>& bytes) {
+                writeInt(bytes.size());
+                outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
             };
 
             void BufferedDataOutput::write(char const *bytes, int length) {

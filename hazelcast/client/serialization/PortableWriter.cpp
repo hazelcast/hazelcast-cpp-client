@@ -19,8 +19,8 @@ namespace hazelcast {
             , index (0)
             , cd(cd)
             , raw(false)
-            , writingPortable(false) {
-                offset = output->position();
+            , writingPortable(false)
+            , offset(output->position()) {
                 int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof (int);
                 this->output->position(offset + fieldIndexesLength);
             };
@@ -105,14 +105,11 @@ namespace hazelcast {
 
                     throw hazelcast::client::HazelcastException(error);
                 }
-                FieldDefinition fd = cd->get(fieldName);
 
                 if (writtenFields.count(fieldName) != 0)
                     hazelcast::client::HazelcastException("Field '" + fieldName + "' has already been written!");
                 writtenFields.insert(fieldName);
-                int pos = output->position();
-                int index = fd.getIndex();
-                output->writeInt(offset + index * sizeof (int), pos);
+                output->writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), output->position());
 
             };
         }

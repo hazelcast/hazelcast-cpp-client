@@ -55,7 +55,7 @@ namespace hazelcast {
 
                 void setBuffer(std::auto_ptr< std::vector<byte> > buffer);
 
-                bool isServerError();
+                bool isServerError() const;
 
                 int hashCode();
 

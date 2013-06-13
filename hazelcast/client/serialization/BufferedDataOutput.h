@@ -31,6 +31,8 @@ namespace hazelcast {
 
                 void write(const std::vector<byte>& bytes);
 
+                void writeCharArray(const std::vector<char>& bytes);
+
                 void write(char const *bytes, int length);
 
                 void writeBoolean(bool b);
@@ -62,11 +64,16 @@ namespace hazelcast {
                 void reset();
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
+                static int const DEFAULT_SIZE = 16 * 1024;
 
             private:
                 std::auto_ptr< std::vector<byte> > outputStream;
 
                 void writeShortUTF(const std::string&);
+
+                BufferedDataOutput(const BufferedDataOutput& rhs);
+
+                BufferedDataOutput& operator = (const BufferedDataOutput& rhs);
 
             };
 

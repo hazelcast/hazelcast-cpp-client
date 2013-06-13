@@ -37,6 +37,8 @@ namespace hazelcast {
 
                 const Address& getEndpoint() const;
 
+                void setEndpoint(Address& address);
+
                 const Socket& getSocket() const;
 
             private:

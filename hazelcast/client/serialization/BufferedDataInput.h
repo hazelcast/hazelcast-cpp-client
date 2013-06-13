@@ -31,11 +31,7 @@ namespace hazelcast {
 
                 BufferedDataInput& operator [](const std::string&);
 
-                ~BufferedDataInput();
-
                 void readFully(std::vector<byte>&);
-
-                void readFully(byte *bytes, int off, int len);
 
                 int skipBytes(int i);
 
@@ -76,12 +72,14 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-                byte *ptr;
-                byte *beg;
+                const std::vector<byte>& buffer;
+                int pos;
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
                 std::string readShortUTF();
+
+                BufferedDataInput(const BufferedDataInput&);
 
                 BufferedDataInput& operator = (const BufferedDataInput&);
 

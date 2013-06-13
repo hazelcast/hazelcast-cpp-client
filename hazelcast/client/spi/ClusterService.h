@@ -50,11 +50,6 @@ namespace hazelcast {
                     serialization::Data request = serializationService.toData(object);
                     connection.write(request);
                     serialization::Data responseData = connection.read(serializationService.getSerializationContext());
-                    if (responseData.isServerError()) {
-                        protocol::HazelcastServerError x = serializationService.toObject<protocol::HazelcastServerError>(responseData);
-                        std::cerr << x.what() << std::endl;
-                        throw  x;
-                    }
                     recv_type response = serializationService.toObject<recv_type>(responseData);
 
                     return response;
