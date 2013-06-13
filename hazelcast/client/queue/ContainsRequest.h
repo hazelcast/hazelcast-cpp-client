@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_ADD_ALL_REQUEST
-#define HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#ifndef HAZELCAST_QUEUE_CONTAINS_REQUEST
+#define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,10 +10,10 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddAllRequest {
+            class ContainsRequest {
             public:
 
-                AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList)
+                ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList)
                 :name(name)
                 , dataList(dataList) {
 
@@ -28,7 +28,7 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::ADD_ALL;
+                    return queue::RequestIDs::CONTAINS;
                 }
 
                 template<typename HzWriter>
@@ -59,4 +59,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#endif //HAZELCAST_QUEUE_CONTAINS_REQUEST

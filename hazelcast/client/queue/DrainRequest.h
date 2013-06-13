@@ -1,21 +1,22 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_ADD_ALL_REQUEST
-#define HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#ifndef HAZELCAST_QUEUE_MAX_SIZE_REQUEST
+#define HAZELCAST_QUEUE_MAX_SIZE_REQUEST
 
-#include "../serialization/Data.h"
+#include "../serialization/SerializationConstants.h"
 #include "RequestIDs.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddAllRequest {
+            class DrainRequest {
             public:
-
-                AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList)
+                DrainRequest(const std::string& name, bool maxSize)
                 :name(name)
-                , dataList(dataList) {
+                , maxSize(maxSize) {
+
 
                 };
 
@@ -28,35 +29,26 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::ADD_ALL;
-                }
+                    return queue::RequestIDs::DRAIN;
+                };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
-                    writer["s"] << dataList.size();
-                    std::vector<serialization::Data>::iterator it;
-                    for (it = dataList.begin(); it != dataList.end(); ++it) {
-                        writer << (*it);
-                    }
+                    writer["m"] << maxSize;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
-                    int size;
-                    reader["s"] >> size;
-                    dataList.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> dataList[i];
-                    }
+                    reader["m"] >> maxSize;
                 };
             private:
-                std::vector<serialization::Data>& dataList;
                 std::string name;
+                int maxSize;
             };
         }
     }
 }
 
-#endif //HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#endif //HAZELCAST_QUEUE_ADD_LISTENER_REQUEST

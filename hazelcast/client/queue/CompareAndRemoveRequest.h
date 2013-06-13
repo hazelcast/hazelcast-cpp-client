@@ -1,8 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_ADD_ALL_REQUEST
-#define HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#ifndef HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
+#define HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 
 #include "../serialization/Data.h"
 #include "RequestIDs.h"
@@ -10,12 +10,13 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddAllRequest {
+            class CompareAndRemoveRequest {
             public:
 
-                AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList)
+                CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain)
                 :name(name)
-                , dataList(dataList) {
+                , dataList(dataList)
+                , retain(retain) {
 
                 };
 
@@ -28,12 +29,13 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::ADD_ALL;
+                    return queue::RequestIDs::COMPARE_AND_REMOVE;
                 }
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
+                    writer["r"] << retain;
                     writer["s"] << dataList.size();
                     std::vector<serialization::Data>::iterator it;
                     for (it = dataList.begin(); it != dataList.end(); ++it) {
@@ -44,6 +46,7 @@ namespace hazelcast {
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["n"] >> name;
+                    reader["r"] >> retain;
                     int size;
                     reader["s"] >> size;
                     dataList.resize(size);
@@ -54,9 +57,10 @@ namespace hazelcast {
             private:
                 std::vector<serialization::Data>& dataList;
                 std::string name;
+                bool retain;
             };
         }
     }
 }
 
-#endif //HAZELCAST_QUEUE_ADD_ALL_REQUEST
+#endif //HAZELCAST_OFFER_REQUEST
