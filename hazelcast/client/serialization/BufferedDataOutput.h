@@ -64,7 +64,7 @@ namespace hazelcast {
                 void reset();
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
-                static int const DEFAULT_SIZE = 16 * 1024;
+                static int const DEFAULT_SIZE = 4 * 1024;
 
             private:
                 std::auto_ptr< std::vector<byte> > outputStream;

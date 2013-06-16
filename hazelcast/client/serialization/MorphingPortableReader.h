@@ -36,7 +36,7 @@ namespace hazelcast {
 
                 MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
 
-                MorphingPortableReader& operator [](const std::string& fieldName);
+                MorphingPortableReader& operator [](const char *fieldName);
 
                 int skipBytes(int i);
 
@@ -77,18 +77,6 @@ namespace hazelcast {
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
-//                    PortableFactory const *portableFactory;
-//                    if (portableFactories.count(factoryId) != 0) {
-//                        portableFactory = portableFactories.at(factoryId);
-//                    } else {
-//                        throw hazelcast::client::HazelcastException("Could not find PortableFactory for factoryId: " + hazelcast::util::to_string(factoryId));
-//                    }
-//
-//                    std::auto_ptr<Portable> p(portableFactory->create(classId));
-//                    if (p.get() == NULL) {
-//                        throw hazelcast::client::HazelcastException("Could not create Portable for class-id: " + hazelcast::util::to_string(factoryId));
-//                    }
-
                     ClassDefinition *cd;
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
@@ -103,19 +91,18 @@ namespace hazelcast {
 
                 template<typename T>
                 void readPortable(T& portable) {
-                    if (!cd->isFieldDefinitionExists(lastFieldName))
+                    if (unknownFieldDefinition)
                         return;
-                    FieldDefinition fd = cd->get(lastFieldName);
                     bool isNull = input.readBoolean();
                     if (isNull) {
                         return;
                     }
-                    read(input, portable, fd.getFactoryId(), fd.getClassId(), cd->getVersion());
+                    read(input, portable, currentFactoryId, currentClassId, cd->getVersion());
                 };
 
                 template<typename T>
                 void readPortable(std::vector< T >& portables) {
-                    if (!cd->isFieldDefinitionExists(lastFieldName))
+                    if (unknownFieldDefinition)
                         return;
                     int len = input.readInt();
                     portables.resize(len, T());
@@ -125,8 +112,7 @@ namespace hazelcast {
                             input.position(offset + i * sizeof (int));
                             int start = input.readInt();
                             input.position(start);
-                            FieldDefinition fd = cd->get(lastFieldName);
-                            read(input, portables[i], fd.getFactoryId(), fd.getClassId(), cd->getVersion());
+                            read(input, portables[i], currentFactoryId, currentClassId, cd->getVersion());
                         }
                     }
                 };
@@ -135,7 +121,7 @@ namespace hazelcast {
 
             private:
 
-                int getPosition(const std::string&);
+                int getPosition(const char *);
 
                 int offset;
                 bool raw;
@@ -143,7 +129,11 @@ namespace hazelcast {
                 SerializationContext *context;
                 ClassDefinition *cd;
                 BufferedDataInput& input;
-                std::string lastFieldName;
+
+                FieldType currentFieldType;
+                bool unknownFieldDefinition;
+                int currentFactoryId;
+                int currentClassId;
             };
 
             template<typename T>

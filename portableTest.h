@@ -20,7 +20,7 @@
 
 
 void testBinaryClient() {
-    hazelcast::client::Address address(SERVER_ADDRESS, SERVER_PORT);
+    hazelcast::client::Address address("127.0.0.1", 13131);
     hazelcast::client::connection::Socket socket(address);
     SerializationService service(0);
     ClassDefinitionBuilder cd(-3, 3);
@@ -30,39 +30,26 @@ void testBinaryClient() {
     hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");
     hazelcast::client::protocol::AuthenticationRequest ar(credentials);
     Data data = service.toData(ar);
+    std::cout << "connecting" << std::endl;
     socket.connect();
-    socket.send("CB1", 3);
-    OutputSocketStream output(socket);
-    data.writeData(output);
+    std::cout << "connected" << std::endl;
 
-    InputSocketStream input(socket);
-    data.readData(input,service.getSerializationContext());
+    int size = data.totalSize();
+    OutputSocketStream outputSocketStream(socket);
+    outputSocketStream.writeInt(size);
+    data.writeData(outputSocketStream);
 
-    if (data.isServerError()) {
-        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
-        std::cout << "type:" << error.type << std::endl;
-        std::cout << "message:" << error.message << std::endl;
-        std::cout << "details:" << error.details << std::endl;
-    } else {
-        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
-        std::cout << principal.uuid << std::endl;
-        std::cout << principal.ownerUuid << std::endl;
+    BufferedDataOutput bufferedDataOutput;
+    data.writeData(bufferedDataOutput);
+    auto_ptr<vector<byte> > buffer = bufferedDataOutput.toByteArray();
+    size = buffer->size();
+    outputSocketStream.writeInt(size);
 
-    }
-    data = service.toData(ar);
-    data.writeData(output);
-    data.readData(input,service.getSerializationContext());
-    if (data.isServerError()) {
-        hazelcast::client::protocol::HazelcastServerError error = service.toObject<hazelcast::client::protocol::HazelcastServerError>(data);
-        std::cout << "type:" << error.type << std::endl;
-        std::cout << "message:" << error.message << std::endl;
-        std::cout << "details:" << error.details << std::endl;
-    } else {
-        hazelcast::client::protocol::Principal principal = service.toObject<hazelcast::client::protocol::Principal>(data);
-        std::cout << principal.uuid << std::endl;
-        std::cout << principal.ownerUuid << std::endl;
+//    for(vector<byte>::iterator it = pType->begin(); it != pType->end() ; ++it){
+//        outputSocketStream.writeByte(*it);
+//    }
+    outputSocketStream.write(&((*buffer.get())[0]), buffer->size());
 
-    }
 }
 
 void testRawData() {
@@ -182,7 +169,7 @@ void testCompression() {
     serialization::SerializationService serializationService2(1);
     serialization::BufferedDataInput dataInput(*(xxx.get()));
     Data newData;
-    newData.readData(dataInput,serializationService2.getSerializationContext());
+    newData.readData(dataInput, serializationService2.getSerializationContext());
     TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
     assert(returnedPortable == mainPortable);
 };

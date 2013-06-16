@@ -8,9 +8,11 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            Socket::Socket(const Address& address) : address(address) {
+            Socket::Socket(const Address& address) : address(address), size(32 * 1024) {
                 getInfo(address);
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+                setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, &size, sizeof(int));
+                setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, &size, sizeof(int));
             };
 
             Socket::Socket(const Socket& rhs) : address(rhs.address) {
@@ -23,20 +25,20 @@ namespace hazelcast {
 
             void Socket::connect() {
                 if (::connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
-                    throw hazelcast::client::HazelcastException(strerror(errno));
+                    throw HazelcastException(strerror(errno));
             }
 
             void Socket::send(const void *buffer, int len) {
                 if (::send(socketId, buffer, len, 0) == -1)
-                    throw hazelcast::client::HazelcastException("Socket::send :Error socket send" + std::string(strerror(errno)));
+                    throw HazelcastException("Socket::send :Error socket send" + std::string(strerror(errno)));
             };
 
             void Socket::receive(void *buffer, int len) {
                 int size = ::recv(socketId, buffer, len, 0);
                 if (size == -1)
-                    throw hazelcast::client::HazelcastException("Socket::receive :Error socket read");
+                    throw HazelcastException("Socket::receive :Error socket read");
                 else if (size == 0) {
-                    throw hazelcast::client::HazelcastException("Socket::receive : Connection closed by remote");
+                    throw HazelcastException("Socket::receive : Connection closed by remote");
                 }
             };
 

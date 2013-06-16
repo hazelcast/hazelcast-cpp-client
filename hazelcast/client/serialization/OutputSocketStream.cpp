@@ -18,6 +18,10 @@ namespace hazelcast {
                 socket.send((void *) bytes, sizeof (char) * length);
             };
 
+            void OutputSocketStream::write(byte const *bytes, int length) {
+                socket.send((void *) bytes, sizeof (byte) * length);
+            };
+
             void OutputSocketStream::writeBoolean(bool i) {
                 writeByte(i);
             };

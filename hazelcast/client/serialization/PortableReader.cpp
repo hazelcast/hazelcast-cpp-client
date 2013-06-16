@@ -22,12 +22,15 @@ namespace hazelcast {
 
             };
 
-            PortableReader & PortableReader::operator [](const std::string& fieldName) {
+            PortableReader & PortableReader::operator [](const char *fieldName) {
+//            PortableReader & PortableReader::operator [](const std::string& fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
                 }
-                lastFieldName = fieldName;
                 input.position(getPosition(fieldName));
+                const FieldDefinition& fd = cd->get(fieldName);
+                currentFactoryId = fd.getFactoryId();
+                currentClassId = fd.getClassId();
                 readingPortable = true;
                 return *this;
             }
@@ -116,15 +119,15 @@ namespace hazelcast {
                 return input.readShortArray();
             };
 
-            int PortableReader::getPosition(const std::string& fieldName) {
+//            int PortableReader::getPosition(const std::string& fieldName) {
+            int PortableReader::getPosition(const char *fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");
                 }
-
+//                if (!cd->isFieldDefinitionExists(fieldName.c_str()))
                 if (!cd->isFieldDefinitionExists(fieldName))
-                    throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + fieldName);
-                FieldDefinition fd = cd->get(fieldName);
-                input.position(offset + fd.getIndex() * sizeof (int));
+                    throw hazelcast::client::HazelcastException("PortableReader::getPosition : unknownField " + std::string(fieldName));
+                input.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
                 return input.readInt();
             };
 

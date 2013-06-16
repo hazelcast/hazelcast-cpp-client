@@ -24,27 +24,29 @@ namespace hazelcast {
 
                 OutputSocketStream(hazelcast::client::connection::Socket& socket);
 
-                virtual void write(const std::vector<byte>& bytes);
+                void write(const std::vector<byte>& bytes);
 
-                virtual void write(char const *bytes, int length);
+                void write(char const *bytes, int length);
 
-                virtual void writeBoolean(bool b);
+                void write(unsigned char const *bytes, int length);
 
-                virtual void writeByte(int i);
+                void writeBoolean(bool b);
 
-                virtual void writeShort(int i);
+                void writeByte(int i);
 
-                virtual void writeChar(int i);
+                void writeShort(int i);
 
-                virtual void writeInt(int i);
+                void writeChar(int i);
 
-                virtual void writeLong(long l);
+                void writeInt(int i);
 
-                virtual void writeFloat(float v);
+                void writeLong(long l);
 
-                virtual void writeDouble(double v);
+                void writeFloat(float v);
 
-                virtual void writeUTF(std::string s);
+                void writeDouble(double v);
+
+                void writeUTF(std::string s);
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 

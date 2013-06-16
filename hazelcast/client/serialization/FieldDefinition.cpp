@@ -11,17 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            FieldDefinition::FieldDefinition(): type(0) {
-
-            };
-
-
-            FieldDefinition::FieldDefinition(FieldDefinition const& rhs)
-            :classId(rhs.classId)
-            , type(rhs.type)
-            , fieldName(rhs.fieldName)
-            , index(rhs.index)
-            , factoryId(rhs.factoryId) {
+            FieldDefinition::FieldDefinition() {
 
             };
 

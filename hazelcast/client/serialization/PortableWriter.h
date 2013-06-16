@@ -33,7 +33,8 @@ namespace hazelcast {
 
                 PortableWriter(SerializationContext *serializationContext, ClassDefinition *cd, BufferedDataOutput *output);
 
-                PortableWriter& operator [](const std::string& fieldName);
+//                PortableWriter& operator [](const std::string& fieldName);
+                PortableWriter& operator [](const char *fieldName);
 
                 void write(const std::vector<byte>& x);
 
@@ -81,7 +82,8 @@ namespace hazelcast {
 
             private:
 
-                void setPosition(const string& fieldName);
+//                void setPosition(const string& fieldName);
+                void setPosition(const char *fieldName);
 
                 template <typename T>
                 ClassDefinition *getClassDefinition(const T& p) {
@@ -115,7 +117,8 @@ namespace hazelcast {
                 SerializationContext *context;
                 BufferedDataOutput *output;
                 int offset;
-                std::set<std::string> writtenFields;
+//                std::set<std::string> writtenFields;
+                std::set<const char *, util::cStrCmp> writtenFields;
                 ClassDefinition *cd;
 
             };

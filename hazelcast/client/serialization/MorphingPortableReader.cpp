@@ -17,17 +17,27 @@ namespace hazelcast {
             , cd(cd)
             , readingPortable(false)
             , raw(false)
-            , offset(input.position()) {
+            , offset(input.position())
+            , unknownFieldDefinition(false)
+            , currentFieldType(0) {
 
             };
 
-            MorphingPortableReader & MorphingPortableReader::operator [](const std::string& fieldName) {
+            MorphingPortableReader & MorphingPortableReader::operator [](const char *fieldName) {
                 if (raw) {
                     throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
                 }
-                lastFieldName = fieldName;
-                input.position(getPosition(fieldName));
                 readingPortable = true;
+                if (cd->isFieldDefinitionExists(fieldName)) {
+                    unknownFieldDefinition = false;
+                    const FieldDefinition& fd = cd->get(fieldName);
+                    currentFactoryId = fd.getFactoryId();
+                    currentClassId = fd.getClassId();
+                    input.position(getPosition(fieldName));
+                    currentFieldType = cd->getFieldType(fieldName);
+                } else {
+                    unknownFieldDefinition = true;
+                }
                 return *this;
             }
 
@@ -53,18 +63,16 @@ namespace hazelcast {
 
             int MorphingPortableReader::readInt() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                FieldType id = fd.getType();
-                if (id == FieldTypes::TYPE_INT) {
+                if (currentFieldType == FieldTypes::TYPE_INT) {
                     return input.readInt();
-                } else if (id == FieldTypes::TYPE_BYTE) {
+                } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
-                } else if (id == FieldTypes::TYPE_CHAR) {
+                } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
                     return input.readChar();
-                } else if (id == FieldTypes::TYPE_SHORT) {
+                } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
@@ -73,20 +81,18 @@ namespace hazelcast {
 
             long MorphingPortableReader::readLong() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                FieldType id = fd.getType();
-                if (id == FieldTypes::TYPE_LONG) {
+                if (currentFieldType == FieldTypes::TYPE_LONG) {
                     return input.readLong();
-                } else if (id == FieldTypes::TYPE_INT) {
+                } else if (currentFieldType == FieldTypes::TYPE_INT) {
                     return input.readInt();
-                } else if (id == FieldTypes::TYPE_BYTE) {
+                } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
-                } else if (id == FieldTypes::TYPE_CHAR) {
+                } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
                     return input.readChar();
-                } else if (id == FieldTypes::TYPE_SHORT) {
+                } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
@@ -94,24 +100,20 @@ namespace hazelcast {
             };
 
             bool MorphingPortableReader::readBoolean() {
-
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_BOOLEAN)
+                if (currentFieldType != FieldTypes::TYPE_BOOLEAN)
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return input.readBoolean();
             };
 
             byte MorphingPortableReader::readByte() {
-
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_BYTE)
+                if (currentFieldType != FieldTypes::TYPE_BYTE)
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return input.readByte();
@@ -119,11 +121,11 @@ namespace hazelcast {
 
             char MorphingPortableReader::readChar() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_CHAR)
+
+                if (currentFieldType != FieldTypes::TYPE_CHAR)
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
 
                 return input.readChar();
@@ -131,24 +133,22 @@ namespace hazelcast {
 
             double MorphingPortableReader::readDouble() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                FieldType id = fd.getType();
-                if (id == FieldTypes::TYPE_FLOAT) {
+                if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                     return input.readFloat();
-                } else if (id == FieldTypes::TYPE_DOUBLE) {
+                } else if (currentFieldType == FieldTypes::TYPE_DOUBLE) {
                     return input.readDouble();
-                } else if (id == FieldTypes::TYPE_LONG) {
+                } else if (currentFieldType == FieldTypes::TYPE_LONG) {
                     return input.readLong();
-                } else if (id == FieldTypes::TYPE_INT) {
+                } else if (currentFieldType == FieldTypes::TYPE_INT) {
                     return input.readInt();
-                } else if (id == FieldTypes::TYPE_BYTE) {
+                } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
-                } else if (id == FieldTypes::TYPE_CHAR) {
+                } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
                     return input.readChar();
-                } else if (id == FieldTypes::TYPE_SHORT) {
+                } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
@@ -157,20 +157,18 @@ namespace hazelcast {
 
             float MorphingPortableReader::readFloat() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                FieldType id = fd.getType();
-                if (id == FieldTypes::TYPE_FLOAT) {
+                if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                     return input.readFloat();
-                } else if (id == FieldTypes::TYPE_INT) {
+                } else if (currentFieldType == FieldTypes::TYPE_INT) {
                     return input.readInt();
-                } else if (id == FieldTypes::TYPE_BYTE) {
+                } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
-                } else if (id == FieldTypes::TYPE_CHAR) {
+                } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
                     return input.readChar();
-                } else if (id == FieldTypes::TYPE_SHORT) {
+                } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
@@ -179,15 +177,12 @@ namespace hazelcast {
 
             short MorphingPortableReader::readShort() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return 0;
-                FieldDefinition fd = cd->get(lastFieldName);
-
-                FieldType id = fd.getType();
-                if (id == FieldTypes::TYPE_BYTE) {
+                if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
                 }
-                if (id == FieldTypes::TYPE_SHORT) {
+                if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
@@ -196,102 +191,87 @@ namespace hazelcast {
 
             string MorphingPortableReader::readUTF() {
 
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return "";
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_UTF) {
+                if (currentFieldType != FieldTypes::TYPE_UTF) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readUTF();
             };
 
             std::vector <byte> MorphingPortableReader::readByteArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return std::vector<byte>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_BYTE_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_BYTE_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readByteArray();
             };
 
             std::vector<char> MorphingPortableReader::readCharArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     return std::vector<char>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_CHAR_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_CHAR_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readCharArray();
             };
 
             std::vector<int> MorphingPortableReader::readIntArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     std::vector<int>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_INT_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_INT_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readIntArray();
             };
 
             std::vector<long> MorphingPortableReader::readLongArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     std::vector<long>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_LONG_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_LONG_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readLongArray();
             };
 
             std::vector<double> MorphingPortableReader::readDoubleArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     std::vector<double>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_DOUBLE_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_DOUBLE_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readDoubleArray();
             };
 
             std::vector<float> MorphingPortableReader::readFloatArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     std::vector<float>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_FLOAT_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_FLOAT_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readFloatArray();
             };
 
             std::vector<short> MorphingPortableReader::readShortArray() {
-                if (!cd->isFieldDefinitionExists(lastFieldName))
+                if (unknownFieldDefinition)
                     std::vector<short>(1, 0);
-                FieldDefinition fd = cd->get(lastFieldName);
 
-                if (fd.getType() != FieldTypes::TYPE_SHORT_ARRAY) {
+                if (currentFieldType != FieldTypes::TYPE_SHORT_ARRAY) {
                     throw hazelcast::client::HazelcastException("IncompatibleClassChangeError");
                 }
                 return input.readShortArray();
             };
 
-            int MorphingPortableReader::getPosition(const std::string& fieldName) {
-                if (raw) {
-                    throw hazelcast::client::HazelcastException("Cannot read Portable fields after getRawDataInput() is called!");
-                }
-
-                if (!cd->isFieldDefinitionExists(fieldName))
-                    return 0;
-                FieldDefinition fd = cd->get(fieldName);
-                input.position(offset + fd.getIndex() * sizeof (int));
+            int MorphingPortableReader::getPosition(const char *fieldName) {
+                input.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
                 return input.readInt();
             };
 

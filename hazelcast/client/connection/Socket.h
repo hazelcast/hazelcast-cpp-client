@@ -42,6 +42,7 @@ namespace hazelcast {
                 Address address;
                 struct addrinfo *server_info;
                 int socketId;
+                int size;
 
 
             };

@@ -7,7 +7,6 @@
 //
 
 #include "PortableWriter.h"
-#include "../../util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,9 +25,10 @@ namespace hazelcast {
             };
 
 
-            PortableWriter& PortableWriter::operator [](const std::string& fieldName) {
+//            PortableWriter& PortableWriter::operator [](const std::string& fieldName) {
+            PortableWriter& PortableWriter::operator [](const char *fieldName) {
                 if (raw) {
-                    throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
+                    throw HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
                 }
                 setPosition(fieldName);
                 writingPortable = true;
@@ -91,7 +91,8 @@ namespace hazelcast {
                 output->writeBoolean(true);
             };
 
-            void PortableWriter::setPosition(const string& fieldName) {
+            void PortableWriter::setPosition(const char *fieldName) {
+//            void PortableWriter::setPosition(const string& fieldName) {
                 if (raw) throw HazelcastException("Cannot write Portable fields after getRawDataOutput() is called!");
                 if (!cd->isFieldDefinitionExists(fieldName)) {
                     std::string error;
@@ -103,11 +104,11 @@ namespace hazelcast {
                     error += hazelcast::util::to_string(cd->getVersion());
                     error += "}";
 
-                    throw hazelcast::client::HazelcastException(error);
+                    throw HazelcastException(error);
                 }
 
                 if (writtenFields.count(fieldName) != 0)
-                    hazelcast::client::HazelcastException("Field '" + fieldName + "' has already been written!");
+                    throw HazelcastException("Field '" + std::string(fieldName) + "' has already been written!");
                 writtenFields.insert(fieldName);
                 output->writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), output->position());
 

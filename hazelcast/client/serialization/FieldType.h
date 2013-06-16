@@ -8,6 +8,9 @@ namespace hazelcast {
 
             class FieldType {
             public:
+                FieldType() : id(0) {
+
+                };
 
                 FieldType(int type) :id((byte) type) {
                 };

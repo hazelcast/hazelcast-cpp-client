@@ -82,7 +82,6 @@ namespace hazelcast {
                 total += 4; // id
                 if (cd != NULL) {
                     total += 4; // classDefinition-classId
-                    total += 4; // classDefinition-namespace-size
                     total += 4; // // classDefinition-factory-id
                     total += 4; // classDefinition-version
                     total += 4; // classDefinition-binary-length

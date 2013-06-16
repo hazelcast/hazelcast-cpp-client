@@ -18,6 +18,7 @@
 #include <cassert>
 #include "FieldDefinition.h"
 #include "ConstantSerializers.h"
+#include "../../util/Util.h"
 
 using namespace std;
 
@@ -50,21 +51,19 @@ namespace hazelcast {
 
                 void add(ClassDefinition *);
 
-                bool isFieldDefinitionExists(const std::string&);
+                bool isFieldDefinitionExists(const char *);
 
-                const FieldDefinition& get(const std::string&);
+                const FieldDefinition& get(const char *);
 
                 const FieldDefinition& get(int);
 
                 vector<ClassDefinition * > &getNestedClassDefinitions();
 
-                bool hasField(const std::string& fieldName) const;
+                bool hasField(const char *fieldName) const;
 
                 std::vector<std::string> getFieldNames() const;
 
-                FieldType getFieldType(const std::string& fieldName) const;
-
-                int getFieldClassId(const std::string& fieldName) const;
+                FieldType getFieldType(const char *fieldName) const;
 
                 int getFieldCount() const;
 
@@ -90,7 +89,7 @@ namespace hazelcast {
                 ClassDefinition& operator = (const ClassDefinition& rhs);
 
                 vector<FieldDefinition> fieldDefinitions;
-                map<string, FieldDefinition> fieldDefinitionsMap;
+                map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
                 vector<ClassDefinition * > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;

@@ -36,7 +36,8 @@ namespace hazelcast {
 
                 PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
 
-                PortableReader& operator [](const std::string& fieldName);
+//                PortableReader& operator [](const std::string& fieldName);
+                PortableReader& operator [](const char *fieldName);
 
                 int skipBytes(int i);
 
@@ -85,20 +86,16 @@ namespace hazelcast {
 
                 template<typename T>
                 void readPortable(T& portable) {
-                    if (!cd->isFieldDefinitionExists(lastFieldName))
-                        throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
-                    FieldDefinition fd = cd->get(lastFieldName);
                     bool isNull = input.readBoolean();
                     if (isNull) {
                         return;
                     }
-                    read(input, portable, fd.getFactoryId(), fd.getClassId());
+                    read(input, portable, currentFactoryId, currentClassId);
                 };
 
                 template<typename T>
                 void readPortable(std::vector< T >& portables) {
-                    if (!cd->isFieldDefinitionExists(lastFieldName))
-                        throw hazelcast::client::HazelcastException("UnknownFieldException" + lastFieldName);
+
                     int len = input.readInt();
                     portables.resize(len, T());
                     if (len > 0) {
@@ -107,8 +104,8 @@ namespace hazelcast {
                             input.position(offset + i * sizeof (int));
                             int start = input.readInt();
                             input.position(start);
-                            FieldDefinition fd = cd->get(lastFieldName);
-                            read(input, portables[i], fd.getFactoryId(), fd.getClassId());
+
+                            read(input, portables[i], currentFactoryId, currentClassId);
                         }
                     }
                 };
@@ -117,7 +114,8 @@ namespace hazelcast {
 
             private:
 
-                int getPosition(const std::string&);
+//                int getPosition(const std::string&);
+                int getPosition(const char *);
 
                 int offset;
                 bool raw;
@@ -125,7 +123,8 @@ namespace hazelcast {
                 SerializationContext *context;
                 ClassDefinition *cd;
                 BufferedDataInput& input;
-                std::string lastFieldName;
+                int currentFactoryId;
+                int currentClassId;
             };
 
             template<typename T>

@@ -77,10 +77,10 @@ public:
         server_port = port;
     };
 
-    void op(IMap<std::string, vector<char> >& map) {
+    void op(IMap<int, vector<char> >& map) {
         char temp[VALUE_SIZE];
         while (true) {
-            std::string key = hazelcast::util::to_string(rand() % ENTRY_COUNT);
+            int key = rand() % ENTRY_COUNT;
             std::vector<char> value(temp, temp + VALUE_SIZE);
 
             int operation = ((int) (rand() % 100));
@@ -89,7 +89,6 @@ public:
                 ++stats.getCount;
             } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
                 vector<char> vector1 = map.put(key, value);
-//                std::cout << key << std::endl;
                 ++stats.putCount;
             } else {
                 map.remove(key);
@@ -115,7 +114,7 @@ public:
         monitor.start();
         try {
             HazelcastClient hazelcastClient(clientConfig);
-            IMap<std::string, vector<char> > map = hazelcastClient.getMap<std::string, vector<char > >("default");
+            IMap<int, vector<char> > map = hazelcastClient.getMap<int, vector<char > >("default");
             op(map);
 
         } catch (std::exception& e) {

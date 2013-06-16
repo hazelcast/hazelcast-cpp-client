@@ -29,8 +29,6 @@ namespace hazelcast {
 
                 FieldDefinition();
 
-                FieldDefinition(FieldDefinition const&);
-
                 FieldDefinition(int, std::string, FieldType const&);
 
                 FieldDefinition(int, std::string, FieldType const&, int, int);

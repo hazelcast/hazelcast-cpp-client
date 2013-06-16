@@ -3,7 +3,9 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
+#include <iostream>
 #include "Connection.h"
+#include "../serialization/BufferedDataOutput.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,7 +27,10 @@ namespace hazelcast {
             };
 
             void Connection::write(serialization::Data const & data) {
-                data.writeData(outputSocketStream);
+                serialization::BufferedDataOutput out;
+                data.writeData(out);
+                auto_ptr<vector<byte> > buffer = out.toByteArray();
+                outputSocketStream.write(&((*buffer.get())[0]), buffer->size());
             };
 
             serialization::Data Connection::read(serialization::SerializationContext & serializationContext) {

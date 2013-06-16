@@ -16,6 +16,13 @@
 
 namespace hazelcast {
     namespace util {
+
+        struct cStrCmp {
+            bool operator ()(const char *lhs, const char *rhs) const {
+                return strcmp(lhs, rhs) < 0;
+            }
+        };
+
         std::string to_string(int);
 
         template <typename key, typename value>
