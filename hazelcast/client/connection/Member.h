@@ -34,7 +34,7 @@ namespace hazelcast {
 
                 int operator <(const Member&) const;
 
-                Address getAddress() const;
+                const Address& getAddress() const;
 
                 std::string getUuid() const;
 

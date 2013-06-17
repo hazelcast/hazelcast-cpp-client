@@ -16,23 +16,27 @@ namespace hazelcast {
             HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient *client)
             : clientConfig(clientConfig)
             , serializationService(0)
-            , connectionManager(serializationService, clientConfig)
-            , clusterService(*client)
+            , clientContext(*client)
+            , clusterService(clientContext)
+            , connectionManager(clusterService, serializationService, clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
-            , clientContext(*client)
             , cluster(clusterService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
 
+            void shutdown() {
+                //TODO
+            };
+
             ClientConfig clientConfig;
             serialization::SerializationService serializationService;
-            connection::ConnectionManager connectionManager;
+            spi::ClientContext clientContext;
             spi::ClusterService clusterService;
+            connection::ConnectionManager connectionManager;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
-            spi::ClientContext clientContext;
             Cluster cluster;
 
         };
@@ -96,6 +100,10 @@ namespace hazelcast {
 
         ISemaphore HazelcastClient::getISemaphore(std::string instanceName) {
             return ISemaphore(instanceName);
+        };
+
+        void HazelcastClient::shutdown() {
+            impl->shutdown();
         };
 
 

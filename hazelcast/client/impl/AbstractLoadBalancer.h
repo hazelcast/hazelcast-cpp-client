@@ -20,23 +20,23 @@ namespace hazelcast {
         class Cluster;
 
         namespace impl {
-            class AbstractLoadBalancer : public hazelcast::client::LoadBalancer, public hazelcast::client::MembershipListener {
+            class AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
             public:
 
                 void setMembersRef();
 
-                virtual std::vector<hazelcast::client::connection::Member> getMembers();
+                virtual std::vector<connection::Member> getMembers();
 
-                virtual void init(hazelcast::client::Cluster& cluster);
+                virtual void init(Cluster& cluster);
 
-                void memberAdded(const hazelcast::client::connection::MembershipEvent& membershipEvent);
+                void memberAdded(const connection::MembershipEvent& membershipEvent);
 
-                void memberRemoved(const hazelcast::client::connection::MembershipEvent& membershipEvent);
+                void memberRemoved(const connection::MembershipEvent& membershipEvent);
 
                 virtual ~AbstractLoadBalancer();
 
             private:
-                hazelcast::util::AtomicPointer<std::vector<hazelcast::client::connection::Member> > membersRef;
+                util::AtomicPointer<std::vector<connection::Member> > membersRef;
                 Cluster *cluster;
             };
         }

@@ -33,6 +33,16 @@ namespace hazelcast {
             ClientConfig& ClientContext::getClientConfig() {
                 return hazelcastClient.getClientConfig();
             };
+
+            PartitionService & ClientContext::getPartitionService() {
+                return hazelcastClient.getPartitionService();
+            };
+
+            connection::ConnectionManager & ClientContext::getConnectionManager() {
+                return hazelcastClient.getConnectionManager();
+            }
+
+
         }
 
     }

@@ -39,6 +39,8 @@ namespace hazelcast {
 
                 void setEndpoint(Address& address);
 
+                clock_t getLastReadTime() const;
+
                 const Socket& getSocket() const;
 
             private:
@@ -48,6 +50,7 @@ namespace hazelcast {
                 serialization::InputSocketStream inputSocketStream;
                 serialization::OutputSocketStream outputSocketStream;
                 int connectionId;
+                clock_t lastRead;
             };
         }
     }

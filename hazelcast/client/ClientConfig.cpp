@@ -12,7 +12,7 @@ namespace hazelcast {
         , attemptPeriod(3000)
         , credentials(NULL)
         , loadBalancer(NULL)
-        , isDefaultCredentialsInitiliazed(false) {
+        , isDefaultCredentialsInitialized(false) {
         };
 
 
@@ -43,8 +43,18 @@ namespace hazelcast {
             return connectionAttemptLimit;
         };
 
+
+        int ClientConfig::getConnectionTimeout() const {
+            return connectionTimeout;
+        }
+
         int ClientConfig::getAttemptPeriod() const {
             return attemptPeriod;
+        };
+
+
+        bool ClientConfig::isRedoOperation() const {
+            return redoOperation;
         };
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
@@ -57,13 +67,23 @@ namespace hazelcast {
             this->loadBalancer = loadBalancer;
         };
 
+
+        ClientConfig ClientConfig::addListener(spi::EventListener *listener) {
+            listeners.insert(listener);
+            return *this;
+        };
+
+        std::set<spi::EventListener *>  ClientConfig::getListeners() const {
+            return listeners;
+        };
+
         protocol::Credentials & ClientConfig::getCredentials() {
             if (credentials == NULL) {
-                if (isDefaultCredentialsInitiliazed)
+                if (isDefaultCredentialsInitialized)
                     return defaultCredentials;
                 defaultCredentials.setPrincipal(groupConfig.getName());
                 defaultCredentials.setPassword(groupConfig.getPassword());
-                isDefaultCredentialsInitiliazed = true;
+                isDefaultCredentialsInitialized = true;
                 return defaultCredentials;
             }
             return *credentials;

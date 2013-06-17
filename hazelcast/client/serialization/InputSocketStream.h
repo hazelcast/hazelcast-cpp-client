@@ -48,6 +48,8 @@ namespace hazelcast {
 
                 std::string readUTF();
 
+                void close();
+
             private:
                 hazelcast::client::connection::Socket& socket;
 

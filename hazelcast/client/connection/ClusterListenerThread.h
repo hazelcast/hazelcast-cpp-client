@@ -50,8 +50,6 @@ namespace hazelcast {
 
                 void updateMembersRef();
 
-                void fireMembershipEvent(MembershipEvent&);
-
                 std::vector<Address> getClusterAddresses() const;
 
                 std::vector<Address> getConfigAddresses() const;

@@ -21,6 +21,10 @@ namespace hazelcast {
             class Credentials;
         }
 
+        namespace spi {
+            class ClusterService;
+        }
+
         class MembershipListener;
 
         class ClientConfig;
@@ -30,29 +34,33 @@ namespace hazelcast {
 
             class ConnectionManager {
             public:
-                ConnectionManager(hazelcast::client::serialization::SerializationService&, hazelcast::client::ClientConfig&);
+
+                ConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService&, ClientConfig&);
 
                 ~ConnectionManager();
 
                 Connection *newConnection(const Address& address);
 
-                Connection& getRandomConnection();
+                Connection *getRandomConnection();
 
-                Connection& getConnection(const Address& address);
+                Connection *getConnection(const Address& address);
 
                 void releaseConnection(Connection *connection);
 
-                ConnectionPool *getConnectionPool(const hazelcast::client::Address& address);
+                ConnectionPool *getConnectionPool(const Address& address);
 
-                void removeConnectionPool(const hazelcast::client::Address& address);
+                void removeConnectionPool(const Address& address);
 
                 void authenticate(Connection& connection, bool reAuth);
 
+                void shutdown();
+
             private:
-                hazelcast::util::ConcurrentMap<Address, ConnectionPool > poolMap;
-                hazelcast::client::serialization::SerializationService& serializationService;
-                hazelcast::client::ClientConfig& clientConfig;
-                hazelcast::client::protocol::Principal *principal;
+                util::ConcurrentMap<Address, ConnectionPool > poolMap;
+                spi::ClusterService& clusterService;
+                serialization::SerializationService& serializationService;
+                ClientConfig& clientConfig;
+                protocol::Principal *principal;
                 HeartBeatChecker heartBeatChecker;
                 volatile bool live;
 

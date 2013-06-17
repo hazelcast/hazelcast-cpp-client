@@ -9,15 +9,17 @@
 #include "../protocol/AuthenticationRequest.h"
 #include "../protocol/HazelcastServerError.h"
 #include "../serialization/SerializationService.h"
+#include "../spi/ClusterService.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(serialization::SerializationService& serializationService, ClientConfig& clientConfig)
-            : serializationService(serializationService)
+            ConnectionManager::ConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService& serializationService, ClientConfig& clientConfig)
+            : clusterService(clusterService)
+            , serializationService(serializationService)
             , clientConfig(clientConfig)
-            , heartBeatChecker(5, serializationService)
-            , live(true)  //TODO get from config
+            , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
+            , live(true)
             , principal(NULL) {
 
             };
@@ -35,39 +37,25 @@ namespace hazelcast {
                 return connection;
             };
 
-            Connection& ConnectionManager::getRandomConnection() {
+            Connection *ConnectionManager::getRandomConnection() {
                 checkLive();
-                Address& address = clientConfig.getAddresses().at(0);//TODO implement load balancer and stuff
-//                    if (address == null) {
-//                        throw new IOException("LoadBalancer '" + router + "' could not find a address to route to");
-//                    }
+                const Address& address = clientConfig.getLoadBalancer()->next().getAddress();
                 return getConnection(address);
             }
 
-            Connection& ConnectionManager::getConnection(const Address& address) {
+            Connection *ConnectionManager::getConnection(const Address& address) {
                 checkLive();
                 ConnectionPool *pool = getConnectionPool(address);
+                if (pool == NULL )
+                    return NULL;
                 Connection *connection = NULL;
-//                try {
-                connection = pool == NULL ? &getRandomConnection() : pool->take();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-                // Could be that this address is dead and that's why pool is not able to create and give a connection.
-                // We will call it again, and hopefully at some time LoadBalancer will give us the right target for the connection.
-                if (connection == NULL) {
-                    checkLive();
-//                    try {
-                    sleep(1);
-//                    } catch (InterruptedException ignored) {
-//                    }
-                    return getRandomConnection();
-                }
-                if (!heartBeatChecker.checkHeartBeat(*connection)) {
+                connection = pool->take();
+                if (connection != NULL && !heartBeatChecker.checkHeartBeat(*connection)) {
                     connection->close();
-                    return getRandomConnection();
+                    delete connection;
+                    return NULL;
                 }
-                return *connection;
+                return connection;
             };
 
             void ConnectionManager::releaseConnection(Connection *connection) {
@@ -77,9 +65,11 @@ namespace hazelcast {
                         pool->release(connection);
                     } else {
                         connection->close();
+                        delete connection;
                     }
                 } else {
                     connection->close();
+                    delete connection;
                 }
             };
 
@@ -87,14 +77,14 @@ namespace hazelcast {
                 checkLive();
                 ConnectionPool *pool = poolMap.get(address);
                 if (pool == NULL) {
-//                if (client.getClientClusterService().getMember(address) == null){
-//                    return null;
-//                }
+                    if (clusterService.isMemberExists(address)) {
+                        return NULL;
+                    }
                     pool = new ConnectionPool(address, serializationService, *this);
 
-                    ConnectionPool *pPool = poolMap.putIfAbsent(address, pool);
-                    if (pPool) delete pool;
-                    return pPool == NULL ? pool : pPool;
+                    ConnectionPool *previousPool = poolMap.putIfAbsent(address, pool);
+                    if (previousPool) delete pool;
+                    return previousPool == NULL ? pool : previousPool;
                 }
                 return pool;
             };
@@ -103,6 +93,7 @@ namespace hazelcast {
                 ConnectionPool *pool = poolMap.remove(address);
                 if (pool != NULL) {
                     pool->destroy();
+                    delete pool;
                 }
             };
 
@@ -127,9 +118,13 @@ namespace hazelcast {
                 if (!live) {
                     throw HazelcastException("Instance not active!");
                 }
-            }
+            };
 
 
+            void ConnectionManager::shutdown() {
+                live = false;
+                poolMap.clear();
+            };
         }
     }
 }

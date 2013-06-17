@@ -50,6 +50,8 @@ namespace hazelcast {
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
+                void close();
+
             private:
                 hazelcast::client::connection::Socket& socket;
 

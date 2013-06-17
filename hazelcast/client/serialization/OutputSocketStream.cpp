@@ -137,6 +137,12 @@ namespace hazelcast {
                 writeShort(utfLength);
                 write(byteArray, utfLength);
             };
+
+            void OutputSocketStream::close() {
+                socket.close();
+            };
+
+
         }
     }
 }

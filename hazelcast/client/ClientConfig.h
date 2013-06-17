@@ -6,7 +6,9 @@
 #include "protocol/Credentials.h"
 #include "LoadBalancer.h"
 #include "impl/RoundRobinLB.h"
+#include "spi/EventListener.h"
 #include <vector>
+#include <set>
 
 namespace hazelcast {
     namespace client {
@@ -30,13 +32,29 @@ namespace hazelcast {
 
             int getConnectionAttemptLimit() const;
 
+            int getConnectionTimeout() const;
+
             int getAttemptPeriod() const;
+
+            bool isRedoOperation() const;
+
+            /**
+           * Adds a listener object to configuration to be registered when {@code HazelcastClient} starts.
+           *
+           * @param listener one of {@link com.hazelcast.core.LifecycleListener}, {@link com.hazelcast.core.DistributedObjectListener}
+           *                 or {@link com.hazelcast.core.MembershipListener}
+           * @return
+           */
+            ClientConfig addListener(spi::EventListener *listener);
+
+            std::set<spi::EventListener *> getListeners() const;
 
             LoadBalancer *const getLoadBalancer();
 
             void setLoadBalancer(LoadBalancer *loadBalancer);
 
             void setCredentials(protocol::Credentials *credentials);
+
 
         private:
 
@@ -57,7 +75,7 @@ namespace hazelcast {
             /**
              * Used to distribute the operations to multiple Endpoints.
              */
-            LoadBalancer* loadBalancer;
+            LoadBalancer *loadBalancer;
 
             impl::RoundRobinLB defaultLoadBalancer;
 
@@ -65,9 +83,7 @@ namespace hazelcast {
              * List of listeners that Hazelcast will automatically add as a part of initialization process.
              * Currently only supports {@link com.hazelcast.core.LifecycleListener}.
              */
-//            final Collection<EventListener>
-//            listeners = new HashSet <EventListener>();
-
+            std::set<spi::EventListener *> listeners;
             /**
              * If true, client will route the key based operations to owner of the key at the best effort.
              * Note that it uses a cached version of {@link com.hazelcast.core.PartitionService#getPartitions()} and doesn't
@@ -127,7 +143,7 @@ namespace hazelcast {
 
             protocol::Credentials defaultCredentials;
 
-            bool isDefaultCredentialsInitiliazed;
+            bool isDefaultCredentialsInitialized;
         };
 
     }

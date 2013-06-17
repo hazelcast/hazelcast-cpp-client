@@ -37,7 +37,7 @@ namespace hazelcast {
                 return address < rhs.address;
             };
 
-            Address Member::getAddress() const {
+            const Address& Member::getAddress() const {
                 return address;
             };
 

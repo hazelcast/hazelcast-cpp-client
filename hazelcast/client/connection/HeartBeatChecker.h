@@ -24,9 +24,14 @@ namespace hazelcast {
             public:
                 HeartBeatChecker(int timeout, serialization::SerializationService& serializationService);
 
-                bool checkHeartBeat(const Connection& connection);
+                bool checkHeartBeat(Connection& connection);
+
+                static void *run(void *);
+
+                void runImpl();
 
             private:
+
                 int timeout;
                 protocol::PingRequest pingRequest;
                 serialization::Data ping;

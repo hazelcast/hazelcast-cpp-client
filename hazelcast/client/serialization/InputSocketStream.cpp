@@ -181,6 +181,11 @@ namespace hazelcast {
                 return std::string(chararr);
             };
 
+            void InputSocketStream::close() {
+                socket.close();
+            }
+
+
         }
     }
 }

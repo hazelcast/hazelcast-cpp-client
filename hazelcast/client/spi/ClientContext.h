@@ -14,29 +14,37 @@ namespace hazelcast {
 
         class ClientConfig;
 
+        namespace connection {
+            class ConnectionManager;
+        }
 
         namespace spi {
             class InvocationService;
 
             class ClusterService;
 
+            class PartitionService;
 
             class ClientContext {
             public:
 
-                ClientContext(hazelcast::client::HazelcastClient& hazelcastClient);
+                ClientContext(HazelcastClient& hazelcastClient);
 
-                hazelcast::client::serialization::SerializationService& getSerializationService();
+                serialization::SerializationService& getSerializationService();
 
                 ClusterService& getClusterService();
 
                 InvocationService& getInvocationService();
 
-                hazelcast::client::ClientConfig& getClientConfig();
+                ClientConfig& getClientConfig();
+
+                PartitionService& getPartitionService();
+
+                connection::ConnectionManager& getConnectionManager();
 
 
             private:
-                hazelcast::client::HazelcastClient& hazelcastClient;
+                HazelcastClient& hazelcastClient;
             };
         }
     }

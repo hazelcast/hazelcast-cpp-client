@@ -91,6 +91,13 @@ namespace hazelcast {
                 return k;
             };
 
+            void clear() {
+                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
+                    delete it->second;
+                }
+                internalMap.clear();
+            };
+
         private:
             std::map<K, V *> internalMap;
         };

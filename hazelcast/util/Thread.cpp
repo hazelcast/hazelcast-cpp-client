@@ -3,6 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include <signal.h>
+#include <unistd.h>
+#include <sys/errno.h>
 #include "Thread.h"
 
 
@@ -28,7 +31,21 @@ namespace hazelcast {
 
         void Thread::start() {
             pthread_create(&thread, attributes, runnable, parameters);
-        }
+        };
+
+        bool Thread::join(useconds_t timeout) {
+            useconds_t sleepInterval = 1000 * 100; //100ms
+            while (timeout > 0) {
+                usleep(sleepInterval);
+                if (ESRCH == pthread_kill(thread, 0)) {
+                    //Thread not found, means it is finished
+                    return true;
+                }
+                timeout -= sleepInterval;
+            }
+            pthread_cancel(thread);
+            return false;
+        };
 
         void Thread::join() {
             pthread_join(thread, NULL);
@@ -37,10 +54,6 @@ namespace hazelcast {
 
         void Thread::detach() {
             pthread_detach(thread);
-        };
-
-        Thread::~Thread() {
-
         };
 
         Thread::Thread(Thread const & param) {

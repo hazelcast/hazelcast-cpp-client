@@ -86,6 +86,8 @@ namespace hazelcast {
 
             ClientConfig& getClientConfig();
 
+            void shutdown();
+
         private:
             class HazelcastClientImpl;
 

@@ -19,13 +19,13 @@ namespace hazelcast {
 
             Thread(void *(*runnable)(void *), pthread_attr_t const *, void *parameters);
 
-            virtual void start();
+            void start();
 
-            virtual void join();
+            void join();
 
-            virtual void detach();
+            void detach();
 
-            virtual ~Thread();
+            bool join(useconds_t timeout);
 
         private:
             pthread_t thread;
