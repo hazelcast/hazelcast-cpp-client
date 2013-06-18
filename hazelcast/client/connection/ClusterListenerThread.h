@@ -15,6 +15,8 @@ namespace hazelcast {
 
         namespace spi {
             class ClusterService;
+
+            class LifecycleService;
         }
 
         namespace connection {
@@ -27,18 +29,19 @@ namespace hazelcast {
 
             class ClusterListenerThread : public hazelcast::util::Thread {
             public:
-                ClusterListenerThread(ConnectionManager& connMgr, hazelcast::client::ClientConfig& clientConfig, hazelcast::client::spi::ClusterService&);
+                ClusterListenerThread(ConnectionManager& connMgr, ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&);
 
-                void setInitialConnection(hazelcast::client::connection::Connection *);
+                void setInitialConnection(connection::Connection *);
 
                 static void *run(void *);
 
             private:
                 ConnectionManager& connectionManager;
-                hazelcast::client::spi::ClusterService& clusterService;
+                spi::ClusterService& clusterService;
+                spi::LifecycleService& lifecycleService;
                 Connection *conn;
                 std::vector<Member> members;
-                hazelcast::client::ClientConfig& clientConfig;
+                ClientConfig& clientConfig;
 
                 void runImpl();
 

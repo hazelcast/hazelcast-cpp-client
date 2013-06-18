@@ -12,10 +12,10 @@ namespace hazelcast {
 
         namespace spi {
 
-            LifecycleService::LifecycleService(HazelcastClient & hazelcastClient)
+            LifecycleService::LifecycleService(HazelcastClient & hazelcastClient, ClientConfig& config)
             :hazelcastClient(hazelcastClient)
             , active(false) {
-                std::set<spi::EventListener *> listeners = hazelcastClient.getClientConfig().getListeners();
+                std::set<spi::EventListener *> listeners = config.getListeners();
                 if (!listeners.empty()) {
                     for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                         LifecycleListener *listener = dynamic_cast<LifecycleListener *>(*it);

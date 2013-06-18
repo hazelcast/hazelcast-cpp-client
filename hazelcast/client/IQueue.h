@@ -11,23 +11,20 @@ namespace hazelcast {
         class IQueue {
         public:
 
-            IQueue(std::string instanceName) : instanceName(instanceName) {
+            IQueue(const std::string& instanceName, spi::ClientContext& clientContext)
+            : instanceName(instanceName)
+            , context(clientContext) {
 
             };
 
-            IQueue(const IQueue& rhs) : instanceName(rhs.instanceName) {
-            };
-
-            ~IQueue() {
-
-            };
-
-            std::string getName() const {
-                return instanceName;
+            IQueue(const IQueue& rhs)
+            : instanceName(rhs.instanceName)
+            , context(rhs.context) {
             };
 
         private:
             std::string instanceName;
+            spi::ClientContext& context;
 
         };
     }

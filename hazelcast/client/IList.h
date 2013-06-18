@@ -12,19 +12,10 @@ namespace hazelcast {
         class IList {
         public:
 
-            IList(std::string instanceName) : instanceName(instanceName) {
+            IList(const std::string& instanceName, spi::ClientContext& clientContext)
+            : instanceName(instanceName)
+            , context(clientContext) {
 
-            };
-
-            IList(const IList& rhs) : instanceName(rhs.instanceName) {
-            };
-
-            ~IList() {
-
-            };
-
-            std::string getName() const {
-                return instanceName;
             };
 
             int size();
@@ -79,7 +70,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }

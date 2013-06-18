@@ -38,9 +38,14 @@ namespace hazelcast {
                 return hazelcastClient.getPartitionService();
             };
 
+
+            LifecycleService & ClientContext::getLifecycleService() {
+                return hazelcastClient.getLifecycleService();
+            };
+
             connection::ConnectionManager & ClientContext::getConnectionManager() {
                 return hazelcastClient.getConnectionManager();
-            }
+            };
 
 
         }

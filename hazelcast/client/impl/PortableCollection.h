@@ -31,24 +31,17 @@ namespace hazelcast {
                     return collection;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                int getTypeSerializerId() const;
 
-                int getFactoryId() const {
-                    return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
-                };
+                int getFactoryId() const;
 
-                int getClassId() const {
-                    return protocol::SpiConstants::COLLECTION;
-                };
+                int getClassId() const;
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["l"] << true;
                     writer["s"] << collection.size();
-                    std::vector<serialization::Data>::iterator it;
-                    for (it = collection.begin(); it != collection.end(); ++it) {
+                    for (std::vector<serialization::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
                         writer << (*it);
                     }
 

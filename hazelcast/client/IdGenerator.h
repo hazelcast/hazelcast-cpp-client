@@ -3,21 +3,16 @@
 
 #include <string>
 
-
 namespace hazelcast {
     namespace client {
-
+        namespace spi {
+            class ClientContext;
+        }
 
         class IdGenerator {
         public:
 
-            IdGenerator(std::string instanceName);
-
-            IdGenerator(const IdGenerator& rhs);
-
-            ~IdGenerator();
-
-            std::string getName() const;
+            IdGenerator(const std::string& instanceName, spi::ClientContext& clientContext);
 
             /**
              * Try to initialize this IdGenerator instance with given id
@@ -38,7 +33,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }

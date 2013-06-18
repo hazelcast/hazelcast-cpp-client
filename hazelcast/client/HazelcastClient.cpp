@@ -1,10 +1,9 @@
 #include "IdGenerator.h"
 #include "IAtomicLong.h"
 #include "ICountDownLatch.h"
-#include "spi/PartitionService.h"
 #include "ISemaphore.h"
-#include "Cluster.h"
 #include "ClientConfig.h"
+#include "Cluster.h"
 #include "HazelcastClient.h"
 
 namespace hazelcast {
@@ -13,10 +12,11 @@ namespace hazelcast {
         class HazelcastClient::HazelcastClientImpl {
 
         public:
-            HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient *client)
+            HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient& client)
             : clientConfig(clientConfig)
+            , lifecycleService(client, clientConfig)
             , serializationService(0)
-            , clientContext(*client)
+            , clientContext(client)
             , clusterService(clientContext)
             , connectionManager(clusterService, serializationService, clientConfig)
             , partitionService(clusterService, serializationService)
@@ -31,6 +31,7 @@ namespace hazelcast {
             };
 
             ClientConfig clientConfig;
+            spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
             spi::ClientContext clientContext;
             spi::ClusterService clusterService;
@@ -42,9 +43,10 @@ namespace hazelcast {
         };
 
         HazelcastClient::HazelcastClient(ClientConfig& config)
-        :impl(new HazelcastClientImpl(config, this)) {
+        :impl(new HazelcastClientImpl(config, *this)) {
             impl->clusterService.start();
             impl->partitionService.start();
+            impl->lifecycleService.setStarted();
 
         };
 
@@ -77,6 +79,9 @@ namespace hazelcast {
             return impl->clusterService;
         };
 
+        spi::LifecycleService & HazelcastClient::getLifecycleService() {
+            return impl->lifecycleService;
+        };
 
         spi::PartitionService & HazelcastClient::getPartitionService() {
             return impl->partitionService;
@@ -86,20 +91,20 @@ namespace hazelcast {
             return impl->clientContext;
         };
 
-        IdGenerator HazelcastClient::getIdGenerator(std::string instanceName) {
-            return IdGenerator(instanceName);
+        IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
+            return getDistributedObject< IdGenerator >(instanceName);
         };
 
-        IAtomicLong HazelcastClient::getIAtomicLong(std::string instanceName) {
-            return IAtomicLong(instanceName);
+        IAtomicLong HazelcastClient::getIAtomicLong(const std::string& instanceName) {
+            return getDistributedObject< IAtomicLong >(instanceName);
         };
 
-        ICountDownLatch HazelcastClient::getICountDownLatch(std::string instanceName) {
-            return ICountDownLatch(instanceName);
+        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string& instanceName) {
+            return getDistributedObject< ICountDownLatch >(instanceName);
         };
 
-        ISemaphore HazelcastClient::getISemaphore(std::string instanceName) {
-            return ISemaphore(instanceName);
+        ISemaphore HazelcastClient::getISemaphore(const std::string& instanceName) {
+            return getDistributedObject< ISemaphore >(instanceName);
         };
 
         void HazelcastClient::shutdown() {

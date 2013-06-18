@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "MembershipEvent.h"
-#include "../../util/SerializableCollection.h"
+#include "../impl/SerializableCollection.h"
 #include "../protocol/AddMembershipListenerRequest.h"
 #include "../ClientConfig.h"
 #include "../spi/ClusterService.h"
@@ -11,11 +11,12 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService)
+            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService)
             : Thread::Thread(connection::ClusterListenerThread::run, this)
             , connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
+            , lifecycleService(lifecycleService)
             , conn(NULL) {
                 ;
             };
@@ -32,19 +33,25 @@ namespace hazelcast {
 
             void ClusterListenerThread::runImpl() {
                 while (true) {
-                    try {
+                    try{
                         if (conn == NULL) {
-                            conn = pickConnection();
-                            std::cout << "Connected: " << (*conn) << std::endl;
+                            try {
+                                conn = pickConnection();
+                                std::cout << "Connected: " << (*conn) << std::endl;
+                            } catch (HazelcastException& e) {
+                                lifecycleService.shutdown();
+                                std::cout << *conn << " FAILED..." << std::endl;
+                                return;
+                            }
                         }
                         loadInitialMemberList();
                         listenMembershipEvents();
-                    } catch (HazelcastException& e) {
-//                        if (client.getLifecycleService().isRunning()) {
-//                            e.printStackTrace();
-//                        }
-                        std::cout << *conn << " FAILED..." << std::endl;
+                    }catch(HazelcastException& e){
+                        if (lifecycleService.isRunning()) {
+                            std::cerr << e.what() << std::endl;
+                        }
                         conn->close();
+                        delete conn;
                     }
                     try {
                         sleep(1);
@@ -67,7 +74,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::loadInitialMemberList() {
                 protocol::AddMembershipListenerRequest request;
-                util::SerializableCollection coll = clusterService.sendAndReceive<util::SerializableCollection>(conn, request);
+                impl::SerializableCollection coll = clusterService.sendAndReceive<impl::SerializableCollection>(conn, request);
 
                 serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 std::map<std::string, Member> prevMembers;
@@ -118,7 +125,7 @@ namespace hazelcast {
                         members.erase(std::find(members.begin(), members.end(), member));
                     }
                     updateMembersRef();
-//                    connectionManager.removeConnectionPool(member.getAddress());
+                    connectionManager.removeConnectionPool(member.getAddress());
                     clusterService.fireMembershipEvent(event);
                 }
             };

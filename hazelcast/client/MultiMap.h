@@ -15,19 +15,10 @@ namespace hazelcast {
         class MultiMap {
         public:
 
-            MultiMap(std::string instanceName) : instanceName(instanceName) {
+            MultiMap(const std::string& instanceName, spi::ClientContext& clientContext)
+            : instanceName(instanceName)
+            , context(clientContext) {
 
-            };
-
-            MultiMap(const MultiMap& rhs) : instanceName(rhs.instanceName) {
-            };
-
-            ~MultiMap() {
-
-            };
-
-            std::string getName() const {
-                return instanceName;
             };
 
             /**
@@ -366,7 +357,7 @@ namespace hazelcast {
              */
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
 
 

@@ -9,17 +9,14 @@
 namespace hazelcast {
     namespace client {
 
+        namespace spi {
+            class ClientContext;
+        }
 
         class ICountDownLatch {
         public:
 
-            ICountDownLatch(std::string instanceName);
-
-            ICountDownLatch(const ICountDownLatch& rhs);
-
-            ~ICountDownLatch();
-
-            std::string getName() const;
+            ICountDownLatch(const std::string& instanceName, spi::ClientContext& clientContext);
 
             /**
              * Causes the current thread to wait until the latch has counted down to
@@ -111,7 +108,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }

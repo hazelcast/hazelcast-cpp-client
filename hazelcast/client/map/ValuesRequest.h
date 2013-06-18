@@ -14,6 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             class ValuesRequest {
+            public:
                 ValuesRequest(const std::string& name)
                 :name(name) {
 

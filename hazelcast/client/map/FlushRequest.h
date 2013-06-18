@@ -14,6 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             class FlushRequest {
+            public:
                 FlushRequest(const std::string& name)
                 :name(name) {
 

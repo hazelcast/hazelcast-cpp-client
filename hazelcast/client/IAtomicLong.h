@@ -6,16 +6,14 @@
 
 namespace hazelcast {
     namespace client {
-
+        namespace spi {
+            class ClientContext;
+        }
 
         class IAtomicLong {
         public:
 
-            IAtomicLong(std::string instanceName);
-
-            IAtomicLong(const IAtomicLong& rhs);
-
-            ~IAtomicLong();
+            IAtomicLong(const std::string& instanceName, spi::ClientContext& clientContext);
 
             /**
              * Returns the name of this IAtomicLong instance.
@@ -96,7 +94,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }

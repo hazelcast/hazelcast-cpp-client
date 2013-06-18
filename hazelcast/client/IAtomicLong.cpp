@@ -4,20 +4,11 @@
 namespace hazelcast {
     namespace client {
 
-        IAtomicLong::IAtomicLong(std::string instanceName) : instanceName(instanceName) {
+        IAtomicLong::IAtomicLong(const std::string& instanceName, spi::ClientContext& clientContext)
+        : instanceName(instanceName), context(clientContext) {
 
         };
 
-        IAtomicLong::IAtomicLong(const IAtomicLong& rhs) : instanceName(rhs.instanceName) {
-        };
-
-        IAtomicLong::~IAtomicLong() {
-
-        };
-
-        std::string IAtomicLong::getName() const {
-            return instanceName;
-        };
 
     }
 }

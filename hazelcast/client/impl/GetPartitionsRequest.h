@@ -25,25 +25,25 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getTypeSerializerId(const hazelcast::client::impl::GetPartitionsRequest& x) {
+            inline int getTypeSerializerId(const impl::GetPartitionsRequest& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 
-            inline int getFactoryId(const hazelcast::client::impl::GetPartitionsRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::PARTITION_DS_FACTORY;
+            inline int getFactoryId(const impl::GetPartitionsRequest& ar) {
+                return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
             }
 
-            inline int getClassId(const hazelcast::client::impl::GetPartitionsRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::GET_PARTITIONS;
+            inline int getClassId(const impl::GetPartitionsRequest& ar) {
+                return protocol::ProtocolConstants::GET_PARTITIONS;
             }
 
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::impl::GetPartitionsRequest& arr) {
+            inline void writePortable(HzWriter& writer, const impl::GetPartitionsRequest& arr) {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::impl::GetPartitionsRequest& arr) {
+            inline void readPortable(HzReader& reader, impl::GetPartitionsRequest& arr) {
             };
 
         }

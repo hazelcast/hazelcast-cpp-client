@@ -1,22 +1,12 @@
 #include "IdGenerator.h"
 
-
 namespace hazelcast {
     namespace client {
 
-        IdGenerator::IdGenerator(std::string instanceName) : instanceName(instanceName) {
+        IdGenerator::IdGenerator(const std::string& instanceName, spi::ClientContext& clientContext)
+        : instanceName(instanceName)
+        , context(clientContext) {
 
-        };
-
-        IdGenerator::IdGenerator(const IdGenerator& rhs) : instanceName(rhs.instanceName) {
-        };
-
-        IdGenerator::~IdGenerator() {
-
-        };
-
-        std::string IdGenerator::getName() const {
-            return instanceName;
         };
 
         bool IdGenerator::init(long id) {

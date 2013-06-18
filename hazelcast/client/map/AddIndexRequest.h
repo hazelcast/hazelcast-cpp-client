@@ -16,6 +16,7 @@ namespace hazelcast {
         namespace map {
 
             class AddIndexRequest {
+            public:
                 AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered)
                 :name(name)
                 , attribute(attribute)

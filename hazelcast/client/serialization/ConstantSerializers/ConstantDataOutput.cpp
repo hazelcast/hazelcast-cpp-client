@@ -58,13 +58,6 @@ namespace hazelcast {
 
             void operator <<(BufferedDataOutput& dataOutput, const std::vector<char >&  data) {
                 dataOutput.writeCharArray(data);
-//                int size = data.size();
-//                dataOutput.writeInt(size);
-//                if (size > 0) {
-//                    for (int i = 0; i < size; ++i) {
-//                        dataOutput.writeChar(data[i]);
-//                    }
-//                }
             };
 
             void operator <<(BufferedDataOutput& dataOutput, const std::vector<short >&  data) {

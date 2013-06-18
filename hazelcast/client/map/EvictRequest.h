@@ -16,6 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             class EvictRequest {
+            public:
                 EvictRequest(const std::string& name, serialization::Data& key, int threadId)
                 :name(name)
                 , key(key)

@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace spi {
             ClusterService::ClusterService(ClientContext & clientContext)
             : clientContext(clientContext)
-            , clusterThread(clientContext.getConnectionManager(), clientContext.getClientConfig(), *this)
+            , clusterThread(clientContext.getConnectionManager(), clientContext.getClientConfig(), *this, clientContext.getLifecycleService())
             , credentials(clientContext.getClientConfig().getCredentials())
             , redoOperation(clientContext.getClientConfig().isRedoOperation()) {
 
@@ -39,9 +39,9 @@ namespace hazelcast {
 
 
             connection::Connection *ClusterService::getConnection(Address const & address) {
-//                if (!client.getLifecycleService().isRunning()){
-//                    throw new HazelcastInstanceNotActiveException();
-//                }
+                if (!clientContext.getLifecycleService().isRunning()) {
+                    throw HazelcastException("Instance is not active!");
+                }
                 connection::Connection *connection = NULL;
                 int retryCount = getClientConfig().getConnectionAttemptLimit();
                 while (connection == NULL && retryCount > 0) {

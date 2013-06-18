@@ -3,20 +3,12 @@
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch(std::string instanceName) : instanceName(instanceName) {
+        ICountDownLatch::ICountDownLatch(const std::string& instanceName, spi::ClientContext& clientContext)
+        : instanceName(instanceName)
+        , context(clientContext) {
 
         };
 
-        ICountDownLatch::ICountDownLatch(const ICountDownLatch& rhs) : instanceName(rhs.instanceName) {
-        };
-
-        ICountDownLatch::~ICountDownLatch() {
-
-        };
-
-        std::string ICountDownLatch::getName() const {
-            return instanceName;
-        };
 
     }
 }

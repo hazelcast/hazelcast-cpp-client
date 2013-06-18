@@ -27,6 +27,8 @@ namespace hazelcast {
             class ClusterService;
 
             class PartitionService;
+
+            class LifecycleService;
         }
 
         class ClientConfig;
@@ -50,38 +52,44 @@ namespace hazelcast {
 
             ~HazelcastClient();
 
-            template<typename K, typename V>
-            IMap<K, V> getMap(std::string instanceName) {
-                return IMap<K, V >(instanceName, getClientContext());
+            template <typename T>
+            T getDistributedObject(const std::string& instanceName) {
+                return T(instanceName, getClientContext());
             };
 
             template<typename K, typename V>
-            MultiMap<K, V> getMultiMap(std::string instanceName) {
-                return MultiMap<K, V >(instanceName);
+            IMap<K, V> getMap(const std::string& instanceName) {
+                return getDistributedObject< IMap<K, V > >(instanceName);
+            };
+
+            template<typename K, typename V>
+            MultiMap<K, V> getMultiMap(const std::string& instanceName) {
+                return getDistributedObject< MultiMap<K, V > >(instanceName);
             };
 
             template<typename E>
-            IQueue<E> getQueue(std::string instanceName) {
-                return IQueue<E >(instanceName);
+            IQueue<E> getQueue(const std::string& instanceName) {
+                return getDistributedObject< IQueue<E > >(instanceName);
             };
 
             template<typename E>
-            ISet<E> getSet(std::string instanceName) {
-                return ISet<E >(instanceName);
+            ISet<E> getSet(const std::string& instanceName) {
+                return getDistributedObject< ISet<E > >(instanceName);
             };
 
             template<typename E>
-            IList<E> getList(std::string instanceName) {
-                return IList<E >(instanceName);
+            IList<E> getList(const std::string& instanceName) {
+                return getDistributedObject< IList<E > >(instanceName);
             };
 
-            IdGenerator getIdGenerator(std::string instanceName);
+            IdGenerator getIdGenerator(const std::string& instanceName);
 
-            IAtomicLong getIAtomicLong(std::string instanceName);
+            IAtomicLong getIAtomicLong(const std::string& instanceName);
 
-            ICountDownLatch getICountDownLatch(std::string instanceName);
+            ICountDownLatch getICountDownLatch(const std::string& instanceName);
 
-            ISemaphore getISemaphore(std::string instanceName);
+
+            ISemaphore getISemaphore(const std::string& instanceName);
 
 
             ClientConfig& getClientConfig();
@@ -104,6 +112,8 @@ namespace hazelcast {
             spi::ClusterService& getClusterService();
 
             spi::PartitionService& getPartitionService();
+
+            spi::LifecycleService & getLifecycleService();
 
             HazelcastClient(const HazelcastClient& rhs);
 

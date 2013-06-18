@@ -16,10 +16,11 @@ namespace hazelcast {
     namespace client {
         class HazelcastClient;
 
+        class ClientConfig;
         namespace spi {
             class LifecycleService {
             public:
-                LifecycleService(HazelcastClient& hazelcastClient);
+                LifecycleService(HazelcastClient& hazelcastClient, ClientConfig& config);
 
                 void addLifecycleListener(LifecycleListener *lifecycleListener);
 

@@ -3,9 +3,6 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include <signal.h>
-#include <unistd.h>
-#include <sys/errno.h>
 #include "Thread.h"
 
 

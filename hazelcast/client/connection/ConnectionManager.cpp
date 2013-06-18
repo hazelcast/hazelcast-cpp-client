@@ -77,7 +77,7 @@ namespace hazelcast {
                 checkLive();
                 ConnectionPool *pool = poolMap.get(address);
                 if (pool == NULL) {
-                    if (clusterService.isMemberExists(address)) {
+                    if (!clusterService.isMemberExists(address)) {
                         return NULL;
                     }
                     pool = new ConnectionPool(address, serializationService, *this);

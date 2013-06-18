@@ -2,14 +2,42 @@
 #define HAZELCAST_IMAP
 
 
-#include "map/GetRequest.h"
-#include "map/PutRequest.h"
-#include "map/RemoveRequest.h"
 #include "HazelcastException.h"
 #include "serialization/Data.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "serialization/SerializationService.h"
+#include "impl/MapKeySet.h"
+#include "impl/MapEntrySet.h"
+#include "impl/MapValueCollection.h"
+#include "map/GetRequest.h"
+#include "map/PutRequest.h"
+#include "map/RemoveRequest.h"
+#include "map/ContainsKeyRequest.h"
+#include "map/ContainsValueRequest.h"
+#include "map/FlushRequest.h"
+#include "map/RemoveIfSameRequest.h"
+#include "map/DeleteRequest.h"
+#include "map/TryRemoveRequest.h"
+#include "map/TryPutRequest.h"
+#include "map/PutTransientRequest.h"
+#include "map/ReplaceIfSameRequest.h"
+#include "map/ReplaceRequest.h"
+#include "map/SetRequest.h"
+#include "map/LockRequest.h"
+#include "map/IsLockedRequest.h"
+#include "map/UnlockRequest.h"
+#include "map/GetEntryViewRequest.h"
+#include "map/EvictRequest.h"
+#include "map/KeySetRequest.h"
+#include "map/GetAllRequest.h"
+#include "map/EntrySetRequest.h"
+#include "map/ValuesRequest.h"
+#include "map/AddIndexRequest.h"
+#include "map/SizeRequest.h"
+#include "map/DestroyRequest.h"
+#include "map/ClearRequest.h"
+#include "map/PutAllRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -23,39 +51,34 @@ namespace hazelcast {
         class IMap {
         public:
 
-            IMap(std::string instanceName, spi::ClientContext& clientContext)
+            IMap(const std::string& instanceName, spi::ClientContext& clientContext)
             : instanceName(instanceName)
             , context(clientContext) {
 
             };
 
-            IMap(const IMap& rhs)
-            : instanceName(rhs.instanceName)
-            , context(rhs.context) {
-            };
-
-            std::string getName() const {
-                return instanceName;
-            };
-
             bool containsKey(const K& key) {
+                serialization::Data keyData = toData(key);
+                map::ContainsKeyRequest request(instanceName, keyData);
+                return invoke<bool>(request, keyData);
             };
 
             bool containsValue(const V& value) {
+                serialization::Data valueData = toData(value);
+                map::ContainsValueRequest request(instanceName, valueData);
+                return invoke<bool>(request, valueData);
             };
 
             V get(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::GetRequest request(instanceName, keyData);
-                V value = invoke<V>(request, keyData);
-                return value;
+                return invoke<V>(request, keyData);
             };
 
             V put(const K& key, V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-
-                map::PutRequest request(instanceName, keyData, valueData, 1, 0);
+                map::PutRequest request(instanceName, keyData, valueData, getThreadId(), 0);
 //                serialization::Data debugData = toData(request);
 //                return toObject<V>(debugData);
                 return invoke<V>(request, keyData);
@@ -63,70 +86,241 @@ namespace hazelcast {
 
             V remove(const K& key) {
                 serialization::Data keyData = toData(key);
+                map::RemoveRequest request(instanceName, keyData, getThreadId());
+                return invoke<V>(request, keyData);;
+            };
 
-                map::RemoveRequest request(instanceName, keyData, 1);
-                V value = invoke<V>(request, keyData);
-                return value;
+            bool remove(const K& key, const V& value) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::RemoveIfSameRequest request(instanceName, keyData, valueData, getThreadId());
+                return invoke<bool>(request, keyData);;
+            };
+
+            void deleteEntry(const K& key) {
+                serialization::Data keyData = toData(key);
+                map::DeleteRequest request(instanceName, keyData, getThreadId());
+                invoke<bool>(request, keyData);;
             };
 
             void flush() {
+                map::FlushRequest request(instanceName);
+                invoke<bool>(request);
             };
 
-            std::map< K, V > getAll(const std::set<K>& keys) {
-            };
+            //TODO putAsync, getAsync, RemoveAsync
+
 
             bool tryRemove(const K& key, long timeoutInMillis) {
+                serialization::Data keyData = toData(key);
+                map::TryRemoveRequest request(instanceName, keyData, getThreadId(), timeoutInMillis);
+                return invoke<bool>(request, keyData);;
             };
 
             bool tryPut(const K& key, const V& value, long timeoutInMillis) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::TryPutRequest request(instanceName, keyData, valueData, getThreadId(), timeoutInMillis);
+                return invoke<bool>(request, keyData);
             };
 
-            void put(const K& key, const V& value, long ttl) {
+            V put(const K& key, const V& value, long ttl) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::PutRequest request(instanceName, keyData, valueData, getThreadId(), ttl);
+                return invoke<V>(request, keyData);
             };
 
             void putTransient(const K& key, const V& value, long ttl) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::PutTransientRequest request(instanceName, keyData, valueData, getThreadId(), ttl);
+                invoke<bool>(request, keyData);
             };
 
-            bool replace(const K& key, V oldValue, V newValue) {
+            bool replace(const K& key, const V& oldValue, const V& newValue) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(oldValue);
+                serialization::Data newValueData = toData(newValue);
+                map::ReplaceIfSameRequest request(instanceName, keyData, valueData, newValueData, getThreadId());
+                return invoke<bool>(request, keyData);
             };
 
-            //TODO V replace(K,V)
-            //TODO set
-            //TODO locks and listeners
-
-            std::pair<K, V> getEntry(const K& key) {
+            V replace(const K& key, const V& value) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::ReplaceRequest request(instanceName, keyData, valueData, getThreadId());
+                return invoke<V>(request, keyData);
             };
 
-            //predicates ? supported TODO
+            void set(const K& key, const V& value, long ttl) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::SetRequest request(instanceName, keyData, getThreadId(), ttl);
+                invoke<bool>(request, keyData);
+            };
+
+            void lock(const K&  key) {
+                serialization::Data keyData = toData(key);
+                map::LockRequest request(instanceName, keyData, getThreadId());
+                invoke<bool>(request, keyData);
+            };
+
+            void lock(const K&  key, long leaseTime) {
+                serialization::Data keyData = toData(key);
+                map::LockRequest request (instanceName, keyData, getThreadId(), leaseTime, -1);
+                invoke(request, keyData);
+            };
+
+            bool isLocked(const K&  key) {
+                serialization::Data keyData = toData(key);
+                map::IsLockedRequest request(instanceName, keyData);
+                return invoke<bool>(request, keyData);
+            };
+
+            bool tryLock(const K&  key) {
+                return tryLock(key, 0);
+            };
+
+            bool tryLock(const K&  key, long timeInMillis) {
+                serialization::Data keyData = toData(key);
+                map::LockRequest request(instanceName, keyData, getThreadId(), 0, timeInMillis);
+
+                return invoke<bool>(request, keyData);;
+            };
+
+            void unlock(const K&  key) {
+                serialization::Data keyData = toData(key);
+                map::UnlockRequest request(instanceName, keyData, getThreadId(), false);
+                invoke<bool>(request, keyData);
+            };
+
+            void forceUnlock(const K&  key) {
+                serialization::Data keyData = toData(key);
+                map::UnlockRequest request(instanceName, keyData, getThreadId(), true);
+                invoke<bool>(request, keyData);
+            };
+
+            //TODO listeners
+
+            std::pair<K, V> getEntryView(const K& key) {
+                serialization::Data keyData = toData(key);
+                map::GetEntryViewRequest request(instanceName, keyData);
+                //TODO why Entry View is not portable
+            };
+
 
             bool evict(const K& key) {
+                serialization::Data keyData = toData(key);
+                map::EvictRequest request(instanceName, keyData, getThreadId());
+                return invoke<bool>(request, keyData);
             };
 
-            std::set<K> keySet() {
+            std::vector<K> keySet() {
+                map::KeySetRequest request(instanceName);
+                impl::MapKeySet mapKeySet = invoke(request);
+                return mapKeySet.getKeySet();
+            };
+
+            std::map< K, V > getAll(const std::set<K>& keys) {
+                std::vector<serialization::Data> keySet(keys.size());
+                for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
+                    keySet.push_back(toData(*it));
+                }
+                map::GetAllRequest request(instanceName, keySet);
+                impl::MapEntrySet mapEntrySet = invoke<impl::MapEntrySet>(request);
+                std::map< K, V > result;
+                const std::vector< std::pair< serialization::Data, serialization::Data> >  & entrySet = mapEntrySet.getEntrySet();
+                for (std::vector< std::pair< serialization::Data, serialization::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
+                    result[toObject<K>(it->first)] = toObject<V>(it->second);
+                }
+                return result;
             };
 
             std::vector<V> values() {
+                map::ValuesRequest request(instanceName);
+                impl::MapValueCollection valueCollection = invoke<impl::MapValueCollection>(request);
+                const vector<serialization::Data>  & getValues = valueCollection.getValues();
+                std::vector<V> values(getValues.size());
+                for (int i = 0; i < getValues.size(); i++) {
+                    values[i] = toObject<V>(getValues[i]);
+                }
+                return values;
             };
 
             std::vector< std::pair<K, V> > entrySet() {
+                map::EntrySetRequest request(instanceName);
+                impl::MapEntrySet result = invoke<impl::MapEntrySet>(request);
+                const std::vector< std::pair< serialization::Data, serialization::Data> >  & returnedEntries = result.getEntrySet();
+                std::vector< std::pair<K, V> > entrySet(returnedEntries.size());
+                for (int i = 0; i < entrySet.size(); ++i) {
+                    entrySet[i] = std::make_pair<K, V>(toObject<K>(returnedEntries[i].first), toObject<V>(returnedEntries[i].second));
+                }
+                return entrySet;
             };
 
-            void lock(const K& key) throw (HazelcastException) {
+            //TODO predicates
+
+            void addIndex(const string& attribute, bool ordered) {
+                map::AddIndexRequest request(instanceName, attribute, ordered);
+                invoke<bool>(request);
             };
 
-            bool isLocked(const K& key) {
+//        Object executeOnKey(K key, EntryProcessor entryProcessor) { TODO
+//                final Data keyData = toData(key);
+//                MapExecuteOnKeyRequest request = new MapExecuteOnKeyRequest(name, entryProcessor, keyData);
+//                return invoke(request, keyData);
+//            }
+//
+//        Map<K, Object> executeOnEntries(EntryProcessor entryProcessor) {
+//                MapExecuteOnAllKeysRequest request = new MapExecuteOnAllKeysRequest(name, entryProcessor);
+//                MapEntrySet entrySet = invoke(request);
+//                Map<K, Object> result = new HashMap<K, Object>();
+//                for (Entry<Data, Data> dataEntry : entrySet.getEntrySet()) {
+//                    final Data keyData = dataEntry.getKey();
+//                    final Data valueData = dataEntry.getValue();
+//                    K key = toObject(keyData);
+//                    result.put(key, toObject(valueData));
+//                }
+//                return result;
+//            }
+
+            void set(K key, V value) {
+                set(key, value, -1);
             };
 
-            bool tryLock(const K& key, long timeoutInMillis) {
+            int size() {
+                map::SizeRequest request(instanceName);
+                return invoke<int>(request);;
             };
 
-            void unlock(const K& key) {
+            bool isEmpty() {
+                return size() == 0;
             };
 
-            void forceUnlock(const K& key) {
+            void putAll(const std::map<K, V>& m) {
+                impl::MapEntrySet entrySet;
+                std::vector< std::pair< serialization::Data, serialization::Data> >  & entryDataSet = entrySet.getEntrySet();
+                entryDataSet.resize(m.size());
+                int i = 0;
+                for (typename std::map<K, V>::const_iterator it = m.begin(); it != m.end(); ++it) {
+                    entryDataSet[i] = std::make_pair(toData(it->first), toData(it->second));
+                }
+                map::PutAllRequest request(instanceName, entrySet);
+                invoke<bool>(request);
+            };
+
+            void clear() {
+                map::ClearRequest request(instanceName);
+                invoke<bool>(request);
             };
 
         private:
+            void onDestroy() {
+                map::DestroyRequest request (instanceName);
+                invoke<bool>(request);
+            };
+
             template<typename T>
             serialization::Data toData(const T& object) {
                 return context.getSerializationService().toData(object);
@@ -139,22 +333,16 @@ namespace hazelcast {
 
             template<typename Response, typename Request>
             Response invoke(const Request& request, serialization::Data&  keyData) {
-//                try {
-                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData); //TODO real one
-//                return context.getInvocationService().template invokeOnRandomTarget<Response>(request); //TODO delete line later
-//                } catch (Exception e) {
-//                    throw ExceptionUtil.rethrow(e);
-//                }
+                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
             };
 
-//
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
-//                try {
                 return context.getInvocationService().template invokeOnRandomTarget<Response>(request);
-//                } catch (Exception e) {
-//                    throw ExceptionUtil.rethrow(e);
-//                }
+            };
+
+            int getThreadId() {
+                return 1;
             };
 
             std::string instanceName;

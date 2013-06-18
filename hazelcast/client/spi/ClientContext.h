@@ -1,6 +1,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
+#include "LifecycleService.h"
+
 #ifndef HAZELCAST_CLIENT_CONTEXT
 #define HAZELCAST_CLIENT_CONTEXT
 
@@ -39,6 +41,8 @@ namespace hazelcast {
                 ClientConfig& getClientConfig();
 
                 PartitionService& getPartitionService();
+
+                LifecycleService& getLifecycleService();
 
                 connection::ConnectionManager& getConnectionManager();
 

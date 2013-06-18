@@ -34,8 +34,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
                     writer["size"] << keys.size();
-                    std::vector<serialization::Data>::iterator it;
-                    for (it = keys.begin(); it != keys.end(); ++it) {
+                    for (std::vector<serialization::Data>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
                         writer << (*it);
                     }
                 };

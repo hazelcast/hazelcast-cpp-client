@@ -1,22 +1,20 @@
 //
-// Created by sancar koyunlu on 6/11/13.
+// Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
+#ifndef HAZELCAST_MAP_PUT_ALL_REQUEST
+#define HAZELCAST_MAP_PUT_ALL_REQUEST
 
-
-#ifndef MAP_KEY_SET_REQUEST
-#define MAP_KEY_SET_REQUEST
-
+#include "../impl/MapEntrySet.h"
 #include "RequestIDs.h"
-#include "../serialization/SerializationConstants.h"
-#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class KeySetRequest {
+            class PutAllRequest {
             public:
-                KeySetRequest(const std::string& name)
-                :name(name) {
+                PutAllRequest(const std::string& name, impl::MapEntrySet& entrySet)
+                :name(name)
+                , entrySet(entrySet) {
 
                 };
 
@@ -29,24 +27,26 @@ namespace hazelcast {
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::KEY_SET;
+                    return map::RequestIDs::PUT_ALL;
                 }
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
+                void writePortable(HzWriter& writer) const {
                     writer["n"] << name;
+                    writer << entrySet;
                 };
 
                 template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
+                void readPortable(HzReader& reader) {
                     reader["n"] >> name;
+                    reader >> entrySet;
                 };
             private:
                 std::string name;
+                impl::MapEntrySet& entrySet;
             };
         }
     }
 }
 
-
-#endif //MAP_KEY_SET_REQUEST
+#endif //HAZELCAST_MAP_PUT_ALL_REQUEST

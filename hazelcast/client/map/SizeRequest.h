@@ -14,6 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             class SizeRequest {
+            public:
                 SizeRequest(const std::string& name)
                 :name(name) {
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include "HazelcastException.h"
+#include "ClientContext.h"
 
 
 namespace hazelcast {
@@ -13,13 +14,7 @@ namespace hazelcast {
         class ISemaphore {
         public:
 
-            ISemaphore(std::string instanceName);
-
-            ISemaphore(const ISemaphore& rhs);
-
-            ~ISemaphore();
-
-            std::string getName() const;
+            ISemaphore(const std::string& instanceName, spi::ClientContext& clientContext);
 
             /**
              * Try to initialize this ISemaphore instance with given permit count
@@ -263,7 +258,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }

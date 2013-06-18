@@ -15,7 +15,17 @@ namespace hazelcast {
                 LockRequest(const std::string& name, serialization::Data& key, int threadId, long ttl, long timeout)
                 :name(name)
                 , key(key)
-                , threadId(threadId) {
+                , threadId(threadId)
+                , ttl(ttl)
+                , timeout(timeout) {
+                };
+
+                LockRequest(const std::string& name, serialization::Data& key, int threadId)
+                :name(name)
+                , key(key)
+                , threadId(threadId)
+                , ttl(-1)
+                , timeout(-1) {
                 };
 
                 int getTypeSerializerId() const {

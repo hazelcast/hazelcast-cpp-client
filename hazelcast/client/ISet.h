@@ -11,14 +11,9 @@ namespace hazelcast {
         class ISet {
         public:
 
-            ISet(std::string instanceName) : instanceName(instanceName) {
-
-            };
-
-            ISet(const ISet& rhs) : instanceName(rhs.instanceName) {
-            };
-
-            ~ISet() {
+            ISet(const std::string& instanceName, spi::ClientContext& clientContext)
+            : instanceName(instanceName)
+            , context(clientContext) {
 
             };
 
@@ -50,7 +45,7 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-
+            spi::ClientContext& context;
         };
     }
 }
