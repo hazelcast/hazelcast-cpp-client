@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_MAP_SIZE_REQUEST
 #define HAZELCAST_MAP_SIZE_REQUEST
 
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include <string>
 
@@ -25,11 +25,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::SIZE;
+                    return PortableHook::SIZE;
                 }
 
                 template<typename HzWriter>

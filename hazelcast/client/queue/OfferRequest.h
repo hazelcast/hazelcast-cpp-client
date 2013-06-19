@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_OFFER_REQUEST
 
 #include "../serialization/Data.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,11 +31,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::RequestIDs::F_ID;
+                    return queue::PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::OFFER;
+                    return queue::PortableHook::OFFER;
                 }
 
                 template<typename HzWriter>

@@ -7,9 +7,9 @@
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "serialization/SerializationService.h"
-#include "impl/MapKeySet.h"
-#include "impl/MapEntrySet.h"
-#include "impl/MapValueCollection.h"
+#include "map/MapKeySet.h"
+#include "map/MapEntrySet.h"
+#include "map/MapValueCollection.h"
 #include "map/GetRequest.h"
 #include "map/PutRequest.h"
 #include "map/RemoveRequest.h"
@@ -38,6 +38,9 @@
 #include "map/DestroyRequest.h"
 #include "map/ClearRequest.h"
 #include "map/PutAllRequest.h"
+#include "map/QueryRequest.h"
+#include "map/QueryDataResultStream.h"
+#include "map/EntryView.h"
 #include <string>
 #include <map>
 #include <set>
@@ -203,10 +206,11 @@ namespace hazelcast {
 
             //TODO listeners
 
-            std::pair<K, V> getEntryView(const K& key) {
+            map::EntryView<K, V> getEntryView(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::GetEntryViewRequest request(instanceName, keyData);
-                //TODO why Entry View is not portable
+                map::EntryView<serialization::Data, serialization::Data> dataEntryView = invoke<map::EntryView<serialization::Data, serialization::Data>>(request, keyData);
+                return map::EntryView<K, V>(toObject<K>(dataEntryView.key), toObject<V>(dataEntryView.value), dataEntryView);
             };
 
 
@@ -218,7 +222,7 @@ namespace hazelcast {
 
             std::vector<K> keySet() {
                 map::KeySetRequest request(instanceName);
-                impl::MapKeySet mapKeySet = invoke(request);
+                map::MapKeySet mapKeySet = invoke(request);
                 return mapKeySet.getKeySet();
             };
 
@@ -228,7 +232,7 @@ namespace hazelcast {
                     keySet.push_back(toData(*it));
                 }
                 map::GetAllRequest request(instanceName, keySet);
-                impl::MapEntrySet mapEntrySet = invoke<impl::MapEntrySet>(request);
+                map::MapEntrySet mapEntrySet = invoke<map::MapEntrySet>(request);
                 std::map< K, V > result;
                 const std::vector< std::pair< serialization::Data, serialization::Data> >  & entrySet = mapEntrySet.getEntrySet();
                 for (std::vector< std::pair< serialization::Data, serialization::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
@@ -239,7 +243,7 @@ namespace hazelcast {
 
             std::vector<V> values() {
                 map::ValuesRequest request(instanceName);
-                impl::MapValueCollection valueCollection = invoke<impl::MapValueCollection>(request);
+                map::MapValueCollection valueCollection = invoke<map::MapValueCollection>(request);
                 const vector<serialization::Data>  & getValues = valueCollection.getValues();
                 std::vector<V> values(getValues.size());
                 for (int i = 0; i < getValues.size(); i++) {
@@ -250,7 +254,7 @@ namespace hazelcast {
 
             std::vector< std::pair<K, V> > entrySet() {
                 map::EntrySetRequest request(instanceName);
-                impl::MapEntrySet result = invoke<impl::MapEntrySet>(request);
+                map::MapEntrySet result = invoke<map::MapEntrySet>(request);
                 const std::vector< std::pair< serialization::Data, serialization::Data> >  & returnedEntries = result.getEntrySet();
                 std::vector< std::pair<K, V> > entrySet(returnedEntries.size());
                 for (int i = 0; i < entrySet.size(); ++i) {
@@ -259,7 +263,38 @@ namespace hazelcast {
                 return entrySet;
             };
 
-            //TODO predicates
+            std::vector<K> keySet(const std::string& sql) {
+                map::QueryRequest request(instanceName, "KEY", sql);
+                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                std::vector<K> keySet(queryDataResultStream.size());
+                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                    keySet[i] = toObject<K>(dataResult[i].key);
+                }
+                return keySet;
+            };
+
+            std::vector<V> values(const std::string& sql) {
+                map::QueryRequest request(instanceName, "VALUE", sql);
+                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                std::vector<V> keySet(queryDataResultStream.size());
+                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                    keySet[i] = toObject<V>(dataResult[i].value);
+                }
+                return keySet;
+            };
+
+            std::vector<std::pair<K, V> > entrySet(const std::string& sql) {
+                map::QueryRequest request(instanceName, "ENTRY", sql);
+                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                std::vector<std::pair<K, V> > keySet(queryDataResultStream.size());
+                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                    keySet[i] = std::make_pair(toObject<K>(dataResult[i].key), toObject<V>(dataResult[i].value));
+                }
+                return keySet;
+            };
 
             void addIndex(const string& attribute, bool ordered) {
                 map::AddIndexRequest request(instanceName, attribute, ordered);
@@ -299,7 +334,7 @@ namespace hazelcast {
             };
 
             void putAll(const std::map<K, V>& m) {
-                impl::MapEntrySet entrySet;
+                map::MapEntrySet entrySet;
                 std::vector< std::pair< serialization::Data, serialization::Data> >  & entryDataSet = entrySet.getEntrySet();
                 entryDataSet.resize(m.size());
                 int i = 0;

@@ -5,7 +5,7 @@
 #define HAZELCAST_MAP_SET_REQUEST
 
 #include "../serialization/Data.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,11 +26,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::SET;
+                    return PortableHook::SET;
                 }
 
                 template<typename HzWriter>

@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_MAP_IS_LOCKED_REQUEST
 #define HAZELCASTMAP_IS_LOCKED_REQUEST
 
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include <string>
@@ -27,11 +27,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::IS_LOCKED;
+                    return PortableHook::IS_LOCKED;
                 }
 
                 template<typename HzWriter>

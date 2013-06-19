@@ -4,11 +4,11 @@
 
 
 #include "MapEntrySet.h"
-#include "../map/ResponseIDs.h"
+#include "DataSerializableHook.h"
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
+        namespace map {
             MapEntrySet::MapEntrySet() {
 
             }
@@ -18,11 +18,11 @@ namespace hazelcast {
             }
 
             int MapEntrySet::getFactoryId() const {
-                return map::ResponseIDs::F_ID;
+                return DataSerializableHook::F_ID;
             }
 
             int MapEntrySet::getClassId() const {
-                return map::ResponseIDs::ENTRY_SET;
+                return DataSerializableHook::ENTRY_SET;
             }
 
             const std::vector< std::pair< serialization::Data, serialization::Data> >  & MapEntrySet::getEntrySet() const {

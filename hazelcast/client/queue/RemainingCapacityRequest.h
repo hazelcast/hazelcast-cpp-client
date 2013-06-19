@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 
 #include "../serialization/SerializationConstants.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include <string>
 
 namespace hazelcast {
@@ -23,11 +23,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::RequestIDs::F_ID;
+                    return queue::PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::REMAINING_CAPACITY;
+                    return queue::PortableHook::REMAINING_CAPACITY;
                 };
 
                 template<typename HzWriter>

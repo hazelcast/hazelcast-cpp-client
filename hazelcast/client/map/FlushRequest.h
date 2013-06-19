@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_MAP_FLUSH_REQUEST
 #define HAZELCAST_MAP_FLUSH_REQUEST
 
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include <string>
 
@@ -25,11 +25,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::FLUSH;
+                    return PortableHook::FLUSH;
                 }
 
                 template<typename HzWriter>

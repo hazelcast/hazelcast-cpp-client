@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_ITERATOR_REQUEST
 
 #include "../serialization/SerializationConstants.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include <string>
 
 namespace hazelcast {
@@ -23,11 +23,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::RequestIDs::F_ID;
+                    return queue::PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::ITERATOR;
+                    return queue::PortableHook::ITERATOR;
                 };
 
                 template<typename HzWriter>

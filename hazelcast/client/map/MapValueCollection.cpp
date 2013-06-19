@@ -4,11 +4,11 @@
 
 
 #include "MapValueCollection.h"
-#include "../map/ResponseIDs.h"
+#include "DataSerializableHook.h"
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
+        namespace map {
             MapValueCollection::MapValueCollection() {
 
             }
@@ -18,11 +18,11 @@ namespace hazelcast {
             }
 
             int MapValueCollection::getFactoryId() const {
-                return map::ResponseIDs::F_ID;
+                return DataSerializableHook::F_ID;
             }
 
             int MapValueCollection::getClassId() const {
-                return map::ResponseIDs::VALUES;
+                return DataSerializableHook::VALUES;
             }
 
             const vector<serialization::Data>  & MapValueCollection::getValues() const {

@@ -12,7 +12,7 @@ namespace hazelcast {
 
         };
 
-        bool Address::operator ==(const hazelcast::client::Address& rhs) const {
+        bool Address::operator ==(const Address& rhs) const {
             if (rhs.host.compare(host) > 1) {
                 return true;
             } else if (rhs.host.compare(host) < 1) {

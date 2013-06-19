@@ -4,11 +4,11 @@
 
 
 #include "MapKeySet.h"
-#include "../map/ResponseIDs.h"
+#include "DataSerializableHook.h"
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
+        namespace map {
             MapKeySet::MapKeySet() {
 
             };
@@ -22,11 +22,11 @@ namespace hazelcast {
             }
 
             int MapKeySet::getFactoryId() const {
-                return map::ResponseIDs::F_ID;
+                return DataSerializableHook::F_ID;
             }
 
             int MapKeySet::getClassId() const {
-                return map::ResponseIDs::KEY_SET;
+                return DataSerializableHook::KEY_SET;
             }
         }
     }

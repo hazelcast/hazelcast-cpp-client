@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ADD_INDEX_REQUEST
 #define HAZELCAST_ADD_INDEX_REQUEST
 
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include <string>
 
@@ -29,11 +29,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::ADD_INDEX;
+                    return PortableHook::ADD_INDEX;
                 }
 
                 template<typename HzWriter>

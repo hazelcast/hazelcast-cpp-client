@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MAP_EVICT_REQUEST
 #define HAZELCAST_MAP_EVICT_REQUEST
 
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include <string>
@@ -29,11 +29,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 };
 
                 int getClassId() {
-                    return map::RequestIDs::EVICT;
+                    return PortableHook::EVICT;
                 };
 
                 template<typename HzWriter>

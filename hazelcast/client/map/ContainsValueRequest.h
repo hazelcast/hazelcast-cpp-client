@@ -5,7 +5,7 @@
 #define HAZELCAST_MAP_CONTAINS_VALUE_R
 
 #include "../serialization/Data.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,11 +22,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::CONTAINS_VALUE;
+                    return PortableHook::CONTAINS_VALUE;
                 }
 
                 template<typename HzWriter>

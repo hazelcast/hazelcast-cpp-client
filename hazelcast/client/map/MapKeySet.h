@@ -4,18 +4,18 @@
 
 
 
-#ifndef HAZELCAST_MAP_VALUE_COLLECTION
-#define HAZELCAST_MAP_VALUE_COLLECTION
+#ifndef HAZELCAST_MAP_KEY_SET
+#define HAZELCAST_MAP_KEY_SET
 
-#include "../serialization/Data.h"
 #include <vector>
+#include "../serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
-            class MapValueCollection {
+        namespace map {
+            class MapKeySet {
             public:
-                MapValueCollection();
+                MapKeySet();
 
                 int getTypeSerializerId() const;
 
@@ -23,12 +23,12 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                const std::vector<serialization::Data>& getValues() const;
+                const std::vector<serialization::Data>& getKeySet() const;
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << values.size();
-                    for (std::vector < serialization::Data > ::const_iterator it = values.begin(); it != values.end();
+                    writer << keySet.size();
+                    for (std::vector < serialization::Data > ::const_iterator it = keySet.begin(); it != keySet.end();
                          ++it) {
                         writer << (*it);
                     }
@@ -38,17 +38,17 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     int size;
                     reader >> size;
-                    values.resize(size);
+                    keySet.resize(size);
                     for (int i = 0; i < size; i++) {
-                        reader >> values[i];
+                        reader >> keySet[i];
                     }
                 };
             private:
-                std::vector<serialization::Data> values;
+                std::vector<serialization::Data> keySet;
+
             };
         }
     }
 }
 
-
-#endif //HAZELCAST_MAP_VALUE_COLLECTION
+#endif //__MapKeySet_H_

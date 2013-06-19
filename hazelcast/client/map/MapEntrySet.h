@@ -13,7 +13,7 @@
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
+        namespace map {
             class MapEntrySet {
             public:
                 MapEntrySet();

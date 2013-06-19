@@ -28,8 +28,6 @@ namespace hazelcast {
 
                 static void *run(void *);
 
-                void runImpl();
-
             private:
 
                 int timeout;

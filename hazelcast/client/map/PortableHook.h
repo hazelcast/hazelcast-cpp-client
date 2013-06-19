@@ -4,13 +4,13 @@
 
 
 
-#ifndef HAZELCAST__MAP_REQUEST_ID
-#define HAZELCAST__MAP_REQUEST_ID
+#ifndef HAZELCAST_MAP_PortableHook
+#define HAZELCAST_MAP_PortableHook
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            namespace RequestIDs {
+            namespace PortableHook {
                 enum {
                     F_ID = -10,
                     GET = 1,
@@ -43,12 +43,15 @@ namespace hazelcast {
                     ENTRY_SET = 31,
                     SIZE = 33,
                     QUERY = 34,
-                    CLEAR = 35,
+                    SQL_QUERY = 35,
+                    CLEAR = 36,
                     GET_LOCAL_MAP_STATS = 37,
                     EXECUTE_ON_KEY = 38,
                     EXECUTE_ON_ALL_KEYS = 39,
                     PUT_ALL = 40,
-                    DESTROY = 41
+                    DESTROY = 41,
+                    TXN_REQUEST = 42,
+                    ENTRY_VIEW = 50
                 };
             }
 

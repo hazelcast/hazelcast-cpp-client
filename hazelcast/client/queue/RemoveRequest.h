@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_REMOVE_REQUEST
 
 #include "../serialization/Data.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,11 +24,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::RequestIDs::F_ID;
+                    return queue::PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::REMOVE;
+                    return queue::PortableHook::REMOVE;
                 }
 
                 template<typename HzWriter>

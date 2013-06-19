@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            namespace RequestIDs {
+            namespace PortableHook {
                 enum {
                     F_ID = -11,
                     OFFER = 1,

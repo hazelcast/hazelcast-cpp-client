@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_POLL_REQUEST
 
 #include "../serialization/SerializationConstants.h"
-#include "RequestIDs.h"
+#include "PortableHook.h"
 #include <string>
 
 namespace hazelcast {
@@ -30,11 +30,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::RequestIDs::F_ID;
+                    return queue::PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::RequestIDs::POLL;
+                    return queue::PortableHook::POLL;
                 };
 
                 template<typename HzWriter>

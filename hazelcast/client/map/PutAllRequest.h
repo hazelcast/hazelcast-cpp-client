@@ -4,15 +4,15 @@
 #ifndef HAZELCAST_MAP_PUT_ALL_REQUEST
 #define HAZELCAST_MAP_PUT_ALL_REQUEST
 
-#include "../impl/MapEntrySet.h"
-#include "RequestIDs.h"
+#include "../map/MapEntrySet.h"
+#include "PortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
             class PutAllRequest {
             public:
-                PutAllRequest(const std::string& name, impl::MapEntrySet& entrySet)
+                PutAllRequest(const std::string& name, map::MapEntrySet& entrySet)
                 :name(name)
                 , entrySet(entrySet) {
 
@@ -23,11 +23,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return map::RequestIDs::F_ID;
+                    return PortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return map::RequestIDs::PUT_ALL;
+                    return PortableHook::PUT_ALL;
                 }
 
                 template<typename HzWriter>
@@ -43,7 +43,7 @@ namespace hazelcast {
                 };
             private:
                 std::string name;
-                impl::MapEntrySet& entrySet;
+                map::MapEntrySet& entrySet;
             };
         }
     }
