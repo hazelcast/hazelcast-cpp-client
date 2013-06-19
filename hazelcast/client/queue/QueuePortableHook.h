@@ -4,13 +4,13 @@
 
 
 
-#ifndef HAZELCAST_QUEUE_REQUEST_ID
-#define HAZELCAST_QUEUE_REQUEST_ID
+#ifndef HAZELCAST_QUEUE_PORTABLE_HOOK
+#define HAZELCAST_QUEUE_PORTABLE_HOOK
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            namespace PortableHook {
+            namespace QueuePortableHook {
                 enum {
                     F_ID = -11,
                     OFFER = 1,

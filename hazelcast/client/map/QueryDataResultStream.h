@@ -13,7 +13,7 @@
 #include "Data.h"
 #include "QueryResultEntry.h"
 #include <string>
-#include <bits/stl_bvector.h>
+#include <vector>
 
 namespace hazelcast {
     namespace client {

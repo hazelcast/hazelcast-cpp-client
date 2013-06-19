@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_ADD_LISTENER_REQUEST
 
 #include "../serialization/SerializationConstants.h"
-#include "PortableHook.h"
+#include "QueuePortableHook.h"
 #include <string>
 
 namespace hazelcast {
@@ -25,11 +25,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::PortableHook::F_ID;
+                    return queue::QueuePortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::PortableHook::ADD_LISTENER;
+                    return queue::QueuePortableHook::ADD_LISTENER;
                 };
 
                 template<typename HzWriter>
