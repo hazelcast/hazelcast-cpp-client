@@ -32,8 +32,10 @@ namespace hazelcast {
 
             namespace SpiConstants {
                 int const SPI_PORTABLE_FACTORY = -1;
-                int const CREDENTIALS_ID = 1;
-                int const COLLECTION = 7;
+                int const USERNAME_PWD_CRED = 1;
+                int const COLLECTION = 2;
+                int const ITEM_EVENT = 3;
+                int const ENTRY_EVENT = 4;
             }
         }
     }

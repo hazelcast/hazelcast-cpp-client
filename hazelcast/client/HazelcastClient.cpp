@@ -51,7 +51,12 @@ namespace hazelcast {
         };
 
         HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {
+            //private;
+        };
 
+
+        void HazelcastClient::operator = (const HazelcastClient& rhs) {
+            //private
         };
 
         HazelcastClient::~HazelcastClient() {

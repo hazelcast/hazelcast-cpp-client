@@ -20,14 +20,7 @@ namespace hazelcast {
 
                 };
 
-                PortableCollection(std::vector<serialization::Data>& collection)
-                //TODO not efficent  vector<Data> is copied
-                :collection(collection) {
-
-                };
-
-                //TODO not efficent  vector<Data> is copied
-                std::vector<serialization::Data> getCollection() {
+                const std::vector<serialization::Data>& getCollection() const {
                     return collection;
                 };
 

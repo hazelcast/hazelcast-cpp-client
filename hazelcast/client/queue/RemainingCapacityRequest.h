@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PeekRequest {
+            class RemainingCapacityRequest {
             public:
-                PeekRequest(const std::string& name)
+                RemainingCapacityRequest(const std::string& name)
                 :name(name) {
 
                 };

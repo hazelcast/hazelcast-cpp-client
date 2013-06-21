@@ -41,6 +41,10 @@
 #include "map/QueryRequest.h"
 #include "map/QueryDataResultStream.h"
 #include "map/EntryView.h"
+#include "map/AddEntryListenerRequest.h"
+#include "impl/EntryListener.h"
+#include "spi/EventHandler.h"
+#include "PortableEntryEvent.h"
 #include <string>
 #include <map>
 #include <set>
@@ -204,7 +208,42 @@ namespace hazelcast {
                 invoke<bool>(request, keyData);
             };
 
-            //TODO listeners
+//        String addInterceptor(MapInterceptor interceptor) {
+//                MapAddInterceptorRequest request = new MapAddInterceptorRequest(name, interceptor);
+//                return invoke(request);
+//            }
+//
+//        void removeInterceptor(String id) {
+//                MapRemoveInterceptorRequest request = new MapRemoveInterceptorRequest(name, id);
+//                invoke(request);
+//            }
+
+            template < typename L>
+            void addEntryListener(L/* extends impl::EntryListener*/ *listener, bool includeValue) {
+                map::AddEntryListenerRequest request(instanceName, includeValue);
+//                spi::EventHandler<impl::PortableEntryEvent> handler = createHandler(listener, includeValue);
+//                listen(request, handler);
+            };
+
+//        String addEntryListener(EntryListener<K, V> listener, K key, boolean includeValue) {
+//                final Data keyData = toData(key);
+//                MapAddEntryListenerRequest request = new MapAddEntryListenerRequest(name, keyData, includeValue);
+//                EventHandler<PortableEntryEvent> handler = createHandler(listener, includeValue);
+//                return listen(request, keyData, handler);
+//            }
+//
+//        String addEntryListener(EntryListener<K, V> listener, Predicate<K, V> predicate, K key, boolean includeValue) {
+//                final Data keyData = toData(key);
+//                MapAddEntryListenerRequest request = new MapAddEntryListenerRequest(name, keyData, includeValue, predicate);
+//                EventHandler<PortableEntryEvent> handler = createHandler(listener, includeValue);
+//                return listen(request, keyData, handler);
+//            }
+
+            template < typename L>
+            bool removeEntryListener(L/* extends impl::EntryListener*/ *listener) {
+//                return stopListening(id);
+            };
+
 
             map::EntryView<K, V> getEntryView(const K& key) {
                 serialization::Data keyData = toData(key);

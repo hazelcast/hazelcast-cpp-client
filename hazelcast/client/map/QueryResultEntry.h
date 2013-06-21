@@ -44,15 +44,15 @@ namespace hazelcast {
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    bool isNull;
-                    reader >> isNull;
-                    if (!isNull)
+                    bool isNotNull;
+                    reader >> isNotNull;
+                    if (isNotNull)
                         reader >> keyIndex;
-                    reader >> isNull;
-                    if (!isNull)
+                    reader >> isNotNull;
+                    if (isNotNull)
                         reader >> key;
-                    reader >> isNull;
-                    if (!isNull)
+                    reader >> isNotNull;
+                    if (isNotNull)
                         reader >> value;
                 };
                 serialization::Data keyIndex;

@@ -28,43 +28,43 @@ namespace hazelcast {
                 };
 
                 int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                    return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
                 };
 
                 int getFactoryId() const {
-                    return PortableHook::F_ID;
+                    return DataSerializableHook::F_ID;
                 };
 
                 int getClassId() const {
-                    return PortableHook::ENTRY_VIEW;
+                    return DataSerializableHook::ENTRY_VIEW;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["c"] << cost;
-                    writer["cr"] << creationTime;
-                    writer["ex"] << expirationTime;
-                    writer["h"] << hits;
-                    writer["lat"] << lastAccessTime;
-                    writer["lst"] << lastStoredTime;
-                    writer["lut"] << lastUpdateTime;
-                    writer["v"] << version;
                     writer << key;
                     writer << value;
+                    writer << cost;
+                    writer << creationTime;
+                    writer << expirationTime;
+                    writer << hits;
+                    writer << lastAccessTime;
+                    writer << lastStoredTime;
+                    writer << lastUpdateTime;
+                    writer << version;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["c"] >> cost;
-                    reader["cr"] >> creationTime;
-                    reader["ex"] >> expirationTime;
-                    reader["h"] >> hits;
-                    reader["lat"] >> lastAccessTime;
-                    reader["lst"] >> lastStoredTime;
-                    reader["lut"] >> lastUpdateTime;
-                    reader["v"] >> version;
                     reader >> key;
                     reader >> value;
+                    reader >> cost;
+                    reader >> creationTime;
+                    reader >> expirationTime;
+                    reader >> hits;
+                    reader >> lastAccessTime;
+                    reader >> lastStoredTime;
+                    reader >> lastUpdateTime;
+                    reader >> version;
                 };
                 K key;
                 V value;

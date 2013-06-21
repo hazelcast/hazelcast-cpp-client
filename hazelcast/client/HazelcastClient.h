@@ -6,6 +6,7 @@
 #include "IQueue.h"
 #include "ISet.h"
 #include "IList.h"
+#include "ITopic.h"
 
 #include <memory>
 #include <map>
@@ -40,7 +41,7 @@ namespace hazelcast {
         class ICountDownLatch;
 
         class ISemaphore;
-        //TODO  Lock , Topic
+        //TODO  Lock
 
         class HazelcastClient {
             friend class hazelcast::client::spi::ClusterService;
@@ -82,6 +83,11 @@ namespace hazelcast {
                 return getDistributedObject< IList<E > >(instanceName);
             };
 
+            template<typename E>
+            ITopic<E> getTopic(const std::string& instanceName) {
+                return getDistributedObject< ITopic<E> >(instanceName);
+            };
+
             IdGenerator getIdGenerator(const std::string& instanceName);
 
             IAtomicLong getIAtomicLong(const std::string& instanceName);
@@ -117,7 +123,7 @@ namespace hazelcast {
 
             HazelcastClient(const HazelcastClient& rhs);
 
-            //TODO assignment
+            void operator = (const HazelcastClient& rhs);
 
 
         };

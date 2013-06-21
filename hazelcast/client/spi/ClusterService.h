@@ -71,6 +71,16 @@ namespace hazelcast {
 
                 bool isMemberExists(const Address& address);
 
+//            public MemberImpl getMember(String uuid) {
+//                    final Collection<MemberImpl> memberList = getMemberList();
+//                    for (MemberImpl member : memberList) {
+//                        if (uuid.equals(member.getUuid())) {
+//                            return member;
+//                        }
+//                    }
+//                    return null;
+//                }
+
                 std::vector<connection::Member> getMemberList();
 
                 friend class connection::ClusterListenerThread;

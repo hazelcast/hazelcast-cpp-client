@@ -55,7 +55,7 @@ namespace hazelcast {
             };
 
             inline int getClassId(const protocol::Credentials& ar) {
-                return protocol::SpiConstants::CREDENTIALS_ID;
+                return protocol::SpiConstants::USERNAME_PWD_CRED;
             };
 
 

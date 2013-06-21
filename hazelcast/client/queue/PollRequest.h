@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_POLL_REQUEST
 
 #include "../serialization/SerializationConstants.h"
-#include "QueueQueuePortableHook.h"
+#include "QueuePortableHook.h"
 #include <string>
 
 namespace hazelcast {

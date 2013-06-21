@@ -23,6 +23,7 @@ namespace hazelcast {
                     KEY_SET = 7,
                     VALUES = 8,
                     ENTRY_SET = 9,
+                    ENTRY_VIEW = 10,
                     MAP_STATS = 11,
                     QUERY_RESULT_ENTRY = 12,
                     QUERY_RESULT_STREAM = 13
