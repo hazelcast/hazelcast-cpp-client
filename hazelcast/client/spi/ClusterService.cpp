@@ -139,6 +139,18 @@ namespace hazelcast {
                 return pMap->count(address) > 0;;
             };
 
+
+            connection::Member ClusterService::getMember(const std::string& uuid) {
+
+                vector<connection::Member> list = getMemberList();
+                for (vector<connection::Member>::iterator it = list.begin(); it != list.end(); ++it) {
+                    if (uuid.compare(it->getUuid())) {
+                        return *it;
+                    }
+                }
+                return connection::Member();
+            };
+
             vector<connection::Member>  ClusterService::getMemberList() {
                 return util::values(membersRef.get());
             };

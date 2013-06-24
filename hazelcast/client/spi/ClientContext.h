@@ -27,6 +27,8 @@ namespace hazelcast {
 
             class PartitionService;
 
+            class ServerListenerService;
+
             class ClientContext {
             public:
 
@@ -43,6 +45,8 @@ namespace hazelcast {
                 PartitionService& getPartitionService();
 
                 LifecycleService& getLifecycleService();
+
+                ServerListenerService& getServerListenerService();
 
                 connection::ConnectionManager& getConnectionManager();
 

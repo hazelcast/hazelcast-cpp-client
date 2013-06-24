@@ -8,6 +8,7 @@
 #define HAZELCAST_CONCURRENT_QUEUE
 
 #include "Lock.h"
+#include "LockGuard.h"
 #include <queue>
 #include <iostream>
 
@@ -21,14 +22,13 @@ namespace hazelcast {
             };
 
             bool offer(const T& e) {
-                mutex.lock();
+                util::LockGuard lg(mutex);
                 internalQueue.push(e);
-                mutex.unlock();
                 return true;
             };
 
             bool poll(T& e) {
-                mutex.lock();
+                util::LockGuard lg(mutex);
                 bool success = true;
                 if (!empty()) {
                     e = internalQueue.front();
@@ -36,7 +36,6 @@ namespace hazelcast {
                 } else {
                     success = false;
                 }
-                mutex.unlock();
                 return success;
             };
 

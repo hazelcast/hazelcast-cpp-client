@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class PartitionService {
             public:
-                PartitionService(ClusterService&, hazelcast::client::serialization::SerializationService&);
+                PartitionService(ClusterService&, serialization::SerializationService&);
 
                 void start();
 
@@ -34,19 +34,19 @@ namespace hazelcast {
 
                 Address *getPartitionOwner(int partitionId);
 
-                int getPartitionId(hazelcast::client::serialization::Data& key);
+                int getPartitionId(serialization::Data& key);
 
 
             private:
-                hazelcast::util::Thread partitionListenerThread;
-                hazelcast::util::Thread refreshPartitionThread;
+                util::Thread partitionListenerThread;
+                util::Thread refreshPartitionThread;
 
                 ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
 
                 volatile int partitionCount;
 
-                hazelcast::util::ConcurrentMap<int, Address> partitions;
+                util::ConcurrentMap<int, Address> partitions;
 
                 static void *startListener(void *parameteres);
 
@@ -56,9 +56,9 @@ namespace hazelcast {
 
                 void runRefresher();
 
-                hazelcast::client::impl::PartitionsResponse getPartitionsFrom(const Address& address);
+                impl::PartitionsResponse getPartitionsFrom(const Address& address);
 
-                void processPartitionResponse(hazelcast::client::impl::PartitionsResponse& response);
+                void processPartitionResponse(impl::PartitionsResponse& response);
 
                 void getInitialPartitions();
             };

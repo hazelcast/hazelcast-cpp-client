@@ -6,15 +6,16 @@
 #ifndef HAZELCAST_CLUSTER_SERVICE
 #define HAZELCAST_CLUSTER_SERVICE
 
-#include "../Address.h"
+#include "ClientContext.h"
+#include "PartitionService.h"
+#include "ResponseStream.h"
+#include "../serialization/SerializationService.h"
 #include "../connection/Connection.h"
 #include "../connection/ClusterListenerThread.h"
 #include "../connection/ConnectionManager.h"
 #include "../protocol/HazelcastServerError.h"
-#include "../serialization/SerializationService.h"
+#include "../Address.h"
 #include "../../util/AtomicPointer.h"
-#include "PartitionService.h"
-#include "../spi/ClientContext.h"
 #include "../../util/Lock.h"
 #include <set>
 
@@ -29,40 +30,37 @@ namespace hazelcast {
 
                 void start();
 
-                template< typename recv_type, typename send_type>
-                recv_type sendAndReceive(send_type& object) {
-                    recv_type response;
+                template< typename Response, typename Request>
+                Response sendAndReceive(const Request& object) {
+                    Response response;
                     connection::Connection *conn = getConnectionManager().getRandomConnection();
-                    response = sendAndReceive<recv_type>(conn, object);
+                    response = sendAndReceive<Response>(conn, object);
                     getConnectionManager().releaseConnection(conn);
                     return response;
                 };
 
-                template< typename recv_type, typename send_type>
-                recv_type sendAndReceive(const Address& address, send_type& object) {
+                template< typename Response, typename Request>
+                Response sendAndReceive(const Address& address, const Request& object) {
                     connection::Connection *conn = getConnectionManager().getConnection(address);
-                    recv_type response = sendAndReceive<recv_type>(conn, object);
+                    Response response = sendAndReceive<Response>(conn, object);
                     getConnectionManager().releaseConnection(conn);
                     return response;
                 };
 
-                template< typename recv_type, typename send_type>
-                recv_type sendAndReceive(connection::Connection *connection, send_type& object) {
-                    try {
-                        serialization::SerializationService& serializationService = getSerializationService();
-                        serialization::Data request = serializationService.toData(object);
-                        connection->write(request);
-                        serialization::Data responseData = connection->read(serializationService.getSerializationContext());
-                        return serializationService.toObject<recv_type>(responseData);
-                    } catch(HazelcastException hazelcastException){
-                        clientContext.getPartitionService().refreshPartitions();
-                        if (redoOperation /*|| dynamic_cast<const impl::RetryableRequest *>(&object) != NULL*/) {//TODO global isRetryable(const T& a) function solves
-                            return sendAndReceive<recv_type>(object);
-                        }
-                        throw hazelcastException;
-                    }
+
+                template< typename Request, typename ResponseHandler>
+                void sendAndHandle(const Address& address, const Request& obj, const ResponseHandler&  handler) {
+                    connection::Connection *conn = getConnection(address);
+                    sendAndHandle(conn, obj, handler);
                 };
 
+                template< typename Request, typename ResponseHandler>
+                void sendAndHandle(const Request& obj, const ResponseHandler& handler) {
+                    connection::Connection *conn = getRandomConnection();
+                    sendAndHandle(conn, obj, handler);
+                };
+
+//
                 Address getMasterAddress();
 
                 void addMembershipListener(MembershipListener *listener);
@@ -71,21 +69,14 @@ namespace hazelcast {
 
                 bool isMemberExists(const Address& address);
 
-//            public MemberImpl getMember(String uuid) {
-//                    final Collection<MemberImpl> memberList = getMemberList();
-//                    for (MemberImpl member : memberList) {
-//                        if (uuid.equals(member.getUuid())) {
-//                            return member;
-//                        }
-//                    }
-//                    return null;
-//                }
+                connection::Member getMember(const std::string& uuid);
 
                 std::vector<connection::Member> getMemberList();
 
                 friend class connection::ClusterListenerThread;
 
             private:
+
 
                 connection::ClusterListenerThread clusterThread;
                 protocol::Credentials& credentials;
@@ -94,6 +85,50 @@ namespace hazelcast {
                 std::set< MembershipListener *> listeners;
                 util::Lock listenerLock;
                 const bool redoOperation;
+
+
+                template< typename Response, typename Request>
+                Response sendAndReceive(connection::Connection *connection, const Request& object) {
+                    try {
+                        serialization::SerializationService& serializationService = getSerializationService();
+                        serialization::Data request = serializationService.toData(object);
+                        connection->write(request);
+                        serialization::Data responseData = connection->read(serializationService.getSerializationContext());
+                        return serializationService.toObject<Response>(responseData);
+                    } catch(HazelcastException hazelcastException){
+                        clientContext.getPartitionService().refreshPartitions();
+                        if (redoOperation /*|| dynamic_cast<const impl::RetryableRequest *>(&object) != NULL*/) {//TODO global isRetryable(const T& a) function solves
+                            return sendAndReceive<Response>(object);
+                        }
+                        throw hazelcastException;
+                    }
+                };
+
+                template< typename Request, typename ResponseHandler>
+                void sendAndHandle(connection::Connection *conn, const Request& obj, const ResponseHandler&  handler) {
+                    serialization::SerializationService& serializationService = getSerializationService();
+                    ResponseStream stream(serializationService, *conn);
+                    try {
+                        serialization::Data request = serializationService.toData(obj);
+                        conn->write(request);
+                    } catch (HazelcastException&/*IOException*/ e){
+                        clientContext.getPartitionService().refreshPartitions();
+                        if (redoOperation /*obj instanceof RetryableRequest*/) {
+                            sendAndHandle(obj, handler);
+                            return;
+                        }
+                        throw HazelcastException(e.what());
+                    }
+
+                    try {
+                        handler.handle(stream);
+                    } catch (HazelcastException& e) {
+                        stream.end();
+                        throw e;//ClientException(e);
+                    }
+                    stream.end();
+                }
+
 
                 void fireMembershipEvent(connection::MembershipEvent& membershipEvent);
 

@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Member::Member():address("", 0) { //TODO
+            Member::Member():address("", 0) {
 
             };
 

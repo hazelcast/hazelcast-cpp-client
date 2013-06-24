@@ -43,6 +43,10 @@ namespace hazelcast {
                 return hazelcastClient.getLifecycleService();
             };
 
+            ServerListenerService& ClientContext::getServerListenerService() {
+                return hazelcastClient.getServerListenerService();
+            };
+
             connection::ConnectionManager & ClientContext::getConnectionManager() {
                 return hazelcastClient.getConnectionManager();
             };

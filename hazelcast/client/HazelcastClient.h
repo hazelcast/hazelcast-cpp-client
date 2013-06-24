@@ -30,6 +30,8 @@ namespace hazelcast {
             class PartitionService;
 
             class LifecycleService;
+
+            class ServerListenerService;
         }
 
         class ClientConfig;
@@ -120,6 +122,8 @@ namespace hazelcast {
             spi::PartitionService& getPartitionService();
 
             spi::LifecycleService & getLifecycleService();
+
+            spi::ServerListenerService& getServerListenerService();
 
             HazelcastClient(const HazelcastClient& rhs);
 

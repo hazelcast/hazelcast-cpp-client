@@ -23,7 +23,7 @@ namespace hazelcast {
 
 
                 template<typename Response, typename Request >
-                Response invokeOnKeyOwner(const Request& request, hazelcast::client::serialization::Data& key) {
+                Response invokeOnKeyOwner(const Request& request, serialization::Data& key) {
                     Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         return invokeOnTarget<Response>(request, *owner);
@@ -31,7 +31,27 @@ namespace hazelcast {
                     return invokeOnRandomTarget<Response>(request);
                 };
 
+                template<typename Request, typename  ResponseHandler>
+                void invokeOnRandomTarget(const Request& request, const ResponseHandler& handler) {
+                    clusterService.sendAndHandle(request, handler);
+                };
+
+
+                template<typename Request, typename  ResponseHandler>
+                void invokeOnKeyOwner(const Request& request, serialization::Data& key, const ResponseHandler&  handler) {
+                    Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
+                    if (owner != NULL) {
+                        invokeOnTarget(request, *owner, handler);
+                    }
+                    invokeOnRandomTarget(request, handler);
+                };
+
             private :
+                template<typename Request, typename  ResponseHandler>
+                void invokeOnTarget(const Request& request, const Address& target, const ResponseHandler&  handler) {
+                    clusterService.sendAndHandle(target, request, handler);
+                }
+
                 template<typename Response, typename Request >
                 Response invokeOnTarget(const Request& request, const Address& target) {
                     return clusterService.sendAndReceive<Response>(target, request);

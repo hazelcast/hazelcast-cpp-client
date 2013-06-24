@@ -6,6 +6,7 @@
 #include "serialization/Data.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
+#include "spi/ServerListenerService.h"
 #include "serialization/SerializationService.h"
 #include "map/MapKeySet.h"
 #include "map/MapEntrySet.h"
@@ -43,8 +44,8 @@
 #include "map/EntryView.h"
 #include "map/AddEntryListenerRequest.h"
 #include "impl/EntryListener.h"
-#include "spi/EventHandler.h"
-#include "PortableEntryEvent.h"
+#include "impl/EntryEventHandler.h"
+#include "impl/PortableEntryEvent.h"
 #include <string>
 #include <map>
 #include <set>
@@ -219,29 +220,22 @@ namespace hazelcast {
 //            }
 
             template < typename L>
-            void addEntryListener(L/* extends impl::EntryListener*/ *listener, bool includeValue) {
+            long addEntryListener(L& listener, bool includeValue) {
                 map::AddEntryListenerRequest request(instanceName, includeValue);
-//                spi::EventHandler<impl::PortableEntryEvent> handler = createHandler(listener, includeValue);
-//                listen(request, handler);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
+                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, entryEventHandler);
             };
 
-//        String addEntryListener(EntryListener<K, V> listener, K key, boolean includeValue) {
-//                final Data keyData = toData(key);
-//                MapAddEntryListenerRequest request = new MapAddEntryListenerRequest(name, keyData, includeValue);
-//                EventHandler<PortableEntryEvent> handler = createHandler(listener, includeValue);
-//                return listen(request, keyData, handler);
-//            }
-//
-//        String addEntryListener(EntryListener<K, V> listener, Predicate<K, V> predicate, K key, boolean includeValue) {
-//                final Data keyData = toData(key);
-//                MapAddEntryListenerRequest request = new MapAddEntryListenerRequest(name, keyData, includeValue, predicate);
-//                EventHandler<PortableEntryEvent> handler = createHandler(listener, includeValue);
-//                return listen(request, keyData, handler);
-//            }
-
             template < typename L>
-            bool removeEntryListener(L/* extends impl::EntryListener*/ *listener) {
-//                return stopListening(id);
+            long addEntryListener(L& listener, const K& key, bool includeValue) {
+                serialization::Data keyData = toData(key);
+                map::AddEntryListenerRequest request(instanceName, includeValue, keyData);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
+                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, keyData, entryEventHandler);
+            };
+
+            bool removeEntryListener(long registrationId) {
+                return context.getServerListenerService().stopListening(instanceName, registrationId);
             };
 
 

@@ -21,6 +21,7 @@ namespace hazelcast {
             , connectionManager(clusterService, serializationService, clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
+            , serverListenerService(invocationService)
             , cluster(clusterService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
@@ -38,6 +39,7 @@ namespace hazelcast {
             connection::ConnectionManager connectionManager;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
+            spi::ServerListenerService serverListenerService;
             Cluster cluster;
 
         };
@@ -72,8 +74,8 @@ namespace hazelcast {
             return impl->clientConfig;
         };
 
-        connection::ConnectionManager & HazelcastClient::getConnectionManager() {
-            return impl->connectionManager;
+        spi::ClientContext & HazelcastClient::getClientContext() {
+            return impl->clientContext;
         };
 
         spi::InvocationService & HazelcastClient::getInvocationService() {
@@ -84,16 +86,21 @@ namespace hazelcast {
             return impl->clusterService;
         };
 
-        spi::LifecycleService & HazelcastClient::getLifecycleService() {
-            return impl->lifecycleService;
-        };
-
         spi::PartitionService & HazelcastClient::getPartitionService() {
             return impl->partitionService;
         };
 
-        spi::ClientContext & HazelcastClient::getClientContext() {
-            return impl->clientContext;
+        spi::LifecycleService & HazelcastClient::getLifecycleService() {
+            return impl->lifecycleService;
+        };
+
+
+        spi::ServerListenerService& HazelcastClient::getServerListenerService() {
+            return impl->serverListenerService;
+        };
+
+        connection::ConnectionManager & HazelcastClient::getConnectionManager() {
+            return impl->connectionManager;
         };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
