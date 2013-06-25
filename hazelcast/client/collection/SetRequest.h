@@ -4,52 +4,51 @@
 
 
 
-#ifndef HAZELCAST_ContainsAllRequest
-#define HAZELCAST_ContainsAllRequest
+#ifndef HAZELCAST_SetRequest
+#define HAZELCAST_SetRequest
 
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "CollectionPortableHook.h"
 #include "CollectionKeyBasedRequest.h"
-#include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class ContainsAllRequest : public CollectionKeyBasedRequest {
+            class SetRequest : public CollectionKeyBasedRequest {
             public:
-                ContainsAllRequest(const CollectionProxyId& id, const serialization::Data& key, const std::vector<serialization::Data>& dataList)
+                SetRequest(const CollectionProxyId& id, const serialization::Data& key, const serialization::Data& value, int index, int threadId)
                 :CollectionKeyBasedRequest(id, key)
-                , dataList(dataList) {
+                , value(value)
+                , threadId(threadId)
+                , index(index) {
 
                 };
 
                 int getClassId() const {
-                    return CollectionPortableHook::CONTAINS_ALL;
+                    return CollectionPortableHook::SET;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["s"] << dataList.size();
-                    for (int i = 0; i < dataList.size(); ++i) {
-                        writer << dataList[i];
-                    }
+                    writer["i"] << index;
+                    writer["t"] << threadId;
+                    writer << value;
                     CollectionKeyBasedRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    int size;
-                    reader["s"] >> size;
-                    dataList.resize(size);
-                    for (int i = 0; i < size; ++i) {
-                        reader >> dataList[i];
-                    }
+                    reader["i"] >> index;
+                    reader["t"] >> threadId;
+                    reader >> value;
                     CollectionKeyBasedRequest::readPortable(reader);
                 };
 
             private:
-                std::vector<serialization::Data> dataList;
+                serialization::Data value;
+                int threadId;
+                int index;
             };
 
         }
@@ -57,4 +56,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_ContainsAllRequest
+#endif //HAZELCAST_SetRequest

@@ -4,27 +4,25 @@
 
 
 
-#ifndef HAZELCAST_AddItemListenerRequest
-#define HAZELCAST_AddItemListenerRequest
+#ifndef HAZELCAST_MultiMapUnlockRequest
+#define HAZELCAST_MultiMapUnlockRequest
+
 
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "CollectionPortableHook.h"
-#include "CollectionKeyBasedRequest.h"
-#include "CollectionRequest.h"
 #include "CollectionProxyId.h"
-#include "ConstantClassDefinitionWriter.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class AddItemListenerRequest {
+            class MultiMapUnlockRequest {
             public:
-                AddItemListenerRequest(const CollectionProxyId& id, const serialization::Data& key, bool includeValue)
+                MultiMapUnlockRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId)
                 :proxyId(id)
                 , key(key)
-                , includeValue(includeValue) {
+                , threadId(threadId) {
 
                 };
 
@@ -37,31 +35,27 @@ namespace hazelcast {
                 };
 
                 int getClassId() const {
-                    return CollectionPortableHook::ADD_ITEM_LISTENER;
+                    return CollectionPortableHook::UNLOCK;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["i"] << includeValue;
-                    writer << proxyId;
-                    writer << true;
+                    writer["tid"] << threadId;
                     writer << key;
+                    writer << proxyId;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["i"] >> includeValue;
+                    reader["tid"] >> threadId;
+                    reader >> key;
                     reader >> proxyId;
-                    bool isNotNull;
-                    reader >> isNotNull;
-                    if (isNotNull)
-                        reader >> key;
                 };
 
             private:
                 CollectionProxyId proxyId;
                 serialization::Data key;
-                bool includeValue;
+                int threadId;
             };
 
         }
@@ -69,4 +63,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_AddItemListenerRequest
+#endif //HAZELCAST_MultiMapUnlockRequest

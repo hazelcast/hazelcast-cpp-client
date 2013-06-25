@@ -10,7 +10,7 @@
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "CollectionPortableHook.h"
-#import "CollectionKeyBasedRequest.h"
+#include "CollectionKeyBasedRequest.h"
 #include <vector>
 
 namespace hazelcast {

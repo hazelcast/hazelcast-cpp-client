@@ -11,10 +11,7 @@
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "CollectionPortableHook.h"
-#include "CollectionKeyBasedRequest.h"
-#include "CollectionRequest.h"
 #include "CollectionProxyId.h"
-#include "ConstantClassDefinitionWriter.h"
 #include <vector>
 
 namespace hazelcast {
