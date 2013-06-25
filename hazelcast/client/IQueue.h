@@ -14,7 +14,10 @@
 #include "queue/ClearRequest.h"
 #include "queue/DestroyRequest.h"
 #include "queue/ItearatorRequest.h"
+#include "queue/AddListenerRequest.h"
 #include "impl/PortableCollection.h"
+#include "impl/ItemEventHandler.h"
+#include "ItemEvent.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -24,11 +27,22 @@ namespace hazelcast {
         template<typename E>
         class IQueue {
         public:
-            IQueue(const std::string& name, spi::ClientContext& clientContext)
-            : name(name)
+            IQueue(const std::string& instanceName, spi::ClientContext& clientContext)
+            : instanceName(instanceName)
             , context(clientContext)
-            , key(clientContext.getSerializationService().toData(name)) {
+            , key(clientContext.getSerializationService().toData(instanceName)) {
 
+            };
+
+            template < typename L>
+            long addItemListener(L& listener, bool includeValue) {
+                queue::AddListenerRequest request(instanceName, includeValue);
+                impl::ItemEvent<E> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
+                return context.getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(instanceName, request, entryEventHandler);
+            };
+
+            bool removeItemListener(long registrationId) {
+                return context.getServerListenerService().stopListening(instanceName, registrationId);
             };
 
             bool add(const E& e) {
@@ -52,7 +66,7 @@ namespace hazelcast {
 
             bool offer(const E& e, long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
                 serialization::Data data = context.getSerializationService().toData(e);
-                queue::OfferRequest request(name, timeoutInMillis, data);
+                queue::OfferRequest request(instanceName, timeoutInMillis, data);
                 return invoke<bool>(request);
             };
 
@@ -61,18 +75,18 @@ namespace hazelcast {
             };
 
             E poll(long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
-                queue::PollRequest request(name, timeoutInMillis);
+                queue::PollRequest request(instanceName, timeoutInMillis);
                 return invoke<E>(request);
             };
 
             int remainingCapacity() {
-                queue::RemainingCapacityRequest request(name);
+                queue::RemainingCapacityRequest request(instanceName);
                 return invoke<int>(request);
             };
 
             bool remove(const E& o) {
                 serialization::Data data = context.getSerializationService().toData(o);
-                queue::RemoveRequest request(name, data);
+                queue::RemoveRequest request(instanceName, data);
                 bool result = invoke(request);
                 return result;
             };
@@ -80,7 +94,7 @@ namespace hazelcast {
             bool contains(const E& o) {
                 std::vector<serialization::Data> list(1);
                 list[0] = context.getSerializationService().toData(o);
-                queue::ContainsRequest request(name, list);
+                queue::ContainsRequest request(instanceName, list);
                 return invoke<bool>(request);
             };
 
@@ -89,7 +103,7 @@ namespace hazelcast {
             };
 
             int drainTo(const std::vector<E>& c, int maxElements) {
-                queue::DrainRequest request(name, maxElements);
+                queue::DrainRequest request(instanceName, maxElements);
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
                 const std::vector<serialization::Data>& coll = result.getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
@@ -124,12 +138,12 @@ namespace hazelcast {
             };
 
             E peek() {
-                queue::PeekRequest request(name);
+                queue::PeekRequest request(instanceName);
                 return invoke<E>(request);
             };
 
             int size() {
-                queue::SizeRequest request(name);
+                queue::SizeRequest request(instanceName);
                 return invoke<int>(request);;
             }
 
@@ -145,7 +159,7 @@ namespace hazelcast {
 //            }
 //
             std::vector<E> toArray() {
-                queue::IteratorRequest request(name);
+                queue::IteratorRequest request(instanceName);
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
                 const vector<serialization::Data> const & coll = result.getCollection();
                 return getObjectList(coll);
@@ -153,38 +167,38 @@ namespace hazelcast {
 
             bool containsAll(const std::vector<E>& c) {
                 std::vector<serialization::Data> list = getDataList(c);
-                queue::ContainsRequest request(name, list);
+                queue::ContainsRequest request(instanceName, list);
                 return invoke<bool>(request);
             }
 
             bool addAll(const std::vector<E>& c) {
-                queue::AddAllRequest request(name, getDataList(c));
+                queue::AddAllRequest request(instanceName, getDataList(c));
                 return invoke<bool>(request);
             }
 
             bool removeAll(const std::vector<E>&c) {
-                queue::CompareAndRemoveRequest request(name, getDataList(c), false);
+                queue::CompareAndRemoveRequest request(instanceName, getDataList(c), false);
                 return invoke<bool>(request);
             }
 
             bool retainAll(const std::vector<E>&c) {
-                queue::CompareAndRemoveRequest request(name, getDataList(c), true);
+                queue::CompareAndRemoveRequest request(instanceName, getDataList(c), true);
                 return invoke<bool>(request);
             }
 
 
             void clear() {
-                queue::ClearRequest request(name);
+                queue::ClearRequest request(instanceName);
                 invoke<bool>(request);
             };
 
             void onDestroy() {
-                queue::DestroyRequest request(name);
+                queue::DestroyRequest request(instanceName);
                 invoke<bool>(request);
             };
 
             std::string getName() {
-                return name;
+                return instanceName;
             };
 
             template<typename Response, typename Request>
@@ -209,7 +223,7 @@ namespace hazelcast {
             };
 
         private:
-            std::string name;
+            std::string instanceName;
             serialization::Data key;
             spi::ClientContext& context;
 
