@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace collection {
             class RemoveIndexRequest : public CollectionKeyBasedRequest {
             public:
-                RemoveIndexRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId, int index)
+                RemoveIndexRequest(const CollectionProxyId& id, const serialization::Data& key, int index, int threadId)
                 : CollectionKeyBasedRequest(id, key)
                 , threadId(threadId)
                 , index(index) {

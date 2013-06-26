@@ -17,7 +17,7 @@ namespace hazelcast {
             class CollectionProxyId {
             public:
                 enum CollectionProxyType {
-                    MULTI_MAP, LIST, SET, QUEUE
+                    MULTI_MAP, LIST, SET
                 };
 
                 CollectionProxyId(const std::string& name, CollectionProxyType type)

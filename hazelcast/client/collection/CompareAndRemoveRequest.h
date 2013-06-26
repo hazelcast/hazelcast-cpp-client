@@ -18,10 +18,11 @@ namespace hazelcast {
         namespace collection {
             class CompareAndRemoveRequest : public CollectionKeyBasedRequest {
             public:
-                CompareAndRemoveRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId, const std::vector<serialization::Data>& dataList)
+                CompareAndRemoveRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId, bool retain, const std::vector<serialization::Data>& dataList)
                 :CollectionKeyBasedRequest(id, key)
                 , threadId(threadId)
-                , dataList(dataList) {
+                , dataList(dataList)
+                , retain(retain) {
 
                 };
 
