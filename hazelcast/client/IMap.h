@@ -95,7 +95,7 @@ namespace hazelcast {
             V remove(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::RemoveRequest request(instanceName, keyData, getThreadId());
-                return invoke<V>(request, keyData);;
+                return invoke<V>(request, keyData);
             };
 
             bool remove(const K& key, const V& value) {

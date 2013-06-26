@@ -20,6 +20,12 @@ namespace hazelcast {
                     MULTI_MAP, LIST, SET, QUEUE
                 };
 
+                CollectionProxyId(const std::string& name, CollectionProxyType type)
+                :name(name)
+                , keyName("")
+                , type(type) {
+                };
+
                 CollectionProxyId(const std::string& name, const std::string& keyName, CollectionProxyType type)
                 :name(name)
                 , keyName(keyName)

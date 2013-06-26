@@ -18,7 +18,15 @@ namespace hazelcast {
             public:
                 ContainsEntryRequest(const CollectionProxyId& id, const serialization::Data& key, const serialization::Data& value)
                 : CollectionRequest(id)
+                , hasKey(true)
                 , key(key)
+                , value(value) {
+
+                };
+
+                ContainsEntryRequest(const CollectionProxyId& id, const serialization::Data& value)
+                : CollectionRequest(id)
+                , hasKey(false)
                 , value(value) {
 
                 };
@@ -29,8 +37,10 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << true;
-                    writer << key;
+                    writer << hasKey;
+                    if (hasKey) {
+                        writer << key;
+                    }
                     writer << true;
                     writer << value;
                     CollectionRequest::writePortable(writer);
@@ -38,10 +48,10 @@ namespace hazelcast {
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    bool isNotNull;
-                    reader >> isNotNull;
-                    if (isNotNull)
+                    reader >> hasKey;
+                    if (hasKey)
                         reader >> key;
+                    bool isNotNull;
                     reader >> isNotNull;
                     if (isNotNull)
                         reader >> value;
@@ -49,6 +59,7 @@ namespace hazelcast {
                 };
 
             private:
+                bool hasKey;
                 serialization::Data key;
                 serialization::Data value;
             };

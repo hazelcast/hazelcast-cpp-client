@@ -22,7 +22,18 @@ namespace hazelcast {
                 MultiMapLockRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId)
                 :proxyId(id)
                 , key(key)
-                , threadId(threadId) {
+                , threadId(threadId)
+                , ttl(-1)
+                , timeout(-1) {
+
+                };
+
+                MultiMapLockRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId, long ttl, long timeout)
+                :proxyId(id)
+                , key(key)
+                , threadId(threadId)
+                , ttl(ttl)
+                , timeout(timeout) {
 
                 };
 
@@ -41,6 +52,8 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer["tid"] << threadId;
+                    writer["ttl"] << ttl;
+                    writer["timeout"] << timeout;
                     writer << key;
                     writer << proxyId;
                 };
@@ -48,6 +61,8 @@ namespace hazelcast {
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     reader["tid"] >> threadId;
+                    reader["ttl"] >> ttl;
+                    reader["timeout"] >> timeout;
                     reader >> key;
                     reader >> proxyId;
                 };
@@ -56,6 +71,8 @@ namespace hazelcast {
                 CollectionProxyId proxyId;
                 serialization::Data key;
                 int threadId;
+                long ttl;
+                long timeout;
             };
 
         }

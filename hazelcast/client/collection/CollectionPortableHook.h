@@ -5,7 +5,7 @@
 
 
 #ifndef HAZELCAST_COLLECTION_PORTABLE_HOOK
-#define
+#define HAZELCAST_COLLECTION_PORTABLE_HOOK
 
 namespace hazelcast {
     namespace client {
