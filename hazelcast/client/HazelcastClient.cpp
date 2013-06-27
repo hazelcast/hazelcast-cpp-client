@@ -1,10 +1,11 @@
 #include "IdGenerator.h"
-#include "IAtomicLong.h"
 #include "ICountDownLatch.h"
 #include "ISemaphore.h"
 #include "ClientConfig.h"
 #include "Cluster.h"
 #include "HazelcastClient.h"
+#include "impl/IdGeneratorSupport.h"
+#include "ILock.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,6 +41,7 @@ namespace hazelcast {
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
+            impl::IdGeneratorSupport idGeneratorSupport;
             Cluster cluster;
 
         };
@@ -55,7 +57,6 @@ namespace hazelcast {
         HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {
             //private;
         };
-
 
         void HazelcastClient::operator = (const HazelcastClient& rhs) {
             //private
@@ -94,7 +95,6 @@ namespace hazelcast {
             return impl->lifecycleService;
         };
 
-
         spi::ServerListenerService& HazelcastClient::getServerListenerService() {
             return impl->serverListenerService;
         };
@@ -104,7 +104,9 @@ namespace hazelcast {
         };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
-            return getDistributedObject< IdGenerator >(instanceName);
+            IdGenerator generator = getDistributedObject< IdGenerator >(instanceName);
+            generator.setIdGeneratorSupport(&(impl->idGeneratorSupport));
+            return generator;
         };
 
         IAtomicLong HazelcastClient::getIAtomicLong(const std::string& instanceName) {
@@ -118,6 +120,87 @@ namespace hazelcast {
         ISemaphore HazelcastClient::getISemaphore(const std::string& instanceName) {
             return getDistributedObject< ISemaphore >(instanceName);
         };
+
+        ILock HazelcastClient::getILock(const std::string& instanceName) {
+            return getDistributedObject< ILock >(instanceName);;
+        };
+
+
+
+//        @Override TODO
+//        public String addDistributedObjectListener(DistributedObjectListener distributedObjectListener) {
+//        return proxyManager.addDistributedObjectListener(distributedObjectListener);
+//    }
+//
+//        public boolean removeDistributedObjectListener(String registrationId) {
+//        return proxyManager.removeDistributedObjectListener(registrationId);
+//    }
+
+//        @Override
+//        public IExecutorService getExecutorService(String name) {
+//        return getDistributedObject(DistributedExecutorService.SERVICE_NAME, name);
+//    }
+//
+//        @Override
+//        public <T> T executeTransaction(TransactionalTask<T> task) throws TransactionException {
+//        return executeTransaction(TransactionOptions.getDefault(), task);
+//    }
+//
+//        @Override
+//        public <T> T executeTransaction(TransactionOptions options, TransactionalTask<T> task) throws TransactionException {
+//        final TransactionContext context = newTransactionContext(options);
+//        context.beginTransaction();
+//        try {
+//            final T value = task.execute(context);
+//            context.commitTransaction();
+//            return value;
+//        } catch (Throwable e) {
+//            context.rollbackTransaction();
+//            if (e instanceof TransactionException) {
+//                throw (TransactionException) e;
+//            }
+//            if (e.getCause() instanceof TransactionException) {
+//                throw (TransactionException) e.getCause();
+//            }
+//            if (e instanceof RuntimeException) {
+//                throw (RuntimeException) e;
+//            }
+//            throw new TransactionException(e);
+//        }
+//    }
+//
+//        @Override
+//        public TransactionContext newTransactionContext() {
+//        return newTransactionContext(TransactionOptions.getDefault());
+//    }
+//
+//        @Override
+//        public TransactionContext newTransactionContext(TransactionOptions options) {
+//        return new TransactionContextProxy(this, options);
+//    }
+//
+//        void shutdown() {
+//            CLIENTS.remove(id);
+//            executionService.shutdown();
+//            partitionService.stop();
+//            clusterService.stop();
+//            connectionManager.shutdown();
+//        }
+//
+//        public static Collection<HazelcastInstance> getAllHazelcastClients() {
+//        return Collections.<HazelcastInstance>unmodifiableCollection(CLIENTS.values());
+//    }
+//
+//        public static void shutdownAll() {
+//        for (HazelcastClientProxy proxy : CLIENTS.values()) {
+//            try {
+//                proxy.client.getLifecycleService().shutdown();
+//            } catch (Exception ignored) {
+//            }
+//            proxy.client = null;
+//        }
+//        CLIENTS.clear();
+//    }
 
         void HazelcastClient::shutdown() {
             impl->shutdown();

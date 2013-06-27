@@ -43,7 +43,8 @@ namespace hazelcast {
         class ICountDownLatch;
 
         class ISemaphore;
-        //TODO  Lock
+
+        class ILock;
 
         class HazelcastClient {
             friend class hazelcast::client::spi::ClusterService;
@@ -98,6 +99,7 @@ namespace hazelcast {
 
             ICountDownLatch getICountDownLatch(const std::string& instanceName);
 
+            ILock getILock(const std::string& instanceName);
 
             ISemaphore getISemaphore(const std::string& instanceName);
 
