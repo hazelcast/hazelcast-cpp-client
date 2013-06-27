@@ -27,22 +27,25 @@ namespace hazelcast {
         template<typename E>
         class IQueue {
         public:
-            IQueue(const std::string& instanceName, spi::ClientContext& clientContext)
-            : instanceName(instanceName)
-            , context(clientContext)
-            , key(clientContext.getSerializationService().toData(instanceName)) {
+            IQueue() {
 
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
+                key = context->getSerializationService().toData(instanceName);
             };
 
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
                 queue::AddListenerRequest request(instanceName, includeValue);
-                impl::ItemEvent<E> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(instanceName, request, entryEventHandler);
+                impl::ItemEvent<E> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(instanceName, request, entryEventHandler);
             };
 
             bool removeItemListener(long registrationId) {
-                return context.getServerListenerService().stopListening(instanceName, registrationId);
+                return context->getServerListenerService().stopListening(instanceName, registrationId);
             };
 
             bool add(const E& e) {
@@ -65,7 +68,7 @@ namespace hazelcast {
             };
 
             bool offer(const E& e, long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
-                serialization::Data data = context.getSerializationService().toData(e);
+                serialization::Data data = context->getSerializationService().toData(e);
                 queue::OfferRequest request(instanceName, timeoutInMillis, data);
                 return invoke<bool>(request);
             };
@@ -85,7 +88,7 @@ namespace hazelcast {
             };
 
             bool remove(const E& o) {
-                serialization::Data data = context.getSerializationService().toData(o);
+                serialization::Data data = context->getSerializationService().toData(o);
                 queue::RemoveRequest request(instanceName, data);
                 bool result = invoke(request);
                 return result;
@@ -93,7 +96,7 @@ namespace hazelcast {
 
             bool contains(const E& o) {
                 std::vector<serialization::Data> list(1);
-                list[0] = context.getSerializationService().toData(o);
+                list[0] = context->getSerializationService().toData(o);
                 queue::ContainsRequest request(instanceName, list);
                 return invoke<bool>(request);
             };
@@ -107,7 +110,7 @@ namespace hazelcast {
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
                 const std::vector<serialization::Data>& coll = result.getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    E e = context.getSerializationService().template toObject<E>(*it);
+                    E e = context->getSerializationService().template toObject<E>(*it);
                     c.add(e);
                 }
                 return coll.size();
@@ -155,7 +158,7 @@ namespace hazelcast {
 //                IteratorRequest request = new IteratorRequest(name);
 //                PortableCollection result = invoke(request);
 //                Collection<Data> coll = result.getCollection();
-//                return new QueueIterator<E>(coll.iterator(), context.getSerializationService(), false);
+//                return new QueueIterator<E>(coll.iterator(), context->getSerializationService(), false);
 //            }
 //
             std::vector<E> toArray() {
@@ -203,13 +206,13 @@ namespace hazelcast {
 
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
-                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
             std::vector<serialization::Data> getDataList(const std::vector<E>& objects) {
                 std::vector<serialization::Data> dataList(objects.size());
                 for (int i = 0; i < objects.size(); i++) {
-                    dataList[i] = context.getSerializationService().toData(objects[i]);
+                    dataList[i] = context->getSerializationService().toData(objects[i]);
                 }
                 return dataList;
             };
@@ -217,7 +220,7 @@ namespace hazelcast {
             std::vector<E> getObjectList(const std::vector<serialization::Data>& dataList) {
                 std::vector<E> objects(dataList.size());
                 for (int i = 0; i < dataList.size(); i++) {
-                    objects[i] = context.getSerializationService(). template toObject<E>(dataList[i]);
+                    objects[i] = context->getSerializationService(). template toObject<E>(dataList[i]);
                 }
                 return objects;
             };
@@ -225,7 +228,7 @@ namespace hazelcast {
         private:
             std::string instanceName;
             serialization::Data key;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
 
         };
     }

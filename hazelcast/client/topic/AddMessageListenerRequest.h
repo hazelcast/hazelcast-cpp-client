@@ -16,6 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             class AddMessageListenerRequest {
+            public:
                 AddMessageListenerRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
 

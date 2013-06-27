@@ -21,6 +21,11 @@ namespace hazelcast {
                 :key(key) {
                 };
 
+                IsLockedRequest(const serialization::Data& key, int threadId)
+                :key(key)
+                , threadId(threadId) {
+                };
+
                 int getClassId() const {
                     return LockPortableHook::IS_LOCKED;
                 };
@@ -35,15 +40,17 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
+                    writer["tid"] << threadId;
                     writer << key;
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
+                    reader["tid"] >> threadId;
                     reader >> key;
                 };
             private:
-
+                int threadId;
                 serialization::Data key;
             };
         }

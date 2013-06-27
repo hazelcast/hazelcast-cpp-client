@@ -16,6 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace semaphore {
             class DrainRequest : public SemaphoreRequest {
+            public:
                 DrainRequest(const std::string& instanceName)
                 : SemaphoreRequest(instanceName, -1) {
 

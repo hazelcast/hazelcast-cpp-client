@@ -1,10 +1,12 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
 
+#include "spi/ClientContext.h"
+#include "spi/InvocationService.h"
+#include "serialization/Data.h"
+#include "HazelcastException.h"
 #include <string>
 #include <stdexcept>
-#include "HazelcastException.h"
-#include "ClientContext.h"
 
 
 namespace hazelcast {
@@ -14,7 +16,9 @@ namespace hazelcast {
         class ISemaphore {
         public:
 
-            ISemaphore(const std::string& instanceName, spi::ClientContext& clientContext);
+            ISemaphore();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Try to initialize this ISemaphore instance with given permit count
@@ -257,8 +261,16 @@ namespace hazelcast {
 
 
         private:
+            void checkNegative(int permits);
+
+            template<typename Response, typename Request>
+            Response invoke(const Request& request) {
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            };
+
+            serialization::Data key;
             std::string instanceName;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
     }
 }

@@ -4,8 +4,8 @@
 
 
 
-#ifndef HAZELCAST_DestroyRequest
-#define HAZELCAST_DestroyRequest
+#ifndef HAZELCAST_Topic_DestroyRequest
+#define HAZELCAST_Topic_DestroyRequest
 
 #include "../serialization/SerializationConstants.h"
 #include "TopicPortableHook.h"
@@ -15,6 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             class DestroyRequest {
+            public:
                 DestroyRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
 

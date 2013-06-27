@@ -33,10 +33,13 @@ namespace hazelcast {
         class MultiMap {
         public:
 
-            MultiMap(const std::string& instanceName, spi::ClientContext& clientContext)
-            : proxyId(instanceName, collection::CollectionProxyId::CollectionProxyType::MULTI_MAP)
-            , context(clientContext) {
+            MultiMap() {
 
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                context = clientContext;
+                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::CollectionProxyType::MULTI_MAP);
             };
 
             /**
@@ -278,8 +281,8 @@ namespace hazelcast {
             template < typename L>
             long addEntryListener(L& listener, bool includeValue) {
                 collection::AddEntryListenerRequest request(proxyId, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, entryEventHandler);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, entryEventHandler);
             };
 
             /**
@@ -304,8 +307,8 @@ namespace hazelcast {
             long addEntryListener(L& listener, const K& key, bool includeValue) {
                 serialization::Data keyData = toData(key);
                 map::AddEntryListenerRequest request(proxyId, includeValue, keyData);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, keyData, entryEventHandler);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, keyData, entryEventHandler);
             };
 
             /**
@@ -317,7 +320,7 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeEntryListener(long registrationId) {
-                return context.getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
+                return context->getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
             };
 
             /**
@@ -432,22 +435,22 @@ namespace hazelcast {
 
             template<typename T>
             serialization::Data toData(const T& object) {
-                return context.getSerializationService().toData(object);
+                return context->getSerializationService().toData(object);
             };
 
             template<typename T>
             T toObject(const serialization::Data& data) {
-                return context.getSerializationService().template toObject<T>(data);
+                return context->getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
             Response invoke(const Request& request, serialization::Data&  keyData) {
-                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
             };
 
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
-                return context.getInvocationService().template invokeOnRandomTarget<Response>(request);
+                return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 
             int getThreadId() {
@@ -455,7 +458,7 @@ namespace hazelcast {
             };
 
             collection::CollectionProxyId proxyId;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
 
 

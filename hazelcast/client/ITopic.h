@@ -10,6 +10,10 @@
 #include "spi/ClientContext.h"
 #include "serialization/Data.h"
 #include "serialization/SerializationService.h"
+#include "topic/PublishRequest.h"
+#include "topic/DestroyRequest.h"
+#include "topic/AddMessageListenerRequest.h"
+#include "TopicEventHandler.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,56 +21,48 @@ namespace hazelcast {
         template <typename E>
         class ITopic {
         public:
-            ITopic(const std::string& instanceName, spi::ClientContext& clientContext)
-            : name(instanceName)
-            , context(clientContext)
-            , key(clientContext.getSerializationService().toData(name)) {
 
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
+                key = context->getSerializationService().toData(instanceName);
             };
 
-//        public void publish(E message) {
-//                final Data data = getContext().getSerializationService().toData(message);
-//                PublishRequest request = new PublishRequest(name, data);
-//                invoke(request);
-//            }
-//
-//        public String addMessageListener(final MessageListener<E> listener) {
-//                AddMessageListenerRequest request = new AddMessageListenerRequest(name);
-//                EventHandler<PortableMessage> handler = new EventHandler<PortableMessage>() {
-//                    public void handle(PortableMessage event) {
-//                        E messageObject = (E)getContext().getSerializationService().toObject(event.getMessage());
-//                        Member member = getContext().getClusterService().getMember(event.getUuid());
-//                        Message<E> message = new Message<E>(name, messageObject, event.getPublishTime(), member);
-//                        listener.onMessage(message);
-//                    }
-//                };
-//                return listen(request, getKey(), handler);
-//            }
+            void publish(E message) {
+                serialization::Data data = context->getSerializationService().toData(message);
+                topic::PublishRequest request(instanceName, data);
+                invoke<bool>(request);
+            }
 
-//        bool removeMessageListener(String registrationId) {
-//                return stopListening(registrationId);
-//            }
-//
-//        void onDestroy() {
-//                TopicDestroyRequest request = new TopicDestroyRequest(name);
-//                invoke(request);
-//            }
-//
-//
-//
-//            template<typename Response, typename Request>
-//            Response invoke(const Request& request) {
-//                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, key);
-//            };
+            template <typename L>
+            long addMessageListener(L& listener) {
+                topic::AddMessageListenerRequest request(instanceName);
+                topic::TopicEventHandler<E, L> topicEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener);
+                return context->getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(instanceName, request, key, topicEventHandler);
+            }
+
+            bool removeMessageListener(long registrationId) {
+                return context->getServerListenerService().stopListening(instanceName, registrationId);
+            };
+
+            void onDestroy() {
+                topic::DestroyRequest request(instanceName);
+                invoke<bool>(request);
+            };
 
             std::string getName() {
-                return name;
+                return instanceName;
             };
 
         private:
-            std::string name;
+            template<typename Response, typename Request>
+            Response invoke(const Request& request) {
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            };
+
+            std::string instanceName;
             serialization::Data key;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
     }
 }

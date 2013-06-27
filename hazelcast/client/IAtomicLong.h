@@ -1,6 +1,9 @@
 #ifndef HAZELCAST_ATOMIC_NUMBER
 #define HAZELCAST_ATOMIC_NUMBER
 
+#include "spi/ClientContext.h"
+#include "spi/InvocationService.h"
+#include "serialization/Data.h"
 #include <string>
 
 
@@ -13,7 +16,9 @@ namespace hazelcast {
         class IAtomicLong {
         public:
 
-            IAtomicLong(const std::string& instanceName, spi::ClientContext& clientContext);
+            IAtomicLong();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Returns the name of this IAtomicLong instance.
@@ -93,8 +98,14 @@ namespace hazelcast {
             void set(long newValue);
 
         private:
+            template<typename Response, typename Request>
+            Response invoke(const Request& request) {
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            };
+
+            serialization::Data key;
             std::string instanceName;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
     }
 }

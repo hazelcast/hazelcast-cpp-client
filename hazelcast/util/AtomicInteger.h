@@ -15,6 +15,8 @@ namespace hazelcast {
 
             AtomicInteger(int);
 
+            operator int() const;
+
             AtomicInteger(const AtomicInteger&);
 
             AtomicInteger& operator = (const AtomicInteger&);

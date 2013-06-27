@@ -1,6 +1,9 @@
 #ifndef HAZELCAST_ID_GENERATOR
 #define HAZELCAST_ID_GENERATOR
 
+#include "IAtomicLong.h"
+#include "../util/Lock.h"
+#include "../util/AtomicInteger.h"
 #include <string>
 
 namespace hazelcast {
@@ -9,10 +12,21 @@ namespace hazelcast {
             class ClientContext;
         }
 
+        namespace impl {
+            class IdGeneratorSupport;
+        }
+
         class IdGenerator {
         public:
+            enum {
+                BLOCK_SIZE = 1000
+            };
 
-            IdGenerator(const std::string& instanceName, spi::ClientContext& clientContext);
+            IdGenerator();
+
+            void setIdGeneratorSupport(impl::IdGeneratorSupport *support);
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Try to initialize this IdGenerator instance with given id
@@ -33,7 +47,11 @@ namespace hazelcast {
 
         private:
             std::string instanceName;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
+            impl::IdGeneratorSupport *support;
+            IAtomicLong atomicLong;
+            util::AtomicInteger local;
+            util::AtomicInteger residue;
         };
     }
 }

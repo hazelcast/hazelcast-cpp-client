@@ -1,9 +1,12 @@
 #ifndef HAZELCAST_ICOUNT_DOWN_LATCH
 #define HAZELCAST_ICOUNT_DOWN_LATCH
 
+#include "spi/ClientContext.h"
+#include "spi/InvocationService.h"
+#include "serialization/Data.h"
+#include "HazelcastException.h"
 #include <string>
 #include <stdexcept>
-#include "HazelcastException.h"
 
 
 namespace hazelcast {
@@ -16,7 +19,9 @@ namespace hazelcast {
         class ICountDownLatch {
         public:
 
-            ICountDownLatch(const std::string& instanceName, spi::ClientContext& clientContext);
+            ICountDownLatch();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Causes the current thread to wait until the latch has counted down to
@@ -107,8 +112,14 @@ namespace hazelcast {
             bool trySetCount(int count);
 
         private:
+            template<typename Response, typename Request>
+            Response invoke(const Request& request) {
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            };
+
+            serialization::Data key;
             std::string instanceName;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
     }
 }

@@ -15,6 +15,10 @@ namespace hazelcast {
 
         };
 
+        AtomicInteger::operator int() const {
+            return __sync_fetch_and_add(&integer, 0);
+        }
+
         AtomicInteger::AtomicInteger(AtomicInteger const & rhs) {
             __sync_lock_test_and_set(&integer, rhs.integer);
         };

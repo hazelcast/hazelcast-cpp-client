@@ -19,22 +19,25 @@ namespace hazelcast {
         template<typename E>
         class IList {
         public:
-            IList(const std::string& instanceName, spi::ClientContext& clientContext)
-            : proxyId("hz:list:", instanceName, collection::CollectionProxyId::CollectionProxyType::LIST)
-            , context(clientContext)
-            , key(toData(instanceName)) {
+            IList() {
 
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                context = clientContext;
+                key = toData(instanceName);
+                proxyId = collection::CollectionProxyId("hz:list:", instanceName, collection::CollectionProxyId::CollectionProxyType::LIST);
             };
 
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
                 collection::AddItemListenerRequest request(proxyId, includeValue);
-                impl::ItemEvent<E> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(proxyId.getName() + proxyId.getKeyName(), request, entryEventHandler);
+                impl::ItemEvent<E> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(proxyId.getName() + proxyId.getKeyName(), request, entryEventHandler);
             };
 
             bool removeItemListener(long registrationId) {
-                return context.getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
+                return context->getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
             };
 
             int size() {
@@ -162,17 +165,17 @@ namespace hazelcast {
 
             template<typename T>
             serialization::Data toData(const T& object) {
-                return context.getSerializationService().toData(object);
+                return context->getSerializationService().toData(object);
             };
 
             template<typename T>
             T toObject(const serialization::Data& data) {
-                return context.getSerializationService().template toObject<T>(data);
+                return context->getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
-                return context.getInvocationService().template invokeOnRandomTarget<Response>(request, key);
+                return context->getInvocationService().template invokeOnRandomTarget<Response>(request, key);
             };
 
             int getThreadId() {
@@ -180,7 +183,7 @@ namespace hazelcast {
             };
 
             collection::CollectionProxyId proxyId;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
             serialization::Data key;
         };
     }

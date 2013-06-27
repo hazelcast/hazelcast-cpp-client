@@ -15,6 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace countdownlatch {
             class CountDownRequest {
+            public:
                 CountDownRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
 

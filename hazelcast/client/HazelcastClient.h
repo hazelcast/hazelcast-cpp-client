@@ -57,7 +57,9 @@ namespace hazelcast {
 
             template <typename T>
             T getDistributedObject(const std::string& instanceName) {
-                return T(instanceName, getClientContext());
+                T t;
+                t.init(instanceName, &getClientContext());
+                return t;
             };
 
             template<typename K, typename V>

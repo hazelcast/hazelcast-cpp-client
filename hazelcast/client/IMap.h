@@ -59,10 +59,9 @@ namespace hazelcast {
         class IMap {
         public:
 
-            IMap(const std::string& instanceName, spi::ClientContext& clientContext)
-            : instanceName(instanceName)
-            , context(clientContext) {
-
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
             };
 
             bool containsKey(const K& key) {
@@ -222,20 +221,20 @@ namespace hazelcast {
             template < typename L>
             long addEntryListener(L& listener, bool includeValue) {
                 map::AddEntryListenerRequest request(instanceName, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, entryEventHandler);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, entryEventHandler);
             };
 
             template < typename L>
             long addEntryListener(L& listener, const K& key, bool includeValue) {
                 serialization::Data keyData = toData(key);
                 map::AddEntryListenerRequest request(instanceName, includeValue, keyData);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context.getClusterService(), context.getSerializationService(), listener, includeValue);
-                return context.getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, keyData, entryEventHandler);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, keyData, entryEventHandler);
             };
 
             bool removeEntryListener(long registrationId) {
-                return context.getServerListenerService().stopListening(instanceName, registrationId);
+                return context->getServerListenerService().stopListening(instanceName, registrationId);
             };
 
 
@@ -391,22 +390,22 @@ namespace hazelcast {
 
             template<typename T>
             serialization::Data toData(const T& object) {
-                return context.getSerializationService().toData(object);
+                return context->getSerializationService().toData(object);
             };
 
             template<typename T>
             T toObject(const serialization::Data& data) {
-                return context.getSerializationService().template toObject<T>(data);
+                return context->getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
             Response invoke(const Request& request, serialization::Data&  keyData) {
-                return context.getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
             };
 
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
-                return context.getInvocationService().template invokeOnRandomTarget<Response>(request);
+                return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 
             int getThreadId() {
@@ -414,7 +413,7 @@ namespace hazelcast {
             };
 
             std::string instanceName;
-            spi::ClientContext& context;
+            spi::ClientContext *context;
         };
     }
 }

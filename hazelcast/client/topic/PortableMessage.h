@@ -16,6 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             class PortableMessage {
+            public:
                 PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid)
                 : uuid(uuid)
                 , message(message)

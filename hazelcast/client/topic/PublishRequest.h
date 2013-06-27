@@ -17,6 +17,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             class PublishRequest {
+            public:
                 PublishRequest(const std::string& instanceName, const serialization::Data& message)
                 : instanceName(instanceName)
                 , message(message) {

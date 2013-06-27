@@ -4,8 +4,8 @@
 
 
 
-#ifndef HAZELCAST_SetCount
-#define HAZELCAST_SetCount
+#ifndef HAZELCAST_SetCountRequest
+#define HAZELCAST_SetCountRequest
 
 #include "../serialization/SerializationConstants.h"
 #include "CountDownLatchPortableHook.h"
@@ -14,8 +14,9 @@
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class SetCount {
-                SetCount(const std::string& instanceName, long count)
+            class SetCountRequest {
+            public:
+                SetCountRequest(const std::string& instanceName, long count)
                 : instanceName(instanceName)
                 , count(count) {
 
@@ -53,4 +54,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_SetCount
+#endif //HAZELCAST_SetCountRequest

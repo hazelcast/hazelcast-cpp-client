@@ -16,12 +16,12 @@ namespace hazelcast {
     namespace client {
         namespace semaphore {
             class AcquireRequest : public SemaphoreRequest {
+            public:
                 AcquireRequest(const std::string& instanceName, int permitCount, long timeout)
                 : SemaphoreRequest(instanceName, permitCount)
                 , timeout(timeout) {
 
                 };
-
 
                 int getClassId() const {
                     return SemaphorePortableHook::ACQUIRE;
