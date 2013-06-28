@@ -33,7 +33,7 @@ namespace hazelcast {
 
             Connection *ConnectionManager::newConnection(Address const & address) {
                 Connection *connection = new Connection(address, serializationService);
-                authenticate(*connection, true);
+                authenticate(*connection, true, true);
                 return connection;
             };
 
@@ -97,12 +97,13 @@ namespace hazelcast {
                 }
             };
 
-            void ConnectionManager::authenticate(Connection& connection, bool reAuth) {
+            void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
                 connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());
                 auth.setPrincipal(principal);
                 auth.setReAuth(reAuth);
+                auth.setFirstConnection(firstConnection);
 
                 serialization::Data toData = serializationService.toData(auth);
                 connection.write(toData);

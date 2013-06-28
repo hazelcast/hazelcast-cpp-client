@@ -30,10 +30,13 @@ namespace hazelcast {
 
                 void setReAuth(bool);
 
+                void setFirstConnection(bool);
+
             private:
                 Credentials credentials;
                 Principal *principal;
                 bool reAuth;
+                bool firstConnection;
             };
 
         }
@@ -67,6 +70,7 @@ namespace hazelcast {
                     writer["principal"] << *arr.principal;
                 }
                 writer["reAuth"] << arr.reAuth;
+                writer["firstConnection"] << arr.firstConnection;
             };
 
             template<typename HzReader>
@@ -76,6 +80,7 @@ namespace hazelcast {
                 reader["principal"] >> (*principal);
                 arr.principal = principal;
                 reader["reAuth"] >> arr.reAuth;
+                reader["firstConnection"] >> arr.firstConnection;
             };
 
         }

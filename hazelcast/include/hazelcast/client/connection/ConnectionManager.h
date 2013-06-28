@@ -51,7 +51,7 @@ namespace hazelcast {
 
                 void removeConnectionPool(const Address& address);
 
-                void authenticate(Connection& connection, bool reAuth);
+                void authenticate(Connection& connection, bool reAuth, bool firstConnection);
 
                 void shutdown();
 

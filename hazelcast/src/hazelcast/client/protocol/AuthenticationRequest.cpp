@@ -10,7 +10,8 @@ namespace hazelcast {
         namespace protocol {
             AuthenticationRequest::AuthenticationRequest(Credentials credentials)
             :credentials(credentials)
-            , reAuth(true) {
+            , reAuth(true)
+            , firstConnection(true) {
 
             };
 
@@ -20,6 +21,10 @@ namespace hazelcast {
 
             void AuthenticationRequest::setReAuth(bool reAuth) {
                 this->reAuth = reAuth;
+            }
+
+            void AuthenticationRequest::setFirstConnection(bool firstConnection) {
+                this->firstConnection = firstConnection;
             }
 
 

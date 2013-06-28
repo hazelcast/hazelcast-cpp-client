@@ -31,8 +31,7 @@ namespace hazelcast {
                 bool b = queue.poll(t);
                 if (b == false) {
                     t = new Connection(address, serializationService);
-
-                    connectionManager.authenticate(*t, false);
+                    connectionManager.authenticate(*t, false, false);
                 }
                 return t;
             }
