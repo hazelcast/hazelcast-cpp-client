@@ -1,13 +1,12 @@
 #ifndef MAPTEST
 #define MAPTEST
 
-
 #include "TestMainPortable.h"
 #include "testUtil.h"
 #include "SimpleMapTest.h"
-#include <cassert>
+#include <gtest/gtest.h>
 
-void testPutGetRemove() {
+TEST(MapTest, PutGetRemove){
     ClientConfig clientConfig;
     Address address = Address(SERVER_ADDRESS, SERVER_PORT);
     clientConfig.addAddress(address);
@@ -29,24 +28,24 @@ void testPutGetRemove() {
             x.i = i * 10;
             x.p.ii.push_back(i * 100);
             TestMainPortable oldValue = iMap.put(i, x);
-            assert(oldValue == empty);
+            EXPECT_EQ(empty, oldValue);
         }
 
         for (int i = 0; i < 100; i++) {
             TestMainPortable x = iMap.get(i);
-            assert(x.i == i * 10);
-            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 100);
+            EXPECT_EQ(i * 10, x.i);
+            EXPECT_EQ( i * 100, x.p.ii.at(x.p.ii.size() - 1));
         }
 
         for (int i = 0; i < 50; i++) {
             TestMainPortable x = iMap.get(i);
             TestMainPortable p = iMap.remove(i);
-            assert(x == p);
+            EXPECT_EQ(x, p);
         }
 
         for (int i = 0; i < 50; i++) {
             TestMainPortable x = iMap.get(i);
-            assert(x == empty);
+            EXPECT_EQ(empty, x);
         }
 
         for (int i = 50; i < 100; i++) {
@@ -54,14 +53,14 @@ void testPutGetRemove() {
             x.i = i * 20;
             x.p.ii.push_back(i * 200);
             TestMainPortable oldValue = iMap.put(i, x);
-            assert(oldValue.i == i * 10);
-            assert(oldValue.p.ii.at(oldValue.p.ii.size() - 1) == i * 100);
+            EXPECT_EQ(i * 10, oldValue.i);
+            EXPECT_EQ( i * 100, oldValue.p.ii.at(oldValue.p.ii.size() - 1));
         }
 
         for (int i = 50; i < 100; i++) {
             TestMainPortable x = iMap.remove(i);
-            assert(x.i == i * 20);
-            assert(x.p.ii.at(x.p.ii.size() - 1) == i * 200);
+            EXPECT_EQ( i * 20, x.i);
+            EXPECT_EQ( i * 200, x.p.ii.at(x.p.ii.size() - 1));
         }
 
     } catch (std::exception& e) {

@@ -64,7 +64,7 @@ public:
     }
 
 
-    bool operator ==(TestInnerPortable& m) {
+    bool operator ==(const TestInnerPortable& m) const {
         if (bb != m.bb) return false;
         if (cc != m.cc) return false;
         if (ss != m.ss) return false;
@@ -79,7 +79,7 @@ public:
     };
 
 
-    bool operator !=(TestInnerPortable& m) {
+    bool operator !=(const TestInnerPortable& m) const {
         return !(*this == m);
     };
 

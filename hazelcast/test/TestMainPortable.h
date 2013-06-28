@@ -62,7 +62,7 @@ public:
         return (*this);
     };
 
-    bool operator ==(TestMainPortable& m) {
+    bool operator ==(const TestMainPortable& m) const {
         if (this == &m) return true;
         if (null == true && m.null == true)
             return true;
@@ -79,7 +79,7 @@ public:
         return true;
     };
 
-    bool operator !=(TestMainPortable& m) {
+    bool operator !=(const TestMainPortable& m) const {
         return !(*this == m);
     };
     TestInnerPortable p;

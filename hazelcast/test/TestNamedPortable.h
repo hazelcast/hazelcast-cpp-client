@@ -10,6 +10,7 @@
 #define Server_TestNamedPortable_h
 
 #include <string>
+#include "SerializationConstants.h"
 
 using namespace hazelcast::client::serialization;
 
@@ -49,7 +50,7 @@ public:
 
     };
 
-    virtual bool operator ==(TestNamedPortable& m) {
+    virtual bool operator ==(const TestNamedPortable& m) const {
         if (this == &m)
             return true;
         if (k != m.k)
@@ -59,7 +60,7 @@ public:
         return true;
     };
 
-    virtual bool operator !=(TestNamedPortable& m) {
+    virtual bool operator !=(const TestNamedPortable& m) const {
         return !(*this == m);
     };
     std::string name;

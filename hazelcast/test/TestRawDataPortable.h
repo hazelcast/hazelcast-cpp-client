@@ -38,7 +38,7 @@ public:
         this->ds = ds;
     }
 
-    bool operator ==(TestRawDataPortable& m) {
+    bool operator ==(const TestRawDataPortable& m) const{
         if (this == &m)
             return true;
         if (l != m.l) return false;
@@ -50,7 +50,7 @@ public:
         return true;
     };
 
-    bool operator !=(TestRawDataPortable& m) {
+    bool operator !=(const TestRawDataPortable& m) const{
         return !(*this == m);
     };
 };

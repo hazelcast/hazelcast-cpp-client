@@ -20,7 +20,7 @@ public:
 
     }
 
-    bool operator ==(TestDataSerializable & rhs) {
+    bool operator ==(const TestDataSerializable & rhs) const {
         if (this == &rhs)
             return true;
         if (i != rhs.i) return false;
@@ -28,7 +28,7 @@ public:
         return true;
     };
 
-    bool operator !=(TestDataSerializable& m) {
+    bool operator !=(const TestDataSerializable& m) const {
         return !(*this == m);
     };
 
