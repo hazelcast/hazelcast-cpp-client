@@ -1,10 +1,16 @@
 #include "TestDataSerializable.h"
 #include "portableTest.h"
 #include "mapTest.h"
+#include <gtest/gtest.h>
 
-int main(int argc, char **argv) {
+
+TEST(FactorialTest, Zero) {
+    EXPECT_EQ(1, 1);
+}
+
+GTEST_API_ int main(int argc, char **argv) {
     try{
-//
+
 //        testDifferentVersions();
 //        testRawData();
 //        testRawDataWithoutRegistering();
@@ -14,7 +20,7 @@ int main(int argc, char **argv) {
 //        testSerialization();
 //        testSerializationViaFile();
 //        testIdentifiedDataSerializable();
-
+//
 //        testPutGetRemove();
 //        testBinaryClient();
 //        testMapOperations();
@@ -22,14 +28,7 @@ int main(int argc, char **argv) {
 //        testMapLocksInParallel();
         testSpeed();
 //        testPut();
-//        int num = 0;
-//
-//        for (int i = 0; i < 100; i++) {
-//            hazelcast::util::Thread x(increment, &num);
-//        }
-//
-//        sleep(2);
-//        std::cout << num << std::endl;
+
         std::cout << "Test are completed successfully" << std::endl;
 //        std::cin >> argc;
 
@@ -38,7 +37,8 @@ int main(int argc, char **argv) {
     } catch(void *s){
         std::cout << s << std::endl;
     }
-    return 0;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 };
 
 

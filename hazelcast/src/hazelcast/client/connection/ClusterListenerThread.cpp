@@ -3,6 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "MembershipEvent.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
+#include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {
     namespace client {
