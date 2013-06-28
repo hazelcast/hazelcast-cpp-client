@@ -11,19 +11,18 @@ namespace hazelcast {
     namespace client {
 
         class HazelcastClient::HazelcastClientImpl {
-
         public:
             HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient& client)
             : clientConfig(clientConfig)
             , lifecycleService(client, clientConfig)
             , serializationService(0)
-            , clientContext(client)
-            , clusterService(clientContext)
+            , clusterService(partitionService, lifecycleService , connectionManager, serializationService, clientConfig)
             , connectionManager(clusterService, serializationService, clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
             , serverListenerService(invocationService)
-            , cluster(clusterService) {
+            , cluster(clusterService)
+            , clientContext(client)   {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
@@ -32,17 +31,17 @@ namespace hazelcast {
                 //TODO
             };
 
+            impl::IdGeneratorSupport idGeneratorSupport;
             ClientConfig clientConfig;
             spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
-            spi::ClientContext clientContext;
             spi::ClusterService clusterService;
             connection::ConnectionManager connectionManager;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
-            impl::IdGeneratorSupport idGeneratorSupport;
             Cluster cluster;
+            spi::ClientContext clientContext;
 
         };
 

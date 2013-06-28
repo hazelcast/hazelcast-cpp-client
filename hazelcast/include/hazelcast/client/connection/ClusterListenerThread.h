@@ -29,7 +29,7 @@ namespace hazelcast {
 
             class ClusterListenerThread : public hazelcast::util::Thread {
             public:
-                ClusterListenerThread(ConnectionManager& connMgr, ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&);
+                ClusterListenerThread(ConnectionManager& connMgr, ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&,serialization::SerializationService&);
 
                 void setInitialConnection(connection::Connection *);
 
@@ -39,6 +39,8 @@ namespace hazelcast {
                 ConnectionManager& connectionManager;
                 spi::ClusterService& clusterService;
                 spi::LifecycleService& lifecycleService;
+                serialization::SerializationService& serializationService;
+
                 Connection *conn;
                 std::vector<Member> members;
                 ClientConfig& clientConfig;

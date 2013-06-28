@@ -26,24 +26,24 @@ namespace hazelcast {
 
             class ClusterService {
             public:
-                ClusterService(ClientContext& clientContext);
+                ClusterService(spi::PartitionService&, spi::LifecycleService&, connection::ConnectionManager&, serialization::SerializationService&, ClientConfig &);
 
                 void start();
 
                 template< typename Response, typename Request>
                 Response sendAndReceive(const Request& object) {
                     Response response;
-                    connection::Connection *conn = getConnectionManager().getRandomConnection();
+                    connection::Connection *conn = connectionManager.getRandomConnection();
                     response = sendAndReceive<Response>(conn, object);
-                    getConnectionManager().releaseConnection(conn);
+                    connectionManager.releaseConnection(conn);
                     return response;
                 };
 
                 template< typename Response, typename Request>
                 Response sendAndReceive(const Address& address, const Request& object) {
-                    connection::Connection *conn = getConnectionManager().getConnection(address);
+                    connection::Connection *conn = connectionManager.getConnection(address);
                     Response response = sendAndReceive<Response>(conn, object);
-                    getConnectionManager().releaseConnection(conn);
+                    connectionManager.releaseConnection(conn);
                     return response;
                 };
 
@@ -60,7 +60,6 @@ namespace hazelcast {
                     sendAndHandle(conn, obj, handler);
                 };
 
-//
                 Address getMasterAddress();
 
                 void addMembershipListener(MembershipListener *listener);
@@ -76,11 +75,14 @@ namespace hazelcast {
                 friend class connection::ClusterListenerThread;
 
             private:
-
+                connection::ConnectionManager& connectionManager;
+                serialization::SerializationService& serializationService;
+                ClientConfig & clientConfig;
+                spi::LifecycleService& lifecycleService;
+                spi::PartitionService& partitionService;
 
                 connection::ClusterListenerThread clusterThread;
                 protocol::Credentials& credentials;
-                ClientContext& clientContext;
                 util::AtomicPointer< std::map<Address, connection::Member > > membersRef;
                 std::set< MembershipListener *> listeners;
                 util::Lock listenerLock;
@@ -90,13 +92,12 @@ namespace hazelcast {
                 template< typename Response, typename Request>
                 Response sendAndReceive(connection::Connection *connection, const Request& object) {
                     try {
-                        serialization::SerializationService& serializationService = getSerializationService();
                         serialization::Data request = serializationService.toData(object);
                         connection->write(request);
                         serialization::Data responseData = connection->read(serializationService.getSerializationContext());
                         return serializationService.toObject<Response>(responseData);
                     } catch(HazelcastException hazelcastException){
-                        clientContext.getPartitionService().refreshPartitions();
+                        partitionService.refreshPartitions();
                         if (redoOperation /*|| dynamic_cast<const impl::RetryableRequest *>(&object) != NULL*/) {//TODO global isRetryable(const T& a) function solves
                             return sendAndReceive<Response>(object);
                         }
@@ -106,13 +107,12 @@ namespace hazelcast {
 
                 template< typename Request, typename ResponseHandler>
                 void sendAndHandle(connection::Connection *conn, const Request& obj, const ResponseHandler&  handler) {
-                    serialization::SerializationService& serializationService = getSerializationService();
                     ResponseStream stream(serializationService, *conn);
                     try {
                         serialization::Data request = serializationService.toData(obj);
                         conn->write(request);
                     } catch (HazelcastException&/*IOException*/ e){
-                        clientContext.getPartitionService().refreshPartitions();
+                        partitionService.refreshPartitions();
                         if (redoOperation /*obj instanceof RetryableRequest*/) {
                             sendAndHandle(obj, handler);
                             return;
@@ -138,11 +138,6 @@ namespace hazelcast {
 
                 connection::Connection *connectToOne(const std::vector<Address>& socketAddresses);
 
-                connection::ConnectionManager& getConnectionManager();
-
-                serialization::SerializationService& getSerializationService();
-
-                ClientConfig & getClientConfig();
             };
 
         }

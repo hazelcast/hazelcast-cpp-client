@@ -11,12 +11,13 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService)
+            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService,serialization::SerializationService& serializationService)
             : Thread::Thread(connection::ClusterListenerThread::run, this)
             , connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
             , lifecycleService(lifecycleService)
+            , serializationService(serializationService)
             , conn(NULL) {
                 ;
             };
@@ -76,7 +77,6 @@ namespace hazelcast {
                 protocol::AddMembershipListenerRequest request;
                 impl::SerializableCollection coll = clusterService.sendAndReceive < impl::SerializableCollection >(conn, request);
 
-                serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 std::map<std::string, Member> prevMembers;
                 if (!members.empty()) {
                     for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
@@ -113,7 +113,6 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::listenMembershipEvents() {
-                serialization::SerializationService & serializationService = clusterService.getSerializationService();
                 while (true) {
                     serialization::Data data = conn->read(serializationService.getSerializationContext());
                     MembershipEvent event = serializationService.toObject<MembershipEvent>(data);
