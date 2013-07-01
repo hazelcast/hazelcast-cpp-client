@@ -19,3 +19,8 @@
 
 #test resources
 *.txt
+
+external/gtest/include/.svn/
+external/gtest/include/gtest/.svn/
+external/gtest/include/gtest/internal/.svn/
+external/gtest/src/.svn/
