@@ -16,6 +16,8 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
+#include "Serializer.h"
+#include "Portable.h"
 
 #include <vector>
 #include <map>
@@ -29,7 +31,7 @@ namespace hazelcast {
 
             class BufferedDataOutput;
 
-            class PortableSerializer {
+            class PortableSerializer{
             public:
 
                 PortableSerializer(SerializationContext *const serializationContext);

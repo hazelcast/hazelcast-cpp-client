@@ -49,7 +49,7 @@ namespace hazelcast {
 
                 void setPartitionHash(int partitionHash);
 
-                int getType();
+                int getType() const;
 
                 void setType(int type);
 

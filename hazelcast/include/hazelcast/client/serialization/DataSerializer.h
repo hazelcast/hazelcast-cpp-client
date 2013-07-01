@@ -9,7 +9,8 @@
 #include "BufferedDataInput.h"
 #include "ConstantSerializers.h"
 #include "../HazelcastException.h"
-#include "TypeSerializer.h"
+#include "Serializer.h"
+#include "DataSerializable.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,19 +25,19 @@ namespace hazelcast {
                     out.writeBoolean(true);
                     out.writeInt(getFactoryId(object));
                     out.writeInt(getClassId(object));
-                    writePortable(out, object);
+                    writeData(out, object);
                 };
 
                 template <typename T>
                 void read(BufferedDataInput& in, T& object) {
                     bool identified = in.readBoolean();
                     if (!identified) {
-                        throw hazelcast::client::HazelcastException("void DataSerializer::read(BufferedDataInput& in, T& object) >  DataSerializable is not identified");
+                        throw HazelcastException("void DataSerializer::read(BufferedDataInput& in, T& object) >  DataSerializable is not identified");
                     }
                     in.readInt(); //factoryId
                     in.readInt(); //classId
                     //TODO factoryId and classId is not used!!!
-                    hazelcast::client::serialization::readPortable(in, object);
+                    readData(in, object);
                 };
 
                 ~DataSerializer();

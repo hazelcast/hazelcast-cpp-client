@@ -10,6 +10,8 @@
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
 #include "SerializationConstants.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 #include <vector>
 #include <string>
 #include <ostream>
@@ -35,6 +37,16 @@ namespace hazelcast {
             int getClassId(const T& t) {
                 return t.getClassId();
             }
+
+            template<typename T>
+            inline void writeData(BufferedDataOutput& portableWriter, const T& data) {
+                data.writeData(portableWriter);
+            };
+
+            template<typename T>
+            inline void readData(BufferedDataInput& portableReader, T& data) {
+                data.readData(portableReader);
+            };
 
             template<typename W, typename T>
             inline void writePortable(W& portableWriter, const T& data) {
@@ -84,10 +96,8 @@ namespace hazelcast {
 }
 
 #include "ConstantSerializers/ConstantClassDefinitionWriter.h"
-#include "ConstantSerializers/ConstantDataOutput.h"
 #include "ConstantSerializers/ConstantPortableWriter.h"
 #include "ConstantSerializers/ConstantsPortableReader.h"
 #include "ConstantSerializers/ConstantsMorphingPortableReader.h"
-#include "ConstantSerializers/ConstantDataInput.h"
 
 #endif /* HAZELCAST_CONSTANT_SERIALIZERS */

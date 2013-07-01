@@ -29,8 +29,6 @@ namespace hazelcast {
 
                 BufferedDataInput(const std::vector<byte>&);
 
-                BufferedDataInput& operator [](const std::string&);
-
                 void readFully(std::vector<byte>&);
 
                 int skipBytes(int i);
@@ -83,17 +81,6 @@ namespace hazelcast {
 
                 BufferedDataInput& operator = (const BufferedDataInput&);
 
-            };
-
-            template<typename T>
-            inline void operator >>(BufferedDataInput& in, std::vector<T>& data) {
-                throw hazelcast::client::HazelcastException("template<typename T>\n"
-                        "            inline void readPortable(BufferedDataInput& in, std::vector<T>& data) >> Not supported");
-            };
-
-            template<typename T>
-            inline void operator >>(BufferedDataInput& dataInput, T& data) {
-                readPortable(dataInput, data);
             };
         }
     }

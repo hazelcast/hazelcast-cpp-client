@@ -25,21 +25,13 @@ namespace hazelcast {
 
                 BufferedDataOutput();
 
-                BufferedDataOutput& operator [](const std::string&);
-
                 std::auto_ptr< std::vector<byte> > toByteArray();
 
                 void write(const std::vector<byte>& bytes);
 
-                void writeCharArray(const std::vector<char>& bytes);
-
-                void write(char const *bytes, int length);
-
                 void writeBoolean(bool b);
 
                 void writeByte(int i);
-
-                void writeByte(int n, int i);
 
                 void writeShort(int i);
 
@@ -54,6 +46,22 @@ namespace hazelcast {
                 void writeDouble(double v);
 
                 void writeUTF(const std::string& s);
+
+                void writeByteArray(const std::vector<byte>&  data);
+
+                void writeCharArray(const std::vector<char>& bytes);
+
+                void writeShortArray(const std::vector<short >&  data);
+
+                void writeIntArray(const std::vector<int>&  data);
+
+                void writeLongArray(const std::vector<long >&  data);
+
+                void writeFloatArray(const std::vector<float >&  data);
+
+                void writeDoubleArray(const std::vector<double >&  data);
+
+                void writeByte(int index, int i);
 
                 void writeInt(int index, int v);
 
@@ -75,18 +83,6 @@ namespace hazelcast {
 
                 BufferedDataOutput& operator = (const BufferedDataOutput& rhs);
 
-            };
-
-
-            template<typename T>
-            inline void operator <<(BufferedDataOutput& out, const std::vector<T>& data) {
-                throw hazelcast::client::HazelcastException("template<typename T>\n"
-                        "            inline void writePortable(BufferedDataOutput& out, std::vector<T>& data) >> Not supported");
-            };
-
-            template<typename T>
-            inline void operator <<(BufferedDataOutput& dataOutput, const T& data) {
-                writePortable(dataOutput, data);
             };
         }
     }

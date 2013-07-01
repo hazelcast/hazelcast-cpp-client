@@ -18,7 +18,9 @@
 #include "../../util/Util.h"
 #include "Data.h"
 #include "DataSerializer.h"
-#include "TypeSerializer.h"
+#include "Serializer.h"
+#include "Portable.h"
+#include "DataSerializable.h"
 #include <iosfwd>
 #include <string>
 
@@ -34,92 +36,284 @@ namespace hazelcast {
 
                 ~SerializationService();
 
-                template<typename K>
-                Data toData(K& object) {
+                /**
+                *
+                *  return false if a serializer is already given corresponding to serializerId
+                */
+                bool registerSerializer(SerializerBase *serializer);
+
+                template<typename T>
+                Data toData(Portable *portable) {
+                    const T *object = dynamic_cast<const T *>(portable);
                     Data data;
                     BufferedDataOutput output;
-                    int typeID = getTypeSerializerId(object);
-                    data.setType(typeID);
-                    if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
-                        portableSerializer.write(output, object);
-                        int factoryId = getFactoryId(object);
-                        int classId = getClassId(object);
-                        data.cd = serializationContext.lookup(factoryId, classId);
-                    } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
-                        dataSerializer.write(output, object);
+                    portableSerializer.write(output, object);
+                    int factoryId = getFactoryId(object);
+                    int classId = getClassId(object);
+                    data.cd = serializationContext.lookup(factoryId, classId);
+                    data.setBuffer(output.toByteArray());
+                    return data;
+                };
+
+                template<typename T>
+                Data toData(DataSerializable *dataSerializable) {
+                    const T *object = dynamic_cast<const T *>(dataSerializable);
+                    Data data;
+                    BufferedDataOutput output;
+                    dataSerializer.write(output, object);
+                    data.setBuffer(output.toByteArray());
+                    return data;
+                };
+
+                template<typename T>
+                Data toData(const void *serializable) {
+                    const T *object = dynamic_cast<const T *>(serializable);
+                    Data data;
+                    BufferedDataOutput output;
+                    SerializerBase *serializer = serializerFor(object->getSerializerId());
+                    if (serializer) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializerFor(data.getType()));
+                        s->write(output, object);
                     } else {
-                        throw HazelcastException("Not supported");
+                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(getTypeSerializerId(*object)) + ", typename :" + typeid(T).name());
                     }
                     data.setBuffer(output.toByteArray());
                     return data;
                 };
 
-                template<typename K>
-                inline K toObject(const Data& data) {
+                template<typename T>
+                inline T toObject(const Data& data) {
                     checkServerError(data);
-                    K object;
+                    T object;
                     if (data.bufferSize() == 0) return object;
-                    int typeID = data.type;
+                    toObjectResolved(data, &object);
+                    return object;
+                };
+
+                template<typename T>
+                inline void toObjectResolved(const Data& data, Portable *portable) {
+                    T *object = static_cast< T *>(portable);
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
-                    if (typeID == SerializationConstants::CONSTANT_TYPE_PORTABLE) {
-                        serializationContext.registerClassDefinition(data.cd);
-                        int factoryId = data.cd->getFactoryId();
-                        int classId = data.cd->getClassId();
-                        int version = data.cd->getVersion();
-                        portableSerializer.read(dataInput, object, factoryId, classId, version);
-                    } else if (typeID == SerializationConstants::CONSTANT_TYPE_DATA) {
-                        dataSerializer.read(dataInput, object);
+                    serializationContext.registerClassDefinition(data.cd);
+                    int factoryId = data.cd->getFactoryId();
+                    int classId = data.cd->getClassId();
+                    int version = data.cd->getVersion();
+                    portableSerializer.read(dataInput, *object, factoryId, classId, version);
+                };
+
+                template<typename T>
+                inline void toObjectResolved(const Data& data, DataSerializable *dataSerializable) {
+                    T *object = static_cast< T *>(dataSerializable);
+                    BufferedDataInput dataInput(*(data.buffer.get()));
+
+                    dataSerializer.read(dataInput, *object);
+                };
+
+                template<typename T>
+                inline void toObjectResolved(const Data& data, void *serializable) {
+                    T *object = static_cast< T *>(serializable);
+                    BufferedDataInput dataInput(*(data.buffer.get()));
+                    SerializerBase *serializer = serializerFor(object->getSerializerId());
+                    if (serializer) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializerFor(data.getType()));
+                        s->read(dataInput);
                     } else {
-                        throw HazelcastException("Not supported");
+                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
                     }
-                    return object;
                 };
 
                 SerializationContext& getSerializationContext();
 
-                Data toData(byte);
-
-                Data toData(bool);
-
-                Data toData(char);
-
-                Data toData(short);
-
-                Data toData(int);
-
-                Data toData(long);
-
-                Data toData(float);
-
-                Data toData(double);
-
-                Data toData(const std::vector<byte>&);
-
-                Data toData(const std::vector<char>&);
-
-                Data toData(const std::vector<short>&);
-
-                Data toData(const std::vector<int>&);
-
-                Data toData(const std::vector<long>&);
-
-                Data toData(const std::vector<float>&);
-
-                Data toData(const std::vector<double>&);
-
-                Data toData(const std::string&);
 
             private:
+                SerializerBase *serializerFor(int id);
 
                 SerializationService(const SerializationService&);
 
                 void checkServerError(const Data& data);
 
+                util::ConcurrentMap<int, SerializerBase> serializers;
                 SerializationContext serializationContext;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
 
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<byte >(const void *serializable) {
+                BufferedDataOutput output;
+                const byte *object = static_cast<const byte *>(serializable);
+                output.writeByte(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<bool>(const void *serializable) {
+                BufferedDataOutput output;
+                const bool *object = static_cast<const bool *>(serializable);
+                output.writeBoolean(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<char>(const void *serializable) {
+                BufferedDataOutput output;
+                const char *object = static_cast<const char *>(serializable);
+                output.writeChar(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<short>(const void *serializable) {
+                BufferedDataOutput output;
+                const short *object = static_cast<const short *>(serializable);
+                output.writeShort(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<int>(const void *serializable) {
+                BufferedDataOutput output;
+                const int *object = static_cast<const int *>(serializable);
+                output.writeInt(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<long>(const void *serializable) {
+                BufferedDataOutput output;
+                const long *object = static_cast<const long *>(serializable);
+                output.writeLong(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<float>(const void *serializable) {
+                BufferedDataOutput output;
+                const float *object = static_cast<const float *>(serializable);
+                output.writeFloat(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<double>(const void *serializable) {
+                BufferedDataOutput output;
+                const double *object = static_cast<const double *>(serializable);
+                output.writeDouble(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<byte> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<byte>  *object = static_cast<const std::vector<byte> *>(serializable);
+                output.writeByteArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<char> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<char> *object = static_cast<const std::vector<char> *>(serializable);
+                output.writeCharArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<short> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<short> *object = static_cast<const std::vector<short> *>(serializable);
+                output.writeShortArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<int> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<int> *object = static_cast<const std::vector<int> *>(serializable);
+                output.writeIntArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<long> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<long> *object = static_cast<const std::vector<long> *>(serializable);
+                output.writeLongArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<float> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<float> *object = static_cast<const std::vector<float> *>(serializable);
+                output.writeFloatArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::vector<double> >(const void *serializable) {
+                BufferedDataOutput output;
+                const std::vector<double> *object = static_cast<const std::vector<double> *>(serializable);
+                output.writeDoubleArray(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
+            };
+
+
+            template<>
+            inline Data SerializationService::toData<std::string>(const void *serializable) {
+                BufferedDataOutput output;
+                const std::string *object = static_cast<const std::string *>(serializable);
+                output.writeUTF(*object);
+                Data data;
+                data.setBuffer(output.toByteArray());
+                return data;
             };
 
             template<>
@@ -128,8 +322,7 @@ namespace hazelcast {
                 byte object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readByte();
             };
 
             template<>
@@ -138,18 +331,16 @@ namespace hazelcast {
                 bool object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readBoolean();
             };
 
             template<>
             inline char SerializationService::toObject(const Data& data) {
                 checkServerError(data);
                 char object = 0;
-                BufferedDataInput dataInput(*(data.buffer.get()));
                 if (data.bufferSize() == 0) return object;
-                dataInput >> object;
-                return object;
+                BufferedDataInput dataInput(*(data.buffer.get()));
+                return dataInput.readChar();
             };
 
             template<>
@@ -158,8 +349,7 @@ namespace hazelcast {
                 short object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readShort();
             };
 
             template<>
@@ -168,8 +358,7 @@ namespace hazelcast {
                 int object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readInt();
             };
 
             template<>
@@ -178,8 +367,7 @@ namespace hazelcast {
                 long object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readLong();
             };
 
             template<>
@@ -188,8 +376,7 @@ namespace hazelcast {
                 float object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readFloat();
             };
 
             template<>
@@ -198,8 +385,7 @@ namespace hazelcast {
                 double object = 0;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readDouble();
             };
 
             template<>
@@ -208,8 +394,7 @@ namespace hazelcast {
                 std::vector<byte> object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readByteArray();
             };
 
             template<>
@@ -218,8 +403,7 @@ namespace hazelcast {
                 std::vector<char> object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readCharArray();
             };
 
             template<>
@@ -228,8 +412,7 @@ namespace hazelcast {
                 std::vector<short > object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readShortArray();
             };
 
             template<>
@@ -238,8 +421,7 @@ namespace hazelcast {
                 std::vector<int> object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readIntArray();
             };
 
             template<>
@@ -248,8 +430,7 @@ namespace hazelcast {
                 std::vector<long> object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readLongArray();
             };
 
             template<>
@@ -258,8 +439,7 @@ namespace hazelcast {
                 std::vector<float> object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readFloatArray();
             };
 
             template<>
@@ -268,8 +448,7 @@ namespace hazelcast {
                 std::vector<double > object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readDoubleArray();
             };
 
             template<>
@@ -278,8 +457,7 @@ namespace hazelcast {
                 std::string object;
                 if (data.bufferSize() == 0) return object;
                 BufferedDataInput dataInput(*(data.buffer.get()));
-                dataInput >> object;
-                return object;
+                return dataInput.readUTF();
             };
         }
     }

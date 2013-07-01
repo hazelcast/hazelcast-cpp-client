@@ -8,6 +8,8 @@
 #define __TestMobile_H_
 
 #include "hazelcast/client/serialization/SerializationConstants.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 
 class TestDataSerializable {
@@ -52,16 +54,14 @@ namespace hazelcast {
                 return 1;
             }
 
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestDataSerializable& data) {
-                writer << data.c;
-                writer << data.i;
+            inline void writeData(BufferedDataOutput& writer, const TestDataSerializable& data) {
+                writer.writeChar(data.c);
+                writer.writeInt(data.i);
             };
 
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestDataSerializable& data) {
-                reader >> data.c;
-                reader >> data.i;
+            inline void readPortable(BufferedDataInput& reader, TestDataSerializable& data) {
+                data.c = reader.readChar();
+                data.i = reader.readInt();
             };
         }
     }

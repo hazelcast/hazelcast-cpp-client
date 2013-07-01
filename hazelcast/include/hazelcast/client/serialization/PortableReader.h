@@ -36,7 +36,6 @@ namespace hazelcast {
 
                 PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
 
-//                PortableReader& operator [](const std::string& fieldName);
                 PortableReader& operator [](const char *fieldName);
 
                 int skipBytes(int i);
@@ -113,8 +112,6 @@ namespace hazelcast {
                 void readingFromDataInput();
 
             private:
-
-//                int getPosition(const std::string&);
                 int getPosition(const char *);
 
                 int offset;
