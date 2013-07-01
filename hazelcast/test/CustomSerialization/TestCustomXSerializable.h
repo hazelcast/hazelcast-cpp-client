@@ -12,9 +12,9 @@
 
 class TestCustomXSerializable {
 public:
-    std::string name;
+    int id;
 
-    virtual int getSerializerId() const{
+    int getSerializerId() const {
         return 666;
     };
 };
@@ -22,45 +22,21 @@ public:
 class TestCustomPerson {
 public:
 
-    virtual std::string getName() const = 0;
+    std::string getName() const {
+        return name;
+    };
 
-    virtual void setName(const std::string&) = 0;
+    void setName(const std::string & param) {
+        name = param;
+    };
 
-    virtual int getSerializerId() const {
+    int getSerializerId() const {
         return 999;
     };
-};
 
-class TestCustomStudent : public TestCustomPerson {
-public:
-
-    int id;
+private:
     std::string name;
-
-    std::string getName() const {
-        return name;
-    };
-
-    void setName(const std::string & param) {
-        name = param;
-    };
 };
-
-class TestCustomTwoNamedPerson : public TestCustomPerson {
-public:
-
-    std::string surname;
-    std::string name;
-
-    std::string getName() const {
-        return name;
-    };
-
-    void setName(const std::string & param) {
-        name = param;
-    };
-};
-
 
 #endif //HAZELCAST_TestSimpleXML
 

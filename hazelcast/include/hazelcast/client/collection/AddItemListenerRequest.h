@@ -13,7 +13,6 @@
 #include "CollectionKeyBasedRequest.h"
 #include "CollectionRequest.h"
 #include "CollectionProxyId.h"
-#include "ConstantClassDefinitionWriter.h"
 #include <vector>
 
 namespace hazelcast {

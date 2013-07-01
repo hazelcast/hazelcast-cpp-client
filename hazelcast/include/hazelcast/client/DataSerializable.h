@@ -15,6 +15,10 @@ namespace hazelcast {
             virtual ~DataSerializable() {
 
             };
+
+            virtual int getSerializerId() const {
+                return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
+            }
         };
     }
 }

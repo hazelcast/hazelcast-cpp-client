@@ -19,6 +19,10 @@ namespace hazelcast {
             };
 
 
+            BufferedDataOutput::~BufferedDataOutput() {
+
+            };
+
             BufferedDataOutput::BufferedDataOutput(BufferedDataOutput const & rhs) {
                 //private
             };

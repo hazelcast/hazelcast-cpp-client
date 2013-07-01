@@ -18,14 +18,14 @@ public:
 
     void write(hazelcast::client::serialization::BufferedDataOutput & out, const T& object) {
         out.writeInt(666);
-        out.writeUTF(object.name);
+        out.writeInt(object.id);
         out.writeInt(666);
     }
 
     void read(hazelcast::client::serialization::BufferedDataInput & in, T& object) {
         int i = in.readInt();
         assert(i == 666);
-        object.name = in.readUTF();
+        object.id = in.readInt();
         i = in.readInt();
         assert(i == 666);
     }

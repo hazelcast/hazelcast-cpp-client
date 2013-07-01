@@ -36,43 +36,37 @@ namespace hazelcast {
 
                 PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
 
-                PortableReader& operator [](const char *fieldName);
+                int readInt(const char *fieldName);
 
-                int skipBytes(int i);
+                long readLong(const char *fieldName);
 
-                void readFully(std::vector<byte>&);
+                bool readBoolean(const char *fieldName);
 
-                int readInt();
+                byte readByte(const char *fieldName);
 
-                long readLong();
+                char readChar(const char *fieldName);
 
-                bool readBoolean();
+                double readDouble(const char *fieldName);
 
-                byte readByte();
+                float readFloat(const char *fieldName);
 
-                char readChar();
+                short readShort(const char *fieldName);
 
-                double readDouble();
+                string readUTF(const char *fieldName);
 
-                float readFloat();
+                std::vector<byte> readByteArray(const char *fieldName);
 
-                short readShort();
+                std::vector<char> readCharArray(const char *fieldName);
 
-                string readUTF();
+                std::vector<int> readIntArray(const char *fieldName);
 
-                std::vector<byte> readByteArray();
+                std::vector<long> readLongArray(const char *fieldName);
 
-                std::vector<char> readCharArray();
+                std::vector<double> readDoubleArray(const char *fieldName);
 
-                std::vector<int> readIntArray();
+                std::vector<float> readFloatArray(const char *fieldName);
 
-                std::vector<long> readLongArray();
-
-                std::vector<double> readDoubleArray();
-
-                std::vector<float> readFloatArray();
-
-                std::vector<short> readShortArray();
+                std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
@@ -84,17 +78,20 @@ namespace hazelcast {
                 };
 
                 template<typename T>
-                void readPortable(T& portable) {
+                T readPortable(const char *fieldName) {
+                    T portable;
+                    setPosition(fieldName);
                     bool isNull = input.readBoolean();
                     if (isNull) {
-                        return;
+                        return portable;
                     }
                     read(input, portable, currentFactoryId, currentClassId);
                 };
 
                 template<typename T>
-                void readPortable(std::vector< T >& portables) {
-
+                std::vector< T > readPortableArray(const char *fieldName) {
+                    std::vector< T > portables;
+                    setPosition(fieldName);
                     int len = input.readInt();
                     portables.resize(len, T());
                     if (len > 0) {
@@ -107,37 +104,23 @@ namespace hazelcast {
                             read(input, portables[i], currentFactoryId, currentClassId);
                         }
                     }
+                    return portables;
                 };
 
-                void readingFromDataInput();
+                BufferedDataInput *getRawDataInput();
 
             private:
                 int getPosition(const char *);
 
+                void setPosition(const char *);
+
                 int offset;
                 bool raw;
-                bool readingPortable;
                 SerializationContext *context;
                 ClassDefinition *cd;
                 BufferedDataInput& input;
                 int currentFactoryId;
                 int currentClassId;
-            };
-
-            template<typename T>
-            inline void operator >>(PortableReader& portableReader, std::vector<T>& data) {
-                portableReader.readingFromDataInput();
-                portableReader.readPortable(data);
-            };
-
-
-            template<typename T>
-            inline void operator >>(PortableReader& portableReader, T& data) {
-                portableReader.readingFromDataInput();
-                if (getSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
-                    portableReader.readPortable(data);
-                else
-                    readPortable(portableReader, data);
             };
 
 

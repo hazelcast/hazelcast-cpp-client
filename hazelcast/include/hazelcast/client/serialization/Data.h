@@ -14,6 +14,8 @@
 #include "../protocol/ProtocolConstants.h"
 #include "ConstantSerializers.h"
 #include "../HazelcastException.h"
+#include "PortableReader.h"
+#include "MorphingPortableReader.h"
 #include <vector>
 #include <iosfwd>
 

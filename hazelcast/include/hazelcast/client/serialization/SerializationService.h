@@ -47,9 +47,9 @@ namespace hazelcast {
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
                     BufferedDataOutput output;
-                    portableSerializer.write(output, object);
-                    int factoryId = getFactoryId(object);
-                    int classId = getClassId(object);
+                    portableSerializer.write(output, *object);
+                    int factoryId = getFactoryId(*object);
+                    int classId = getClassId(*object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
                     data.cd = serializationContext.lookup(factoryId, classId);
                     data.setBuffer(output.toByteArray());
@@ -61,7 +61,7 @@ namespace hazelcast {
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
                     BufferedDataOutput output;
-                    dataSerializer.write(output, object);
+                    dataSerializer.write(output, *object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
                     return data;

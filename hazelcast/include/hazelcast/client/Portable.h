@@ -7,6 +7,8 @@
 #ifndef HAZELCAST_Portable
 #define HAZELCAST_Portable
 
+#include "SerializationConstants.h"
+
 namespace hazelcast{
     namespace client{
         class Portable {
@@ -14,6 +16,10 @@ namespace hazelcast{
             virtual ~Portable(){
 
             };
+
+            virtual int getSerializerId() const {
+                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            }
         };
     }
 

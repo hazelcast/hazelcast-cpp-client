@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "Thread.h"
+#include "hazelcast/util/Thread.h"
 
 
 namespace hazelcast {

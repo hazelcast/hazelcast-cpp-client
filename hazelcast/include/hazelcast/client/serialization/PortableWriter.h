@@ -33,39 +33,50 @@ namespace hazelcast {
 
                 PortableWriter(SerializationContext *serializationContext, ClassDefinition *cd, BufferedDataOutput *output);
 
-//                PortableWriter& operator [](const std::string& fieldName);
-                PortableWriter& operator [](const char *fieldName);
+                void writeInt(const char *fieldName, int value);
 
-                void write(const std::vector<byte>& x);
+                void writeLong(const char *fieldName, long value);
 
-                void writeInt(int value);
+                void writeBoolean(const char *fieldName, bool value);
 
-                void writeLong(long value);
+                void writeByte(const char *fieldName, byte value);
 
-                void writeBoolean(bool value);
+                void writeChar(const char *fieldName, int value);
 
-                void writeByte(byte value);
+                void writeDouble(const char *fieldName, double value);
 
-                void writeChar(int value);
+                void writeFloat(const char *fieldName, float value);
 
-                void writeDouble(double value);
+                void writeShort(const char *fieldName, short value);
 
-                void writeFloat(float value);
+                void writeUTF(const char *fieldName, const string& str);
 
-                void writeShort(short value);
+                void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
-                void writeUTF(const string& str);
+                void writeByteArray(const char *fieldName, const std::vector<byte>& x);
 
-                void writeNullPortable(int factoryId, int classId);
+                void writeCharArray(const char *fieldName, const std::vector<char >&  data);
+
+                void writeShortArray(const char *fieldName, const std::vector<short >&  data);
+
+                void writeIntArray(const char *fieldName, const std::vector<int>&  data);
+
+                void writeLongArray(const char *fieldName, const std::vector<long >&  data);
+
+                void writeFloatArray(const char *fieldName, const std::vector<float >&  data);
+
+                void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
+
+//                void writeData(const char *fieldName, const Data&  data);
 
                 template <typename T>
-                void writePortable(const T& portable) {
+                void writePortable(const char *fieldName, const T& portable) {
                     output->writeBoolean(false);
                     write(*output, portable);
                 };
 
                 template <typename T>
-                void writePortable(const std::vector<T>& values) {
+                void writePortable(const char *fieldName, const std::vector<T>& values) {
                     int len = values.size();
                     output->writeInt(len);
                     if (len > 0) {
@@ -78,11 +89,10 @@ namespace hazelcast {
                     }
                 };
 
-                void writingToDataOutput();
+                BufferedDataOutput* getRawDataOutput();
 
             private:
 
-//                void setPosition(const string& fieldName);
                 void setPosition(const char *fieldName);
 
                 template <typename T>
@@ -112,33 +122,14 @@ namespace hazelcast {
 
                 int index;
                 bool raw;
-                bool writingPortable;
 
                 SerializationContext *context;
                 BufferedDataOutput *output;
                 int offset;
-//                std::set<std::string> writtenFields;
                 std::set<const char *, util::cStrCmp> writtenFields;
                 ClassDefinition *cd;
 
             };
-
-            template<typename T>
-            inline void operator <<(PortableWriter& portableWriter, const std::vector<T>& data) {
-                portableWriter.writingToDataOutput();
-                portableWriter.writePortable(data);
-            };
-
-            template<typename T>
-            inline void operator <<(PortableWriter& portableWriter, const T& data) {
-                portableWriter.writingToDataOutput();
-                if (getSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
-                    portableWriter.writePortable(data);
-                else {
-                    writePortable(portableWriter, data);
-                }
-            };
-
 
         }
     }

@@ -10,9 +10,10 @@
 #include "hazelcast/client/serialization/SerializationConstants.h"
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
+#include "DataSerializable.h"
 
 
-class TestDataSerializable {
+class TestDataSerializable : public hazelcast::client::DataSerializable{
 public:
     TestDataSerializable() {
 
@@ -42,9 +43,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getSerializerId(const TestDataSerializable& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
+//            inline int getSerializerId(const TestDataSerializable& x) {
+//                return SerializationConstants::CONSTANT_TYPE_DATA;
+//            };
 
             inline int getFactoryId(const TestDataSerializable& t) {
                 return 1;
@@ -59,7 +60,7 @@ namespace hazelcast {
                 writer.writeInt(data.i);
             };
 
-            inline void readPortable(BufferedDataInput& reader, TestDataSerializable& data) {
+            inline void readData(BufferedDataInput& reader, TestDataSerializable& data) {
                 data.c = reader.readChar();
                 data.i = reader.readInt();
             };

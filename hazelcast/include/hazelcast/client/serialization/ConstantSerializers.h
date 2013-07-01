@@ -96,9 +96,4 @@ namespace hazelcast {
     }
 }
 
-#include "ConstantSerializers/ConstantClassDefinitionWriter.h"
-#include "ConstantSerializers/ConstantPortableWriter.h"
-#include "ConstantSerializers/ConstantsPortableReader.h"
-#include "ConstantSerializers/ConstantsMorphingPortableReader.h"
-
 #endif /* HAZELCAST_CONSTANT_SERIALIZERS */

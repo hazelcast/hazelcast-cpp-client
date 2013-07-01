@@ -15,55 +15,15 @@ namespace hazelcast {
             : input(input)
             , context(serializationContext)
             , cd(cd)
-            , readingPortable(false)
             , raw(false)
             , offset(input.position())
-            , unknownFieldDefinition(false)
             , currentFieldType(0) {
 
             };
 
-            MorphingPortableReader & MorphingPortableReader::operator [](const char *fieldName) {
-                if (raw) {
-                    throw hazelcast::client::HazelcastException("Cannot call [] operation after reading  directly from stream(without [])");
-                }
-                readingPortable = true;
-                if (cd->isFieldDefinitionExists(fieldName)) {
-                    unknownFieldDefinition = false;
-                    const FieldDefinition& fd = cd->get(fieldName);
-                    currentFactoryId = fd.getFactoryId();
-                    currentClassId = fd.getClassId();
-                    input.position(getPosition(fieldName));
-                    currentFieldType = cd->getFieldType(fieldName);
-                } else {
-                    unknownFieldDefinition = true;
-                }
-                return *this;
-            }
+            int MorphingPortableReader::readInt(char const *fieldName) {
 
-            void MorphingPortableReader::readingFromDataInput() {
-                if (readingPortable) {
-                    readingPortable = false;
-                } else {
-                    input.position(offset + cd->getFieldCount() * 4);
-                    int pos = input.readInt();
-                    input.position(pos);
-                    raw = true;
-                }
-            };
-
-
-            int MorphingPortableReader::skipBytes(int i) {
-                throw hazelcast::client::HazelcastException("Not supported");
-            };
-
-            void MorphingPortableReader::readFully(std::vector<byte> &bytes) {
-                input.readFully(bytes);
-            };
-
-            int MorphingPortableReader::readInt() {
-
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType == FieldTypes::TYPE_INT) {
@@ -79,9 +39,9 @@ namespace hazelcast {
                 }
             };
 
-            long MorphingPortableReader::readLong() {
+            long MorphingPortableReader::readLong(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType == FieldTypes::TYPE_LONG) {
@@ -99,8 +59,8 @@ namespace hazelcast {
                 }
             };
 
-            bool MorphingPortableReader::readBoolean() {
-                if (unknownFieldDefinition)
+            bool MorphingPortableReader::readBoolean(char const *fieldName) {
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType != FieldTypes::TYPE_BOOLEAN)
@@ -109,8 +69,8 @@ namespace hazelcast {
                 return input.readBoolean();
             };
 
-            byte MorphingPortableReader::readByte() {
-                if (unknownFieldDefinition)
+            byte MorphingPortableReader::readByte(char const *fieldName) {
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType != FieldTypes::TYPE_BYTE)
@@ -119,9 +79,9 @@ namespace hazelcast {
                 return input.readByte();
             };
 
-            char MorphingPortableReader::readChar() {
+            char MorphingPortableReader::readChar(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
 
 
@@ -131,9 +91,9 @@ namespace hazelcast {
                 return input.readChar();
             };
 
-            double MorphingPortableReader::readDouble() {
+            double MorphingPortableReader::readDouble(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType == FieldTypes::TYPE_FLOAT) {
@@ -155,9 +115,9 @@ namespace hazelcast {
                 }
             };
 
-            float MorphingPortableReader::readFloat() {
+            float MorphingPortableReader::readFloat(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
 
                 if (currentFieldType == FieldTypes::TYPE_FLOAT) {
@@ -175,9 +135,9 @@ namespace hazelcast {
                 }
             };
 
-            short MorphingPortableReader::readShort() {
+            short MorphingPortableReader::readShort(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return 0;
                 if (currentFieldType == FieldTypes::TYPE_BYTE) {
                     return input.readByte();
@@ -189,9 +149,9 @@ namespace hazelcast {
                 }
             };
 
-            string MorphingPortableReader::readUTF() {
+            string MorphingPortableReader::readUTF(char const *fieldName) {
 
-                if (unknownFieldDefinition)
+                if (setPosition(fieldName))
                     return "";
 
                 if (currentFieldType != FieldTypes::TYPE_UTF) {
@@ -200,8 +160,8 @@ namespace hazelcast {
                 return input.readUTF();
             };
 
-            std::vector <byte> MorphingPortableReader::readByteArray() {
-                if (unknownFieldDefinition)
+            std::vector <byte> MorphingPortableReader::readByteArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     return std::vector<byte>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_BYTE_ARRAY) {
@@ -210,8 +170,8 @@ namespace hazelcast {
                 return input.readByteArray();
             };
 
-            std::vector<char> MorphingPortableReader::readCharArray() {
-                if (unknownFieldDefinition)
+            std::vector<char> MorphingPortableReader::readCharArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     return std::vector<char>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_CHAR_ARRAY) {
@@ -220,8 +180,8 @@ namespace hazelcast {
                 return input.readCharArray();
             };
 
-            std::vector<int> MorphingPortableReader::readIntArray() {
-                if (unknownFieldDefinition)
+            std::vector<int> MorphingPortableReader::readIntArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     std::vector<int>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_INT_ARRAY) {
@@ -230,8 +190,8 @@ namespace hazelcast {
                 return input.readIntArray();
             };
 
-            std::vector<long> MorphingPortableReader::readLongArray() {
-                if (unknownFieldDefinition)
+            std::vector<long> MorphingPortableReader::readLongArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     std::vector<long>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_LONG_ARRAY) {
@@ -240,8 +200,8 @@ namespace hazelcast {
                 return input.readLongArray();
             };
 
-            std::vector<double> MorphingPortableReader::readDoubleArray() {
-                if (unknownFieldDefinition)
+            std::vector<double> MorphingPortableReader::readDoubleArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     std::vector<double>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_DOUBLE_ARRAY) {
@@ -250,8 +210,8 @@ namespace hazelcast {
                 return input.readDoubleArray();
             };
 
-            std::vector<float> MorphingPortableReader::readFloatArray() {
-                if (unknownFieldDefinition)
+            std::vector<float> MorphingPortableReader::readFloatArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     std::vector<float>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_FLOAT_ARRAY) {
@@ -260,8 +220,8 @@ namespace hazelcast {
                 return input.readFloatArray();
             };
 
-            std::vector<short> MorphingPortableReader::readShortArray() {
-                if (unknownFieldDefinition)
+            std::vector<short> MorphingPortableReader::readShortArray(char const *fieldName) {
+                if (setPosition(fieldName))
                     std::vector<short>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_SHORT_ARRAY) {
@@ -274,6 +234,30 @@ namespace hazelcast {
                 input.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
                 return input.readInt();
             };
+
+            bool MorphingPortableReader::setPosition(char const *fieldName) {
+                if (cd->isFieldDefinitionExists(fieldName)) {
+                    const FieldDefinition& fd = cd->get(fieldName);
+                    currentFactoryId = fd.getFactoryId();
+                    currentClassId = fd.getClassId();
+                    input.position(getPosition(fieldName));
+                    currentFieldType = cd->getFieldType(fieldName);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            BufferedDataInput *MorphingPortableReader::getRawDataInput() {
+                if (!raw) {
+                    input.position(offset + cd->getFieldCount() * 4);
+                    int pos = input.readInt();
+                    input.position(pos);
+
+                }
+                raw = true;
+                return &input;
+            }
 
         }
     }

@@ -6,11 +6,12 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_DATA_OUTPUT
-#define HAZELCAST_DATA_OUTPUT
+#ifndef HAZELCAST_EMPTY_DATA_OUTPUT
+#define HAZELCAST_EMPTY_DATA_OUTPUT
 
 #include "ConstantSerializers.h"
 #include "../HazelcastException.h"
+#include "BufferedDataOutput.h"
 #include <vector>
 #include <iosfwd>
 
@@ -20,14 +21,8 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class BufferedDataOutput {
+            class EmptyDataOutput : public BufferedDataOutput{
             public:
-
-                BufferedDataOutput();
-
-                virtual ~BufferedDataOutput();
-
-                std::auto_ptr< std::vector<byte> > toByteArray();
 
                 void write(const std::vector<byte>& bytes);
 
@@ -72,18 +67,6 @@ namespace hazelcast {
                 void position(int newPos);
 
                 void reset();
-
-                static int const STRING_CHUNK_SIZE = 16 * 1024;
-                static int const DEFAULT_SIZE = 4 * 1024;
-
-            private:
-                std::auto_ptr< std::vector<byte> > outputStream;
-
-                void writeShortUTF(const std::string&);
-
-                BufferedDataOutput(const BufferedDataOutput& rhs);
-
-                BufferedDataOutput& operator = (const BufferedDataOutput& rhs);
 
             };
         }
