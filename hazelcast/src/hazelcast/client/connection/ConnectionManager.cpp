@@ -105,7 +105,7 @@ namespace hazelcast {
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
-                serialization::Data toData = serializationService.toData(auth);
+                serialization::Data toData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.write(toData);
                 serialization::Data data1 = connection.read(serializationService.getSerializationContext());
                 Address address = serializationService.toObject<Address>(data1);

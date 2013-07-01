@@ -34,7 +34,7 @@ namespace hazelcast {
                 return getSource();
             }
 
-            int PortableEntryEvent::getTypeSerializerId() const {
+            int PortableEntryEvent::getSerializerId() const {
                 return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
             };
 

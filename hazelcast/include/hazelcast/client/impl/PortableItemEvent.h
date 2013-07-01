@@ -29,7 +29,7 @@ namespace hazelcast {
 
                 ItemEventType getEventType() const;
 
-                int getTypeSerializerId() const;
+                int getSerializerId() const;
 
                 int getFactoryId() const;
 

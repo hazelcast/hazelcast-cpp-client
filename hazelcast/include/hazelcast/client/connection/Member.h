@@ -53,7 +53,7 @@ inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::co
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getTypeSerializerId(const hazelcast::client::connection::Member& x) {
+            inline int getSerializerId(const hazelcast::client::connection::Member& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

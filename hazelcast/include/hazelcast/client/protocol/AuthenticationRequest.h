@@ -47,7 +47,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getTypeSerializerId(const protocol::AuthenticationRequest& x) {
+            inline int getSerializerId(const protocol::AuthenticationRequest& x) {
                 return SerializationConstants::CONSTANT_TYPE_PORTABLE;
             };
 

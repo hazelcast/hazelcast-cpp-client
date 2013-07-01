@@ -44,7 +44,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            inline int getTypeSerializerId(const hazelcast::client::impl::PartitionsResponse& x) {
+            inline int getSerializerId(const hazelcast::client::impl::PartitionsResponse& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

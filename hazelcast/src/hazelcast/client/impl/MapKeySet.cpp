@@ -17,7 +17,7 @@ namespace hazelcast {
                 return keySet;
             };
 
-            int MapKeySet::getTypeSerializerId() const {
+            int MapKeySet::getSerializerId() const {
                 return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
             }
 

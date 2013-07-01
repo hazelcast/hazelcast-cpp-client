@@ -7,6 +7,8 @@
 #ifndef HAZELCAST_TYPE_SERIALIZER
 #define HAZELCAST_TYPE_SERIALIZER
 
+#include <iostream>
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -26,9 +28,9 @@ namespace hazelcast {
 
                 };
 
-                virtual void write(BufferedDataOutput &out, const Serializable *object) = 0;
+                virtual void write(BufferedDataOutput &out, const Serializable& object) = 0;
 
-                virtual Serializable *read(BufferedDataInput &in) = 0;
+                virtual void read(BufferedDataInput &in, Serializable & object) = 0;
 
             };
 

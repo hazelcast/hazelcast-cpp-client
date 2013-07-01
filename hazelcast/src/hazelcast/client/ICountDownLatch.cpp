@@ -14,7 +14,7 @@ namespace hazelcast {
         void ICountDownLatch::init(const std::string& instanceName, spi::ClientContext *clientContext) {
             this->context = clientContext;
             this->instanceName = instanceName;
-            key = context->getSerializationService().toData(instanceName);
+            key = context->getSerializationService().toData<std::string>(&instanceName);
         };
 
         bool ICountDownLatch::await(long timeoutInMillis) {

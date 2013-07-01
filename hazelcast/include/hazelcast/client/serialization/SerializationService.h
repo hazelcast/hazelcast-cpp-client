@@ -9,18 +9,18 @@
 #ifndef HAZELCAST_SERIALIZATION_SERVICE
 #define HAZELCAST_SERIALIZATION_SERVICE
 
-#include "ConstantSerializers.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
-#include "PortableSerializer.h"
 #include "SerializationContext.h"
 #include "../HazelcastException.h"
 #include "../../util/Util.h"
-#include "Data.h"
+#include "PortableSerializer.h"
 #include "DataSerializer.h"
-#include "Serializer.h"
 #include "Portable.h"
 #include "DataSerializable.h"
+#include "Serializer.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
+#include "ConstantSerializers.h"
+#include "Data.h"
 #include <iosfwd>
 #include <string>
 
@@ -50,6 +50,7 @@ namespace hazelcast {
                     portableSerializer.write(output, object);
                     int factoryId = getFactoryId(object);
                     int classId = getClassId(object);
+                    data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
                     data.cd = serializationContext.lookup(factoryId, classId);
                     data.setBuffer(output.toByteArray());
                     return data;
@@ -61,22 +62,25 @@ namespace hazelcast {
                     Data data;
                     BufferedDataOutput output;
                     dataSerializer.write(output, object);
+                    data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
                     return data;
                 };
 
                 template<typename T>
                 Data toData(const void *serializable) {
-                    const T *object = dynamic_cast<const T *>(serializable);
+                    const T *object = static_cast<const T *>(serializable);
                     Data data;
                     BufferedDataOutput output;
-                    SerializerBase *serializer = serializerFor(object->getSerializerId());
+                    int type = getSerializerId(*object);
+                    SerializerBase *serializer = serializerFor(type);
                     if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializerFor(data.getType()));
-                        s->write(output, object);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        s->write(output, *object);
                     } else {
-                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(getTypeSerializerId(*object)) + ", typename :" + typeid(T).name());
+                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
                     }
+                    data.setType(type);
                     data.setBuffer(output.toByteArray());
                     return data;
                 };
@@ -86,38 +90,40 @@ namespace hazelcast {
                     checkServerError(data);
                     T object;
                     if (data.bufferSize() == 0) return object;
-                    toObjectResolved(data, &object);
-                    return object;
+                    return toObjectResolved<T>(data, &object);;
                 };
 
                 template<typename T>
-                inline void toObjectResolved(const Data& data, Portable *portable) {
-                    T *object = static_cast< T *>(portable);
+                inline T toObjectResolved(const Data& data, Portable *portable) {
+                    T object;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
                     serializationContext.registerClassDefinition(data.cd);
                     int factoryId = data.cd->getFactoryId();
                     int classId = data.cd->getClassId();
                     int version = data.cd->getVersion();
-                    portableSerializer.read(dataInput, *object, factoryId, classId, version);
+                    portableSerializer.read(dataInput, object, factoryId, classId, version);
+                    return object;
                 };
 
                 template<typename T>
-                inline void toObjectResolved(const Data& data, DataSerializable *dataSerializable) {
-                    T *object = static_cast< T *>(dataSerializable);
+                inline T toObjectResolved(const Data& data, DataSerializable *dataSerializable) {
+                    T object;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
-                    dataSerializer.read(dataInput, *object);
+                    dataSerializer.read(dataInput, object);
+                    return object;
                 };
 
                 template<typename T>
-                inline void toObjectResolved(const Data& data, void *serializable) {
-                    T *object = static_cast< T *>(serializable);
+                inline T toObjectResolved(const Data& data, void *serializable) {
+                    T object;
                     BufferedDataInput dataInput(*(data.buffer.get()));
-                    SerializerBase *serializer = serializerFor(object->getSerializerId());
+                    SerializerBase *serializer = serializerFor(getSerializerId(object));
                     if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializerFor(data.getType()));
-                        s->read(dataInput);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);;
+                        s->read(dataInput, object);
+                        return object;
                     } else {
                         throw HazelcastException("No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
                     }
@@ -232,7 +238,7 @@ namespace hazelcast {
             template<>
             inline Data SerializationService::toData<std::vector<byte> >(const void *serializable) {
                 BufferedDataOutput output;
-                const std::vector<byte>  *object = static_cast<const std::vector<byte> *>(serializable);
+                const std::vector<byte> *object = static_cast<const std::vector<byte> *>(serializable);
                 output.writeByteArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());

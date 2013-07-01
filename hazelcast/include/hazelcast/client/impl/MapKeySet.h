@@ -17,7 +17,7 @@ namespace hazelcast {
             public:
                 MapKeySet();
 
-                int getTypeSerializerId() const;
+                int getSerializerId() const;
 
                 int getFactoryId() const;
 

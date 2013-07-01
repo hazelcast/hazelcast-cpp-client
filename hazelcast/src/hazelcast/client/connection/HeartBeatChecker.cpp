@@ -19,7 +19,7 @@ namespace hazelcast {
             HeartBeatChecker::HeartBeatChecker(int timeout, serialization::SerializationService& serializationService)
             :serializationService(serializationService)
             , timeout(timeout)
-            , ping(serializationService.toData(pingRequest)) {
+            , ping(serializationService.toData<protocol::PingRequest>(&pingRequest)){
             }
 
             void *HeartBeatChecker::run(void *input) {

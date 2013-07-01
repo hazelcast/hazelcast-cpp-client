@@ -16,8 +16,45 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "TestCustomSerializerX.h"
+#import "TestCustomXSerializable.h"
+#import "TestCustomPersonSerializer.h"
 #include <fstream>
 #include <gtest/gtest.h>
+
+
+TEST(SerializationTest, CustomSerialization){
+    serialization::SerializationService serializationService(1);
+
+    TestCustomSerializerX<TestCustomXSerializable> serializer1;
+    TestCustomPersonSerializer serializer2;
+    serializationService.registerSerializer(&serializer1);
+    serializationService.registerSerializer(&serializer2);
+
+
+    TestCustomXSerializable a;
+    a.name = "TestCustomSerializable";
+    Data data = serializationService.toData<TestCustomXSerializable>(&a);
+    TestCustomXSerializable a2 = serializationService.toObject<TestCustomXSerializable>(data);
+    EXPECT_EQ("TestCustomSerializable", a2.name);
+
+    TestCustomStudent b;
+    b.name = "TestCustomStudent";
+    b.id = 100;
+    Data data1 = serializationService.toData<TestCustomStudent>(&b);
+    TestCustomStudent b2 = serializationService.toObject<TestCustomStudent>(data1);
+    EXPECT_EQ("TestCustomStudent", b2.name);
+    EXPECT_EQ(100, b2.id);
+
+
+    TestCustomTwoNamedPerson c;
+    c.name = "TestCustom";
+    c.surname = "NamedPerson";
+    Data data2 = serializationService.toData<TestCustomTwoNamedPerson>(&c);
+    TestCustomTwoNamedPerson c2 = serializationService.toObject<TestCustomTwoNamedPerson>(data2);
+    EXPECT_EQ("TestCustom", c2.name);
+    EXPECT_EQ("NamedPerson", c2.surname);
+};
 
 TEST(SerializationTest, RawData) {
     serialization::SerializationService serializationService(1);
@@ -32,24 +69,24 @@ TEST(SerializationTest, RawData) {
     builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
 
-    Data data = serializationService.toData(p);
+    Data data = serializationService.toData<TestRawDataPortable>(&p);
     TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
     EXPECT_EQ(p, x);
-}
+};
 
 
 TEST(SerializationTest, IdentifiedDataSerializable) {
     SerializationService serializationService(1);
     Data data;
     TestDataSerializable np(4, 'k');
-    data = serializationService.toData(np);
+    data = serializationService.toData<TestDataSerializable>(&np);
 
     TestDataSerializable tnp1;
     tnp1 = serializationService.toObject<TestDataSerializable>(data);
 
     EXPECT_EQ(np, tnp1);
     int x = 4;
-    data = serializationService.toData(x);
+    data = serializationService.toData<int>(&x);
     int y = serializationService.toObject<int>(data);
     EXPECT_EQ(x, y);
 };
@@ -64,11 +101,11 @@ TEST(SerializationTest, RawDataWithoutRegistering) {
     TestDataSerializable ds(123, 's');
     TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
-    Data data = serializationService.toData(p);
+    Data data = serializationService.toData<TestNamedPortable>(&p);
     TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
     EXPECT_EQ(p, x);
 
-}
+};
 
 void invalidWrite() {
     SerializationService serializationService(1);
@@ -76,13 +113,13 @@ void invalidWrite() {
     ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
-    Data data = serializationService.toData(p);
+    Data data = serializationService.toData<TestInvalidWritePortable>(&p);
     TestInvalidWritePortable o = serializationService.toObject<TestInvalidWritePortable>(data);
 };
 
 TEST(SerializationTest, RawDataInvalidWrite) {
     EXPECT_THROW(invalidWrite(), HazelcastException);
-}
+};
 
 void invalidRead() {
     SerializationService serializationService(1);
@@ -90,7 +127,7 @@ void invalidRead() {
     ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
-    Data data = serializationService.toData(p);
+    Data data = serializationService.toData<TestInvalidReadPortable>(&p);
     serializationService.toObject<TestInvalidReadPortable>(data);
 }
 
@@ -105,10 +142,10 @@ TEST(SerializationTest, DifferentVersions) {
     serialization::SerializationService serializationService2(2);
 
     TestNamedPortable p1("portable-v1", 111);
-    Data data = serializationService.toData(p1);
+    Data data = serializationService.toData<TestNamedPortable>(&p1);
 
     TestNamedPortableV2 p2("portable-v2", 123);
-    Data data2 = serializationService2.toData(p2);
+    Data data2 = serializationService2.toData<TestNamedPortable>(&p2);
 
     TestNamedPortableV2 t2 = serializationService2.toObject<TestNamedPortableV2>(data);
     EXPECT_EQ("portable-v1", t2.name);
@@ -125,7 +162,7 @@ TEST(SerializationTest, Compression) {
     serialization::SerializationService serializationService1(1);
     TestMainPortable mainPortable = getTestMainPortable();
 
-    Data data = serializationService1.toData(mainPortable);
+    Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
     BufferedDataOutput out;
     data.writeData(out);
@@ -144,7 +181,7 @@ TEST(SerializationTest, Compression) {
 int write() {
     serialization::SerializationService serializationService(1);
     TestMainPortable mainPortable = getTestMainPortable();
-    Data data = serializationService.toData(mainPortable);
+    Data data = serializationService.toData<TestMainPortable>(&mainPortable);
     BufferedDataOutput out;
     data.writeData(out);
     std::vector<byte>& outBuffer = *(out.toByteArray().get());
@@ -194,15 +231,15 @@ TEST(SerializationTest, BasicFunctinolity) {
     serialization::Data data;
 
     int x = 3;
-    data = serializationService.toData(x);
+    data = serializationService.toData<int>(&x);
     EXPECT_EQ(x, serializationService.toObject<int>(data));
 
     short f = 3.2;
-    data = serializationService.toData(f);
+    data = serializationService.toData<short>(&f);
     EXPECT_EQ(f, serializationService.toObject<short>(data));
 
     TestNamedPortable np("name", 5);
-    data = serializationService.toData(np);
+    data = serializationService.toData<TestNamedPortable>(&np);
 
     TestNamedPortable tnp1, tnp2;
     tnp1 = serializationService.toObject<TestNamedPortable >(data);
@@ -236,7 +273,7 @@ TEST(SerializationTest, BasicFunctinolity) {
 
     TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
 
-    data = serializationService.toData(inner);
+    data = serializationService.toData<TestInnerPortable>(&inner);
 
     TestInnerPortable tip1, tip2;
     tip1 = serializationService.toObject<TestInnerPortable >(data);
@@ -247,7 +284,7 @@ TEST(SerializationTest, BasicFunctinolity) {
 
     TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
             -897543.3678909, "this is main portable object created for testing!", inner);
-    data = serializationService.toData(main);
+    data = serializationService.toData<TestMainPortable>(&main);
 
     TestMainPortable tmp1, tmp2;
     tmp1 = serializationService.toObject<TestMainPortable >(data);

@@ -26,7 +26,7 @@ namespace hazelcast {
                     return SemaphorePortableHook::F_ID;
                 };
 
-                virtual int getTypeSerializerId() const {
+                virtual int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 

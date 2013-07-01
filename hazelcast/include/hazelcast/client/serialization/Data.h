@@ -152,7 +152,7 @@ namespace hazelcast {
             };
 
 
-            inline int getTypeSerializerId(const Data& x) {
+            inline int getSerializerId(const Data& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

@@ -17,7 +17,7 @@ namespace hazelcast {
                 , value(value) {
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 

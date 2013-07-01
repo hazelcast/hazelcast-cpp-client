@@ -98,7 +98,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getTypeSerializerId(const TestInnerPortable& x) {
+            inline int getSerializerId(const TestInnerPortable& x) {
                 return SerializationConstants::CONSTANT_TYPE_PORTABLE;
             };
 

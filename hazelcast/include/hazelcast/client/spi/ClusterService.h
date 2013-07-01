@@ -92,7 +92,7 @@ namespace hazelcast {
                 template< typename Response, typename Request>
                 Response sendAndReceive(connection::Connection *connection, const Request& object) {
                     try {
-                        serialization::Data request = serializationService.toData(object);
+                        serialization::Data request = serializationService.toData<Request>(&object);
                         connection->write(request);
                         serialization::Data responseData = connection->read(serializationService.getSerializationContext());
                         return serializationService.toObject<Response>(responseData);
@@ -109,7 +109,7 @@ namespace hazelcast {
                 void sendAndHandle(connection::Connection *conn, const Request& obj, const ResponseHandler&  handler) {
                     ResponseStream stream(serializationService, *conn);
                     try {
-                        serialization::Data request = serializationService.toData(obj);
+                        serialization::Data request = serializationService.toData<Request>(&obj);
                         conn->write(request);
                     } catch (HazelcastException&/*IOException*/ e){
                         partitionService.refreshPartitions();

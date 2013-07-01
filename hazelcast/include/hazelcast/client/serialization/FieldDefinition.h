@@ -56,7 +56,7 @@ namespace hazelcast {
                 int factoryId;
             };
 
-            inline int getTypeSerializerId(const FieldDefinition& x) {
+            inline int getSerializerId(const FieldDefinition& x) {
                 return SerializationConstants::CONSTANT_TYPE_DATA;
             };
 

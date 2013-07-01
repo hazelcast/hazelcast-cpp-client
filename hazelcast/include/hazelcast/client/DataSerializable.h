@@ -12,10 +12,9 @@ namespace hazelcast {
 
         class DataSerializable {
         public:
-            virtual ~DataSerializable() = 0;
-        };
+            virtual ~DataSerializable() {
 
-        DataSerializable::~DataSerializable() {
+            };
         };
     }
 }

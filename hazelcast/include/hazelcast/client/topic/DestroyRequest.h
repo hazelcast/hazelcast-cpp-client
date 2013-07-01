@@ -25,7 +25,7 @@ namespace hazelcast {
                     return TopicPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 

@@ -13,7 +13,7 @@ namespace hazelcast {
 
             }
 
-            int MapValueCollection::getTypeSerializerId() const {
+            int MapValueCollection::getSerializerId() const {
                 return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
             }
 

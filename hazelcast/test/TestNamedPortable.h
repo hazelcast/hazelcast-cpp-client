@@ -22,7 +22,7 @@ public:
     TestNamedPortable(std::string name, int k):name(name), k(k) {
     };
 
-    inline int getTypeSerializerId() const {
+    inline int getSerializerId() const {
         return SerializationConstants::CONSTANT_TYPE_PORTABLE;
     };
 

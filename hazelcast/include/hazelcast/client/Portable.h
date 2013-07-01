@@ -11,11 +11,9 @@ namespace hazelcast{
     namespace client{
         class Portable {
             public:
-            virtual ~Portable() = 0;
-        };
+            virtual ~Portable(){
 
-        Portable::~Portable(){
-
+            };
         };
     }
 

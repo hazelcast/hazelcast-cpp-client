@@ -390,7 +390,7 @@ namespace hazelcast {
 
             template<typename T>
             serialization::Data toData(const T& object) {
-                return context->getSerializationService().toData(object);
+                return context->getSerializationService().toData<T>(&object);
             };
 
             template<typename T>

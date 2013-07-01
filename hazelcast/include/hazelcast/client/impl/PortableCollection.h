@@ -24,7 +24,7 @@ namespace hazelcast {
                     return collection;
                 };
 
-                int getTypeSerializerId() const;
+                int getSerializerId() const;
 
                 int getFactoryId() const;
 

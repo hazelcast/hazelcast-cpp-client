@@ -34,7 +34,7 @@ namespace hazelcast {
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;
-                key = context->getSerializationService().toData(instanceName);
+                key = context->getSerializationService().toData<std::string>(&instanceName);
             };
 
             template < typename L>
@@ -68,7 +68,7 @@ namespace hazelcast {
             };
 
             bool offer(const E& e, long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
-                serialization::Data data = context->getSerializationService().toData(e);
+                serialization::Data data = toData(e);
                 queue::OfferRequest request(instanceName, timeoutInMillis, data);
                 return invoke<bool>(request);
             };
@@ -88,7 +88,7 @@ namespace hazelcast {
             };
 
             bool remove(const E& o) {
-                serialization::Data data = context->getSerializationService().toData(o);
+                serialization::Data data = toData(o);
                 queue::RemoveRequest request(instanceName, data);
                 bool result = invoke(request);
                 return result;
@@ -96,7 +96,7 @@ namespace hazelcast {
 
             bool contains(const E& o) {
                 std::vector<serialization::Data> list(1);
-                list[0] = context->getSerializationService().toData(o);
+                list[0] = toData(o);
                 queue::ContainsRequest request(instanceName, list);
                 return invoke<bool>(request);
             };
@@ -204,6 +204,17 @@ namespace hazelcast {
                 return instanceName;
             };
 
+
+        private:
+            std::string instanceName;
+            serialization::Data key;
+            spi::ClientContext *context;
+
+            template<typename T>
+            serialization::Data toData(const T& object) {
+                return context->getSerializationService().toData<T>(&object);
+            };
+
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
@@ -212,7 +223,7 @@ namespace hazelcast {
             std::vector<serialization::Data> getDataList(const std::vector<E>& objects) {
                 std::vector<serialization::Data> dataList(objects.size());
                 for (int i = 0; i < objects.size(); i++) {
-                    dataList[i] = context->getSerializationService().toData(objects[i]);
+                    dataList[i] = toData(objects[i]);
                 }
                 return dataList;
             };
@@ -224,11 +235,6 @@ namespace hazelcast {
                 }
                 return objects;
             };
-
-        private:
-            std::string instanceName;
-            serialization::Data key;
-            spi::ClientContext *context;
 
         };
     }

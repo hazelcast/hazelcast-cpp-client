@@ -134,7 +134,7 @@ namespace hazelcast {
             template<typename T>
             inline void operator >>(PortableReader& portableReader, T& data) {
                 portableReader.readingFromDataInput();
-                if (getTypeSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
+                if (getSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
                     portableReader.readPortable(data);
                 else
                     readPortable(portableReader, data);

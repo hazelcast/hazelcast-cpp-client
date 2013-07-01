@@ -44,7 +44,7 @@ namespace hazelcast {
                     return type;
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
                 };
 

@@ -5,6 +5,7 @@
 #define HAZELCAST_SERVER_ERROR
 
 #include "ProtocolConstants.h"
+#include "SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
@@ -34,6 +35,10 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            inline int getSerializerId(const protocol::HazelcastServerError& ar) {
+                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+            }
+
             inline int getFactoryId(const protocol::HazelcastServerError& ar) {
                 return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
