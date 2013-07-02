@@ -69,15 +69,6 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
-
-                    ClassDefinition *cd;
-                    cd = context->lookup(factoryId, classId); // using serializationContext.version
-                    PortableReader reader(context, dataInput, cd);
-                    hazelcast::client::serialization::readPortable(reader, object);
-                };
-
-                template<typename T>
                 T readPortable(const char *fieldName) {
                     T portable;
                     setPosition(fieldName);
@@ -86,6 +77,7 @@ namespace hazelcast {
                         return portable;
                     }
                     read(input, portable, currentFactoryId, currentClassId);
+                    return portable;
                 };
 
                 template<typename T>
@@ -113,6 +105,14 @@ namespace hazelcast {
                 int getPosition(const char *);
 
                 void setPosition(const char *);
+
+                template<typename T>
+                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
+                    ClassDefinition *cd;
+                    cd = context->lookup(factoryId, classId); // using serializationContext.version
+                    PortableReader reader(context, dataInput, cd);
+                    hazelcast::client::serialization::readPortable(reader, object);
+                };
 
                 int offset;
                 bool raw;

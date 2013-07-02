@@ -49,19 +49,6 @@ namespace hazelcast {
                 return (*this);
             };
 
-            bool Data::operator ==(const Data& rhs) const {
-                if (type != rhs.type) return false;
-                if (cd != rhs.cd) return false;
-                if (partitionHash != rhs.partitionHash) return false;
-                if (*(buffer.get()) != *(rhs.buffer).get()) return false;
-                return true;
-            };
-
-            bool Data::operator !=(const Data& rhs) const {
-                return !((*this) == rhs);
-            };
-
-
             bool Data::isServerError() const {
                 return isError;
             };

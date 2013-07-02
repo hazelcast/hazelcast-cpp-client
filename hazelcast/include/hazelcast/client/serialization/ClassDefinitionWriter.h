@@ -70,7 +70,7 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                void writePortable(const char *fieldName, const std::vector<T>& portables) {
+                void writePortableArray(const char *fieldName, const std::vector<T>& portables) {
                     int classId = getClassId(portables[0]);
                     int factoryId = getFactoryId(portables[0]);
                     FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);

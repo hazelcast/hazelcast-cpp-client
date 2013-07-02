@@ -8,12 +8,15 @@
 #define HAZELCAST_Portable
 
 #include "SerializationConstants.h"
+#include "ConstantSerializers.h"
 
-namespace hazelcast{
-    namespace client{
+namespace hazelcast {
+    namespace client {
+        typedef unsigned char byte;
+
         class Portable {
-            public:
-            virtual ~Portable(){
+        public:
+            virtual ~Portable() {
 
             };
 

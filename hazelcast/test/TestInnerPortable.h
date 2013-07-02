@@ -9,13 +9,13 @@
 #ifndef Server_TestInnerPortable_h
 #define Server_TestInnerPortable_h
 
+#include "Portable.h"
 #include "TestNamedPortable.h"
-#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 
 using namespace hazelcast::client;
 
-class TestInnerPortable {
+class TestInnerPortable : public Portable {
     template<typename HzWriter>
     friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestInnerPortable& data);
 
@@ -98,9 +98,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getSerializerId(const TestInnerPortable& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
+//            inline int getSerializerId(const TestInnerPortable& x) {
+//                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+//            };
 
             inline int getFactoryId(const TestInnerPortable& t) {
                 return 1;
@@ -112,26 +112,26 @@ namespace hazelcast {
 
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const TestInnerPortable& data) {
-                writer["b"] << data.bb;
-                writer["c"] << data.cc;
-                writer["s"] << data.ss;
-                writer["i"] << data.ii;
-                writer["l"] << data.ll;
-                writer["f"] << data.ff;
-                writer["d"] << data.dd;
-                writer["nn"] << data.nn;
+                writer.writeByteArray("b", data.bb);
+                writer.writeCharArray("c", data.cc);
+                writer.writeShortArray("s", data.ss);
+                writer.writeIntArray("i", data.ii);
+                writer.writeLongArray("l", data.ll);
+                writer.writeFloatArray("f", data.ff);
+                writer.writeDoubleArray("d", data.dd);
+                writer.writePortableArray("nn", data.nn);
             };
 
             template<typename HzReader>
             inline void readPortable(HzReader& reader, TestInnerPortable& data) {
-                reader["b"] >> data.bb;
-                reader["c"] >> data.cc;
-                reader["s"] >> data.ss;
-                reader["i"] >> data.ii;
-                reader["l"] >> data.ll;
-                reader["f"] >> data.ff;
-                reader["d"] >> data.dd;
-                reader["nn"] >> data.nn;
+                data.bb = reader.readByteArray("b");
+                data.cc = reader.readCharArray("c");
+                data.ss = reader.readShortArray("s");
+                data.ii = reader.readIntArray("i");
+                data.ll = reader.readLongArray("l");
+                data.ff = reader.readFloatArray("f");
+                data.dd = reader.readDoubleArray("d");
+                data.nn = reader.template readPortableArray<TestNamedPortable>("nn");
             };
         }
     }

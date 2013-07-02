@@ -76,6 +76,7 @@ namespace hazelcast {
 
             void PortableWriter::writeByteArray(const char *fieldName, const vector<byte>  & bytes) {
                 setPosition(fieldName);
+                output->writeInt(bytes.size());
                 output->write(bytes);
             };
 
@@ -83,10 +84,8 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeChar(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeChar(data[i]);
                 }
             };
 
@@ -94,10 +93,8 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeShort(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeShort(data[i]);
                 }
             };
 
@@ -105,10 +102,8 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeInt(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeInt(data[i]);
                 }
             };
 
@@ -116,10 +111,8 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeLong(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeLong(data[i]);
                 }
             };
 
@@ -127,10 +120,8 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeFloat(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeFloat(data[i]);
                 }
             };
 
@@ -138,34 +129,10 @@ namespace hazelcast {
                 setPosition(fieldName);
                 int size = data.size();
                 output->writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        output->writeDouble(data[i]);
-                    }
+                for (int i = 0; i < size; i++) {
+                    output->writeDouble(data[i]);
                 }
             };
-
-//            void PortableWriter::writeData(const char *fieldName, const Data&  data) { //TODO ???
-//                setPosition(fieldName);
-//                output->writeInt(data.getType());
-//                if (data.cd != NULL) {
-//                    output->writeInt(data.cd->getClassId());
-//                    output->writeInt(data.cd->getFactoryId());
-//                    output->writeInt(data.cd->getVersion());
-//                    const std::vector<byte>& classDefBytes = data.cd->getBinary();
-//                    output->writeInt(classDefBytes.size());
-//                    output->write(classDefBytes);
-//                } else {
-//                    output->writeInt(data.NO_CLASS_ID);
-//                }
-//                int len = data.bufferSize();
-//                output->writeInt(len);
-//                if (len > 0) {
-//                    output->write(*(data.buffer.get()));
-//                }
-//                output->writeInt(data.partitionHash);
-//            };
-
 
             void PortableWriter::setPosition(const char *fieldName) {
                 if (raw) throw HazelcastException("Cannot write Portable fields after getRawDataOutput() is called!");
@@ -189,7 +156,7 @@ namespace hazelcast {
 
             };
 
-            BufferedDataOutput* PortableWriter::getRawDataOutput() {
+            BufferedDataOutput *PortableWriter::getRawDataOutput() {
                 if (!raw) {
                     int pos = output->position();
                     int index = cd->getFieldCount(); // last index

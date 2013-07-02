@@ -242,9 +242,9 @@ namespace hazelcast {
                     currentClassId = fd.getClassId();
                     input.position(getPosition(fieldName));
                     currentFieldType = cd->getFieldType(fieldName);
-                    return true;
-                } else {
                     return false;
+                } else {
+                    return true;
                 }
             }
 

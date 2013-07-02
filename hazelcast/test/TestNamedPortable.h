@@ -9,7 +9,6 @@
 #ifndef Server_TestNamedPortable_h
 #define Server_TestNamedPortable_h
 
-#include "SerializationConstants.h"
 #include "Portable.h"
 #include <string>
 
@@ -41,10 +40,6 @@ public:
     inline void readPortable(HzReader& reader) {
         name = reader.readUTF("name");
         k = reader.readInt("myint");
-    };
-
-    virtual ~TestNamedPortable() {
-
     };
 
     virtual bool operator ==(const TestNamedPortable& m) const {

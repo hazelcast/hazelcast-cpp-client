@@ -27,7 +27,7 @@ public:
 
     TestRawDataPortable() {
 
-    }
+    };
 
     TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
         this->l = l;
@@ -36,7 +36,7 @@ public:
         this->k = k;
         this->s = s;
         this->ds = ds;
-    }
+    };
 
     bool operator ==(const TestRawDataPortable& m) const {
         if (this == &m)
@@ -73,13 +73,13 @@ namespace hazelcast {
 
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const TestRawDataPortable& data) {
-                writer.writeLong("l",data.l);
-                writer.writeCharArray("c",data.c);
-                writer.writePortable("p",data.p);
-                BufferedDataOutput* out = writer.getRawDataOutput();
+                writer.writeLong("l", data.l);
+                writer.writeCharArray("c", data.c);
+                writer.writePortable("p", data.p);
+                BufferedDataOutput *out = writer.getRawDataOutput();
                 out->writeInt(data.k);
                 out->writeUTF(data.s);
-                writeData(*out,data.ds);
+                writeData(*out, data.ds);
             };
 
             template<typename HzReader>
@@ -87,10 +87,10 @@ namespace hazelcast {
                 data.l = reader.readLong("l");
                 data.c = reader.readCharArray("c");
                 data.p = reader.template readPortable<TestNamedPortable>("p");
-                BufferedDataInput* in = reader.getRawDataInput();
+                BufferedDataInput *in = reader.getRawDataInput();
                 data.k = in->readInt();
                 data.s = in->readUTF();
-                readData(*in,data.ds);
+                readData(*in, data.ds);
             };
         }
     }

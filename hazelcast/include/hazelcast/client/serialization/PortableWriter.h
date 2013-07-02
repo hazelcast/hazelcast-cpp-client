@@ -67,16 +67,16 @@ namespace hazelcast {
 
                 void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
 
-//                void writeData(const char *fieldName, const Data&  data);
-
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
+                    setPosition(fieldName);
                     output->writeBoolean(false);
                     write(*output, portable);
                 };
 
                 template <typename T>
-                void writePortable(const char *fieldName, const std::vector<T>& values) {
+                void writePortableArray(const char *fieldName, const std::vector<T>& values) {
+                    setPosition(fieldName);
                     int len = values.size();
                     output->writeInt(len);
                     if (len > 0) {
@@ -89,7 +89,7 @@ namespace hazelcast {
                     }
                 };
 
-                BufferedDataOutput* getRawDataOutput();
+                BufferedDataOutput *getRawDataOutput();
 
             private:
 

@@ -27,10 +27,6 @@ namespace hazelcast {
             typedef unsigned char byte;
 
             class Data {
-                friend void readPortable(PortableReader& dataInput, Data& data);
-
-                friend void readPortable(MorphingPortableReader& portableReader, Data& data);
-
             public:
 
                 Data();
@@ -60,10 +56,6 @@ namespace hazelcast {
                 bool isServerError() const;
 
                 int hashCode();
-
-                bool operator ==(const Data&) const;
-
-                bool operator !=(const Data&) const;
 
                 template<typename  Out>
                 void writeData(Out & dataOutput) const {
@@ -152,12 +144,6 @@ namespace hazelcast {
 
                 int getClassId() const;
             };
-
-
-            inline int getSerializerId(const Data& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
         }
     }
 }

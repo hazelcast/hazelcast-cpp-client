@@ -54,7 +54,7 @@ namespace hazelcast {
 
                 BufferedDataInput dataInput(decompressed);
                 ClassDefinition *cd = new ClassDefinition;
-                readPortable(dataInput, *cd);
+                cd->readData(dataInput);
                 cd->setBinary(binary);
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
@@ -75,7 +75,7 @@ namespace hazelcast {
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
                         BufferedDataOutput output;
-                        writePortable(output, *cd);
+                        cd->writeData(output);
                         std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
                         compress(*(binary.get()));
                         cd->setBinary(binary);

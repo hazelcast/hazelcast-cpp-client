@@ -6,7 +6,7 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestNamedPortableV2 {
+class TestNamedPortableV2 : public hazelcast::client::Portable {
 public:
     TestNamedPortableV2() {
 
@@ -41,9 +41,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            inline int getSerializerId(const TestNamedPortableV2& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
+//            inline int getSerializerId(const TestNamedPortableV2& x) {
+//                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+//            };
 
             inline int getFactoryId(const TestNamedPortableV2& t) {
                 return 1;
@@ -55,16 +55,16 @@ namespace hazelcast {
 
             template<typename HzWriter>
             inline void writePortable(HzWriter& writer, const TestNamedPortableV2& data) {
-                writer["v"] << data.v;
-                writer["name"] << data.name;
-                writer["myint"] << data.k;
+                writer.writeInt("v", data.v);
+                writer.writeUTF("name", data.name);
+                writer.writeInt("myint", data.k);
             };
 
             template<typename HzReader>
             inline void readPortable(HzReader& reader, TestNamedPortableV2& data) {
-                reader["v"] >> data.v;
-                reader["name"] >> data.name;
-                reader["myint"] >> data.k;
+                data.v = reader.readInt("v");
+                data.name = reader.readUTF("name");
+                data.k = reader.readInt("myint");
             };
         }
     }
