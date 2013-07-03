@@ -40,7 +40,8 @@ namespace hazelcast {
             }
 
             template<typename T>
-            inline void writeData(BufferedDataOutput& portableWriter, const T& data) {
+//            inline void writeData(BufferedDataOutput& portableWriter,const T& data) {//TODO
+            inline void writeData(BufferedDataOutput& portableWriter, T& data) {
                 data.writeData(portableWriter);
             };
 

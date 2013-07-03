@@ -21,6 +21,14 @@ namespace hazelcast {
 
             }
 
+            int Principal::getFactoryId() const {
+                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
+            }
+
+            int Principal::getClassId() const {
+                return ProtocolConstants::PRINCIPAL_ID;;
+            }
+
 
         }
     }

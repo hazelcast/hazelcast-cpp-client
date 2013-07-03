@@ -38,14 +38,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
-                    writer << message;
+                    writer.writeUTF("n", instanceName);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    message.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
-                    reader >> message;
+                    instanceName = reader.readUTF("n");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    message.readData(*in);
                 };
             private:
                 serialization::Data message;

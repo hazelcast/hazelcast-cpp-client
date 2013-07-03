@@ -51,18 +51,18 @@ namespace hazelcast {
             }
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestInvalidWritePortable& data) {
-                //TODO convert std::string to const char*
-                writer["l"] << data.l;
-                writer << data.i;
-                writer["s"] << data.s;
+            inline void writePortable(HzWriter& writer, const TestInvalidReadPortable& data) {
+                writer.writeLong("l", data.l);
+                serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                out->writeInt(data.i);
+                writer.writeUTF("s", data.s);
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestInvalidWritePortable& data) {
-                reader["l"] >> data.l;
-                reader["i"] >> data.i;
-                reader["s"] >> data.s;
+            inline void readPortable(HzReader& reader, TestInvalidReadPortable& data) {
+                data.l = reader.readLong("l");
+                data.i = reader.readInt("i");
+                data.s = reader.readLong("s");
             };
         }
     }

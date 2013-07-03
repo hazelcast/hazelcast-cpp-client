@@ -29,13 +29,13 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     AtomicLongRequest::writePortable(writer);
-                    writer["e"] << expect;
+                    writer.writeLong("e", expect);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     AtomicLongRequest::readPortable(reader);
-                    reader["e"] >> expect;
+                    expect = reader.readLong("e");
                 };
             private:
                 long expect;

@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class LockRequest {
+            class LockRequest : public Portable {
             public:
                 LockRequest(const std::string& name, serialization::Data& key, int threadId, long ttl, long timeout)
                 :name(name)
@@ -28,10 +28,6 @@ namespace hazelcast {
                 , timeout(-1) {
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return PortableHook::F_ID;
                 };
@@ -42,20 +38,22 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["thread"] << threadId;
-                    writer["ttl"] << ttl;
-                    writer["timeout"] << timeout;
-                    writer << key;
+                    writer.writeUTF("n", name);
+                    writer.writeInt("thread", threadId);
+                    writer.writeLong("ttl", ttl);
+                    writer.writeLong("timeout", timeout);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["thread"] >> threadId;
-                    reader["ttl"] >> ttl;
-                    reader["timeout"] >> timeout;
-                    reader >> key;
+                    name = reader.readUTF("n");
+                    threadId = reader.readInt("thread");
+                    ttl = reader.readLong("ttl");
+                    timeout = reader.readLong("timeout");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
                 serialization::Data& key;

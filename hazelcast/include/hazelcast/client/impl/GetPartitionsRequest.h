@@ -7,45 +7,33 @@
 #ifndef HAZELCAST_GET_PARTITIONS_REQUEST
 #define HAZELCAST_GET_PARTITIONS_REQUEST
 
+#include "DataSerializable.h"
 #include "../protocol/ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class BufferedDataInput;
+
+            class BufferedDataOutput;
+        }
         namespace impl {
-            class GetPartitionsRequest {
+
+
+            class GetPartitionsRequest : public DataSerializable {
             public:
                 GetPartitionsRequest();
+
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                void writeData(serialization::BufferedDataOutput& writer);
+
+                void readData(serialization::BufferedDataInput& reader);
+
             };
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            inline int getSerializerId(const impl::GetPartitionsRequest& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            inline int getFactoryId(const impl::GetPartitionsRequest& ar) {
-                return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
-            }
-
-            inline int getClassId(const impl::GetPartitionsRequest& ar) {
-                return protocol::ProtocolConstants::GET_PARTITIONS;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const impl::GetPartitionsRequest& arr) {
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, impl::GetPartitionsRequest& arr) {
-            };
-
         }
     }
 }

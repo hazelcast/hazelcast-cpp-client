@@ -7,7 +7,6 @@
 //
 
 #include "PortableWriter.h"
-#include "Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -76,62 +75,37 @@ namespace hazelcast {
 
             void PortableWriter::writeByteArray(const char *fieldName, const vector<byte>  & bytes) {
                 setPosition(fieldName);
-                output->writeInt(bytes.size());
-                output->write(bytes);
+                output->writeByteArray(bytes);
             };
 
             void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char >&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeChar(data[i]);
-                }
+                output->writeCharArray(data);
             };
 
             void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short >&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeShort(data[i]);
-                }
+                output->writeShortArray(data);
             };
 
             void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int>&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeInt(data[i]);
-                }
+                output->writeIntArray(data);
             };
 
             void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long >&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeLong(data[i]);
-                }
+                output->writeLongArray(data);
             };
 
             void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float >&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeFloat(data[i]);
-                }
+                output->writeFloatArray(data);
             };
 
             void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double >&  data) {
                 setPosition(fieldName);
-                int size = data.size();
-                output->writeInt(size);
-                for (int i = 0; i < size; i++) {
-                    output->writeDouble(data[i]);
-                }
+                output->writeDoubleArray(data);
             };
 
             void PortableWriter::setPosition(const char *fieldName) {

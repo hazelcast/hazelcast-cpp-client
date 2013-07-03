@@ -9,7 +9,6 @@
 #ifndef HAZELCAST_EMPTY_DATA_OUTPUT
 #define HAZELCAST_EMPTY_DATA_OUTPUT
 
-#include "ConstantSerializers.h"
 #include "../HazelcastException.h"
 #include "BufferedDataOutput.h"
 #include <vector>

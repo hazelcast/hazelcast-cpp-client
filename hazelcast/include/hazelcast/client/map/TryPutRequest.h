@@ -36,22 +36,24 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["timeout"] << timeout;
-                    writer["n"] << name;
-                    writer["t"] << threadId;
-                    writer["ttl"] << ttl;
-                    writer << key;
-                    writer << value;
+                    writer.writeLong("timeout", timeout);
+                    writer.writeUTF("n", name);
+                    writer.writeInt("t", threadId);
+                    writer.writeLong("ttl", ttl);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
+                    value.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["timeout"] >> timeout;
-                    reader["n"] >> name;
-                    reader["t"] >> threadId;
-                    reader["ttl"] >> ttl;
-                    reader >> key;
-                    reader >> value;
+                    timeout = reader.readLong("timeout");
+                    name = reader.readUTF("n");
+                    threadId = reader.readInt("t");
+                    ttl = reader.readLong("ttl");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
+                    value.readData(*in);
                 };
             private:
                 serialization::Data& key;

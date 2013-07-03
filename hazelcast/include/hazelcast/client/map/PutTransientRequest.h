@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class PutTransientRequest {
+            class PutTransientRequest : public Portable{
             public:
                 PutTransientRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
                 :name(name)
@@ -19,10 +19,6 @@ namespace hazelcast {
                 , threadId(threadId)
                 , ttl(ttl) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -35,21 +31,22 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["t"] << threadId;
-                    writer["ttl"] << ttl;
-                    writer << key;
-                    writer << value;
+                    writer.writeUTF("n", name);
+                    writer.writeInt("thread", threadId);
+                    writer.writeLong("ttl", ttl);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> threadId;
-                    reader["ttl"] >> ttl;
-                    reader >> key;
-                    reader >> value;
+                    name = reader.readUTF("n");
+                    threadId = reader.readInt("thread");
+                    ttl = reader.readLong("ttl");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
+
             private:
                 serialization::Data& key;
                 serialization::Data& value;

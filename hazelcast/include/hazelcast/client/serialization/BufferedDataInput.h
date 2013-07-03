@@ -29,6 +29,10 @@ namespace hazelcast {
 
                 BufferedDataInput(const std::vector<byte>&);
 
+                void setSerializationContext(SerializationContext* context);
+
+                SerializationContext * getSerializationContext();
+
                 void readFully(std::vector<byte>&);
 
                 int skipBytes(int i);
@@ -72,6 +76,7 @@ namespace hazelcast {
             private:
                 const std::vector<byte>& buffer;
                 int pos;
+                SerializationContext* context;
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 

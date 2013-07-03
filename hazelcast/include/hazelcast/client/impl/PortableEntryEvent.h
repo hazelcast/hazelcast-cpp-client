@@ -9,11 +9,14 @@
 #include "../connection/Member.h"
 #include "EntryEvent.h"
 #include "Data.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableEntryEvent : public EventObject {
+            class PortableEntryEvent : public EventObject, public Portable {
             public:
                 enum EntryEventType {
                     ADDED, REMOVED, UPDATED, EVICTED
@@ -48,37 +51,34 @@ namespace hazelcast {
 
                 std::string getName() const;
 
-
-                int getSerializerId() const;
-
                 int getFactoryId() const;
 
                 int getClassId() const;
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << (int) eventType;
-                    writer << uuid;
-                    writer << key;
-                    writer << true;
-                    writer << value;
-                    writer << true;
-                    writer << oldValue;
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    out->writeInt(eventType);
+                    out->writeUTF(uuid);
+                    key.writeData(*out);
+                    out->writeBoolean(true);
+                    value.writeData(*out);
+                    out->writeBoolean(true);
+                    oldValue.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    int type;
-                    reader >> type;
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    int type = in->readInt();
 //                    eventType = type;
-                    reader >> key;
-                    bool isNotNull;
-                    reader >> isNotNull;
+                    key.readData(*in);
+                    bool isNotNull = in->readBoolean();
                     if (isNotNull)
-                        reader >> value;
-                    reader >> isNotNull;
+                        value.readData(*in);
+                    isNotNull = in->readBoolean();
                     if (isNotNull)
-                        reader >> oldValue;
+                        oldValue.readData(*in);
                 };
 
             private:

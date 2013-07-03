@@ -34,14 +34,14 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["m"] << maxSize;
+                    writer.writeUTF("n", name);
+                    writer.writeInt("m", maxSize);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["m"] >> maxSize;
+                    name = reader.readUTF("n");
+                    maxSize = reader.readInt("m");
                 };
             private:
                 std::string name;

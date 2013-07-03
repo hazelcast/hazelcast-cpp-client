@@ -11,12 +11,13 @@
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "LockPortableHook.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace lock {
-            class LockRequest {
+            class LockRequest : public Portable {
             public:
             public:
                 LockRequest(const serialization::Data& key, int threadId)
@@ -41,24 +42,22 @@ namespace hazelcast {
                     return LockPortableHook::FACTORY_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["tid"] << threadId;
-                    writer["ttl"] << ttl;
-                    writer["timeout"] << timeout;
-                    writer << key;
+                    writer.writeInt("tid", threadId);
+                    writer.writeLong("ttl", ttl);
+                    writer.writeLong("timeout", timeout);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["tid"] >> threadId;
-                    reader["ttl"] >> ttl;
-                    reader["timeout"] >> timeout;
-                    reader >> key;
+                    threadId = reader.readInt("tid");
+                    ttl = reader.readLong("ttl");
+                    timeout = reader.readLong("timeout");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
 

@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class PortableEntrySetResponse {
+            class PortableEntrySetResponse : public Portable {
             public:
                 PortableEntrySetResponse() {
 
@@ -45,21 +45,22 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["s"] << entrySet.size();
+                    writer.writeInt("s", entrySet.size());
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
                     for (int i = 0; i < entrySet.size(); ++i) {
-                        writer << entrySet[i].first;
-                        writer << entrySet[i].second;
+                        entrySet[i].first.writeData(*out);
+                        entrySet[i].second.writeData(*out);
                     }
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    int size;
-                    reader["s"] >> size;
+                    int size = reader.readInt("s");
                     entrySet.resize(size);
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
-                        reader >> entrySet[i].first;
-                        reader >> entrySet[i].second;
+                        entrySet[i].first.readData(*in);
+                        entrySet[i].second.readData(*in);
                     }
                 };
 

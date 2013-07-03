@@ -20,6 +20,14 @@ namespace hazelcast {
                 return error.c_str();
             }
 
+            int HazelcastServerError::getFactoryId() const {
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
+            }
+
+            int HazelcastServerError::getClassId() const {
+                return protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID;
+            }
+
         }
     }
 }

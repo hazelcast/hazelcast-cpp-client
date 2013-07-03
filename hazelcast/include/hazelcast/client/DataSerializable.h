@@ -13,6 +13,8 @@ namespace hazelcast {
 
         class DataSerializable {
         public:
+            typedef unsigned char byte;
+
             virtual ~DataSerializable() {
 
             };

@@ -12,10 +12,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
-#include "ConstantSerializers.h"
 #include "../HazelcastException.h"
-#include "PortableReader.h"
-#include "MorphingPortableReader.h"
 #include <vector>
 #include <iosfwd>
 
@@ -87,12 +84,12 @@ namespace hazelcast {
 
                     if (classId != NO_CLASS_ID) {
                         int factoryId = dataInput.readInt();
-                        isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                                && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                        isError = (factoryId == protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
+                                && (classId == protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
-
+                        SerializationContext& serializationContext = dataInput.getSerializationContext();
                         if (serializationContext.isClassDefinitionExists(factoryId, classId, version)) {
                             cd = serializationContext.lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);
@@ -138,7 +135,6 @@ namespace hazelcast {
                 bool isError;
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
-
 
                 int getFactoryId() const;
 

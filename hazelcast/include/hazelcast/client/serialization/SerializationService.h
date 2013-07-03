@@ -19,7 +19,6 @@
 #include "Serializer.h"
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
-#include "ConstantSerializers.h"
 #include "Data.h"
 #include <iosfwd>
 #include <string>

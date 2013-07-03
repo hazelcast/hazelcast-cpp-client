@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            class AddEntryListenerRequest {
+            class AddEntryListenerRequest : public Portable {
             public:
                 AddEntryListenerRequest(const std::string& name, bool includeValue)
                 :name(name), includeValue(includeValue), hasKey(false), hasPredicate(false) {
@@ -38,10 +38,6 @@ namespace hazelcast {
 
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return PortableHook::F_ID;
                 }
@@ -52,29 +48,31 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 inline void writePortable(HzWriter& writer) const {
-                    writer["name"] << name;
-                    writer["i"] << includeValue;
-                    writer["key"] << hasKey;
-                    writer["pre"] << hasPredicate;
+                    writer.writeUTF("name", name);
+                    writer.writeBoolean("i", includeValue);
+                    writer.writeBoolean("key", hasKey);
+                    writer.writeBoolean("pre", hasPredicate);
                     if (hasPredicate) {
-                        writer["p"] << sql;
+                        writer.writeUTF("p", sql);
                     }
                     if (hasKey) {
-                        writer << key;
+                        serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                        key.writeData(*out);
                     }
                 };
 
                 template<typename HzReader>
                 inline void readPortable(HzReader& reader) {
-                    reader["name"] >> name;
-                    reader["i"] >> includeValue;
-                    reader["key"] >> hasKey;
-                    reader["pre"] >> hasPredicate;
+                    name = reader.readUTF("name");
+                    includeValue = reader.readBoolean("i");
+                    hasKey = reader.readBoolean("key");
+                    hasPredicate = reader.readBoolean("pre");
                     if (hasPredicate) {
-                        reader["p"] >> sql;
+                        sql = reader.readUTF("p");
                     }
                     if (hasKey) {
-                        reader >> key;
+                        serialization::BufferedDataInput *in = reader.getRawDataInput();
+                        key.readData(*in);
                     }
                 };
             private:

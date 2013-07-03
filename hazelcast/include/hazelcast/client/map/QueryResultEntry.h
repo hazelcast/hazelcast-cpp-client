@@ -14,14 +14,10 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryResultEntry {
+            class QueryResultEntry : public DataSerializable {
             public:
                 QueryResultEntry() {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
                 };
 
                 int getFactoryId() const {
@@ -32,28 +28,25 @@ namespace hazelcast {
                     return DataSerializableHook::QUERY_RESULT_ENTRY;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << true;
-                    writer << keyIndex;
-                    writer << true;
-                    writer << key;
-                    writer << true;
-                    writer << value;
+                void writePortable(serialization::BufferedDataOutput& writer) const {
+                    writer.writeBoolean(true);
+                    keyIndex.writeData(writer);
+                    writer.writeBoolean(true);
+                    key.writeData(writer);
+                    writer.writeBoolean(true);
+                    value.writeData(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    bool isNotNull;
-                    reader >> isNotNull;
+                void readPortable(serialization::BufferedDataInput& reader) {
+                    bool isNotNull = reader.readBoolean();
                     if (isNotNull)
-                        reader >> keyIndex;
-                    reader >> isNotNull;
+                        keyIndex.readData(reader);
+                    isNotNull = reader.readBoolean();
                     if (isNotNull)
-                        reader >> key;
-                    reader >> isNotNull;
+                        key.readData(reader);
+                    isNotNull = reader.readBoolean();
                     if (isNotNull)
-                        reader >> value;
+                        value.readData(reader);
                 };
                 serialization::Data keyIndex;
                 serialization::Data key;

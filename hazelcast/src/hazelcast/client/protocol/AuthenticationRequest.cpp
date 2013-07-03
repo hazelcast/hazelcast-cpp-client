@@ -28,6 +28,14 @@ namespace hazelcast {
             }
 
 
+            int AuthenticationRequest::getFactoryId() const {
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
+            }
+
+            int AuthenticationRequest::getClassId() const {
+                return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
+            };
+
         }
     }
 }

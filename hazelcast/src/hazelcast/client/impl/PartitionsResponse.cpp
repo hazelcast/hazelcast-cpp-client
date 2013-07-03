@@ -4,6 +4,10 @@
 
 
 #include "PartitionsResponse.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
+#include "ProtocolConstants.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -28,7 +32,40 @@ namespace hazelcast {
 
             bool PartitionsResponse::isEmpty() {
                 return members.size() == 0;
-            }
+            };
+
+            int PartitionsResponse::getFactoryId() const {
+                return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
+            };
+
+            int PartitionsResponse::getClassId() const {
+                return protocol::ProtocolConstants::PARTITIONS;
+            };
+
+            void PartitionsResponse::writeData(serialization::BufferedDataOutput& writer) {
+                writer.writeInt(members.size());
+                for (int i = 0; i < members.size(); i++) {
+                    members[i].writeData(writer);
+                }
+                writer.writeInt(ownerIndexes.size());
+                for (int i = 0; i < ownerIndexes.size(); i++) {
+                    writer.writeInt(ownerIndexes[i]);
+                }
+            };
+
+            void PartitionsResponse::readData(serialization::BufferedDataInput& reader) {
+                int len;
+                len = reader.readInt();
+                members.resize(len);
+                for (int i = 0; i < len; i++) {
+                    members[i].readData(reader);
+                }
+                len = reader.readInt();
+                ownerIndexes.resize(len);
+                for (int i = 0; i < len; i++) {
+                    ownerIndexes[i] = reader.readInt();
+                }
+            };
 
 
         }

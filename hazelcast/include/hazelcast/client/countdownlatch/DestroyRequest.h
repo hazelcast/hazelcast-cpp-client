@@ -9,12 +9,13 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "CountDownLatchPortableHook.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class DestroyRequest {
+            class DestroyRequest : public Portable{
                 DestroyRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
 
@@ -24,22 +25,18 @@ namespace hazelcast {
                     return CountDownLatchPortableHook::F_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return CountDownLatchPortableHook::DESTROY;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
+                    writer.writeUTF("name", instanceName);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
+                    instanceName = reader.readUTF("name");
                 };
             private:
 

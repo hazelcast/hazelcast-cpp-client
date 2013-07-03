@@ -30,15 +30,17 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["l"] << last;
-                    writer << value;
+                    writer.writeBoolean("l", last);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    value.writeData(*out);
                     CollectionRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["l"] >> last;
-                    reader >> value;
+                    last = reader.readBoolean("l");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    value.readData(*in);
                     CollectionRequest::readPortable(reader);
                 };
 

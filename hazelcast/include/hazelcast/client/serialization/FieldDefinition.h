@@ -10,13 +10,15 @@
 #define HAZELCAST_FIELD_DEFINITION
 
 #include "FieldType.h"
-#include "DataSerializable.h"
 #include "SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class BufferedDataInput;
+
+            class BufferedDataOutput;
 
 
             class FieldDefinition {

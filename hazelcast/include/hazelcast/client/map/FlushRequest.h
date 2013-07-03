@@ -13,15 +13,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class FlushRequest {
+            class FlushRequest : public Portable{
             public:
                 FlushRequest(const std::string& name)
                 :name(name) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -34,12 +30,12 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 inline void writePortable(HzWriter& writer) const {
-                    writer["name"] << name;
+                    writer.writeUTF("name", name);
                 };
 
                 template<typename HzReader>
                 inline void readPortable(HzReader& reader) {
-                    reader["name"] >> name;
+                    name = reader.readUTF("name");
                 };
             private:
                 std::string name;

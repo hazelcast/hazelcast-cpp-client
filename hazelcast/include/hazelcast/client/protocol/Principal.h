@@ -11,11 +11,27 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class Principal {
+            class Principal : public Portable {
             public:
                 Principal();
 
                 Principal(std::string uuid, std::string ownerUuid);
+
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                template<typename HzWriter>
+                inline void writePortable(HzWriter& writer, const protocol::Principal& data) {
+                    writer.writeUTF("uuid", uuid);
+                    writer.writeUTF("ownerUuid", ownerUuid);
+                };
+
+                template<typename HzReader>
+                inline void readPortable(HzReader& reader, protocol::Principal& data) {
+                    uuid = reader.readUTF("uuid");
+                    ownerUuid = reader.readUTF("ownerUuid");
+                };
 
                 std::string uuid;
                 std::string ownerUuid;
@@ -23,39 +39,4 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getSerializerId(const protocol::Principal& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const protocol::Principal& ar) {
-                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
-            }
-
-            inline int getClassId(const protocol::Principal& ar) {
-                return protocol::ProtocolConstants::PRINCIPAL_ID;;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const protocol::Principal& data) {
-                writer ["uuid"] << data.uuid;
-                writer ["ownerUuid"] << data.ownerUuid;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, protocol::Principal& data) {
-                reader ["uuid"] >> data.uuid;
-                reader ["ownerUuid"] >> data.ownerUuid;
-            };
-
-        }
-    }
-}
-
 #endif //HAZELCAST_PRINCIPAL

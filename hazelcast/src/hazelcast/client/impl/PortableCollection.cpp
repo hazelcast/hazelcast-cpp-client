@@ -8,8 +8,14 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            int PortableCollection::getSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
+
+
+            PortableCollection::PortableCollection() {
+
+            };
+
+            const std::vector<serialization::Data>& PortableCollection::getCollection() const {
+                return collection;
             };
 
             int PortableCollection::getFactoryId() const {

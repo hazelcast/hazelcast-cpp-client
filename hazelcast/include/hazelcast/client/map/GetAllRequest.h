@@ -10,16 +10,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetAllRequest {
+            class GetAllRequest : public Portable {
             public:
                 GetAllRequest(const std::string& name, std::vector<serialization::Data>& keys)
                 :name(name)
                 , keys(keys) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -31,24 +27,24 @@ namespace hazelcast {
                 }
 
                 template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["size"] << keys.size();
-                    for (std::vector<serialization::Data>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
-                        writer << (*it);
+                inline void writePortable(HzWriter& writer) const {
+                    writer.writeUTF("n", name);
+                    writer.writeInt("size", keys.size());
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    for (int i = 0; i < keys.size(); i++) {
+                        keys[i].writeData(*out);
                     }
                 };
 
                 template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    int size;
-                    reader["size"] >> size;
+                inline void readPortable(HzReader& reader) {
+                    name = reader.readUTF("n");
+                    int size = reader.readInt("size");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
                     keys.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> keys[i];
+                    for (int i = 0; i < keys.size(); i++) {
+                        keys[i].readData(*in);
                     }
-
                 };
             private:
                 std::vector<serialization::Data> keys;

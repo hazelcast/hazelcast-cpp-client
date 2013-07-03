@@ -14,12 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class Member {
-                template<typename HzWriter>
-                friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::client::connection::Member& ar);
-
-                template<typename HzReader>
-                friend void hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::connection::Member& ar);
+            class Member : public DataSerializable {
 
             public:
                 Member();
@@ -38,6 +33,14 @@ namespace hazelcast {
 
                 std::string getUuid() const;
 
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                void writeData(serialization::BufferedDataOutput& writer);
+
+                void readData(serialization::BufferedDataInput& reader);
+
             private:
                 hazelcast::client::Address address;
                 std::string uuid;
@@ -50,35 +53,5 @@ inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::co
     return strm << std::string("Member[") << a.getAddress().getHost() << std::string("]:") << hazelcast::util::to_string(a.getAddress().getPort());
 };
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            inline int getSerializerId(const hazelcast::client::connection::Member& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
 
-            inline int getFactoryId(const hazelcast::client::connection::Member& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
-            }
-
-            inline int getClassId(const hazelcast::client::connection::Member& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::MEMBER_ID;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::connection::Member& ar) {
-                writer << ar.address;
-                writer << ar.uuid;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::connection::Member& ar) {
-                reader >> ar.address;
-                reader >> ar.uuid;
-            };
-
-        }
-    }
-}
 #endif //HAZELCAST_MEMBER

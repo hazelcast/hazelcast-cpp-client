@@ -9,50 +9,30 @@
 
 #include "../serialization/Data.h"
 #include "../serialization/SerializationConstants.h"
+#include "DataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class SerializableCollection {
+            class SerializableCollection : public DataSerializable{
             public:
                 SerializableCollection();
 
                 ~SerializableCollection();
 
-                std::vector<serialization::Data *> getCollection() const;
-
-                int getSerializerId() const;
+                const std::vector<serialization::Data>& getCollection() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
+                void writeData(serialization::BufferedDataOutput& writer);
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) {
-                    writer << datas.size();
-                    for (std::vector < serialization::Data * > ::const_iterator it = datas.begin(); it != datas.end();
-                         ++it) {
-                        (*it)->writeData(writer);
-                    }
-                };
-
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    int size;
-                    reader >> size;
-                    if (size == -1)
-                        return;
-                    for (int i = 0; i < size; i++) {
-                        serialization::Data *data = new serialization::Data();
-                        data->readData(reader);
-                        datas.push_back(data);
-                    }
-                };
+                void readData(serialization::BufferedDataInput& reader);
 
             private:
-                std::vector<serialization::Data *> datas;
+                std::vector<serialization::Data> data;
             };
         }
     }

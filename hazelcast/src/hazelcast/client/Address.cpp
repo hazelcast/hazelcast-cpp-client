@@ -1,5 +1,7 @@
-#include <string>
 #include "Address.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
+#include "ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,6 +41,40 @@ namespace hazelcast {
 
         std::string Address::getHost() const {
             return host;
+        };
+
+        int Address::getFactoryId() const {
+            return protocol::ProtocolConstants::DATA_FACTORY_ID;
+        };
+
+        int Address::getClassId() const {
+            return protocol::ProtocolConstants::ADDRESS_ID;
+        };
+
+        void Address::writeData(serialization::BufferedDataOutput & writer) {
+            writer.writeInt(port);
+            writer.writeByte(type);
+            int size = host.size();
+            writer.writeInt(size);
+            if (size != 0) {
+                std::vector<char> temp(size);
+                char const *str = host.c_str();
+                temp.insert(temp.begin(), str, str + size);
+                writer.writeCharArray(temp);
+            }
+        };
+
+        void Address::readData(serialization::BufferedDataInput & reader) {
+            port = reader.readInt();
+            type = reader.readByte();
+            int size = reader.readInt();
+            if (size != 0) {
+                std::vector<byte> temp(size);
+                reader.readFully(temp);
+                std::ostringstream oss;
+                std::copy(temp.begin(), temp.end(), std::ostream_iterator<byte>(oss));
+                host = oss.str();
+            }
         };
 
     }

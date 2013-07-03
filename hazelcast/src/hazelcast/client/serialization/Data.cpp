@@ -107,7 +107,7 @@ namespace hazelcast {
                 this->partitionHash = partitionHash;
             };
 
-            int Data::getType() const{
+            int Data::getType() const {
                 return type;
             };
 

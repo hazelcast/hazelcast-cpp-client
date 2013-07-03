@@ -17,7 +17,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class MultiMapUnlockRequest {
+            class MultiMapUnlockRequest : public Portable {
             public:
                 MultiMapUnlockRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId)
                 :proxyId(id)
@@ -30,26 +30,24 @@ namespace hazelcast {
                     return CollectionPortableHook::F_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return CollectionPortableHook::UNLOCK;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["tid"] << threadId;
-                    writer << key;
-                    writer << proxyId;
+                    writer.writeInt("tid", threadId);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
+                    proxyId.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["tid"] >> threadId;
-                    reader >> key;
-                    reader >> proxyId;
+                    threadId = reader.readInt("tid");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
+                    proxyId.readData(*in);
                 };
 
             private:

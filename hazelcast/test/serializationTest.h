@@ -160,7 +160,8 @@ TEST(SerializationTest, Compression) {
     serialization::SerializationService serializationService2(1);
     serialization::BufferedDataInput dataInput(*(xxx.get()));
     Data newData;
-    newData.readData(dataInput, serializationService2.getSerializationContext());
+    dataInput.setSerializationContext(&serializationService2.getSerializationContext())
+    newData.readData(dataInput);
     TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
     EXPECT_EQ(mainPortable, returnedPortable);
 };
@@ -199,7 +200,8 @@ void read(int size) {
     serialization::BufferedDataInput dataInput(buffer);
 
     serialization::Data data;
-    data.readData(dataInput, serializationService.getSerializationContext());
+    dataInput.setSerializationContext(&serializationService.getSerializationContext());
+    data.readData(dataInput);
 
     TestMainPortable tmp1 = serializationService.toObject<TestMainPortable>(data);
 

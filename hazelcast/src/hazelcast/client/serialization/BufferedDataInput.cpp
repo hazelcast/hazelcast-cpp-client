@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "BufferedDataInput.h"
+#include <cassert>
 
 namespace hazelcast {
     namespace client {
@@ -13,17 +14,28 @@ namespace hazelcast {
 
             BufferedDataInput::BufferedDataInput(const std::vector<byte>& rhsBuffer)
             :buffer(rhsBuffer)
-            , pos(0) {
+            , pos(0)
+            , context(NULL) {
             };
 
             BufferedDataInput::BufferedDataInput(BufferedDataInput const & param)
-            :buffer(param.buffer) {
+            :buffer(param.buffer), context(NULL) {
                 //private
             };
 
             BufferedDataInput& BufferedDataInput::operator = (const BufferedDataInput&) {
                 //private
                 return *this;
+            };
+
+            void BufferedDataInput::setSerializationContext(SerializationContext *context) {
+                this->context = context;
+            };
+
+
+            SerializationContext *BufferedDataInput::getSerializationContext() {
+                assert(context != NULL);
+                return context;
             };
 
             void BufferedDataInput::readFully(std::vector<byte>& bytes) {
@@ -88,7 +100,6 @@ namespace hazelcast {
             };
 
             float BufferedDataInput::readFloat() {
-
                 union {
                     int i;
                     float f;
@@ -98,7 +109,6 @@ namespace hazelcast {
             };
 
             double BufferedDataInput::readDouble() {
-
                 union {
                     double d;
                     long l;
@@ -205,7 +215,6 @@ namespace hazelcast {
             };
 
             std::vector<char> BufferedDataInput::readCharArray() {
-
                 int len = readInt();
                 std::vector<char> values(len);
                 for (int i = 0; i < len; i++) {
@@ -215,7 +224,6 @@ namespace hazelcast {
             };
 
             std::vector<int> BufferedDataInput::readIntArray() {
-
                 int len = readInt();
                 std::vector<int> values(len);
                 for (int i = 0; i < len; i++) {
@@ -225,7 +233,6 @@ namespace hazelcast {
             };
 
             std::vector<long> BufferedDataInput::readLongArray() {
-
                 int len = readInt();
                 std::vector<long> values(len);
                 for (int i = 0; i < len; i++) {
@@ -235,7 +242,6 @@ namespace hazelcast {
             };
 
             std::vector<double> BufferedDataInput::readDoubleArray() {
-
                 int len = readInt();
                 std::vector<double> values(len);
                 for (int i = 0; i < len; i++) {
@@ -245,7 +251,6 @@ namespace hazelcast {
             };
 
             std::vector<float> BufferedDataInput::readFloatArray() {
-
                 int len = readInt();
                 std::vector<float> values(len);
                 for (int i = 0; i < len; i++) {
@@ -255,7 +260,6 @@ namespace hazelcast {
             };
 
             std::vector<short> BufferedDataInput::readShortArray() {
-
                 int len = readInt();
                 std::vector<short> values(len);
                 for (int i = 0; i < len; i++) {

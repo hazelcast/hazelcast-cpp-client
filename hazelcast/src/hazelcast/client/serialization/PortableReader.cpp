@@ -126,6 +126,7 @@ namespace hazelcast {
                     input.position(pos);
                 }
                 raw = true;
+                input.setSerializationContext(context);
                 return &input;
             };
 

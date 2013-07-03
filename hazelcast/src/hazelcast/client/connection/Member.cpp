@@ -4,6 +4,8 @@
 
 
 #include "Member.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 
 namespace hazelcast {
@@ -44,6 +46,26 @@ namespace hazelcast {
             std::string Member::getUuid() const {
                 return uuid;
             };
+
+            int Member::getFactoryId() const {
+                return protocol::ProtocolConstants::DATA_FACTORY_ID;
+            };
+
+            int Member::getClassId() const {
+                return protocol::ProtocolConstants::MEMBER_ID;
+            };
+
+            void Member::writeData(serialization::BufferedDataOutput & writer) {
+                address.writeData(writer);
+                writer.writeUTF(uuid);
+            };
+
+            void Member::readData(serialization::BufferedDataInput & reader) {
+                address.readData(reader);
+                uuid = reader.readUTF();
+            };
+
+
         }
     }
 }

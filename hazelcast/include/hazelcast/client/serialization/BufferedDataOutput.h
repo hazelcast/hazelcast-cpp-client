@@ -9,7 +9,6 @@
 #ifndef HAZELCAST_DATA_OUTPUT
 #define HAZELCAST_DATA_OUTPUT
 
-#include "ConstantSerializers.h"
 #include "../HazelcastException.h"
 #include <vector>
 #include <iosfwd>

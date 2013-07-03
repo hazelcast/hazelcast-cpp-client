@@ -28,13 +28,13 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["i"] << index;
+                    writer.writeInt("i", index);
                     CollectionRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["i"] >> index;
+                    index = reader.readInt("i");
                     CollectionRequest::readPortable(reader);
                 };
 

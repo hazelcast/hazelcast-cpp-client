@@ -12,7 +12,6 @@
 #include "FieldDefinition.h"
 #include "../HazelcastException.h"
 #include "FieldType.h"
-#include "ConstantSerializers.h"
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "EmptyDataOutput.h"

@@ -5,16 +5,13 @@
 
 #include "MapEntrySet.h"
 #include "DataSerializableHook.h"
+#include "BufferedDataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
             MapEntrySet::MapEntrySet() {
 
-            }
-
-            int MapEntrySet::getSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
             }
 
             int MapEntrySet::getFactoryId() const {
@@ -32,6 +29,23 @@ namespace hazelcast {
             std::vector< std::pair< serialization::Data, serialization::Data> >  & MapEntrySet::getEntrySet() {
                 return entrySet;
             }
+
+            void MapEntrySet::writeData(serialization::BufferedDataOutput& writer) {
+                writer.writeInt(entrySet.size());
+                for (int i = 0; i < entrySet.size(); ++i) {
+                    entrySet[i].first.writeData(writer);
+                    entrySet[i].second.writeData(writer);
+                }
+            };
+
+            void MapEntrySet::readData(serialization::BufferedDataInput& reader) {
+                int size = reader.readInt();
+                entrySet.resize(size);
+                for (int i = 0; i < size; i++) {
+                    entrySet[i].first.readData(reader);
+                    entrySet[i].second.readData(reader);
+                }
+            };
         }
     }
 }

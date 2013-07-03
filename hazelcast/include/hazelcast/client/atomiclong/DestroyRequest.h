@@ -9,13 +9,14 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "AtomicLongPortableHook.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace atomiclong {
 
-            class DestroyRequest {
+            class DestroyRequest : public Portable{
                 DestroyRequest(const std::string& instanceName)
                 :instanceName(instanceName) {
 
@@ -25,22 +26,18 @@ namespace hazelcast {
                     return AtomicLongPortableHook::F_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return AtomicLongPortableHook::DESTROY;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
+                    writer.writeUTF("n", instanceName);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
+                    instanceName = reader.readUTF("n");
                 };
 
             private:

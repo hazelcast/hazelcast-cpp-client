@@ -5,16 +5,31 @@
 
 #include "InputSocketStream.h"
 #include "hazelcast/client/HazelcastException.h"
+#include "SerializationContext.h"
+#include <cassert>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            InputSocketStream::InputSocketStream(hazelcast::client::connection::Socket& socket):socket(socket) {
+            InputSocketStream::InputSocketStream(hazelcast::client::connection::Socket& socket)
+            :socket(socket)
+            , context(NULL) {
             };
 
             InputSocketStream& InputSocketStream::operator = (const InputSocketStream&) {
                 return *this;
+            };
+
+
+            void InputSocketStream::setSerializationContext(SerializationContext *context) {
+                this->context = context;
+            };
+
+
+            SerializationContext * InputSocketStream::getSerializationContext() {
+                assert(context != NULL);
+                return context;
             };
 
             void InputSocketStream::readFully(std::vector<byte>& bytes) {

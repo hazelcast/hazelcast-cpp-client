@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace protocol {
 
 
-            class HazelcastServerError {
+            class HazelcastServerError : public Portable {
 
             public:
                 HazelcastServerError();
@@ -27,43 +27,28 @@ namespace hazelcast {
                 std::string details;
 
                 int type;
+
+                int getClassId() const;
+
+                int getFactoryId() const;
+
+                template<typename HzWriter>
+                inline void writePortable(HzWriter& writer, const protocol::HazelcastServerError& data) {
+                    writer.writeUTF("m", message);
+                    writer.writeUTF("d", details);
+                    writer.writeInt("t", data.type);
+                };
+
+                template<typename HzReader>
+                inline void readPortable(HzReader& reader, protocol::HazelcastServerError& data) {
+                    message = reader.readUTF("m");
+                    details = reader.readUTF("d");
+                    type = reader.readInt("t");
+                };
             };
         }
     }
 }
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            inline int getSerializerId(const protocol::HazelcastServerError& ar) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            }
-
-            inline int getFactoryId(const protocol::HazelcastServerError& ar) {
-                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
-            }
-
-            inline int getClassId(const protocol::HazelcastServerError& ar) {
-                return protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const protocol::HazelcastServerError& data) {
-                writer["m"] << data.message;
-                writer["d"] << data.details;
-                writer["t"] << data.type;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, protocol::HazelcastServerError& data) {
-                reader["m"] >> data.message;
-                reader["d"] >> data.details;
-                reader["t"] >> data.type;
-            };
-
-        }
-    }
-}
 
 #endif //HAZELCAST_SERVER_ERROR

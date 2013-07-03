@@ -4,6 +4,8 @@
 
 
 #include "PingRequest.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -11,6 +13,23 @@ namespace hazelcast {
             PingRequest::PingRequest() {
 
             }
+
+            int PingRequest::getFactoryId() const {
+                return ProtocolConstants::DATA_FACTORY_ID;
+            }
+
+            int PingRequest::getClassId() const {
+                return ProtocolConstants::PING;
+            }
+
+            void PingRequest::writeData(serialization::BufferedDataOutput & writer) {
+
+            }
+
+            void PingRequest::readData(serialization::BufferedDataInput & reader) {
+
+            }
+
         }
     }
 }

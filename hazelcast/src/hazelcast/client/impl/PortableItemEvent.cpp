@@ -27,10 +27,6 @@ namespace hazelcast {
                 return eventType;
             }
 
-            int PortableItemEvent::getSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
             int PortableItemEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             };

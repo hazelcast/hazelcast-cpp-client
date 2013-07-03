@@ -14,11 +14,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapEntrySet {
+            class MapEntrySet : public DataSerializable {
             public:
                 MapEntrySet();
-
-                int getSerializerId() const;
 
                 int getFactoryId() const;
 
@@ -28,26 +26,10 @@ namespace hazelcast {
 
                 std::vector<std::pair<serialization::Data, serialization::Data > >& getEntrySet();
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << entrySet.size();
-                    for (std::vector<std::pair<serialization::Data, serialization::Data > >::const_iterator it = entrySet.begin(); it != entrySet.end();
-                         ++it) {
-                        writer << it->first;
-                        writer << it->second;
-                    }
-                };
+                void writeData(serialization::BufferedDataOutput& writer);
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    int size;
-                    reader >> size;
-                    entrySet.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> entrySet[i].first;
-                        reader >> entrySet[i].second;
-                    }
-                };
+                void readData(serialization::BufferedDataInput& reader);
+
             private:
                 std::vector<std::pair<serialization::Data, serialization::Data > > entrySet;
             };

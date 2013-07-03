@@ -85,9 +85,9 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                vector<serialization::Data *> collection = coll.getCollection();
-                for (vector<serialization::Data *>::iterator it = collection.begin(); it != collection.end(); ++it) {
-                    Member member = serializationService.toObject<Member>(*(*it));
+                const vector<serialization::Data>& collection = coll.getCollection();
+                for (vector<serialization::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
+                    Member member = serializationService.toObject<Member>(*it);
 
                     members.push_back(member);
                 }

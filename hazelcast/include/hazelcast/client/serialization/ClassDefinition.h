@@ -11,7 +11,6 @@
 
 
 #include "FieldDefinition.h"
-#include "DataSerializable.h"
 #include "../../util/Util.h"
 #include <iosfwd>
 #include <string>

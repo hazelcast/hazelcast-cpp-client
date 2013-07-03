@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class TryRemoveRequest {
+            class TryRemoveRequest : public Portable{
             public:
                 TryRemoveRequest(const std::string& name, serialization::Data& key, int threadId, long timeout)
                 :name(name)
@@ -18,10 +18,6 @@ namespace hazelcast {
                 , threadId(threadId)
                 , timeout(timeout) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -34,19 +30,22 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["t"] << threadId;
-                    writer["timeout"] << timeout;
-                    writer << key;
+                    writer.writeLong("timeout", timeout);
+                    writer.writeUTF("n", name);
+                    writer.writeInt("t", threadId);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> threadId;
-                    reader["timeout"] >> timeout;
-                    reader >> key;
+                    timeout = reader.readLong("timeout");
+                    name = reader.readUTF("n");
+                    threadId = reader.readInt("t");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
+
             private:
                 serialization::Data& key;
                 std::string name;

@@ -122,70 +122,57 @@ namespace hazelcast {
             };
 
             void BufferedDataOutput::writeByteArray(const std::vector<byte>&  data) {
-                int size = data.size();
-                writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeByte(data[i]);
-                    }
-                }
+                writeInt(data.size());
+                outputStream->insert(outputStream->end(), data.begin(), data.end());
             };
 
-            void BufferedDataOutput::writeCharArray(const std::vector<char>& bytes) {
-                writeInt(bytes.size());
-                outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
+            void BufferedDataOutput::writeCharArray(const std::vector<char>& data) {
+                writeInt(data.size());
+//                outputStream->insert(outputStream->end(), data.begin(), data.end());//TODO
+                for (int i = 0; i < data.size(); ++i) {
+                    writeChar(data[i]);
+                }
             };
 
             void BufferedDataOutput::writeShortArray(const std::vector<short >&  data) {
                 int size = data.size();
                 writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeShort(data[i]);
-                    }
+                for (int i = 0; i < size; ++i) {
+                    writeShort(data[i]);
                 }
             };
 
             void BufferedDataOutput::writeIntArray(const std::vector<int>&  data) {
                 int size = data.size();
                 writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeInt(data[i]);
-                    }
+                for (int i = 0; i < size; ++i) {
+                    writeInt(data[i]);
                 }
             };
 
             void BufferedDataOutput::writeLongArray(const std::vector<long >&  data) {
                 int size = data.size();
                 writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeLong(data[i]);
-                    }
+                for (int i = 0; i < size; ++i) {
+                    writeLong(data[i]);
                 }
             };
 
             void BufferedDataOutput::writeFloatArray(const std::vector<float >&  data) {
                 int size = data.size();
                 writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeFloat(data[i]);
-                    }
+                for (int i = 0; i < size; ++i) {
+                    writeFloat(data[i]);
                 }
             };
 
             void BufferedDataOutput::writeDoubleArray(const std::vector<double >&  data) {
                 int size = data.size();
                 writeInt(size);
-                if (size > 0) {
-                    for (int i = 0; i < size; ++i) {
-                        writeDouble(data[i]);
-                    }
+                for (int i = 0; i < size; ++i) {
+                    writeDouble(data[i]);
                 }
             };
-
 
             int BufferedDataOutput::position() {
                 return outputStream->size();

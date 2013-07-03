@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class SemaphoreRequest {
+            class SemaphoreRequest : public Portable {
             public:
                 SemaphoreRequest(const std::string& instanceName, int permitCount)
                 :instanceName(instanceName)
@@ -26,20 +26,16 @@ namespace hazelcast {
                     return SemaphorePortableHook::F_ID;
                 };
 
-                virtual int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
-                    writer["p"] << permitCount;
+                    writer.writeUTF("n", instanceName);
+                    writer.writeInt("p", permitCount);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
-                    reader["p"] >> permitCount;
+                    instanceName = reader.readUTF("n");
+                    permitCount = reader.readInt("p");
                 };
             private:
 
