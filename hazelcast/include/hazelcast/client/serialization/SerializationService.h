@@ -44,7 +44,7 @@ namespace hazelcast {
                 bool registerSerializer(SerializerBase *serializer);
 
                 template<typename T>
-                Data toData(Portable *portable) {
+                Data toData(const Portable *portable) {
                     Is_Portable<T>();
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
@@ -59,7 +59,7 @@ namespace hazelcast {
                 };
 
                 template<typename T>
-                Data toData(DataSerializable *dataSerializable) {
+                Data toData(const DataSerializable *dataSerializable) {
                     Is_DataSerializable<T>();
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
@@ -93,7 +93,7 @@ namespace hazelcast {
                     checkServerError(data);
                     T object;
                     if (data.bufferSize() == 0) return object;
-                    return toObjectResolved<T>(data, &object);;
+                    return toObjectResolved<T>(data, &object);
                 };
 
                 template<typename T>

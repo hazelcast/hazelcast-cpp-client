@@ -32,19 +32,21 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeUTF("n", name);
-                    writer.writeInt("thread", threadId);
+                    writer.writeInt("t", threadId);
                     writer.writeLong("ttl", ttl);
                     serialization::BufferedDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
+                    value.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     name = reader.readUTF("n");
-                    threadId = reader.readInt("thread");
+                    threadId = reader.readInt("t");
                     ttl = reader.readLong("ttl");
                     serialization::BufferedDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
+                    value.readData(*in);
                 };
 
             private:

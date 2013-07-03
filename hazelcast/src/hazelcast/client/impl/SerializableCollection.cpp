@@ -32,20 +32,21 @@ namespace hazelcast {
 
 
             void SerializableCollection::writeData(serialization::BufferedDataOutput& writer) {
-               writer.writeInt(data.size());
-                for(int i = 0 ; i < data.size() ; ++i){
+                writer.writeInt(data.size());
+                for (int i = 0; i < data.size(); ++i) {
                     data[i].writeData(writer);
                 }
             };
 
             void SerializableCollection::readData(serialization::BufferedDataInput& reader) {
-                   int size = reader.readInt();
-                if(size == -1)
+                int size = reader.readInt();
+                if (size == -1)
                     return;
+                data.resize(size);
                 for (int i = 0; i < size; i++) {
                     data[i].readData(reader);
                 }
-            } ;
+            };
 
         }
     }

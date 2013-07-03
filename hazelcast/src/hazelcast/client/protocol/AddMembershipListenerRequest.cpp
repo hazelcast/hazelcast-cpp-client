@@ -22,7 +22,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::ADD_MS_LISTENER;
             }
 
-            void AddMembershipListenerRequest::writeData(serialization::BufferedDataOutput& writer) {
+            void AddMembershipListenerRequest::writeData(serialization::BufferedDataOutput& writer) const{
             };
 
             void AddMembershipListenerRequest::readData(serialization::BufferedDataInput& reader) {

@@ -45,7 +45,8 @@ namespace hazelcast {
 
             void SerializationService::checkServerError(const Data & data) {
                 if (data.isServerError()) {
-                    throw toObject<protocol::HazelcastServerError>(data);
+                    protocol::HazelcastServerError error;
+                    throw toObjectResolved<protocol::HazelcastServerError>(data, &error);
                 }
             };
 

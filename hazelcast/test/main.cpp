@@ -10,7 +10,6 @@ GTEST_API_ int main(int argc, char **argv) {
 //    } catch(void *s){
 //        std::cout << s << std::endl;
 //    }
-//
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 };

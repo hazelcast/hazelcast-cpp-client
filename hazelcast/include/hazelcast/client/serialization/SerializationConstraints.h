@@ -176,8 +176,16 @@ namespace hazelcast {
                     t.readData(i);
                 }
 
+                static void const_constraints(T& t) {
+                    int s = t.getFactoryId();
+                    s = t.getClassId();
+                    BufferedDataOutput o;
+                    t.writeData(o);
+                }
+
                 Is_DataSerializable() {
                     void(*p)(T&) = constraints;
+                    void(*cp)(T&) = const_constraints;
                 }
             };
 
