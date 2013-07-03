@@ -13,6 +13,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class BufferedDataOutput;
+
+            class BufferedDataInput;
+        }
         namespace protocol {
             class AddMembershipListenerRequest : public DataSerializable {
             public:

@@ -7,7 +7,6 @@
 
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
-#include "ConstantSerializers.h"
 #include "../HazelcastException.h"
 #include "Serializer.h"
 #include "DataSerializable.h"
@@ -23,9 +22,9 @@ namespace hazelcast {
                 template <typename T>
                 void write(BufferedDataOutput &out, T& object) {
                     out.writeBoolean(true);
-                    out.writeInt(getFactoryId(object));
-                    out.writeInt(getClassId(object));
-                    writeData(out, object);
+                    out.writeInt(object.getFactoryId());
+                    out.writeInt(object.getClassId());
+                    object.writeData(out);
                 };
 
                 template <typename T>
@@ -37,7 +36,7 @@ namespace hazelcast {
                     in.readInt(); //factoryId
                     in.readInt(); //classId
                     //TODO factoryId and classId is not used!!!
-                    readData(in, object);
+                    object.readData(in);
                 };
 
                 ~DataSerializer();

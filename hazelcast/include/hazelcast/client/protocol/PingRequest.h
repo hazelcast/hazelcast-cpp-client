@@ -11,6 +11,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class BufferedDataOutput;
+
+            class BufferedDataInput;
+        }
         namespace protocol {
             class PingRequest : public DataSerializable {
             public:

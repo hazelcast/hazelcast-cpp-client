@@ -53,7 +53,7 @@ TEST(SerializationTest, RawData) {
     TestDataSerializable ds(123, 's');
     TestNamedPortable np("named portable", 34567);
     TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
-    ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
+    ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
     builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
 
@@ -98,7 +98,7 @@ TEST(SerializationTest, RawDataWithoutRegistering) {
 void invalidWrite() {
     SerializationService serializationService(1);
     TestInvalidWritePortable p(2131, 123, "q4edfd");
-    ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
+    ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
     Data data = serializationService.toData<TestInvalidWritePortable>(&p);
@@ -112,7 +112,7 @@ TEST(SerializationTest, RawDataInvalidWrite) {
 void invalidRead() {
     SerializationService serializationService(1);
     TestInvalidReadPortable p(2131, 123, "q4edfd");
-    ClassDefinitionBuilder builder(getFactoryId(p), getClassId(p));
+    ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
     builder.addLongField("l").addIntField("i").addUTFField("s");
     serializationService.getSerializationContext().registerClassDefinition(builder.build());
     Data data = serializationService.toData<TestInvalidReadPortable>(&p);

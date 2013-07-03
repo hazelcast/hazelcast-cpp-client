@@ -31,7 +31,7 @@ namespace hazelcast {
                 int getClassId() const;
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) {
+                inline void writePortable(HzWriter& writer) const{
                     writer.writePortable("credentials", credentials);
                     if (principal == NULL) {
                         writer.writeNullPortable("principal", -3, 3);

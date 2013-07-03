@@ -15,7 +15,7 @@
 
 using namespace hazelcast::client::serialization;
 
-class TestInvalidWritePortable {
+class TestInvalidWritePortable : public Portable {
 public:
 
     TestInvalidWritePortable() {
@@ -28,45 +28,33 @@ public:
         this->s = l;
     }
 
+    inline int getFactoryId() const {
+        return 1;
+    }
+
+    inline int getClassId() const {
+        return 5;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const {
+        writer.writeLong("l", l);
+        serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+        out->writeInt(i);
+        writer.writeUTF("s", s);
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        l = reader.readLong("l");
+        i = reader.readInt("i");
+        s = reader.readLong("s");
+    };
+
     long l;
     int i;
     std::string s;
 };
-
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getSerializerId(const TestInvalidWritePortable& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const TestInvalidWritePortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestInvalidWritePortable& t) {
-                return 5;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestInvalidWritePortable& data) {
-                writer.writeLong("l", data.l);
-                serialization::BufferedDataOutput *out = writer.getRawDataOutput();
-                out->writeInt(data.i);
-                writer.writeUTF("s", data.s);
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestInvalidWritePortable& data) {
-                data.l = reader.readLong("l");
-                data.i = reader.readInt("i");
-                data.s = reader.readLong("s");
-            };
-        }
-    }
-}
 
 
 #endif //__TestInvalidWritePortable_H_

@@ -9,18 +9,12 @@
 #ifndef HAZELCAST_CONSTANT_SERIALIZERS
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
-#include "SerializationConstants.h"
 #include <vector>
 #include <string>
-#include <ostream>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-
-            class BufferedDataInput;
-
-            class BufferedDataOutput;
 
             typedef unsigned char byte;
 
@@ -28,37 +22,6 @@ namespace hazelcast {
             int getSerializerId(const T& t) {
                 return t.getSerializerId();
             };
-
-            template<typename T>
-            int getFactoryId(const T& t) {
-                return t.getFactoryId();
-            }
-
-            template<typename T>
-            int getClassId(const T& t) {
-                return t.getClassId();
-            }
-
-            template<typename T>
-            inline void writeData(BufferedDataOutput& portableWriter, const T& data) {
-                data.writeData(portableWriter);
-            };
-
-            template<typename T>
-            inline void readData(BufferedDataInput& portableReader, T& data) {
-                data.readData(portableReader);
-            };
-
-            template<typename W, typename T>
-            inline void writePortable(W& portableWriter, const T& data) {
-                data.writePortable(portableWriter);
-            };
-
-            template<typename R, typename T>
-            inline void readPortable(R& portableReader, T& data) {
-                data.readPortable(portableReader);
-            };
-
 
             int getSerializerId(byte data);
 

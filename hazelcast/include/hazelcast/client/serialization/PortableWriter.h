@@ -16,6 +16,7 @@
 #include "SerializationContext.h"
 #include "ClassDefinitionWriter.h"
 #include "ConstantSerializers.h"
+#include "SerializationConstraints.h"
 #include <string>
 #include <set>
 #include <vector>
@@ -69,6 +70,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
+                    Is_Portable<T>();
                     setPosition(fieldName);
                     output->writeBoolean(false);
                     write(*output, portable);
@@ -76,6 +78,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortableArray(const char *fieldName, const std::vector<T>& values) {
+                    Is_Portable<T>();
                     setPosition(fieldName);
                     int len = values.size();
                     output->writeInt(len);
@@ -99,13 +102,13 @@ namespace hazelcast {
                 ClassDefinition *getClassDefinition(const T& p) {
                     ClassDefinition *cd;
 
-                    int factoryId = getFactoryId(p);
-                    int classId = getClassId(p);
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
                     if (context->isClassDefinitionExists(factoryId, classId)) {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        serialization::writePortable(classDefinitionWriter, p);
+                        p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
@@ -117,7 +120,7 @@ namespace hazelcast {
                 void write(BufferedDataOutput &dataOutput, const T& p) {
                     ClassDefinition *cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    serialization::writePortable(portableWriter, p);
+                    p.writePortable(portableWriter);
                 };
 
                 int index;

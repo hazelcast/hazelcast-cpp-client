@@ -16,11 +16,6 @@
 using namespace hazelcast::client;
 
 class TestInnerPortable : public Portable {
-    template<typename HzWriter>
-    friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestInnerPortable& data);
-
-    template<typename HzReader>
-    friend void hazelcast::client::serialization::readPortable(HzReader& reader, TestInnerPortable& data);
 
 public:
     TestInnerPortable() {
@@ -52,11 +47,11 @@ public:
         return (*this);
     }
 
-    int getClassId() {
+    int getClassId() const {
         return 2;
     };
 
-    int getFactoryId() {
+    int getFactoryId() const {
         return 1;
     };
 
@@ -83,6 +78,31 @@ public:
         return !(*this == m);
     };
 
+    template<typename HzWriter>
+    void writePortable(HzWriter& writer) const {
+        writer.writeByteArray("b", bb);
+        writer.writeCharArray("c", cc);
+        writer.writeShortArray("s", ss);
+        writer.writeIntArray("i", ii);
+        writer.writeLongArray("l", ll);
+        writer.writeFloatArray("f", ff);
+        writer.writeDoubleArray("d", dd);
+        writer.writePortableArray("nn", nn);
+    };
+
+    template<typename HzReader>
+    void readPortable(HzReader& reader) {
+        bb = reader.readByteArray("b");
+        cc = reader.readCharArray("c");
+        ss = reader.readShortArray("s");
+        ii = reader.readIntArray("i");
+        ll = reader.readLongArray("l");
+        ff = reader.readFloatArray("f");
+        dd = reader.readDoubleArray("d");
+        nn = reader.template readPortableArray<TestNamedPortable>("nn");
+    };
+
+
     std::vector<int> ii;
 private:
     std::vector<byte> bb;
@@ -94,46 +114,5 @@ private:
     std::vector< TestNamedPortable > nn;
 
 };
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
 
-//            inline int getSerializerId(const TestInnerPortable& x) {
-//                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-//            };
-
-            inline int getFactoryId(const TestInnerPortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestInnerPortable& t) {
-                return 2;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestInnerPortable& data) {
-                writer.writeByteArray("b", data.bb);
-                writer.writeCharArray("c", data.cc);
-                writer.writeShortArray("s", data.ss);
-                writer.writeIntArray("i", data.ii);
-                writer.writeLongArray("l", data.ll);
-                writer.writeFloatArray("f", data.ff);
-                writer.writeDoubleArray("d", data.dd);
-                writer.writePortableArray("nn", data.nn);
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestInnerPortable& data) {
-                data.bb = reader.readByteArray("b");
-                data.cc = reader.readCharArray("c");
-                data.ss = reader.readShortArray("s");
-                data.ii = reader.readIntArray("i");
-                data.ll = reader.readLongArray("l");
-                data.ff = reader.readFloatArray("f");
-                data.dd = reader.readDoubleArray("d");
-                data.nn = reader.template readPortableArray<TestNamedPortable>("nn");
-            };
-        }
-    }
-}
 #endif

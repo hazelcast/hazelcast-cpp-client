@@ -33,7 +33,7 @@ namespace hazelcast {
 
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) {
+                inline void writePortable(HzWriter& writer) const{
                     writer.writeUTF("principal", principal);//dev
                     writer.writeUTF("endpoint", endpoint);//"
                     writer.writeByteArray("pwd", password);//dev-pass

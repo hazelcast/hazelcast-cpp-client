@@ -75,11 +75,11 @@ namespace hazelcast {
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);
-                        hazelcast::client::serialization::readPortable(reader, object);
+                        object.readPortable(reader);
                     } else {
                         cd = context->lookup(factoryId, classId, dataVersion); // registered during read
                         MorphingPortableReader reader(context, dataInput, cd);
-                        hazelcast::client::serialization::readPortable(reader, object);
+                        object.readPortable(reader);
                     }
                 };
 

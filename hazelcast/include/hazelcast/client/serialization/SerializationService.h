@@ -12,6 +12,7 @@
 #include "SerializationContext.h"
 #include "../HazelcastException.h"
 #include "../../util/Util.h"
+#include "ConstantSerializers.h"
 #include "PortableSerializer.h"
 #include "DataSerializer.h"
 #include "Portable.h"
@@ -20,6 +21,7 @@
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
 #include "Data.h"
+#include "SerializationConstraints.h"
 #include <iosfwd>
 #include <string>
 
@@ -43,12 +45,13 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(Portable *portable) {
+                    Is_Portable<T>();
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
                     BufferedDataOutput output;
                     portableSerializer.write(output, *object);
-                    int factoryId = getFactoryId(*object);
-                    int classId = getClassId(*object);
+                    int factoryId = object->getFactoryId();
+                    int classId = object->getClassId();
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
                     data.cd = serializationContext.lookup(factoryId, classId);
                     data.setBuffer(output.toByteArray());
@@ -57,6 +60,7 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(DataSerializable *dataSerializable) {
+                    Is_DataSerializable<T>();
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
                     BufferedDataOutput output;
@@ -94,6 +98,7 @@ namespace hazelcast {
 
                 template<typename T>
                 inline T toObjectResolved(const Data& data, Portable *portable) {
+                    Is_Portable<T>();
                     T object;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 
@@ -107,6 +112,7 @@ namespace hazelcast {
 
                 template<typename T>
                 inline T toObjectResolved(const Data& data, DataSerializable *dataSerializable) {
+                    Is_DataSerializable<T>();
                     T object;
                     BufferedDataInput dataInput(*(data.buffer.get()));
 

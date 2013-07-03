@@ -31,42 +31,34 @@ public:
     };
 
 
+
+    inline int getFactoryId() const{
+        return 1;
+    }
+
+    inline int getClassId() const{
+        return 3;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const{
+        writer.writeInt("v", v);
+        writer.writeUTF("name", name);
+        writer.writeInt("myint", k);
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        v = reader.readInt("v");
+        name = reader.readUTF("name");
+        k = reader.readInt("myint");
+    };
+    
     std::string name;
     int k;
     int v;
 
 };
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
 
-//            inline int getSerializerId(const TestNamedPortableV2& x) {
-//                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-//            };
-
-            inline int getFactoryId(const TestNamedPortableV2& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestNamedPortableV2& t) {
-                return 3;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestNamedPortableV2& data) {
-                writer.writeInt("v", data.v);
-                writer.writeUTF("name", data.name);
-                writer.writeInt("myint", data.k);
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestNamedPortableV2& data) {
-                data.v = reader.readInt("v");
-                data.name = reader.readUTF("name");
-                data.k = reader.readInt("myint");
-            };
-        }
-    }
-}
 #endif

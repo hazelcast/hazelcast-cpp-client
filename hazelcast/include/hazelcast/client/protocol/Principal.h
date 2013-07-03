@@ -23,13 +23,13 @@ namespace hazelcast {
                 int getClassId() const;
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer, const protocol::Principal& data) {
+                inline void writePortable(HzWriter& writer) const{
                     writer.writeUTF("uuid", uuid);
                     writer.writeUTF("ownerUuid", ownerUuid);
                 };
 
                 template<typename HzReader>
-                inline void readPortable(HzReader& reader, protocol::Principal& data) {
+                inline void readPortable(HzReader& reader) {
                     uuid = reader.readUTF("uuid");
                     ownerUuid = reader.readUTF("ownerUuid");
                 };

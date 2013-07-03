@@ -34,14 +34,14 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer, const protocol::HazelcastServerError& data) {
+                inline void writePortable(HzWriter& writer) const{
                     writer.writeUTF("m", message);
                     writer.writeUTF("d", details);
-                    writer.writeInt("t", data.type);
+                    writer.writeInt("t", type);
                 };
 
                 template<typename HzReader>
-                inline void readPortable(HzReader& reader, protocol::HazelcastServerError& data) {
+                inline void readPortable(HzReader& reader) {
                     message = reader.readUTF("m");
                     details = reader.readUTF("d");
                     type = reader.readInt("t");

@@ -25,10 +25,6 @@ namespace hazelcast {
                     return CountDownLatchPortableHook::F_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return CountDownLatchPortableHook::COUNT_DOWN;
                 };

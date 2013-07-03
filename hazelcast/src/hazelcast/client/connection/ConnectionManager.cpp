@@ -3,7 +3,6 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "ConnectionManager.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"

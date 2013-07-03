@@ -13,7 +13,7 @@
 #include "DataSerializable.h"
 
 
-class TestDataSerializable : public hazelcast::client::DataSerializable{
+class TestDataSerializable : public hazelcast::client::DataSerializable {
 public:
     TestDataSerializable() {
 
@@ -35,37 +35,26 @@ public:
         return !(*this == m);
     };
 
+    inline int getFactoryId() const {
+        return 1;
+    }
+
+    inline int getClassId() const {
+        return 1;
+    }
+
+    inline void writeData(BufferedDataOutput& writer) const {
+        writer.writeChar(c);
+        writer.writeInt(i);
+    };
+
+    inline void readData(BufferedDataInput& reader) {
+        c = reader.readChar();
+        i = reader.readInt();
+    };
+
     int i;
     char c;
 };
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-//            inline int getSerializerId(const TestDataSerializable& x) {
-//                return SerializationConstants::CONSTANT_TYPE_DATA;
-//            };
-
-            inline int getFactoryId(const TestDataSerializable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestDataSerializable& t) {
-                return 1;
-            }
-
-            inline void writeData(BufferedDataOutput& writer, const TestDataSerializable& data) {
-                writer.writeChar(data.c);
-                writer.writeInt(data.i);
-            };
-
-            inline void readData(BufferedDataInput& reader, TestDataSerializable& data) {
-                data.c = reader.readChar();
-                data.i = reader.readInt();
-            };
-        }
-    }
-}
 
 #endif //__TestMobile_H_

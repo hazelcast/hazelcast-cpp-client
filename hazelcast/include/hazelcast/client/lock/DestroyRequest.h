@@ -32,10 +32,6 @@ namespace hazelcast {
                     return LockPortableHook::FACTORY_ID;
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     serialization::BufferedDataOutput *out = writer.getRawDataOutput();

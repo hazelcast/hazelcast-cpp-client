@@ -18,10 +18,6 @@ namespace hazelcast {
 
                 };
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return PortableHook::F_ID;
                 }

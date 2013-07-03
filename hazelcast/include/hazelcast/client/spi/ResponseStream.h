@@ -18,10 +18,6 @@
 namespace hazelcast {
     namespace client {
 
-        namespace serialization {
-            class SerializationService;
-        }
-
         namespace connection {
             class Connection;
         }

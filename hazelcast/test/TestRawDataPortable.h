@@ -29,6 +29,36 @@ public:
 
     };
 
+    inline int getFactoryId() const{
+        return 1;
+    }
+
+    inline int getClassId()const {
+        return 4;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const{
+        writer.writeLong("l", l);
+        writer.writeCharArray("c", c);
+        writer.writePortable("p", p);
+        BufferedDataOutput *out = writer.getRawDataOutput();
+        out->writeInt(k);
+        out->writeUTF(s);
+        ds.writeData(*out);
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        l = reader.readLong("l");
+        c = reader.readCharArray("c");
+        p = reader.template readPortable<TestNamedPortable>("p");
+        BufferedDataInput *in = reader.getRawDataInput();
+        k = in->readInt();
+        s = in->readUTF();
+        ds.readData(*in);
+    };
+
     TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
         this->l = l;
         this->c = c;
@@ -54,47 +84,6 @@ public:
         return !(*this == m);
     };
 };
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-//            inline int getSerializerId(const TestRawDataPortable& x) {
-//                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-//            };
-
-            inline int getFactoryId(const TestRawDataPortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestRawDataPortable& t) {
-                return 4;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestRawDataPortable& data) {
-                writer.writeLong("l", data.l);
-                writer.writeCharArray("c", data.c);
-                writer.writePortable("p", data.p);
-                BufferedDataOutput *out = writer.getRawDataOutput();
-                out->writeInt(data.k);
-                out->writeUTF(data.s);
-                writeData(*out, data.ds);
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestRawDataPortable& data) {
-                data.l = reader.readLong("l");
-                data.c = reader.readCharArray("c");
-                data.p = reader.template readPortable<TestNamedPortable>("p");
-                BufferedDataInput *in = reader.getRawDataInput();
-                data.k = in->readInt();
-                data.s = in->readUTF();
-                readData(*in, data.ds);
-            };
-        }
-    }
-}
 
 
 #endif //__RawDataPortable_H_

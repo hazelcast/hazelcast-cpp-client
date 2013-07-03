@@ -65,21 +65,21 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
-                    FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
+                    FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, portable.getFactoryId(), portable.getClassId());
                     addNestedField(portable, fd);
                 };
 
                 template <typename T>
                 void writePortableArray(const char *fieldName, const std::vector<T>& portables) {
-                    int classId = getClassId(portables[0]);
-                    int factoryId = getFactoryId(portables[0]);
+                    int classId = portables[0].getClassId();
+                    int factoryId = portables[0].getFactoryId();
                     FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
                     addNestedField(portables[0], fd);
                 };
 
                 ClassDefinition *getClassDefinition();
 
-                BufferedDataOutput* getRawDataOutput();
+                BufferedDataOutput *getRawDataOutput();
 
             private:
                 void addField(const char *fieldName, FieldType const&);
@@ -95,13 +95,13 @@ namespace hazelcast {
                 ClassDefinition *getOrBuildClassDefinition(const T& p) {
                     ClassDefinition *cd;
 
-                    int factoryId = getFactoryId(p);
-                    int classId = getClassId(p);
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
                     if (context->isClassDefinitionExists(factoryId, classId)) {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        serialization::writePortable(classDefinitionWriter, p);
+                        p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
