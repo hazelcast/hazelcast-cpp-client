@@ -51,7 +51,7 @@ namespace hazelcast {
             }
 
             template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestInvalidReadPortable& data) {
+            inline void writePortable(HzWriter& writer, const TestInvalidWritePortable& data) {
                 writer.writeLong("l", data.l);
                 serialization::BufferedDataOutput *out = writer.getRawDataOutput();
                 out->writeInt(data.i);
@@ -59,7 +59,7 @@ namespace hazelcast {
             };
 
             template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestInvalidReadPortable& data) {
+            inline void readPortable(HzReader& reader, TestInvalidWritePortable& data) {
                 data.l = reader.readLong("l");
                 data.i = reader.readInt("i");
                 data.s = reader.readLong("s");

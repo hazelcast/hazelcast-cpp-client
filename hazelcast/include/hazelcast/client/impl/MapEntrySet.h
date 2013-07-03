@@ -7,7 +7,8 @@
 #ifndef HAZELCAST_MAP_ENTRY_SET
 #define HAZELCAST_MAP_ENTRY_SET
 
-#include "../serialization/Data.h"
+#include "Data.h"
+#include "DataSerializable.h"
 #include <vector>
 
 

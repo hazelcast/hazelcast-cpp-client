@@ -22,7 +22,7 @@ namespace hazelcast {
                 return ProtocolConstants::PING;
             }
 
-            void PingRequest::writeData(serialization::BufferedDataOutput & writer) {
+            void PingRequest::writeData(serialization::BufferedDataOutput & writer) const {
 
             }
 

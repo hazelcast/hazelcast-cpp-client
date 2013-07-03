@@ -9,7 +9,6 @@
 #include "ClientContext.h"
 #include "PartitionService.h"
 #include "ResponseStream.h"
-#include "../serialization/SerializationService.h"
 #include "../connection/Connection.h"
 #include "../connection/ClusterListenerThread.h"
 #include "../connection/ConnectionManager.h"
@@ -17,6 +16,7 @@
 #include "../Address.h"
 #include "../../util/AtomicPointer.h"
 #include "../../util/Lock.h"
+#include "../serialization/SerializationService.h"
 #include <set>
 
 namespace hazelcast {

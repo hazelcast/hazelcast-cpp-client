@@ -16,6 +16,7 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
+#include "ConstantSerializers.h"
 #include "Serializer.h"
 #include "Portable.h"
 
@@ -48,7 +49,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        writePortable(classDefinitionWriter, p);
+                        serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
@@ -60,7 +61,7 @@ namespace hazelcast {
                 void write(BufferedDataOutput &dataOutput, T& p) {
                     ClassDefinition *cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    writePortable(portableWriter, p);
+                    serialization::writePortable(portableWriter, p);
                 };
 
                 template <typename T>

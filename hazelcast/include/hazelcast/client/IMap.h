@@ -1,13 +1,11 @@
 #ifndef HAZELCAST_IMAP
 #define HAZELCAST_IMAP
 
-
 #include "HazelcastException.h"
 #include "serialization/Data.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "spi/ServerListenerService.h"
-#include "serialization/SerializationService.h"
 #include "impl/MapKeySet.h"
 #include "impl/MapEntrySet.h"
 #include "impl/MapValueCollection.h"
@@ -46,6 +44,7 @@
 #include "impl/EntryListener.h"
 #include "impl/EntryEventHandler.h"
 #include "impl/PortableEntryEvent.h"
+#include "serialization/SerializationService.h"
 #include <string>
 #include <map>
 #include <set>
@@ -298,9 +297,9 @@ namespace hazelcast {
             std::vector<K> keySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "KEY", sql);
                 map::QueryDataResultStream queryDataResultStream = invoke(request);
-                std::vector<K> keySet(queryDataResultStream.size());
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
-                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                std::vector<K> keySet(dataResult.size());
+                for (int i = 0; i <dataResult.size(); ++i) {
                     keySet[i] = toObject<K>(dataResult[i].key);
                 }
                 return keySet;
@@ -309,9 +308,9 @@ namespace hazelcast {
             std::vector<V> values(const std::string& sql) {
                 map::QueryRequest request(instanceName, "VALUE", sql);
                 map::QueryDataResultStream queryDataResultStream = invoke(request);
-                std::vector<V> keySet(queryDataResultStream.size());
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
-                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                std::vector<V> keySet(dataResult.size());
+                for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = toObject<V>(dataResult[i].value);
                 }
                 return keySet;
@@ -320,9 +319,9 @@ namespace hazelcast {
             std::vector<std::pair<K, V> > entrySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "ENTRY", sql);
                 map::QueryDataResultStream queryDataResultStream = invoke(request);
-                std::vector<std::pair<K, V> > keySet(queryDataResultStream.size());
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
-                for (int i = 0; i < queryDataResultStream.size(); ++i) {
+                std::vector<std::pair<K, V> > keySet(dataResult.size());
+                for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = std::make_pair(toObject<K>(dataResult[i].key), toObject<V>(dataResult[i].value));
                 }
                 return keySet;

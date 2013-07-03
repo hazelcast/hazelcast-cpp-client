@@ -105,7 +105,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
+                        serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
@@ -117,7 +117,7 @@ namespace hazelcast {
                 void write(BufferedDataOutput &dataOutput, const T& p) {
                     ClassDefinition *cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    hazelcast::client::serialization::writePortable(portableWriter, p);
+                    serialization::writePortable(portableWriter, p);
                 };
 
                 int index;

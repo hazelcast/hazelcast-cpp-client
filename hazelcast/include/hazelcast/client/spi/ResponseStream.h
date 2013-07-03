@@ -9,11 +9,11 @@
 #ifndef HAZELCAST_RESPONSE_STREAM
 #define HAZELCAST_RESPONSE_STREAM
 
-#include "../serialization/SerializationService.h"
 #include "../serialization/Data.h"
 #include "../connection/Connection.h"
 #include "../../util/Lock.h"
 #include "../../util/LockGuard.h"
+#include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

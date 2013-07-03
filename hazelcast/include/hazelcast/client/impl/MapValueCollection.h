@@ -8,6 +8,7 @@
 #define HAZELCAST_MAP_VALUE_COLLECTION
 
 #include "../serialization/Data.h"
+#include "DataSerializable.h"
 #include <vector>
 
 namespace hazelcast {

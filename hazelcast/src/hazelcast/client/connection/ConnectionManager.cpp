@@ -8,7 +8,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/protocol/HazelcastServerError.h"
-#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {

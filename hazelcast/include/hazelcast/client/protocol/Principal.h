@@ -6,6 +6,7 @@
 
 #include "ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {

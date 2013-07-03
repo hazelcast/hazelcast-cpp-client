@@ -7,8 +7,9 @@
 #ifndef HAZELCAST_MAP_KEY_SET
 #define HAZELCAST_MAP_KEY_SET
 
-#include <vector>
 #include "../serialization/Data.h"
+#include "DataSerializable.h"
+#include <vector>
 
 namespace hazelcast {
     namespace client {

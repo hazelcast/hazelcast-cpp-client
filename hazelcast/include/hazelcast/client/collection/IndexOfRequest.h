@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace collection {
             class IndexOfRequest : public CollectionKeyBasedRequest {
             public:
-                IndexOfRequest(const CollectionProxyId& id, const serialization::Data& key, const serialization::Data& value, bool last)
+                IndexOfRequest(const CollectionProxyId& id, const serialization::Data& key, serialization::Data& value, bool last)
                 : CollectionKeyBasedRequest(id, key)
                 , value(value)
                 , last(last) {
@@ -45,7 +45,7 @@ namespace hazelcast {
                 };
 
             private:
-                const serialization::Data& value;
+                serialization::Data& value;
                 bool last;
             };
         }

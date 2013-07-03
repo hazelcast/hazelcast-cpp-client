@@ -52,7 +52,7 @@ namespace hazelcast {
                     return CollectionDataSerializerHook::COLLECTION_PROXY_ID;
                 };
 
-                void writeData(serialization::BufferedDataOutput& writer) {
+                void writeData(serialization::BufferedDataOutput& writer) const{
                     writer.writeUTF(name);
                     writer.writeInt(type);
                     writer.writeUTF(keyName);

@@ -9,11 +9,11 @@
 
 #include "spi/ClientContext.h"
 #include "serialization/Data.h"
-#include "serialization/SerializationService.h"
 #include "topic/PublishRequest.h"
 #include "topic/DestroyRequest.h"
 #include "topic/AddMessageListenerRequest.h"
 #include "TopicEventHandler.h"
+#include "serialization/SerializationService.h"
 #include <string>
 
 namespace hazelcast {

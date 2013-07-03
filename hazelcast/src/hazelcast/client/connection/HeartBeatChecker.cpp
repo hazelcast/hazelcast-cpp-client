@@ -5,8 +5,8 @@
 
 #include "HeartBeatChecker.h"
 #include "Connection.h"
-#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/../util/Thread.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

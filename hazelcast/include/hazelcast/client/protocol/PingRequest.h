@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class PingRequest : public DataSerializable{
+            class PingRequest : public DataSerializable {
             public:
                 PingRequest();
 
@@ -20,7 +20,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::BufferedDataOutput& writer);
+                void writeData(serialization::BufferedDataOutput& writer) const;
 
                 void readData(serialization::BufferedDataInput& reader);
 

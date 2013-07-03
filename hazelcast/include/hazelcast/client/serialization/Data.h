@@ -78,7 +78,7 @@ namespace hazelcast {
                 }
 
                 template<typename  Input>
-                void readData(Input & dataInput, SerializationContext& serializationContext) {
+                void readData(Input & dataInput) {
                     type = dataInput.readInt();
                     int classId = dataInput.readInt();
 
@@ -89,31 +89,15 @@ namespace hazelcast {
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
-                        SerializationContext& serializationContext = dataInput.getSerializationContext();
-                        if (serializationContext.isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = serializationContext.lookup(factoryId, classId, version);
+                        SerializationContext* serializationContext = dataInput.getSerializationContext();
+                        if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = serializationContext->lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);
                         } else {
                             std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                             dataInput.readFully(*(classDefBytes.get()));
-                            cd = serializationContext.createClassDefinition(factoryId, classDefBytes);
+                            cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
                         }
-                    }
-                    int size = dataInput.readInt();
-                    if (size > 0) {
-                        this->buffer->resize(size, 0);
-                        dataInput.readFully(*(buffer.get()));
-                    }
-                    partitionHash = dataInput.readInt();
-                }
-
-                template<typename  Input>
-                void readData(Input & dataInput) {
-                    type = dataInput.readInt();
-                    int classId = dataInput.readInt();
-
-                    if (classId != NO_CLASS_ID) {
-                        throw client::HazelcastException("It is not pure data");
                     }
                     int size = dataInput.readInt();
                     if (size > 0) {

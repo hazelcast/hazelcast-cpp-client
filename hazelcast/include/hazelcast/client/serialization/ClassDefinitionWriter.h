@@ -15,6 +15,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "EmptyDataOutput.h"
+#include "ConstantSerializers.h"
 #include <string>
 #include <iosfwd>
 
@@ -100,7 +101,7 @@ namespace hazelcast {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
+                        serialization::writePortable(classDefinitionWriter, p);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }

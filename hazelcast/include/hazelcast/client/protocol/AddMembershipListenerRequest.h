@@ -9,6 +9,7 @@
 
 #include "ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
+#include "DataSerializable.h"
 
 namespace hazelcast {
     namespace client {

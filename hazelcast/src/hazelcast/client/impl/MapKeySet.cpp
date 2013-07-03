@@ -6,6 +6,7 @@
 #include "MapKeySet.h"
 #include "DataSerializableHook.h"
 #include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
