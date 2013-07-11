@@ -3,8 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "GetPartitionsRequest.h"
-#include "BufferedDataOutput.h"
+#include "hazelcast/client/impl/GetPartitionsRequest.h"
 
 namespace hazelcast {
     namespace client {

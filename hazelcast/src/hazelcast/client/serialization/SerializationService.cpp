@@ -7,7 +7,7 @@
 //
 
 #include "hazelcast/client/protocol/HazelcastServerError.h"
-#include "SerializationService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 using namespace std;
 

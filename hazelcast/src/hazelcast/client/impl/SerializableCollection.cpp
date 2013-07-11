@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "SerializableCollection.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {

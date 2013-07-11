@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "Credentials.h"
+#include "hazelcast/client/protocol/Credentials.h"
 
 
 namespace hazelcast {

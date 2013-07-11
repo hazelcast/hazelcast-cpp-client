@@ -1,5 +1,5 @@
-#include "ConstantSerializers.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/ConstantSerializers.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {

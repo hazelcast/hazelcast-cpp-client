@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 
 
 namespace hazelcast {

@@ -1,4 +1,4 @@
-#include "EmptyDataOutput.h"
+#include "hazelcast/client/serialization/EmptyDataOutput.h"
 
 
 namespace hazelcast {

@@ -1,4 +1,4 @@
-#include "OutputSocketStream.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/HazelcastException.h"
 
 namespace hazelcast {

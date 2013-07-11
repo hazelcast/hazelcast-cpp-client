@@ -5,8 +5,7 @@
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "BufferedDataInput.h"
-#include <cassert>
+#include "hazelcast/client/serialization/BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,7 +33,6 @@ namespace hazelcast {
 
 
             SerializationContext *BufferedDataInput::getSerializationContext() {
-                assert(context != NULL);
                 return context;
             };
 

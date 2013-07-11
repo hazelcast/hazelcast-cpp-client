@@ -3,9 +3,9 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "InputSocketStream.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/HazelcastException.h"
-#include "SerializationContext.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
 #include <cassert>
 
 namespace hazelcast {

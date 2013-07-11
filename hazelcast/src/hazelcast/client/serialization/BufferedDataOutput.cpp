@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "BufferedDataOutput.h"
-#include <iostream>
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
 
 namespace hazelcast {
     namespace client {

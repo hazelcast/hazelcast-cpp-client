@@ -1,4 +1,4 @@
-#include "ClientConfig.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {

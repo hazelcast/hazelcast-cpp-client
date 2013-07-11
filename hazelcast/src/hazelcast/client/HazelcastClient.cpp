@@ -1,11 +1,11 @@
-#include "IdGenerator.h"
-#include "ICountDownLatch.h"
-#include "ISemaphore.h"
-#include "ClientConfig.h"
-#include "Cluster.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/ICountDownLatch.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/impl/IdGeneratorSupport.h"
-#include "ILock.h"
+#include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
     namespace client {

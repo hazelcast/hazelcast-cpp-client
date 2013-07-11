@@ -8,7 +8,7 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "ILock.h"
+#include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
     namespace client {

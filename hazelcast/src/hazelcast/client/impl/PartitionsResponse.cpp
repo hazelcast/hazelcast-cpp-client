@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PartitionsResponse.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
-#include "ProtocolConstants.h"
+#include "hazelcast/client/impl/PartitionsResponse.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 
 namespace hazelcast {

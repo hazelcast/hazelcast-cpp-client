@@ -5,10 +5,9 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "ClassDefinition.h"
-#include "BufferedDataInput.h"
-#include "BufferedDataOutput.h"
-#include <iostream>
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
 
 namespace hazelcast {
     namespace client {

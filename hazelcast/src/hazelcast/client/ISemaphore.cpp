@@ -1,4 +1,4 @@
-#include "ISemaphore.h"
+#include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/semaphore/InitRequest.h"
 #include "hazelcast/client/semaphore/AcquireRequest.h"
 #include "hazelcast/client/semaphore/AvailableRequest.h"

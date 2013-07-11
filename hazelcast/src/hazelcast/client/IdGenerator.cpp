@@ -1,4 +1,4 @@
-#include "IdGenerator.h"
+#include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/impl/IdGeneratorSupport.h"
 
 namespace hazelcast {

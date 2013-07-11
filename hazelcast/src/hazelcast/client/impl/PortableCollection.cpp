@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableCollection.h"
+#include "hazelcast/client/impl/PortableCollection.h"
 
 namespace hazelcast {
     namespace client {

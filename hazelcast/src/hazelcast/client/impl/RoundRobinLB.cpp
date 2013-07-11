@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "RoundRobinLB.h"
+#include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/HazelcastException.h"
 

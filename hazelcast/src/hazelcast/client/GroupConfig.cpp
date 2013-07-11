@@ -1,5 +1,4 @@
-#include "GroupConfig.h"
-#include <iostream>
+#include "hazelcast/client/GroupConfig.h"
 
 
 namespace hazelcast {

@@ -6,9 +6,9 @@
 //
 
 
-#include "ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/HazelcastException.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

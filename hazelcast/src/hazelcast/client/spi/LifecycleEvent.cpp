@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "LifecycleEvent.h"
+#include "hazelcast/client/spi/LifecycleEvent.h"
 
 
 namespace hazelcast {

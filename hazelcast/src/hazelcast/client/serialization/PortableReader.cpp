@@ -5,8 +5,8 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "SerializationContext.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {

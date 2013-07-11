@@ -6,8 +6,8 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
 #include "hazelcast/client/impl/PartitionsResponse.h"
-#include "PartitionService.h"
-#include "ClusterService.h"
+#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {
     namespace client {

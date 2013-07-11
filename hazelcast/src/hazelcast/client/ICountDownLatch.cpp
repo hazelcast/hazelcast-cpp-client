@@ -1,4 +1,4 @@
-#include "ICountDownLatch.h"
+#include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/countdownlatch/AwaitRequest.h"
 #include "hazelcast/client/countdownlatch/CountDownRequest.h"
 #include "hazelcast/client/countdownlatch/GetCountRequest.h"

@@ -3,9 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AddMembershipListenerRequest.h"
-#include "ConstantSerializers.h"
-
+#include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 
 namespace hazelcast {
     namespace client {

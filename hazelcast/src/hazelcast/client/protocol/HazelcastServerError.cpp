@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "HazelcastServerError.h"
+#include "hazelcast/client/protocol/HazelcastServerError.h"
 
 namespace hazelcast {
     namespace client {

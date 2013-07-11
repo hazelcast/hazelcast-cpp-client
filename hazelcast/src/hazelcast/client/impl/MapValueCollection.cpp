@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "MapValueCollection.h"
-#include "DataSerializableHook.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
+#include "hazelcast/client/impl/MapValueCollection.h"
+#include "hazelcast/client/map/DataSerializableHook.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {

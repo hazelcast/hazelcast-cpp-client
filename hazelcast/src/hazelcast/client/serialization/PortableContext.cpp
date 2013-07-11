@@ -6,8 +6,8 @@
 //
 
 
-#include "PortableContext.h"
-#include "SerializationService.h"
+#include "hazelcast/client/serialization/PortableContext.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include <zlib.h>
 
 namespace hazelcast {

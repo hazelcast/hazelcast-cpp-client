@@ -1,7 +1,7 @@
-#include "Address.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
-#include "ProtocolConstants.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {

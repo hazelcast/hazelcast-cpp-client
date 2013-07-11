@@ -1,4 +1,4 @@
-#include "IAtomicLong.h"
+#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/atomiclong/AddAndGetRequest.h"
 #include "hazelcast/client/atomiclong/CompareAndSetRequest.h"
 #include "hazelcast/client/atomiclong/GetAndAddRequest.h"

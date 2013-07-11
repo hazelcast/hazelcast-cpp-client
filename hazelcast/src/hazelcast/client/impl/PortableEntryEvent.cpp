@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableEntryEvent.h"
+#include "hazelcast/client/impl/PortableEntryEvent.h"
 
 namespace hazelcast {
     namespace client {

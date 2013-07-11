@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IdGeneratorSupport.h"
+#include "hazelcast/client/impl/IdGeneratorSupport.h"
 
 namespace hazelcast {
     namespace client {

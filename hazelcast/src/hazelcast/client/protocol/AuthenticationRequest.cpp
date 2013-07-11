@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "AuthenticationRequest.h"
+#include "hazelcast/client/protocol/AuthenticationRequest.h"
 
 namespace hazelcast {
     namespace client {
