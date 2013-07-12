@@ -84,7 +84,7 @@ namespace hazelcast {
                             } else {
                                 invocationService.invokeOnRandomTarget(request, eventResponseHandler);
                             }
-                        }catch(HazelcastException & ignored){
+                        }catch(exception::IException & ignored){
 
                         }
                     }
@@ -106,12 +106,12 @@ namespace hazelcast {
                             try {
                                 Event event = stream.read<Event>();
                                 listenerSupport.eventHandler.handle(event);
-                            } catch(HazelcastException &/*IOException*/ e){
+                            } catch(exception::IOException& e){
                                 throw e;
-                            } catch (HazelcastException& e) {
+                            } catch (exception::IException& e) {
                                 try {
                                     stream.end();
-                                } catch (HazelcastException &/*IOException*/ ignored) {
+                                } catch (exception::IOException& ignored) {
                                 }
                                 listenerSupport.active = false;
                             }

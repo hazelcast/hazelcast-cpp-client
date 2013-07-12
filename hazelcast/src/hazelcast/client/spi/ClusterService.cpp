@@ -18,7 +18,7 @@ namespace hazelcast {
             , connectionManager(connectionManager)
             , serializationService(serializationService)
             , clientConfig(clientConfig)
-            , clusterThread(connectionManager, clientConfig, *this, lifecycleService , serializationService)
+            , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
             , credentials(clientConfig.getCredentials())
             , redoOperation(clientConfig.isRedoOperation()) {
 
@@ -35,8 +35,8 @@ namespace hazelcast {
                 while (membersRef.get() == NULL) {
                     try {
                         sleep(1);
-                    } catch (void* ) {
-                        throw  HazelcastException("ClusterService::start");
+                    }catch(...){
+                        throw  exception::IException("ClusterService::start", "ClusterService can not be started");
                     }
                 }
             }
@@ -44,7 +44,7 @@ namespace hazelcast {
 
             connection::Connection *ClusterService::getConnection(Address const & address) {
                 if (!lifecycleService.isRunning()) {
-                    throw HazelcastException("Instance is not active!");
+                    throw exception::IException("ClusterService", "Instance is not active!");
                 }
                 connection::Connection *connection = NULL;
                 int retryCount = clientConfig.getConnectionAttemptLimit();
@@ -56,14 +56,14 @@ namespace hazelcast {
                     }
                 }
                 if (connection == NULL) {
-                    throw HazelcastException("Unable to connect!!!");
+                    throw exception::IException("ClusterService", "Unable to connect!!!");
                 }
                 return connection;
             };
 
             connection::Connection *ClusterService::getRandomConnection() {
                 if (!lifecycleService.isRunning()) {
-                    throw HazelcastException("HazelcastInstanceNotActiveException")/*HazelcastInstanceNotActiveException()*/;
+                    throw exception::IException("ClusterService", "Instance is not active!");
                 }
                 connection::Connection *connection = NULL;
                 int retryCount = clientConfig.getConnectionAttemptLimit();
@@ -75,7 +75,7 @@ namespace hazelcast {
                     }
                 }
                 if (connection == NULL) {
-                    throw HazelcastException("Unable to connect!!!");
+                    throw exception::IException("ClusterService", "Unable to connect!!!");
                 }
                 return connection;
             };
@@ -88,9 +88,11 @@ namespace hazelcast {
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            std::cout << "Trying to connect: " + (*it).getHost() + ":" + util::to_string((*it).getPort()) << std::endl;
-                            return connectionManager.newConnection((*it));
-                        } catch (HazelcastException& ignored) {
+                            std::cout << "Trying to connect: " << *it << std::endl;
+                            connection::Connection *pConnection = connectionManager.newConnection((*it));
+                            std::cout << "Connected to: " << *pConnection << std::endl;
+                            return pConnection;
+                        } catch (exception::IException & ignored) {
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -101,10 +103,10 @@ namespace hazelcast {
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
                     if (remainingTime > 0) {
-                        sleep(remainingTime);
+                        usleep(remainingTime * 1000);
                     }
                 }
-                throw  HazelcastException("Unable to connect to any address in the config!");
+                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!");
             };
 
 
@@ -112,6 +114,11 @@ namespace hazelcast {
                 vector<connection::Member> list = getMemberList();
                 return list[0].getAddress();
             }
+            
+            bool ClusterService::isMemberListEmpty(){
+                vector<connection::Member> list = getMemberList();
+                return list.empty();
+            };
 
             void ClusterService::addMembershipListener(MembershipListener *listener) {
                 listenerLock.lock();

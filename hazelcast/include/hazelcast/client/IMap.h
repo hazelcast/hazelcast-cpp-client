@@ -1,7 +1,7 @@
 #ifndef HAZELCAST_IMAP
 #define HAZELCAST_IMAP
 
-#include "HazelcastException.h"
+#include "IException.h"
 #include "serialization/Data.h"
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"

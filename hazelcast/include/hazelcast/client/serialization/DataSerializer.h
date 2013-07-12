@@ -7,9 +7,10 @@
 
 #include "BufferedDataOutput.h"
 #include "BufferedDataInput.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "Serializer.h"
 #include "DataSerializable.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,7 +32,7 @@ namespace hazelcast {
                 void read(BufferedDataInput& in, T& object) {
                     bool identified = in.readBoolean();
                     if (!identified) {
-                        throw HazelcastException("void DataSerializer::read(BufferedDataInput& in, T& object) >  DataSerializable is not identified");
+                        throw exception::IOException("void DataSerializer::read", " DataSerializable is not identified");
                     }
                     in.readInt(); //factoryId
                     in.readInt(); //classId

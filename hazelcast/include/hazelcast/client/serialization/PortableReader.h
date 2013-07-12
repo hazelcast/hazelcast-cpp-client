@@ -12,7 +12,7 @@
 #include "ClassDefinition.h"
 #include "BufferedDataInput.h"
 #include "FieldDefinition.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "ConstantSerializers.h"
 #include "SerializationContext.h"
 #include "SerializationConstraints.h"

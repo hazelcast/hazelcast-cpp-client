@@ -10,7 +10,7 @@
 #define HAZELCAST_SERIALIZATION_SERVICE
 
 #include "SerializationContext.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "../../util/Util.h"
 #include "ConstantSerializers.h"
 #include "PortableSerializer.h"
@@ -81,7 +81,7 @@ namespace hazelcast {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->write(output, *object);
                     } else {
-                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
+                        throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
                     }
                     data.setType(type);
                     data.setBuffer(output.toByteArray());
@@ -130,7 +130,7 @@ namespace hazelcast {
                         s->read(dataInput, object);
                         return object;
                     } else {
-                        throw HazelcastException("No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
+                        throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
                     }
                 };
 

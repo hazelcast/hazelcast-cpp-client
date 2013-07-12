@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/HazelcastException.h"
+#include "IException.h"
 #include "Util.h"
 #include "Lock.h"
 
@@ -20,14 +20,14 @@ namespace hazelcast {
         void Lock::lock() {
             int err = pthread_mutex_lock(&mutex);
             if (err) {
-                throw hazelcast::client::HazelcastException("Lock::lock error no: " + to_string(err));
+                throw client::exception::IException("Lock::lock", "error no: " + to_string(err));
             }
         };
 
         void Lock::unlock() {
             int err = pthread_mutex_unlock(&mutex);
             if (err) {
-                throw hazelcast::client::HazelcastException("Lock:unLock error no: " + to_string(err));
+                throw client::exception::IException("Lock:unLock", "error no: " + to_string(err));
             }
         };
 

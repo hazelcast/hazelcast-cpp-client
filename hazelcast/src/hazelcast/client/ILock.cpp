@@ -66,7 +66,7 @@ namespace hazelcast {
         bool ILock::tryLock() {
             try {
                 return tryLock(0);
-            } catch (HazelcastException&/*InterruptedException*/ e) {
+            } catch (exception::IException& e) {
                 return false;
             }
         };

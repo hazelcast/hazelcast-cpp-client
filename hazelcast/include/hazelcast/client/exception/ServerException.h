@@ -11,17 +11,17 @@
 
 namespace hazelcast {
     namespace client {
-        namespace protocol {
+        namespace exception {
 
 
-            class HazelcastServerError : public Portable {
+            class ServerException : public Portable , public std::exception{
 
             public:
-                HazelcastServerError();
+                ServerException();
 
-                virtual ~HazelcastServerError();
+                virtual ~ServerException() throw();
 
-                virtual char const *what() const;
+                virtual char const *what() const throw();
 
                 std::string message;
 
@@ -34,7 +34,7 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const{
+                inline void writePortable(HzWriter& writer) const {
                     writer.writeUTF("m", message);
                     writer.writeUTF("d", details);
                     writer.writeInt("t", type);

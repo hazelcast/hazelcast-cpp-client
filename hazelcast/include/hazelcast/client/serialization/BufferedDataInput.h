@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "ConstantSerializers.h"
 #include <vector>
 #include <string>

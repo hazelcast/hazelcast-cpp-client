@@ -12,7 +12,7 @@
 #include "../connection/Connection.h"
 #include "../connection/ClusterListenerThread.h"
 #include "../connection/ConnectionManager.h"
-#include "../protocol/HazelcastServerError.h"
+#include "ServerException.h"
 #include "../Address.h"
 #include "../../util/AtomicPointer.h"
 #include "../../util/Lock.h"
@@ -62,6 +62,8 @@ namespace hazelcast {
 
                 Address getMasterAddress();
 
+                bool isMemberListEmpty();
+
                 void addMembershipListener(MembershipListener *listener);
 
                 bool removeMembershipListener(MembershipListener *listener);
@@ -96,12 +98,12 @@ namespace hazelcast {
                         connection->write(request);
                         serialization::Data responseData = connection->read(serializationService.getSerializationContext());
                         return serializationService.toObject<Response>(responseData);
-                    } catch(HazelcastException hazelcastException){
+                    } catch(exception::IException& e){
                         partitionService.refreshPartitions();
                         if (redoOperation /*|| dynamic_cast<const impl::RetryableRequest *>(&object) != NULL*/) {//TODO global isRetryable(const T& a) function solves
                             return sendAndReceive<Response>(object);
                         }
-                        throw hazelcastException;
+                        throw e;
                     }
                 };
 
@@ -111,18 +113,18 @@ namespace hazelcast {
                     try {
                         serialization::Data request = serializationService.toData<Request>(&obj);
                         conn->write(request);
-                    } catch (HazelcastException&/*IOException*/ e){
+                    } catch (exception::IOException& e){
                         partitionService.refreshPartitions();
                         if (redoOperation /*obj instanceof RetryableRequest*/) {
                             sendAndHandle(obj, handler);
                             return;
                         }
-                        throw HazelcastException(e.what());
+                        throw exception::IException(e);
                     }
 
                     try {
                         handler.handle(stream);
-                    } catch (HazelcastException& e) {
+                    } catch (exception::IException& e) {
                         stream.end();
                         throw e;//ClientException(e);
                     }

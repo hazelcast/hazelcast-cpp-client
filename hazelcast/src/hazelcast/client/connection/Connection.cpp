@@ -59,13 +59,6 @@ namespace hazelcast {
                 endpoint = address;
             };
 
-            void Connection::close() {
-                socket.close();
-                outputSocketStream.close();
-                inputSocketStream.close();
-            };
-
-
         }
     }
 }

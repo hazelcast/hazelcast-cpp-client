@@ -3,6 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include <iostream>
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include "hazelcast/client/Cluster.h"
 

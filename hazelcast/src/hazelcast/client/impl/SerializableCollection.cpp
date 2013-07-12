@@ -16,6 +16,9 @@ namespace hazelcast {
             };
 
             SerializableCollection::~SerializableCollection() {
+                for (int i = 0; i < dataCollection.size(); i++) {
+                    delete dataCollection[i];
+                }
             };
 
             int SerializableCollection::getFactoryId() const {
@@ -26,15 +29,15 @@ namespace hazelcast {
                 return protocol::SpiConstants::COLLECTION;
             }
 
-            const vector<hazelcast::client::serialization::Data>&  SerializableCollection::getCollection() const {
-                return data;
+            const vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {
+                return dataCollection;
             };
 
 
             void SerializableCollection::writeData(serialization::BufferedDataOutput& writer) {
-                writer.writeInt(data.size());
-                for (int i = 0; i < data.size(); ++i) {
-                    data[i].writeData(writer);
+                writer.writeInt(dataCollection.size());
+                for (int i = 0; i < dataCollection.size(); ++i) {
+                    dataCollection[i]->writeData(writer);
                 }
             };
 
@@ -42,9 +45,10 @@ namespace hazelcast {
                 int size = reader.readInt();
                 if (size == -1)
                     return;
-                data.resize(size);
                 for (int i = 0; i < size; i++) {
-                    data[i].readData(reader);
+                    serialization::Data *data = new serialization::Data();
+                    data->readData(reader);
+                    dataCollection.push_back(data);
                 }
             };
 

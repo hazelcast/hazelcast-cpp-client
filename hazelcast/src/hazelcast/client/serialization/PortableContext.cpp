@@ -98,11 +98,11 @@ namespace hazelcast {
                 int err = compress2((Bytef *) compressedTemp, &compSize, (Bytef *) uncompressedTemp, ucompSize, Z_BEST_COMPRESSION);
                 switch (err) {
                     case Z_BUF_ERROR:
-                        throw hazelcast::client::HazelcastException("not enough room in the output buffer at compression");
+                        throw exception::IOException("PortableContext::compress", "not enough room in the output buffer at compression");
                     case Z_DATA_ERROR:
-                        throw hazelcast::client::HazelcastException("data is corrupted at compression");
+                        throw exception::IOException("PortableContext::compress", "data is corrupted at compression");
                     case Z_MEM_ERROR:
-                        throw hazelcast::client::HazelcastException("if there was not  enough memory at compression");
+                        throw exception::IOException("PortableContext::compress", "there was not  enough memory at compression");
                 }
                 std::vector<byte> compressed(compressedTemp, compressedTemp + compSize);
                 binary = compressed;
@@ -124,11 +124,11 @@ namespace hazelcast {
                     err = uncompress((Bytef *) temp, &ucompSize, (Bytef *) compressedTemp, compSize);
                     switch (err) {
                         case Z_BUF_ERROR:
-                            std::cerr << "buffer size is not enough" << std::endl;
+                            throw exception::IOException("PortableContext::compress", "not enough room in the output buffer at decompression");
                         case Z_DATA_ERROR:
-                            std::cerr << "data is corrupted or incomplete at decompression" << std::endl;
+                            throw exception::IOException("PortableContext::compress", "data is corrupted at decompression");
                         case Z_MEM_ERROR:
-                            std::cerr << "there was not  enough memory at decompression" << std::endl;
+                            throw exception::IOException("PortableContext::compress", "there was not  enough memory at decompression");
                     }
                 } while (err != Z_OK);
                 std::vector<byte> decompressed(temp, temp + ucompSize);

@@ -10,7 +10,7 @@
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
 #include "FieldDefinition.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "FieldType.h"
 #include "ClassDefinition.h"
 #include "SerializationContext.h"

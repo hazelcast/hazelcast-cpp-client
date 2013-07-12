@@ -8,6 +8,7 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/BufferedDataInput.h"
 #include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -86,7 +87,7 @@ namespace hazelcast {
                 if (hasField(fieldName)) {
                     return fieldDefinitionsMap.at(fieldName).getType();
                 } else {
-                    throw hazelcast::client::HazelcastException("field does not exist");
+                    throw exception::IOException("ClassDefinition::getFieldType","field does not exist");
                 }
             }
 

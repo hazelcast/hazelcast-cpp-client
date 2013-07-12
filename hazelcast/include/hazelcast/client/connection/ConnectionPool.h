@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_BASED_OBJECT_POOL
 
 #include "../../util/ConcurrentQueue.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "../../util/Lock.h"
 #include "../Address.h"
 

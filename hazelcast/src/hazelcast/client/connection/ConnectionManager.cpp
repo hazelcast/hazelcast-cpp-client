@@ -6,7 +6,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/protocol/HazelcastServerError.h"
+#include "ServerException.h"
 #include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {
@@ -49,7 +49,6 @@ namespace hazelcast {
                 Connection *connection = NULL;
                 connection = pool->take();
                 if (connection != NULL && !heartBeatChecker.checkHeartBeat(*connection)) {
-                    connection->close();
                     delete connection;
                     return NULL;
                 }
@@ -62,11 +61,9 @@ namespace hazelcast {
                     if (pool != NULL) {
                         pool->release(connection);
                     } else {
-                        connection->close();
                         delete connection;
                     }
                 } else {
-                    connection->close();
                     delete connection;
                 }
             };
@@ -115,7 +112,7 @@ namespace hazelcast {
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw HazelcastException("Instance not active!");
+                    throw exception::IException("ConnectionManager::checkLive()", "Instance not active!");
                 }
             };
 

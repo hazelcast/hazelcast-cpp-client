@@ -15,18 +15,20 @@
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastException : public std::domain_error {
-
+       namespace exception{
+        class IException : public std::exception {
         public:
+            IException(const std::string& source ,const std::string& message);
 
-            HazelcastException(::std::string message);
-
-            virtual ~HazelcastException() throw();
+            virtual ~IException() throw();
 
             virtual char const *what() const throw();
-        };
 
+        private:
+            std::string message;
+            std::string source;
+        };
+       }
     }
 }
 

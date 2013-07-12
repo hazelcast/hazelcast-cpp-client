@@ -13,7 +13,8 @@
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
-#include "hazelcast/client/protocol/HazelcastServerError.h"
+#include "hazelcast/client/exception/ServerException.h"
+#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/Socket.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -106,7 +107,7 @@ void invalidWrite() {
 };
 
 TEST(SerializationTest, RawDataInvalidWrite) {
-    EXPECT_THROW(invalidWrite(), HazelcastException);
+    EXPECT_THROW(invalidWrite(), hazelcast::client::exception::IException);
 };
 
 void invalidRead() {
@@ -120,7 +121,7 @@ void invalidRead() {
 }
 
 TEST(SerializationTest, RawDataInvalidRead) {
-    EXPECT_THROW(invalidRead(), HazelcastException);
+    EXPECT_THROW(invalidRead(), hazelcast::client::exception::IException);
 }
 
 

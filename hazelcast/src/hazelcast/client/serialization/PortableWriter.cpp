@@ -7,6 +7,7 @@
 //
 
 #include "hazelcast/client/serialization/PortableWriter.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -109,7 +110,7 @@ namespace hazelcast {
             };
 
             void PortableWriter::setPosition(const char *fieldName) {
-                if (raw) throw HazelcastException("Cannot write Portable fields after getRawDataOutput() is called!");
+                if (raw) throw exception::IOException("PortableWriter::setPosition","Cannot write Portable fields after getRawDataOutput() is called!");
                 if (!cd->isFieldDefinitionExists(fieldName)) {
                     std::string error;
                     error += "HazelcastSerializationException( Invalid field name: '";
@@ -120,11 +121,11 @@ namespace hazelcast {
                     error += hazelcast::util::to_string(cd->getVersion());
                     error += "}";
 
-                    throw HazelcastException(error);
+                    throw exception::IOException("PortableWriter::setPosition",error);
                 }
 
                 if (writtenFields.count(fieldName) != 0)
-                    throw HazelcastException("Field '" + std::string(fieldName) + "' has already been written!");
+                    throw exception::IOException("PortableWriter::setPosition","Field '" + std::string(fieldName) + "' has already been written!");
                 writtenFields.insert(fieldName);
                 output->writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), output->position());
 

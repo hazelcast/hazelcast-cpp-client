@@ -7,7 +7,7 @@
 //
 //#include <memory>
 //#include "util/Thread.h"
-//#include "HazelcastException.h"
+//#include "IException.h"
 //
 //namespace hazelcast {
 //    namespace client {
@@ -25,7 +25,7 @@
 //            std::auto_ptr<R> get(useconds_t timeout) {
 //                std::auto_ptr<R> result(thread->join<R>());
 //                if (result->get() == NULL) {
-//                    throw HazelcastException("Timeout");
+//                    throw IException("Timeout");
 //                } else {
 //                    return result;
 //                }

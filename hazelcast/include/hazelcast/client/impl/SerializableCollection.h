@@ -15,13 +15,13 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class SerializableCollection : public DataSerializable{
+            class SerializableCollection : public DataSerializable {
             public:
                 SerializableCollection();
 
                 ~SerializableCollection();
 
-                const std::vector<serialization::Data>& getCollection() const;
+                const std::vector<serialization::Data *>& getCollection() const;
 
                 int getFactoryId() const;
 
@@ -32,7 +32,7 @@ namespace hazelcast {
                 void readData(serialization::BufferedDataInput& reader);
 
             private:
-                std::vector<serialization::Data> data;
+                std::vector <serialization::Data * > dataCollection;
             };
         }
     }

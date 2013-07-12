@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/HazelcastException.h"
+#include "IException.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,10 +19,10 @@ namespace hazelcast {
                 cluster.addMembershipListener(this);
             };
 
-            const hazelcast::client::connection::Member& RoundRobinLB::next() {
+            const connection::Member& RoundRobinLB::next() {
                 std::vector<hazelcast::client::connection::Member> members = getMembers();
                 if (members.size() == 0) {
-                    throw hazelcast::client::HazelcastException("No member in member list!!");
+                    throw exception::IException("const connection::Member& RoundRobinLB::next()","No member in member list!!");
                 }
                 return members[index.getAndAdd(1) % members.size()];
             }

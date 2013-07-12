@@ -12,7 +12,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include <vector>
 #include <iosfwd>
 
@@ -101,7 +101,7 @@ namespace hazelcast {
                     }
                     int size = dataInput.readInt();
                     if (size > 0) {
-                        this->buffer->resize(size, 0);
+                        this->buffer->resize(size);
                         dataInput.readFully(*(buffer.get()));
                     }
                     partitionHash = dataInput.readInt();

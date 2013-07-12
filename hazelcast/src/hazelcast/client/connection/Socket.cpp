@@ -1,8 +1,6 @@
-#include "Socket.h"
-#include "hazelcast/client/HazelcastException.h"
+#include "hazelcast/client/connection/Socket.h"
+#include "IOException.h"
 #include <errno.h>
-
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -13,6 +11,7 @@ namespace hazelcast {
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
                 setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, &size, sizeof(int));
                 setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, &size, sizeof(int));
+                setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
             };
 
             Socket::Socket(const Socket& rhs) : address(rhs.address) {
@@ -25,20 +24,20 @@ namespace hazelcast {
 
             void Socket::connect() {
                 if (::connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
-                    throw HazelcastException(strerror(errno));
+                    throw exception::IOException("Socket::connect", strerror(errno));
             }
 
             void Socket::send(const void *buffer, int len) {
                 if (::send(socketId, buffer, len, 0) == -1)
-                    throw HazelcastException("Socket::send :Error socket send" + std::string(strerror(errno)));
+                    throw exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             };
 
             void Socket::receive(void *buffer, int len) {
                 int size = ::recv(socketId, buffer, len, 0);
                 if (size == -1)
-                    throw HazelcastException("Socket::receive :Error socket read");
+                    throw exception::IOException("Socket::receive", "Error socket read");
                 else if (size == 0) {
-                    throw HazelcastException("Socket::receive : Connection closed by remote");
+                    throw exception::IOException("Socket::receive", "Connection closed by remote");
                 }
             };
 
@@ -69,7 +68,7 @@ namespace hazelcast {
 
                 int status;
                 if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &server_info)) != 0) {
-                    std::cerr << address << "getaddrinfo error: " << gai_strerror(status) << std::endl;
+                    throw exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
                 }
 
             };

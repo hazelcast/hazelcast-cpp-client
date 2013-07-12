@@ -58,6 +58,8 @@ namespace hazelcast {
 
                 impl::PartitionsResponse getPartitionsFrom(const Address& address);
 
+                impl::PartitionsResponse getPartitionsFrom();
+
                 void processPartitionResponse(impl::PartitionsResponse& response);
 
                 void getInitialPartitions();

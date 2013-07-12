@@ -24,7 +24,6 @@ namespace hazelcast {
 
             void PartitionService::start() {
                 getInitialPartitions();
-                std::cerr << "partitionCount = " << partitionCount << std::endl;
                 partitionListenerThread.start();
             };
 
@@ -56,8 +55,13 @@ namespace hazelcast {
             void PartitionService::runListener() {
                 while (true) {
                     sleep(10);
-                    Address masterAddress = clusterService.getMasterAddress();
-                    impl::PartitionsResponse partitionResponse = getPartitionsFrom(masterAddress);
+                    impl::PartitionsResponse partitionResponse;
+                    if (clusterService.isMemberListEmpty()) {
+                        partitionResponse = getPartitionsFrom();
+                    } else {
+                        Address address = clusterService.getMasterAddress();
+                        partitionResponse = getPartitionsFrom(address);
+                    }
                     if (!partitionResponse.isEmpty()) {
                         processPartitionResponse(partitionResponse);
                     }
@@ -66,7 +70,14 @@ namespace hazelcast {
 
 
             void PartitionService::runRefresher() {
-                impl::PartitionsResponse partitionResponse = getPartitionsFrom(clusterService.getMasterAddress());
+                impl::PartitionsResponse partitionResponse;
+                if (clusterService.isMemberListEmpty()) {
+                    partitionResponse = getPartitionsFrom();
+                } else {
+                    Address address = clusterService.getMasterAddress();
+                    partitionResponse = getPartitionsFrom(address);
+
+                }
                 if (!partitionResponse.isEmpty()) {
                     processPartitionResponse(partitionResponse);
                 }
@@ -74,9 +85,26 @@ namespace hazelcast {
 
             impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address  & address) {
                 impl::GetPartitionsRequest getPartitionsRequest;
-                impl::PartitionsResponse partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
+                impl::PartitionsResponse partitionResponse;
+                try{
+                    partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
+                }catch(exception::IOException& e){
+                    std::cerr << e.what() << std::endl;
+                }
                 return partitionResponse;
             };
+
+
+            impl::PartitionsResponse PartitionService::getPartitionsFrom() {
+                impl::GetPartitionsRequest getPartitionsRequest;
+                impl::PartitionsResponse partitionResponse;
+                try{
+                    partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(getPartitionsRequest);
+                }catch(exception::IOException& e){
+                    std::cerr << e.what() << std::endl;
+                }
+                return partitionResponse;
+            }
 
             void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
                 vector<Address> members = response.getMembers();
@@ -104,7 +132,7 @@ namespace hazelcast {
                         return;
                     }
                 }
-                throw HazelcastException("IllegalStateException :: Cannot get initial partitions!");
+                throw exception::IException("PartitionService::getInitialPartitions", " Cannot get initial partitions!");
             };
 
 

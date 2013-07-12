@@ -37,7 +37,7 @@ namespace hazelcast {
                 void end() {
                     util::LockGuard lg(endMutex);
                     if (!isEnded) {
-                        connection.close();
+                        //connection.close(); TODO
                         isEnded = true;
                     }
                 };

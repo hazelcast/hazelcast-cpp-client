@@ -18,6 +18,9 @@
 #include "impl/PortableCollection.h"
 #include "impl/ItemEventHandler.h"
 #include "ItemEvent.h"
+#include "IllegalStateException.h"
+#include "InterruptedException.h"
+#include "NoSuchElementException.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -26,17 +29,18 @@ namespace hazelcast {
 
         template<typename E>
         class IQueue {
+            friend class HazelcastClient;
+
         public:
-            IQueue() {
-
-            };
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                this->context = clientContext;
-                this->instanceName = instanceName;
-                key = context->getSerializationService().toData<std::string>(&instanceName);
-            };
-
+            /**
+             * Adds an item listener for this collection. Listener will get notified
+             * for all collection add/remove events.
+             *
+             * @param listener     item listener
+             * @param includeValue <tt>true</tt> updated item should be passed
+             *                     to the item listener, <tt>false</tt> otherwise.
+             * @return returns registration id.
+             */
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
                 queue::AddListenerRequest request(instanceName, includeValue);
@@ -44,6 +48,14 @@ namespace hazelcast {
                 return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(instanceName, request, entryEventHandler);
             };
 
+            /**
+            * Removes the specified item listener.
+            * Returns silently if the specified listener is not added before.
+            *
+            * @param registrationId Id of listener registration.
+            *
+            * @return true if registration is removed, false otherwise
+            */
             bool removeItemListener(long registrationId) {
                 return context->getServerListenerService().stopListening(instanceName, registrationId);
             };
@@ -52,34 +64,69 @@ namespace hazelcast {
                 if (offer(e)) {
                     return true;
                 }
-                throw HazelcastException/*TODO IllegalState Exception*/("Queue is full!");
+                throw exception::IllegalStateException("bool IQueue::dd(const E& e)", "Queue is full!");
             };
 
+            /**
+             * Inserts the specified element into this queue if it is possible to do
+             * so immediately without violating capacity restrictions, returning
+             * <tt>true</tt> upon success and <tt>false</tt> if no space is currently
+             * available.
+             *
+             * @param e the element to add
+             * @return <tt>true</tt> if the element was added to this queue, else
+             *         <tt>false</tt>
+             */
             bool offer(const E& e) {
                 try {
                     return offer(e, 0);
-                } catch (HazelcastException/*TODO Interrupted Exception*/ ex) {
+                } catch (exception::InterruptedException& ex) {
                     return false;
                 }
             };
 
-            void put(const E& e) throw(HazelcastException/*TODO Interrupted Exception*/) {
+            void put(const E& e) {
                 offer(e, -1);
             };
 
-            bool offer(const E& e, long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
+            /**
+            * Inserts the specified element into this queue, waiting up to the
+            * specified wait time if necessary for space to become available.
+            *
+            * @param e the element to add
+            * @param timeout how long to wait before giving up, in units of
+            *        
+            * @param unit a <tt>TimeUnit</tt> determining how to interpret the
+            *        <tt>timeout</tt> parameter
+            * @return <tt>true</tt> if successful, or <tt>false</tt> if
+            *         the specified waiting time elapses before space is available
+            * @throws InterruptedException if interrupted while waiting
+            */
+            bool offer(const E& e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
                 queue::OfferRequest request(instanceName, timeoutInMillis, data);
-                return invoke<bool>(request);
+                bool result;
+                try {
+                    result = invoke<bool>(request);
+                } catch(exception::ServerException& e){
+                    throw exception::InterruptedException("IQueue::offer", "timeout");
+                }
+                return result;
             };
 
-            E take() throw(HazelcastException/*TODO Interrupted Exception*/) {
+            E take() {
                 return poll(-1);
             };
 
-            E poll(long timeoutInMillis) throw(HazelcastException/*TODO Interrupted Exception*/) {
+            E poll(long timeoutInMillis) {
                 queue::PollRequest request(instanceName, timeoutInMillis);
-                return invoke<E>(request);
+                E result;
+                try {
+                    result = invoke<E>(request);
+                } catch(exception::ServerException& e){
+                    throw exception::InterruptedException("IQueue::poll", "timeout");
+                }
+                return result;
             };
 
             int remainingCapacity() {
@@ -118,8 +165,8 @@ namespace hazelcast {
 
             E remove() {
                 E res = poll();
-                if (res == E()) {//TODO ?
-                    throw HazelcastException/*TODO NoSuchElementException*/("Queue is empty!");
+                if (res == E()) {
+                    throw exception::NoSuchElementException("E IQueue::remove()", "Queue is empty!");
                 }
                 return res;
             };
@@ -127,7 +174,7 @@ namespace hazelcast {
             E poll() {
                 try {
                     return poll(0);
-                } catch (HazelcastException/*TODO InterruptedException*/ e) {
+                } catch (exception::InterruptedException& e) {
                     return E();
                 }
             };
@@ -135,7 +182,7 @@ namespace hazelcast {
             E element() {
                 E res = peek();
                 if (res == E()) {
-                    throw HazelcastException/*TODO NoSuchElementException*/("Queue is empty!");
+                    throw exception::NoSuchElementException("E IQueue::element()", "Queue is empty!");
                 }
                 return res;
             };
@@ -154,13 +201,6 @@ namespace hazelcast {
                 return size() == 0;
             };
 
-//        Iterator<E> iterator() {TODO
-//                IteratorRequest request = new IteratorRequest(name);
-//                PortableCollection result = invoke(request);
-//                Collection<Data> coll = result.getCollection();
-//                return new QueueIterator<E>(coll.iterator(), context->getSerializationService(), false);
-//            }
-//
             std::vector<E> toArray() {
                 queue::IteratorRequest request(instanceName);
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
@@ -209,6 +249,16 @@ namespace hazelcast {
             std::string instanceName;
             serialization::Data key;
             spi::ClientContext *context;
+
+            IQueue() {
+
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
+                key = context->getSerializationService().toData<std::string>(&instanceName);
+            };
 
             template<typename T>
             serialization::Data toData(const T& object) {

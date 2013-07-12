@@ -9,31 +9,37 @@
 #define HAZELCAST_ATOMIC_REFERENCE
 
 #include <iosfwd>
+#include "Lock.h"
+#include "LockGuard.h"
 
 namespace hazelcast {
     namespace util {
         template <typename T>
         class AtomicPointer {
         public:
-            AtomicPointer() {
-                __sync_lock_test_and_set(&pointer, NULL);
+            AtomicPointer():pointer(NULL) {
             };
 
             AtomicPointer(T *p) {
-                __sync_lock_test_and_set(&pointer, p);
+                util::LockGuard lg(mutex);
+                pointer = p;
             };
 
             T *get() {
-                return __sync_fetch_and_add(&pointer, 0);
+                util::LockGuard lg(mutex);
+                return pointer;
             };
 
             T *set(T *p) {
-
-                return __sync_lock_test_and_set(&pointer, p);
+                util::LockGuard lg(mutex);
+                T *oldPointer = pointer;
+                pointer = p;
+                return oldPointer;
             };
 
         private:
             T *pointer;
+            util::Lock mutex;
         };
 
     }

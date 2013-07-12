@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA_OUTPUT
 #define HAZELCAST_DATA_OUTPUT
 
-#include "../HazelcastException.h"
+#include "IException.h"
 #include <vector>
 #include <iosfwd>
 

@@ -5,6 +5,7 @@
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
+#include "hazelcast/client/exception/InterruptedException.h"
 
 
 namespace hazelcast {
@@ -70,7 +71,7 @@ namespace hazelcast {
             checkNegative(permits);
             try {
                 return tryAcquire(permits, 0);
-            } catch (HazelcastException&/*InterruptedException*/ e) {
+            } catch (exception::InterruptedException & e) {
                 return false;
             }
         };
@@ -87,7 +88,7 @@ namespace hazelcast {
 
         void ISemaphore::checkNegative(int permits) {
             if (permits < 0) {
-                throw HazelcastException/*IllegalArgumentException*/("Permits cannot be negative!");
+                throw exception::IException("ISemaphore::checkNegative", "Permits cannot be negative!");
             }
         };
 

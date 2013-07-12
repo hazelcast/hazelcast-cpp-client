@@ -29,7 +29,7 @@ namespace hazelcast {
 
             class ClusterListenerThread : public hazelcast::util::Thread {
             public:
-                ClusterListenerThread(ConnectionManager& connMgr, ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&,serialization::SerializationService&);
+                ClusterListenerThread(ConnectionManager& , ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&,serialization::SerializationService&);
 
                 void setInitialConnection(connection::Connection *);
 

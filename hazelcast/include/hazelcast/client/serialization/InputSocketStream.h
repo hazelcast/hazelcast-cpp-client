@@ -52,8 +52,6 @@ namespace hazelcast {
 
                 std::string readUTF();
 
-                void close();
-
             private:
                 connection::Socket& socket;
                 SerializationContext* context;

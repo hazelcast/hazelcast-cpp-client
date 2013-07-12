@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/client/protocol/HazelcastServerError.h"
+#include "ServerException.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 
 using namespace std;
@@ -45,8 +45,8 @@ namespace hazelcast {
 
             void SerializationService::checkServerError(const Data & data) {
                 if (data.isServerError()) {
-                    protocol::HazelcastServerError error;
-                    throw toObjectResolved<protocol::HazelcastServerError>(data, &error);
+                    exception::ServerException error;
+                    throw toObjectResolved<exception::ServerException>(data, &error);
                 }
             };
 

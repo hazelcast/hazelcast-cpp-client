@@ -8,6 +8,7 @@
 
 #include "hazelcast/client/serialization/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/PortableSerializer.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -29,7 +30,7 @@ namespace hazelcast {
 
             void ClassDefinitionWriter::addField(const char *fieldName, FieldType const & fieldType) {
                 if (raw) {
-                    throw hazelcast::client::HazelcastException("Cannot call [] operation after writing directly to stream(without [])");
+                    throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
                 }
                 FieldDefinition fd(index++, fieldName, fieldType);
                 cd->add(fd);
@@ -83,7 +84,7 @@ namespace hazelcast {
                 if (!raw) {
                     FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
                     if (context->isClassDefinitionExists(factoryId, classId) == false) {
-                        throw hazelcast::client::HazelcastException("Cannot write null portable withouy explicitly registering class definition!");
+                        throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable withouy explicitly registering class definition!");
                     } else {
                         cd->add(fd);
                         cd->add(context->lookup(factoryId, classId));

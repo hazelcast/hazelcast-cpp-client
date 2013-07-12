@@ -38,7 +38,6 @@ namespace hazelcast {
 
             void ConnectionPool::release(Connection *e) {
                 if (!active || !queue.offer(e)) {
-                    e->close();
                     delete e;
                 }
             }

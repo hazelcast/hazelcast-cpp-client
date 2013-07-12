@@ -107,7 +107,7 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.addAddress(Address(server_address, server_port));
+        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
 
         hazelcast::util::Thread monitor(printStats);

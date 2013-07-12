@@ -7,6 +7,8 @@
 #ifndef HAZELCAST_CONCURRENT_MAP
 #define HAZELCAST_CONCURRENT_MAP
 
+#include "hazelcast/util/Lock.h"
+#include "hazelcast/util/LockGuard.h"
 #include <map>
 #include <vector>
 
@@ -23,6 +25,7 @@ namespace hazelcast {
             };
 
             bool containsKey(const K& key) const {
+                LockGuard lg(lock);
                 return internalMap.count(key) > 0;
             };
 
@@ -32,6 +35,7 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             V *putIfAbsent(const K& key, V *value) {
+                LockGuard lg(lock);
                 if (internalMap.count(key) > 0) {
                     return internalMap[key];
                 } else {
@@ -41,6 +45,7 @@ namespace hazelcast {
             };
 
             V *put(const K& key, V *value) {
+                LockGuard lg(lock);
                 if (internalMap.count(key) > 0) {
                     V *tempValue = internalMap[key];
                     internalMap[key] = value;
@@ -57,6 +62,7 @@ namespace hazelcast {
              *
              */
             V *get(const K& key) {
+                LockGuard lg(lock);
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
                 else
@@ -64,6 +70,7 @@ namespace hazelcast {
             };
 
             V *remove(const K& key) {
+                LockGuard lg(lock);
                 if (internalMap.count(key) > 0) {
                     V *value = internalMap[key];
                     internalMap.erase(internalMap.find(key));
@@ -74,6 +81,7 @@ namespace hazelcast {
             };
 
             std::vector<V *> values() {
+                LockGuard lg(lock);
                 std::vector<V *> val(internalMap.size());
                 int i = 0;
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
@@ -83,6 +91,7 @@ namespace hazelcast {
             };
 
             std::vector<K> keys() {
+                LockGuard lg(lock);
                 std::vector<K> k(internalMap.size());
                 int i = 0;
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
@@ -92,6 +101,7 @@ namespace hazelcast {
             };
 
             void clear() {
+                LockGuard lg(lock);
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
                     delete it->second;
                 }
@@ -100,6 +110,7 @@ namespace hazelcast {
 
         private:
             std::map<K, V *> internalMap;
+            mutable Lock lock;
         };
     }
 }

@@ -4,7 +4,7 @@
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "serialization/Data.h"
-#include "HazelcastException.h"
+#include "IException.h"
 #include <string>
 #include <stdexcept>
 
@@ -53,7 +53,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire()throw ( hazelcast::client::HazelcastException);
+            void acquire()throw ( exception::IException);
 
             /**
              * <p>Acquires the given number of permits, if they are available,
@@ -86,7 +86,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire(int permits)throw ( hazelcast::client::HazelcastException);
+            void acquire(int permits)throw ( exception::IException);
 
 
             /**
@@ -214,7 +214,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(long timeoutInMillis) throw ( hazelcast::client::HazelcastException);
+            bool tryAcquire(long timeoutInMillis) throw ( exception::IException);
 
             /**
              * Acquires the given number of permits, if they are available and
@@ -257,7 +257,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(int permits, long timeoutInMillis) throw ( hazelcast::client::HazelcastException);
+            bool tryAcquire(int permits, long timeoutInMillis) throw ( exception::IException);
 
 
         private:

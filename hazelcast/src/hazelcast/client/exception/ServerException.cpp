@@ -3,28 +3,28 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "hazelcast/client/protocol/HazelcastServerError.h"
+#include "ServerException.h"
 
 namespace hazelcast {
     namespace client {
-        namespace protocol {
-            HazelcastServerError::HazelcastServerError() {
+        namespace exception {
+            ServerException::ServerException() {
 
             }
 
-            HazelcastServerError::~HazelcastServerError() {
+            ServerException::~ServerException() throw(){
             }
 
-            char const *HazelcastServerError::what() const {
+            char const *ServerException::what() const throw(){
                 std::string error = message + ":" + details;
                 return error.c_str();
             }
 
-            int HazelcastServerError::getFactoryId() const {
+            int ServerException::getFactoryId() const {
                 return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
 
-            int HazelcastServerError::getClassId() const {
+            int ServerException::getClassId() const {
                 return protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID;
             }
 

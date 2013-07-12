@@ -5,7 +5,7 @@
 
 #include "ReadWriteLock.h"
 #include "Util.h"
-#include "hazelcast/client/HazelcastException.h"
+#include "IException.h"
 #include <sys/errno.h>
 
 namespace hazelcast {
@@ -25,7 +25,7 @@ namespace hazelcast {
                 return true;
             if (err == EBUSY)
                 return false;
-            throw client::HazelcastException("ReadWriteLock::tryReadLock error no: " + to_string(err));
+            throw client::exception::IException("ReadWriteLock::tryReadLock", " error no: " + to_string(err));
         };
 
         bool ReadWriteLock::tryWriteLock() {
@@ -34,25 +34,25 @@ namespace hazelcast {
                 return true;
             if (err == EBUSY)
                 return false;
-            throw client::HazelcastException("ReadWriteLock::tryWriteLock error no: " + to_string(err));
+            throw client::exception::IException("ReadWriteLock::tryWriteLock", " error no: " + to_string(err));
         };
 
         void ReadWriteLock::readLock() {
             int err = pthread_rwlock_rdlock(&lock);
             if (err)
-                throw client::HazelcastException("ReadWriteLock::readLock error no: " + to_string(err));
+                throw client::exception::IException("ReadWriteLock::readLock", " error no: " + to_string(err));
         };
 
         void ReadWriteLock::writeLock() {
             int err = pthread_rwlock_rdlock(&lock);
             if (err)
-                throw client::HazelcastException("ReadWriteLock::writeLock error no: " + to_string(err));
+                throw client::exception::IException("ReadWriteLock::writeLock", " error no: " + to_string(err));
         };
 
         void ReadWriteLock::unlock() {
             int err = pthread_rwlock_unlock(&lock);
             if (err)
-                throw client::HazelcastException("ReadWriteLock::unlock error no: " + to_string(err));
+                throw client::exception::IException("ReadWriteLock::unlock", " error no: " + to_string(err));
         };
 
         ReadWriteLock::ReadWriteLock(const ReadWriteLock& lock) {
