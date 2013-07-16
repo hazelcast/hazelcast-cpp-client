@@ -56,11 +56,11 @@ namespace hazelcast {
                 while (true) {
                     sleep(10);
                     impl::PartitionsResponse partitionResponse;
-                    if (clusterService.isMemberListEmpty()) {
+                    auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                    if (ptr.get() == NULL) {
                         partitionResponse = getPartitionsFrom();
                     } else {
-                        Address address = clusterService.getMasterAddress();
-                        partitionResponse = getPartitionsFrom(address);
+                        partitionResponse = getPartitionsFrom(*ptr.get());
                     }
                     if (!partitionResponse.isEmpty()) {
                         processPartitionResponse(partitionResponse);
@@ -71,12 +71,11 @@ namespace hazelcast {
 
             void PartitionService::runRefresher() {
                 impl::PartitionsResponse partitionResponse;
-                if (clusterService.isMemberListEmpty()) {
+                auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                if (ptr.get() == NULL) {
                     partitionResponse = getPartitionsFrom();
                 } else {
-                    Address address = clusterService.getMasterAddress();
-                    partitionResponse = getPartitionsFrom(address);
-
+                    partitionResponse = getPartitionsFrom(*ptr.get());
                 }
                 if (!partitionResponse.isEmpty()) {
                     processPartitionResponse(partitionResponse);

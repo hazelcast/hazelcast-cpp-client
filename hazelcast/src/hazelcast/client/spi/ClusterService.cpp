@@ -110,15 +110,13 @@ namespace hazelcast {
             };
 
 
-            Address ClusterService::getMasterAddress() {
+            std::auto_ptr<Address> ClusterService::getMasterAddress() {
                 vector<connection::Member> list = getMemberList();
-                return list[0].getAddress();
+                if (list.empty()) {
+                    return std::auto_ptr<Address>(NULL);
+                }
+                return std::auto_ptr<Address>(new Address(list[0].getAddress()));
             }
-            
-            bool ClusterService::isMemberListEmpty(){
-                vector<connection::Member> list = getMemberList();
-                return list.empty();
-            };
 
             void ClusterService::addMembershipListener(MembershipListener *listener) {
                 listenerLock.lock();

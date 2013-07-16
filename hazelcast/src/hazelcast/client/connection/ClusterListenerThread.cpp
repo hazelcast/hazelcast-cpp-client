@@ -137,8 +137,8 @@ namespace hazelcast {
                 }
                 std::cerr << "}" << std::endl;
                 std::map<Address, Member> *pMap = clusterService.membersRef.set(map);
-                if (pMap != NULL)
-                    delete pMap;
+                //if (pMap != NULL)
+                   // delete pMap;   //TODO should not be deleted immediately| user thread may be holding the pointer
 
             };
 

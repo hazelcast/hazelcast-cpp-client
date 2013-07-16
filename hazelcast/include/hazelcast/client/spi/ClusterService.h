@@ -60,9 +60,7 @@ namespace hazelcast {
                     sendAndHandle(conn, obj, handler);
                 };
 
-                Address getMasterAddress();
-
-                bool isMemberListEmpty();
+                std::auto_ptr<Address> getMasterAddress();
 
                 void addMembershipListener(MembershipListener *listener);
 
