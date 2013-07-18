@@ -5,7 +5,7 @@
 #define HAZELCAST_CREDENTIALS
 
 #include "ProtocolConstants.h"
-#include "../serialization/ConstantSerializers.h"
+#include "Portable.h"
 #include <string>
 #include <vector>
 
@@ -15,13 +15,7 @@ namespace hazelcast {
         typedef unsigned char byte;
 
         namespace protocol {
-            class Credentials {
-                template<typename HzWriter>
-                friend void serialization::writePortable(HzWriter& writer, const protocol::Credentials& data);
-
-                template<typename HzReader>
-                friend void serialization::readPortable(HzReader& reader, protocol::Credentials& data);
-
+            class Credentials : public Portable {
             public:
                 Credentials();
 
@@ -33,6 +27,25 @@ namespace hazelcast {
 
                 void setPassword(const std::string& password);
 
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+
+                template<typename HzWriter>
+                inline void writePortable(HzWriter& writer) const{
+                    writer.writeUTF("principal", principal);//dev
+                    writer.writeUTF("endpoint", endpoint);//"
+                    writer.writeByteArray("pwd", password);//dev-pass
+                };
+
+                template<typename HzReader>
+                inline void readPortable(HzReader& reader) {
+                    principal = reader.readUTF("principal");
+                    endpoint = reader.readUTF("endpoint");
+                    password = reader.readByteArray("pwd");
+                };
+
             private:
                 std::string principal;
                 std::string endpoint;
@@ -42,41 +55,5 @@ namespace hazelcast {
     }
 }
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const protocol::Credentials& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const protocol::Credentials& ar) {
-                return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
-            };
-
-            inline int getClassId(const protocol::Credentials& ar) {
-                return protocol::SpiConstants::USERNAME_PWD_CRED;
-            };
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const protocol::Credentials& data) {
-                writer["principal"] << data.principal; //dev
-                writer["endpoint"] << data.endpoint; //""
-                writer["pwd"] << data.password; //dev-pass
-
-
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, protocol::Credentials& data) {
-                reader["principal"] >> data.principal; //dev
-                reader["endpoint"] >> data.endpoint; //""
-                reader["pwd"] >> data.password; //dev-pass
-            };
-
-        }
-    }
-}
 
 #endif //HAZELCAST_CREDENTIALS

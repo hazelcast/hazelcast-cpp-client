@@ -6,8 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "BufferedDataOutput.h"
-#include <iostream>
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "Util.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,6 +20,10 @@ namespace hazelcast {
             };
 
 
+            BufferedDataOutput::~BufferedDataOutput() {
+
+            };
+
             BufferedDataOutput::BufferedDataOutput(BufferedDataOutput const & rhs) {
                 //private
             };
@@ -26,10 +31,6 @@ namespace hazelcast {
             BufferedDataOutput & BufferedDataOutput::operator = (BufferedDataOutput const & rhs) {
                 //private
                 return *this;
-            };
-
-            BufferedDataOutput& BufferedDataOutput::operator [](const std::string& string) {
-                throw hazelcast::client::HazelcastException("BufferedDataOutput::operator [](std::string string) > not supported!!");
             };
 
             std::auto_ptr< std::vector<byte> > BufferedDataOutput::toByteArray() {
@@ -40,21 +41,12 @@ namespace hazelcast {
                 outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
             };
 
-            void BufferedDataOutput::writeCharArray(const std::vector<char>& bytes) {
-                writeInt(bytes.size());
-                outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
-            };
-
-            void BufferedDataOutput::write(char const *bytes, int length) {
-                outputStream->insert(outputStream->end(), bytes, bytes + (length * sizeof (char)));
-            };
-
             void BufferedDataOutput::writeBoolean(bool i) {
                 writeByte(i);
             };
 
-            void BufferedDataOutput::writeByte(int n, int i) {
-                (*outputStream)[n] = char(0xff & i);
+            void BufferedDataOutput::writeByte(int index, int i) {
+                (*outputStream)[index] = char(0xff & i);
             }
 
             void BufferedDataOutput::writeByte(int i) {
@@ -130,6 +122,59 @@ namespace hazelcast {
                 writeByte(index, v);
             };
 
+            void BufferedDataOutput::writeByteArray(const std::vector<byte>&  data) {
+                writeInt(data.size());
+                outputStream->insert(outputStream->end(), data.begin(), data.end());
+            };
+
+            void BufferedDataOutput::writeCharArray(const std::vector<char>& data) {
+                writeInt(data.size());
+//                outputStream->insert(outputStream->end(), data.begin(), data.end());//TODO
+                for (int i = 0; i < data.size(); ++i) {
+                    writeChar(data[i]);
+                }
+            };
+
+            void BufferedDataOutput::writeShortArray(const std::vector<short >&  data) {
+                int size = data.size();
+                writeInt(size);
+                for (int i = 0; i < size; ++i) {
+                    writeShort(data[i]);
+                }
+            };
+
+            void BufferedDataOutput::writeIntArray(const std::vector<int>&  data) {
+                int size = data.size();
+                writeInt(size);
+                for (int i = 0; i < size; ++i) {
+                    writeInt(data[i]);
+                }
+            };
+
+            void BufferedDataOutput::writeLongArray(const std::vector<long >&  data) {
+                int size = data.size();
+                writeInt(size);
+                for (int i = 0; i < size; ++i) {
+                    writeLong(data[i]);
+                }
+            };
+
+            void BufferedDataOutput::writeFloatArray(const std::vector<float >&  data) {
+                int size = data.size();
+                writeInt(size);
+                for (int i = 0; i < size; ++i) {
+                    writeFloat(data[i]);
+                }
+            };
+
+            void BufferedDataOutput::writeDoubleArray(const std::vector<double >&  data) {
+                int size = data.size();
+                writeInt(size);
+                for (int i = 0; i < size; ++i) {
+                    writeDouble(data[i]);
+                }
+            };
+
             int BufferedDataOutput::position() {
                 return outputStream->size();
             };
@@ -160,12 +205,9 @@ namespace hazelcast {
                     }
                 }
                 if (utfLength > 65535) {
-                    std::string error = "encoded string too long:";
-                    error += utfLength;
-                    error += " bytes";
-                    throw hazelcast::client::HazelcastException(error);
+                    throw exception::IOException("BufferedDataOutput::writeShortUTF","encoded string too long:" + util::to_string(utfLength) + " bytes");
                 }
-                char byteArray[utfLength];
+                std::vector<byte> byteArray(utfLength);
                 int i;
                 for (i = 0; i < stringLen; i++) {
                     if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -185,7 +227,7 @@ namespace hazelcast {
                     }
                 }
                 writeShort(utfLength);
-                write(byteArray, utfLength);
+                write(byteArray);
             };
 
 

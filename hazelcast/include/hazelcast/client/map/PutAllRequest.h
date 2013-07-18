@@ -10,16 +10,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class PutAllRequest {
+            class PutAllRequest : public Portable {
             public:
                 PutAllRequest(const std::string& name, map::MapEntrySet& entrySet)
                 :name(name)
                 , entrySet(entrySet) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -32,14 +28,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer << entrySet;
+                    writer.writeUTF("n", name);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    entrySet.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader >> entrySet;
+                    name = reader.readUTF("n");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    entrySet.readData(*in);
                 };
             private:
                 std::string name;

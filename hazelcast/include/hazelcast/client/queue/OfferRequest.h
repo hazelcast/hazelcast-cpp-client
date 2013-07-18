@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class OfferRequest {
+            class OfferRequest : public Portable {
             public:
                 OfferRequest(const std::string& name, serialization::Data& data, long timeout)
                 :name(name)
@@ -26,10 +26,6 @@ namespace hazelcast {
 
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return queue::QueuePortableHook::F_ID;
                 }
@@ -40,16 +36,18 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["t"] << timeoutInMillis;
-                    writer << data;
+                    writer.writeUTF("n", name);
+                    writer.writeLong("t", timeoutInMillis);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    data.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> timeoutInMillis;
-                    reader >> data;
+                    name = reader.readUTF("n");
+                    timeoutInMillis = reader.readUTF("t");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    data.readData(*in);
                 };
             private:
                 serialization::Data& data;

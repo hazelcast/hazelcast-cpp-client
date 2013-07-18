@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "Cluster.h"
+#include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "MembershipListener.h"
+#include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {

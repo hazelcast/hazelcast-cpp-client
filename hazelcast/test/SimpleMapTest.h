@@ -5,8 +5,8 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/AtomicInteger.h"
+#include <boost/thread.hpp>
+#include <boost/atomic.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -28,9 +28,9 @@ public:
 
     Stats(const Stats& rhs) {
         Stats newOne;
-        getCount = rhs.getCount;
-        putCount = rhs.putCount;
-        removeCount = rhs.removeCount;
+        getCount.exchange(rhs.getCount);
+        putCount.exchange(rhs.putCount);
+        removeCount.exchange(rhs.removeCount);
     };
 
     Stats getAndReset() {
@@ -40,29 +40,28 @@ public:
         removeCount = 0;
         return newOne;
     };
-    hazelcast::util::AtomicInteger getCount;
-    hazelcast::util::AtomicInteger putCount;
-    hazelcast::util::AtomicInteger removeCount;
+    boost::atomic<int> getCount;
+    boost::atomic<int> putCount;
+    boost::atomic<int> removeCount;
 
     void print() {
-        std::cout << "Total = " << total() << ", puts = " << putCount.get() << " , gets = " << getCount.get() << " , removes = " << removeCount.get() << std::endl;
+        std::cout << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = " << removeCount << std::endl;
     };
 
     int total() {
-        return getCount.get() + putCount.get() + removeCount.get();
+        return getCount + putCount + removeCount;
     };
 } stats;
 
-void *printStats(void *) {
+void printStats() {
     while (true) {
         try {
-            sleep(STATS_SECONDS);
+            boost::this_thread::sleep(boost::posix_time::seconds(STATS_SECONDS));
             Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
-            return NULL;
         }
     }
 };
@@ -107,20 +106,19 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.addAddress(Address(server_address, server_port));
+        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
         clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
 
-        hazelcast::util::Thread monitor(printStats);
-        monitor.start();
         try {
+            boost::thread monitor(printStats);
             HazelcastClient hazelcastClient(clientConfig);
             IMap<int, vector<char> > map = hazelcastClient.getMap<int, vector<char > >("default");
-            op(map);
+           // op(map);
 
+            monitor.join();
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
         }
-        monitor.join();
     }
 
 

@@ -10,12 +10,13 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "SemaphorePortableHook.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class DestroyRequest {
+            class DestroyRequest : public Portable {
             public:
                 DestroyRequest(const std::string& instanceName)
                 :instanceName(instanceName) {
@@ -29,18 +30,14 @@ namespace hazelcast {
                     return SemaphorePortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
+                    writer.writeUTF("n", instanceName);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
+                    instanceName = reader.readUTF("n");
                 };
             private:
 

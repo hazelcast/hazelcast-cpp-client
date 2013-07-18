@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 void setMembersRef();
 
-                virtual std::vector<connection::Member> getMembers();
+                virtual boost::shared_ptr< std::vector<hazelcast::client::connection::Member> > getMembers();
 
                 virtual void init(Cluster& cluster);
 

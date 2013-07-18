@@ -5,9 +5,10 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include <iostream>
-#include "ClassDefinition.h"
-#include "BufferedDataInput.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -86,7 +87,7 @@ namespace hazelcast {
                 if (hasField(fieldName)) {
                     return fieldDefinitionsMap.at(fieldName).getType();
                 } else {
-                    throw hazelcast::client::HazelcastException("field does not exist");
+                    throw exception::IOException("ClassDefinition::getFieldType","field does not exist");
                 }
             }
 
@@ -118,6 +119,39 @@ namespace hazelcast {
 
             void ClassDefinition::setBinary(std::auto_ptr < std::vector<byte> > binary) {
                 this->binary.reset(binary.release());
+            };
+
+            void ClassDefinition::writeData(BufferedDataOutput& dataOutput) {
+                dataOutput.writeInt(factoryId);
+                dataOutput.writeInt(classId);
+                dataOutput.writeInt(version);
+                dataOutput.writeInt(fieldDefinitions.size());
+                for (int i = 0; i < fieldDefinitions.size(); i++) {
+                    fieldDefinitions[i].writeData(dataOutput);
+                }
+
+                dataOutput .writeInt(int(nestedClassDefinitions.size()));
+                for (int i = 0; i < nestedClassDefinitions.size(); i++) {
+                    nestedClassDefinitions[i]->writeData(dataOutput);
+                }
+            };
+
+            void ClassDefinition::readData(BufferedDataInput& dataInput) {
+                factoryId = dataInput.readInt();
+                classId = dataInput.readInt();
+                version = dataInput.readInt();
+                int size = dataInput.readInt();
+                for (int i = 0; i < size; i++) {
+                    FieldDefinition fieldDefinition;
+                    fieldDefinition.readData(dataInput);
+                    add(fieldDefinition);
+                }
+                size = dataInput.readInt();
+                for (int i = 0; i < size; i++) {
+                    ClassDefinition *classDefinition = new ClassDefinition;
+                    classDefinition->readData(dataInput);
+                    add(classDefinition);
+                }
             };
 
         }

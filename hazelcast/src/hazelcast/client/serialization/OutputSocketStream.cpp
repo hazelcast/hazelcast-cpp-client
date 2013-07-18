@@ -1,12 +1,13 @@
-#include "OutputSocketStream.h"
-#include "hazelcast/client/HazelcastException.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
 
-            OutputSocketStream::OutputSocketStream(hazelcast::client::connection::Socket & socket):socket(socket) {
+            OutputSocketStream::OutputSocketStream(hazelcast::client::connection::Socket & socket)
+            :socket(socket) {
             }
 
             void OutputSocketStream::write(const std::vector<byte>& bytes) {
@@ -110,10 +111,7 @@ namespace hazelcast {
                     }
                 }
                 if (utfLength > 65535) {
-                    std::string error = "encoded string too long:";
-                    error += utfLength;
-                    error += " bytes";
-                    throw hazelcast::client::HazelcastException(error);
+                    throw exception::IOException("OutputSocketStream::writeShortUTF", "encoded string too long:" + util::to_string(utfLength) + " bytes");
                 }
                 char byteArray[utfLength];
                 int i;
@@ -137,11 +135,6 @@ namespace hazelcast {
                 writeShort(utfLength);
                 write(byteArray, utfLength);
             };
-
-            void OutputSocketStream::close() {
-                socket.close();
-            };
-
 
         }
     }

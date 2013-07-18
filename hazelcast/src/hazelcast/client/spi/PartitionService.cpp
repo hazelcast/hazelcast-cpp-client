@@ -6,8 +6,9 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
 #include "hazelcast/client/impl/PartitionsResponse.h"
-#include "PartitionService.h"
-#include "ClusterService.h"
+#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClusterService.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -15,22 +16,19 @@ namespace hazelcast {
             PartitionService::PartitionService(ClusterService & clusterService, serialization::SerializationService & serializationService)
             :partitionCount(0)
             , clusterService(clusterService)
-            , serializationService(serializationService)
-            , partitionListenerThread(PartitionService::startListener, this)
-            , refreshPartitionThread(PartitionService::startRefresher, this) {
+            , serializationService(serializationService) {
 
             };
 
 
             void PartitionService::start() {
                 getInitialPartitions();
-                std::cerr << "partitionCount = " << partitionCount << std::endl;
-                partitionListenerThread.start();
+                boost::thread partitionListener(boost::bind(&PartitionService::runListener, this));
             };
 
 
             void PartitionService::refreshPartitions() {
-                refreshPartitionThread.start();
+                boost::thread partitionListener(boost::bind(&PartitionService::runRefresher, this));
             };
 
             Address *PartitionService::getPartitionOwner(int partitionId) {
@@ -43,21 +41,17 @@ namespace hazelcast {
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             };
 
-            void *PartitionService::startListener(void *parameteres) {
-                static_cast<PartitionService *>(parameteres)->runListener();
-                return NULL;
-            };
-
-            void *PartitionService::startRefresher(void *parameteres) {
-                static_cast<PartitionService *>(parameteres)->runRefresher();
-                return NULL;
-            };
 
             void PartitionService::runListener() {
                 while (true) {
-                    sleep(10);
-                    Address masterAddress = clusterService.getMasterAddress();
-                    impl::PartitionsResponse partitionResponse = getPartitionsFrom(masterAddress);
+                    boost::this_thread::sleep(boost::posix_time::seconds(10));
+                    impl::PartitionsResponse partitionResponse;
+                    auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                    if (ptr.get() == NULL) {
+                        partitionResponse = getPartitionsFrom();
+                    } else {
+                        partitionResponse = getPartitionsFrom(*ptr.get());
+                    }
                     if (!partitionResponse.isEmpty()) {
                         processPartitionResponse(partitionResponse);
                     }
@@ -66,7 +60,13 @@ namespace hazelcast {
 
 
             void PartitionService::runRefresher() {
-                impl::PartitionsResponse partitionResponse = getPartitionsFrom(clusterService.getMasterAddress());
+                impl::PartitionsResponse partitionResponse;
+                auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                if (ptr.get() == NULL) {
+                    partitionResponse = getPartitionsFrom();
+                } else {
+                    partitionResponse = getPartitionsFrom(*ptr.get());
+                }
                 if (!partitionResponse.isEmpty()) {
                     processPartitionResponse(partitionResponse);
                 }
@@ -74,9 +74,26 @@ namespace hazelcast {
 
             impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address  & address) {
                 impl::GetPartitionsRequest getPartitionsRequest;
-                impl::PartitionsResponse partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
+                impl::PartitionsResponse partitionResponse;
+                try{
+                    partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
+                }catch(exception::IOException& e){
+                    std::cerr << e.what() << std::endl;
+                }
                 return partitionResponse;
             };
+
+
+            impl::PartitionsResponse PartitionService::getPartitionsFrom() {
+                impl::GetPartitionsRequest getPartitionsRequest;
+                impl::PartitionsResponse partitionResponse;
+                try{
+                    partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(getPartitionsRequest);
+                }catch(exception::IOException& e){
+                    std::cerr << e.what() << std::endl;
+                }
+                return partitionResponse;
+            }
 
             void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
                 vector<Address> members = response.getMembers();
@@ -104,7 +121,7 @@ namespace hazelcast {
                         return;
                     }
                 }
-                throw HazelcastException("IllegalStateException :: Cannot get initial partitions!");
+                throw exception::IException("PartitionService::getInitialPartitions", " Cannot get initial partitions!");
             };
 
 

@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "Credentials.h"
+#include "hazelcast/client/protocol/Credentials.h"
 
 
 namespace hazelcast {
@@ -33,6 +33,15 @@ namespace hazelcast {
                 std::vector<byte> pwd(pasw, pasw + 8); //TODO
                 this->password = pwd;
             };
+
+            int Credentials::getFactoryId() const {
+                return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
+
+            }
+
+            int Credentials::getClassId() const {
+                return protocol::SpiConstants::USERNAME_PWD_CRED;
+            }
 
 
         }

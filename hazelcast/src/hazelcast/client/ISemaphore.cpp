@@ -1,10 +1,11 @@
-#include "ISemaphore.h"
+#include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/semaphore/InitRequest.h"
 #include "hazelcast/client/semaphore/AcquireRequest.h"
 #include "hazelcast/client/semaphore/AvailableRequest.h"
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
+#include "hazelcast/client/exception/InterruptedException.h"
 
 
 namespace hazelcast {
@@ -17,7 +18,7 @@ namespace hazelcast {
         void ISemaphore::init(const std::string& instanceName, spi::ClientContext *clientContext) {
             this->context = clientContext;
             this->instanceName = instanceName;
-            key = context->getSerializationService().toData(instanceName);
+            key = context->getSerializationService().toData<std::string>(&instanceName);
         };
 
 
@@ -70,7 +71,7 @@ namespace hazelcast {
             checkNegative(permits);
             try {
                 return tryAcquire(permits, 0);
-            } catch (HazelcastException&/*InterruptedException*/ e) {
+            } catch (exception::InterruptedException & e) {
                 return false;
             }
         };
@@ -87,7 +88,7 @@ namespace hazelcast {
 
         void ISemaphore::checkNegative(int permits) {
             if (permits < 0) {
-                throw HazelcastException/*IllegalArgumentException*/("Permits cannot be negative!");
+                throw exception::IException("ISemaphore::checkNegative", "Permits cannot be negative!");
             }
         };
 

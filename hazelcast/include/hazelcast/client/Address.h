@@ -1,23 +1,21 @@
 #ifndef HAZELCAST_ADDRESS
 #define HAZELCAST_ADDRESS
 
-#include "protocol/ProtocolConstants.h"
-#include "serialization/ConstantSerializers.h"
 #include "../util/Util.h"
+#include "DataSerializable.h"
 #include <string>
 #include <sstream>
 #include <iterator>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class BufferedDataInput;
 
-        class Address {
-            template<typename HzWriter>
-            friend void ::hazelcast::client::serialization::writePortable(HzWriter& writer, const hazelcast::client::Address& ar);
+            class BufferedDataOutput;
+        }
 
-            template<typename HzReader>
-            friend void ::hazelcast::client::serialization::readPortable(HzReader& reader, hazelcast::client::Address& ar);
-
+        class Address : public DataSerializable {
         public:
             //TODO type IPV4 IPV6
             Address();
@@ -32,6 +30,14 @@ namespace hazelcast {
 
             std::string getHost() const;
 
+            int getFactoryId() const;
+
+            int getClassId() const;
+
+            void writeData(serialization::BufferedDataOutput& writer);
+
+            void readData(serialization::BufferedDataInput& reader);
+
         private:
             static const byte IPv4 = 4;
             static const byte IPv6 = 6;
@@ -41,61 +47,24 @@ namespace hazelcast {
             byte type;
         };
 
+        struct addressComparator {
+            bool operator ()(const Address& lhs, const Address& rhs) const {
+                int i = lhs.getHost().compare(rhs.getHost());
+                if (i == 0) {
+                    return lhs.getPort() > rhs.getPort();
+                }
+                return i > 0;
+
+            }
+        };
+
+
     }
 };
+
 
 inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::Address &a) {
     return strm << std::string("Address[") << a.getHost() << std::string(":") << hazelcast::util::to_string(a.getPort()) << std::string("]");
 };
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const hazelcast::client::Address& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            inline int getFactoryId(const hazelcast::client::Address& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
-            };
-
-            inline int getClassId(const hazelcast::client::Address& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::ADDRESS_ID;
-            };
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::Address& address) {
-                writer << address.port;
-                writer << address.type;
-                int size = address.host.size();
-                writer << size;
-                if (size != 0) {
-                    std::vector<char> temp(size);
-                    char const *str = address.host.c_str();
-                    temp.insert(temp.begin(), str, str + size);
-                    writer << str;
-                }
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::Address& address) {
-                reader >> address.port;
-                reader >> address.type;
-                int size;
-                reader >> size;
-                if (size != 0) {
-                    std::vector<byte> temp(size);
-                    reader.readFully(temp);
-                    std::ostringstream oss;
-                    std::copy(temp.begin(), temp.end(), std::ostream_iterator<byte>(oss));
-                    address.host = oss.str();
-                }
-            };
-
-        }
-    }
-}
 
 #endif /* HAZELCAST_ADDRESS */

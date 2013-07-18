@@ -1,4 +1,4 @@
-#include "ClientConfig.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -12,7 +12,8 @@ namespace hazelcast {
         , attemptPeriod(3000)
         , credentials(NULL)
         , loadBalancer(NULL)
-        , isDefaultCredentialsInitialized(false) {
+        , isDefaultCredentialsInitialized(false)
+        , defaultLoadBalancer(new impl::RoundRobinLB) {
         };
 
 
@@ -34,24 +35,48 @@ namespace hazelcast {
             return addressList;
         };
 
+        ClientConfig& ClientConfig::setGroupConfig(GroupConfig& groupConfig) {
+            this->groupConfig = groupConfig;
+            return *this;
+        };
+
+
         GroupConfig& ClientConfig::getGroupConfig() {
             return groupConfig;
         };
 
 
+        ClientConfig& ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
+            this->connectionAttemptLimit = connectionAttemptLimit;
+            return *this;
+        };
+
         int ClientConfig::getConnectionAttemptLimit() const {
             return connectionAttemptLimit;
         };
 
+        ClientConfig& ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
+            this->connectionTimeout = connectionTimeoutInMillis;
+            return *this;
+        };
 
         int ClientConfig::getConnectionTimeout() const {
             return connectionTimeout;
-        }
+        };
+
+        ClientConfig& ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
+            this->attemptPeriod = attemptPeriodInMillis;
+            return *this;
+        };
 
         int ClientConfig::getAttemptPeriod() const {
             return attemptPeriod;
         };
 
+        ClientConfig& ClientConfig::setRedoOperation(bool redoOperation) {
+            this->redoOperation = redoOperation;
+            return *this;
+        };
 
         bool ClientConfig::isRedoOperation() const {
             return redoOperation;
@@ -59,7 +84,7 @@ namespace hazelcast {
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
-                return &defaultLoadBalancer;
+                return defaultLoadBalancer.get();
             return loadBalancer;
         };
 
@@ -68,13 +93,17 @@ namespace hazelcast {
         };
 
 
-        ClientConfig ClientConfig::addListener(spi::EventListener *listener) {
+        ClientConfig& ClientConfig::addListener(spi::EventListener *listener) {
             listeners.insert(listener);
             return *this;
         };
 
         std::set<spi::EventListener *>  ClientConfig::getListeners() const {
             return listeners;
+        };
+
+        void ClientConfig::setCredentials(protocol::Credentials *credentials) {
+            this->credentials = credentials;
         };
 
         protocol::Credentials & ClientConfig::getCredentials() {
@@ -88,11 +117,6 @@ namespace hazelcast {
             }
             return *credentials;
         };
-
-        void ClientConfig::setCredentials(protocol::Credentials *credentials) {
-            this->credentials = credentials;
-        };
-
 
     }
 }

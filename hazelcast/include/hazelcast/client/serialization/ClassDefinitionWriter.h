@@ -10,11 +10,12 @@
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
 #include "FieldDefinition.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "FieldType.h"
-#include "ConstantSerializers.h"
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
+#include "EmptyDataOutput.h"
+#include "ConstantSerializers.h"
 #include <string>
 #include <iosfwd>
 
@@ -28,73 +29,60 @@ namespace hazelcast {
 
                 ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext);
 
-                ClassDefinitionWriter& operator [](const std::string& fieldName);
+                void writeInt(const char *fieldName, int value);
 
-                void write(const std::vector<byte>& x) {
-                    throw hazelcast::client::HazelcastException("Unsupported");//TODO
-                }
+                void writeLong(const char *fieldName, long value);
 
-                void writeInt(int value);
+                void writeBoolean(const char *fieldName, bool value);
 
-                void writeLong(long value);
+                void writeByte(const char *fieldName, byte value);
 
-                void writeBoolean(bool value);
+                void writeChar(const char *fieldName, int value);
 
-                void writeByte(byte value);
+                void writeDouble(const char *fieldName, double value);
 
-                void writeChar(int value);
+                void writeFloat(const char *fieldName, float value);
 
-                void writeDouble(double value);
+                void writeShort(const char *fieldName, short value);
 
-                void writeFloat(float value);
+                void writeUTF(const char *fieldName, const string& str);
 
-                void writeShort(short value);
+                void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
-                void writeUTF(const string& str);
+                void writeByteArray(const char *fieldName, const std::vector<byte>& values);
 
-                void writeNullPortable(int factoryId, int classId);
+                void writeCharArray(const char *fieldName, const std::vector<char >&  data);
 
-                void writeByteArray(const std::vector<byte>&);
+                void writeShortArray(const char *fieldName, const std::vector<short >&  data);
 
-                void writeCharArray(const std::vector<char>&);
+                void writeIntArray(const char *fieldName, const std::vector<int>&  data);
 
-                void writeIntArray(const std::vector<int>&);
+                void writeLongArray(const char *fieldName, const std::vector<long >&  data);
 
-                void writeLongArray(const std::vector<long>&);
+                void writeFloatArray(const char *fieldName, const std::vector<float >&  data);
 
-                void writeDoubleArray(const std::vector<double>&);
-
-                void writeFloatArray(const std::vector<float>&);
-
-                void writeShortArray(const std::vector<short>&);
+                void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
 
                 template <typename T>
-                void writePortable(const T& portable) {
-                    if (writingPortable) {
-                        FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE, getFactoryId(portable), getClassId(portable));
-                        addNestedField(portable, fd);
-                        writingPortable = false;
-                    } else {
-                        throw hazelcast::client::HazelcastException("Can not write portable directly(without using ['fieldName'])");
-                    }
+                void writePortable(const char *fieldName, const T& portable) {
+                    FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, portable.getFactoryId(), portable.getClassId());
+                    addNestedField(portable, fd);
                 };
 
                 template <typename T>
-                void writePortable(const std::vector<T>& portables) {
-                    if (writingPortable) {
-                        int classId = getClassId(portables[0]);
-                        int factoryId = getFactoryId(portables[0]);
-                        FieldDefinition fd(index++, lastFieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
-                        addNestedField(portables[0], fd);
-                    } else {
-                        throw hazelcast::client::HazelcastException("Can not write portable directly(without using ['fieldName'])");
-                    }
+                void writePortableArray(const char *fieldName, const std::vector<T>& portables) {
+                    int classId = portables[0].getClassId();
+                    int factoryId = portables[0].getFactoryId();
+                    FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
+                    addNestedField(portables[0], fd);
                 };
 
                 ClassDefinition *getClassDefinition();
 
+                BufferedDataOutput *getRawDataOutput();
+
             private:
-                void addField(FieldType const&);
+                void addField(const char *fieldName, FieldType const&);
 
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
@@ -107,13 +95,13 @@ namespace hazelcast {
                 ClassDefinition *getOrBuildClassDefinition(const T& p) {
                     ClassDefinition *cd;
 
-                    int factoryId = getFactoryId(p);
-                    int classId = getClassId(p);
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
                     if (context->isClassDefinitionExists(factoryId, classId)) {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        hazelcast::client::serialization::writePortable(classDefinitionWriter, p);
+                        p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
@@ -125,24 +113,10 @@ namespace hazelcast {
                 int classId;
                 int index;
                 bool raw;
-                bool writingPortable;
-                std::string lastFieldName;
                 ClassDefinition *cd;
                 SerializationContext *context;
+                EmptyDataOutput emptyDataOutput;
 
-            };
-
-            template<typename T>
-            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const std::vector<T>& data) {
-                classDefinitionWriter.writePortable(data);
-            };
-
-            template<typename T>
-            inline void operator <<(ClassDefinitionWriter& classDefinitionWriter, const T& data) {
-                if (getTypeSerializerId(data) == SerializationConstants::CONSTANT_TYPE_PORTABLE)
-                    classDefinitionWriter.writePortable(data);
-                else
-                    writePortable(classDefinitionWriter, data);
             };
 
         }

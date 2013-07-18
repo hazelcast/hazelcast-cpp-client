@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename K, typename V>
-            class EntryView {
+            class EntryView : public DataSerializable {
             public:
                 EntryView(const K& key, const V& value, const EntryView<serialization::Data, serialization::Data>& rhs)
                 : key(key)
@@ -27,10 +27,6 @@ namespace hazelcast {
 
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
-                };
-
                 int getFactoryId() const {
                     return DataSerializableHook::F_ID;
                 };
@@ -39,32 +35,30 @@ namespace hazelcast {
                     return DataSerializableHook::ENTRY_VIEW;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << key;
-                    writer << value;
-                    writer << cost;
-                    writer << creationTime;
-                    writer << expirationTime;
-                    writer << hits;
-                    writer << lastAccessTime;
-                    writer << lastStoredTime;
-                    writer << lastUpdateTime;
-                    writer << version;
+                void writeData(serialization::BufferedDataOutput& out) const {
+//                    writer << key;
+//                    writer << value;TODO ???
+                    out.writeLong(cost);
+                    out.writeLong(creationTime);
+                    out.writeLong(expirationTime);
+                    out.writeLong(hits);
+                    out.writeLong(lastAccessTime);
+                    out.writeLong(lastStoredTime);
+                    out.writeLong(lastUpdateTime);
+                    out.writeLong(version);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader >> key;
-                    reader >> value;
-                    reader >> cost;
-                    reader >> creationTime;
-                    reader >> expirationTime;
-                    reader >> hits;
-                    reader >> lastAccessTime;
-                    reader >> lastStoredTime;
-                    reader >> lastUpdateTime;
-                    reader >> version;
+                void readData(serialization::BufferedDataInput& in) {
+//                    reader >> key;  TODO ???
+//                    reader >> value;
+                    cost = in.readLong();
+                    creationTime = in.readLong();
+                    expirationTime = in.readLong();
+                    hits = in.readLong();
+                    lastAccessTime = in.readLong();
+                    lastStoredTime = in.readLong();
+                    lastUpdateTime = in.readLong();
+                    version = in.readLong();
                 };
                 K key;
                 V value;

@@ -4,6 +4,8 @@
 
 
 #include "MembershipEvent.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,6 +29,25 @@ namespace hazelcast {
                 return eventType;
             };
 
+            int MembershipEvent::getFactoryId() const {
+                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
+
+            }
+
+            int MembershipEvent::getClassId() const {
+                return hazelcast::client::protocol::ProtocolConstants::MEMBERSHIP_EVENT;
+
+            }
+
+            void MembershipEvent::writeData(serialization::BufferedDataOutput& writer) {
+                member.writeData(writer);
+                writer.writeInt(eventType);
+            }
+
+            void MembershipEvent::readData(serialization::BufferedDataInput& reader) {
+                member.readData(reader);
+                eventType = reader.readInt();
+            }
 
         }
     }

@@ -9,10 +9,12 @@
 
 #include <map>
 #include <vector>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 
 namespace hazelcast {
     namespace util {
-        template <typename K, typename V>
+        template <typename K, typename V, typename Comparator  = std::less<K> >
         class ConcurrentMap {
         public:
             ConcurrentMap() {
@@ -23,6 +25,7 @@ namespace hazelcast {
             };
 
             bool containsKey(const K& key) const {
+                boost::lock_guard<boost::mutex> guard (mapLock);
                 return internalMap.count(key) > 0;
             };
 
@@ -32,6 +35,7 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             V *putIfAbsent(const K& key, V *value) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     return internalMap[key];
                 } else {
@@ -41,6 +45,7 @@ namespace hazelcast {
             };
 
             V *put(const K& key, V *value) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     V *tempValue = internalMap[key];
                     internalMap[key] = value;
@@ -57,6 +62,7 @@ namespace hazelcast {
              *
              */
             V *get(const K& key) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
                 else
@@ -64,6 +70,7 @@ namespace hazelcast {
             };
 
             V *remove(const K& key) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     V *value = internalMap[key];
                     internalMap.erase(internalMap.find(key));
@@ -74,6 +81,7 @@ namespace hazelcast {
             };
 
             std::vector<V *> values() {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 std::vector<V *> val(internalMap.size());
                 int i = 0;
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
@@ -83,6 +91,7 @@ namespace hazelcast {
             };
 
             std::vector<K> keys() {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 std::vector<K> k(internalMap.size());
                 int i = 0;
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
@@ -92,6 +101,7 @@ namespace hazelcast {
             };
 
             void clear() {
+                boost::lock_guard<boost::mutex> lg(mapLock);
                 for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
                     delete it->second;
                 }
@@ -99,7 +109,8 @@ namespace hazelcast {
             };
 
         private:
-            std::map<K, V *> internalMap;
+            std::map<K, V *, Comparator> internalMap;
+            mutable boost::mutex mapLock;
         };
     }
 }

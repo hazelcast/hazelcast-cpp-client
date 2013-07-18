@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            class GetRemainingLeaseRequest {
+            class GetRemainingLeaseRequest : public Portable {
             public:
                 GetRemainingLeaseRequest(const serialization::Data& key)
                 :key(key) {
@@ -30,18 +30,16 @@ namespace hazelcast {
                     return LockPortableHook::FACTORY_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << key;
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader >> key;
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
 

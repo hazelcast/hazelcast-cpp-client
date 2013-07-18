@@ -45,8 +45,6 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addLongArrayField(std::string);
 
-                ClassDefinitionBuilder& addBooleanArrayField(std::string);
-
                 ClassDefinitionBuilder& addByteArrayField(std::string);
 
                 ClassDefinitionBuilder& addCharArrayField(std::string);
@@ -56,8 +54,6 @@ namespace hazelcast {
                 ClassDefinitionBuilder& addFloatArrayField(std::string);
 
                 ClassDefinitionBuilder& addShortArrayField(std::string);
-
-                ClassDefinitionBuilder& addUTFArrayField(std::string);
 
                 ClassDefinitionBuilder& addPortableArrayField(std::string, int, int);
 

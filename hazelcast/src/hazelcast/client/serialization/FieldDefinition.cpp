@@ -5,7 +5,9 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "FieldDefinition.h"
+#include "hazelcast/client/serialization/FieldDefinition.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,6 +53,23 @@ namespace hazelcast {
                 return classId;
             };
 
+
+            void FieldDefinition::writeData(BufferedDataOutput & dataOutput) {
+                dataOutput.writeInt(index);
+                dataOutput.writeUTF(fieldName);
+                dataOutput.writeByte(type.getId());
+                dataOutput.writeInt(factoryId);
+                dataOutput.writeInt(classId);
+            };
+
+            void FieldDefinition::readData(BufferedDataInput & dataInput) {
+                index = dataInput.readInt();
+                fieldName = dataInput.readUTF();
+                type.id = dataInput.readByte();
+                factoryId = dataInput.readInt();
+                classId = dataInput.readInt();
+
+            };
 
             bool FieldDefinition::operator ==(const FieldDefinition & other) const {
                 if (this == &other) return true;

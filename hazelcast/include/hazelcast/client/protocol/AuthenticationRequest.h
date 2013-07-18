@@ -11,18 +11,12 @@
 #include "Principal.h"
 #include "Credentials.h"
 #include "ProtocolConstants.h"
-#include "../serialization/NullPortable.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class AuthenticationRequest {
-                template<typename HzWriter>
-                friend void serialization::writePortable(HzWriter& writer, const protocol::AuthenticationRequest& arr);
-
-                template<typename HzReader>
-                friend void serialization::readPortable(HzReader& reader, protocol::AuthenticationRequest& arr);
-
+            class AuthenticationRequest : public Portable {
             public:
                 AuthenticationRequest(Credentials credential);
 
@@ -32,55 +26,37 @@ namespace hazelcast {
 
                 void setFirstConnection(bool);
 
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                template<typename HzWriter>
+                inline void writePortable(HzWriter& writer) const{
+                    writer.writePortable("credentials", credentials);
+                    if (principal == NULL) {
+                        writer.writeNullPortable("principal", -3, 3);
+                    } else {
+                        writer.writePortable("principal", *principal);
+                    }
+                    writer.writeBoolean("reAuth", reAuth);
+                    writer.writeBoolean("firstConnection", firstConnection);
+                };
+
+                template<typename HzReader>
+                inline void readPortable(HzReader& reader) {
+                    credentials = reader.template readPortable<Credentials>("credentials");
+                    protocol::Principal *principal = new protocol::Principal();
+                    *principal = reader.template readPortable<Principal>("principal");
+                    this->principal = principal;
+                    reAuth = reader.readBoolean("reAuth");
+                    firstConnection = reader.readBoolean("firstConnection");
+                };
+
             private:
                 Credentials credentials;
                 Principal *principal;
                 bool reAuth;
                 bool firstConnection;
-            };
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const protocol::AuthenticationRequest& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const protocol::AuthenticationRequest& ar) {
-                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
-            }
-
-            inline int getClassId(const protocol::AuthenticationRequest& ar) {
-                return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const protocol::AuthenticationRequest& arr) {
-                writer["credentials"] << arr.credentials;
-                if (arr.principal == NULL) {
-                    NullPortable nullPortable(-3, 3);
-                    writer["principal"] << nullPortable;
-                } else {
-                    writer["principal"] << *arr.principal;
-                }
-                writer["reAuth"] << arr.reAuth;
-                writer["firstConnection"] << arr.firstConnection;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, protocol::AuthenticationRequest& arr) {
-                reader["credentials"] >> arr.credentials;
-                protocol::Principal *principal = new protocol::Principal();
-                reader["principal"] >> (*principal);
-                arr.principal = principal;
-                reader["reAuth"] >> arr.reAuth;
-                reader["firstConnection"] >> arr.firstConnection;
             };
 
         }

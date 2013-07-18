@@ -18,17 +18,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryDataResultStream {
+            class QueryDataResultStream : public DataSerializable {
             public:
                 QueryDataResultStream(const std::string& name, const std::string& iterationType, const std::string& sql)
                 :iterationType(iterationType)
-                , isSet(true)
-                , s(0) {
+                , isSet(true) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
                 };
 
                 int getFactoryId() const {
@@ -43,35 +38,28 @@ namespace hazelcast {
                     return q;
                 };
 
-                int size() const {
-                    return s;
-                };
-
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << isSet;
-                    writer << iterationType;
-                    writer << s;
-                    for (int i = 0; i < s; i++) {
-                        writer << q;
+                void writeData(serialization::BufferedDataOutput& writer) const {
+                    writer.writeBoolean(isSet);
+                    writer.writeUTF(iterationType);
+                    writer.writeInt(q.size());
+                    for (int i = 0; i < q.size(); i++) {
+                        q[i].writeData(writer);
                     }
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader >> isSet;
-                    reader >> iterationType;
-                    reader >> s;
-                    q.resize(s);
-                    for (int i = 0; i < s; i++) {
-                        reader >> q;
+                void readData(serialization::BufferedDataInput& reader) {
+                    isSet = reader.readBoolean();
+                    iterationType = reader.readUTF();
+                    int size = reader.readInt();
+                    q.resize(size);
+                    for (int i = 0; i < size; i++) {
+                        q[i].readData(reader);
                     }
 
                 };
             private:
                 std::string iterationType;
                 std::vector<QueryResultEntry> q;
-                int s;
                 bool isSet;
             };
 

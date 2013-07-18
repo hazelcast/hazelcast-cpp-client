@@ -12,8 +12,7 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
-#include "ConstantSerializers.h"
-#include "../HazelcastException.h"
+#include "IException.h"
 #include <vector>
 #include <iosfwd>
 
@@ -25,10 +24,6 @@ namespace hazelcast {
             typedef unsigned char byte;
 
             class Data {
-                friend void readPortable(PortableReader& dataInput, Data& data);
-
-                friend void readPortable(MorphingPortableReader& portableReader, Data& data);
-
             public:
 
                 Data();
@@ -49,7 +44,7 @@ namespace hazelcast {
 
                 void setPartitionHash(int partitionHash);
 
-                int getType();
+                int getType() const;
 
                 void setType(int type);
 
@@ -58,10 +53,6 @@ namespace hazelcast {
                 bool isServerError() const;
 
                 int hashCode();
-
-                bool operator ==(const Data&) const;
-
-                bool operator !=(const Data&) const;
 
                 template<typename  Out>
                 void writeData(Out & dataOutput) const {
@@ -87,46 +78,30 @@ namespace hazelcast {
                 }
 
                 template<typename  Input>
-                void readData(Input & dataInput, SerializationContext& serializationContext) {
-                    type = dataInput.readInt();
-                    int classId = dataInput.readInt();
-
-                    if (classId != NO_CLASS_ID) {
-                        int factoryId = dataInput.readInt();
-                        isError = (factoryId == hazelcast::client::protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                                && (classId == hazelcast::client::protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
-                        int version = dataInput.readInt();
-
-                        int classDefSize = dataInput.readInt();
-
-                        if (serializationContext.isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = serializationContext.lookup(factoryId, classId, version);
-                            dataInput.skipBytes(classDefSize);
-                        } else {
-                            std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                            dataInput.readFully(*(classDefBytes.get()));
-                            cd = serializationContext.createClassDefinition(factoryId, classDefBytes);
-                        }
-                    }
-                    int size = dataInput.readInt();
-                    if (size > 0) {
-                        this->buffer->resize(size, 0);
-                        dataInput.readFully(*(buffer.get()));
-                    }
-                    partitionHash = dataInput.readInt();
-                }
-
-                template<typename  Input>
                 void readData(Input & dataInput) {
                     type = dataInput.readInt();
                     int classId = dataInput.readInt();
 
                     if (classId != NO_CLASS_ID) {
-                        throw client::HazelcastException("It is not pure data");
+                        int factoryId = dataInput.readInt();
+                        isError = (factoryId == protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
+                                && (classId == protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
+                        int version = dataInput.readInt();
+
+                        int classDefSize = dataInput.readInt();
+                        SerializationContext* serializationContext = dataInput.getSerializationContext();
+                        if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = serializationContext->lookup(factoryId, classId, version);
+                            dataInput.skipBytes(classDefSize);
+                        } else {
+                            std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
+                            dataInput.readFully(*(classDefBytes.get()));
+                            cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
+                        }
                     }
                     int size = dataInput.readInt();
                     if (size > 0) {
-                        this->buffer->resize(size, 0);
+                        this->buffer->resize(size);
                         dataInput.readFully(*(buffer.get()));
                     }
                     partitionHash = dataInput.readInt();
@@ -145,17 +120,10 @@ namespace hazelcast {
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
 
-
                 int getFactoryId() const;
 
                 int getClassId() const;
             };
-
-
-            inline int getTypeSerializerId(const Data& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
         }
     }
 }

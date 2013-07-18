@@ -9,18 +9,13 @@
 #ifndef Server_TestMainPortable_h
 #define Server_TestMainPortable_h
 
+#include "Portable.h"
 #include "TestInnerPortable.h"
 #include <string>
 
 using namespace hazelcast::client::serialization;
 
-class TestMainPortable {
-    template<typename HzWriter>
-    friend void hazelcast::client::serialization::writePortable(HzWriter& writer, const TestMainPortable& data);
-
-    template<typename HzReader>
-    friend void hazelcast::client::serialization::readPortable(HzReader& reader, TestMainPortable& data);
-
+class TestMainPortable : public hazelcast::client::Portable {
 public:
 
     TestMainPortable():null(true) {
@@ -62,6 +57,7 @@ public:
         return (*this);
     };
 
+
     bool operator ==(const TestMainPortable& m) const {
         if (this == &m) return true;
         if (null == true && m.null == true)
@@ -82,6 +78,44 @@ public:
     bool operator !=(const TestMainPortable& m) const {
         return !(*this == m);
     };
+
+    inline int getFactoryId() const{
+        return 1;
+    }
+
+    inline int getClassId()const {
+        return 1;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const{
+        writer.writeByte("b", b);
+        writer.writeBoolean("bool", boolean);
+        writer.writeChar("c", c);
+        writer.writeShort("s", s);
+        writer.writeInt("i", i);
+        writer.writeLong("l", l);
+        writer.writeFloat("f", f);
+        writer.writeDouble("d", d);
+        writer.writeUTF("str", str);
+        writer.writePortable("p", p);
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        null = false;
+        b = reader.readByte("b");
+        boolean = reader.readBoolean("bool");
+        c = reader.readChar("c");
+        s = reader.readShort("s");
+        i = reader.readInt("i");
+        l = reader.readLong("l");
+        f = reader.readFloat("f");
+        d = reader.readDouble("d");
+        str = reader.readUTF("str");
+        p = reader.template readPortable<TestInnerPortable>("p");
+    };
+
     TestInnerPortable p;
     int i;
 private:
@@ -96,51 +130,4 @@ private:
     std::string str;
 };
 
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const TestMainPortable& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const TestMainPortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestMainPortable& t) {
-                return 1;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestMainPortable& data) {
-                writer["b"] << data.b;
-                writer["bool"] << data.boolean;
-                writer["c"] << data.c;
-                writer["s"] << data.s;
-                writer["i"] << data.i;
-                writer["l"] << data.l;
-                writer["f"] << data.f;
-                writer["d"] << data.d;
-                writer["str"] << data.str;
-                writer["p"] << data.p;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestMainPortable& data) {
-                data.null = false;
-                reader["b"] >> data.b;
-                reader["bool"] >> data.boolean;
-                reader["c"] >> data.c;
-                reader["s"] >> data.s;
-                reader["i"] >> data.i;
-                reader["l"] >> data.l;
-                reader["f"] >> data.f;
-                reader["d"] >> data.d;
-                reader["str"] >> data.str;
-                reader["p"] >> data.p;
-            };
-        }
-    }
-}
 #endif

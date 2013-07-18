@@ -35,7 +35,8 @@ namespace hazelcast {
 
             serialization::Data Connection::read(serialization::SerializationContext & serializationContext) {
                 serialization::Data data;
-                data.readData(inputSocketStream, serializationContext);
+                inputSocketStream.setSerializationContext(&serializationContext);
+                data.readData(inputSocketStream);
                 lastRead = clock();
                 return data;
             };
@@ -57,13 +58,6 @@ namespace hazelcast {
             void Connection::setEndpoint(Address & address) {
                 endpoint = address;
             };
-
-            void Connection::close() {
-                socket.close();
-                outputSocketStream.close();
-                inputSocketStream.close();
-            };
-
 
         }
     }

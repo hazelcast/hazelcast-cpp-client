@@ -3,18 +3,33 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "InputSocketStream.h"
-#include "hazelcast/client/HazelcastException.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include <cassert>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            InputSocketStream::InputSocketStream(hazelcast::client::connection::Socket& socket):socket(socket) {
+            InputSocketStream::InputSocketStream(connection::Socket& socket)
+            :socket(socket)
+            , context(NULL) {
             };
 
             InputSocketStream& InputSocketStream::operator = (const InputSocketStream&) {
                 return *this;
+            };
+
+
+            void InputSocketStream::setSerializationContext(SerializationContext *context) {
+                this->context = context;
+            };
+
+
+            SerializationContext *InputSocketStream::getSerializationContext() {
+                assert(context != NULL);
+                return context;
             };
 
             void InputSocketStream::readFully(std::vector<byte>& bytes) {
@@ -145,12 +160,10 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("InputSocketStream::readShortUTF : malformed input: partial character at end");
+                                throw exception::IOException("InputSocketStream::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
-                                std::string error = "malformed input around byte";
-                                error += count;
-                                throw hazelcast::client::HazelcastException(error);
+                                throw exception::IOException("InputSocketStream::readShortUTF", "malformed input around byte" + util::to_string(count));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                             break;
@@ -158,33 +171,23 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("InputSocketStream::readShortUTF : malformed input: partial character at end");
+                                throw exception::IOException("InputSocketStream::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                std::string error = "InputSocketStream::readShortUTF : malformed input around byte";
-                                error += count - 1;
-                                throw hazelcast::client::HazelcastException(error);
+                                throw exception::IOException("InputSocketStream::readShortUTF", "malformed input around byte" + util::to_string(count));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                             break;
                         default:
                             /* 10xx xxxx, 1111 xxxx */
-
-                            std::string error = "malformed input around byte";
-                            error += count;
-                            throw hazelcast::client::HazelcastException(error);
+                            throw exception::IOException("InputSocketStream::readShortUTF", "malformed input around byte" + util::to_string(count));
 
                     }
                 }
                 chararr[chararr_count] = '\0';
                 return std::string(chararr);
             };
-
-            void InputSocketStream::close() {
-                socket.close();
-            }
-
 
         }
     }

@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class PortableMessage {
+            class PortableMessage : public Portable{
             public:
                 PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid)
                 : uuid(uuid)
@@ -40,26 +40,24 @@ namespace hazelcast {
                     return TopicPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return TopicPortableHook::PORTABLE_MESSAGE;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["pt"] << publishTime;
-                    writer["u"] << uuid;
-                    writer << message;
+                    writer.writeLong("pt", publishTime);
+                    writer.writeUTF("u", uuid);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    message.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["pt"] >> publishTime;
-                    reader["u"] >> uuid;
-                    reader >> message;
+                    publishTime = reader.readLong("pt");
+                    uuid = reader.readUTF("u");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    message.readData(*in);
                 };
             private:
                 serialization::Data message;

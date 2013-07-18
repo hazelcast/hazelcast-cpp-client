@@ -5,10 +5,8 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "ClassDefinition.h"
-#include "SerializationContext.h"
-#include "SerializationService.h"
-#include "PortableContext.h"
+#include "hazelcast/client/serialization/PortableContext.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -68,11 +66,11 @@ namespace hazelcast {
             };
 
             PortableContext& SerializationContext::getPortableContext(int factoryId) {
-//                int count = portableContextMap.count(factoryId);
+//                int count = portableContextMap.count(factoryId);//TODO look at the constructor
 //                if (count == 0) {
 //                    char message[70];
 //                    sprintf(message, "Could not find Portable factory for factoryId: %d", factoryId);
-//                    throw hazelcast::client::HazelcastException(message);
+//                    throw hazelcast::client::IException(message);
 //                }
 //                return portableContextMap.at(factoryId);
                 PortableContext *value = portableContextMap.get(factoryId);

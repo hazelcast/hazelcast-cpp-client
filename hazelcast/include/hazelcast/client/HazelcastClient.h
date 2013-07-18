@@ -47,9 +47,9 @@ namespace hazelcast {
         class ILock;
 
         class HazelcastClient {
-            friend class hazelcast::client::spi::ClusterService;
+            friend class spi::ClusterService;
 
-            friend class hazelcast::client::spi::ClientContext;
+            friend class spi::ClientContext;
 
         public:
             HazelcastClient(ClientConfig&);

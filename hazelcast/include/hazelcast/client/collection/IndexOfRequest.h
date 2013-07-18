@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace collection {
             class IndexOfRequest : public CollectionKeyBasedRequest {
             public:
-                IndexOfRequest(const CollectionProxyId& id, const serialization::Data& key, const serialization::Data& value, bool last)
+                IndexOfRequest(const CollectionProxyId& id, const serialization::Data& key, serialization::Data& value, bool last)
                 : CollectionKeyBasedRequest(id, key)
                 , value(value)
                 , last(last) {
@@ -30,20 +30,22 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["l"] << last;
-                    writer << value;
+                    writer.writeBoolean("l", last);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    value.writeData(*out);
                     CollectionRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["l"] >> last;
-                    reader >> value;
+                    last = reader.readBoolean("l");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    value.readData(*in);
                     CollectionRequest::readPortable(reader);
                 };
 
             private:
-                const serialization::Data& value;
+                serialization::Data& value;
                 bool last;
             };
         }

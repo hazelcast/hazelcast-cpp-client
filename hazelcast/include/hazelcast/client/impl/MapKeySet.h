@@ -7,17 +7,16 @@
 #ifndef HAZELCAST_MAP_KEY_SET
 #define HAZELCAST_MAP_KEY_SET
 
-#include <vector>
 #include "../serialization/Data.h"
+#include "DataSerializable.h"
+#include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapKeySet {
+            class MapKeySet : public DataSerializable {
             public:
                 MapKeySet();
-
-                int getTypeSerializerId() const;
 
                 int getFactoryId() const;
 
@@ -25,24 +24,10 @@ namespace hazelcast {
 
                 const std::vector<serialization::Data>& getKeySet() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << keySet.size();
-                    for (std::vector < serialization::Data > ::const_iterator it = keySet.begin(); it != keySet.end();
-                         ++it) {
-                        writer << (*it);
-                    }
-                };
+                void writeData(serialization::BufferedDataOutput& writer);
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    int size;
-                    reader >> size;
-                    keySet.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> keySet[i];
-                    }
-                };
+                void readData(serialization::BufferedDataInput& reader);
+
             private:
                 std::vector<serialization::Data> keySet;
 

@@ -20,7 +20,7 @@ namespace hazelcast {
 
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
@@ -34,24 +34,24 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["r"] << retain;
-                    writer["s"] << dataList.size();
-                    std::vector<serialization::Data>::iterator it;
-                    for (it = dataList.begin(); it != dataList.end(); ++it) {
-                        writer << (*it);
+                    writer.writeUTF("n", name);
+                    writer.writeBoolean("r", retain);
+                    writer.writeInt("s", dataList.size());
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    for (int i = 0; i < dataList.size(); ++i) {
+                        dataList[i].writeData(*out);
                     }
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["r"] >> retain;
-                    int size;
-                    reader["s"] >> size;
+                    name = reader.readUTF("n");
+                    retain = reader.readBoolean("r");
+                    int size = reader.readInt("s");
                     dataList.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> dataList[i];
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    for (int i = 0; i < size; ++i) {
+                        dataList[i].readData(*in);
                     }
                 };
             private:

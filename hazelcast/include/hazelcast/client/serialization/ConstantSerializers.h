@@ -9,85 +9,54 @@
 #ifndef HAZELCAST_CONSTANT_SERIALIZERS
 #define HAZELCAST_CONSTANT_SERIALIZERS
 
-#include "SerializationConstants.h"
 #include <vector>
 #include <string>
-#include <ostream>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-
             typedef unsigned char byte;
 
             template<typename T>
-            int getTypeSerializerId(const T& t) {
-                return t.getTypeSerializerId();
+            int getSerializerId(const T& t) {
+                return t.getSerializerId();
             };
 
-            template<typename T>
-            int getFactoryId(const T& t) {
-                return t.getFactoryId();
-            }
+            int getSerializerId(byte data);
 
-            template<typename T>
-            int getClassId(const T& t) {
-                return t.getClassId();
-            }
+            int getSerializerId(bool data);
 
-            template<typename W, typename T>
-            inline void writePortable(W& portableWriter, const T& data) {
-                data.writePortable(portableWriter);
-            };
+            int getSerializerId(char data);
 
-            template<typename R, typename T>
-            inline void readPortable(R& portableReader, T& data) {
-                data.readPortable(portableReader);
-            };
+            int getSerializerId(short data);
 
+            int getSerializerId(int data);
 
-            int getTypeSerializerId(byte data);
+            int getSerializerId(long data);
 
-            int getTypeSerializerId(bool data);
+            int getSerializerId(float data);
 
-            int getTypeSerializerId(char data);
+            int getSerializerId(double data);
 
-            int getTypeSerializerId(short data);
+            int getSerializerId(const std::string& data);
 
-            int getTypeSerializerId(int data);
+            int getSerializerId(const std::vector<byte>&  data);
 
-            int getTypeSerializerId(long data);
+            int getSerializerId(const std::vector<char >&  data);
 
-            int getTypeSerializerId(float data);
+            int getSerializerId(const std::vector<short >&  data);
 
-            int getTypeSerializerId(double data);
+            int getSerializerId(const std::vector<int>&  data);
 
-            int getTypeSerializerId(const std::string& data);
+            int getSerializerId(const std::vector<long >&  data);
 
-            int getTypeSerializerId(const std::vector<byte>&  data);
+            int getSerializerId(const std::vector<float >&  data);
 
-            int getTypeSerializerId(const std::vector<char >&  data);
-
-            int getTypeSerializerId(const std::vector<short >&  data);
-
-            int getTypeSerializerId(const std::vector<int>&  data);
-
-            int getTypeSerializerId(const std::vector<long >&  data);
-
-            int getTypeSerializerId(const std::vector<float >&  data);
-
-            int getTypeSerializerId(const std::vector<double >&  data);
+            int getSerializerId(const std::vector<double >&  data);
 
         }
     }
 }
-
-#include "ConstantSerializers/ConstantClassDefinitionWriter.h"
-#include "ConstantSerializers/ConstantDataOutput.h"
-#include "ConstantSerializers/ConstantPortableWriter.h"
-#include "ConstantSerializers/ConstantsPortableReader.h"
-#include "ConstantSerializers/ConstantsMorphingPortableReader.h"
-#include "ConstantSerializers/ConstantDataInput.h"
 
 #endif /* HAZELCAST_CONSTANT_SERIALIZERS */

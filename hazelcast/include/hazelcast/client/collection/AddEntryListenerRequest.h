@@ -17,7 +17,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class AddEntryListenerRequest {
+            class AddEntryListenerRequest : public Portable{
             public:
                 AddEntryListenerRequest(const CollectionProxyId& id, const serialization::Data& key, bool includeValue)
                 :proxyId(id)
@@ -30,30 +30,27 @@ namespace hazelcast {
                     return CollectionPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return CollectionPortableHook::ADD_ENTRY_LISTENER;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["i"] << includeValue;
-                    writer << proxyId;
-                    writer << true;
-                    writer << key;
+                    writer.writeInt("i", includeValue);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    proxyId.writeData(*out);
+                    out->writeBoolean(true);
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["i"] >> includeValue;
-                    reader >> proxyId;
-                    bool isNotNull;
-                    reader >> isNotNull;
+                    includeValue = reader.readInt("i");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    proxyId.readData(*in);
+                    bool isNotNull = in->readBoolean();
                     if (isNotNull)
-                        reader >> key;
+                        key.readData(*in);
                 };
 
             private:

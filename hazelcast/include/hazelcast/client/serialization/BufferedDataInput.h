@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "../HazelcastException.h"
+#include "IException.h"
 #include "ConstantSerializers.h"
 #include <vector>
 #include <string>
@@ -29,7 +29,9 @@ namespace hazelcast {
 
                 BufferedDataInput(const std::vector<byte>&);
 
-                BufferedDataInput& operator [](const std::string&);
+                void setSerializationContext(SerializationContext* context);
+
+                SerializationContext * getSerializationContext();
 
                 void readFully(std::vector<byte>&);
 
@@ -74,6 +76,7 @@ namespace hazelcast {
             private:
                 const std::vector<byte>& buffer;
                 int pos;
+                SerializationContext* context;
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
@@ -83,17 +86,6 @@ namespace hazelcast {
 
                 BufferedDataInput& operator = (const BufferedDataInput&);
 
-            };
-
-            template<typename T>
-            inline void operator >>(BufferedDataInput& in, std::vector<T>& data) {
-                throw hazelcast::client::HazelcastException("template<typename T>\n"
-                        "            inline void readPortable(BufferedDataInput& in, std::vector<T>& data) >> Not supported");
-            };
-
-            template<typename T>
-            inline void operator >>(BufferedDataInput& dataInput, T& data) {
-                readPortable(dataInput, data);
             };
         }
     }

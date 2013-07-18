@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class CollectionProxyId {
+            class CollectionProxyId : public DataSerializable {
             public:
                 enum CollectionProxyType {
                     MULTI_MAP, LIST, SET
@@ -44,10 +44,6 @@ namespace hazelcast {
                     return type;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
-                };
-
                 int getFactoryId() const {
                     return CollectionDataSerializerHook::F_ID;
                 };
@@ -56,19 +52,16 @@ namespace hazelcast {
                     return CollectionDataSerializerHook::COLLECTION_PROXY_ID;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << name;
-                    writer << (int) type;
-                    writer << keyName;
+                void writeData(serialization::BufferedDataOutput& writer) const{
+                    writer.writeUTF(name);
+                    writer.writeInt(type);
+                    writer.writeUTF(keyName);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader >> name;
-                    int type;
-                    reader >> type;
-                    reader >> keyName;
+                void readData(serialization::BufferedDataInput& reader) {
+                    name = reader.readUTF();
+                    int type = reader.readInt();
+                    keyName = reader.readUTF();
                 };
 
             private:

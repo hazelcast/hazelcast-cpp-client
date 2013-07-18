@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class AddMessageListenerRequest {
+            class AddMessageListenerRequest : public Portable{
             public:
                 AddMessageListenerRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
@@ -26,22 +26,18 @@ namespace hazelcast {
                     return TopicPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return TopicPortableHook::ADD_LISTENER;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
+                    writer.writeUTF("n", instanceName);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
+                    instanceName = reader.readUTF("n");
                 };
             private:
                 std::string instanceName;

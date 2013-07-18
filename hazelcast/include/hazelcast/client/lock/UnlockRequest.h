@@ -38,22 +38,24 @@ namespace hazelcast {
                     return LockPortableHook::FACTORY_ID;
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["tid"] << threadId;
-                    writer["force"] << force;
-                    writer << key;
+                    writer.writeInt("tid", threadId);
+                    writer.writeBoolean("force", force);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["tid"] >> threadId;
-                    reader["force"] >> force;
-                    reader >> key;
+                    threadId = reader.readInt("tid");
+                    force = reader.readBoolean("force");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
 

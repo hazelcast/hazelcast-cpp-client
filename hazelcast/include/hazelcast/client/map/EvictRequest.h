@@ -15,17 +15,13 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class EvictRequest {
+            class EvictRequest : public Portable {
             public:
                 EvictRequest(const std::string& name, serialization::Data& key, int threadId)
                 :name(name)
                 , key(key)
                 , threadId(threadId) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() {
@@ -37,17 +33,19 @@ namespace hazelcast {
                 };
 
                 template<typename HzWriter>
-                void writePortable(HzWriter& writer) {
-                    writer["n"] << name;
-                    writer["t"] << threadId;
-                    writer << key;
+                inline void writePortable(HzWriter& writer) const {
+                    writer.writeUTF("name", name);
+                    writer.writeInt("t", threadId);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> threadId;
-                    reader >> key;
+                inline void readPortable(HzReader& reader) {
+                    name = reader.readUTF("name");
+                    threadId = reader.readInt("t");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
                 serialization::Data& key;

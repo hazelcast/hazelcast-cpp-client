@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/client/protocol/HazelcastServerError.h"
-#include "SerializationService.h"
+#include "ServerException.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 using namespace std;
 
@@ -34,140 +34,21 @@ namespace hazelcast {
             };
 
 
-            void SerializationService::checkServerError(const Data & data) {
-                if (data.isServerError()) {
-                    throw toObject<protocol::HazelcastServerError>(data);
-                }
+            bool SerializationService::registerSerializer(SerializerBase *serializer) {
+                SerializerBase *available = serializers.putIfAbsent(serializer->getTypeId(), serializer);
+                return available == NULL;
             };
 
-            Data SerializationService::toData(byte object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
+            SerializerBase *SerializationService::serializerFor(int id) {
+                return serializers.get(id);
+            };
 
-            Data SerializationService::toData(bool object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(char object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(short object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(int object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(long object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(float object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(double object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<byte> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<char> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<short> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<int> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<long> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<float> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(vector<double> const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
-            Data SerializationService::toData(string const & object) {
-                BufferedDataOutput output;
-                output << object;
-                Data data;
-                data.setBuffer(output.toByteArray());
-                return data;
-            }
-
+            void SerializationService::checkServerError(const Data & data) {
+                if (data.isServerError()) {
+                    exception::ServerException error;
+                    throw toObjectResolved<exception::ServerException>(data, &error);
+                }
+            };
 
         }
     }

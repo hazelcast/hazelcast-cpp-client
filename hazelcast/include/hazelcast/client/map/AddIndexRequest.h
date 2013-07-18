@@ -15,17 +15,13 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            class AddIndexRequest {
+            class AddIndexRequest : public Portable {
             public:
                 AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered)
                 :name(name)
                 , attribute(attribute)
                 , ordered(ordered) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -38,16 +34,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 inline void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["a"] << attribute;
-                    writer["o"] << ordered;
+                    writer.writeUTF("name", name);
+                    writer.writeUTF("a", attribute);
+                    writer.writeBoolean("o", ordered);
                 };
 
                 template<typename HzReader>
                 inline void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["a"] >> attribute;
-                    reader["o"] >> ordered;
+                    name = reader.readUTF("name");
+                    attribute = reader.readUTF("a");
+                    ordered = reader.readBoolean("o");
                 };
             private:
                 std::string name;

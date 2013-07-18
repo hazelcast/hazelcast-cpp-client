@@ -6,37 +6,31 @@
 #include "HeartBeatChecker.h"
 #include "Connection.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/../util/Thread.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            struct HeartBeatThreadArgs {
-                Connection& connection;
-                serialization::Data& ping;
-            };
+
 
             HeartBeatChecker::HeartBeatChecker(int timeout, serialization::SerializationService& serializationService)
             :serializationService(serializationService)
             , timeout(timeout)
-            , ping(serializationService.toData(pingRequest)) {
+            , ping(serializationService.toData<protocol::PingRequest>(&pingRequest)) {
             }
 
-            void *HeartBeatChecker::run(void *input) {
-                HeartBeatThreadArgs *args = (HeartBeatThreadArgs *) input;
+            void HeartBeatChecker::run(Connection *connection) {
                 try{
-                    args->connection.write(args->ping);
+                    connection->write(ping);
                 }catch(...){
                     std::cerr << "Warning: HearBeatChecker ping failed " << std::endl;
                 }
             };
 
             bool HeartBeatChecker::checkHeartBeat(Connection& connection) {
-                HeartBeatThreadArgs args = {connection, ping};
                 if ((clock() - connection.getLastReadTime()) > timeout * CLOCKS_PER_SEC / 2) {
-                    util::Thread w(HeartBeatChecker::run, &args);
-                    w.start();
-                    return w.join(timeout * 1000 * 1000);
+                    boost::thread thread(boost::bind(&HeartBeatChecker::run, this, &connection));
+                    return thread.try_join_for(boost::chrono::duration<int, boost::milli>(timeout));
                 } else {
                     return true;
                 }

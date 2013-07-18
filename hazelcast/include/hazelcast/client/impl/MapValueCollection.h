@@ -8,41 +8,27 @@
 #define HAZELCAST_MAP_VALUE_COLLECTION
 
 #include "../serialization/Data.h"
+#include "DataSerializable.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapValueCollection {
+            class MapValueCollection : public DataSerializable{
             public:
                 MapValueCollection();
-
-                int getTypeSerializerId() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
+                void writeData(serialization::BufferedDataOutput& writer);
+
+                void readData(serialization::BufferedDataInput& reader);
+
                 const std::vector<serialization::Data>& getValues() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer << values.size();
-                    for (std::vector < serialization::Data > ::const_iterator it = values.begin(); it != values.end();
-                         ++it) {
-                        writer << (*it);
-                    }
-                };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    int size;
-                    reader >> size;
-                    values.resize(size);
-                    for (int i = 0; i < size; i++) {
-                        reader >> values[i];
-                    }
-                };
             private:
                 std::vector<serialization::Data> values;
             };

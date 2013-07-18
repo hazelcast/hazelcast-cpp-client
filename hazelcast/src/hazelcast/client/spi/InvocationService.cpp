@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "InvocationService.h"
+#include "hazelcast/client/spi/InvocationService.h"
 
 namespace hazelcast {
     namespace client {

@@ -1,70 +1,71 @@
-#include "ConstantSerializers.h"
+#include "hazelcast/client/serialization/ConstantSerializers.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            int getTypeSerializerId(byte data) {
+            int getSerializerId(byte data) {
                 return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
             };
 
-            int getTypeSerializerId(bool data) {
+            int getSerializerId(bool data) {
                 return SerializationConstants::CONSTANT_TYPE_BOOLEAN;
             };
 
-            int getTypeSerializerId(char data) {
+            int getSerializerId(char data) {
                 return SerializationConstants::CONSTANT_TYPE_CHAR;
             };
 
-            int getTypeSerializerId(short data) {
+            int getSerializerId(short data) {
                 return SerializationConstants::CONSTANT_TYPE_SHORT;
             };
 
-            int getTypeSerializerId(int data) {
+            int getSerializerId(int data) {
                 return SerializationConstants::CONSTANT_TYPE_INTEGER;
             };
 
-            int getTypeSerializerId(long data) {
+            int getSerializerId(long data) {
                 return SerializationConstants::CONSTANT_TYPE_LONG;
             };
 
-            int getTypeSerializerId(float data) {
+            int getSerializerId(float data) {
                 return SerializationConstants::CONSTANT_TYPE_FLOAT;
             };
 
-            int getTypeSerializerId(double data) {
+            int getSerializerId(double data) {
                 return SerializationConstants::CONSTANT_TYPE_DOUBLE;
             };
 
-            int getTypeSerializerId(const std::string&   data) {
+            int getSerializerId(const std::string&   data) {
                 return SerializationConstants::CONSTANT_TYPE_STRING;
             };
 
-            int getTypeSerializerId(const std::vector<byte>&  data) {
+            int getSerializerId(const std::vector<byte>&  data) {
                 return SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<char >&  data) {
+            int getSerializerId(const std::vector<char >&  data) {
                 return SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<short >&  data) {
+            int getSerializerId(const std::vector<short >&  data) {
                 return SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<int>&  data) {
+            int getSerializerId(const std::vector<int>&  data) {
                 return SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<long >&  data) {
+            int getSerializerId(const std::vector<long >&  data) {
                 return SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<float >&  data) {
+            int getSerializerId(const std::vector<float >&  data) {
                 return SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
             };
 
-            int getTypeSerializerId(const std::vector<double >&  data) {
+            int getSerializerId(const std::vector<double >&  data) {
                 return SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
             };
 

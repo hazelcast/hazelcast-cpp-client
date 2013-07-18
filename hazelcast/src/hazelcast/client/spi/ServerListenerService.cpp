@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ServerListenerService.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
 
 
 namespace hazelcast {

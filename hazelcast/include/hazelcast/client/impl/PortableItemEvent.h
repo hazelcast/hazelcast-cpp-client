@@ -11,11 +11,14 @@
 #include "../connection/Member.h"
 #include "EntryEvent.h"
 #include "Data.h"
+#include "Portable.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableItemEvent {
+            class PortableItemEvent : public Portable {
             public:
                 enum ItemEventType {
                     ADDED, REMOVED
@@ -29,30 +32,29 @@ namespace hazelcast {
 
                 ItemEventType getEventType() const;
 
-                int getTypeSerializerId() const;
-
                 int getFactoryId() const;
 
                 int getClassId() const;
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["e"] << (int) eventType;
-                    writer["u"] << uuid;
-                    writer << true;
-                    writer << item;
+                    writer.writeInt("e", eventType);
+                    writer.writeUTF("u", uuid);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    out->writeBoolean(true);
+                    item.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    int type;
-                    reader["e"] >> type;
+                    int type = reader.readInt("e");
 //                    eventType = type;
-                    reader["u"] >> uuid;
+                    uuid = reader.readUTF("u");
                     bool isNotNull;
-                    reader >> isNotNull;
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    isNotNull = in->readBoolean();
                     if (isNotNull)
-                        reader >> item;
+                        item.readData(*in);
                 };
 
             private:

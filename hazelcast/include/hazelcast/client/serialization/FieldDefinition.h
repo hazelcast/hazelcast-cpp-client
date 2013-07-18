@@ -16,15 +16,12 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class BufferedDataInput;
+
+            class BufferedDataOutput;
 
 
             class FieldDefinition {
-                template<typename DataOutput>
-                friend void writePortable(DataOutput& dataOutput, const FieldDefinition& data);
-
-                template<typename DataInput>
-                friend void readPortable(DataInput& dataInput, FieldDefinition& data);
-
             public:
 
                 FieldDefinition();
@@ -47,6 +44,9 @@ namespace hazelcast {
 
                 bool operator !=(const FieldDefinition&) const;
 
+                void writeData(BufferedDataOutput & dataOutput);
+
+                void readData(BufferedDataInput & dataInput);
 
             private:
                 int index;
@@ -56,29 +56,6 @@ namespace hazelcast {
                 int factoryId;
             };
 
-            inline int getTypeSerializerId(const FieldDefinition& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            template <typename DataOutput>
-            void writePortable(DataOutput & dataOutput, FieldDefinition const & data) {
-                dataOutput << data.index;
-                dataOutput << data.fieldName;
-                dataOutput.writeByte(data.type.getId());
-                dataOutput << data.factoryId;
-                dataOutput << data.classId;
-
-            };
-
-            template <typename DataInput>
-            void readPortable(DataInput & dataInput, FieldDefinition & data) {
-                dataInput >> data.index;
-                dataInput >> data.fieldName;
-                dataInput >> data.type.id;
-                dataInput >> data.factoryId;
-                dataInput >> data.classId;
-
-            };
         }
     }
 }

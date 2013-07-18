@@ -4,7 +4,7 @@
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "serialization/Data.h"
-#include "HazelcastException.h"
+#include "IException.h"
 #include <string>
 #include <stdexcept>
 
@@ -67,7 +67,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool await(long timeoutInMillis) throw(hazelcast::client::HazelcastException);
+            bool await(long timeoutInMillis) throw(exception::IException);
 
             /**
              * Decrements the count of the latch, releasing all waiting threads if

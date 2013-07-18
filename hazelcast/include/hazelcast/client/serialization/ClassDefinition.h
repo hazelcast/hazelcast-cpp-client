@@ -10,15 +10,14 @@
 #define HAZELCAST_CLASS_DEFINITION
 
 
+#include "FieldDefinition.h"
+#include "../../util/Util.h"
 #include <iosfwd>
 #include <string>
 #include <map>
 #include <vector>
 #include <set>
 #include <cassert>
-#include "FieldDefinition.h"
-#include "ConstantSerializers.h"
-#include "../../util/Util.h"
 
 using namespace std;
 
@@ -33,12 +32,6 @@ namespace hazelcast {
             typedef unsigned char byte;
 
             class ClassDefinition {
-                template<typename DataOutput>
-                friend void writePortable(DataOutput& dataOutput, const ClassDefinition& data);
-
-                template<typename DataInput>
-                friend void readPortable(DataInput& dataInput, ClassDefinition& data);
-
             public:
 
                 ClassDefinition();
@@ -79,6 +72,10 @@ namespace hazelcast {
 
                 void setVersion(int);
 
+                void writeData(BufferedDataOutput& dataOutput);
+
+                void readData(BufferedDataInput& dataInput);
+
             private:
                 int classId;
                 int version;
@@ -96,42 +93,6 @@ namespace hazelcast {
 
             };
 
-            inline int getTypeSerializerId(const ClassDefinition& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            template<typename DataOutput>
-            void writePortable(DataOutput& dataOutput, const ClassDefinition& data) {
-                dataOutput.writeInt(data.getFactoryId());
-                dataOutput.writeInt(data.getClassId());
-                dataOutput.writeInt(data.getVersion());
-                dataOutput.writeInt(data.getFieldCount());
-                for (vector<FieldDefinition>::const_iterator it = data.fieldDefinitions.begin(); it != data.fieldDefinitions.end(); it++)
-                    dataOutput << (*it);
-                dataOutput .writeInt(int(data.nestedClassDefinitions.size()));
-                for (vector<ClassDefinition * >::const_iterator it = data.nestedClassDefinitions.begin(); it != data.nestedClassDefinitions.end(); it++)
-                    dataOutput << *(*it);
-            };
-
-            template<typename DataInput>
-            void readPortable(DataInput& dataInput, ClassDefinition& data) {
-                dataInput >> data.factoryId;
-                dataInput >> data.classId;
-                dataInput >> data.version;
-                int size = 0;
-                dataInput >> size;
-                for (int i = 0; i < size; i++) {
-                    FieldDefinition fieldDefinition;
-                    dataInput >> fieldDefinition;
-                    data.add(fieldDefinition);
-                }
-                dataInput >> size;
-                for (int i = 0; i < size; i++) {
-                    ClassDefinition *classDefinition = new ClassDefinition;
-                    dataInput >> *classDefinition;
-                    data.add(classDefinition);
-                }
-            };
         }
     }
 }

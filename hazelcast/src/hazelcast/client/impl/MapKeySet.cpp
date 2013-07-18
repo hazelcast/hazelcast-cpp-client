@@ -3,8 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "MapKeySet.h"
-#include "DataSerializableHook.h"
+#include "hazelcast/client/impl/MapKeySet.h"
+#include "hazelcast/client/map/DataSerializableHook.h"
+#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,10 +19,6 @@ namespace hazelcast {
                 return keySet;
             };
 
-            int MapKeySet::getTypeSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
-            }
-
             int MapKeySet::getFactoryId() const {
                 return DataSerializableHook::F_ID;
             }
@@ -28,6 +26,24 @@ namespace hazelcast {
             int MapKeySet::getClassId() const {
                 return DataSerializableHook::KEY_SET;
             }
+
+            void MapKeySet::writeData(serialization::BufferedDataOutput& writer) {
+                writer.writeInt(keySet.size());
+                for (int i = 0; i < keySet.size(); ++i) {
+                    keySet[i].writeData(writer);
+                }
+
+            }
+
+            void MapKeySet::readData(serialization::BufferedDataInput& reader) {
+                int size = reader.readInt();
+                keySet.resize(size);
+                for (int i = 0; i < size; i++) {
+                    keySet[i].readData(reader);
+                }
+            }
+
+
         }
     }
 }

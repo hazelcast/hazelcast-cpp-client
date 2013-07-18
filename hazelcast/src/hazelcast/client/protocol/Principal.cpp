@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "Principal.h"
+#include "hazelcast/client/protocol/Principal.h"
 
 
 namespace hazelcast {
@@ -19,6 +19,14 @@ namespace hazelcast {
             : uuid(uuid)
             , ownerUuid(ownerUuid) {
 
+            }
+
+            int Principal::getFactoryId() const {
+                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
+            }
+
+            int Principal::getClassId() const {
+                return ProtocolConstants::PRINCIPAL_ID;;
             }
 
 

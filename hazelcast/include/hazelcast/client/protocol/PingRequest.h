@@ -7,48 +7,32 @@
 
 #include "ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            class PingRequest {
-            public:
-                PingRequest();
-
-            };
-
-        }
-    }
-}
+#include "DataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class BufferedDataOutput;
 
-            inline int getTypeSerializerId(const hazelcast::client::protocol::PingRequest& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
+            class BufferedDataInput;
+        }
+        namespace protocol {
+            class PingRequest : public DataSerializable {
+            public:
+                PingRequest();
 
-            inline int getFactoryId(const hazelcast::client::protocol::PingRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
-            }
+                int getFactoryId() const;
 
-            inline int getClassId(const hazelcast::client::protocol::PingRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::PING;
-            }
+                int getClassId() const;
 
+                void writeData(serialization::BufferedDataOutput& writer) const;
 
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::PingRequest& arr) {
-            };
+                void readData(serialization::BufferedDataInput& reader);
 
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::protocol::PingRequest& arr) {
             };
 
         }
     }
 }
-
 
 #endif //HAZELCAST_CLIENT_PING_REQUEST

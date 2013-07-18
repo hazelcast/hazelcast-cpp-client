@@ -7,13 +7,13 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService,serialization::SerializationService& serializationService)
-            : Thread::Thread(connection::ClusterListenerThread::run, this)
-            , connectionManager(connectionMgr)
+            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService, serialization::SerializationService& serializationService)
+            : connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
             , lifecycleService(lifecycleService)
@@ -26,12 +26,6 @@ namespace hazelcast {
                 this->conn = connection;
             };
 
-            void *ClusterListenerThread::run(void *input) {
-                static_cast<ClusterListenerThread *>(input)->runImpl();
-                return NULL;
-
-            };
-
             void ClusterListenerThread::runImpl() {
                 while (true) {
                     try{
@@ -39,24 +33,24 @@ namespace hazelcast {
                             try {
                                 conn = pickConnection();
                                 std::cout << "Connected: " << (*conn) << std::endl;
-                            } catch (HazelcastException & e) {
+                            } catch (exception::IException & e) {
+                                std::cout << *conn << e.what() << std::endl;
                                 lifecycleService.shutdown();
-                                std::cout << *conn << " FAILED..." << std::endl;
                                 return;
                             }
                         }
                         loadInitialMemberList();
                         listenMembershipEvents();
-                    }catch(HazelcastException & e){
+                    }catch(exception::IException & e){
                         if (lifecycleService.isRunning()) {
                             std::cerr << e.what() << std::endl;
                         }
-                        conn->close();
                         delete conn;
+                        conn = NULL;
                     }
                     try {
-                        sleep(1);
-                    } catch (void *x) {
+                        boost::this_thread::sleep(boost::posix_time::seconds(1));
+                    } catch (...) {
                         break;
                     }
                 }
@@ -85,10 +79,9 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                vector<serialization::Data *> collection = coll.getCollection();
-                for (vector<serialization::Data *>::iterator it = collection.begin(); it != collection.end(); ++it) {
-                    Member member = serializationService.toObject<Member>(*(*it));
-
+                const vector<serialization::Data *>& collection = coll.getCollection();
+                for (vector<serialization::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
+                    Member member = serializationService.toObject<Member>(**it);
                     members.push_back(member);
                 }
                 updateMembersRef();
@@ -120,24 +113,23 @@ namespace hazelcast {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
                     } else {
-                        //TODO O(n) time complexity ???
                         members.erase(std::find(members.begin(), members.end(), member));
+                        connectionManager.removeConnectionPool(member.getAddress());
                     }
                     updateMembersRef();
-                    connectionManager.removeConnectionPool(member.getAddress());
                     clusterService.fireMembershipEvent(event);
                 }
             };
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member> *map = new std::map<Address, Member>;
+                std::map<Address, Member , addressComparator > *map = new std::map<Address, Member, addressComparator>;
                 std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                     std::cerr << "\t" << (*it) << std::endl;
                     (*map)[(*it).getAddress()] = (*it);
                 }
                 std::cerr << "}" << std::endl;
-                delete clusterService.membersRef.set(map);
+                clusterService.membersRef.set(map);
 
             };
 

@@ -9,21 +9,17 @@
 #ifndef Server_TestNamedPortable_h
 #define Server_TestNamedPortable_h
 
+#include "Portable.h"
 #include <string>
-#include "SerializationConstants.h"
 
 using namespace hazelcast::client::serialization;
 
-class TestNamedPortable {
+class TestNamedPortable : public hazelcast::client::Portable{
 public:
     TestNamedPortable() {
     };
 
     TestNamedPortable(std::string name, int k):name(name), k(k) {
-    };
-
-    inline int getTypeSerializerId() const {
-        return SerializationConstants::CONSTANT_TYPE_PORTABLE;
     };
 
     inline int getFactoryId() const {
@@ -36,18 +32,14 @@ public:
 
     template<typename HzWriter>
     inline void writePortable(HzWriter& writer) const {
-        writer["name"] << name;
-        writer["myint"] << k;
+        writer.writeUTF("name", name);
+        writer.writeInt("myint", k);
     };
 
     template<typename HzReader>
     inline void readPortable(HzReader& reader) {
-        reader["name"] >> name;
-        reader["myint"] >> k;
-    };
-
-    virtual ~TestNamedPortable() {
-
+        name = reader.readUTF("name");
+        k = reader.readInt("myint");
     };
 
     virtual bool operator ==(const TestNamedPortable& m) const {

@@ -33,8 +33,6 @@ namespace hazelcast {
 
                 serialization::Data read(serialization::SerializationContext & serializationContext);
 
-                void close();
-
                 const Address& getEndpoint() const;
 
                 void setEndpoint(Address& address);

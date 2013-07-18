@@ -16,6 +16,8 @@
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
+#include "Serializer.h"
+#include "Portable.h"
 
 #include <vector>
 #include <map>
@@ -29,7 +31,7 @@ namespace hazelcast {
 
             class BufferedDataOutput;
 
-            class PortableSerializer {
+            class PortableSerializer{
             public:
 
                 PortableSerializer(SerializationContext *const serializationContext);
@@ -39,14 +41,13 @@ namespace hazelcast {
                 template <typename T>
                 ClassDefinition *getClassDefinition(T& p) {
                     ClassDefinition *cd;
-
-                    int factoryId = getFactoryId(p);
-                    int classId = getClassId(p);
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
                     if (context->isClassDefinitionExists(factoryId, classId)) {
                         cd = context->lookup(factoryId, classId);
                     } else {
                         ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        writePortable(classDefinitionWriter, p);
+                        p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
                         cd = context->registerClassDefinition(cd);
                     }
@@ -55,10 +56,10 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                void write(BufferedDataOutput &dataOutput, T& p) {
+                void write(BufferedDataOutput &dataOutput, const T& p) {
                     ClassDefinition *cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
-                    writePortable(portableWriter, p);
+                    p.writePortable(portableWriter);
                 };
 
                 template <typename T>
@@ -68,11 +69,11 @@ namespace hazelcast {
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);
-                        readPortable(reader, object);
+                        object.readPortable(reader);
                     } else {
                         cd = context->lookup(factoryId, classId, dataVersion); // registered during read
                         MorphingPortableReader reader(context, dataInput, cd);
-                        readPortable(reader, object);
+                        object.readPortable(reader);
                     }
                 };
 

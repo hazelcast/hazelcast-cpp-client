@@ -9,11 +9,11 @@
 
 #include "spi/ClientContext.h"
 #include "serialization/Data.h"
-#include "serialization/SerializationService.h"
 #include "topic/PublishRequest.h"
 #include "topic/DestroyRequest.h"
 #include "topic/AddMessageListenerRequest.h"
 #include "TopicEventHandler.h"
+#include "serialization/SerializationService.h"
 #include <string>
 
 namespace hazelcast {
@@ -25,11 +25,11 @@ namespace hazelcast {
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;
-                key = context->getSerializationService().toData(instanceName);
+                key = context->getSerializationService().toData<std::string>(&instanceName);
             };
 
             void publish(E message) {
-                serialization::Data data = context->getSerializationService().toData(message);
+                serialization::Data data = context->getSerializationService().toData<E>(&message);
                 topic::PublishRequest request(instanceName, data);
                 invoke<bool>(request);
             }

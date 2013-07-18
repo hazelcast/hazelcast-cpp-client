@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_ROUND_ROBIN_LB
 #define HAZELCAST_ROUND_ROBIN_LB
 
-#include "../../util/AtomicInteger.h"
 #include "AbstractLoadBalancer.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -29,7 +29,7 @@ namespace hazelcast {
                 const hazelcast::client::connection::Member& next();
 
             private:
-                hazelcast::util::AtomicInteger index;
+                boost::atomic<int> index;
             };
         }
     }

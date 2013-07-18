@@ -9,10 +9,10 @@
 #define HAZELCAST_LISTENER_SUPPORT
 
 #include "Data.h"
-#include "../../util/Thread.h"
 #include "ResponseStream.h"
 #include "InvocationService.h"
 #include "ClientContext.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -37,8 +37,7 @@ namespace hazelcast {
             class ListenerSupport : public ListenerSupportBase {
             public:
                 ListenerSupport(InvocationService& invocationService, const Request& request, const EventHandler& eventHandler, const serialization::Data& key)
-                : thread(ListenerSupport::run, this)
-                , invocationService(invocationService)
+                : invocationService(invocationService)
                 , request(request)
                 , eventHandler(eventHandler)
                 , key(key)
@@ -56,15 +55,8 @@ namespace hazelcast {
 
                 };
 
-                void *run(void *input) {
-                    static_cast<ListenerSupport *>(input)->listenImpl();
-                    return NULL;
-
-                };
-
-
                 void listen() {
-                    thread.start();
+                    boost::thread listenerThread(boost::bind(&ListenerSupport<Request, EventHandler, Event>::listenImpl, this));
                 };
 
 
@@ -84,7 +76,7 @@ namespace hazelcast {
                             } else {
                                 invocationService.invokeOnRandomTarget(request, eventResponseHandler);
                             }
-                        }catch(HazelcastException & ignored){
+                        }catch(exception::IException & ignored){
 
                         }
                     }
@@ -106,12 +98,12 @@ namespace hazelcast {
                             try {
                                 Event event = stream.read<Event>();
                                 listenerSupport.eventHandler.handle(event);
-                            } catch(HazelcastException &/*IOException*/ e){
+                            } catch(exception::IOException& e){
                                 throw e;
-                            } catch (HazelcastException& e) {
+                            } catch (exception::IException& e) {
                                 try {
                                     stream.end();
-                                } catch (HazelcastException &/*IOException*/ ignored) {
+                                } catch (exception::IOException& ignored) {
                                 }
                                 listenerSupport.active = false;
                             }
@@ -121,7 +113,6 @@ namespace hazelcast {
                     ListenerSupport & listenerSupport;
                 };
 
-                util::Thread thread;
                 InvocationService& invocationService;
                 ResponseStream& lastStream;
                 bool hasKey;

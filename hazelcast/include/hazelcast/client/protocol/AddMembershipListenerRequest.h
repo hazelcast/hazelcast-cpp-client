@@ -9,13 +9,27 @@
 
 #include "ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
+#include "DataSerializable.h"
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class BufferedDataOutput;
+
+            class BufferedDataInput;
+        }
         namespace protocol {
-            class AddMembershipListenerRequest {
+            class AddMembershipListenerRequest : public DataSerializable {
             public:
                 AddMembershipListenerRequest();
+
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                void writeData(serialization::BufferedDataOutput& writer) const;
+
+                void readData(serialization::BufferedDataInput& reader);
 
             private:
             };
@@ -23,32 +37,4 @@ namespace hazelcast {
     }
 }
 
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            inline int getTypeSerializerId(const hazelcast::client::protocol::AddMembershipListenerRequest& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            inline int getFactoryId(const hazelcast::client::protocol::AddMembershipListenerRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
-            }
-
-            inline int getClassId(const hazelcast::client::protocol::AddMembershipListenerRequest& ar) {
-                return hazelcast::client::protocol::ProtocolConstants::ADD_MS_LISTENER;
-            }
-
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const hazelcast::client::protocol::AddMembershipListenerRequest& arr) {
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, hazelcast::client::protocol::AddMembershipListenerRequest& arr) {
-            };
-
-        }
-    }
-}
 #endif //HAZELCAST_ADD_MLR

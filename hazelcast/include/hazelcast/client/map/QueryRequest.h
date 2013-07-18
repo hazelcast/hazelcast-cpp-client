@@ -14,17 +14,13 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryRequest {
+            class QueryRequest : public Portable {
             public:
                 QueryRequest(const std::string& name, const std::string& iterationType, const std::string& sql)
                 :name(name)
                 , iterationType(iterationType)
                 , sql(sql) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -37,16 +33,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["t"] << iterationType;
-                    writer["sql"] << sql;
+                    writer.writeUTF("n", name);
+                    writer.writeUTF("t", iterationType);
+                    writer.writeUTF("sql", sql);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> iterationType;
-                    reader["sql"] >> sql;
+                    name = reader.readUTF("n");
+                    iterationType = reader.readUTF("t");
+                    sql = reader.readUTF("sql");
 
                 };
             private:

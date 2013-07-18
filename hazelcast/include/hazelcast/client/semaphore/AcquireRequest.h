@@ -30,13 +30,13 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     SemaphoreRequest::writePortable(writer);
-                    writer["t"] << timeout;
+                    writer.writeLong("t",timeout);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     SemaphoreRequest::readPortable(reader);
-                    reader["t"] >> timeout;
+                    timeout = reader.readLong("t");
                 };
             private:
 

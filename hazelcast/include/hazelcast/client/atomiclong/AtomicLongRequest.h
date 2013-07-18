@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace atomiclong {
 
-            class AtomicLongRequest {
+            class AtomicLongRequest : public Portable {
             public:
                 AtomicLongRequest(const std::string& instanceName, long delta)
                 :instanceName(instanceName)
@@ -27,20 +27,16 @@ namespace hazelcast {
                     return AtomicLongPortableHook::F_ID;
                 };
 
-                virtual int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << instanceName;
-                    writer["d"] << delta;
+                    writer.writeUTF("n", instanceName);
+                    writer.writeLong("d", delta);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> instanceName;
-                    reader["d"] >> delta;
+                    instanceName = reader.readUTF("n");
+                    delta = reader.readLong("d");
                 };
             private:
                 long delta;

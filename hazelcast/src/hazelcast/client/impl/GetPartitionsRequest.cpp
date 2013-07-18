@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "GetPartitionsRequest.h"
+#include "hazelcast/client/impl/GetPartitionsRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -11,6 +11,26 @@ namespace hazelcast {
             GetPartitionsRequest::GetPartitionsRequest() {
 
             };
+
+            int GetPartitionsRequest::getFactoryId() const {
+                return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
+
+            }
+
+            int GetPartitionsRequest::getClassId() const {
+                return protocol::ProtocolConstants::GET_PARTITIONS;
+
+            }
+
+            void GetPartitionsRequest::writeData(serialization::BufferedDataOutput & writer) const{
+
+            }
+
+            void GetPartitionsRequest::readData(serialization::BufferedDataInput & reader) {
+
+            }
+
+
         }
     }
 }

@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class UnlockRequest {
+            class UnlockRequest : public Portable {
             public:
                 UnlockRequest(const std::string& name, serialization::Data& key, int threadId)
                 :name(name)
@@ -26,11 +26,6 @@ namespace hazelcast {
                 , force(force) {
                 };
 
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return PortableHook::F_ID;
                 };
@@ -41,18 +36,20 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["thread"] << threadId;
-                    writer["force"] << force;
-                    writer << key;
+                    writer.writeUTF("n", name);
+                    writer.writeInt("thread", threadId);
+                    writer.writeBoolean("force", force);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["thread"] >> threadId;
-                    reader["force"] >> force;
-                    reader >> key;
+                    name = reader.readUTF("n");
+                    threadId = reader.readInt("thread");
+                    force = reader.readBoolean("force");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
                 serialization::Data& key;

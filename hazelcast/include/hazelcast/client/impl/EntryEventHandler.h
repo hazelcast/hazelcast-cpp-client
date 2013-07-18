@@ -9,9 +9,9 @@
 #define HAZELCAST_ENTRY_EVENT_HANDLER
 
 #include "PortableEntryEvent.h"
-#include "../serialization/SerializationService.h"
 #include "ClusterService.h"
 #include "EntryEvent.h"
+#include "../serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

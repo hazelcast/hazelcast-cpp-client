@@ -11,17 +11,13 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddListenerRequest {
+            class AddListenerRequest : public Portable{
             public:
                 AddListenerRequest(const std::string& name, bool includeValue)
                 :name(name)
                 , includeValue(includeValue) {
 
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -34,14 +30,14 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["i"] << includeValue;
+                    writer.writeUTF("n", name);
+                    writer.writeBoolean("i", includeValue);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["i"] >> includeValue;
+                    name = reader.readUTF("n");
+                    includeValue = reader.readBoolean("i");
                 };
             private:
                 std::string name;

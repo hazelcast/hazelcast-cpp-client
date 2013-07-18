@@ -4,10 +4,9 @@
 #ifndef HAZELCAST_QUEUE_BASED_OBJECT_POOL
 #define HAZELCAST_QUEUE_BASED_OBJECT_POOL
 
-#include "../../util/ConcurrentQueue.h"
-#include "../HazelcastException.h"
-#include "../../util/Lock.h"
-#include "../Address.h"
+#include "hazelcast/util/ConcurrentQueue.h"
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/Address.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,12 +32,12 @@ namespace hazelcast {
 
                 void destroy();
 
+                Address address;
             private:
                 volatile bool active;
                 hazelcast::util::ConcurrentQueue<Connection *> queue;
                 hazelcast::client::serialization::SerializationService& serializationService;
                 ConnectionManager &connectionManager;
-                Address address;
 
             };
         }

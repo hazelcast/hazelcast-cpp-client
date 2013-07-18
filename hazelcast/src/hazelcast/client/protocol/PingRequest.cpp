@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "PingRequest.h"
+#include "hazelcast/client/protocol/PingRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -11,6 +11,23 @@ namespace hazelcast {
             PingRequest::PingRequest() {
 
             }
+
+            int PingRequest::getFactoryId() const {
+                return ProtocolConstants::DATA_FACTORY_ID;
+            }
+
+            int PingRequest::getClassId() const {
+                return ProtocolConstants::PING;
+            }
+
+            void PingRequest::writeData(serialization::BufferedDataOutput & writer) const {
+
+            }
+
+            void PingRequest::readData(serialization::BufferedDataInput & reader) {
+
+            }
+
         }
     }
 }

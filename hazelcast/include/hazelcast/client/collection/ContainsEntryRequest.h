@@ -37,24 +37,26 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << hasKey;
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    out->writeBoolean(hasKey);
                     if (hasKey) {
-                        writer << key;
+                        key.writeData(*out);
+
                     }
-                    writer << true;
-                    writer << value;
+                    out->writeBoolean(true);
+                    value.writeData(*out);
                     CollectionRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader >> hasKey;
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    hasKey = in->readBoolean();
                     if (hasKey)
-                        reader >> key;
-                    bool isNotNull;
-                    reader >> isNotNull;
+                        key.readData(*in);
+                    bool isNotNull = in->readBoolean();
                     if (isNotNull)
-                        reader >> value;
+                        value.readData(*in);
                     CollectionRequest::readPortable(reader);
                 };
 

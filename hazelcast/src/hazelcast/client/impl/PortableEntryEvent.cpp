@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableEntryEvent.h"
+#include "hazelcast/client/impl/PortableEntryEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,10 +33,6 @@ namespace hazelcast {
             std::string PortableEntryEvent::getName() const {
                 return getSource();
             }
-
-            int PortableEntryEvent::getTypeSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
 
             int PortableEntryEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;

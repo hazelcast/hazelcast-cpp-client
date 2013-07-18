@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class AwaitRequest {
+            class AwaitRequest : public Portable {
             public:
                 AwaitRequest(const std::string& instanceName, long timeout)
                 : instanceName(instanceName)
@@ -26,24 +26,20 @@ namespace hazelcast {
                     return CountDownLatchPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getClassId() const {
                     return CountDownLatchPortableHook::AWAIT;
                 };
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["name"] << instanceName;
-                    writer["timeout"] << timeout;
+                    writer.writeUTF("name", instanceName);
+                    writer.writeLong("timeout", timeout);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["name"] >> instanceName;
-                    reader["timeout"] >> timeout;
+                    instanceName = reader.readUTF("name");
+                    timeout = reader.readLong("timeout");
                 };
             private:
 

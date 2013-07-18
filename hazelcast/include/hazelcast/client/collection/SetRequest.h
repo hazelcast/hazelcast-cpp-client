@@ -31,16 +31,18 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["i"] << index;
-                    writer["t"] << threadId;
-                    writer << value;
+                    writer.writeInt("i", index);
+                    writer.writeInt("t", threadId);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    value.writeData(*out);
                     CollectionKeyBasedRequest::writePortable(writer);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["i"] >> index;
-                    reader["t"] >> threadId;
+                    index = reader.readInt("i");
+                    threadId = reader.readInt("t");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
                     reader >> value;
                     CollectionKeyBasedRequest::readPortable(reader);
                 };

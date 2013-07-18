@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace collection {
 
 
-            class CollectionRequest {
+            class CollectionRequest : public Portable {
             public:
                 CollectionRequest(const CollectionProxyId& id)
                 :id(id) {
@@ -24,18 +24,16 @@ namespace hazelcast {
                     return CollectionPortableHook::F_ID;
                 };
 
-                virtual int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer << id;
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    id.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader >> id;
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    id.readData(*in);
                 };
             private:
                 CollectionProxyId id;

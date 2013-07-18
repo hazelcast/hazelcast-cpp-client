@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "DataSerializer.h"
+#include "hazelcast/client/serialization/DataSerializer.h"
 
 namespace hazelcast {
     namespace client {

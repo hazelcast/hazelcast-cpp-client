@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PollRequest {
+            class PollRequest : public Portable{
             public:
                 PollRequest(const std::string& name, long timeout)
                 :name(name)
@@ -25,10 +25,6 @@ namespace hazelcast {
 
                 };
 
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
-
                 int getFactoryId() const {
                     return queue::QueuePortableHook::F_ID;
                 }
@@ -39,14 +35,14 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer["t"] << timeoutInMillis;
+                    writer.writeUTF("n", name);
+                    writer.writeLong("t", timeoutInMillis);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader["t"] >> timeoutInMillis;
+                    name = reader.readUTF("n");
+                    timeoutInMillis = reader.readUTF("t");
                 };
             private:
                 std::string name;

@@ -10,15 +10,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ContainsValueRequest {
+            class ContainsValueRequest : public Portable {
             public:
                 ContainsValueRequest(const std::string& name, serialization::Data& value)
                 :name(name)
                 , value(value) {
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -31,14 +27,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer << value;
+                    writer.writeUTF("name", name);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    value.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader >> value;
+                    name = reader.readUTF("name");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    value.readData(*in);
                 };
             private:
                 serialization::Data& value;

@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableItemEvent.h"
+#include "hazelcast/client/impl/PortableItemEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,10 +26,6 @@ namespace hazelcast {
             PortableItemEvent::ItemEventType PortableItemEvent::getEventType() const {
                 return eventType;
             }
-
-            int PortableItemEvent::getTypeSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
 
             int PortableItemEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;

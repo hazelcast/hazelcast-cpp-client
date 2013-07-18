@@ -9,31 +9,35 @@
 #define HAZELCAST_ATOMIC_REFERENCE
 
 #include <iosfwd>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace hazelcast {
     namespace util {
         template <typename T>
         class AtomicPointer {
         public:
-            AtomicPointer() {
-                __sync_lock_test_and_set(&pointer, NULL);
+            AtomicPointer():pointer(NULL) {
             };
 
-            AtomicPointer(T *p) {
-                __sync_lock_test_and_set(&pointer, p);
+            AtomicPointer(T *p):pointer(p) {
             };
 
-            T *get() {
-                return __sync_fetch_and_add(&pointer, 0);
+            const boost::shared_ptr<T> get() {
+                boost::lock_guard<boost::mutex> lg(mutex);
+                return pointer;
             };
 
-            T *set(T *p) {
-
-                return __sync_lock_test_and_set(&pointer, p);
+            void set(T *p) {
+                boost::lock_guard<boost::mutex> lg(mutex);
+                boost::shared_ptr<T> newPointer(p);
+                pointer = newPointer;
             };
 
         private:
-            T *pointer;
+            boost::shared_ptr<T> pointer;
+            boost::mutex mutex;
         };
 
     }

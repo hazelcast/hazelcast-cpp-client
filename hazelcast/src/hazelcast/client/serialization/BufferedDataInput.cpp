@@ -5,7 +5,9 @@
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "BufferedDataInput.h"
+#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "IOException.h"
+#include "Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -13,22 +15,27 @@ namespace hazelcast {
 
             BufferedDataInput::BufferedDataInput(const std::vector<byte>& rhsBuffer)
             :buffer(rhsBuffer)
-            , pos(0) {
+            , pos(0)
+            , context(NULL) {
             };
-
-            BufferedDataInput& BufferedDataInput::operator [](const std::string& string) {
-                throw hazelcast::client::HazelcastException("BufferedDataInput::operator [](std::string string) > not supported!!");
-            };
-
 
             BufferedDataInput::BufferedDataInput(BufferedDataInput const & param)
-            :buffer(param.buffer) {
+            :buffer(param.buffer), context(NULL) {
                 //private
             };
 
             BufferedDataInput& BufferedDataInput::operator = (const BufferedDataInput&) {
                 //private
                 return *this;
+            };
+
+            void BufferedDataInput::setSerializationContext(SerializationContext *context) {
+                this->context = context;
+            };
+
+
+            SerializationContext *BufferedDataInput::getSerializationContext() {
+                return context;
             };
 
             void BufferedDataInput::readFully(std::vector<byte>& bytes) {
@@ -93,7 +100,6 @@ namespace hazelcast {
             };
 
             float BufferedDataInput::readFloat() {
-
                 union {
                     int i;
                     float f;
@@ -103,7 +109,6 @@ namespace hazelcast {
             };
 
             double BufferedDataInput::readDouble() {
-
                 union {
                     double d;
                     long l;
@@ -117,7 +122,7 @@ namespace hazelcast {
                 if (isNull)
                     return "";
                 int length = readInt();
-                std::string result;
+                std::string result = "";
                 int chunkSize = (length / STRING_CHUNK_SIZE) + 1;
                 while (chunkSize > 0) {
                     result += readShortUTF();
@@ -138,7 +143,7 @@ namespace hazelcast {
             std::string BufferedDataInput::readShortUTF() {
                 short utflen = readShort();
                 std::vector<byte> bytearr(utflen);
-                char chararr[utflen];
+                std::vector<char> chararr(utflen+1);
                 int c, char2, char3;
                 int count = 0;
                 int chararr_count = 0;
@@ -164,12 +169,10 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("BufferedDataInput::readShortUTF : malformed input: partial character at end");
+                                throw exception::IOException("BufferedDataInput::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
-                                std::string error = "malformed input around byte";
-                                error += count;
-                                throw hazelcast::client::HazelcastException(error);
+                                throw exception::IOException("BufferedDataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                             break;
@@ -177,27 +180,23 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw hazelcast::client::HazelcastException("BufferedDataInput::readShortUTF : malformed input: partial character at end");
+                                throw exception::IOException("BufferedDataInput::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                std::string error = "BufferedDataInput::readShortUTF : malformed input around byte";
-                                error += count - 1;
-                                throw hazelcast::client::HazelcastException(error);
+                                throw exception::IOException("BufferedDataInput::readShortUTF", "malformed input around byte" + util::to_string(count-1));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                             break;
                         default:
                             /* 10xx xxxx, 1111 xxxx */
 
-                            std::string error = "malformed input around byte";
-                            error += count;
-                            throw hazelcast::client::HazelcastException(error);
+                            throw exception::IOException("BufferedDataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
 
                     }
                 }
                 chararr[chararr_count] = '\0';
-                return std::string(chararr);
+                return std::string(chararr.data());
             };
 
             std::vector <byte> BufferedDataInput::readByteArray() {
@@ -210,7 +209,6 @@ namespace hazelcast {
             };
 
             std::vector<char> BufferedDataInput::readCharArray() {
-
                 int len = readInt();
                 std::vector<char> values(len);
                 for (int i = 0; i < len; i++) {
@@ -220,7 +218,6 @@ namespace hazelcast {
             };
 
             std::vector<int> BufferedDataInput::readIntArray() {
-
                 int len = readInt();
                 std::vector<int> values(len);
                 for (int i = 0; i < len; i++) {
@@ -230,7 +227,6 @@ namespace hazelcast {
             };
 
             std::vector<long> BufferedDataInput::readLongArray() {
-
                 int len = readInt();
                 std::vector<long> values(len);
                 for (int i = 0; i < len; i++) {
@@ -240,7 +236,6 @@ namespace hazelcast {
             };
 
             std::vector<double> BufferedDataInput::readDoubleArray() {
-
                 int len = readInt();
                 std::vector<double> values(len);
                 for (int i = 0; i < len; i++) {
@@ -250,7 +245,6 @@ namespace hazelcast {
             };
 
             std::vector<float> BufferedDataInput::readFloatArray() {
-
                 int len = readInt();
                 std::vector<float> values(len);
                 for (int i = 0; i < len; i++) {
@@ -260,7 +254,6 @@ namespace hazelcast {
             };
 
             std::vector<short> BufferedDataInput::readShortArray() {
-
                 int len = readInt();
                 std::vector<short> values(len);
                 for (int i = 0; i < len; i++) {

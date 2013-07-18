@@ -3,12 +3,10 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "ConnectionManager.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/protocol/HazelcastServerError.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "ServerException.h"
 #include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {
@@ -51,7 +49,6 @@ namespace hazelcast {
                 Connection *connection = NULL;
                 connection = pool->take();
                 if (connection != NULL && !heartBeatChecker.checkHeartBeat(*connection)) {
-                    connection->close();
                     delete connection;
                     return NULL;
                 }
@@ -64,19 +61,19 @@ namespace hazelcast {
                     if (pool != NULL) {
                         pool->release(connection);
                     } else {
-                        connection->close();
                         delete connection;
                     }
                 } else {
-                    connection->close();
                     delete connection;
                 }
             };
 
             ConnectionPool *ConnectionManager::getConnectionPool(const Address& address) {
                 checkLive();
+//                std::cout << "get address " << address << std::endl;
                 ConnectionPool *pool = poolMap.get(address);
                 if (pool == NULL) {
+//                    std::cout << "get address NULL " << std::endl;
                     if (!clusterService.isMemberExists(address)) {
                         return NULL;
                     }
@@ -86,6 +83,7 @@ namespace hazelcast {
                     if (previousPool) delete pool;
                     return previousPool == NULL ? pool : previousPool;
                 }
+//                std::cout << "getted pool address " << pool->address << std::endl;
                 return pool;
             };
 
@@ -105,7 +103,7 @@ namespace hazelcast {
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
-                serialization::Data toData = serializationService.toData(auth);
+                serialization::Data toData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.write(toData);
                 serialization::Data data1 = connection.read(serializationService.getSerializationContext());
                 Address address = serializationService.toObject<Address>(data1);
@@ -117,7 +115,7 @@ namespace hazelcast {
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw HazelcastException("Instance not active!");
+                    throw exception::IException("ConnectionManager::checkLive()", "Instance not active!");
                 }
             };
 

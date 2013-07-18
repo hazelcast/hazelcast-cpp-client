@@ -8,7 +8,7 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "ILock.h"
+#include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,7 +21,7 @@ namespace hazelcast {
         void ILock::init(const std::string& instanceName, spi::ClientContext *clientContext) {
             this->context = clientContext;
             this->instanceName = instanceName;
-            key = context->getSerializationService().toData(instanceName);
+            key = context->getSerializationService().toData<std::string>(&instanceName);
         };
 
         void ILock::lock() {
@@ -66,7 +66,7 @@ namespace hazelcast {
         bool ILock::tryLock() {
             try {
                 return tryLock(0);
-            } catch (HazelcastException&/*InterruptedException*/ e) {
+            } catch (exception::IException& e) {
                 return false;
             }
         };

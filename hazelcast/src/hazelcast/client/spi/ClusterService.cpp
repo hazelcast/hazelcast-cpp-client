@@ -3,7 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "ClusterService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
@@ -18,7 +18,7 @@ namespace hazelcast {
             , connectionManager(connectionManager)
             , serializationService(serializationService)
             , clientConfig(clientConfig)
-            , clusterThread(connectionManager, clientConfig, *this, lifecycleService , serializationService)
+            , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
             , credentials(clientConfig.getCredentials())
             , redoOperation(clientConfig.isRedoOperation()) {
 
@@ -31,12 +31,12 @@ namespace hazelcast {
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
                 clusterThread.setInitialConnection(connection);
-                clusterThread.start();
+                boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::runImpl, &clusterThread));
                 while (membersRef.get() == NULL) {
                     try {
-                        sleep(1);
-                    } catch (void* ) {
-                        throw  HazelcastException("ClusterService::start");
+                        boost::this_thread::sleep(boost::posix_time::seconds(1));
+                    }catch(...){
+                        throw  exception::IException("ClusterService::start", "ClusterService can not be started");
                     }
                 }
             }
@@ -44,7 +44,7 @@ namespace hazelcast {
 
             connection::Connection *ClusterService::getConnection(Address const & address) {
                 if (!lifecycleService.isRunning()) {
-                    throw HazelcastException("Instance is not active!");
+                    throw exception::IException("ClusterService", "Instance is not active!");
                 }
                 connection::Connection *connection = NULL;
                 int retryCount = clientConfig.getConnectionAttemptLimit();
@@ -52,18 +52,18 @@ namespace hazelcast {
                     connection = connectionManager.getConnection(address);
                     if (connection == NULL) {
                         retryCount--;
-                        usleep(clientConfig.getAttemptPeriod() * 1000);
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(clientConfig.getAttemptPeriod()));
                     }
                 }
                 if (connection == NULL) {
-                    throw HazelcastException("Unable to connect!!!");
+                    throw exception::IException("ClusterService", "Unable to connect!!!");
                 }
                 return connection;
             };
 
             connection::Connection *ClusterService::getRandomConnection() {
                 if (!lifecycleService.isRunning()) {
-                    throw HazelcastException("HazelcastInstanceNotActiveException")/*HazelcastInstanceNotActiveException()*/;
+                    throw exception::IException("ClusterService", "Instance is not active!");
                 }
                 connection::Connection *connection = NULL;
                 int retryCount = clientConfig.getConnectionAttemptLimit();
@@ -71,11 +71,11 @@ namespace hazelcast {
                     connection = connectionManager.getRandomConnection();
                     if (connection == NULL) {
                         retryCount--;
-                        usleep(clientConfig.getAttemptPeriod() * 1000);
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(clientConfig.getAttemptPeriod()));
                     }
                 }
                 if (connection == NULL) {
-                    throw HazelcastException("Unable to connect!!!");
+                    throw exception::IException("ClusterService", "Unable to connect!!!");
                 }
                 return connection;
             };
@@ -88,9 +88,11 @@ namespace hazelcast {
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            std::cout << "Trying to connect: " + (*it).getHost() + ":" + util::to_string((*it).getPort()) << std::endl;
-                            return connectionManager.newConnection((*it));
-                        } catch (HazelcastException& ignored) {
+                            std::cout << "Trying to connect: " << *it << std::endl;
+                            connection::Connection *pConnection = connectionManager.newConnection((*it));
+                            std::cout << "Connected to: " << *pConnection << std::endl;
+                            return pConnection;
+                        } catch (exception::IException & ignored) {
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -101,33 +103,34 @@ namespace hazelcast {
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
                     if (remainingTime > 0) {
-                        sleep(remainingTime);
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
                     }
                 }
-                throw  HazelcastException("Unable to connect to any address in the config!");
+                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!");
             };
 
 
-            Address ClusterService::getMasterAddress() {
+            std::auto_ptr<Address> ClusterService::getMasterAddress() {
                 vector<connection::Member> list = getMemberList();
-                return list[0].getAddress();
+                if (list.empty()) {
+                    return std::auto_ptr<Address>(NULL);
+                }
+                return std::auto_ptr<Address>(new Address(list[0].getAddress()));
             }
 
             void ClusterService::addMembershipListener(MembershipListener *listener) {
-                listenerLock.lock();
+                boost::lock_guard<boost::mutex> guard(listenerLock);
                 listeners.insert(listener);
-                listenerLock.unlock();
             };
 
             bool ClusterService::removeMembershipListener(MembershipListener *listener) {
-                listenerLock.lock();
+                boost::lock_guard<boost::mutex> guard(listenerLock);
                 bool b = listeners.erase(listener) == 1;
-                listenerLock.unlock();
                 return b;
             };
 
             void ClusterService::fireMembershipEvent(connection::MembershipEvent& event) {
-                listenerLock.lock();
+                boost::lock_guard<boost::mutex> guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     if (event.getEventType() == connection::MembershipEvent::MEMBER_ADDED) {
                         (*it)->memberAdded(event);
@@ -135,17 +138,14 @@ namespace hazelcast {
                         (*it)->memberRemoved(event);
                     }
                 }
-                listenerLock.unlock();
             };
 
             bool ClusterService::isMemberExists(Address const & address) {
-                std::map<Address, connection::Member> *pMap = membersRef.get();
-                return pMap->count(address) > 0;;
+                boost::shared_ptr< std::map<Address, connection::Member, addressComparator> > ptr = membersRef.get();
+                return ptr->count(address) > 0;;
             };
 
-
             connection::Member ClusterService::getMember(const std::string& uuid) {
-
                 vector<connection::Member> list = getMemberList();
                 for (vector<connection::Member>::iterator it = list.begin(); it != list.end(); ++it) {
                     if (uuid.compare(it->getUuid())) {
@@ -155,8 +155,16 @@ namespace hazelcast {
                 return connection::Member();
             };
 
-            vector<connection::Member>  ClusterService::getMemberList() {
-                return util::values(membersRef.get());
+            std::vector<connection::Member>  ClusterService::getMemberList() {
+                boost::shared_ptr<std::map< Address, connection::Member, addressComparator> > m = membersRef.get();
+                std::vector<connection::Member> v;
+                if (m == NULL)
+                    return v;
+                typename std::map<Address, connection::Member>::const_iterator it;
+                for (it = m->begin(); it != m->end(); it++) {
+                    v.push_back(it->second);
+                }
+                return v;
             };
 
         }

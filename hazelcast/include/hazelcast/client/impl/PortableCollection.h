@@ -8,23 +8,18 @@
 
 #include "ProtocolConstants.h"
 #include "Data.h"
+#include "Portable.h"
 #include <vector>
 
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableCollection {
+            class PortableCollection : public Portable {
             public:
-                PortableCollection() {
+                PortableCollection();
 
-                };
-
-                const std::vector<serialization::Data>& getCollection() const {
-                    return collection;
-                };
-
-                int getTypeSerializerId() const;
+                const std::vector<serialization::Data>& getCollection() const;
 
                 int getFactoryId() const;
 
@@ -32,25 +27,25 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["l"] << true;
-                    writer["s"] << collection.size();
-                    for (std::vector<serialization::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
-                        writer << (*it);
+                    writer.writeBool("l", true);
+                    writer.writeInt("s", collection.size());
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    for (int i = 0; i < collection.size(); ++i) {
+                        collection[i].writeData(*out);
                     }
 
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    bool isList = true;
-                    reader["l"] >> isList;
-                    int size = 0;
-                    reader["s"] >> size;
+                    bool isList = reader.readBool("l");
+                    int size = reader.readInt("s");
                     if (size < 0)
                         return;
                     collection.resize(size);
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
-                        reader >> collection[i];
+                        collection[i].readData(*in);
                     }
                 };
             private:

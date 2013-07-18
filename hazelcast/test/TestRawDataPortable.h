@@ -10,12 +10,12 @@
 #ifndef __RawDataPortable_H_
 #define __RawDataPortable_H_
 
-#include <iostream>
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
+#include <iostream>
 
 
-class TestRawDataPortable {
+class TestRawDataPortable : public hazelcast::client::Portable {
 public:
 
     long l;
@@ -27,7 +27,37 @@ public:
 
     TestRawDataPortable() {
 
+    };
+
+    inline int getFactoryId() const{
+        return 1;
     }
+
+    inline int getClassId()const {
+        return 4;
+    }
+
+    template<typename HzWriter>
+    inline void writePortable(HzWriter& writer) const{
+        writer.writeLong("l", l);
+        writer.writeCharArray("c", c);
+        writer.writePortable("p", p);
+        BufferedDataOutput *out = writer.getRawDataOutput();
+        out->writeInt(k);
+        out->writeUTF(s);
+        ds.writeData(*out);
+    };
+
+    template<typename HzReader>
+    inline void readPortable(HzReader& reader) {
+        l = reader.readLong("l");
+        c = reader.readCharArray("c");
+        p = reader.template readPortable<TestNamedPortable>("p");
+        BufferedDataInput *in = reader.getRawDataInput();
+        k = in->readInt();
+        s = in->readUTF();
+        ds.readData(*in);
+    };
 
     TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
         this->l = l;
@@ -36,9 +66,9 @@ public:
         this->k = k;
         this->s = s;
         this->ds = ds;
-    }
+    };
 
-    bool operator ==(const TestRawDataPortable& m) const{
+    bool operator ==(const TestRawDataPortable& m) const {
         if (this == &m)
             return true;
         if (l != m.l) return false;
@@ -50,49 +80,10 @@ public:
         return true;
     };
 
-    bool operator !=(const TestRawDataPortable& m) const{
+    bool operator !=(const TestRawDataPortable& m) const {
         return !(*this == m);
     };
 };
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const TestRawDataPortable& x) {
-                return SerializationConstants::CONSTANT_TYPE_PORTABLE;
-            };
-
-            inline int getFactoryId(const TestRawDataPortable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestRawDataPortable& t) {
-                return 4;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestRawDataPortable& data) {
-                writer["l"] << data.l;
-                writer["c"] << data.c;
-                writer["p"] << data.p;
-                writer << data.k;
-                writer << data.s;
-                writer << data.ds;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestRawDataPortable& data) {
-                reader["l"] >> data.l;
-                reader["c"] >> data.c;
-                reader["p"] >> data.p;
-                reader >> data.k;
-                reader >> data.s;
-                reader >> data.ds;
-            };
-        }
-    }
-}
 
 
 #endif //__RawDataPortable_H_

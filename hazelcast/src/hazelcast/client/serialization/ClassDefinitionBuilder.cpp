@@ -6,9 +6,9 @@
 //
 
 
-#include "ClassDefinitionBuilder.h"
-#include "hazelcast/client/HazelcastException.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -85,7 +85,7 @@ namespace hazelcast {
             ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableField(string fieldName, int factoryId, int classId) {
                 check();
                 if (classId == Data::NO_CLASS_ID) {
-                    throw  HazelcastException("Portable class id cannot be zero!");
+                    throw  exception::IOException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
                 }
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
                 cd->add(fd);
@@ -144,7 +144,7 @@ namespace hazelcast {
             ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableArrayField(string fieldName, int factoryId, int classId) {
                 check();
                 if (classId == Data::NO_CLASS_ID) {
-                    throw  HazelcastException("Portable class id cannot be zero!");
+                    throw  exception::IOException("ClassDefinitionBuilder::addPortableArrayField", "Portable class id cannot be zero!");
                 }
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
                 cd->add(fd);
@@ -158,7 +158,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done) {
-                    throw hazelcast::client::HazelcastException("ClassDefinition is already built for " + hazelcast::util::to_string(cd->getClassId()));
+                    throw exception::IOException("ClassDefinitionBuilder::check", "ClassDefinition is already built for " + hazelcast::util::to_string(cd->getClassId()));
                 }
 
             }

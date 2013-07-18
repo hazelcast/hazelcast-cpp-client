@@ -14,16 +14,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class IsLockedRequest {
+            class IsLockedRequest : public Portable {
             public:
                 IsLockedRequest(const std::string& name, serialization::Data& key)
                 :key(key),
                 name(name) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -34,16 +30,19 @@ namespace hazelcast {
                     return PortableHook::IS_LOCKED;
                 }
 
+
                 template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
-                    writer["name"] << name;
-                    writer << key;
+                void writePortable(HzWriter& writer) const {
+                    writer.writeUTF("name", name);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    key.writeData(*out);
                 };
 
                 template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    reader["name"] >> name;
-                    reader >> key;
+                void readPortable(HzReader& reader) {
+                    name = reader.readUTF("name");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    key.readData(*in);
                 };
             private:
                 std::string name;

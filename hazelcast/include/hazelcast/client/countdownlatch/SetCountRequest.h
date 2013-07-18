@@ -26,7 +26,7 @@ namespace hazelcast {
                     return CountDownLatchPortableHook::F_ID;
                 };
 
-                int getTypeSerializerId() const {
+                int getSerializerId() const {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
@@ -36,14 +36,14 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["name"] << instanceName;
-                    writer["count"] << count;
+                    writer.writeUTF("name", instanceName);
+                    writer.writeLong("count", count);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["name"] >> instanceName;
-                    reader["count"] >> count;
+                    instanceName = reader.readUTF("name");
+                    count = reader.readLong("count");
                 };
             private:
 

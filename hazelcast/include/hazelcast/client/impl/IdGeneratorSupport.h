@@ -9,8 +9,8 @@
 #define HAZELCAST_IdGeneratorSupport
 
 #include "../../util/ConcurrentMap.h"
-#include "../../util/Lock.h"
 #include <string>
+#include <boost/thread/mutex.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -21,10 +21,10 @@ namespace hazelcast {
 
                 ~IdGeneratorSupport();
 
-                util::Lock *getLock(const std::string& instanceName);
+                boost::mutex *getLock(const std::string& instanceName);
 
             private:
-                util::ConcurrentMap<std::string, util::Lock> lockMap;
+                util::ConcurrentMap<std::string, boost::mutex> lockMap;
             };
         }
     }

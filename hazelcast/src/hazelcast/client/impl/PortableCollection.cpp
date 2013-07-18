@@ -3,13 +3,19 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableCollection.h"
+#include "hazelcast/client/impl/PortableCollection.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            int PortableCollection::getTypeSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
+
+
+            PortableCollection::PortableCollection() {
+
+            };
+
+            const std::vector<serialization::Data>& PortableCollection::getCollection() const {
+                return collection;
             };
 
             int PortableCollection::getFactoryId() const {

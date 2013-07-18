@@ -8,9 +8,12 @@
 #define __TestMobile_H_
 
 #include "hazelcast/client/serialization/SerializationConstants.h"
+#include "BufferedDataOutput.h"
+#include "BufferedDataInput.h"
+#include "DataSerializable.h"
 
 
-class TestDataSerializable {
+class TestDataSerializable : public hazelcast::client::DataSerializable {
 public:
     TestDataSerializable() {
 
@@ -32,39 +35,26 @@ public:
         return !(*this == m);
     };
 
+    inline int getFactoryId() const {
+        return 1;
+    }
+
+    inline int getClassId() const {
+        return 1;
+    }
+
+    inline void writeData(BufferedDataOutput& writer) const {
+        writer.writeChar(c);
+        writer.writeInt(i);
+    };
+
+    inline void readData(BufferedDataInput& reader) {
+        c = reader.readChar();
+        i = reader.readInt();
+    };
+
     int i;
     char c;
 };
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-
-            inline int getTypeSerializerId(const TestDataSerializable& x) {
-                return SerializationConstants::CONSTANT_TYPE_DATA;
-            };
-
-            inline int getFactoryId(const TestDataSerializable& t) {
-                return 1;
-            }
-
-            inline int getClassId(const TestDataSerializable& t) {
-                return 1;
-            }
-
-            template<typename HzWriter>
-            inline void writePortable(HzWriter& writer, const TestDataSerializable& data) {
-                writer << data.c;
-                writer << data.i;
-            };
-
-            template<typename HzReader>
-            inline void readPortable(HzReader& reader, TestDataSerializable& data) {
-                reader >> data.c;
-                reader >> data.i;
-            };
-        }
-    }
-}
 
 #endif //__TestMobile_H_

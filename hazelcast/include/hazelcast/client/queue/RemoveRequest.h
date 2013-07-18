@@ -10,17 +10,13 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class RemoveRequest {
+            class RemoveRequest : public Portable {
             public:
 
                 RemoveRequest(const std::string& name, serialization::Data& data)
                 :name(name)
                 , data(data) {
 
-                };
-
-                int getTypeSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
@@ -33,14 +29,16 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer["n"] << name;
-                    writer << data;
+                    writer.writeUTF("n", name);
+                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    data.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    reader["n"] >> name;
-                    reader >> data;
+                    name = reader.readUTF("n");
+                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    data.readData(*in);
                 };
             private:
                 serialization::Data& data;

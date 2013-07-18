@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ResponseStream.h"
+#include "hazelcast/client/spi/ResponseStream.h"
 
 namespace hazelcast {
     namespace client {

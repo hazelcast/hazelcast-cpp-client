@@ -26,15 +26,27 @@ namespace hazelcast {
 
             std::vector<Address>& getAddresses();
 
+            ClientConfig& setGroupConfig(GroupConfig& groupConfig);
+
             GroupConfig& getGroupConfig();
+
+            void setCredentials(protocol::Credentials *credentials);
 
             protocol::Credentials& getCredentials();
 
+            ClientConfig& setConnectionAttemptLimit(int connectionAttemptLimit);
+
             int getConnectionAttemptLimit() const;
+
+            ClientConfig& setConnectionTimeout(int connectionTimeoutInMillis);
 
             int getConnectionTimeout() const;
 
+            ClientConfig& setAttemptPeriod(int attemptPeriodInMillis);
+
             int getAttemptPeriod() const;
+
+            ClientConfig& setRedoOperation(bool redoOperation);
 
             bool isRedoOperation() const;
 
@@ -45,7 +57,7 @@ namespace hazelcast {
            *                 or {@link com.hazelcast.core.MembershipListener}
            * @return
            */
-            ClientConfig addListener(spi::EventListener *listener);
+            ClientConfig& addListener(spi::EventListener *listener);
 
             std::set<spi::EventListener *> getListeners() const;
 
@@ -53,7 +65,6 @@ namespace hazelcast {
 
             void setLoadBalancer(LoadBalancer *loadBalancer);
 
-            void setCredentials(protocol::Credentials *credentials);
 
 
         private:
@@ -77,7 +88,7 @@ namespace hazelcast {
              */
             LoadBalancer *loadBalancer;
 
-            impl::RoundRobinLB defaultLoadBalancer;
+            std::auto_ptr<impl::RoundRobinLB> defaultLoadBalancer;
 
             /**
              * List of listeners that Hazelcast will automatically add as a part of initialization process.
