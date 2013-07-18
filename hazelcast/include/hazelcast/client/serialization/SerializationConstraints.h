@@ -80,52 +80,67 @@ namespace hazelcast {
             class EmptyPortableReader {
             public:
                 int readInt(const char *fieldName) {
+                    return 0;
                 };
 
                 long readLong(const char *fieldName) {
+                    return 0;
                 };
 
                 bool readBoolean(const char *fieldName) {
+                    return 0;
                 };
 
                 byte readByte(const char *fieldName) {
+                    return 0;
                 };
 
                 char readChar(const char *fieldName) {
+                    return 0;
                 };
 
                 double readDouble(const char *fieldName) {
-
+                    return 0;
                 };
 
                 float readFloat(const char *fieldName) {
+                    return 0;
                 };
 
                 short readShort(const char *fieldName) {
+                    return 0;
                 };
 
                 std::string readUTF(const char *fieldName) {
+                    return "";
                 };
 
                 std::vector<byte> readByteArray(const char *fieldName) {
+                    return std::vector<byte>();
                 };
 
                 std::vector<char> readCharArray(const char *fieldName) {
+                    return std::vector<char>();
                 };
 
                 std::vector<int> readIntArray(const char *fieldName) {
+                    return std::vector<int>();
                 };
 
                 std::vector<long> readLongArray(const char *fieldName) {
+                    return std::vector<long>();
                 };
 
                 std::vector<double> readDoubleArray(const char *fieldName) {
+                    return std::vector<double>();
                 };
 
                 std::vector<float> readFloatArray(const char *fieldName) {
+                    return std::vector<float>();
                 };
 
                 std::vector<short> readShortArray(const char *fieldName) {
+                    return std::vector<short>();
                 };
 
                 template<typename T>

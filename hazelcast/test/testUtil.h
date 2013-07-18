@@ -1,7 +1,7 @@
 #ifndef TEST_UTIL
 #define TEST_UTIL
 
-#define SERVER_ADDRESS "192.168.2.22"
+#define SERVER_ADDRESS "192.168.2.201"
 #define SERVER_PORT 5701
 
 #include "TestMainPortable.h"

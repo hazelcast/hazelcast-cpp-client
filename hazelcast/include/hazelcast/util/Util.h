@@ -25,17 +25,17 @@ namespace hazelcast {
 
         std::string to_string(int);
 
-        template <typename key, typename value>
-        std::vector<value> values(const std::map<key, value> *m) {
-            std::vector<value> v;
-            if (m == NULL)
-                return v;
-            typename std::map<key, value>::const_iterator it;
-            for (it = m->begin(); it != m->end(); it++) {
-                v.push_back(it->second);
-            }
-            return v;
-        };
+//        template <typename key, typename value>
+//        std::vector<value> values(const std::map<key, value> *m) {
+//            std::vector<value> v;
+//            if (m == NULL)
+//                return v;
+//            typename std::map<key, value>::const_iterator it;
+//            for (it = m->begin(); it != m->end(); it++) {
+//                v.push_back(it->second);
+//            }
+//            return v;
+//        };
 
     }
 }

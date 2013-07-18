@@ -7,7 +7,6 @@
 
 #include "../Address.h"
 #include "../../util/ConcurrentMap.h"
-#include "../../util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -38,8 +37,6 @@ namespace hazelcast {
 
 
             private:
-                util::Thread partitionListenerThread;
-                util::Thread refreshPartitionThread;
 
                 ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
@@ -47,10 +44,6 @@ namespace hazelcast {
                 volatile int partitionCount;
 
                 util::ConcurrentMap<int, Address> partitions;
-
-                static void *startListener(void *parameteres);
-
-                static void *startRefresher(void *parameteres);
 
                 void runListener();
 

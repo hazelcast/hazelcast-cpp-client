@@ -2,8 +2,6 @@
 // Created by sancar koyunlu on 5/31/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-
-#include <iostream>
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include "hazelcast/client/Cluster.h"
 
@@ -25,9 +23,7 @@ namespace hazelcast {
                 for (std::vector<connection::Member>::iterator it = memberSet.begin(); it != memberSet.end(); ++it) {
                     members->push_back((*it));
                 }
-                std::vector<connection::Member> *pVector = membersRef.set(members);
-                if (pVector != NULL)
-                    delete pVector;
+                membersRef.set(members);
             };
 
             void AbstractLoadBalancer::memberAdded(const hazelcast::client::connection::MembershipEvent& membershipEvent) {
@@ -38,8 +34,8 @@ namespace hazelcast {
                 setMembersRef();
             };
 
-            std::vector<hazelcast::client::connection::Member> AbstractLoadBalancer::getMembers() {
-                return *membersRef.get();
+            boost::shared_ptr< std::vector<hazelcast::client::connection::Member> > AbstractLoadBalancer::getMembers() {
+                return membersRef.get();
             };
 
             AbstractLoadBalancer::~AbstractLoadBalancer() {

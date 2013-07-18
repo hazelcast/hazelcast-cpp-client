@@ -6,7 +6,6 @@
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
 #include "Member.h"
-#include "../../util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,14 +26,13 @@ namespace hazelcast {
 
             class MembershipEvent;
 
-            class ClusterListenerThread : public hazelcast::util::Thread {
+            class ClusterListenerThread {
             public:
                 ClusterListenerThread(ConnectionManager& , ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&,serialization::SerializationService&);
 
                 void setInitialConnection(connection::Connection *);
 
-                static void *run(void *);
-
+                void runImpl();
             private:
                 ConnectionManager& connectionManager;
                 spi::ClusterService& clusterService;
@@ -45,7 +43,6 @@ namespace hazelcast {
                 std::vector<Member> members;
                 ClientConfig& clientConfig;
 
-                void runImpl();
 
                 Connection *pickConnection();
 

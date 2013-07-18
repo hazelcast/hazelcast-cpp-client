@@ -56,7 +56,7 @@ namespace hazelcast {
                 void shutdown();
 
             private:
-                util::ConcurrentMap<Address, ConnectionPool > poolMap;
+                util::ConcurrentMap<Address, ConnectionPool , addressComparator> poolMap;
                 spi::ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
                 ClientConfig& clientConfig;

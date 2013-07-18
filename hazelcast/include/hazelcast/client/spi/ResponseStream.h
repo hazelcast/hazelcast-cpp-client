@@ -9,11 +9,11 @@
 #ifndef HAZELCAST_RESPONSE_STREAM
 #define HAZELCAST_RESPONSE_STREAM
 
-#include "../serialization/Data.h"
-#include "../connection/Connection.h"
-#include "../../util/Lock.h"
-#include "../../util/LockGuard.h"
-#include "../serialization/SerializationService.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +35,7 @@ namespace hazelcast {
                 };
 
                 void end() {
-                    util::LockGuard lg(endMutex);
+                    boost::lock_guard<boost::mutex> log(endMutex);
                     if (!isEnded) {
                         //connection.close(); TODO
                         isEnded = true;
@@ -46,7 +46,7 @@ namespace hazelcast {
                 serialization::SerializationService& serializationService;
                 connection::Connection& connection;
                 volatile bool isEnded;
-                util::Lock endMutex;
+                boost::mutex endMutex;
             };
         }
     }

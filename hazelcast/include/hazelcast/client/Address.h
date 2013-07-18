@@ -15,7 +15,7 @@ namespace hazelcast {
             class BufferedDataOutput;
         }
 
-        class Address : public DataSerializable{
+        class Address : public DataSerializable {
         public:
             //TODO type IPV4 IPV6
             Address();
@@ -47,8 +47,21 @@ namespace hazelcast {
             byte type;
         };
 
+        struct addressComparator {
+            bool operator ()(const Address& lhs, const Address& rhs) const {
+                int i = lhs.getHost().compare(rhs.getHost());
+                if (i == 0) {
+                    return lhs.getPort() > rhs.getPort();
+                }
+                return i > 0;
+
+            }
+        };
+
+
     }
 };
+
 
 inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::Address &a) {
     return strm << std::string("Address[") << a.getHost() << std::string(":") << hazelcast::util::to_string(a.getPort()) << std::string("]");

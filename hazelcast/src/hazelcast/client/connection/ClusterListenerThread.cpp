@@ -7,13 +7,13 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService, serialization::SerializationService& serializationService)
-            : Thread::Thread(connection::ClusterListenerThread::run, this)
-            , connectionManager(connectionMgr)
+            : connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
             , lifecycleService(lifecycleService)
@@ -24,12 +24,6 @@ namespace hazelcast {
 
             void ClusterListenerThread::setInitialConnection(connection::Connection *connection) {
                 this->conn = connection;
-            };
-
-            void *ClusterListenerThread::run(void *input) {
-                static_cast<ClusterListenerThread *>(input)->runImpl();
-                return NULL;
-
             };
 
             void ClusterListenerThread::runImpl() {
@@ -55,7 +49,7 @@ namespace hazelcast {
                         conn = NULL;
                     }
                     try {
-                        sleep(1);
+                        boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch (...) {
                         break;
                     }
@@ -119,7 +113,6 @@ namespace hazelcast {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
                     } else {
-                        //TODO O(n) time complexity ???
                         members.erase(std::find(members.begin(), members.end(), member));
                         connectionManager.removeConnectionPool(member.getAddress());
                     }
@@ -129,16 +122,14 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member> *map = new std::map<Address, Member>;
+                std::map<Address, Member , addressComparator > *map = new std::map<Address, Member, addressComparator>;
                 std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                     std::cerr << "\t" << (*it) << std::endl;
                     (*map)[(*it).getAddress()] = (*it);
                 }
                 std::cerr << "}" << std::endl;
-                std::map<Address, Member> *pMap = clusterService.membersRef.set(map);
-                //if (pMap != NULL)
-                   // delete pMap;   //TODO should not be deleted immediately| user thread may be holding the pointer
+                clusterService.membersRef.set(map);
 
             };
 

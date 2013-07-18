@@ -9,8 +9,9 @@
 #define HAZELCAST_ATOMIC_REFERENCE
 
 #include <iosfwd>
-#include "Lock.h"
-#include "LockGuard.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -20,26 +21,23 @@ namespace hazelcast {
             AtomicPointer():pointer(NULL) {
             };
 
-            AtomicPointer(T *p) {
-                util::LockGuard lg(mutex);
-                pointer = p;
+            AtomicPointer(T *p):pointer(p) {
             };
 
-            T *get() {
-                util::LockGuard lg(mutex);
+            const boost::shared_ptr<T> get() {
+                boost::lock_guard<boost::mutex> lg(mutex);
                 return pointer;
             };
 
-            T *set(T *p) {
-                util::LockGuard lg(mutex);
-                T *oldPointer = pointer;
-                pointer = p;
-                return oldPointer;
+            void set(T *p) {
+                boost::lock_guard<boost::mutex> lg(mutex);
+                boost::shared_ptr<T> newPointer(p);
+                pointer = newPointer;
             };
 
         private:
-            T *pointer;
-            util::Lock mutex;
+            boost::shared_ptr<T> pointer;
+            boost::mutex mutex;
         };
 
     }

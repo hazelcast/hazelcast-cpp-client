@@ -21,6 +21,8 @@ namespace hazelcast {
 
                 Member(const Member&);
 
+                Member(const Address&);
+
                 ~Member();
 
                 Member& operator = (const Member&);
@@ -42,7 +44,7 @@ namespace hazelcast {
                 void readData(serialization::BufferedDataInput& reader);
 
             private:
-                hazelcast::client::Address address;
+                Address address;
                 std::string uuid;
             };
         }

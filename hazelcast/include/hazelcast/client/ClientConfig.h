@@ -88,7 +88,7 @@ namespace hazelcast {
              */
             LoadBalancer *loadBalancer;
 
-            impl::RoundRobinLB* defaultLoadBalancer;
+            std::auto_ptr<impl::RoundRobinLB> defaultLoadBalancer;
 
             /**
              * List of listeners that Hazelcast will automatically add as a part of initialization process.

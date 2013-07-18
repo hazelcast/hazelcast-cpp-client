@@ -21,12 +21,13 @@ namespace hazelcast {
             class Connection;
 
             class HeartBeatChecker {
+
             public:
                 HeartBeatChecker(int timeout, serialization::SerializationService& serializationService);
 
                 bool checkHeartBeat(Connection& connection);
 
-                static void *run(void *);
+                void run(Connection* connection);
 
             private:
 

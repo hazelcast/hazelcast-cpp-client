@@ -2,9 +2,9 @@
 #define HAZELCAST_ID_GENERATOR
 
 #include "IAtomicLong.h"
-#include "../util/Lock.h"
-#include "../util/AtomicInteger.h"
 #include <string>
+#include <boost/atomic.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -50,8 +50,8 @@ namespace hazelcast {
             spi::ClientContext *context;
             impl::IdGeneratorSupport *support;
             IAtomicLong atomicLong;
-            util::AtomicInteger local;
-            util::AtomicInteger residue;
+            boost::shared_ptr< boost::atomic<int> > local;
+            boost::shared_ptr< boost::atomic<int> > residue;
         };
     }
 }

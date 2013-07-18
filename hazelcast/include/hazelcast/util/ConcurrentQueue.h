@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_CONCURRENT_QUEUE
 #define HAZELCAST_CONCURRENT_QUEUE
 
-#include "Lock.h"
-#include "LockGuard.h"
 #include <queue>
 #include <iostream>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -22,13 +22,13 @@ namespace hazelcast {
             };
 
             bool offer(const T& e) {
-                util::LockGuard lg(mutex);
+                boost::lock_guard<boost::mutex> lg(m);
                 internalQueue.push(e);
                 return true;
             };
 
             bool poll(T& e) {
-                util::LockGuard lg(mutex);
+                boost::lock_guard<boost::mutex> lg(m);
                 bool success = true;
                 if (!empty()) {
                     e = internalQueue.front();
@@ -44,7 +44,7 @@ namespace hazelcast {
             };
 
         private:
-            util::Lock mutex;
+            boost::mutex m;
             std::queue<T> internalQueue;
         };
     }

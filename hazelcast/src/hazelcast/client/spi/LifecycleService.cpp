@@ -6,6 +6,7 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
+#include <boost/thread/lock_guard.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -28,17 +29,17 @@ namespace hazelcast {
             };
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
-                util::LockGuard lg(listenerLock);
+                boost::lock_guard<boost::mutex> lg(listenerLock);
                 listeners.insert(lifecycleListener);
             };
 
             bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                util::LockGuard lg(listenerLock);
+                boost::lock_guard<boost::mutex> lg(listenerLock);
                 return listeners.erase(lifecycleListener) == 1;
             };
 
             void LifecycleService::fireLifecycleEvent(LifecycleEvent lifecycleEvent) {
-                util::LockGuard lg(listenerLock);
+                boost::lock_guard<boost::mutex> lg(listenerLock);
                 for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     (*it)->stateChanged(lifecycleEvent);
                 };
@@ -55,7 +56,7 @@ namespace hazelcast {
 
             void LifecycleService::shutdown() {
                 active = false;
-                util::LockGuard lg(lifecycleLock);
+                boost::lock_guard<boost::mutex> lg(lifecycleLock);
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 hazelcastClient.shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);

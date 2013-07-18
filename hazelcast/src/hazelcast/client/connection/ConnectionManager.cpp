@@ -70,8 +70,10 @@ namespace hazelcast {
 
             ConnectionPool *ConnectionManager::getConnectionPool(const Address& address) {
                 checkLive();
+//                std::cout << "get address " << address << std::endl;
                 ConnectionPool *pool = poolMap.get(address);
                 if (pool == NULL) {
+//                    std::cout << "get address NULL " << std::endl;
                     if (!clusterService.isMemberExists(address)) {
                         return NULL;
                     }
@@ -81,6 +83,7 @@ namespace hazelcast {
                     if (previousPool) delete pool;
                     return previousPool == NULL ? pool : previousPool;
                 }
+//                std::cout << "getted pool address " << pool->address << std::endl;
                 return pool;
             };
 

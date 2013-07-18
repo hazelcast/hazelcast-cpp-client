@@ -18,7 +18,6 @@ namespace hazelcast {
 
 
         ClientConfig::~ClientConfig() {
-            delete defaultLoadBalancer;
         };
 
         ClientConfig & ClientConfig::addAddress(const Address  & address) {
@@ -85,7 +84,7 @@ namespace hazelcast {
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
-                return defaultLoadBalancer;
+                return defaultLoadBalancer.get();
             return loadBalancer;
         };
 

@@ -5,8 +5,8 @@ namespace hazelcast {
     namespace client {
 
         IdGenerator::IdGenerator()
-        : local(-1)
-        , residue(BLOCK_SIZE) {
+        : local(new boost::atomic<int>(-1))
+        , residue(new boost::atomic<int>(BLOCK_SIZE)) {
 
         };
 
@@ -28,28 +28,28 @@ namespace hazelcast {
             }
             long step = (id / BLOCK_SIZE);
 
-            util::LockGuard lg(*(support->getLock(instanceName)));
+            boost::lock_guard<boost::mutex> lg(*(support->getLock(instanceName)));
             bool init = atomicLong.compareAndSet(0, step + 1);
             if (init) {
-                local = step;
-                residue = (id % BLOCK_SIZE) + 1;
+                *local = step;
+                *residue = (id % BLOCK_SIZE) + 1;
             }
             return init;
         };
 
         long IdGenerator::newId() {
-            int value = residue++;
+            int value = (*residue)++;
             if (value >= BLOCK_SIZE) {
-                util::LockGuard lg(*(support->getLock(instanceName)));
-                value = residue;
+                boost::lock_guard<boost::mutex> lg(*(support->getLock(instanceName)));
+                value = *residue;
                 if (value >= BLOCK_SIZE) {
-                    local = atomicLong.getAndIncrement();
-                    residue = 0;
+                    *local = atomicLong.getAndIncrement();
+                    *residue = 0;
                 }
                 return newId();
 
             }
-            return int(local) * BLOCK_SIZE + value;
+            return int(*local) * BLOCK_SIZE + value;
         };
     }
 }

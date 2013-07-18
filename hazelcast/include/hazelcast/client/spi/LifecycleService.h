@@ -8,9 +8,9 @@
 #define HAZELCAST_LIFECYCLE_SERVICE
 
 #include "LifecycleListener.h"
-#include "Lock.h"
 #include "LifecycleEvent.h"
 #include <set>
+#include <boost/thread/mutex.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -35,8 +35,8 @@ namespace hazelcast {
             private:
                 HazelcastClient& hazelcastClient;
                 std::set<LifecycleListener *> listeners;
-                util::Lock listenerLock;
-                util::Lock lifecycleLock;
+                boost::mutex listenerLock;
+                boost::mutex lifecycleLock;
                 volatile bool active;
 
                 void fireLifecycleEvent(LifecycleEvent lifecycleEvent);

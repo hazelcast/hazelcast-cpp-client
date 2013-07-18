@@ -21,6 +21,12 @@ namespace hazelcast {
 
             };
 
+
+            Member::Member(Address const & rhs)
+            : address(rhs) {
+
+            };
+
             Member::~Member() {
 
             };
