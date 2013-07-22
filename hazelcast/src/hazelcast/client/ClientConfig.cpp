@@ -5,7 +5,7 @@ namespace hazelcast {
 
         ClientConfig::ClientConfig()
         : smart(true)
-        , redoOperation(true)
+        , redoOperation(false) //TODO make it true, after implemented isRedoOperation for request
         , poolSize(100)
         , connectionTimeout(60000)
         , connectionAttemptLimit(2)

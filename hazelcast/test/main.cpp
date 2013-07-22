@@ -1,6 +1,6 @@
-//#include "serializationTest.h"
+#include "serializationTest.h"
 #include "deneme.h"
-#include "mapTest.h"
+//#include "mapTest.h"
 
 
 GTEST_API_ int main(int argc, char **argv) {
@@ -11,6 +11,8 @@ GTEST_API_ int main(int argc, char **argv) {
 //    } catch(std::exception& s){
 //        std::cout << s.what() << std::endl;
 //    }
+//    return 0;
+
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 //    return deneme::init();

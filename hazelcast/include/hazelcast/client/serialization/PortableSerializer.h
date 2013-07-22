@@ -31,7 +31,7 @@ namespace hazelcast {
 
             class BufferedDataOutput;
 
-            class PortableSerializer{
+            class PortableSerializer {
             public:
 
                 PortableSerializer(SerializationContext *const serializationContext);
@@ -39,8 +39,8 @@ namespace hazelcast {
                 ~PortableSerializer();
 
                 template <typename T>
-                ClassDefinition *getClassDefinition(T& p) {
-                    ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> getClassDefinition(T& p) {
+                    boost::shared_ptr<ClassDefinition> cd;
                     int factoryId = p.getFactoryId();
                     int classId = p.getClassId();
                     if (context->isClassDefinitionExists(factoryId, classId)) {
@@ -57,7 +57,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(BufferedDataOutput &dataOutput, const T& p) {
-                    ClassDefinition *cd = getClassDefinition(p);
+                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, &dataOutput);
                     p.writePortable(portableWriter);
                 };
@@ -65,7 +65,7 @@ namespace hazelcast {
                 template <typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
-                    ClassDefinition *cd;
+                    boost::shared_ptr<ClassDefinition> cd;
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);

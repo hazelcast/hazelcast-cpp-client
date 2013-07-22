@@ -16,9 +16,9 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicPointer.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 #include <set>
-#include<boost/thread/mutex.hpp>
-#include<boost/thread/lock_guard.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -34,17 +34,28 @@ namespace hazelcast {
                 template< typename Response, typename Request>
                 Response sendAndReceive(const Request& object) {
                     Response response;
-                    connection::Connection *conn = connectionManager.getRandomConnection();
-                    response = sendAndReceive<Response>(conn, object);
-                    connectionManager.releaseConnection(conn);
+                    connection::Connection *conn = getRandomConnection();
+                    try{
+                        response = sendAndReceive<Response>(conn, object);
+                        connectionManager.releaseConnection(conn);
+                    } catch(exception::IException& e){
+                        connectionManager.releaseConnection(conn);
+                        throw e;
+                    }
                     return response;
                 };
 
                 template< typename Response, typename Request>
                 Response sendAndReceive(const Address& address, const Request& object) {
-                    connection::Connection *conn = connectionManager.getConnection(address);
-                    Response response = sendAndReceive<Response>(conn, object);
-                    connectionManager.releaseConnection(conn);
+                    Response response;
+                    connection::Connection *conn = getConnection(address);
+                    try{
+                        response = sendAndReceive<Response>(conn, object);
+                        connectionManager.releaseConnection(conn);
+                    } catch(exception::IException& e){
+                        connectionManager.releaseConnection(conn);
+                        throw e;
+                    }
                     return response;
                 };
 
@@ -114,7 +125,7 @@ namespace hazelcast {
                         conn->write(request);
                     } catch (exception::IOException& e){
                         partitionService.refreshPartitions();
-                        if (redoOperation /*obj instanceof RetryableRequest*/) {
+                        if (redoOperation /*|| obj instanceof RetryableRequest*/) {
                             sendAndHandle(obj, handler);
                             return;
                         }

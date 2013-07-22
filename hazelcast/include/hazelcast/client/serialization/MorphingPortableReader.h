@@ -34,7 +34,7 @@ namespace hazelcast {
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
+                MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -71,11 +71,11 @@ namespace hazelcast {
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
-                    ClassDefinition *cd;
+                    boost::shared_ptr<ClassDefinition> cd;
                     if (context->getVersion() == dataVersion) {
                         cd = context->lookup(factoryId, classId); // using serializationContext.version
-                        PortableReader reader(context, dataInput, cd);
-                        object.readPortable(reader);
+                        PortableReader wreader(context, dataInput, cd);
+                        object.readPortable(wreader);
                     } else {
                         cd = context->lookup(factoryId, classId, dataVersion); // registered during read
                         MorphingPortableReader reader(context, dataInput, cd);
@@ -126,7 +126,7 @@ namespace hazelcast {
                 int offset;
                 bool raw;
                 SerializationContext *context;
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 BufferedDataInput& input;
 
                 FieldType currentFieldType;

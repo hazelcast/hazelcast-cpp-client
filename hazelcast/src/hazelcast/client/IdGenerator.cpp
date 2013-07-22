@@ -1,18 +1,13 @@
 #include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/impl/IdGeneratorSupport.h"
 
 namespace hazelcast {
     namespace client {
 
         IdGenerator::IdGenerator()
         : local(new boost::atomic<int>(-1))
-        , residue(new boost::atomic<int>(BLOCK_SIZE)) {
+        , residue(new boost::atomic<int>(BLOCK_SIZE))
+        , localLock(new boost::mutex){
 
-        };
-
-
-        void IdGenerator::setIdGeneratorSupport(impl::IdGeneratorSupport *support) {
-            this->support = support;
         };
 
         void IdGenerator::init(const std::string& instanceName, spi::ClientContext *clientContext) {
@@ -28,7 +23,7 @@ namespace hazelcast {
             }
             long step = (id / BLOCK_SIZE);
 
-            boost::lock_guard<boost::mutex> lg(*(support->getLock(instanceName)));
+            boost::lock_guard<boost::mutex> lg(*localLock);
             bool init = atomicLong.compareAndSet(0, step + 1);
             if (init) {
                 *local = step;
@@ -40,7 +35,7 @@ namespace hazelcast {
         long IdGenerator::newId() {
             int value = (*residue)++;
             if (value >= BLOCK_SIZE) {
-                boost::lock_guard<boost::mutex> lg(*(support->getLock(instanceName)));
+                boost::lock_guard<boost::mutex> lg(*localLock);
                 value = *residue;
                 if (value >= BLOCK_SIZE) {
                     *local = atomicLong.getAndIncrement();

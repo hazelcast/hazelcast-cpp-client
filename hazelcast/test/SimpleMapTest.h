@@ -78,21 +78,25 @@ public:
 
     void op(IMap<int, vector<char> >& map) {
         char temp[VALUE_SIZE];
+        std::vector<char> value(temp, temp + VALUE_SIZE);
         while (true) {
             int key = rand() % ENTRY_COUNT;
-            std::vector<char> value(temp, temp + VALUE_SIZE);
-
             int operation = ((int) (rand() % 100));
-            if (operation < GET_PERCENTAGE) {
-                map.get(key);
-                ++stats.getCount;
-            } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                vector<char> vector1 = map.put(key, value);
-                ++stats.putCount;
-            } else {
-                map.remove(key);
-                ++stats.removeCount;
+            try{
+                if (operation < GET_PERCENTAGE) {
+                    map.get(key);
+                    ++stats.getCount;
+                } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
+                    vector<char> vector = map.put(key, value);
+                    ++stats.putCount;
+                } else {
+                    map.remove(key);
+                    ++stats.removeCount;
+                }
+            } catch(std::exception& e){
+                std::cout << "__";
             }
+
         }
     }
 
@@ -113,7 +117,7 @@ public:
             boost::thread monitor(printStats);
             HazelcastClient hazelcastClient(clientConfig);
             IMap<int, vector<char> > map = hazelcastClient.getMap<int, vector<char > >("default");
-           // op(map);
+            op(map);
 
             monitor.join();
         } catch (std::exception& e) {

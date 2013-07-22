@@ -30,7 +30,7 @@ namespace hazelcast {
             bool poll(T& e) {
                 boost::lock_guard<boost::mutex> lg(m);
                 bool success = true;
-                if (!empty()) {
+                if (!internalQueue.empty()) {
                     e = internalQueue.front();
                     internalQueue.pop();
                 } else {
@@ -40,6 +40,7 @@ namespace hazelcast {
             };
 
             bool empty() {
+                boost::lock_guard<boost::mutex> lg(m);
                 return internalQueue.empty();
             };
 

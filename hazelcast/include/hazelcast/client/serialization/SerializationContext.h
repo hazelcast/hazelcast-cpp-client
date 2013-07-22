@@ -9,10 +9,10 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
+#include "ConcurrentSmartMap.h"
 #include <map>
 #include <vector>
 #include <memory>
-#include "../../util/ConcurrentMap.h"
 
 
 namespace hazelcast {
@@ -34,17 +34,19 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int);
 
-                ClassDefinition *lookup(int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                ClassDefinition *lookup(int, int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int, int);
 
-                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+                boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
-                void registerNestedDefinitions(ClassDefinition *cd);
+                void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
 
-                ClassDefinition *registerClassDefinition(ClassDefinition *cd);
+                boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+
+                boost::shared_ptr<ClassDefinition> registerClassDefinition(ClassDefinition* cd);
 
                 int getVersion();
 
@@ -57,7 +59,7 @@ namespace hazelcast {
                 void operator = (const SerializationContext&);
 
                 int contextVersion;
-                hazelcast::util::ConcurrentMap<int, PortableContext> portableContextMap;
+                util::ConcurrentSmartMap<int, PortableContext> portableContextMap;
 
             };
 

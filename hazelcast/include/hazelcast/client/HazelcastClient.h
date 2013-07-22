@@ -8,9 +8,6 @@
 #include "IList.h"
 #include "ITopic.h"
 
-#include <memory>
-#include <map>
-
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -47,9 +44,9 @@ namespace hazelcast {
         class ILock;
 
         class HazelcastClient {
-            friend class spi::ClusterService;
-
             friend class spi::ClientContext;
+
+            friend class spi::LifecycleService;
 
         public:
             HazelcastClient(ClientConfig&);
@@ -106,7 +103,6 @@ namespace hazelcast {
 
             ClientConfig& getClientConfig();
 
-            void shutdown();
 
         private:
             class HazelcastClientImpl;
@@ -132,7 +128,6 @@ namespace hazelcast {
             HazelcastClient(const HazelcastClient& rhs);
 
             void operator = (const HazelcastClient& rhs);
-
 
         };
 

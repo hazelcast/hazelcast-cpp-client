@@ -4,7 +4,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/impl/IdGeneratorSupport.h"
 #include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
@@ -14,24 +13,25 @@ namespace hazelcast {
         public:
             HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient& client)
             : clientConfig(clientConfig)
-            , lifecycleService(client, clientConfig)
+            , lifecycleService(client, this->clientConfig)
             , serializationService(0)
-            , clusterService(partitionService, lifecycleService , connectionManager, serializationService, clientConfig)
-            , connectionManager(clusterService, serializationService, clientConfig)
+            , clusterService(partitionService, lifecycleService, connectionManager, serializationService, this->clientConfig)
+            , connectionManager(clusterService, serializationService, this->clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
             , serverListenerService(invocationService)
             , cluster(clusterService)
-            , clientContext(client)   {
+            , clientContext(client) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
 
-            void shutdown() {
-                //TODO
-            };
 
-            impl::IdGeneratorSupport idGeneratorSupport;
+            ~HazelcastClientImpl(){
+                //TODO shutdown the threads ????
+                lifecycleService.setShutdown();
+            }
+
             ClientConfig clientConfig;
             spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
@@ -47,9 +47,9 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig& config)
         :impl(new HazelcastClientImpl(config, *this)) {
+            impl->lifecycleService.setStarted();
             impl->clusterService.start();
             impl->partitionService.start();
-            impl->lifecycleService.setStarted();
 
         };
 
@@ -103,9 +103,7 @@ namespace hazelcast {
         };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
-            IdGenerator generator = getDistributedObject< IdGenerator >(instanceName);
-            generator.setIdGeneratorSupport(&(impl->idGeneratorSupport));
-            return generator;
+            return getDistributedObject< IdGenerator >(instanceName);
         };
 
         IAtomicLong HazelcastClient::getIAtomicLong(const std::string& instanceName) {
@@ -200,10 +198,6 @@ namespace hazelcast {
 //        }
 //        CLIENTS.clear();
 //    }
-
-        void HazelcastClient::shutdown() {
-            impl->shutdown();
-        };
 
 
     }

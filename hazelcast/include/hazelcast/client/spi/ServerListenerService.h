@@ -8,7 +8,7 @@
 #define HAZELCAST_SERVER_LISTENER_SERVICE
 
 #include "../serialization/Data.h"
-#include "../../util/ConcurrentMap.h"
+#include "ConcurrentSmartMap.h"
 #include "ListenerSupport.h"
 #include "ClientContext.h"
 #include "InvocationService.h"
@@ -29,38 +29,42 @@ namespace hazelcast {
 
                 template <typename Request, typename EventHandler, typename Event>
                 long listen(const std::string& instanceName, const Request& registrationRequest, const serialization::Data& key, const EventHandler& eventHandler) {
-                    util::ConcurrentMap<long, ListenerSupportBase> *m = new util::ConcurrentMap<long, ListenerSupportBase>;
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler, key);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
+
+                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
                     m->put(registrationId, listenerSupport);
 
-                    util::ConcurrentMap<long, ListenerSupportBase> *oldMap = allListeners.putIfAbsent(instanceName, m);
+                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
                     if (oldMap != NULL) {
-                        delete m;
+                        m.reset();
                         oldMap->put(registrationId, listenerSupport);
                     }
+                    listenerSupport->listen();
                     return registrationId;
                 };
 
                 template <typename Request, typename EventHandler, typename Event>
                 long listen(const std::string& instanceName, const Request& registrationRequest, const EventHandler& eventHandler) {
-                    util::ConcurrentMap<long, ListenerSupportBase> *m = new util::ConcurrentMap<long, ListenerSupportBase>;
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
+
+                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
                     m->put(registrationId, listenerSupport);
 
-                    util::ConcurrentMap<long, ListenerSupportBase> *oldMap = allListeners.putIfAbsent(instanceName, m);
+                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
                     if (oldMap != NULL) {
-                        delete m;
+                        m.reset();
                         oldMap->put(registrationId, listenerSupport);
                     }
+                    listenerSupport->listen();
                     return registrationId;
                 };
 
                 bool stopListening(const std::string& instanceName, long registrationId);
 
             private:
-                util::ConcurrentMap<std::string, util::ConcurrentMap<long, ListenerSupportBase> > allListeners;
+                util::ConcurrentSmartMap<std::string, util::ConcurrentSmartMap<long, ListenerSupportBase> > allListeners;
                 InvocationService& invocationService;
             };
         }

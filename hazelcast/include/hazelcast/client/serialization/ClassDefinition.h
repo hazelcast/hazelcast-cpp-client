@@ -18,6 +18,7 @@
 #include <vector>
 #include <set>
 #include <cassert>
+#include <boost/shared_ptr.hpp>
 
 using namespace std;
 
@@ -42,7 +43,7 @@ namespace hazelcast {
 
                 void add(FieldDefinition&);
 
-                void add(ClassDefinition *);
+                void add(boost::shared_ptr<ClassDefinition>);
 
                 bool isFieldDefinitionExists(const char *);
 
@@ -50,7 +51,7 @@ namespace hazelcast {
 
                 const FieldDefinition& get(int);
 
-                vector<ClassDefinition * > &getNestedClassDefinitions();
+                vector<boost::shared_ptr<ClassDefinition> > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
 
@@ -87,7 +88,7 @@ namespace hazelcast {
 
                 vector<FieldDefinition> fieldDefinitions;
                 map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
-                vector<ClassDefinition * > nestedClassDefinitions;
+                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;
 

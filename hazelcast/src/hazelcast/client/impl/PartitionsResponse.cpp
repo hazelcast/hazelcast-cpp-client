@@ -22,11 +22,11 @@ namespace hazelcast {
 
             };
 
-            std::vector<Address>  PartitionsResponse::getMembers() const {
+            const std::vector<Address>&  PartitionsResponse::getMembers() const {
                 return members;
             };
 
-            std::vector<int>  PartitionsResponse::getOwnerIndexes() const {
+            const std::vector<int>&  PartitionsResponse::getOwnerIndexes() const {
                 return ownerIndexes;
             };
 

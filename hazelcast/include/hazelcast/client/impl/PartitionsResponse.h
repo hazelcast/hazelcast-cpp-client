@@ -20,9 +20,9 @@ namespace hazelcast {
 
                 PartitionsResponse(std::vector<Address>& addresses, std::vector<int>& ownerIndexes);
 
-                std::vector<Address> getMembers() const;
+                const std::vector<Address>& getMembers() const;
 
-                std::vector<int> getOwnerIndexes() const;
+                const std::vector<int>& getOwnerIndexes() const;
 
                 bool isEmpty();
 

@@ -28,10 +28,10 @@ namespace hazelcast {
 
 
             void PartitionService::refreshPartitions() {
-                boost::thread partitionListener(boost::bind(&PartitionService::runRefresher, this));
+                boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
             };
 
-            Address *PartitionService::getPartitionOwner(int partitionId) {
+            boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
                 return partitions.get(partitionId);
             };
 
@@ -43,8 +43,27 @@ namespace hazelcast {
 
 
             void PartitionService::runListener() {
-                while (true) {
-                    boost::this_thread::sleep(boost::posix_time::seconds(10));
+                try{
+                    while (true) {
+                        boost::this_thread::sleep(boost::posix_time::seconds(10));
+                        impl::PartitionsResponse partitionResponse;
+                        auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                        if (ptr.get() == NULL) {
+                            partitionResponse = getPartitionsFrom();
+                        } else {
+                            partitionResponse = getPartitionsFrom(*ptr.get());
+                        }
+                        if (!partitionResponse.isEmpty()) {
+                            processPartitionResponse(partitionResponse);
+                        }
+                    }
+                }catch(...){
+
+                }
+            };
+
+            void PartitionService::runRefresher() {
+                try{
                     impl::PartitionsResponse partitionResponse;
                     auto_ptr<Address> ptr = clusterService.getMasterAddress();
                     if (ptr.get() == NULL) {
@@ -55,20 +74,8 @@ namespace hazelcast {
                     if (!partitionResponse.isEmpty()) {
                         processPartitionResponse(partitionResponse);
                     }
-                }
-            };
+                }catch(...){
 
-
-            void PartitionService::runRefresher() {
-                impl::PartitionsResponse partitionResponse;
-                auto_ptr<Address> ptr = clusterService.getMasterAddress();
-                if (ptr.get() == NULL) {
-                    partitionResponse = getPartitionsFrom();
-                } else {
-                    partitionResponse = getPartitionsFrom(*ptr.get());
-                }
-                if (!partitionResponse.isEmpty()) {
-                    processPartitionResponse(partitionResponse);
                 }
             };
 
@@ -96,8 +103,8 @@ namespace hazelcast {
             }
 
             void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
-                vector<Address> members = response.getMembers();
-                vector<int> ownerIndexes = response.getOwnerIndexes();
+                const vector<Address>& members = response.getMembers();
+                const vector<int>& ownerIndexes = response.getOwnerIndexes();
                 if (partitionCount == 0) {
                     partitionCount = ownerIndexes.size();
                 }
@@ -105,8 +112,7 @@ namespace hazelcast {
                     int ownerIndex = ownerIndexes[partitionId];
                     if (ownerIndex > -1) {
                         Address *address = new Address(members[ownerIndex]);
-                        Address *pAddress = partitions.put(partitionId, address);
-                        if (pAddress) delete pAddress;
+                        partitions.put(partitionId, address);
                     }
                 }
             };

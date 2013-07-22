@@ -51,7 +51,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName().c_str()] = fd;
             };
 
-            void ClassDefinition::add(ClassDefinition *cd) {
+            void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -67,7 +67,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            vector<ClassDefinition * >& ClassDefinition::getNestedClassDefinitions() {
+            vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -87,7 +87,7 @@ namespace hazelcast {
                 if (hasField(fieldName)) {
                     return fieldDefinitionsMap.at(fieldName).getType();
                 } else {
-                    throw exception::IOException("ClassDefinition::getFieldType","field does not exist");
+                    throw exception::IOException("ClassDefinition::getFieldType", "field does not exist");
                 }
             }
 
@@ -148,7 +148,7 @@ namespace hazelcast {
                 }
                 size = dataInput.readInt();
                 for (int i = 0; i < size; i++) {
-                    ClassDefinition *classDefinition = new ClassDefinition;
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
                     classDefinition->readData(dataInput);
                     add(classDefinition);
                 }

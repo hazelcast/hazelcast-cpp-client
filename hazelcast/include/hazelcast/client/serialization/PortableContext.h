@@ -13,7 +13,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "../../util/ConcurrentMap.h"
+#include "ConcurrentSmartMap.h"
 
 
 namespace hazelcast {
@@ -37,13 +37,11 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int) const;
 
-                ClassDefinition *lookup(int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int);
 
-                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte> >);
+                boost::shared_ptr<ClassDefinition> createClassDefinition(std::auto_ptr< std::vector<byte> >);
 
-                ClassDefinition *registerClassDefinition(ClassDefinition *cd);
-
-                void setSerializationContext(SerializationContext *);
+                boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
             private:
                 void compress(std::vector<byte>&);
@@ -54,7 +52,7 @@ namespace hazelcast {
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                hazelcast::util::ConcurrentMap<long, ClassDefinition> versionedDefinitions;
+                hazelcast::util::ConcurrentSmartMap<long, ClassDefinition> versionedDefinitions;
 //                std::map<long, ClassDefinition * > versionedDefinitions;
                 SerializationContext *serializationContext;
             };

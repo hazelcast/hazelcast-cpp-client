@@ -24,7 +24,6 @@ namespace hazelcast {
 
             IdGenerator();
 
-            void setIdGeneratorSupport(impl::IdGeneratorSupport *support);
 
             void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
@@ -48,8 +47,8 @@ namespace hazelcast {
         private:
             std::string instanceName;
             spi::ClientContext *context;
-            impl::IdGeneratorSupport *support;
             IAtomicLong atomicLong;
+            boost::shared_ptr< boost::mutex > localLock;
             boost::shared_ptr< boost::atomic<int> > local;
             boost::shared_ptr< boost::atomic<int> > residue;
         };

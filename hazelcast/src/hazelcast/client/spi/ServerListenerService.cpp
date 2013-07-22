@@ -19,17 +19,15 @@ namespace hazelcast {
             };
 
             ServerListenerService::~ServerListenerService() {
-                vector<util::ConcurrentMap<long, ListenerSupportBase> *> values = allListeners.values();
+                vector<boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
                 values.clear();
-                allListeners.clear();
             };
 
             bool ServerListenerService::stopListening(const std::string& instanceName, long registrationId) {
-                util::ConcurrentMap<long, ListenerSupportBase> *pMap = allListeners.get(instanceName);
-                ListenerSupportBase *listenerSupportBase = pMap->remove(registrationId);
+                boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > pMap = allListeners.get(instanceName);
+                boost::shared_ptr<ListenerSupportBase> listenerSupportBase = pMap->remove(registrationId);
                 if (listenerSupportBase != NULL) {
-                    ListenerSupportBase *listenerSupport = listenerSupportBase;
-                    listenerSupport->stop();
+                    listenerSupportBase->stop();
                     return true;
                 }
                 return false;

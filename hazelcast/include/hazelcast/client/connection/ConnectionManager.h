@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include "../../util/ConcurrentMap.h"
+#include "ConcurrentSmartMap.h"
 #include "HeartBeatChecker.h"
 #include "ConnectionPool.h"
 
@@ -47,24 +47,19 @@ namespace hazelcast {
 
                 void releaseConnection(Connection *connection);
 
-                ConnectionPool *getConnectionPool(const Address& address);
+                boost::shared_ptr<ConnectionPool> getConnectionPool(const Address& address);
 
                 void removeConnectionPool(const Address& address);
 
                 void authenticate(Connection& connection, bool reAuth, bool firstConnection);
 
-                void shutdown();
-
             private:
-                util::ConcurrentMap<Address, ConnectionPool , addressComparator> poolMap;
+                util::ConcurrentSmartMap<Address, ConnectionPool , addressComparator> poolMap;
                 spi::ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
                 ClientConfig& clientConfig;
                 protocol::Principal *principal;
                 HeartBeatChecker heartBeatChecker;
-                volatile bool live;
-
-                void checkLive();
 
             };
         }

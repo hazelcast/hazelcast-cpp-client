@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            MorphingPortableReader::MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd)
+            MorphingPortableReader::MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd)
             : input(input)
             , context(serializationContext)
             , cd(cd)

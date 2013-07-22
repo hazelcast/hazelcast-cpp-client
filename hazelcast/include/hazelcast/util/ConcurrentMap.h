@@ -7,14 +7,21 @@
 #ifndef HAZELCAST_CONCURRENT_MAP
 #define HAZELCAST_CONCURRENT_MAP
 
-#include <map>
-#include <vector>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <map>
+#include <vector>
 
 namespace hazelcast {
     namespace util {
         template <typename K, typename V, typename Comparator  = std::less<K> >
+        /**
+        * Put once read multiple thread safe map
+        * Deletes nothing.
+        * the ptr getted by any operation should be deleted
+        * only if it is certain that they will never be used again.
+        *
+        */
         class ConcurrentMap {
         public:
             ConcurrentMap() {
@@ -44,18 +51,6 @@ namespace hazelcast {
                 }
             };
 
-            V *put(const K& key, V *value) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
-                if (internalMap.count(key) > 0) {
-                    V *tempValue = internalMap[key];
-                    internalMap[key] = value;
-                    return tempValue;
-                } else {
-                    internalMap[key] = value;
-                    return NULL;
-                }
-            };
-
             /**
              * Returns the value to which the specified key is mapped,
              * or {@code null} if this map contains no mapping for the key.
@@ -69,44 +64,6 @@ namespace hazelcast {
                     return NULL;
             };
 
-            V *remove(const K& key) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
-                if (internalMap.count(key) > 0) {
-                    V *value = internalMap[key];
-                    internalMap.erase(internalMap.find(key));
-                    return value;
-                }
-                else
-                    return NULL;
-            };
-
-            std::vector<V *> values() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
-                std::vector<V *> val(internalMap.size());
-                int i = 0;
-                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
-                    val[i++] = it->second;
-                }
-                return val;
-            };
-
-            std::vector<K> keys() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
-                std::vector<K> k(internalMap.size());
-                int i = 0;
-                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
-                    k[i++] = it->first;
-                }
-                return k;
-            };
-
-            void clear() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
-                for (typename std::map<K, V *>::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
-                    delete it->second;
-                }
-                internalMap.clear();
-            };
 
         private:
             std::map<K, V *, Comparator> internalMap;

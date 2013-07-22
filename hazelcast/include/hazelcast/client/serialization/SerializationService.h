@@ -11,7 +11,6 @@
 
 #include "SerializationContext.h"
 #include "IException.h"
-#include "../../util/Util.h"
 #include "ConstantSerializers.h"
 #include "PortableSerializer.h"
 #include "DataSerializer.h"
@@ -22,6 +21,8 @@
 #include "BufferedDataInput.h"
 #include "Data.h"
 #include "SerializationConstraints.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ConcurrentMap.h"
 #include <iosfwd>
 #include <string>
 
@@ -29,7 +30,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-
+            //TODO change toData's look at temp.cpp
             class SerializationService {
             public:
 

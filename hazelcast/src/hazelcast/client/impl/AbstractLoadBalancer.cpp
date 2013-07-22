@@ -34,7 +34,7 @@ namespace hazelcast {
                 setMembersRef();
             };
 
-            boost::shared_ptr< std::vector<hazelcast::client::connection::Member> > AbstractLoadBalancer::getMembers() {
+            const boost::shared_ptr< std::vector<hazelcast::client::connection::Member> > AbstractLoadBalancer::getMembers() {
                 return membersRef.get();
             };
 

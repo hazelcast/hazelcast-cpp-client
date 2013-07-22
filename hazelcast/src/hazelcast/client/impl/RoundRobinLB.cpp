@@ -20,7 +20,7 @@ namespace hazelcast {
             };
 
             const connection::Member& RoundRobinLB::next() {
-                boost::shared_ptr<std::vector<connection::Member> > members = getMembers();
+                const boost::shared_ptr<std::vector<connection::Member> > members = getMembers();
                 if (members->size() == 0) {
                     throw exception::IException("const connection::Member& RoundRobinLB::next()", "No member in member list!!");
                 }

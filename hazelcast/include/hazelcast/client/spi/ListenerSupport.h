@@ -76,7 +76,7 @@ namespace hazelcast {
                             } else {
                                 invocationService.invokeOnRandomTarget(request, eventResponseHandler);
                             }
-                        }catch(exception::IException & ignored){
+                        }catch(...){
 
                         }
                     }

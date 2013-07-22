@@ -3,7 +3,6 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include <iostream>
 #include "Connection.h"
 #include "hazelcast/client/serialization/BufferedDataOutput.h"
 

@@ -20,11 +20,7 @@ namespace hazelcast {
             };
 
             PortableContext::~PortableContext() {
-//                std::map<long, ClassDefinition * >::iterator it;
-//                for (it = versionedDefinitions.begin(); versionedDefinitions.end() != it; it++) {
-//                    delete (*it).second;//TODO uncommented because of portableTests are broken!
-                //TODO same data cannot register to two serialization
-//                }
+
             };
 
             PortableContext::PortableContext(SerializationContext *serializationContext)
@@ -32,27 +28,23 @@ namespace hazelcast {
 
             };
 
-            void PortableContext::setSerializationContext(SerializationContext *context) {
-                this->serializationContext = context;
-            }
-
             bool PortableContext::isClassDefinitionExists(int classId, int version) const {
                 long key = combineToLong(classId, version);
                 return (versionedDefinitions.containsKey(key));
             };
 
-            ClassDefinition *PortableContext::lookup(int classId, int version) {
+            boost::shared_ptr<ClassDefinition> PortableContext::lookup(int classId, int version) {
                 long key = combineToLong(classId, version);
                 return versionedDefinitions.get(key);
 
             };
 
-            ClassDefinition *PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
+            boost::shared_ptr<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
 
                 std::vector<byte> decompressed = decompress(*(binary.get()));
 
                 BufferedDataInput dataInput(decompressed);
-                ClassDefinition *cd = new ClassDefinition;
+                boost::shared_ptr<ClassDefinition> cd(new ClassDefinition);
                 cd->readData(dataInput);
                 cd->setBinary(binary);
 
@@ -60,14 +52,13 @@ namespace hazelcast {
 
                 if (versionedDefinitions.containsKey(key) == 0) {
                     serializationContext->registerNestedDefinitions(cd);
-                    ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(key, cd);
-                    if (pDefinition) delete cd;
+                    boost::shared_ptr<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(key, cd);
                     return pDefinition == NULL ? cd : pDefinition;
                 }
                 return versionedDefinitions.get(key);
             };
 
-            ClassDefinition *PortableContext::registerClassDefinition(ClassDefinition *cd) {
+            boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
@@ -80,8 +71,7 @@ namespace hazelcast {
                         cd->setBinary(binary);
                     }
                     long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    ClassDefinition *pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
-                    if (pDefinition) delete cd;
+                    boost::shared_ptr<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
                     return pDefinition == NULL ? cd : pDefinition;
                 }
                 return lookup(cd->getClassId(), cd->getVersion());

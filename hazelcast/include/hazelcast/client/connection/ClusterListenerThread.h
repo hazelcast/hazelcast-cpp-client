@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 void setInitialConnection(connection::Connection *);
 
-                void runImpl();
+                void run();
             private:
                 ConnectionManager& connectionManager;
                 spi::ClusterService& clusterService;

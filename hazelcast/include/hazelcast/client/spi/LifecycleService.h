@@ -9,8 +9,9 @@
 
 #include "LifecycleListener.h"
 #include "LifecycleEvent.h"
-#include <set>
 #include <boost/thread/mutex.hpp>
+#include <boost/atomic.hpp>
+#include <set>
 
 namespace hazelcast {
     namespace client {
@@ -22,6 +23,8 @@ namespace hazelcast {
             public:
                 LifecycleService(HazelcastClient& hazelcastClient, ClientConfig& config);
 
+                ~LifecycleService();
+
                 void addLifecycleListener(LifecycleListener *lifecycleListener);
 
                 bool removeLifecycleListener(LifecycleListener *lifecycleListener);
@@ -30,14 +33,13 @@ namespace hazelcast {
 
                 bool isRunning();
 
-                void shutdown();
+                void setShutdown();
 
             private:
                 HazelcastClient& hazelcastClient;
                 std::set<LifecycleListener *> listeners;
                 boost::mutex listenerLock;
-                boost::mutex lifecycleLock;
-                volatile bool active;
+                boost::atomic<bool> active;
 
                 void fireLifecycleEvent(LifecycleEvent lifecycleEvent);
 

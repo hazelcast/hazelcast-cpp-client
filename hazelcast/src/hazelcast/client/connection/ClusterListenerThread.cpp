@@ -26,33 +26,32 @@ namespace hazelcast {
                 this->conn = connection;
             };
 
-            void ClusterListenerThread::runImpl() {
-                while (true) {
-                    try{
-                        if (conn == NULL) {
-                            try {
-                                conn = pickConnection();
-                                std::cout << "Connected: " << (*conn) << std::endl;
-                            } catch (exception::IException & e) {
-                                std::cout << *conn << e.what() << std::endl;
-                                lifecycleService.shutdown();
-                                return;
+            void ClusterListenerThread::run() {
+                try{
+                    while (true) {
+                        try{
+                            if (conn == NULL) {
+                                try {
+                                    conn = pickConnection();
+                                    std::cout << "Connected: " << (*conn) << std::endl;
+                                } catch (std::exception & e) {
+                                    std::cout << *conn << e.what() << std::endl;
+                                    return;
+                                }
                             }
+                            loadInitialMemberList();
+                            listenMembershipEvents();
+                        }catch(std::exception & e){
+                            if (lifecycleService.isRunning()) {
+                                std::cerr << e.what() << std::endl;
+                            }
+                            delete conn;
+                            conn = NULL;
                         }
-                        loadInitialMemberList();
-                        listenMembershipEvents();
-                    }catch(exception::IException & e){
-                        if (lifecycleService.isRunning()) {
-                            std::cerr << e.what() << std::endl;
-                        }
-                        delete conn;
-                        conn = NULL;
-                    }
-                    try {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    } catch (...) {
-                        break;
                     }
+                }catch(...){
+
                 }
             };
 
@@ -122,7 +121,7 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member , addressComparator > *map = new std::map<Address, Member, addressComparator>;
+                std::map<Address, Member, addressComparator > *map = new std::map<Address, Member, addressComparator>;
                 std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                     std::cerr << "\t" << (*it) << std::endl;
@@ -138,7 +137,6 @@ namespace hazelcast {
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
                     socketAddresses.push_back((*it).getAddress());
                 }
-                //                Collections.shuffle(socketAddresses);
                 return socketAddresses;
             };
 
@@ -149,7 +147,6 @@ namespace hazelcast {
                 for (std::vector<Address>::iterator it = configAddresses.begin(); it != configAddresses.end(); ++it) {
                     socketAddresses.push_back((*it));
                 }
-                //                Collections.shuffle(socketAddresses);
                 return socketAddresses;
             };
 

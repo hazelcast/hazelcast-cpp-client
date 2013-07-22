@@ -20,7 +20,13 @@ namespace hazelcast {
             };
 
             ConnectionPool::~ConnectionPool() {
-                destroy();
+                active = false;
+                while (!queue.empty()) {
+                    Connection *connection;
+                    if (queue.poll(connection)) {
+                        delete connection;
+                    }
+                }
             };
 
             Connection *ConnectionPool::take() {
@@ -39,15 +45,6 @@ namespace hazelcast {
             void ConnectionPool::release(Connection *e) {
                 if (!active || !queue.offer(e)) {
                     delete e;
-                }
-            }
-
-            void ConnectionPool::destroy() {
-                active = false;
-                while (queue.empty()) {
-                    Connection *connection;
-                    queue.poll(connection);
-                    delete connection;
                 }
             }
         }

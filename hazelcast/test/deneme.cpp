@@ -11,60 +11,45 @@
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 
-
-template <typename  T, typename V>
-static V getValueFromServer(T x) {
-    V v;
-    return v;
-};
-
-template <typename Key, typename Value>
-class Map {
-public:
-    class value_reference;
-
-    value_reference operator [](const Key& k) {
-        return value_reference(k);
-    };
-
-    //can be outside of the Map class, carrying the key as bytes
-    class value_reference {
-    public:
-        value_reference(const Key& k):k(k) {
-
-        };
-
-        operator Value () {
-
-            return getValueFromServer<Key, Value>(k);
-        };
-
-
-        Key k;
-    private:
-
-    };
-
-private:
-};
-
-void callable (){
-        while (true) {
-            boost::this_thread::sleep(boost::posix_time::seconds(1));
-            std::cout << "zZ " ;
-            std::cout.flush();
+void putMap(hazelcast::util::AtomicPointer<std::map<int, int>> *atomicPointer) {
+    int t = 1;
+    while (true) {
+        t = t == 1 ? 2 : 1;
+        std::map<int, int> *map1 = new std::map<int, int>;
+        for (int i = 0; i < 20; i++) {
+            (*map1)[i] = i * t;
         }
+        atomicPointer->set(map1);
+        boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+
+    }
 };
 
-void start(){
-    boost::thread s(callable);
+void printMap(hazelcast::util::AtomicPointer<std::map<int, int>> *atomicPointer) {
+    while (true) {
+        boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+        boost::shared_ptr<std::map<int, int> > ptr = atomicPointer->get();
+        for (int i = 0; i < 20; i++) {
+            std::cout << i << ":" << (*ptr)[i] << " ";
+        }
+        std::cout << std::endl;
+        std::cout.flush();
+    }
+};
+
+void atomicPointerTest(){
+    hazelcast::util::AtomicPointer<std::map<int, int>> atomicPointer;
+    boost::thread ft(putMap, &atomicPointer);
+    boost::thread f2(putMap, &atomicPointer);
+    boost::thread st(printMap, &atomicPointer);
+    boost::thread s1(printMap, &atomicPointer);
+    boost::thread s2(printMap, &atomicPointer);
+    boost::thread s3(printMap, &atomicPointer);
+
+    ft.join();
 }
 
 int deneme::init() {
-    Map<int, int> m;
-    Map<int, int>::value_reference reference = m[4];
-    int a = reference;
-    std::cout << a << std::endl;
-
+    atomicPointerTest();
     return 0;
 }

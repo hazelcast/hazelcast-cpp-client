@@ -19,7 +19,7 @@ namespace hazelcast {
             public:
                 enum {
                     MEMBER_ADDED = 1,
-                    MEMBER_REMOVED = 3,
+                    MEMBER_REMOVED = 2
                 };
 
                 MembershipEvent();

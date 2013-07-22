@@ -30,8 +30,6 @@ namespace hazelcast {
 
                 void release(Connection *t);
 
-                void destroy();
-
                 Address address;
             private:
                 volatile bool active;

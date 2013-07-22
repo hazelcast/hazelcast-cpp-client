@@ -34,7 +34,7 @@ namespace hazelcast {
             class PortableReader {
             public:
 
-                PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, ClassDefinition *cd);
+                PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -110,7 +110,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
-                    ClassDefinition *cd;
+                    boost::shared_ptr<ClassDefinition> cd;
                     cd = context->lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
                     object.readPortable(reader);
@@ -119,7 +119,7 @@ namespace hazelcast {
                 int offset;
                 bool raw;
                 SerializationContext *context;
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 BufferedDataInput& input;
                 int currentFactoryId;
                 int currentClassId;

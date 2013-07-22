@@ -6,7 +6,7 @@
 #define HAZELCAST_PARTITION_SERVICE
 
 #include "../Address.h"
-#include "../../util/ConcurrentMap.h"
+#include "ConcurrentSmartMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,8 +30,7 @@ namespace hazelcast {
 
                 void refreshPartitions();
 
-
-                Address *getPartitionOwner(int partitionId);
+                boost::shared_ptr<Address> getPartitionOwner(int partitionId);
 
                 int getPartitionId(serialization::Data& key);
 
@@ -43,7 +42,7 @@ namespace hazelcast {
 
                 volatile int partitionCount;
 
-                util::ConcurrentMap<int, Address> partitions;
+                util::ConcurrentSmartMap<int, Address> partitions;
 
                 void runListener();
 

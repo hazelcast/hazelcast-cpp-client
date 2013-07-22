@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            ClassDefinition *ClassDefinitionWriter::getClassDefinition() {
+            boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 

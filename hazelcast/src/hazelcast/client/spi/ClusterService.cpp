@@ -26,12 +26,12 @@ namespace hazelcast {
 
             void ClusterService::start() {
                 serialization::ClassDefinitionBuilder cd(-3, 3);
-                serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+                boost::shared_ptr<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 serializationService.getSerializationContext().registerClassDefinition(ptr);
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
                 clusterThread.setInitialConnection(connection);
-                boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::runImpl, &clusterThread));
+                boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
                 while (membersRef.get() == NULL) {
                     try {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -141,7 +141,7 @@ namespace hazelcast {
             };
 
             bool ClusterService::isMemberExists(Address const & address) {
-                boost::shared_ptr< std::map<Address, connection::Member, addressComparator> > ptr = membersRef.get();
+                const boost::shared_ptr< std::map<Address, connection::Member, addressComparator> > ptr = membersRef.get();
                 return ptr->count(address) > 0;;
             };
 
@@ -156,7 +156,7 @@ namespace hazelcast {
             };
 
             std::vector<connection::Member>  ClusterService::getMemberList() {
-                boost::shared_ptr<std::map< Address, connection::Member, addressComparator> > m = membersRef.get();
+                const boost::shared_ptr<std::map< Address, connection::Member, addressComparator> > m = membersRef.get();
                 std::vector<connection::Member> v;
                 if (m == NULL)
                     return v;
