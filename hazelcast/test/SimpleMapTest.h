@@ -94,7 +94,8 @@ public:
                     ++stats.removeCount;
                 }
             } catch(std::exception& e){
-                std::cout << "__";
+                std::cout << ">> " << e.what() << std::endl;
+                boost::this_thread::sleep(boost::posix_time::seconds(2));
             }
 
         }

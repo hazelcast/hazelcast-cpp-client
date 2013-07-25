@@ -22,13 +22,15 @@ namespace hazelcast {
             void HeartBeatChecker::run(Connection *connection) {
                 try{
                     connection->write(ping);
+                    connection->read(serializationService.getSerializationContext());
                 }catch(...){
                     std::cerr << "Warning: HearBeatChecker ping failed " << std::endl;
+                    boost::this_thread::sleep(boost::posix_time::seconds(5));
                 }
             };
 
             bool HeartBeatChecker::checkHeartBeat(Connection& connection) {
-                if ((clock() - connection.getLastReadTime()) > timeout * CLOCKS_PER_SEC / 2) {
+                if ((clock() - connection.getLastReadTime()) > timeout * ((CLOCKS_PER_SEC / 1000) / 2)) {
                     boost::thread thread(boost::bind(&HeartBeatChecker::run, this, &connection));
                     return thread.try_join_for(boost::chrono::duration<int, boost::milli>(timeout));
                 } else {

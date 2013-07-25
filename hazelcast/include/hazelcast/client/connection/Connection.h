@@ -39,6 +39,8 @@ namespace hazelcast {
 
                 clock_t getLastReadTime() const;
 
+                int getConnectionId() const;
+
                 const Socket& getSocket() const;
 
             private:
@@ -50,14 +52,16 @@ namespace hazelcast {
                 int connectionId;
                 clock_t lastRead;
             };
+
+
+            inline std::ostream& operator <<(std::ostream &strm, const Connection &a) {
+                return strm << "Connection [id " << util::to_string(a.getConnectionId()) << "][" << a.getEndpoint()
+                        << " -> " << a.getSocket().getHost() << ":"
+                        << util::to_string(a.getSocket().getPort()) << "]";
+            };
         }
     }
 }
 
-inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::connection::Connection &a) {
-    return strm << std::string("Connection [") << a.getEndpoint()
-            << std::string(" -> ") << a.getSocket().getHost() << std::string(":")
-            << hazelcast::util::to_string(a.getSocket().getPort()) << std::string("]");
-};
 
 #endif //HAZELCAST_CONNECTION

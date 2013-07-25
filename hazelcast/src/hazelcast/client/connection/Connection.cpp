@@ -41,6 +41,10 @@ namespace hazelcast {
             };
 
 
+            int Connection::getConnectionId() const {
+                return connectionId;
+            };
+
             Socket const & Connection::getSocket() const {
                 return socket;
             };

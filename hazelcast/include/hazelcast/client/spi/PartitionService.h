@@ -39,6 +39,7 @@ namespace hazelcast {
 
                 ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
+                boost::mutex refreshLock;
 
                 volatile int partitionCount;
 

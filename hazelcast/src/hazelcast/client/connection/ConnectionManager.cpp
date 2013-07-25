@@ -45,6 +45,7 @@ namespace hazelcast {
                 Connection *connection = NULL;
                 connection = pool->take();
                 if (connection != NULL && !heartBeatChecker.checkHeartBeat(*connection)) {
+                    std::cerr << "Closing connection : " << *connection << " reason => Member is not responding to heartbeat";
                     delete connection;
                     return NULL;
                 }
@@ -56,6 +57,7 @@ namespace hazelcast {
                 if (pool != NULL) {
                     pool->release(connection);
                 } else {
+                    std::cerr << "Closing connection : " << *connection << " reason => Member pool is removed";
                     delete connection;
                 }
             };

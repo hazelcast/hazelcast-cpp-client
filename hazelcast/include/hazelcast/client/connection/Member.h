@@ -3,8 +3,6 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-
-
 #ifndef HAZELCAST_MEMBER
 #define HAZELCAST_MEMBER
 
@@ -47,13 +45,12 @@ namespace hazelcast {
                 Address address;
                 std::string uuid;
             };
+
+            inline std::ostream& operator <<(std::ostream &strm, const Member &a) {
+                return strm << "Member[" << a.getAddress().getHost() << "]:" << util::to_string(a.getAddress().getPort());
+            };
         }
     }
 }
-
-inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::connection::Member &a) {
-    return strm << std::string("Member[") << a.getAddress().getHost() << std::string("]:") << hazelcast::util::to_string(a.getAddress().getPort());
-};
-
 
 #endif //HAZELCAST_MEMBER

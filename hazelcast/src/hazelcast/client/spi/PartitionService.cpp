@@ -20,12 +20,10 @@ namespace hazelcast {
 
             };
 
-
             void PartitionService::start() {
                 getInitialPartitions();
                 boost::thread partitionListener(boost::bind(&PartitionService::runListener, this));
             };
-
 
             void PartitionService::refreshPartitions() {
                 boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
@@ -43,27 +41,19 @@ namespace hazelcast {
 
 
             void PartitionService::runListener() {
-                try{
-                    while (true) {
+                while (true) {
+                    try{
                         boost::this_thread::sleep(boost::posix_time::seconds(10));
-                        impl::PartitionsResponse partitionResponse;
-                        auto_ptr<Address> ptr = clusterService.getMasterAddress();
-                        if (ptr.get() == NULL) {
-                            partitionResponse = getPartitionsFrom();
-                        } else {
-                            partitionResponse = getPartitionsFrom(*ptr.get());
-                        }
-                        if (!partitionResponse.isEmpty()) {
-                            processPartitionResponse(partitionResponse);
-                        }
+                        runRefresher();
+                    }catch(...){
+                        //ignored
                     }
-                }catch(...){
-
                 }
             };
 
             void PartitionService::runRefresher() {
                 try{
+                    boost::lock_guard<boost::mutex> lg(refreshLock);
                     impl::PartitionsResponse partitionResponse;
                     auto_ptr<Address> ptr = clusterService.getMasterAddress();
                     if (ptr.get() == NULL) {
@@ -75,7 +65,7 @@ namespace hazelcast {
                         processPartitionResponse(partitionResponse);
                     }
                 }catch(...){
-
+                    //ignored
                 }
             };
 
@@ -85,7 +75,7 @@ namespace hazelcast {
                 try{
                     partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
                 }catch(exception::IOException& e){
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
                 }
                 return partitionResponse;
             };

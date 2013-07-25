@@ -51,7 +51,7 @@ namespace hazelcast {
                     internalMap[key] = boost::shared_ptr<V>(value);
                     return tempValue;
                 } else {
-                    internalMap[key] = boost::shared_ptr<V>(value);;
+                    internalMap[key] = boost::shared_ptr<V>(value);
                     return NULL;
                 }
             };

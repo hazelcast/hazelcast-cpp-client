@@ -47,52 +47,50 @@ namespace hazelcast {
                     throw exception::IException("ClusterService", "Instance is not active!");
                 }
                 connection::Connection *connection = NULL;
-                int retryCount = clientConfig.getConnectionAttemptLimit();
-                while (connection == NULL && retryCount > 0) {
-                    connection = connectionManager.getConnection(address);
-                    if (connection == NULL) {
-                        retryCount--;
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(clientConfig.getAttemptPeriod()));
-                    }
+                connection = connectionManager.getConnection(address);
+                if (connection != NULL) {
+                    return connection;
                 }
-                if (connection == NULL) {
-                    throw exception::IException("ClusterService", "Unable to connect!!!");
-                }
-                return connection;
+                beforeRetry();
+                return getRandomConnection();
             };
 
             connection::Connection *ClusterService::getRandomConnection() {
                 if (!lifecycleService.isRunning()) {
                     throw exception::IException("ClusterService", "Instance is not active!");
                 }
+                int retryCount = RETRY_COUNT;
                 connection::Connection *connection = NULL;
-                int retryCount = clientConfig.getConnectionAttemptLimit();
                 while (connection == NULL && retryCount > 0) {
                     connection = connectionManager.getRandomConnection();
                     if (connection == NULL) {
                         retryCount--;
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(clientConfig.getAttemptPeriod()));
+                        beforeRetry();
                     }
                 }
                 if (connection == NULL) {
                     throw exception::IException("ClusterService", "Unable to connect!!!");
                 }
                 return connection;
-            };
+            }
 
             connection::Connection *ClusterService::connectToOne(const std::vector<Address>& socketAddresses) {
                 const int connectionAttemptLimit = clientConfig.getConnectionAttemptLimit();
                 int attempt = 0;
+                std::exception lastError;
                 while (true) {
                     time_t tryStartTime = std::time(NULL);
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            std::cout << "Trying to connect: " << *it << std::endl;
-                            connection::Connection *pConnection = connectionManager.newConnection((*it));
-                            std::cout << "Connected to: " << *pConnection << std::endl;
-                            return pConnection;
-                        } catch (exception::IException & ignored) {
+                            return connectionManager.newConnection((*it));
+                        } catch (exception::IOException & e) {
+                            lastError = e;
+                            std::cerr << "IO error  during initial connection.." << e.what() << std::endl;
+                        } catch (exception::ServerException & e) {
+                            lastError = e;
+                            std::cerr << "IO error  during initial connection.." << e.what() << std::endl;
+
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -106,7 +104,7 @@ namespace hazelcast {
                         boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
                     }
                 }
-                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!");
+                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
             };
 
 
@@ -166,6 +164,12 @@ namespace hazelcast {
                 }
                 return v;
             };
+
+            void ClusterService::beforeRetry() {
+                boost::this_thread::sleep(boost::posix_time::milliseconds(RETRY_WAIT_TIME));
+                partitionService.refreshPartitions();
+            }
+
 
         }
     }

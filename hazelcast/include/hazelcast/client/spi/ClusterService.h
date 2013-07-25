@@ -31,45 +31,129 @@ namespace hazelcast {
 
                 void start();
 
-                template< typename Response, typename Request>
+                template< typename Response, typename Request >
                 Response sendAndReceive(const Request& object) {
-                    Response response;
-                    connection::Connection *conn = getRandomConnection();
-                    try{
-                        response = sendAndReceive<Response>(conn, object);
-                        connectionManager.releaseConnection(conn);
-                    } catch(exception::IException& e){
-                        connectionManager.releaseConnection(conn);
-                        throw e;
+                    while (true) {
+                        connection::Connection *connection = NULL;
+                        try {
+                            connection = getRandomConnection();
+                            serialization::Data request = serializationService.toData<Request>(&object);
+                            connection->write(request);
+                            serialization::Data responseData = connection->read(serializationService.getSerializationContext());
+                            Response response = serializationService.toObject<Response>(responseData);
+                            connectionManager.releaseConnection(connection);
+                            return response;
+                        } catch (exception::IOException& e) {
+                            std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                            delete connection;
+                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                                std::cerr << "Retrying " << std::endl;
+                                beforeRetry();
+                                continue;
+                            }
+                        } catch (exception::IException& e) {
+                            connectionManager.releaseConnection(connection);
+                            throw e;
+                        }
                     }
-                    return response;
                 };
 
-                template< typename Response, typename Request>
+                template< typename Response, typename Request >
                 Response sendAndReceive(const Address& address, const Request& object) {
-                    Response response;
-                    connection::Connection *conn = getConnection(address);
-                    try{
-                        response = sendAndReceive<Response>(conn, object);
-                        connectionManager.releaseConnection(conn);
-                    } catch(exception::IException& e){
-                        connectionManager.releaseConnection(conn);
+                    while (true) {
+                        connection::Connection *connection = NULL;
+                        try {
+                            connection = getConnection(address);
+                            serialization::Data request = serializationService.toData<Request>(&object);
+                            connection->write(request);
+                            serialization::Data responseData = connection->read(serializationService.getSerializationContext());
+                            Response response = serializationService.toObject<Response>(responseData);
+                            connectionManager.releaseConnection(connection);
+                            return response;
+                        } catch (exception::IOException& e) {
+                            if(connection != NULL){
+                                std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                                delete connection;
+                            }
+                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what())<< std::endl;
+                                beforeRetry();
+                                continue;
+                            }
+                        } catch (exception::IException& e) {
+                            connectionManager.releaseConnection(connection);
+                            throw e;
+                        }
+                    }
+
+                };
+
+                template< typename Request, typename ResponseHandler>
+                void sendAndHandle(const Address& address, const Request& object, const ResponseHandler&  handler) {
+                    std::auto_ptr<ResponseStream> stream(NULL);
+                    while (stream.get() == NULL) {
+                        connection::Connection *connection = NULL;
+                        try {
+                            connection = getConnection(address);
+                            serialization::Data request = serializationService.toData<Request>(&object);
+                            connection->write(request);
+                            stream.reset(new ResponseStream(serializationService, *connection));
+                        } catch (exception::IOException& e) {
+                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                            delete connection;
+                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
+                                beforeRetry();
+                                continue;
+                            }
+                        } catch (exception::IException& e) {
+                            if (connection != NULL)
+                                connectionManager.releaseConnection(connection);
+                            throw e;
+                        }
+
+                    }
+
+                    try {
+                        handler.handle(*stream);
+                    } catch (exception::IException& e) {
+                        stream->end();
                         throw e;
                     }
-                    return response;
-                };
-
-
-                template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Address& address, const Request& obj, const ResponseHandler&  handler) {
-                    connection::Connection *conn = getConnection(address);
-                    sendAndHandle(conn, obj, handler);
+                    stream->end();
                 };
 
                 template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Request& obj, const ResponseHandler& handler) {
-                    connection::Connection *conn = getRandomConnection();
-                    sendAndHandle(conn, obj, handler);
+                void sendAndHandle(const Request& object, const ResponseHandler&  handler) {
+                    std::auto_ptr<ResponseStream> stream(NULL);
+                    while (stream.get() == NULL) {
+                        connection::Connection *connection = NULL;
+                        try {
+                            connection = getRandomConnection();
+                            serialization::Data request = serializationService.toData<Request>(&object);
+                            connection->write(request);
+                            stream.reset(new ResponseStream(serializationService, *connection));
+                        } catch (exception::IOException& e) {
+                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                            delete connection;
+                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                                std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
+                                beforeRetry();
+                                continue;
+                            }
+                        } catch (exception::IException& e) {
+                            if (connection != NULL)
+                                connectionManager.releaseConnection(connection);
+                            throw e;
+                        }
+                    }
+                    try {
+                        handler.handle(*stream);
+                    } catch (exception::IException& e) {
+                        stream->end();
+                        throw e;
+                    }
+                    stream->end();
                 };
 
                 std::auto_ptr<Address> getMasterAddress();
@@ -86,6 +170,8 @@ namespace hazelcast {
 
                 friend class connection::ClusterListenerThread;
 
+                static const int RETRY_COUNT = 20;
+                static const int RETRY_WAIT_TIME = 500;
             private:
                 connection::ConnectionManager& connectionManager;
                 serialization::SerializationService& serializationService;
@@ -100,48 +186,6 @@ namespace hazelcast {
                 boost::mutex listenerLock;
                 const bool redoOperation;
 
-
-                template< typename Response, typename Request>
-                Response sendAndReceive(connection::Connection *connection, const Request& object) {
-                    try {
-                        serialization::Data request = serializationService.toData<Request>(&object);
-                        connection->write(request);
-                        serialization::Data responseData = connection->read(serializationService.getSerializationContext());
-                        return serializationService.toObject<Response>(responseData);
-                    } catch(exception::IException& e){
-                        partitionService.refreshPartitions();
-                        if (redoOperation /*|| dynamic_cast<const impl::RetryableRequest *>(&object) != NULL*/) {//TODO global isRetryable(const T& a) function solves
-                            return sendAndReceive<Response>(object);
-                        }
-                        throw e;
-                    }
-                };
-
-                template< typename Request, typename ResponseHandler>
-                void sendAndHandle(connection::Connection *conn, const Request& obj, const ResponseHandler&  handler) {
-                    ResponseStream stream(serializationService, *conn);
-                    try {
-                        serialization::Data request = serializationService.toData<Request>(&obj);
-                        conn->write(request);
-                    } catch (exception::IOException& e){
-                        partitionService.refreshPartitions();
-                        if (redoOperation /*|| obj instanceof RetryableRequest*/) {
-                            sendAndHandle(obj, handler);
-                            return;
-                        }
-                        throw exception::IException(e);
-                    }
-
-                    try {
-                        handler.handle(stream);
-                    } catch (exception::IException& e) {
-                        stream.end();
-                        throw e;//ClientException(e);
-                    }
-                    stream.end();
-                }
-
-
                 void fireMembershipEvent(connection::MembershipEvent& membershipEvent);
 
                 connection::Connection *getConnection(const Address& address);
@@ -149,6 +193,8 @@ namespace hazelcast {
                 connection::Connection *getRandomConnection();
 
                 connection::Connection *connectToOne(const std::vector<Address>& socketAddresses);
+
+                void beforeRetry();
 
             };
 

@@ -59,12 +59,12 @@ namespace hazelcast {
         };
 
 
+        inline std::ostream& operator <<(std::ostream &strm, const Address &a) {
+            return strm << "Address[" << a.getHost() << ":" << util::to_string(a.getPort()) << "]";
+        };
     }
 };
 
 
-inline std::ostream& operator <<(std::ostream &strm, const hazelcast::client::Address &a) {
-    return strm << std::string("Address[") << a.getHost() << std::string(":") << hazelcast::util::to_string(a.getPort()) << std::string("]");
-};
 
 #endif /* HAZELCAST_ADDRESS */
