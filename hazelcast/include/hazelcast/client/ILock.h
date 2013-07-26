@@ -70,8 +70,6 @@ namespace hazelcast {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
-            int getThreadId();
-
             serialization::Data key;
             spi::ClientContext *context;
             std::string instanceName;

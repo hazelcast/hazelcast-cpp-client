@@ -60,7 +60,7 @@ namespace hazelcast {
             bool put(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                collection::PutRequest request(proxyId, keyData, valueData, -1, getThreadId());
+                collection::PutRequest request(proxyId, keyData, valueData, -1, util::getThreadId());
                 return invoke<V>(request, keyData);
             };
 
@@ -102,7 +102,7 @@ namespace hazelcast {
             bool remove(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                collection::RemoveRequest request(proxyId, keyData, valueData, getThreadId());
+                collection::RemoveRequest request(proxyId, keyData, valueData, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
@@ -126,7 +126,7 @@ namespace hazelcast {
              */
             std::vector<V> remove(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::RemoveAllRequest request(proxyId, keyData, getThreadId());
+                collection::RemoveAllRequest request(proxyId, keyData, util::getThreadId());
                 return toObjectCollection(invoke<impl::PortableCollection>(request, keyData));
             };
 
@@ -346,7 +346,7 @@ namespace hazelcast {
              */
             void lock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, getThreadId());
+                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -367,7 +367,7 @@ namespace hazelcast {
              */
             bool tryLock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, getThreadId(), -1, 0);
+                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId(), -1, 0);
                 return invoke<bool>(request, keyData);
             };
 
@@ -395,7 +395,7 @@ namespace hazelcast {
              */
             bool tryLock(const K& key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, getThreadId(), -1, timeoutInMillis);
+                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId(), -1, timeoutInMillis);
                 return invoke<bool>(request, keyData);
             };
 
@@ -414,7 +414,7 @@ namespace hazelcast {
              */
             void unlock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapUnlockRequest request(proxyId, keyData, getThreadId());
+                collection::MultiMapUnlockRequest request(proxyId, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -451,10 +451,6 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
-            };
-
-            int getThreadId() {
-                return 1;
             };
 
             collection::CollectionProxyId proxyId;

@@ -7,6 +7,7 @@
 
 
 #include "Util.h"
+#include <boost/thread.hpp>
 #include <sstream>
 
 namespace hazelcast {
@@ -16,6 +17,14 @@ namespace hazelcast {
             s << value;
             return s.str();
         };
+
+        int getThreadId(){
+            std::stringstream  s;
+            s << boost::this_thread::get_id();
+            int threadNumber;
+            sscanf(s.str().c_str(), "%ix", &threadNumber);
+            return threadNumber;
+        }
     }
 }
 

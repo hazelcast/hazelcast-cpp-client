@@ -3,48 +3,12 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include <ostream>
-#include <iostream>
 #include "deneme.h"
 #include "AtomicPointer.h"
 #include "Member.h"
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
-
-
-//const int threadCount = 100;
-//
-//std::vector<boost::shared_ptr<int> > hold[threadCount];
-//
-//void copySharedPtr(boost::shared_ptr<int> *ptr, int id) {
-//    hold[id].resize(1000);
-//
-//    for (int i = 0; i < 1000; i++) {
-//        hold[id][i] = *ptr;
-//    }
-//    boost::this_thread::sleep(boost::posix_time::seconds(3));
-//
-//    for (int j = 0; j < 1000; j++) {
-//        assert(1000 * threadCount + 1 == hold[id][j].use_count() );
-//    }
-//}
-
-//void atomicPointerTest() {
-//    boost::shared_ptr<int> ptr(new int);
-//    for (int i = 0; i < threadCount; i++) {
-//        boost::thread s3(copySharedPtr, &ptr, i);
-//
-//    }
-//    boost::this_thread::sleep(boost::posix_time::seconds(3));
-//    long count = ptr.use_count();
-//    std::cout << count << std::endl;
-//    for (int i = 0; i < threadCount; i++) {
-//        for (int j = 0; j < 1000; j++) {
-//            assert(count == hold[i][j].use_count() );
-//        }
-//    }
-//
-//}
+#include <fstream>
 
 namespace ttt {
 
@@ -52,59 +16,73 @@ namespace ttt {
     class AtomicPointer {
     public:
         AtomicPointer()
-        :pointer(NULL), accessLock(new boost::mutex) {
+        :pointer(NULL), accessLock(new boost::mutex), localLock(new boost::mutex) {
         };
 
         AtomicPointer(T *const p)
-        :pointer(p), accessLock(new boost::mutex) {
+        :pointer(p), accessLock(new boost::mutex), localLock(new boost::mutex) {
 
         };
 
-        AtomicPointer(AtomicPointer &rhs) {
+        AtomicPointer(const AtomicPointer &rhs) {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*(rhs.accessLock));
             pointer = rhs.pointer;
             accessLock = rhs.accessLock;
         };
 
+        ~AtomicPointer() {
+
+        };
+
+        void operator = (const AtomicPointer &rhs) {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
+            boost::lock_guard<boost::mutex> lg(*(rhs.accessLock));
+            pointer = rhs.pointer;
+            accessLock = rhs.accessLock;
+        };
+
+
         bool operator ==(const AtomicPointer &rhs) {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*(accessLock));
             return pointer == rhs.pointer;
         };
 
-        void operator = (const AtomicPointer &rhs) {
-            boost::lock_guard<boost::mutex> lg(*(rhs.accessLock));
-            pointer = rhs.pointer;
-            accessLock = rhs.accessLock;
-        }
 
         T operator *() {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*accessLock);
             return *pointer;
         };
 
         T *operator ->() {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*accessLock);
             return pointer.get();
         };
 
         T *get() {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*accessLock);
             return pointer.get();
         };
 
         void reset(T *p) {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*accessLock);
             pointer.reset(p);
         };
 
         int use_count() {
+            boost::lock_guard<boost::mutex> lg2(*localLock);
             boost::lock_guard<boost::mutex> lg(*accessLock);
             return pointer.use_count();
         }
-
     private:
         boost::shared_ptr<T> pointer;
         boost::shared_ptr<boost::mutex> accessLock;
+        std::auto_ptr<boost::mutex> localLock;
     };
 
     template<typename T>
@@ -207,50 +185,119 @@ namespace ttt {
 
 }
 
-ttt::AtomicPointer<int> testptr;
-ttt::AtomicPointer<int> a(new int);
-ttt::AtomicPointer<int> b(new int);
-boost::mutex printLock;
 
-void printTestPtrs(boost::thread::id i) {
-//    printLock.lock();
-    std::cout << i << std::endl;
-    std::cout << testptr << std::endl;
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
-    std::cout.flush();
-//    printLock.unlock();
-};
+namespace atomicSafety {
+    ttt::AtomicPointer<int> testptr;
 
-void update(ttt::AtomicPointer<int>& xx) {
-    while (true) {
-//        boost::this_thread::sleep(boost::posix_time::seconds(1));
-        testptr = xx;
-//        printTestPtrs(boost::this_thread::get_id());
-
-    }
-};
-
-void observer() {
-    int *a_ptr = a.get();
-    int *b_ptr = b.get();
-
-    boost::this_thread::sleep(boost::posix_time::seconds(20));
-    while (true) {
-        int *x = testptr.get();
-        if (!(a_ptr == x || b_ptr == x || x == NULL)) {
-            std::cout << x << std::endl;
-            std::cout.flush();
+    void update(ttt::AtomicPointer<int>& xx) {
+        while (true) {
+            testptr = xx;
         }
-//        printTestPtrs(boost::this_thread::get_id());
     };
+
+    void observer(std::vector< ttt::AtomicPointer<int> * >& s) {
+        unsigned long size = s.size();
+        std::vector<int *> ptrs(size);
+        for (int i = 0; i < size; i++) {
+            ptrs[i] = s[i]->get();
+        }
+
+        while (true) {
+            int *x = testptr.get();
+            bool equalToOne = false;
+            for (int i = 0; i < size; i++) {
+                if (ptrs[i] == x) {
+                    equalToOne = true;
+                }
+            }
+            if (!equalToOne) {
+                std::cout << x << std::endl;
+                std::cout.flush();
+            }
+        };
+    }
+
+
+    void test() {
+        std::vector< ttt::AtomicPointer<int> * > atomicPtrs;
+
+        for (int i = 0; i < 20; i++) {
+            ttt::AtomicPointer<int> *atomicPointer = new ttt::AtomicPointer<int>(new int);
+            atomicPtrs.push_back(atomicPointer);
+            boost::thread updateThread(update, boost::ref(*atomicPointer));
+        }
+
+        testptr = *(atomicPtrs[0]);
+        boost::thread t(observer, boost::ref(atomicPtrs));
+        t.join();
+    }
 }
 
+namespace  atomicVisibility {
+    ttt::AtomicPointer<int> testptr;
+
+    void update() {
+        int i = 20000;
+        int last;
+        while (i--) {
+            int *pInt = new int;
+
+            *pInt = boost::posix_time::microsec_clock::local_time().time_of_day().total_milliseconds();
+            ttt::AtomicPointer<int> *newValue = new ttt::AtomicPointer<int>(pInt);
+            testptr = *newValue;
+            last = *pInt;
+        }
+        std::cout << "update finished " << last << std::endl;
+    };
+
+    void observer() {
+        try{
+            std::ofstream file;
+            boost::thread::id s = boost::this_thread::get_id();
+            std::stringstream id;
+            id << "t" << s << ".txt";
+            file.open(id.str().c_str(), std::ofstream::out);
+            int i = 10000;
+            while (i--) {
+                int *pInt = testptr.get();
+                file << *pInt << "\t:\t" << pInt << std::endl;
+            }
+            std::cout.flush();
+            file.flush();
+            file.close();
+        }catch(std::exception& e){
+            std::cout << e.what() << std::endl;
+        } catch(...){
+            std::cout << "unknown exception" << std::endl;
+        }
+        std::cout << "finished" << std::endl;
+    }
+
+
+    void test() {
+        int *p = new int;
+        *p = 1;
+        testptr.reset(p);
+
+        boost::thread o(observer);
+        boost::thread o1(observer);
+        boost::thread o2(observer);
+        boost::thread o3(observer);
+        boost::thread o4(observer);
+        boost::thread u(update);
+        std::cout << "Joining" << std::endl;
+        o.join();
+        o1.join();
+        o2.join();
+        o3.join();
+        o4.join();
+        u.join();
+
+    }
+}
 
 int deneme::init() {
-    boost::thread t(observer);
-    boost::thread x(update, boost::ref(a));
-    boost::thread y(update, boost::ref(b));
-    t.join();
+//    atomicSafety::test();
+//    atomicVisibility::test();
     return 0;
 }

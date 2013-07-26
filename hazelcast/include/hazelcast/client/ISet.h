@@ -69,13 +69,13 @@ namespace hazelcast {
 
             bool add(const E& e) {
                 serialization::Data valueData = toData(e);
-                collection::PutRequest request(proxyId, key, valueData, -1, getThreadId());
+                collection::PutRequest request(proxyId, key, valueData, -1, util::getThreadId());
                 return invoke<E>(request);
             };
 
             bool remove(const E& e) {
                 serialization::Data valueData = toData(e);
-                collection::RemoveRequest request(proxyId, key, valueData, getThreadId());
+                collection::RemoveRequest request(proxyId, key, valueData, util::getThreadId());
                 return invoke<bool>(request);
             };
 
@@ -85,22 +85,22 @@ namespace hazelcast {
             };
 
             bool addAll(const std::vector<E>& objects) {
-                collection::AddAllRequest request(proxyId, key, getThreadId(), toDataCollection(objects));
+                collection::AddAllRequest request(proxyId, key, util::getThreadId(), toDataCollection(objects));
                 return invoke<bool>(request);
             };
 
             bool removeAll(const std::vector<E>& objects) {
-                collection::CompareAndRemoveRequest request(proxyId, key, getThreadId(), false, toDataCollection(objects));
+                collection::CompareAndRemoveRequest request(proxyId, key, util::getThreadId(), false, toDataCollection(objects));
                 return invoke<bool>(request);
             };
 
             bool retainAll(const std::vector<E>& objects) {
-                collection::CompareAndRemoveRequest request(proxyId, key, getThreadId(), true, toDataCollection(objects));
+                collection::CompareAndRemoveRequest request(proxyId, key, util::getThreadId(), true, toDataCollection(objects));
                 return invoke<bool>(request);
             };
 
             void clear() {
-                collection::RemoveAllRequest request(proxyId, key, getThreadId());
+                collection::RemoveAllRequest request(proxyId, key, util::getThreadId());
                 invoke<bool>(request);
             };
 
@@ -127,10 +127,6 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request, key);
-            };
-
-            int getThreadId() {
-                return 1;
             };
 
             collection::CollectionProxyId proxyId;

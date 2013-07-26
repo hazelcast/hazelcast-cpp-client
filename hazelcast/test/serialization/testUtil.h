@@ -5,8 +5,6 @@
 #define SERVER_PORT 5701
 
 #include "TestMainPortable.h"
-//#include "TestPortableFactory.h"
-//#include "TestPortableFactory2.h"
 
 TestMainPortable getTestMainPortable() {
     byte byteArray[] = {0, 1, 2};
@@ -36,17 +34,5 @@ TestMainPortable getTestMainPortable() {
             -897543.3678909, "this is main portable object created for testing!", inner);
     return main;
 };
-//
-//std::map<int, PortableFactory const *> getPortableFactoryMap() {
-//    static std::map<int, PortableFactory const *> cc;
-//    cc[1] = new TestPortableFactory();
-//    return cc;
-//};
-//
-//std::map<int, PortableFactory const *> getPortableFactoryMap2() {
-//    static std::map<int, PortableFactory const *> cc2;
-//    cc2[1] = new TestPortableFactory2();
-//    return cc2;
-//};
-//
+
 #endif

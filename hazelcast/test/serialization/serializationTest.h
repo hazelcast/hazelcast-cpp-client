@@ -284,40 +284,5 @@ TEST(SerializationTest, BasicFunctionality) {
     EXPECT_EQ(main, tmp2);
 };
 
-
-
-//void testBinaryClient() {
-//    hazelcast::client::Address address("127.0.0.1", 13131);
-//    hazelcast::client::connection::Socket socket(address);
-//    SerializationService service(0);
-//    ClassDefinitionBuilder cd(-3, 3);
-//    ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
-//    service.getSerializationContext().registerClassDefinition(ptr);
-//
-//    hazelcast::client::protocol::Credentials credentials("sancar", "dev-pass");
-//    hazelcast::client::protocol::AuthenticationRequest ar(credentials);
-//    Data data = service.toData(ar);
-//    std::cout << "connecting" << std::endl;
-//    socket.connect();
-//    std::cout << "connected" << std::endl;
-//
-//    int size = data.totalSize();
-//    OutputSocketStream outputSocketStream(socket);
-//    outputSocketStream.writeInt(size);
-//    data.writeData(outputSocketStream);
-//
-//    BufferedDataOutput bufferedDataOutput;
-//    data.writeData(bufferedDataOutput);
-//    auto_ptr <vector<byte>> buffer = bufferedDataOutput.toByteArray();
-//    size = buffer->size();
-//    outputSocketStream.writeInt(size);
-//
-////    for(vector<byte>::iterator it = pType->begin(); it != pType->end() ; ++it){
-////        outputSocketStream.writeByte(*it);
-////    }
-//    outputSocketStream.write(&((*buffer.get())[0]), buffer->size());
-//
-//}
-
 #endif
 

@@ -84,7 +84,7 @@ namespace hazelcast {
             V put(const K& key, V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutRequest request(instanceName, keyData, valueData, getThreadId(), 0);
+                map::PutRequest request(instanceName, keyData, valueData, util::getThreadId(), 0);
 //                serialization::Data debugData = toData(request);
 //                return toObject<V>(debugData);
                 return invoke<V>(request, keyData);
@@ -92,20 +92,20 @@ namespace hazelcast {
 
             V remove(const K& key) {
                 serialization::Data keyData = toData(key);
-                map::RemoveRequest request(instanceName, keyData, getThreadId());
+                map::RemoveRequest request(instanceName, keyData, util::getThreadId());
                 return invoke<V>(request, keyData);
             };
 
             bool remove(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::RemoveIfSameRequest request(instanceName, keyData, valueData, getThreadId());
+                map::RemoveIfSameRequest request(instanceName, keyData, valueData, util::getThreadId());
                 return invoke<bool>(request, keyData);;
             };
 
             void deleteEntry(const K& key) {
                 serialization::Data keyData = toData(key);
-                map::DeleteRequest request(instanceName, keyData, getThreadId());
+                map::DeleteRequest request(instanceName, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);;
             };
 
@@ -119,28 +119,28 @@ namespace hazelcast {
 
             bool tryRemove(const K& key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
-                map::TryRemoveRequest request(instanceName, keyData, getThreadId(), timeoutInMillis);
+                map::TryRemoveRequest request(instanceName, keyData, util::getThreadId(), timeoutInMillis);
                 return invoke<bool>(request, keyData);;
             };
 
             bool tryPut(const K& key, const V& value, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TryPutRequest request(instanceName, keyData, valueData, getThreadId(), timeoutInMillis);
+                map::TryPutRequest request(instanceName, keyData, valueData, util::getThreadId(), timeoutInMillis);
                 return invoke<bool>(request, keyData);
             };
 
             V put(const K& key, const V& value, long ttl) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutRequest request(instanceName, keyData, valueData, getThreadId(), ttl);
+                map::PutRequest request(instanceName, keyData, valueData, util::getThreadId(), ttl);
                 return invoke<V>(request, keyData);
             };
 
             void putTransient(const K& key, const V& value, long ttl) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutTransientRequest request(instanceName, keyData, valueData, getThreadId(), ttl);
+                map::PutTransientRequest request(instanceName, keyData, valueData, util::getThreadId(), ttl);
                 invoke<bool>(request, keyData);
             };
 
@@ -148,33 +148,33 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(oldValue);
                 serialization::Data newValueData = toData(newValue);
-                map::ReplaceIfSameRequest request(instanceName, keyData, valueData, newValueData, getThreadId());
+                map::ReplaceIfSameRequest request(instanceName, keyData, valueData, newValueData, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
             V replace(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::ReplaceRequest request(instanceName, keyData, valueData, getThreadId());
+                map::ReplaceRequest request(instanceName, keyData, valueData, util::getThreadId());
                 return invoke<V>(request, keyData);
             };
 
             void set(const K& key, const V& value, long ttl) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::SetRequest request(instanceName, keyData, getThreadId(), ttl);
+                map::SetRequest request(instanceName, keyData, util::getThreadId(), ttl);
                 invoke<bool>(request, keyData);
             };
 
             void lock(const K&  key) {
                 serialization::Data keyData = toData(key);
-                map::LockRequest request(instanceName, keyData, getThreadId());
+                map::LockRequest request(instanceName, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
             void lock(const K&  key, long leaseTime) {
                 serialization::Data keyData = toData(key);
-                map::LockRequest request (instanceName, keyData, getThreadId(), leaseTime, -1);
+                map::LockRequest request (instanceName, keyData, util::getThreadId(), leaseTime, -1);
                 invoke(request, keyData);
             };
 
@@ -190,20 +190,20 @@ namespace hazelcast {
 
             bool tryLock(const K&  key, long timeInMillis) {
                 serialization::Data keyData = toData(key);
-                map::LockRequest request(instanceName, keyData, getThreadId(), 0, timeInMillis);
+                map::LockRequest request(instanceName, keyData, util::getThreadId(), 0, timeInMillis);
 
                 return invoke<bool>(request, keyData);;
             };
 
             void unlock(const K&  key) {
                 serialization::Data keyData = toData(key);
-                map::UnlockRequest request(instanceName, keyData, getThreadId(), false);
+                map::UnlockRequest request(instanceName, keyData, util::getThreadId(), false);
                 invoke<bool>(request, keyData);
             };
 
             void forceUnlock(const K&  key) {
                 serialization::Data keyData = toData(key);
-                map::UnlockRequest request(instanceName, keyData, getThreadId(), true);
+                map::UnlockRequest request(instanceName, keyData, util::getThreadId(), true);
                 invoke<bool>(request, keyData);
             };
 
@@ -247,7 +247,7 @@ namespace hazelcast {
 
             bool evict(const K& key) {
                 serialization::Data keyData = toData(key);
-                map::EvictRequest request(instanceName, keyData, getThreadId());
+                map::EvictRequest request(instanceName, keyData, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
@@ -405,10 +405,6 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
-            };
-
-            int getThreadId() {
-                return 1;
             };
 
             std::string instanceName;

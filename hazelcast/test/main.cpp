@@ -2,7 +2,6 @@
 #include "deneme.h"
 #include "mapTest.h"
 
-
 GTEST_API_ int main(int argc, char **argv) {
     return testSpeed();
 //    testing::InitGoogleTest(&argc, argv);

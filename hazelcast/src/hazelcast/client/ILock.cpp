@@ -29,17 +29,17 @@ namespace hazelcast {
         };
 
         void ILock::lock(long leaseTimeInMillis) {
-            lock::LockRequest request(key, getThreadId(), leaseTimeInMillis, -1);
+            lock::LockRequest request(key, util::getThreadId(), leaseTimeInMillis, -1);
             invoke<bool>(request);
         };
 
         void ILock::unlock() {
-            lock::UnlockRequest request(key, getThreadId(), false);
+            lock::UnlockRequest request(key, util::getThreadId(), false);
             invoke<bool>(request);
         };
 
         void ILock::forceUnlock() {
-            lock::UnlockRequest request(key, getThreadId(), true);
+            lock::UnlockRequest request(key, util::getThreadId(), true);
             invoke<bool>(request);
         };
 
@@ -49,7 +49,7 @@ namespace hazelcast {
         };
 
         bool ILock::isLockedByCurrentThread() {
-            lock::IsLockedRequest request(key, getThreadId());
+            lock::IsLockedRequest request(key, util::getThreadId());
             return invoke<bool>(request);
         };
 
@@ -72,14 +72,9 @@ namespace hazelcast {
         };
 
         bool ILock::tryLock(long timeInMillis) {
-            lock::LockRequest request(key, getThreadId(), -1, timeInMillis);
+            lock::LockRequest request(key, util::getThreadId(), -1, timeInMillis);
             return invoke<bool>(request);
         };
-
-        int ILock::getThreadId() {
-            return 1;
-        };
-
 
     }
 }

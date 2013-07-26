@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 1;
+int THREAD_COUNT = 8;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
@@ -76,7 +76,8 @@ public:
         server_port = port;
     };
 
-    void op(IMap<int, vector<char> >& map) {
+    void op(HazelcastClient* hazelcastClient) {
+        IMap<int, vector<char> > map = hazelcastClient->getMap<int, vector<char > >("default");
         char temp[VALUE_SIZE];
         std::vector<char> value(temp, temp + VALUE_SIZE);
         while (true) {
@@ -117,8 +118,10 @@ public:
         try {
             boost::thread monitor(printStats);
             HazelcastClient hazelcastClient(clientConfig);
-            IMap<int, vector<char> > map = hazelcastClient.getMap<int, vector<char > >("default");
-            op(map);
+            for (int i = 0; i < THREAD_COUNT; i++) {
+                boost::thread t(boost::bind(&SimpleMapTest::op, this, &hazelcastClient));
+            }
+
 
             monitor.join();
         } catch (std::exception& e) {
