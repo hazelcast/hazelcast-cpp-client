@@ -1,11 +1,18 @@
-#include "serializationTest.h"
-#include "deneme.h"
-#include "mapTest.h"
+//#include "serializationTest.h"
+//#include "deneme.h"
+//#include "mapTest.h"
+#include "iTestFixtureSample.h"
+#include "QueueTest.h"
+
 
 int main(int argc, char **argv) {
-    return testSpeed();
-//    testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
+    iTestFixtureSample s;
+    s.executeTests();
+//    QueueTest queueTest;
+//    queueTest.executeTests();
+    return 0;
+
+//    return testSpeed();
 //    return deneme::init();
 };
 
