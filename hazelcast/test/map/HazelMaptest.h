@@ -6,18 +6,21 @@
 //  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
 //
 
-#include "TestMainPortable.h"
+#ifndef HAZEL_MAP_TEST
+#define HAZEL_MAP_TEST
+
 #include "testUtil.h"
-#include "SimpleMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/Util.h"
-#include <assert.h> 
-#include <vector.h>
+#include <hazelcast/client/ClientConfig.h>
+#include <cassert>
+#include <vector>
 
 using namespace hazelcast::client;
 using namespace std;
-
+std::map<string, string> mapTemp;
 ClientConfig clientConfig;
+
 
 HazelcastClient hazelcastClient(clientConfig);
 
@@ -52,7 +55,7 @@ void testGet(){
         string key = "key";
         key += hazelcast::util::to_string(i);
         string temp = iMap.get(key);
-
+        
         string value = "value";
         value += hazelcast::util::to_string(i);
         assert( temp == value);
@@ -102,7 +105,7 @@ void testContains(){
     
     assert(!(iMap.containsKey("key10")));
     assert(iMap.containsKey("key1"));
-
+    
     assert(!(iMap.containsValue("value10")));
     assert(iMap.containsValue("value1"));
     
@@ -121,7 +124,7 @@ void testReplace(){
     
     assert(!(iMap.replace("key1", "value1", "value3")));
     assert("value2" == iMap.get("key1"));
-
+    
     assert((iMap.replace("key1", "value2", "value3")));
     assert("value3" == iMap.get("key1"));
 }
@@ -130,26 +133,72 @@ void testPutTtl() {
     
     iMap.put("key1", "value1", 1000);
     string temp = iMap.get("key1");
-    assert(temp != "");    
+    assert(temp != "");
     boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
     string temp2 = iMap.get("key1");
     assert(temp2 == "");
 }
 
 void testTryPutRemove(){
+    
     // This method contains CountDownLatch
+    assert(false);
 }
 
 void testAsyncPutWithTtl(){
+    
     // This method contains CountDownLatch
+    assert(false);
+    
 }
 
 void testIssue537(){
+    
     // This method contains CountDownLatch
+    assert(false);
+    
 }
 
 void testListener(){
+    
     // This method contains CountDownLatch
+    assert(false);
+    
+}
+
+void testTryLock(){
+    
+    // This method contains CountDownLatch
+    assert(false);
+    
+}
+
+void testForceUnlock(){
+    
+    // This method contains CountDownLatch
+    assert(false);
+    
+}
+
+void testLockTtl2(){
+    
+    // This method contains CountDownLatch
+    assert(false);
+    
+}
+
+void testLockTtl(){
+    
+    // This method contains CountDownLatch
+    assert(false);
+    
+}
+
+void testLock(){
+    
+    // This method contains CountDownLatch
+    assert(false);
+    
 }
 
 void testBasicPredicate(){
@@ -177,3 +226,104 @@ void testBasicPredicate(){
     
 }
 
+void testPutTransient() {
+    
+    //TODO mapstore
+    assert(false);
+    
+}
+
+void testSet(){
+    
+    iMap.set("key1", "value1");
+    assert("value1" == iMap.get("key1"));
+    
+    iMap.set("key1", "value2");
+    assert("value2" == iMap.get("key1"));
+    
+    iMap.set("key1", "value3", 1000);
+    assert("value3" == iMap.get("key1"));
+    
+    boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+    
+    assert(iMap.get("key1") == "");
+    
+}
+
+void testAsyncGet(){
+    
+    // This method contains Async functions which is not coded yet
+    assert(false);
+    
+}
+
+void testAsyncPut(){
+    
+    // This method contains Async functions which is not coded yet
+    assert(false);
+    
+}
+
+void testAsyncRemove(){
+    
+    // This method contains Async functions which is not coded yet
+    assert(false);
+    
+}
+
+void testValues() {
+    
+    fillMap();
+    vector<string> tempVector;
+    tempVector = iMap.values("this == value1");
+    assert(1 == tempVector.size());
+    
+    vector<string>::iterator it = tempVector.begin();
+    assert("value1" == *it);
+}
+
+void testGetAllPutAll(){
+    
+    for (int i = 0; i < 100; i++) {
+        mapTemp[hazelcast::util::to_string(i)] = hazelcast::util::to_string(i);
+    }
+    iMap.putAll(mapTemp);
+    assert(iMap.size() == 100);
+    for (int i = 0; i < 100; i++) {
+        assert(iMap.get(hazelcast::util::to_string(i)) == hazelcast::util::to_string(i));
+    }
+    
+    static IMap<string, string> iMap2 = hazelcastClient.getMap<string, string >("dev");
+
+    std::set<string> tempSet;
+    tempSet.insert(hazelcast::util::to_string(1));
+    tempSet.insert(hazelcast::util::to_string(3));
+    
+    iMap2.getAll(tempSet);
+    
+    assert(iMap2.size() == 2);
+    assert(iMap2.get(hazelcast::util::to_string(1)) == "1");
+    assert(iMap2.get(hazelcast::util::to_string(3)) == "3");
+    
+}
+
+void testPutIfAbsent(){
+    
+    // putIfAbsent method is not coded yet
+    assert(false);
+}
+
+void testPutIfAbsentTtl(){
+    
+    // putIfAbsent method is not coded yet
+    assert(false);
+
+}
+
+void destroy(){
+    
+    // waiting for framework
+    assert(false);
+
+}
+#endif
