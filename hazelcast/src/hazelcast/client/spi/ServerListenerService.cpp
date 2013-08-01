@@ -8,10 +8,7 @@
 
 namespace hazelcast {
     namespace client {
-
-
         namespace spi {
-
 
             ServerListenerService::ServerListenerService(InvocationService& invocationService)
             :invocationService(invocationService) {
@@ -19,13 +16,13 @@ namespace hazelcast {
             };
 
             ServerListenerService::~ServerListenerService() {
-                vector<boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
+                vector<util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
                 values.clear();
             };
 
             bool ServerListenerService::stopListening(const std::string& instanceName, long registrationId) {
-                boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > pMap = allListeners.get(instanceName);
-                boost::shared_ptr<ListenerSupportBase> listenerSupportBase = pMap->remove(registrationId);
+                util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > pMap = allListeners.get(instanceName);
+                util::AtomicPointer<ListenerSupportBase> listenerSupportBase = pMap->remove(registrationId);
                 if (listenerSupportBase != NULL) {
                     listenerSupportBase->stop();
                     return true;

@@ -4,7 +4,7 @@
 
 
 #include "Connection.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "ObjectDataOutput.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,7 +26,7 @@ namespace hazelcast {
             };
 
             void Connection::write(serialization::Data const & data) {
-                serialization::BufferedDataOutput out;
+                serialization::ObjectDataOutput out;
                 data.writeData(out);
                 auto_ptr<vector<byte> > buffer = out.toByteArray();
                 outputSocketStream.write(&((*buffer.get())[0]), buffer->size());

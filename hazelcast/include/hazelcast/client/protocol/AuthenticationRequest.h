@@ -34,7 +34,7 @@ namespace hazelcast {
                 inline void writePortable(HzWriter& writer) const{
                     writer.writePortable("credentials", credentials);
                     if (principal == NULL) {
-                        writer.writeNullPortable("principal", -3, 3);
+                        writer.writeNullPortable("principal",  -3, 3);
                     } else {
                         writer.writePortable("principal", *principal);
                     }

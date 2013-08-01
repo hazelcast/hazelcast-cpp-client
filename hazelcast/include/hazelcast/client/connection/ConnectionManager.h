@@ -47,7 +47,7 @@ namespace hazelcast {
 
                 void releaseConnection(Connection *connection);
 
-                boost::shared_ptr<ConnectionPool> getConnectionPool(const Address& address);
+                util::AtomicPointer <ConnectionPool> getConnectionPool(const Address& address);
 
                 void removeConnectionPool(const Address& address);
 

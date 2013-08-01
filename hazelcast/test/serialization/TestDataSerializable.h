@@ -8,8 +8,8 @@
 #define __TestMobile_H_
 
 #include "hazelcast/client/serialization/SerializationConstants.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 #include "DataSerializable.h"
 
 
@@ -43,12 +43,12 @@ public:
         return 1;
     }
 
-    inline void writeData(BufferedDataOutput& writer) const {
+    inline void writeData(ObjectDataOutput& writer) const {
         writer.writeChar(c);
         writer.writeInt(i);
     };
 
-    inline void readData(BufferedDataInput& reader) {
+    inline void readData(ObjectDataInput& reader) {
         c = reader.readChar();
         i = reader.readInt();
     };

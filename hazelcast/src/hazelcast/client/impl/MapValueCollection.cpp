@@ -5,8 +5,8 @@
 
 #include "hazelcast/client/impl/MapValueCollection.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,14 +27,14 @@ namespace hazelcast {
                 return values;
             };
 
-            void MapValueCollection::writeData(serialization::BufferedDataOutput& writer) {
+            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) {
                 writer.writeInt(values.size());
                 for (int i = 0; i < values.size(); ++i) {
                     values[i].writeData(writer);
                 }
             }
 
-            void MapValueCollection::readData(serialization::BufferedDataInput& reader) {
+            void MapValueCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
                 values.resize(size);
                 for (int i = 0; i < size; ++i) {

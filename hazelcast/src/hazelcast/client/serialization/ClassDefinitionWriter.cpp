@@ -14,7 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext)
+            ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext& serializationContext)
             : factoryId(factoryId)
             , classId(classId)
             , raw(false)
@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::getClassDefinition() {
+            util::AtomicPointer<ClassDefinition> ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 
@@ -83,11 +83,11 @@ namespace hazelcast {
             void ClassDefinitionWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
                 if (!raw) {
                     FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
-                    if (context->isClassDefinitionExists(factoryId, classId) == false) {
+                    if (context.isClassDefinitionExists(factoryId, classId) == false) {
                         throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable withouy explicitly registering class definition!");
                     } else {
                         cd->add(fd);
-                        cd->add(context->lookup(factoryId, classId));
+                        cd->add(context.lookup(factoryId, classId));
                     }
                 }
 
@@ -128,7 +128,7 @@ namespace hazelcast {
 
             };
 
-            BufferedDataOutput *ClassDefinitionWriter::getRawDataOutput() {
+            ObjectDataOutput *ClassDefinitionWriter::getRawDataOutput() {
                 return &emptyDataOutput;
             };
         }

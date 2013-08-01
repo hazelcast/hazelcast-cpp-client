@@ -11,14 +11,13 @@
 
 #include "SerializationContext.h"
 #include "ClassDefinition.h"
-#include "../../util/Util.h"
 #include "ClassDefinitionWriter.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
 #include "MorphingPortableReader.h"
 #include "Serializer.h"
 #include "Portable.h"
-
+#include "hazelcast/util/Util.h"
 #include <vector>
 #include <map>
 #include <memory>
@@ -27,58 +26,59 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class BufferedDataInput;
+            class ObjectDataInput;
 
-            class BufferedDataOutput;
+            class ObjectDataOutput;
 
             class PortableSerializer {
             public:
 
-                PortableSerializer(SerializationContext *const serializationContext);
-
-                ~PortableSerializer();
+                PortableSerializer(SerializationContext& serializationContext);
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getClassDefinition(T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                util::AtomicPointer<ClassDefinition> getClassDefinition(T& p) {
+                    util::AtomicPointer<ClassDefinition> cd;
                     int factoryId = p.getFactoryId();
                     int classId = p.getClassId();
-                    if (context->isClassDefinitionExists(factoryId, classId)) {
-                        cd = context->lookup(factoryId, classId);
+                    if (context.isClassDefinitionExists(factoryId, classId)) {
+                        cd = context.lookup(factoryId, classId);
                     } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
+                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
                         p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
-                        cd = context->registerClassDefinition(cd);
+                        cd = context.registerClassDefinition(cd);
                     }
 
                     return cd;
                 };
 
                 template <typename T>
-                void write(BufferedDataOutput &dataOutput, const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
-                    PortableWriter portableWriter(context, cd, &dataOutput);
+                void write(ObjectDataOutput &dataOutput, const T& p) {
+                    util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
+                    PortableWriter portableWriter(context, cd, dataOutput);
                     p.writePortable(portableWriter);
+                    portableWriter.end();
                 };
 
                 template <typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                    util::AtomicPointer<ClassDefinition> cd;
 
-                    boost::shared_ptr<ClassDefinition> cd;
-                    if (context->getVersion() == dataVersion) {
-                        cd = context->lookup(factoryId, classId); // using serializationContext.version
+                    if (context.getVersion() == dataVersion) {
+                        cd = context.lookup(factoryId, classId); // using serializationContext.version
                         PortableReader reader(context, dataInput, cd);
                         object.readPortable(reader);
+                        reader.end();
                     } else {
-                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
+                        cd = context.lookup(factoryId, classId, dataVersion); // registered during read
                         MorphingPortableReader reader(context, dataInput, cd);
                         object.readPortable(reader);
+                        reader.end();
                     }
                 };
 
             private:
-                SerializationContext *const context;
+                SerializationContext& context;
 
             };
 

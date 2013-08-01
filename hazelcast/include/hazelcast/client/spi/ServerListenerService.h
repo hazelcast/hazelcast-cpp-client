@@ -32,10 +32,10 @@ namespace hazelcast {
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler, key);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
 
-                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
+                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
                     m->put(registrationId, listenerSupport);
 
-                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
+                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
                     if (oldMap != NULL) {
                         m.reset();
                         oldMap->put(registrationId, listenerSupport);
@@ -49,10 +49,10 @@ namespace hazelcast {
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
 
-                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
+                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
                     m->put(registrationId, listenerSupport);
 
-                    boost::shared_ptr<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
+                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
                     if (oldMap != NULL) {
                         m.reset();
                         oldMap->put(registrationId, listenerSupport);

@@ -29,7 +29,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeBool("l", true);
                     writer.writeInt("s", collection.size());
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     for (int i = 0; i < collection.size(); ++i) {
                         collection[i].writeData(*out);
                     }
@@ -43,7 +43,7 @@ namespace hazelcast {
                     if (size < 0)
                         return;
                     collection.resize(size);
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
                         collection[i].readData(*in);
                     }

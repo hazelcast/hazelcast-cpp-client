@@ -4,8 +4,8 @@
 
 
 #include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,14 +34,14 @@ namespace hazelcast {
             };
 
 
-            void SerializableCollection::writeData(serialization::BufferedDataOutput& writer) {
+            void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) {
                 writer.writeInt(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); ++i) {
                     dataCollection[i]->writeData(writer);
                 }
             };
 
-            void SerializableCollection::readData(serialization::BufferedDataInput& reader) {
+            void SerializableCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
                 if (size == -1)
                     return;

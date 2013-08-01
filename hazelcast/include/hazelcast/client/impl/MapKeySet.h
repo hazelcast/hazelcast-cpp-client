@@ -24,9 +24,9 @@ namespace hazelcast {
 
                 const std::vector<serialization::Data>& getKeySet() const;
 
-                void writeData(serialization::BufferedDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer);
 
-                void readData(serialization::BufferedDataInput& reader);
+                void readData(serialization::ObjectDataInput& reader);
 
             private:
                 std::vector<serialization::Data> keySet;

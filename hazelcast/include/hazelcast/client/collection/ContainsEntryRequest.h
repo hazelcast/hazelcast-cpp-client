@@ -37,7 +37,7 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     out->writeBoolean(hasKey);
                     if (hasKey) {
                         key.writeData(*out);
@@ -50,7 +50,7 @@ namespace hazelcast {
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     hasKey = in->readBoolean();
                     if (hasKey)
                         key.readData(*in);

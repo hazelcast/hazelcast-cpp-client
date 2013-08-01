@@ -41,16 +41,16 @@ namespace hazelcast {
                     connection::Member member = clusterService.getMember(event.getUuid());
                     EntryEvent<K, V> entryEvent(instanceName, member, event.getEventType(), key, value, oldValue);
                     switch (event.getEventType()) {
-                        case PortableEntryEvent::EntryEventType::ADDED:
+                        case PortableEntryEvent::ADDED :
                             listener.entryAdded(entryEvent);
                             break;
-                        case PortableEntryEvent::EntryEventType::REMOVED:
+                        case PortableEntryEvent::REMOVED :
                             listener.entryRemoved(entryEvent);
                             break;
-                        case PortableEntryEvent::EntryEventType::UPDATED:
+                        case PortableEntryEvent::UPDATED :
                             listener.entryUpdated(entryEvent);
                             break;
-                        case PortableEntryEvent::EntryEventType::EVICTED:
+                        case PortableEntryEvent::EVICTED :
                             listener.entryEvicted(entryEvent);
                             break;
                         default:

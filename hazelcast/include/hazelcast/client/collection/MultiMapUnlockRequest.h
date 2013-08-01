@@ -37,7 +37,7 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("tid", threadId);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                     proxyId.writeData(*out);
                 };
@@ -45,7 +45,7 @@ namespace hazelcast {
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     threadId = reader.readInt("tid");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                     proxyId.readData(*in);
                 };

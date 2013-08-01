@@ -46,7 +46,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("tid", threadId);
                     writer.writeBoolean("force", force);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                 };
 
@@ -54,7 +54,7 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     threadId = reader.readInt("tid");
                     force = reader.readBoolean("force");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                 };
             private:

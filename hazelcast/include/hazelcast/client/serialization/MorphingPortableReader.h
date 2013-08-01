@@ -10,7 +10,7 @@
 #define HAZELCAST_MORPHING_PORTABLE_READER
 
 #include "ClassDefinition.h"
-#include "BufferedDataInput.h"
+#include "ObjectDataInput.h"
 #include "FieldDefinition.h"
 #include "IException.h"
 #include "PortableReader.h"
@@ -34,7 +34,7 @@ namespace hazelcast {
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
+                MorphingPortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -69,17 +69,19 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
-                    boost::shared_ptr<ClassDefinition> cd;
-                    if (context->getVersion() == dataVersion) {
-                        cd = context->lookup(factoryId, classId); // using serializationContext.version
-                        PortableReader wreader(context, dataInput, cd);
-                        object.readPortable(wreader);
+                    util::AtomicPointer<ClassDefinition> cd;
+                    if (context.getVersion() == dataVersion) {
+                        cd = context.lookup(factoryId, classId); // using serializationContext.version
+                        PortableReader reader(context, dataInput, cd);
+                        object.readPortable(reader);
+                        reader.end();
                     } else {
-                        cd = context->lookup(factoryId, classId, dataVersion); // registered during read
+                        cd = context.lookup(factoryId, classId, dataVersion); // registered during read
                         MorphingPortableReader reader(context, dataInput, cd);
                         object.readPortable(reader);
+                        reader.end();
                     }
                 };
 
@@ -115,7 +117,9 @@ namespace hazelcast {
                     return portables;
                 };
 
-                BufferedDataInput *getRawDataInput();
+                void end();
+
+                ObjectDataInput *getRawDataInput();
 
             private:
 
@@ -123,11 +127,12 @@ namespace hazelcast {
 
                 bool setPosition(const char *);
 
+                ObjectDataInput& input;
+                int const finalPosition;
                 int offset;
                 bool raw;
-                SerializationContext *context;
-                boost::shared_ptr<ClassDefinition> cd;
-                BufferedDataInput& input;
+                SerializationContext& context;
+                util::AtomicPointer<ClassDefinition> cd;
 
                 FieldType currentFieldType;
                 int currentFactoryId;

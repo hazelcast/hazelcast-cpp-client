@@ -35,7 +35,7 @@ namespace hazelcast {
                     writer.writeUTF("n", name);
                     writer.writeInt("thread", threadId);
                     writer.writeLong("ttl", ttl);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                 };
 
@@ -44,7 +44,7 @@ namespace hazelcast {
                     name = reader.readUTF("n");
                     threadId = reader.readInt("thread");
                     ttl = reader.readLong("ttl");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                 };
 

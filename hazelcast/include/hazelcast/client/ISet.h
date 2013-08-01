@@ -27,7 +27,7 @@ namespace hazelcast {
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 context = clientContext;
                 key = toData(instanceName);
-                proxyId = collection::CollectionProxyId("hz:set:", instanceName, collection::CollectionProxyId::CollectionProxyType::SET);
+                proxyId = collection::CollectionProxyId("hz:set:", instanceName, collection::CollectionProxyId::SET);
             };
 
             template < typename L>

@@ -30,10 +30,9 @@ namespace hazelcast {
 
                 void refreshPartitions();
 
-                boost::shared_ptr<Address> getPartitionOwner(int partitionId);
+                util::AtomicPointer<Address> getPartitionOwner(int partitionId);
 
                 int getPartitionId(serialization::Data& key);
-
 
             private:
 

@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void ClusterService::start() {
                 serialization::ClassDefinitionBuilder cd(-3, 3);
-                boost::shared_ptr<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
+                util::AtomicPointer<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 serializationService.getSerializationContext().registerClassDefinition(ptr);
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
@@ -86,10 +86,10 @@ namespace hazelcast {
                             return connectionManager.newConnection((*it));
                         } catch (exception::IOException & e) {
                             lastError = e;
-                            std::cerr << "IO error  during initial connection.." << e.what() << std::endl;
+                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
                         } catch (exception::ServerException & e) {
                             lastError = e;
-                            std::cerr << "IO error  during initial connection.." << e.what() << std::endl;
+                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
 
                         }
                     }
@@ -139,8 +139,7 @@ namespace hazelcast {
             };
 
             bool ClusterService::isMemberExists(Address const & address) {
-                const boost::shared_ptr< std::map<Address, connection::Member, addressComparator> > ptr = membersRef.get();
-                return ptr->count(address) > 0;;
+                return membersRef->count(address) > 0;;
             };
 
             connection::Member ClusterService::getMember(const std::string& uuid) {
@@ -154,12 +153,13 @@ namespace hazelcast {
             };
 
             std::vector<connection::Member>  ClusterService::getMemberList() {
-                const boost::shared_ptr<std::map< Address, connection::Member, addressComparator> > m = membersRef.get();
+                typedef std::map<Address, connection::Member, addressComparator> MemberMap;
                 std::vector<connection::Member> v;
-                if (m == NULL)
+                if (membersRef == NULL)
                     return v;
-                typename std::map<Address, connection::Member>::const_iterator it;
-                for (it = m->begin(); it != m->end(); it++) {
+                typename MemberMap::const_iterator it;
+                boost::lock_guard<util::AtomicPointer< MemberMap > > lockGuard(membersRef);
+                for (it = membersRef->begin(); it != membersRef->end(); it++) {
                     v.push_back(it->second);
                 }
                 return v;

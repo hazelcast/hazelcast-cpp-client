@@ -40,7 +40,7 @@ public:
     template<typename HzReader>
     inline void readPortable(HzReader& reader) {
         l = reader.readLong("l");
-        serialization::BufferedDataInput *in = reader.getRawDataInput();
+        serialization::ObjectDataInput *in = reader.getRawDataInput();
         i = in->readInt();
         s = reader.readLong("s");
     };

@@ -29,14 +29,14 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeUTF("n", name);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     entrySet.writeData(*out);
                 };
 
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     name = reader.readUTF("n");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     entrySet.readData(*in);
                 };
             private:

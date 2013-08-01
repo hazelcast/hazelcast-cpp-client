@@ -11,7 +11,8 @@
 
 
 #include "FieldDefinition.h"
-#include "../../util/Util.h"
+#include "hazelcast/util/Util.h"
+#include "AtomicPointer.h"
 #include <iosfwd>
 #include <string>
 #include <map>
@@ -26,9 +27,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class BufferedDataInput;
+            class ObjectDataInput;
 
-            class BufferedDataOutput;
+            class ObjectDataOutput;
 
             typedef unsigned char byte;
 
@@ -43,7 +44,7 @@ namespace hazelcast {
 
                 void add(FieldDefinition&);
 
-                void add(boost::shared_ptr<ClassDefinition>);
+                void add(util::AtomicPointer<ClassDefinition>);
 
                 bool isFieldDefinitionExists(const char *);
 
@@ -51,7 +52,7 @@ namespace hazelcast {
 
                 const FieldDefinition& get(int);
 
-                vector<boost::shared_ptr<ClassDefinition> > &getNestedClassDefinitions();
+                vector<util::AtomicPointer<ClassDefinition> > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
 
@@ -73,9 +74,9 @@ namespace hazelcast {
 
                 void setVersion(int);
 
-                void writeData(BufferedDataOutput& dataOutput);
+                void writeData(ObjectDataOutput& dataOutput);
 
-                void readData(BufferedDataInput& dataInput);
+                void readData(ObjectDataInput& dataInput);
 
             private:
                 int classId;
@@ -88,7 +89,7 @@ namespace hazelcast {
 
                 vector<FieldDefinition> fieldDefinitions;
                 map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
-                vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
+                vector<util::AtomicPointer<ClassDefinition> > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;
 

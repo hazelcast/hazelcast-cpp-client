@@ -11,11 +11,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableSerializer::PortableSerializer(SerializationContext *const serializationContext)
+            PortableSerializer::PortableSerializer(SerializationContext& serializationContext)
             : context(serializationContext) {
-            };
-
-            PortableSerializer::~PortableSerializer() {
             };
 
         }

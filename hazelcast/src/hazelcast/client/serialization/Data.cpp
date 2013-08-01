@@ -16,7 +16,6 @@ namespace hazelcast {
             : partitionHash(-1)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
             , isError(false)
-            , cd(NULL)
             , buffer(new std::vector<byte>) {
 
             };
@@ -32,7 +31,6 @@ namespace hazelcast {
 
             Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer) : partitionHash(-1)
             , isError(false)
-            , cd(NULL)
             , buffer(buffer) {
                 this->type = type;
             };

@@ -37,7 +37,7 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("i", includeValue);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     proxyId.writeData(*out);
                     out->writeBoolean(true);
                     key.writeData(*out);
@@ -46,7 +46,7 @@ namespace hazelcast {
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     includeValue = reader.readInt("i");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     proxyId.readData(*in);
                     bool isNotNull = in->readBoolean();
                     if (isNotNull)

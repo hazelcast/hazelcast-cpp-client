@@ -133,7 +133,7 @@ namespace hazelcast {
                     (*map)[(*it).getAddress()] = (*it);
                 }
                 std::cerr << "}" << std::endl;
-                clusterService.membersRef.set(map);
+                clusterService.membersRef.reset(map);
 
             };
 

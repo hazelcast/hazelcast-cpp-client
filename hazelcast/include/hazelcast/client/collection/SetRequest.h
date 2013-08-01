@@ -33,7 +33,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("i", index);
                     writer.writeInt("t", threadId);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     value.writeData(*out);
                     CollectionKeyBasedRequest::writePortable(writer);
                 };
@@ -42,7 +42,7 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     index = reader.readInt("i");
                     threadId = reader.readInt("t");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     reader >> value;
                     CollectionKeyBasedRequest::readPortable(reader);
                 };

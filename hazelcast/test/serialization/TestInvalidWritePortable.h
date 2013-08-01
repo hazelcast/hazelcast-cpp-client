@@ -39,7 +39,7 @@ public:
     template<typename HzWriter>
     inline void writePortable(HzWriter& writer) const {
         writer.writeLong("l", l);
-        serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+        serialization::ObjectDataOutput *out = writer.getRawDataOutput();
         out->writeInt(i);
         writer.writeUTF("s", s);
     };

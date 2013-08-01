@@ -12,8 +12,8 @@
 #include "EntryEvent.h"
 #include "Data.h"
 #include "Portable.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +40,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("e", eventType);
                     writer.writeUTF("u", uuid);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     out->writeBoolean(true);
                     item.writeData(*out);
                 };
@@ -51,7 +51,7 @@ namespace hazelcast {
 //                    eventType = type;
                     uuid = reader.readUTF("u");
                     bool isNotNull;
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     isNotNull = in->readBoolean();
                     if (isNotNull)
                         item.readData(*in);

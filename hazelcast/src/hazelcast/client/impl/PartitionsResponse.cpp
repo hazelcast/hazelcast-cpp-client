@@ -4,8 +4,8 @@
 
 
 #include "hazelcast/client/impl/PartitionsResponse.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 
 
@@ -42,7 +42,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::PARTITIONS;
             };
 
-            void PartitionsResponse::writeData(serialization::BufferedDataOutput& writer) {
+            void PartitionsResponse::writeData(serialization::ObjectDataOutput& writer) {
                 writer.writeInt(members.size());
                 for (int i = 0; i < members.size(); i++) {
                     members[i].writeData(writer);
@@ -53,7 +53,7 @@ namespace hazelcast {
                 }
             };
 
-            void PartitionsResponse::readData(serialization::BufferedDataInput& reader) {
+            void PartitionsResponse::readData(serialization::ObjectDataInput& reader) {
                 int len;
                 len = reader.readInt();
                 members.resize(len);

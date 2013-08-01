@@ -240,7 +240,7 @@ namespace hazelcast {
             map::EntryView<K, V> getEntryView(const K& key) {
                 serialization::Data keyData = toData(key);
                 map::GetEntryViewRequest request(instanceName, keyData);
-                map::EntryView<serialization::Data, serialization::Data> dataEntryView = invoke<map::EntryView<serialization::Data, serialization::Data>>(request, keyData);
+                map::EntryView<serialization::Data, serialization::Data> dataEntryView = invoke<map::EntryView<serialization::Data, serialization::Data> >(request, keyData);
                 return map::EntryView<K, V>(toObject<K>(dataEntryView.key), toObject<V>(dataEntryView.value), dataEntryView);
             };
 

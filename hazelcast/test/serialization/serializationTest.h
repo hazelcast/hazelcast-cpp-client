@@ -153,13 +153,13 @@ TEST(SerializationTest, Compression) {
 
     Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
-    BufferedDataOutput out;
+    ObjectDataOutput out;
     data.writeData(out);
 
     std::auto_ptr< vector < byte> > xxx = out.toByteArray();
 
     serialization::SerializationService serializationService2(1);
-    serialization::BufferedDataInput dataInput(*(xxx.get()));
+    serialization::ObjectDataInput dataInput(*(xxx.get()));
     Data newData;
     dataInput.setSerializationContext(&serializationService2.getSerializationContext());
     newData.readData(dataInput);
@@ -172,7 +172,7 @@ int write() {
     serialization::SerializationService serializationService(1);
     TestMainPortable mainPortable = getTestMainPortable();
     Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-    BufferedDataOutput out;
+    ObjectDataOutput out;
     data.writeData(out);
     std::vector<byte>& outBuffer = *(out.toByteArray().get());
     int size = outBuffer.size();
@@ -198,7 +198,7 @@ void read(int size) {
 
     byte *tempPtr = (byte *) bytes;
     std::vector<byte> buffer(tempPtr, tempPtr + size);
-    serialization::BufferedDataInput dataInput(buffer);
+    serialization::ObjectDataInput dataInput(buffer);
 
     serialization::Data data;
     dataInput.setSerializationContext(&serializationService.getSerializationContext());

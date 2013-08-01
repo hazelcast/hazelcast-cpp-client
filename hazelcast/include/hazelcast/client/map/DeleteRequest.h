@@ -31,7 +31,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeUTF("name", name);
                     writer.writeInt("t", threadId);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                 };
 
@@ -39,7 +39,7 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     name = reader.readUTF("name");
                     threadId = reader.readInt("t");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                 };
             private:
