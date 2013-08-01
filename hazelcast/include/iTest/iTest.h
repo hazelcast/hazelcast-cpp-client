@@ -23,6 +23,8 @@ namespace iTest {
         if (expected != actual) {
             std::cout << ">> Assert failed. message : " << message << std::endl;
 
+        } else {
+            std::cout << "OK" << std::endl;
         }
     };
 
@@ -30,6 +32,8 @@ namespace iTest {
     void assertEqual(const Exptected& expected, const Actual& actual) {
         if (expected != actual) {
             std::cout << ">> Assert failed." << std::endl;
+        } else {
+            std::cout << "OK" << std::endl;
         }
     };
 }

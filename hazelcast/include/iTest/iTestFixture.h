@@ -5,15 +5,16 @@
 #ifndef HAZELCAST_iTestFixture
 #define HAZELCAST_iTestFixture
 
-#include <vector>
+#include<vector>
 #include <iostream>
-#include <map>
+#include<map>
 
 namespace iTest {
 
     template<typename T>
     class iTestFixture {
         typedef void (T::*TestFunction)();
+
     public:
         iTestFixture():id(0) {
 
@@ -51,7 +52,11 @@ namespace iTest {
                 TestFunction test = tests[i];
                 std::cout << "======= " << testNames[i] << " ======= " << std::endl;
                 beforeTest();
-                ((*t).* (test))();
+                try{
+                    ((*t).* (test))();
+                }catch(std::exception& e){
+                    std::cout << "? " << e.what() << std::endl;
+                }
                 afterTest();
                 std::cout << "=============================== " << std::endl;
             }
@@ -64,7 +69,7 @@ namespace iTest {
         std::map<int, std::string > testNames;
         int id;
     };
-}
+};
 
 
 #endif //HAZELCAST_iTestFixture

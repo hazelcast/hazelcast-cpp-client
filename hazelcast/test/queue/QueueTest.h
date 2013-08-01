@@ -58,7 +58,7 @@ public:
 
 private:
     HazelcastClient *client;
-    IQueue<std::string> *q;
+    IQueue<std::string>* q;
 };
 
 
