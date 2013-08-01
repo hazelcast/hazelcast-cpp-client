@@ -56,11 +56,19 @@ void testGet(){
         value += hazelcast::util::to_string(i);
         assert( temp == value);
     }
+    
+    
 }
 
 void testRemoveAndDelete(){
     fillMap();
-    
+    string temp = iMap.remove("key10");
+    assert(temp == "");
+    iMap.deleteEntry("key9");
+    assert(iMap.size() == 9);
+    for(int i = 0; i <9; i++){
+        
+    }
 }
 void flush(){
     //TODO
