@@ -215,7 +215,8 @@ namespace hazelcast {
             }
 
             bool addAll(const std::vector<E>& c) {
-                queue::AddAllRequest request(instanceName, getDataList(c));
+                vector<serialization::Data> dataList = getDataList(c);
+                queue::AddAllRequest request(instanceName, dataList);
                 return invoke<bool>(request);
             }
 

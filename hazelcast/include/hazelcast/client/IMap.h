@@ -130,10 +130,10 @@ namespace hazelcast {
                 return invoke<bool>(request, keyData);
             };
 
-            V put(const K& key, const V& value, long ttl) {
+            V put(const K& key, const V& value, long ttlInMillis) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutRequest request(instanceName, keyData, valueData, util::getThreadId(), ttl);
+                map::PutRequest request(instanceName, keyData, valueData, util::getThreadId(), ttlInMillis);
                 return invoke<V>(request, keyData);
             };
 
