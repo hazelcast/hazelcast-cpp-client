@@ -139,7 +139,7 @@ namespace hazelcast {
                 SerializationContext& getSerializationContext();
 
             private:
-                SerializerBase *serializerFor(int id);
+                SerializerBase *serializerFor(int typeId);
 
                 SerializationService(const SerializationService&);
 

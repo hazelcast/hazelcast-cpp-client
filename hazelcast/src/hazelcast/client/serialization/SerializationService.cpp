@@ -38,8 +38,8 @@ namespace hazelcast {
                 return serializerHolder.registerSerializer(serializer);
             };
 
-            SerializerBase *SerializationService::serializerFor(int id) {
-                return serializerHolder.serializerFor(id);
+            SerializerBase *SerializationService::serializerFor(int typeId) {
+                return serializerHolder.serializerFor(typeId);
             };
 
             void SerializationService::checkServerError(const Data & data) {
