@@ -29,6 +29,7 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeUTF("n", name);
+                    writer.writeLong("t", 0);
                 };
 
                 template<typename HzReader>

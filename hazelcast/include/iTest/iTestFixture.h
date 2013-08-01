@@ -56,6 +56,8 @@ namespace iTest {
                     ((*t).* (test))();
                 }catch(std::exception& e){
                     std::cout << "? " << e.what() << std::endl;
+                }catch(...){
+                    std::cout << "unknown exception at serialization " << std::endl;
                 }
                 afterTest();
                 std::cout << "=============================== " << std::endl;

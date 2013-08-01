@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ReplaceIfSameRequest {
+            class ReplaceIfSameRequest : public Portable{
             public:
                 ReplaceIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& testValue, serialization::Data& value, int threadId)
                 :name(name)
@@ -19,10 +19,6 @@ namespace hazelcast {
                 , testValue(testValue)
                 , threadId(threadId) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {

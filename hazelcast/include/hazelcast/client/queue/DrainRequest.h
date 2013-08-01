@@ -11,17 +11,12 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class DrainRequest {
+            class DrainRequest : public Portable {
             public:
                 DrainRequest(const std::string& name, bool maxSize)
                 :name(name)
                 , maxSize(maxSize) {
 
-
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {
