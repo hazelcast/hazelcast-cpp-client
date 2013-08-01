@@ -13,6 +13,7 @@
 #include "SerializationContext.h"
 #include "../protocol/ProtocolConstants.h"
 #include "IException.h"
+#include "AtomicPointer.h"
 #include <vector>
 #include <iosfwd>
 
@@ -55,7 +56,7 @@ namespace hazelcast {
                 int hashCode();
 
                 template<typename  Out>
-                void writeData(Out & dataOutput) const {
+                void writeData(Out & dataOutput) const{
                     dataOutput.writeInt(type);
                     if (cd != NULL) {
                         dataOutput.writeInt(cd->getClassId());
@@ -107,7 +108,7 @@ namespace hazelcast {
                     partitionHash = dataInput.readInt();
                 }
 
-                boost::shared_ptr<ClassDefinition> cd;
+                util::AtomicPointer<ClassDefinition> cd;
                 int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;

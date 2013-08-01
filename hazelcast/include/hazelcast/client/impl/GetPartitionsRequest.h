@@ -14,9 +14,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class BufferedDataInput;
+            class ObjectDataInput;
 
-            class BufferedDataOutput;
+            class ObjectDataOutput;
         }
         namespace impl {
 
@@ -29,9 +29,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::BufferedDataOutput& writer) const;
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
-                void readData(serialization::BufferedDataInput& reader);
+                void readData(serialization::ObjectDataInput& reader);
 
             };
         }

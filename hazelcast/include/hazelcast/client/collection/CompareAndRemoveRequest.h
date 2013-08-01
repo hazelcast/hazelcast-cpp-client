@@ -35,7 +35,7 @@ namespace hazelcast {
                     writer.writeBoolean("t", retain);
                     writer.writeInt("t", threadId);
                     writer.writeInt("s", dataList.size());
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     for (int i = 0; i < dataList.size(); ++i) {
                         dataList[i].writeData(*out);
                     }
@@ -48,7 +48,7 @@ namespace hazelcast {
                     threadId = reader.readInt("t");
                     int size = reader.readInt("s");
                     dataList.resize(size);
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
                         dataList[i].readData(*in);
                     }

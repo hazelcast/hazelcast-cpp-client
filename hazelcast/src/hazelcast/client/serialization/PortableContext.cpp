@@ -33,18 +33,18 @@ namespace hazelcast {
                 return (versionedDefinitions.containsKey(key));
             };
 
-            boost::shared_ptr<ClassDefinition> PortableContext::lookup(int classId, int version) {
+            util::AtomicPointer<ClassDefinition> PortableContext::lookup(int classId, int version) {
                 long key = combineToLong(classId, version);
                 return versionedDefinitions.get(key);
 
             };
 
-            boost::shared_ptr<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
+            util::AtomicPointer<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
 
                 std::vector<byte> decompressed = decompress(*(binary.get()));
 
-                BufferedDataInput dataInput(decompressed);
-                boost::shared_ptr<ClassDefinition> cd(new ClassDefinition);
+                ObjectDataInput dataInput(decompressed);
+                util::AtomicPointer<ClassDefinition> cd(new ClassDefinition);
                 cd->readData(dataInput);
                 cd->setBinary(binary);
 
@@ -52,26 +52,26 @@ namespace hazelcast {
 
                 if (versionedDefinitions.containsKey(key) == 0) {
                     serializationContext->registerNestedDefinitions(cd);
-                    boost::shared_ptr<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(key, cd);
+                    util::AtomicPointer<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(key, cd);
                     return pDefinition == NULL ? cd : pDefinition;
                 }
                 return versionedDefinitions.get(key);
             };
 
-            boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+            util::AtomicPointer<ClassDefinition> PortableContext::registerClassDefinition(util::AtomicPointer<ClassDefinition> cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
                 if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
                     if (cd->getBinary().size() == 0) {
-                        BufferedDataOutput output;
+                        ObjectDataOutput output;
                         cd->writeData(output);
                         std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
                         compress(*(binary.get()));
                         cd->setBinary(binary);
                     }
                     long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    boost::shared_ptr<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    util::AtomicPointer<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
                     return pDefinition == NULL ? cd : pDefinition;
                 }
                 return lookup(cd->getClassId(), cd->getVersion());

@@ -38,10 +38,10 @@ namespace hazelcast {
                     connection::Member member = clusterService.getMember(event.getUuid());
                     ItemEvent<E> itemEvent(instanceName, event.getEventType(), item, member);
                     switch (event.getEventType()) {
-                        case PortableItemEvent::ItemEventType ::ADDED:
+                        case PortableItemEvent::ADDED:
                             listener.entryAdded(itemEvent);
                             break;
-                        case PortableItemEvent::ItemEventType::REMOVED:
+                        case PortableItemEvent::REMOVED:
                             listener.entryRemoved(itemEvent);
                             break;
                         default:

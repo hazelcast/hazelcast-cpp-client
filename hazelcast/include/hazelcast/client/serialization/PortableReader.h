@@ -10,7 +10,7 @@
 #define HAZELCAST_PORTABLE_READER
 
 #include "ClassDefinition.h"
-#include "BufferedDataInput.h"
+#include "ObjectDataInput.h"
 #include "FieldDefinition.h"
 #include "IException.h"
 #include "ConstantSerializers.h"
@@ -34,7 +34,7 @@ namespace hazelcast {
             class PortableReader {
             public:
 
-                PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd);
+                PortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -101,7 +101,9 @@ namespace hazelcast {
                     return portables;
                 };
 
-                BufferedDataInput *getRawDataInput();
+                ObjectDataInput *getRawDataInput();
+
+                void end();
 
             private:
                 int getPosition(const char *);
@@ -109,18 +111,20 @@ namespace hazelcast {
                 void setPosition(const char *);
 
                 template<typename T>
-                void read(BufferedDataInput& dataInput, T& object, int factoryId, int classId) {
-                    boost::shared_ptr<ClassDefinition> cd;
-                    cd = context->lookup(factoryId, classId); // using serializationContext.version
+                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId) {
+                    util::AtomicPointer<ClassDefinition> cd;
+                    cd = context.lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
                     object.readPortable(reader);
+                    reader.end();
                 };
 
+                ObjectDataInput& input;
+                int const finalPosition;
                 int offset;
                 bool raw;
-                SerializationContext *context;
-                boost::shared_ptr<ClassDefinition> cd;
-                BufferedDataInput& input;
+                SerializationContext& context;
+                util::AtomicPointer<ClassDefinition> cd;
                 int currentFactoryId;
                 int currentClassId;
             };

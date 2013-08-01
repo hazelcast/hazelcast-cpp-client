@@ -28,7 +28,7 @@ namespace hazelcast {
                     return DataSerializableHook::QUERY_RESULT_ENTRY;
                 }
 
-                void writeData(serialization::BufferedDataOutput& writer) const {
+                void writeData(serialization::ObjectDataOutput& writer) const {
                     writer.writeBoolean(true);
                     keyIndex.writeData(writer);
                     writer.writeBoolean(true);
@@ -37,7 +37,7 @@ namespace hazelcast {
                     value.writeData(writer);
                 };
 
-                void readData(serialization::BufferedDataInput& reader) {
+                void readData(serialization::ObjectDataInput& reader) {
                     bool isNotNull = reader.readBoolean();
                     if (isNotNull)
                         keyIndex.readData(reader);

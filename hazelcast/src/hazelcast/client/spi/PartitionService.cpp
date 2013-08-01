@@ -29,7 +29,7 @@ namespace hazelcast {
                 boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
             };
 
-            boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
+            util::AtomicPointer<Address> PartitionService::getPartitionOwner(int partitionId) {
                 return partitions.get(partitionId);
             };
 

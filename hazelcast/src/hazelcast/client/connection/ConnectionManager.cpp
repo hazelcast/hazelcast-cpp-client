@@ -39,7 +39,7 @@ namespace hazelcast {
             }
 
             Connection *ConnectionManager::getConnection(const Address& address) {
-                boost::shared_ptr<ConnectionPool> pool = getConnectionPool(address);
+                util::AtomicPointer<ConnectionPool> pool = getConnectionPool(address);
                 if (pool == NULL )
                     return NULL;
                 Connection *connection = NULL;
@@ -53,7 +53,7 @@ namespace hazelcast {
             };
 
             void ConnectionManager::releaseConnection(Connection *connection) {
-                boost::shared_ptr<ConnectionPool> pool = getConnectionPool(connection->getEndpoint());
+                util::AtomicPointer<ConnectionPool> pool = getConnectionPool(connection->getEndpoint());
                 if (pool != NULL) {
                     pool->release(connection);
                 } else {
@@ -62,20 +62,18 @@ namespace hazelcast {
                 }
             };
 
-            boost::shared_ptr<ConnectionPool> ConnectionManager::getConnectionPool(const Address& address) {
-//                std::cout << "get address " << address << std::endl;
-                boost::shared_ptr<ConnectionPool> pool = poolMap.get(address);
+            util::AtomicPointer <ConnectionPool> ConnectionManager::getConnectionPool(const Address& address) {
+                util::AtomicPointer<ConnectionPool> pool = poolMap.get(address);
                 if (pool == NULL) {
-//                    std::cout << "get address NULL " << std::endl;
                     if (!clusterService.isMemberExists(address)) {
-                        return NULL;
+                        util::AtomicPointer<ConnectionPool> x;
+                        return x;
                     }
                     pool.reset(new ConnectionPool(address, serializationService, *this));
 
-                    boost::shared_ptr<ConnectionPool> previousPool = poolMap.putIfAbsent(address, pool);
+                    util::AtomicPointer<ConnectionPool> previousPool = poolMap.putIfAbsent(address, pool);
                     return previousPool == NULL ? pool : previousPool;
                 }
-//                std::cout << "getted pool address " << pool->address << std::endl;
                 return pool;
             };
 

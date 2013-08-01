@@ -12,12 +12,13 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd)
+            PortableReader::PortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd)
             : input(input)
+            , finalPosition(input.readInt()) //TODO what happens in case of exception
+            , offset(input.position())
             , context(serializationContext)
             , cd(cd)
-            , raw(false)
-            , offset(input.position()) {
+            , raw(false) {
 
             };
 
@@ -119,15 +120,19 @@ namespace hazelcast {
                 return input.readInt();
             };
 
-            BufferedDataInput *PortableReader::getRawDataInput() {
+            ObjectDataInput *PortableReader::getRawDataInput() {
                 if (!raw) {
                     input.position(offset + cd->getFieldCount() * 4);
                     int pos = input.readInt();
                     input.position(pos);
                 }
                 raw = true;
-                input.setSerializationContext(context);
-                return &input;
+                input.setSerializationContext(&context);
+                return &input; //TODO why return pointer not reference
+            };
+
+            void PortableReader::end() {
+                input.position(finalPosition);
             };
 
         }

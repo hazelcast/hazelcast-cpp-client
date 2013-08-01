@@ -37,9 +37,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::BufferedDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer);
 
-                void readData(serialization::BufferedDataInput& reader);
+                void readData(serialization::ObjectDataInput& reader);
 
             private:
                 Address address;

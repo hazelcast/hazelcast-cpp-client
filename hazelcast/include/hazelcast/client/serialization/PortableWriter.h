@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_PORTABLE_WRITER
 #define HAZELCAST_PORTABLE_WRITER
 
-#include "BufferedDataOutput.h"
+#include "ObjectDataOutput.h"
 #include "FieldDefinition.h"
 #include "IException.h"
 #include "FieldType.h"
@@ -32,7 +32,7 @@ namespace hazelcast {
             class PortableWriter {
             public:
 
-                PortableWriter(SerializationContext *serializationContext, boost::shared_ptr<ClassDefinition> cd, BufferedDataOutput *output);
+                PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, ObjectDataOutput& output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -68,12 +68,14 @@ namespace hazelcast {
 
                 void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
 
+                void end();
+
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
                     Is_Portable<T>();
                     setPosition(fieldName);
-                    output->writeBoolean(false);
-                    write(*output, portable);
+                    output.writeBoolean(false);
+                    write(portable);
                 };
 
                 template <typename T>
@@ -81,56 +83,57 @@ namespace hazelcast {
                     Is_Portable<T>();
                     setPosition(fieldName);
                     int len = values.size();
-                    output->writeInt(len);
+                    output.writeInt(len);
                     if (len > 0) {
-                        int offset = output->position();
-                        output->position(offset + len * sizeof (int));
+                        int offset = output.position();
+                        output.position(offset + len * sizeof (int));
                         for (int i = 0; i < len; i++) {
-                            output->writeInt(offset + i * sizeof (int), output->position());
-                            write(*output, values[i]);
+                            output.writeInt(offset + i * sizeof (int), output.position());
+                            write(values[i]);
                         }
                     }
                 };
 
-                BufferedDataOutput *getRawDataOutput();
+                ObjectDataOutput *getRawDataOutput();
 
             private:
 
                 void setPosition(const char *fieldName);
 
                 template <typename T>
-                boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                util::AtomicPointer<ClassDefinition> getClassDefinition(const T& p) {
+                    util::AtomicPointer<ClassDefinition> cd;
 
                     int factoryId = p.getFactoryId();
                     int classId = p.getClassId();
-                    if (context->isClassDefinitionExists(factoryId, classId)) {
-                        cd = context->lookup(factoryId, classId);
+                    if (context.isClassDefinitionExists(factoryId, classId)) {
+                        cd = context.lookup(factoryId, classId);
                     } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
+                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
                         p.writePortable(classDefinitionWriter);
                         cd = classDefinitionWriter.getClassDefinition();
-                        cd = context->registerClassDefinition(cd);
+                        cd = context.registerClassDefinition(cd);
                     }
 
                     return cd;
                 };
 
                 template <typename T>
-                void write(BufferedDataOutput &dataOutput, const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
-                    PortableWriter portableWriter(context, cd, &dataOutput);
+                void write(const T& p) {
+                    util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
+                    PortableWriter portableWriter(context, cd, output);
                     p.writePortable(portableWriter);
+                    portableWriter.end();
                 };
 
                 int index;
                 bool raw;
-
-                SerializationContext *context;
-                BufferedDataOutput *output;
+                SerializationContext& context;
+                ObjectDataOutput& output;
+                int begin;
                 int offset;
                 std::set<const char *, util::cStrCmp> writtenFields;
-                boost::shared_ptr<ClassDefinition> cd;
+                util::AtomicPointer<ClassDefinition> cd;
 
             };
 

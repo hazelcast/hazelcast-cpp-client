@@ -1,6 +1,6 @@
 #include "hazelcast/client/Address.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
@@ -49,7 +49,7 @@ namespace hazelcast {
             return protocol::ProtocolConstants::ADDRESS_ID;
         };
 
-        void Address::writeData(serialization::BufferedDataOutput & writer) {
+        void Address::writeData(serialization::ObjectDataOutput & writer) {
             writer.writeInt(port);
             writer.writeByte(type);
             int size = host.size();
@@ -62,7 +62,7 @@ namespace hazelcast {
             }
         };
 
-        void Address::readData(serialization::BufferedDataInput & reader) {
+        void Address::readData(serialization::ObjectDataInput & reader) {
             port = reader.readInt();
             type = reader.readByte();
             int size = reader.readInt();

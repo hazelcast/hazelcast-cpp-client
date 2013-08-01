@@ -34,19 +34,19 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int);
 
-                boost::shared_ptr<ClassDefinition> lookup(int, int);
+                util::AtomicPointer<ClassDefinition> lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                boost::shared_ptr<ClassDefinition> lookup(int, int, int);
+                util::AtomicPointer<ClassDefinition> lookup(int, int, int);
 
-                boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+                util::AtomicPointer<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
-                void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
+                void registerNestedDefinitions(util::AtomicPointer<ClassDefinition>);
 
-                boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+                util::AtomicPointer<ClassDefinition> registerClassDefinition(util::AtomicPointer<ClassDefinition>);
 
-                boost::shared_ptr<ClassDefinition> registerClassDefinition(ClassDefinition* cd);
+                util::AtomicPointer<ClassDefinition> registerClassDefinition(ClassDefinition* cd);
 
                 int getVersion();
 

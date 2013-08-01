@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/ClassDefinition.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
+#include "ObjectDataInput.h"
+#include "ObjectDataOutput.h"
 #include "IOException.h"
 
 namespace hazelcast {
@@ -51,7 +51,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName().c_str()] = fd;
             };
 
-            void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
+            void ClassDefinition::add(util::AtomicPointer<ClassDefinition> cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -67,7 +67,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
+            vector<util::AtomicPointer<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -121,7 +121,7 @@ namespace hazelcast {
                 this->binary.reset(binary.release());
             };
 
-            void ClassDefinition::writeData(BufferedDataOutput& dataOutput) {
+            void ClassDefinition::writeData(ObjectDataOutput& dataOutput) {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
@@ -136,7 +136,7 @@ namespace hazelcast {
                 }
             };
 
-            void ClassDefinition::readData(BufferedDataInput& dataInput) {
+            void ClassDefinition::readData(ObjectDataInput& dataInput) {
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
                 version = dataInput.readInt();
@@ -148,7 +148,7 @@ namespace hazelcast {
                 }
                 size = dataInput.readInt();
                 for (int i = 0; i < size; i++) {
-                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition);
+                    util::AtomicPointer<ClassDefinition> classDefinition(new ClassDefinition);
                     classDefinition->readData(dataInput);
                     add(classDefinition);
                 }

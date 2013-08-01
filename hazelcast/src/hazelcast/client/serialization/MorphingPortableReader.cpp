@@ -12,12 +12,13 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            MorphingPortableReader::MorphingPortableReader(SerializationContext *serializationContext, BufferedDataInput& input, boost::shared_ptr<ClassDefinition> cd)
+            MorphingPortableReader::MorphingPortableReader(SerializationContext & serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd)
             : input(input)
+            , finalPosition(input.readInt()) //TODO what happens in case of exception
+            , offset(input.position())
             , context(serializationContext)
             , cd(cd)
             , raw(false)
-            , offset(input.position())
             , currentFieldType(0) {
 
             };
@@ -36,7 +37,7 @@ namespace hazelcast {
                 } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
             };
 
@@ -56,7 +57,7 @@ namespace hazelcast {
                 } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
             };
 
@@ -65,7 +66,7 @@ namespace hazelcast {
                     return 0;
 
                 if (currentFieldType != FieldTypes::TYPE_BOOLEAN)
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
 
                 return input.readBoolean();
             };
@@ -75,7 +76,7 @@ namespace hazelcast {
                     return 0;
 
                 if (currentFieldType != FieldTypes::TYPE_BYTE)
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
 
                 return input.readByte();
             };
@@ -87,7 +88,7 @@ namespace hazelcast {
 
 
                 if (currentFieldType != FieldTypes::TYPE_CHAR)
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
 
                 return input.readChar();
             };
@@ -112,7 +113,7 @@ namespace hazelcast {
                 } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
             };
 
@@ -132,7 +133,7 @@ namespace hazelcast {
                 } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
             };
 
@@ -146,7 +147,7 @@ namespace hazelcast {
                 if (currentFieldType == FieldTypes::TYPE_SHORT) {
                     return input.readShort();
                 } else {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
             };
 
@@ -156,7 +157,7 @@ namespace hazelcast {
                     return "";
 
                 if (currentFieldType != FieldTypes::TYPE_UTF) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readUTF();
             };
@@ -166,7 +167,7 @@ namespace hazelcast {
                     return std::vector<byte>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_BYTE_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readByteArray();
             };
@@ -176,7 +177,7 @@ namespace hazelcast {
                     return std::vector<char>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_CHAR_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readCharArray();
             };
@@ -186,7 +187,7 @@ namespace hazelcast {
                     std::vector<int>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_INT_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readIntArray();
             };
@@ -196,7 +197,7 @@ namespace hazelcast {
                     std::vector<long>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_LONG_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readLongArray();
             };
@@ -206,7 +207,7 @@ namespace hazelcast {
                     std::vector<double>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_DOUBLE_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readDoubleArray();
             };
@@ -216,7 +217,7 @@ namespace hazelcast {
                     std::vector<float>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_FLOAT_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readFloatArray();
             };
@@ -226,7 +227,7 @@ namespace hazelcast {
                     std::vector<short>(1, 0);
 
                 if (currentFieldType != FieldTypes::TYPE_SHORT_ARRAY) {
-                    throw exception::IOException("MorphingPortableReader::*","IncompatibleClassChangeError");
+                    throw exception::IOException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                 }
                 return input.readShortArray();
             };
@@ -249,7 +250,7 @@ namespace hazelcast {
                 }
             }
 
-            BufferedDataInput *MorphingPortableReader::getRawDataInput() {
+            ObjectDataInput *MorphingPortableReader::getRawDataInput() {
                 if (!raw) {
                     input.position(offset + cd->getFieldCount() * 4);
                     int pos = input.readInt();
@@ -257,8 +258,13 @@ namespace hazelcast {
 
                 }
                 raw = true;
-                return &input;
-            }
+                // TODO input.setSerializationContext(&context);  ? why missing
+                return &input; //TODO why return pointer not reference
+            };
+
+            void MorphingPortableReader::end() {
+                input.position(finalPosition);
+            };
 
         }
     }

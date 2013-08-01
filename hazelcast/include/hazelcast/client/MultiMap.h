@@ -39,7 +39,7 @@ namespace hazelcast {
 
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 context = clientContext;
-                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::CollectionProxyType::MULTI_MAP);
+                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::MULTI_MAP);
             };
 
             /**

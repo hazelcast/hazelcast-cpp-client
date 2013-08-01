@@ -11,33 +11,90 @@
 #include <iosfwd>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/lock_guard.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace hazelcast {
     namespace util {
+
         template <typename T>
         class AtomicPointer {
         public:
-            AtomicPointer():pointer(NULL) {
+            AtomicPointer()
+            : accessLock(new boost::recursive_mutex) {
             };
 
-            AtomicPointer(T *p):pointer(p) {
+            AtomicPointer(T *const p)
+            :pointer(p)
+            , accessLock(new boost::recursive_mutex) {
+
             };
 
-            const boost::shared_ptr<T> get() {
-                boost::lock_guard<boost::mutex> lg(mutex);
-                return pointer;
+            AtomicPointer(const AtomicPointer &rhs) {
+                boost::lock_guard<boost::recursive_mutex> lg(*(rhs.accessLock));
+                pointer = rhs.pointer;
+                accessLock = rhs.accessLock;
             };
 
-            void set(T *p) {
-                boost::lock_guard<boost::mutex> lg(mutex);
-                boost::shared_ptr<T> newPointer(p);
-                pointer = newPointer;
+            void operator = (const AtomicPointer &rhs) {
+                boost::lock_guard<boost::recursive_mutex> lg(*(rhs.accessLock));
+                pointer = rhs.pointer;
+                accessLock = rhs.accessLock;
             };
+
+            ~AtomicPointer() {
+
+            };
+
+            bool operator ==(const AtomicPointer &rhs) const{
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                return pointer == rhs.pointer;
+            };
+
+            bool operator !=(const AtomicPointer &rhs) const{
+                return !(pointer == rhs.pointer);
+            };
+
+            void lock() {
+                accessLock->lock();
+            };
+
+            void unlock() {
+                accessLock->unlock();
+            };
+
+            T operator *() {
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                return *pointer;
+            };
+
+            T *operator ->() const{
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                return pointer.get();
+            };
+
+            T *get() {
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                return pointer.get();
+            };
+
+            void reset() {
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                pointer.reset();
+            };
+
+            void reset(T *p) {
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                pointer.reset(p);
+            };
+
+            int use_count() { //for debug purposes
+                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+                return pointer.use_count();
+            }
 
         private:
-            boost::shared_ptr<T> pointer;
-            boost::mutex mutex;
+            mutable boost::shared_ptr<T> pointer;
+            mutable boost::shared_ptr<boost::recursive_mutex> accessLock;
         };
 
     }

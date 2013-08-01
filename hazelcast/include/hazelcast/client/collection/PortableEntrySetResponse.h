@@ -42,7 +42,7 @@ namespace hazelcast {
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
                     writer.writeInt("s", entrySet.size());
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     for (int i = 0; i < entrySet.size(); ++i) {
                         entrySet[i].first.writeData(*out);
                         entrySet[i].second.writeData(*out);
@@ -53,7 +53,7 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     int size = reader.readInt("s");
                     entrySet.resize(size);
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
                         entrySet[i].first.readData(*in);
                         entrySet[i].second.readData(*in);

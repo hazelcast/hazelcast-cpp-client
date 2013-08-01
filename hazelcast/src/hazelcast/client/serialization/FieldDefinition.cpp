@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/FieldDefinition.h"
-#include "hazelcast/client/serialization/BufferedDataOutput.h"
-#include "hazelcast/client/serialization/BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -54,7 +54,7 @@ namespace hazelcast {
             };
 
 
-            void FieldDefinition::writeData(BufferedDataOutput & dataOutput) {
+            void FieldDefinition::writeData(ObjectDataOutput & dataOutput) {
                 dataOutput.writeInt(index);
                 dataOutput.writeUTF(fieldName);
                 dataOutput.writeByte(type.getId());
@@ -62,7 +62,7 @@ namespace hazelcast {
                 dataOutput.writeInt(classId);
             };
 
-            void FieldDefinition::readData(BufferedDataInput & dataInput) {
+            void FieldDefinition::readData(ObjectDataInput & dataInput) {
                 index = dataInput.readInt();
                 fieldName = dataInput.readUTF();
                 type.id = dataInput.readByte();

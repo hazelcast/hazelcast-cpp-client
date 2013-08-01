@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 template<typename Response, typename Request >
                 Response invokeOnKeyOwner(const Request& request, serialization::Data& key) {
-                    boost::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
+                    util::AtomicPointer<Address> owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         return invokeOnTarget<Response>(request, *owner);
                     }
@@ -36,10 +36,9 @@ namespace hazelcast {
                     clusterService.sendAndHandle(request, handler);
                 };
 
-
                 template<typename Request, typename  ResponseHandler>
                 void invokeOnKeyOwner(const Request& request, serialization::Data& key, const ResponseHandler&  handler) {
-                    boost::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
+                    util::AtomicPointer<Address> owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         invokeOnTarget(request, *owner, handler);
                     }

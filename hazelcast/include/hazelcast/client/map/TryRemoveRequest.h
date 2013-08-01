@@ -33,7 +33,7 @@ namespace hazelcast {
                     writer.writeLong("timeout", timeout);
                     writer.writeUTF("n", name);
                     writer.writeInt("t", threadId);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                 };
 
@@ -42,7 +42,7 @@ namespace hazelcast {
                     timeout = reader.readLong("timeout");
                     name = reader.readUTF("n");
                     threadId = reader.readInt("t");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                 };
 

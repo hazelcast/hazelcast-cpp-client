@@ -1,8 +1,8 @@
 #ifndef HAZELCAST_SERIALIZATION_CONSTRAINTS
 #define HAZELCAST_SERIALIZATION_CONSTRAINTS
 
-#include "BufferedDataInput.h"
-#include "BufferedDataOutput.h"
+#include "ObjectDataInput.h"
+#include "ObjectDataOutput.h"
 #include <vector>
 #include <string>
 
@@ -72,7 +72,7 @@ namespace hazelcast {
                 void writePortableArray(const char *fieldName, const std::vector<T>& values) {
                 };
 
-                BufferedDataOutput *getRawDataOutput() {
+                ObjectDataOutput *getRawDataOutput() {
                 };
 
             };
@@ -151,7 +151,7 @@ namespace hazelcast {
                 std::vector< T > readPortableArray(const char *fieldName) {
                 };
 
-                BufferedDataInput *getRawDataInput() {
+                ObjectDataInput *getRawDataInput() {
 
                 };
             };
@@ -184,9 +184,9 @@ namespace hazelcast {
                 static void constraints(T& t) {
                     int s = t.getFactoryId();
                     s = t.getClassId();
-                    BufferedDataOutput o;
+                    ObjectDataOutput o;
                     std::vector<byte> a;
-                    BufferedDataInput i(a);
+                    ObjectDataInput i(a);
                     t.writeData(o);
                     t.readData(i);
                 }
@@ -194,7 +194,7 @@ namespace hazelcast {
                 static void const_constraints(T& t) {
                     int s = t.getFactoryId();
                     s = t.getClassId();
-                    BufferedDataOutput o;
+                    ObjectDataOutput o;
                     t.writeData(o);
                 }
 

@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 8;
+int THREAD_COUNT = 1;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
@@ -97,6 +97,8 @@ public:
             } catch(std::exception& e){
                 std::cout << ">> " << e.what() << std::endl;
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
+            } catch(...){
+                std::cout << "unkown exception" << std::endl;
             }
 
         }
@@ -126,6 +128,8 @@ public:
             monitor.join();
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
+        } catch(...){
+            std::cout << "unkown exception simpleMapTest " << std::endl;
         }
     }
 

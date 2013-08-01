@@ -35,7 +35,7 @@ namespace hazelcast {
                     return DataSerializableHook::ENTRY_VIEW;
                 };
 
-                void writeData(serialization::BufferedDataOutput& out) const {
+                void writeData(serialization::ObjectDataOutput& out) const {
 //                    writer << key;
 //                    writer << value;TODO ???
                     out.writeLong(cost);
@@ -48,7 +48,7 @@ namespace hazelcast {
                     out.writeLong(version);
                 };
 
-                void readData(serialization::BufferedDataInput& in) {
+                void readData(serialization::ObjectDataInput& in) {
 //                    reader >> key;  TODO ???
 //                    reader >> value;
                     cost = in.readLong();

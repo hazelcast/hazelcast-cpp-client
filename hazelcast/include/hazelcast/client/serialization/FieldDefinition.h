@@ -16,9 +16,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class BufferedDataInput;
+            class ObjectDataInput;
 
-            class BufferedDataOutput;
+            class ObjectDataOutput;
 
 
             class FieldDefinition {
@@ -44,9 +44,9 @@ namespace hazelcast {
 
                 bool operator !=(const FieldDefinition&) const;
 
-                void writeData(BufferedDataOutput & dataOutput);
+                void writeData(ObjectDataOutput & dataOutput);
 
-                void readData(BufferedDataInput & dataInput);
+                void readData(ObjectDataInput & dataInput);
 
             private:
                 int index;

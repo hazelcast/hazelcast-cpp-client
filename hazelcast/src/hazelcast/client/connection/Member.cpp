@@ -4,8 +4,8 @@
 
 
 #include "Member.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
 
 
 namespace hazelcast {
@@ -61,12 +61,12 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::MEMBER_ID;
             };
 
-            void Member::writeData(serialization::BufferedDataOutput & writer) {
+            void Member::writeData(serialization::ObjectDataOutput & writer) {
                 address.writeData(writer);
                 writer.writeUTF(uuid);
             };
 
-            void Member::readData(serialization::BufferedDataInput & reader) {
+            void Member::readData(serialization::ObjectDataInput & reader) {
                 address.readData(reader);
                 uuid = reader.readUTF();
             };

@@ -20,11 +20,11 @@ namespace hazelcast {
                 return ProtocolConstants::PING;
             }
 
-            void PingRequest::writeData(serialization::BufferedDataOutput & writer) const {
+            void PingRequest::writeData(serialization::ObjectDataOutput & writer) const {
 
             }
 
-            void PingRequest::readData(serialization::BufferedDataInput & reader) {
+            void PingRequest::readData(serialization::ObjectDataInput & reader) {
 
             }
 

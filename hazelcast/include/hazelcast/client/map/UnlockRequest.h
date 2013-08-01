@@ -39,7 +39,7 @@ namespace hazelcast {
                     writer.writeUTF("n", name);
                     writer.writeInt("thread", threadId);
                     writer.writeBoolean("force", force);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     key.writeData(*out);
                 };
 
@@ -48,7 +48,7 @@ namespace hazelcast {
                     name = reader.readUTF("n");
                     threadId = reader.readInt("thread");
                     force = reader.readBoolean("force");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     key.readData(*in);
                 };
             private:

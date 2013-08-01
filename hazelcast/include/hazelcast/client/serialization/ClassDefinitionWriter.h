@@ -27,7 +27,7 @@ namespace hazelcast {
             class ClassDefinitionWriter {
             public:
 
-                ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext *serializationContext);
+                ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext& serializationContext);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -77,9 +77,27 @@ namespace hazelcast {
                     addNestedField(portables[0], fd);
                 };
 
-                boost::shared_ptr<ClassDefinition> getClassDefinition();
+                util::AtomicPointer<ClassDefinition> getClassDefinition();
 
-                BufferedDataOutput *getRawDataOutput();
+                ObjectDataOutput *getRawDataOutput();
+
+                template <typename T>
+                util::AtomicPointer<ClassDefinition> getOrBuildClassDefinition(const T& p) {
+                    util::AtomicPointer<ClassDefinition> cd;
+
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
+                    if (context.isClassDefinitionExists(factoryId, classId)) {
+                        cd = context.lookup(factoryId, classId);
+                    } else {
+                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
+                        p.writePortable(classDefinitionWriter);
+                        cd = classDefinitionWriter.getClassDefinition();
+                        cd = context.registerClassDefinition(cd);
+                    }
+
+                    return cd;
+                };
 
             private:
                 void addField(const char *fieldName, FieldType const&);
@@ -87,34 +105,16 @@ namespace hazelcast {
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
                     cd->add(fd);
-                    boost::shared_ptr<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
+                    util::AtomicPointer<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
                     cd->add(nestedCd);
-                };
-
-                template <typename T>
-                boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(const T& p) {
-                    boost::shared_ptr<ClassDefinition> cd;
-
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-                    if (context->isClassDefinitionExists(factoryId, classId)) {
-                        cd = context->lookup(factoryId, classId);
-                    } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context->getVersion(), context);
-                        p.writePortable(classDefinitionWriter);
-                        cd = classDefinitionWriter.getClassDefinition();
-                        cd = context->registerClassDefinition(cd);
-                    }
-
-                    return cd;
                 };
 
                 int factoryId;
                 int classId;
                 int index;
                 bool raw;
-                boost::shared_ptr<ClassDefinition> cd;
-                SerializationContext *context;
+                util::AtomicPointer<ClassDefinition> cd;
+                SerializationContext& context;
                 EmptyDataOutput emptyDataOutput;
 
             };

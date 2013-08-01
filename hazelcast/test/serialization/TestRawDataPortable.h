@@ -42,7 +42,7 @@ public:
         writer.writeLong("l", l);
         writer.writeCharArray("c", c);
         writer.writePortable("p", p);
-        BufferedDataOutput *out = writer.getRawDataOutput();
+        ObjectDataOutput *out = writer.getRawDataOutput();
         out->writeInt(k);
         out->writeUTF(s);
         ds.writeData(*out);
@@ -53,7 +53,7 @@ public:
         l = reader.readLong("l");
         c = reader.readCharArray("c");
         p = reader.template readPortable<TestNamedPortable>("p");
-        BufferedDataInput *in = reader.getRawDataInput();
+        ObjectDataInput *in = reader.getRawDataInput();
         k = in->readInt();
         s = in->readUTF();
         ds.readData(*in);

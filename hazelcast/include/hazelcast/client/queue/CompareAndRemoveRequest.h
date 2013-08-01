@@ -37,7 +37,7 @@ namespace hazelcast {
                     writer.writeUTF("n", name);
                     writer.writeBoolean("r", retain);
                     writer.writeInt("s", dataList.size());
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     for (int i = 0; i < dataList.size(); ++i) {
                         dataList[i].writeData(*out);
                     }
@@ -49,7 +49,7 @@ namespace hazelcast {
                     retain = reader.readBoolean("r");
                     int size = reader.readInt("s");
                     dataList.resize(size);
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
                         dataList[i].readData(*in);
                     }

@@ -56,7 +56,7 @@ namespace hazelcast {
                         writer.writeUTF("p", sql);
                     }
                     if (hasKey) {
-                        serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                        serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                         key.writeData(*out);
                     }
                 };
@@ -71,7 +71,7 @@ namespace hazelcast {
                         sql = reader.readUTF("p");
                     }
                     if (hasKey) {
-                        serialization::BufferedDataInput *in = reader.getRawDataInput();
+                        serialization::ObjectDataInput *in = reader.getRawDataInput();
                         key.readData(*in);
                     }
                 };

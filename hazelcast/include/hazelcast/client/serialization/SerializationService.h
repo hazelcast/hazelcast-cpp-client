@@ -17,10 +17,11 @@
 #include "Portable.h"
 #include "DataSerializable.h"
 #include "Serializer.h"
-#include "BufferedDataOutput.h"
-#include "BufferedDataInput.h"
 #include "Data.h"
 #include "SerializationConstraints.h"
+#include "ObjectDataOutput.h"
+#include "ObjectDataInput.h"
+#include "SerializerHolder.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/ConcurrentMap.h"
 #include <iosfwd>
@@ -49,7 +50,7 @@ namespace hazelcast {
                     Is_Portable<T>();
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
-                    BufferedDataOutput output;
+                    ObjectDataOutput output;
                     portableSerializer.write(output, *object);
                     int factoryId = object->getFactoryId();
                     int classId = object->getClassId();
@@ -64,7 +65,7 @@ namespace hazelcast {
                     Is_DataSerializable<T>();
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
-                    BufferedDataOutput output;
+                    ObjectDataOutput output;
                     dataSerializer.write(output, *object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
@@ -75,7 +76,7 @@ namespace hazelcast {
                 Data toData(const void *serializable) {
                     const T *object = static_cast<const T *>(serializable);
                     Data data;
-                    BufferedDataOutput output;
+                    ObjectDataOutput output;
                     int type = getSerializerId(*object);
                     SerializerBase *serializer = serializerFor(type);
                     if (serializer) {
@@ -92,16 +93,16 @@ namespace hazelcast {
                 template<typename T>
                 inline T toObject(const Data& data) {
                     checkServerError(data);
-                    T object;
-                    if (data.bufferSize() == 0) return object;
-                    return toObjectResolved<T>(data, &object);
+                    T *tag;
+                    return toObjectResolved<T>(data, tag);
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, Portable *portable) {
+                inline T toObjectResolved(const Data& data, Portable *tag) {
                     Is_Portable<T>();
                     T object;
-                    BufferedDataInput dataInput(*(data.buffer.get()));
+                    if (data.bufferSize() == 0) return object;
+                    ObjectDataInput dataInput(*(data.buffer.get()),serializerHolder,serializationContext);
 
                     serializationContext.registerClassDefinition(data.cd);
                     int factoryId = data.cd->getFactoryId();
@@ -112,19 +113,19 @@ namespace hazelcast {
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, DataSerializable *dataSerializable) {
+                inline T toObjectResolved(const Data& data, DataSerializable *tag) {
                     Is_DataSerializable<T>();
                     T object;
-                    BufferedDataInput dataInput(*(data.buffer.get()));
-
+                    if (data.bufferSize() == 0) return object;
+                    ObjectDataInput dataInput(*(data.buffer.get()));
                     dataSerializer.read(dataInput, object);
                     return object;
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, void *serializable) {
+                inline T toObjectResolved(const Data& data, void *tag) {
                     T object;
-                    BufferedDataInput dataInput(*(data.buffer.get()));
+                    ObjectDataInput dataInput(*(data.buffer.get()));
                     SerializerBase *serializer = serializerFor(getSerializerId(object));
                     if (serializer) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);;
@@ -137,7 +138,6 @@ namespace hazelcast {
 
                 SerializationContext& getSerializationContext();
 
-
             private:
                 SerializerBase *serializerFor(int id);
 
@@ -145,8 +145,8 @@ namespace hazelcast {
 
                 void checkServerError(const Data& data);
 
-                util::ConcurrentMap<int, SerializerBase> serializers;
                 SerializationContext serializationContext;
+                SerializerHolder serializerHolder;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
 
@@ -155,7 +155,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<byte >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const byte *object = static_cast<const byte *>(serializable);
                 output.writeByte(*object);
                 Data data;
@@ -166,7 +166,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<bool>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const bool *object = static_cast<const bool *>(serializable);
                 output.writeBoolean(*object);
                 Data data;
@@ -177,7 +177,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<char>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const char *object = static_cast<const char *>(serializable);
                 output.writeChar(*object);
                 Data data;
@@ -188,7 +188,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<short>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const short *object = static_cast<const short *>(serializable);
                 output.writeShort(*object);
                 Data data;
@@ -199,7 +199,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<int>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const int *object = static_cast<const int *>(serializable);
                 output.writeInt(*object);
                 Data data;
@@ -210,7 +210,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<long>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const long *object = static_cast<const long *>(serializable);
                 output.writeLong(*object);
                 Data data;
@@ -221,7 +221,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<float>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const float *object = static_cast<const float *>(serializable);
                 output.writeFloat(*object);
                 Data data;
@@ -232,7 +232,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<double>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const double *object = static_cast<const double *>(serializable);
                 output.writeDouble(*object);
                 Data data;
@@ -243,7 +243,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<byte> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<byte> *object = static_cast<const std::vector<byte> *>(serializable);
                 output.writeByteArray(*object);
                 Data data;
@@ -254,7 +254,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<char> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<char> *object = static_cast<const std::vector<char> *>(serializable);
                 output.writeCharArray(*object);
                 Data data;
@@ -265,7 +265,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<short> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<short> *object = static_cast<const std::vector<short> *>(serializable);
                 output.writeShortArray(*object);
                 Data data;
@@ -276,7 +276,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<int> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<int> *object = static_cast<const std::vector<int> *>(serializable);
                 output.writeIntArray(*object);
                 Data data;
@@ -287,7 +287,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<long> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<long> *object = static_cast<const std::vector<long> *>(serializable);
                 output.writeLongArray(*object);
                 Data data;
@@ -298,7 +298,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<float> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<float> *object = static_cast<const std::vector<float> *>(serializable);
                 output.writeFloatArray(*object);
                 Data data;
@@ -309,7 +309,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::vector<double> >(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::vector<double> *object = static_cast<const std::vector<double> *>(serializable);
                 output.writeDoubleArray(*object);
                 Data data;
@@ -320,7 +320,7 @@ namespace hazelcast {
 
             template<>
             inline Data SerializationService::toData<std::string>(const void *serializable) {
-                BufferedDataOutput output;
+                ObjectDataOutput output;
                 const std::string *object = static_cast<const std::string *>(serializable);
                 output.writeUTF(*object);
                 Data data;
@@ -333,7 +333,7 @@ namespace hazelcast {
                 checkServerError(data);
                 byte object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readByte();
             };
 
@@ -342,7 +342,7 @@ namespace hazelcast {
                 checkServerError(data);
                 bool object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readBoolean();
             };
 
@@ -351,7 +351,7 @@ namespace hazelcast {
                 checkServerError(data);
                 char object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readChar();
             };
 
@@ -360,7 +360,7 @@ namespace hazelcast {
                 checkServerError(data);
                 short object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readShort();
             };
 
@@ -369,7 +369,7 @@ namespace hazelcast {
                 checkServerError(data);
                 int object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readInt();
             };
 
@@ -378,7 +378,7 @@ namespace hazelcast {
                 checkServerError(data);
                 long object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readLong();
             };
 
@@ -387,7 +387,7 @@ namespace hazelcast {
                 checkServerError(data);
                 float object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readFloat();
             };
 
@@ -396,7 +396,7 @@ namespace hazelcast {
                 checkServerError(data);
                 double object = 0;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readDouble();
             };
 
@@ -405,7 +405,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<byte> object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readByteArray();
             };
 
@@ -414,7 +414,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<char> object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readCharArray();
             };
 
@@ -423,7 +423,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<short > object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readShortArray();
             };
 
@@ -432,7 +432,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<int> object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readIntArray();
             };
 
@@ -441,7 +441,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<long> object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readLongArray();
             };
 
@@ -450,7 +450,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<float> object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readFloatArray();
             };
 
@@ -459,7 +459,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::vector<double > object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readDoubleArray();
             };
 
@@ -468,7 +468,7 @@ namespace hazelcast {
                 checkServerError(data);
                 std::string object;
                 if (data.bufferSize() == 0) return object;
-                BufferedDataInput dataInput(*(data.buffer.get()));
+                ObjectDataInput dataInput(*(data.buffer.get()));
                 return dataInput.readUTF();
             };
         }

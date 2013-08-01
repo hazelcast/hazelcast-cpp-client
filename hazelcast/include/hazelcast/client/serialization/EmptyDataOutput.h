@@ -10,7 +10,7 @@
 #define HAZELCAST_EMPTY_DATA_OUTPUT
 
 #include "IException.h"
-#include "BufferedDataOutput.h"
+#include "ObjectDataOutput.h"
 #include <vector>
 #include <iosfwd>
 
@@ -20,7 +20,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class EmptyDataOutput : public BufferedDataOutput{
+            class EmptyDataOutput : public ObjectDataOutput {
             public:
 
                 void write(const std::vector<byte>& bytes);

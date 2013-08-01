@@ -12,9 +12,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class BufferedDataOutput;
+            class ObjectDataOutput;
 
-            class BufferedDataInput;
+            class ObjectDataInput;
 
             class SerializerBase {
             public:
@@ -31,9 +31,9 @@ namespace hazelcast {
 
                 };
 
-                virtual void write(BufferedDataOutput &out, const Serializable& object) = 0;
+                virtual void write(ObjectDataOutput &out, const Serializable& object) = 0;
 
-                virtual void read(BufferedDataInput &in, Serializable & object) = 0;
+                virtual void read(ObjectDataInput &in, Serializable & object) = 0;
 
             };
 

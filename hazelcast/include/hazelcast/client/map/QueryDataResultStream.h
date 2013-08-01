@@ -38,7 +38,7 @@ namespace hazelcast {
                     return q;
                 };
 
-                void writeData(serialization::BufferedDataOutput& writer) const {
+                void writeData(serialization::ObjectDataOutput& writer) const {
                     writer.writeBoolean(isSet);
                     writer.writeUTF(iterationType);
                     writer.writeInt(q.size());
@@ -47,7 +47,7 @@ namespace hazelcast {
                     }
                 };
 
-                void readData(serialization::BufferedDataInput& reader) {
+                void readData(serialization::ObjectDataInput& reader) {
                     isSet = reader.readBoolean();
                     iterationType = reader.readUTF();
                     int size = reader.readInt();

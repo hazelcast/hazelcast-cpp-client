@@ -48,7 +48,7 @@ namespace hazelcast {
                 void writePortable(HzWriter& writer) const {
                     writer.writeLong("pt", publishTime);
                     writer.writeUTF("u", uuid);
-                    serialization::BufferedDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     message.writeData(*out);
                 };
 
@@ -56,7 +56,7 @@ namespace hazelcast {
                 void readPortable(HzReader& reader) {
                     publishTime = reader.readLong("pt");
                     uuid = reader.readUTF("u");
-                    serialization::BufferedDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput *in = reader.getRawDataInput();
                     message.readData(*in);
                 };
             private:
