@@ -162,7 +162,7 @@ namespace hazelcast {
             void set(const K& key, const V& value, long ttl) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::SetRequest request(instanceName, keyData, util::getThreadId(), ttl);
+                map::SetRequest request(instanceName, keyData, valueData,util::getThreadId(), ttl);
                 invoke<bool>(request, keyData);
             };
 
@@ -296,7 +296,7 @@ namespace hazelcast {
 
             std::vector<K> keySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "KEY", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<K> keySet(dataResult.size());
                 for (int i = 0; i <dataResult.size(); ++i) {
@@ -307,7 +307,7 @@ namespace hazelcast {
 
             std::vector<V> values(const std::string& sql) {
                 map::QueryRequest request(instanceName, "VALUE", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<V> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
@@ -318,7 +318,7 @@ namespace hazelcast {
 
             std::vector<std::pair<K, V> > entrySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "ENTRY", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke(request);
+                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<std::pair<K, V> > keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {

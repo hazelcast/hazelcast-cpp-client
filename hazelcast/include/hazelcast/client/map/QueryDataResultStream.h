@@ -20,6 +20,11 @@ namespace hazelcast {
         namespace map {
             class QueryDataResultStream : public DataSerializable {
             public:
+                QueryDataResultStream()
+                :isSet(true){
+                    
+                };
+                
                 QueryDataResultStream(const std::string& name, const std::string& iterationType, const std::string& sql)
                 :iterationType(iterationType)
                 , isSet(true) {
