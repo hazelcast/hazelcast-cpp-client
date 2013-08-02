@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ReplaceRequest {
+            class ReplaceRequest : public Portable {
             public:
                 ReplaceRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId)
                 :name(name)
@@ -18,10 +18,6 @@ namespace hazelcast {
                 , value(value)
                 , threadId(threadId) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {

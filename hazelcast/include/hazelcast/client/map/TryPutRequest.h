@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class TryPutRequest {
+            class TryPutRequest  : public Portable {
             public:
                 TryPutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long timeout)
                 :name(name)
@@ -20,10 +20,6 @@ namespace hazelcast {
                 , ttl(-1)
                 , timeout(timeout) {
 
-                };
-
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
                 int getFactoryId() const {

@@ -67,7 +67,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            vector<util::AtomicPointer<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
+            std::vector<util::AtomicPointer<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 

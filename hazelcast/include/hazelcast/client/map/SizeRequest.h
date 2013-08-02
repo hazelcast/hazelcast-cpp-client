@@ -30,12 +30,12 @@ namespace hazelcast {
 
                 template<typename HzWriter>
                 inline void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("name", name);
+                    writer.writeUTF("n", name);
                 };
 
                 template<typename HzReader>
                 inline void readPortable(HzReader& reader) {
-                    name = reader.readUTF("name");
+                    name = reader.readUTF("n");
                 };
             private:
                 std::string name;

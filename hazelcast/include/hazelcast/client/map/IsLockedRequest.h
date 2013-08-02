@@ -4,7 +4,7 @@
 
 
 #ifndef HAZELCAST_MAP_IS_LOCKED_REQUEST
-#define HAZELCASTMAP_IS_LOCKED_REQUEST
+#define HAZELCAST_MAP_IS_LOCKED_REQUEST
 
 #include "PortableHook.h"
 #include "../serialization/SerializationConstants.h"
