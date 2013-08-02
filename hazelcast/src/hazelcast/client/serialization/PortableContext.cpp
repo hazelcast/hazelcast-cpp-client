@@ -39,42 +39,49 @@ namespace hazelcast {
 
             };
 
-            util::AtomicPointer<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > binary) {
-
-                std::vector<byte> decompressed = decompress(*(binary.get()));
+            util::AtomicPointer<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > compressedBinary) {
+                if (compressedBinary.get() == NULL || compressedBinary.get()->size() == 0) {
+                    throw exception::IOException("PortableContext::createClassDefinition", "Illegal class-definition binary! ");
+                }
+                std::vector<byte> decompressed = decompress(*(compressedBinary.get()));
 
                 ObjectDataInput dataInput(decompressed);
                 util::AtomicPointer<ClassDefinition> cd(new ClassDefinition);
                 cd->readData(dataInput);
-                cd->setBinary(binary);
+                cd->setBinary(compressedBinary);
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
-                if (versionedDefinitions.containsKey(key) == 0) {
+                util::AtomicPointer<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(key, cd);
+                if (currentCD == NULL) {
                     serializationContext->registerNestedDefinitions(cd);
-                    util::AtomicPointer<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(key, cd);
-                    return pDefinition == NULL ? cd : pDefinition;
+                    return cd;
+                } else {
+                    return currentCD;
                 }
-                return versionedDefinitions.get(key);
             };
 
             util::AtomicPointer<ClassDefinition> PortableContext::registerClassDefinition(util::AtomicPointer<ClassDefinition> cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
-                if (!isClassDefinitionExists(cd->getClassId(), cd->getVersion())) {
-                    if (cd->getBinary().size() == 0) {
-                        ObjectDataOutput output;
-                        cd->writeData(output);
-                        std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
-                        compress(*(binary.get()));
-                        cd->setBinary(binary);
-                    }
-                    long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    util::AtomicPointer<ClassDefinition> pDefinition = versionedDefinitions.putIfAbsent(versionedClassId, cd);
-                    return pDefinition == NULL ? cd : pDefinition;
+
+                if (cd->getBinary().size() == 0) {
+                    ObjectDataOutput output;
+                    cd->writeData(output);
+                    std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
+                    compress(*(binary.get()));
+                    cd->setBinary(binary);
                 }
-                return lookup(cd->getClassId(), cd->getVersion());
+
+                long key = combineToLong(cd->getClassId(), cd->getVersion());
+                util::AtomicPointer<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(key, cd);
+                if (currentCD == NULL) {
+                    serializationContext->registerNestedDefinitions(cd);
+                    return cd;
+                } else {
+                    return currentCD;
+                }
             };
 
             void PortableContext::compress(std::vector<byte>& binary) {
