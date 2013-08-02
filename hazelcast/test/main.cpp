@@ -4,6 +4,7 @@
 #include "QueueTest.h"
 #include "mapTest.h"
 #include "IAtomicLongTest.h"
+#include "IdGeneratorTest.h"
 
 int testSpeed() {
     SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
@@ -18,8 +19,10 @@ int main(int argc, char **argv) {
     //serializationTest.executeTests();
     //MapTest mapTest;
     //mapTest.executeTests();
-    IAtomicLongTest atomTest;
-    atomTest.executeTests();
+    //IAtomicLongTest atomTest;
+    //atomTest.executeTests();
+    IdGeneratorTest generatorTest;
+    generatorTest.executeTests();
     return 0;
 
 //    return testSpeed();
