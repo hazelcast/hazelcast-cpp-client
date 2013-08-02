@@ -11,21 +11,25 @@
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/Util.h"
-#include <hazelcast/client/ClientConfig.h>
-#include <iTest/iTest.h>
+#include "IAtomicLong.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "iTest.h"
 
-
-using namespace hazelcast::client::IAtomicLong;
+using namespace hazelcast::client;
 using namespace std;
 using namespace iTest;
 
 
-class ClientAtomiclLong {
+class IAtomicLongTest : public iTestFixture<IAtomicLongTest>{
     
 public:
     
+    IAtomicLongTest(){
+        
+    };
+    
     void addTests() {
-        addTest(&ClientAtomiclLong::test, "ClientAtomicLongTest");
+        addTest(&IAtomicLongTest::test, "ClientAtomicLongTest");
     };
     
     void beforeClass() {
@@ -33,7 +37,7 @@ public:
         clientConfig.addAddress(Address("localhost", 5701));
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         client = new HazelcastClient(clientConfig);
-        atom = new IAtomicLong(client->getMap("IAtomicLongTest"));
+        atom = new IAtomicLong(client->getIAtomicLong("IAtomicLongTest"));
     };
     
     void afterClass() {
@@ -50,19 +54,19 @@ public:
     };
     
     void test(){
-        assert(atom->getAndAdd(2) == 0);
-        assert(atom->get() == 0);
+        assertEqual(0, atom->getAndAdd(2));
+        assertEqual(2, atom->get());
         atom->set(5);
-        assert(atom->get() == 5);
-        assert(atom->getAndAdd(3) == 8);
-        assert(!(atom->compareAndSet(7, 4)));
-        assert(atom->get() == 8);
-        assert(atom->compareAndSet(8, 4));
-        assert(atom->get() == 4);
-        assert(atom->decrementAndGet() == 3);
-        assert(atom->getAndIncrement() == 3);
-        assert(atom->getAndSet(9) == 4);
-        assert(atom->incrementAndGet() == 10);
+        assertEqual(5, atom->get());
+        assertEqual(8, atom->addAndGet(3));
+        assertFalse(atom->compareAndSet(7, 4));
+        assertEqual(8, atom->get());
+        assertTrue(atom->compareAndSet(8, 4));
+        assertEqual(4, atom->get());
+        assertEqual(3, atom->decrementAndGet());
+        assertEqual(3, atom->getAndIncrement());
+        assertEqual(4, atom->getAndSet(9));
+        assertEqual(10, atom->incrementAndGet());
     }
     
 private:
