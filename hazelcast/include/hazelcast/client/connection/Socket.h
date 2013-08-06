@@ -21,9 +21,9 @@ namespace hazelcast {
 
                 void connect();
 
-                void send(const void *buffer, int len);
+                void send(const void *buffer, int len) const;
 
-                void receive(void *buffer, int len);
+                void receive(void *buffer, int len) const;
 
                 std::string getHost() const;
 

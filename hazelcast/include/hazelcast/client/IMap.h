@@ -56,12 +56,8 @@ namespace hazelcast {
 
         template<typename K, typename V>
         class IMap {
+            friend class HazelcastClient;
         public:
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                this->context = clientContext;
-                this->instanceName = instanceName;
-            };
 
             bool containsKey(const K& key) {
                 serialization::Data keyData = toData(key);
@@ -81,7 +77,7 @@ namespace hazelcast {
                 return invoke<V>(request, keyData);
             };
 
-            V put(const K& key, V& value) {
+            V put(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 map::PutRequest request(instanceName, keyData, valueData, util::getThreadId(), 0);
@@ -382,6 +378,11 @@ namespace hazelcast {
             };
 
         private:
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
+            };
+
             void onDestroy() {
                 map::DestroyRequest request (instanceName);
                 invoke<bool>(request);

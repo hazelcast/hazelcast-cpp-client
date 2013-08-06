@@ -19,11 +19,11 @@ namespace hazelcast {
                 };
 
                 int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
+                    return QueuePortableHook::F_ID;
                 }
 
                 int getClassId() const {
-                    return queue::QueuePortableHook::REMAINING_CAPACITY;
+                    return QueuePortableHook::REMAINING_CAPACITY;
                 };
 
                 template<typename HzWriter>

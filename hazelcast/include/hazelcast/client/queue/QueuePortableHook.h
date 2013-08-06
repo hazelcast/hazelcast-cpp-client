@@ -26,7 +26,10 @@ namespace hazelcast {
                     ADD_ALL = 11,
                     ADD_LISTENER = 12,
                     REMAINING_CAPACITY = 13,
-                    DESTROY = 14
+                    DESTROY = 14,
+                    TXN_OFFER = 15,
+                    TXN_POLL = 16,
+                    TXN_SIZE = 17
                 };
             }
 

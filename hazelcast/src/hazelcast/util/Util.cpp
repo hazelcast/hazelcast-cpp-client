@@ -7,8 +7,9 @@
 
 
 #include "Util.h"
+#include "ObjectDataOutput.h"
+#include "Data.h"
 #include <boost/thread.hpp>
-#include <sstream>
 
 namespace hazelcast {
     namespace util {
@@ -18,12 +19,26 @@ namespace hazelcast {
             return s.str();
         };
 
-        int getThreadId(){
-            std::stringstream  s;
+        int getThreadId() {
+            std::stringstream s;
             s << boost::this_thread::get_id();
             int threadNumber;
             sscanf(s.str().c_str(), "%ix", &threadNumber);
             return threadNumber;
+        };
+
+        void writeNullableData(client::serialization::ObjectDataOutput& out, client::serialization::Data *data) {
+            if (data != NULL) {
+                out.writeBoolean(true);
+                data->writeData(out);
+            } else {
+                // null
+                out.writeBoolean(false);
+            }
+        };
+
+        long getCurrentTimeMillis() {
+            return boost::posix_time::microsec_clock::local_time().time_of_day().total_milliseconds();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace  atomicVisibility {
         long last;
         while (i--) {
             int *pInt = new int;
-            *pInt = boost::posix_time::microsec_clock::local_time().time_of_day().total_milliseconds();
+            *pInt = hazelcast::util::getCurrentTimeMillis();
             testptr.reset(pInt);
             last = *pInt;
         }

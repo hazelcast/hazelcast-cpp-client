@@ -15,6 +15,13 @@
 #include <vector>
 
 namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            class ObjectDataOutput;
+
+            class Data;
+        }
+    }
     namespace util {
 
         struct cStrCmp {
@@ -26,6 +33,10 @@ namespace hazelcast {
         std::string to_string(int);
 
         int getThreadId();
+
+        void writeNullableData(client::serialization::ObjectDataOutput * out, client::serialization::Data * data);
+
+        long getCurrentTimeMillis();
 
     }
 }
