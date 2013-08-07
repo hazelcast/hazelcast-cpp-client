@@ -1,81 +1,63 @@
 //
-//  ObjectDataInput.cpp
-//  Server
-//
-//  Created by sancar koyunlu on 1/3/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
-#include "ObjectDataInput.h"
+// Created by sancar koyunlu on 8/7/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+#include "DataInput.h"
+#include "IOException.h"
+#include "Util.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(DataInput & dataInput, SerializerHolder& serializerHolder, SerializationContext & context)
-            : buffer(dataInput.buffer)
-            , pos(dataInput.position())
-            , serializationContext(&context)
-            , serializerHolder(&serializerHolder) {
-
-            }
-
-            ObjectDataInput::ObjectDataInput(const std::vector<byte>& rhsBuffer, SerializerHolder& serializerHolder, SerializationContext& context)
+            DataInput::DataInput(const std::vector<byte>& rhsBuffer)
             :buffer(rhsBuffer)
-            , pos(0)
-            , serializationContext(&context)
-            , serializerHolder(&serializerHolder) {
+            , pos(0) {
             };
 
-            ObjectDataInput::ObjectDataInput(ObjectDataInput const & param)
+            DataInput::DataInput(DataInput const & param)
             :buffer(param.buffer) {
                 //private
             };
 
-            ObjectDataInput& ObjectDataInput::operator = (const ObjectDataInput&) {
+            DataInput& DataInput::operator = (const DataInput&) {
                 //private
                 return *this;
             };
 
-            void ObjectDataInput::setSerializationContext(SerializationContext *context) {
-                this->serializationContext = context;
-            };
-
-            SerializationContext *ObjectDataInput::getSerializationContext() {
-                return serializationContext;
-            };
-
-            void ObjectDataInput::readFully(std::vector<byte>& bytes) {
+            void DataInput::readFully(std::vector<byte>& bytes) {
                 bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
                 pos += bytes.size();
             };
 
-            int ObjectDataInput::skipBytes(int i) {
+            int DataInput::skipBytes(int i) {
                 pos += i;
                 return i;
             };
 
-            bool ObjectDataInput::readBoolean() {
+            bool DataInput::readBoolean() {
                 return readByte();
             };
 
-            byte ObjectDataInput::readByte() {
+            byte DataInput::readByte() {
                 return buffer[pos++];
             };
 
-            short ObjectDataInput::readShort() {
+            short DataInput::readShort() {
                 byte a = readByte();
                 byte b = readByte();
                 return (0xff00 & (a << 8)) |
                         (0x00ff & b);
             };
 
-            char ObjectDataInput::readChar() {
+            char DataInput::readChar() {
                 readByte();
                 byte b = readByte();
                 return b;
             };
 
-            int ObjectDataInput::readInt() {
+            int DataInput::readInt() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -86,7 +68,7 @@ namespace hazelcast {
                         (0x000000ff & d);
             };
 
-            long ObjectDataInput::readLong() {
+            long DataInput::readLong() {
                 byte a = readByte();
                 byte b = readByte();
                 byte c = readByte();
@@ -105,7 +87,7 @@ namespace hazelcast {
                         (0x00000000000000ff & h);
             };
 
-            float ObjectDataInput::readFloat() {
+            float DataInput::readFloat() {
                 union {
                     int i;
                     float f;
@@ -114,7 +96,7 @@ namespace hazelcast {
                 return u.f;
             };
 
-            double ObjectDataInput::readDouble() {
+            double DataInput::readDouble() {
                 union {
                     double d;
                     long l;
@@ -123,7 +105,7 @@ namespace hazelcast {
                 return u.d;
             };
 
-            std::string ObjectDataInput::readUTF() {
+            std::string DataInput::readUTF() {
                 bool isNull = readBoolean();
                 if (isNull)
                     return "";
@@ -137,16 +119,16 @@ namespace hazelcast {
                 return result;
             };
 
-            int ObjectDataInput::position() {
+            int DataInput::position() {
                 return pos;
             };
 
-            void ObjectDataInput::position(int newPos) {
+            void DataInput::position(int newPos) {
                 pos = newPos;
             };
             //private functions
 
-            std::string ObjectDataInput::readShortUTF() {
+            std::string DataInput::readShortUTF() {
                 short utflen = readShort();
                 std::vector<byte> bytearr(utflen);
                 std::vector<char> chararr(utflen + 1);
@@ -175,10 +157,10 @@ namespace hazelcast {
                             /* 110x xxxx 10xx xxxx */
                             count += 2;
                             if (count > utflen)
-                                throw exception::IOException("ObjectDataInput::readShortUTF", "malformed input: partial character at end");
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 1];
                             if ((char2 & 0xC0) != 0x80) {
-                                throw exception::IOException("ObjectDataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                             break;
@@ -186,18 +168,18 @@ namespace hazelcast {
                             /* 1110 xxxx 10xx xxxx 10xx xxxx */
                             count += 3;
                             if (count > utflen)
-                                throw exception::IOException("ObjectDataInput::readShortUTF", "malformed input: partial character at end");
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
                             char2 = bytearr[count - 2];
                             char3 = bytearr[count - 1];
                             if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                throw exception::IOException("ObjectDataInput::readShortUTF", "malformed input around byte" + util::to_string(count - 1));
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count - 1));
                             }
                             chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                             break;
                         default:
                             /* 10xx xxxx, 1111 xxxx */
 
-                            throw exception::IOException("ObjectDataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                            throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
 
                     }
                 }
@@ -205,7 +187,7 @@ namespace hazelcast {
                 return std::string(chararr.data());
             };
 
-            std::vector <byte> ObjectDataInput::readByteArray() {
+            std::vector <byte> DataInput::readByteArray() {
                 int len = readInt();
                 std::vector <byte> values(len);
                 for (int i = 0; i < len; i++) {
@@ -214,7 +196,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<char> ObjectDataInput::readCharArray() {
+            std::vector<char> DataInput::readCharArray() {
                 int len = readInt();
                 std::vector<char> values(len);
                 for (int i = 0; i < len; i++) {
@@ -223,7 +205,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<int> ObjectDataInput::readIntArray() {
+            std::vector<int> DataInput::readIntArray() {
                 int len = readInt();
                 std::vector<int> values(len);
                 for (int i = 0; i < len; i++) {
@@ -232,7 +214,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<long> ObjectDataInput::readLongArray() {
+            std::vector<long> DataInput::readLongArray() {
                 int len = readInt();
                 std::vector<long> values(len);
                 for (int i = 0; i < len; i++) {
@@ -241,7 +223,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<double> ObjectDataInput::readDoubleArray() {
+            std::vector<double> DataInput::readDoubleArray() {
                 int len = readInt();
                 std::vector<double> values(len);
                 for (int i = 0; i < len; i++) {
@@ -250,7 +232,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<float> ObjectDataInput::readFloatArray() {
+            std::vector<float> DataInput::readFloatArray() {
                 int len = readInt();
                 std::vector<float> values(len);
                 for (int i = 0; i < len; i++) {
@@ -259,7 +241,7 @@ namespace hazelcast {
                 return values;
             };
 
-            std::vector<short> ObjectDataInput::readShortArray() {
+            std::vector<short> DataInput::readShortArray() {
                 int len = readInt();
                 std::vector<short> values(len);
                 for (int i = 0; i < len; i++) {

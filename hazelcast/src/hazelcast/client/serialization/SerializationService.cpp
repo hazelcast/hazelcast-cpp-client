@@ -17,12 +17,12 @@ namespace hazelcast {
 
             SerializationService::SerializationService(int version)
             : serializationContext(version)
-            , portableSerializer(serializationContext) {
+            , serializerHolder(serializationContext) {
             };
 
             SerializationService::SerializationService(SerializationService const & rhs)
             : serializationContext(1)
-            , portableSerializer(serializationContext) {
+            , serializerHolder(serializationContext) {
             };
 
 

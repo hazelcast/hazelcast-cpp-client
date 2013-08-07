@@ -10,7 +10,7 @@
 #define HAZELCAST_PORTABLE_READER
 
 #include "ClassDefinition.h"
-#include "ObjectDataInput.h"
+#include "DataInput.h"
 #include "FieldDefinition.h"
 #include "IException.h"
 #include "ConstantSerializers.h"
@@ -34,7 +34,7 @@ namespace hazelcast {
             class PortableReader {
             public:
 
-                PortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                PortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -73,11 +73,11 @@ namespace hazelcast {
                     Is_Portable<T>();
                     T portable;
                     setPosition(fieldName);
-                    bool isNull = input.readBoolean();
+                    bool isNull = dataInput.readBoolean();
                     if (isNull) {
                         return portable;
                     }
-                    read(input, portable, currentFactoryId, currentClassId);
+                    read(dataInput, portable, currentFactoryId, currentClassId);
                     return portable;
                 };
 
@@ -86,16 +86,16 @@ namespace hazelcast {
                     Is_Portable<T>();
                     std::vector< T > portables;
                     setPosition(fieldName);
-                    int len = input.readInt();
+                    int len = dataInput.readInt();
                     portables.resize(len, T());
                     if (len > 0) {
-                        int offset = input.position();
+                        int offset = dataInput.position();
                         for (int i = 0; i < len; i++) {
-                            input.position(offset + i * sizeof (int));
-                            int start = input.readInt();
-                            input.position(start);
+                            dataInput.position(offset + i * sizeof (int));
+                            int start = dataInput.readInt();
+                            dataInput.position(start);
 
-                            read(input, portables[i], currentFactoryId, currentClassId);
+                            read(dataInput, portables[i], currentFactoryId, currentClassId);
                         }
                     }
                     return portables;
@@ -111,7 +111,7 @@ namespace hazelcast {
                 void setPosition(const char *);
 
                 template<typename T>
-                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId) {
+                void read(DataInput& dataInput, T& object, int factoryId, int classId) {
                     util::AtomicPointer<ClassDefinition> cd;
                     cd = context.lookup(factoryId, classId); // using serializationContext.version
                     PortableReader reader(context, dataInput, cd);
@@ -119,11 +119,12 @@ namespace hazelcast {
                     reader.end();
                 };
 
-                ObjectDataInput& input;
+                DataInput& dataInput;
+                SerializationContext& context;
+                ObjectDataInput& objectDataInput;
                 int const finalPosition;
                 int offset;
                 bool raw;
-                SerializationContext& context;
                 util::AtomicPointer<ClassDefinition> cd;
                 int currentFactoryId;
                 int currentClassId;

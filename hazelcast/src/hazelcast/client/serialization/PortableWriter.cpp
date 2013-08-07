@@ -13,101 +13,102 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableWriter::PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, ObjectDataOutput& out)
+            PortableWriter::PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& dataOutput)
             : context(serializationContext)
-            , output(out)
+            , objectDataOutput(objectDataOutput)
+            , dataOutput(dataOutput)
             , index (0)
             , cd(cd)
             , raw(false)
-            , begin(output.position())
-            , offset(output.position() + sizeof(int)) {
+            , begin(dataOutput.position())
+            , offset(dataOutput.position() + sizeof(int)) {
                 int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof (int);
-                this->output.position(offset + fieldIndexesLength);
+                this->dataOutput.position(offset + fieldIndexesLength);
             };
 
             void PortableWriter::writeInt(const char *fieldName, int value) {
                 setPosition(fieldName);
-                output.writeInt(value);
+                dataOutput.writeInt(value);
             };
 
             void PortableWriter::writeLong(const char *fieldName, long value) {
                 setPosition(fieldName);
-                output.writeLong(value);
+                dataOutput.writeLong(value);
             };
 
             void PortableWriter::writeBoolean(const char *fieldName, bool value) {
                 setPosition(fieldName);
-                output.writeBoolean(value);
+                dataOutput.writeBoolean(value);
             };
 
             void PortableWriter::writeByte(const char *fieldName, byte value) {
                 setPosition(fieldName);
-                output.writeByte(value);
+                dataOutput.writeByte(value);
             };
 
             void PortableWriter::writeChar(const char *fieldName, int value) {
                 setPosition(fieldName);
-                output.writeChar(value);
+                dataOutput.writeChar(value);
             };
 
             void PortableWriter::writeDouble(const char *fieldName, double value) {
                 setPosition(fieldName);
-                output.writeDouble(value);
+                dataOutput.writeDouble(value);
             };
 
             void PortableWriter::writeFloat(const char *fieldName, float value) {
                 setPosition(fieldName);
-                output.writeFloat(value);
+                dataOutput.writeFloat(value);
             };
 
             void PortableWriter::writeShort(const char *fieldName, short value) {
                 setPosition(fieldName);
-                output.writeShort(value);
+                dataOutput.writeShort(value);
             };
 
             void PortableWriter::writeUTF(const char *fieldName, const string& value) {
                 setPosition(fieldName);
-                output.writeUTF(value);
+                dataOutput.writeUTF(value);
             };
 
             void PortableWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
                 setPosition(fieldName);
-                output.writeBoolean(true);
+                dataOutput.writeBoolean(true);
             };
 
             void PortableWriter::writeByteArray(const char *fieldName, const vector<byte>  & bytes) {
                 setPosition(fieldName);
-                output.writeByteArray(bytes);
+                dataOutput.writeByteArray(bytes);
             };
 
             void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char >&  data) {
                 setPosition(fieldName);
-                output.writeCharArray(data);
+                dataOutput.writeCharArray(data);
             };
 
             void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short >&  data) {
                 setPosition(fieldName);
-                output.writeShortArray(data);
+                dataOutput.writeShortArray(data);
             };
 
             void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int>&  data) {
                 setPosition(fieldName);
-                output.writeIntArray(data);
+                dataOutput.writeIntArray(data);
             };
 
             void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long >&  data) {
                 setPosition(fieldName);
-                output.writeLongArray(data);
+                dataOutput.writeLongArray(data);
             };
 
             void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float >&  data) {
                 setPosition(fieldName);
-                output.writeFloatArray(data);
+                dataOutput.writeFloatArray(data);
             };
 
             void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double >&  data) {
                 setPosition(fieldName);
-                output.writeDoubleArray(data);
+                dataOutput.writeDoubleArray(data);
             };
 
             void PortableWriter::setPosition(const char *fieldName) {
@@ -128,22 +129,22 @@ namespace hazelcast {
                 if (writtenFields.count(fieldName) != 0)
                     throw exception::IOException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
                 writtenFields.insert(fieldName);
-                output.writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), output.position());
+                dataOutput.writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), dataOutput.position());
 
             };
 
             ObjectDataOutput *PortableWriter::getRawDataOutput() {
                 if (!raw) {
-                    int pos = output.position();
+                    int pos = dataOutput.position();
                     int index = cd->getFieldCount(); // last index
-                    output.writeInt(offset + index * sizeof(int), pos);
+                    dataOutput.writeInt(offset + index * sizeof(int), pos);
                 }
                 raw = true;
-                return &output; //TODO why return pointer not reference
+                return &dataOutput; //TODO why return pointer not reference
             };
 
             void PortableWriter::end() {
-                output.writeInt(begin, output.position()); // write final offset
+                dataOutput.writeInt(begin, dataOutput.position()); // write final offset
             };
 
 

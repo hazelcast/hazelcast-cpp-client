@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_PORTABLE_WRITER
 #define HAZELCAST_PORTABLE_WRITER
 
-#include "ObjectDataOutput.h"
+#include "DataOutput.h"
 #include "FieldDefinition.h"
 #include "IException.h"
 #include "FieldType.h"
@@ -32,7 +32,7 @@ namespace hazelcast {
             class PortableWriter {
             public:
 
-                PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, ObjectDataOutput& output);
+                PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -74,7 +74,7 @@ namespace hazelcast {
                 void writePortable(const char *fieldName, const T& portable) {
                     Is_Portable<T>();
                     setPosition(fieldName);
-                    output.writeBoolean(false);
+                    dataOutput.writeBoolean(false);
                     write(portable);
                 };
 
@@ -83,12 +83,12 @@ namespace hazelcast {
                     Is_Portable<T>();
                     setPosition(fieldName);
                     int len = values.size();
-                    output.writeInt(len);
+                    dataOutput.writeInt(len);
                     if (len > 0) {
-                        int offset = output.position();
-                        output.position(offset + len * sizeof (int));
+                        int offset = dataOutput.position();
+                        dataOutput.position(offset + len * sizeof (int));
                         for (int i = 0; i < len; i++) {
-                            output.writeInt(offset + i * sizeof (int), output.position());
+                            dataOutput.writeInt(offset + i * sizeof (int), dataOutput.position());
                             write(values[i]);
                         }
                     }
@@ -121,15 +121,16 @@ namespace hazelcast {
                 template <typename T>
                 void write(const T& p) {
                     util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
-                    PortableWriter portableWriter(context, cd, output);
+                    PortableWriter portableWriter(context, cd, dataOutput);
                     p.writePortable(portableWriter);
                     portableWriter.end();
                 };
 
                 int index;
                 bool raw;
+                DataOutput& dataOutput;
                 SerializationContext& context;
-                ObjectDataOutput& output;
+                ObjectDataOutput& objectDataOutput;
                 int begin;
                 int offset;
                 std::set<const char *, util::cStrCmp> writtenFields;

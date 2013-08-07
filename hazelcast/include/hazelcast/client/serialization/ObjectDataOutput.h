@@ -9,6 +9,9 @@
 #ifndef HAZELCAST_DATA_OUTPUT
 #define HAZELCAST_DATA_OUTPUT
 
+#include "SerializationConstraints.h"
+#include "ClassDefinitionWriter.h"
+#include "PortableWriter.h"
 #include <memory>
 #include <vector>
 #include <iosfwd>
@@ -17,16 +20,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializationContext;
-
-            class SerializerHolder;
-
             typedef unsigned char byte;
 
             class ObjectDataOutput {
             public:
 
-                ObjectDataOutput();
+                ObjectDataOutput(SerializerHolder&, SerializationContext&);
 
                 virtual ~ObjectDataOutput();
 
@@ -70,88 +69,83 @@ namespace hazelcast {
 
                 void writeInt(int index, int v);
 
-                /*
-                          void writeNullObject();
+                void writeNullObject();
 
-                          template<typename T>
-                          void writeObject(const Portable *portable) {
-                              Is_Portable<T>();
-                              const T *p = dynamic_cast<const T *>(portable);
-                              writeBoolean(true);
-                              writeInt(getSerializerId(*p));
-                              boost::shared_ptr<ClassDefinition> cd = serializationContext.lookup(p->getFactoryId(), p->getClassId());
-                              if (cd == NULL) {
-                                  ClassDefinitionWriter classDefinitionWriter(serializationContext.getVersion(), p->getFactoryId(), p->getClassId(), this);
-                                  boost::shared_ptr<ClassDefinition> cd = classDefinitionWriter.getOrBuildClassDefinition(*p);
-                                  cd->writeData(*this);
-                              }
-                              serializerHolder.writeToPortableSerializer(*this, *p);
+                template<typename T>
+                void writeObject(const Portable *portable) {
+                    Is_Portable<T>();
+                    const T *p = dynamic_cast<const T *>(portable);
+                    writeBoolean(true);
+                    writeInt(getSerializerId(*p));
+                    boost::shared_ptr<ClassDefinition> cd = context.lookup(p->getFactoryId(), p->getClassId());
+                    if (cd == NULL) {
+                        ClassDefinitionWriter classDefinitionWriter(context.getVersion(), p->getFactoryId(), p->getClassId(), this);
+                        boost::shared_ptr<ClassDefinition> cd = classDefinitionWriter.getOrBuildClassDefinition(*p);
+                        cd->writeData(*this);
+                    }
+                    serializerHolder.getPortableSerializer().write(*this, *p);
 
-                          };
+                };
 
-                          template<typename T>
-                          void writeObject(const DataSerializable *dataSerializable) {
-                              Is_DataSerializable<T>();
-                              const T *p = dynamic_cast<const T *>(dataSerializable);
-                              writeBoolean(true);
-                              writeInt(getSerializerId(*p));
-                              writeDataSerializable(*p);
-                          };
+                template<typename T>
+                void writeObject(const DataSerializable *dataSerializable) {
+                    Is_DataSerializable<T>();
+                    const T *p = dynamic_cast<const T *>(dataSerializable);
+                    writeBoolean(true);
+                    writeInt(getSerializerId(*p));
+                    serializerHolder.getDataSerializer().write(*this, *p);
+                };
 
-                          template<typename T>
-                          void writeObject(const void *serializable) {
-                              const T *object = static_cast<const T *>(serializable);
-                              int type = getSerializerId(*object);
-                              writeBoolean(true);
-                              writeInt(type);
-                              SerializerBase *serializer = serializerHolder.serializerFor(type);
-                              if (serializer) {
-                                  Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
-                                  s->write(*this, *object);
-                              } else {
-                                  throw exception::IOException("ObjectDataOutput::writeObject", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
-                              }
-                          };
+                template<typename T>
+                void writeObject(const void *serializable) {
+                    const T *object = static_cast<const T *>(serializable);
+                    int type = getSerializerId(*object);
+                    writeBoolean(true);
+                    writeInt(type);
+                    SerializerBase *serializer = serializerHolder.serializerFor(type);
+                    if (serializer) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        s->write(*this, *object);
+                    } else {
+                        throw exception::IOException("ObjectDataOutput::writeObject", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
+                    }
+                };
 
-                          template <typename T>
-                          void writeDataSerializable(T& object) {
-                              writeBoolean(true);
-                              writeInt(object.getFactoryId());
-                              writeInt(object.getClassId());
-                              object.writeData(*this);
-                          };
+                template <typename T>
+                void writeDataSerializable(T& object) {
+                    writeBoolean(true);
+                    writeInt(object.getFactoryId());
+                    writeInt(object.getClassId());
+                    object.writeData(*this);
+                };
 
-                          template <typename T>
-                          boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
-                              boost::shared_ptr<ClassDefinition> cd;
+                template <typename T>
+                boost::shared_ptr<ClassDefinition> getClassDefinition(const T& p) {
+                    boost::shared_ptr<ClassDefinition> cd;
 
-                              int factoryId = p.getFactoryId();
-                              int classId = p.getClassId();
-                              if (context.isClassDefinitionExists(factoryId, classId)) {
-                                  cd = context.lookup(factoryId, classId);
-                              } else {
-                                  ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
-                                  p.writePortable(classDefinitionWriter);
-                                  cd = classDefinitionWriter.getClassDefinition();
-                                  cd = context.registerClassDefinition(cd);
-                              }
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
+                    if (context.isClassDefinitionExists(factoryId, classId)) {
+                        cd = context.lookup(factoryId, classId);
+                    } else {
+                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
+                        p.writePortable(classDefinitionWriter);
+                        cd = classDefinitionWriter.getClassDefinition();
+                        cd = context.registerClassDefinition(cd);
+                    }
 
-                              return cd;
-                          };
+                    return cd;
+                };
 
-                          template <typename T>
-                          void write(ObjectDataOutput &dataOutput, const T& p) {
-                              boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
-                              PortableWriter portableWriter(context, cd, dataOutput);
-                              p.writePortable(portableWriter);
-                              portableWriter.end();
-                          };
+                template <typename T>
+                void write(const T& p) {
+                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+                    PortableWriter portableWriter(context, cd, *this);
+                    p.writePortable(portableWriter);
+                    portableWriter.end();
+                };
 
-                           void ObjectDataOutput::writeNullObject() {
-                                writeBoolean(false);
-                            };
 
-                            */
                 int position();
 
                 void position(int newPos);
@@ -163,6 +157,8 @@ namespace hazelcast {
 
             private:
                 std::auto_ptr< std::vector<byte> > outputStream;
+                SerializerHolder& serializerHolder;
+                SerializationContext& context;
 
                 void writeShortUTF(const std::string&);
 

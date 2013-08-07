@@ -4,13 +4,13 @@
 
 
 #include "SerializerHolder.h"
-#include "Serializer.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            SerializerHolder::SerializerHolder(){
+            SerializerHolder::SerializerHolder(SerializationContext& context)
+            :portableSerializer(context) {
 
             }
 
@@ -23,6 +23,15 @@ namespace hazelcast {
                 return serializers.get(typeId);
             }
 
+            PortableSerializer& SerializerHolder::getPortableSerializer() {
+                return portableSerializer;
+            }
+
+            DataSerializer& SerializerHolder::getDataSerializer() {
+                return dataSerializer;
+            }
+
 
         }
-    }}
+    }
+}

@@ -17,7 +17,6 @@
 #include "EmptyDataOutput.h"
 #include "ConstantSerializers.h"
 #include <string>
-#include <iosfwd>
 
 
 namespace hazelcast {

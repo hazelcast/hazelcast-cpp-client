@@ -27,14 +27,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class BufferObjectDataInput;
-
             typedef unsigned char byte;
 
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -69,7 +67,7 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                void read(DataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
 
                     util::AtomicPointer<ClassDefinition> cd;
                     if (context.getVersion() == dataVersion) {
@@ -90,11 +88,11 @@ namespace hazelcast {
                     T portable;
                     if (setPosition(fieldName))
                         return portable;
-                    bool isNull = input.readBoolean();
+                    bool isNull = dataInput.readBoolean();
                     if (isNull) {
                         return portable;
                     }
-                    read(input, portable, currentFactoryId, currentClassId, cd->getVersion());
+                    read(dataInput, portable, currentFactoryId, currentClassId, cd->getVersion());
                     return portable;
                 };
 
@@ -103,15 +101,15 @@ namespace hazelcast {
                     std::vector< T > portables;
                     if (setPosition(fieldName))
                         return portables;
-                    int len = input.readInt();
+                    int len = dataInput.readInt();
                     portables.resize(len, T());
                     if (len > 0) {
-                        int offset = input.position();
+                        int offset = dataInput.position();
                         for (int i = 0; i < len; i++) {
-                            input.position(offset + i * sizeof (int));
-                            int start = input.readInt();
-                            input.position(start);
-                            read(input, portables[i], currentFactoryId, currentClassId, cd->getVersion());
+                            dataInput.position(offset + i * sizeof (int));
+                            int start = dataInput.readInt();
+                            dataInput.position(start);
+                            read(dataInput, portables[i], currentFactoryId, currentClassId, cd->getVersion());
                         }
                     }
                     return portables;
@@ -127,11 +125,12 @@ namespace hazelcast {
 
                 bool setPosition(const char *);
 
-                ObjectDataInput& input;
+                DataInput& dataInput;
+                SerializationContext& context;
+                ObjectDataInput& objectDataInput;
                 int const finalPosition;
                 int offset;
                 bool raw;
-                SerializationContext& context;
                 util::AtomicPointer<ClassDefinition> cd;
 
                 FieldType currentFieldType;

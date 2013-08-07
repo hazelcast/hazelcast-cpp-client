@@ -1,76 +1,73 @@
 //
-//  BufferedDataOutput.cpp
-//  Server
-//
-//  Created by sancar koyunlu on 1/3/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+// Created by sancar koyunlu on 8/7/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "ObjectDataOutput.h"
+
+#include "DataOutput.h"
+#include "IOException.h"
+#include "Util.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataOutput::ObjectDataOutput(SerializerHolder& serializerHolder, SerializationContext& serializationContext)
-            : outputStream(new std::vector<byte>())
-            , serializerHolder(serializerHolder)
-            , context(serializationContext) {
+            DataOutput::DataOutput()
+            : outputStream(new std::vector<byte>()) {
                 outputStream->reserve(DEFAULT_SIZE);
             };
 
 
-            ObjectDataOutput::~ObjectDataOutput() {
+            DataOutput::~DataOutput() {
 
             };
 
-            ObjectDataOutput::ObjectDataOutput(ObjectDataOutput const & rhs) {
+            DataOutput::DataOutput(DataOutput const & rhs) {
                 //private
             };
 
-            ObjectDataOutput & ObjectDataOutput::operator = (ObjectDataOutput const & rhs) {
+            DataOutput & DataOutput::operator = (DataOutput const & rhs) {
                 //private
                 return *this;
             };
 
-            std::auto_ptr< std::vector<byte> > ObjectDataOutput::toByteArray() {
+            std::auto_ptr< std::vector<byte> > DataOutput::toByteArray() {
                 return outputStream;
             };
 
-            void ObjectDataOutput::write(const std::vector<byte>& bytes) {
+            void DataOutput::write(const std::vector<byte>& bytes) {
                 outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
             };
 
-            void ObjectDataOutput::writeBoolean(bool i) {
+            void DataOutput::writeBoolean(bool i) {
                 writeByte(i);
             };
 
-            void ObjectDataOutput::writeByte(int index, int i) {
+            void DataOutput::writeByte(int index, int i) {
                 (*outputStream)[index] = char(0xff & i);
             }
 
-            void ObjectDataOutput::writeByte(int i) {
+            void DataOutput::writeByte(int i) {
                 outputStream->push_back(char(0xff & i));
             };
 
-            void ObjectDataOutput::writeShort(int v) {
+            void DataOutput::writeShort(int v) {
                 writeByte((v >> 8));
                 writeByte(v);
             };
 
-            void ObjectDataOutput::writeChar(int i) {
+            void DataOutput::writeChar(int i) {
                 writeByte((i >> 8));
                 writeByte(i);
             };
 
-            void ObjectDataOutput::writeInt(int v) {
+            void DataOutput::writeInt(int v) {
                 writeByte((v >> 24));
                 writeByte((v >> 16));
                 writeByte((v >> 8));
                 writeByte(v);
             };
 
-            void ObjectDataOutput::writeLong(long l) {
+            void DataOutput::writeLong(long l) {
                 writeByte((l >> 56));
                 writeByte((l >> 48));
                 writeByte((l >> 40));
@@ -81,7 +78,7 @@ namespace hazelcast {
                 writeByte((int) l);
             };
 
-            void ObjectDataOutput::writeFloat(float x) {
+            void DataOutput::writeFloat(float x) {
                 union {
                     float f;
                     int i;
@@ -90,7 +87,7 @@ namespace hazelcast {
                 writeInt(u.i);
             };
 
-            void ObjectDataOutput::writeDouble(double v) {
+            void DataOutput::writeDouble(double v) {
                 union {
                     double d;
                     long l;
@@ -99,7 +96,7 @@ namespace hazelcast {
                 writeLong(u.l);
             };
 
-            void ObjectDataOutput::writeUTF(const std::string& str) {
+            void DataOutput::writeUTF(const std::string& str) {
                 bool isNull = str.empty();
                 writeBoolean(isNull);
                 if (isNull)
@@ -115,19 +112,19 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeInt(int index, int v) {
+            void DataOutput::writeInt(int index, int v) {
                 writeByte(index++, (v >> 24));
                 writeByte(index++, (v >> 16));
                 writeByte(index++, (v >> 8));
                 writeByte(index, v);
             };
 
-            void ObjectDataOutput::writeByteArray(const std::vector<byte>&  data) {
+            void DataOutput::writeByteArray(const std::vector<byte>&  data) {
                 writeInt(data.size());
                 outputStream->insert(outputStream->end(), data.begin(), data.end());
             };
 
-            void ObjectDataOutput::writeCharArray(const std::vector<char>& data) {
+            void DataOutput::writeCharArray(const std::vector<char>& data) {
                 writeInt(data.size());
 //                outputStream->insert(outputStream->end(), data.begin(), data.end());//TODO
                 for (int i = 0; i < data.size(); ++i) {
@@ -135,7 +132,7 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeShortArray(const std::vector<short >&  data) {
+            void DataOutput::writeShortArray(const std::vector<short >&  data) {
                 int size = data.size();
                 writeInt(size);
                 for (int i = 0; i < size; ++i) {
@@ -143,7 +140,7 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeIntArray(const std::vector<int>&  data) {
+            void DataOutput::writeIntArray(const std::vector<int>&  data) {
                 int size = data.size();
                 writeInt(size);
                 for (int i = 0; i < size; ++i) {
@@ -151,7 +148,7 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeLongArray(const std::vector<long >&  data) {
+            void DataOutput::writeLongArray(const std::vector<long >&  data) {
                 int size = data.size();
                 writeInt(size);
                 for (int i = 0; i < size; ++i) {
@@ -159,7 +156,7 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeFloatArray(const std::vector<float >&  data) {
+            void DataOutput::writeFloatArray(const std::vector<float >&  data) {
                 int size = data.size();
                 writeInt(size);
                 for (int i = 0; i < size; ++i) {
@@ -167,7 +164,7 @@ namespace hazelcast {
                 }
             };
 
-            void ObjectDataOutput::writeDoubleArray(const std::vector<double >&  data) {
+            void DataOutput::writeDoubleArray(const std::vector<double >&  data) {
                 int size = data.size();
                 writeInt(size);
                 for (int i = 0; i < size; ++i) {
@@ -175,22 +172,22 @@ namespace hazelcast {
                 }
             };
 
-            int ObjectDataOutput::position() {
+            int DataOutput::position() {
                 return outputStream->size();
             };
 
-            void ObjectDataOutput::position(int newPos) {
+            void DataOutput::position(int newPos) {
                 if (outputStream->size() < newPos)
                     outputStream->resize(newPos, 0);
             };
 
-            void ObjectDataOutput::reset() {
+            void DataOutput::reset() {
                 outputStream->clear();
             };
 
             //private functions
 
-            void ObjectDataOutput::writeShortUTF(const std::string& str) {
+            void DataOutput::writeShortUTF(const std::string& str) {
                 int stringLen = (int) str.length();
                 int utfLength = 0;
                 int count = 0;
@@ -228,10 +225,6 @@ namespace hazelcast {
                 }
                 writeShort(utfLength);
                 write(byteArray);
-            };
-
-            void ObjectDataOutput::writeNullObject() {
-                writeBoolean(false);
             };
 
 

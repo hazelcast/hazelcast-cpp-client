@@ -18,6 +18,8 @@
 #include "Serializer.h"
 #include "Portable.h"
 #include "hazelcast/util/Util.h"
+#include "DataInput.h"
+#include "DataOutput.h"
 #include <vector>
 #include <map>
 #include <memory>
@@ -53,7 +55,7 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                void write(ObjectDataOutput &dataOutput, const T& p) {
+                void write(DataOutput &dataOutput, const T& p) {
                     util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
                     PortableWriter portableWriter(context, cd, dataOutput);
                     p.writePortable(portableWriter);
@@ -61,7 +63,7 @@ namespace hazelcast {
                 };
 
                 template <typename T>
-                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
+                void read(DataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
                     util::AtomicPointer<ClassDefinition> cd;
 
                     if (context.getVersion() == dataVersion) {

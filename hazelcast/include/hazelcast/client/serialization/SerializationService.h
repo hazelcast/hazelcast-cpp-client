@@ -50,8 +50,8 @@ namespace hazelcast {
                     Is_Portable<T>();
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
-                    ObjectDataOutput output;
-                    portableSerializer.write(output, *object);
+                    DataOutput output;
+                    serializerHolder.getPortableSerializer().write(output, *object);
                     int factoryId = object->getFactoryId();
                     int classId = object->getClassId();
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
@@ -66,7 +66,7 @@ namespace hazelcast {
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
                     ObjectDataOutput output;
-                    dataSerializer.write(output, *object);
+                    serializerHolder.getDataSerializer().write(output, *object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
                     return data;
@@ -102,13 +102,13 @@ namespace hazelcast {
                     Is_Portable<T>();
                     T object;
                     if (data.bufferSize() == 0) return object;
-                    ObjectDataInput dataInput(*(data.buffer.get()),serializerHolder,serializationContext);
+                    DataInput dataInput(*(data.buffer.get()));
 
                     serializationContext.registerClassDefinition(data.cd);
                     int factoryId = data.cd->getFactoryId();
                     int classId = data.cd->getClassId();
                     int version = data.cd->getVersion();
-                    portableSerializer.read(dataInput, object, factoryId, classId, version);
+                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
                     return object;
                 };
 
@@ -118,7 +118,7 @@ namespace hazelcast {
                     T object;
                     if (data.bufferSize() == 0) return object;
                     ObjectDataInput dataInput(*(data.buffer.get()));
-                    dataSerializer.read(dataInput, object);
+                    serializerHolder.getDataSerializer().read(dataInput, object);
                     return object;
                 };
 
@@ -147,8 +147,6 @@ namespace hazelcast {
 
                 SerializationContext serializationContext;
                 SerializerHolder serializerHolder;
-                PortableSerializer portableSerializer;
-                DataSerializer dataSerializer;
 
             };
 

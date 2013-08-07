@@ -12,11 +12,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd)
-            : input(input)
+            PortableReader::PortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
+            : dataInput(input)
+            , context(serializationContext)
+            , objectDataInput(input, serializationContext),
             , finalPosition(input.readInt()) //TODO what happens in case of exception
             , offset(input.position())
-            , context(serializationContext)
             , cd(cd)
             , raw(false) {
 
@@ -24,87 +25,87 @@ namespace hazelcast {
 
             int PortableReader::readInt(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readInt();
+                return dataInput.readInt();
             };
 
             long PortableReader::readLong(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readLong();
+                return dataInput.readLong();
             };
 
             bool PortableReader::readBoolean(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readBoolean();
+                return dataInput.readBoolean();
             };
 
             byte PortableReader::readByte(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readByte();
+                return dataInput.readByte();
             };
 
             char PortableReader::readChar(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readChar();
+                return dataInput.readChar();
             };
 
             double PortableReader::readDouble(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readDouble();
+                return dataInput.readDouble();
             };
 
             float PortableReader::readFloat(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readFloat();
+                return dataInput.readFloat();
             };
 
             short PortableReader::readShort(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readShort();
+                return dataInput.readShort();
             };
 
             string PortableReader::readUTF(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readUTF();
+                return dataInput.readUTF();
             };
 
             std::vector <byte> PortableReader::readByteArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readByteArray();
+                return dataInput.readByteArray();
             };
 
             std::vector<char> PortableReader::readCharArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readCharArray();
+                return dataInput.readCharArray();
             };
 
             std::vector<int> PortableReader::readIntArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readIntArray();
+                return dataInput.readIntArray();
             };
 
             std::vector<long> PortableReader::readLongArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readLongArray();
+                return dataInput.readLongArray();
             };
 
             std::vector<double> PortableReader::readDoubleArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readDoubleArray();
+                return dataInput.readDoubleArray();
             };
 
             std::vector<float> PortableReader::readFloatArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readFloatArray();
+                return dataInput.readFloatArray();
             };
 
             std::vector<short> PortableReader::readShortArray(const char *fieldName) {
                 setPosition(fieldName);
-                return input.readShortArray();
+                return dataInput.readShortArray();
             };
 
 
             void PortableReader::setPosition(char const *fieldName) {
-                input.position(getPosition(fieldName));
+                dataInput.position(getPosition(fieldName));
                 const FieldDefinition& fd = cd->get(fieldName);
                 currentFactoryId = fd.getFactoryId();
                 currentClassId = fd.getClassId();
@@ -116,23 +117,23 @@ namespace hazelcast {
                 }
                 if (!cd->isFieldDefinitionExists(fieldName))
                     throw exception::IException("PortableReader::getPosition ", " unknownField " + std::string(fieldName));
-                input.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
-                return input.readInt();
+                dataInput.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
+                return dataInput.readInt();
             };
 
             ObjectDataInput *PortableReader::getRawDataInput() {
                 if (!raw) {
-                    input.position(offset + cd->getFieldCount() * 4);
-                    int pos = input.readInt();
-                    input.position(pos);
+                    dataInput.position(offset + cd->getFieldCount() * 4);
+                    int pos = dataInput.readInt();
+                    dataInput.position(pos);
                 }
                 raw = true;
-                input.setSerializationContext(&context);
-                return &input; //TODO why return pointer not reference
+                dataInput.setSerializationContext(&context);
+                return &objectDataInput; //TODO why return pointer not reference
             };
 
             void PortableReader::end() {
-                input.position(finalPosition);
+                dataInput.position(finalPosition);
             };
 
         }
