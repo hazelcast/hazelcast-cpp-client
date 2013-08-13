@@ -9,6 +9,9 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "AtomicLongPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {

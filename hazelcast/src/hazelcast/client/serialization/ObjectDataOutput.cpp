@@ -4,14 +4,17 @@
 
 
 #include "ClassDefinitionWriter.h"
-#include "ObjectDataOutput.h"
+#include "IdentifiedDataSerializable.h"
+#include "SerializerHolder.h"
+#include "SerializationContext.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(SerializerHolder& serializerHolder, SerializationContext& serializationContext)
-            : serializerHolder(&serializerHolder)
-            , context(&serializationContext)
+            ObjectDataOutput::ObjectDataOutput( SerializationContext& serializationContext)
+            : context(&serializationContext)
+            , serializerHolder(&serializationContext.getSerializerHolder())
             , isEmpty(false) {
 
             };
@@ -142,22 +145,22 @@ namespace hazelcast {
             void ObjectDataOutput::writeObject(const Portable *portable) {
                 if (isEmpty) return;
                 writeBoolean(true);
-                writeInt(getSerializerId(*portable));
-                util::AtomicPointer <ClassDefinition> cd = context.lookup(portable->getFactoryId(), portable->getClassId());
+                writeInt(portable->getSerializerId());
+                util::AtomicPointer <ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
                 if (cd == NULL) {
-                    ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context.getVersion(), context);
+                    ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context->getVersion(), *context);
                     util::AtomicPointer <ClassDefinition> cd = classDefinitionWriter.getOrBuildClassDefinition(*portable);
-                    cd->writeData(*this);
+                    cd->writeData(dataOutput);
                 }
-                serializerHolder.getPortableSerializer().write(dataOutput, *portable);
+                serializerHolder->getPortableSerializer().write(dataOutput, *portable);
 
             };
 
             void ObjectDataOutput::writeObject(const IdentifiedDataSerializable *dataSerializable) {
                 if (isEmpty) return;
                 writeBoolean(true);
-                writeInt(getSerializerId(*dataSerializable));
-                serializerHolder.getDataSerializer().write(*this, *dataSerializable);
+                writeInt(dataSerializable->getSerializerId());
+                serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             };
 
 

@@ -9,20 +9,22 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_WRITER
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
-#include "FieldDefinition.h"
 #include "IException.h"
 #include "FieldType.h"
 #include "ClassDefinition.h"
-#include "SerializationContext.h"
-#include "ConstantSerializers.h"
 #include "ObjectDataOutput.h"
-#include "Portable.h"
+#include "FieldDefinition.h"
 #include <string>
 
 
 namespace hazelcast {
     namespace client {
+
+        class Portable;
+
         namespace serialization {
+
+            class SerializationContext;
 
             class ClassDefinitionWriter {
             public:
@@ -45,7 +47,7 @@ namespace hazelcast {
 
                 void writeShort(const char *fieldName, short value);
 
-                void writeUTF(const char *fieldName, const string& str);
+                void writeUTF(const char *fieldName, const std::string& str);
 
                 void writeNullPortable(const char *fieldName, int factoryId, int classId);
 

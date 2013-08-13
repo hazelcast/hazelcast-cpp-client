@@ -13,14 +13,8 @@
 #include "FieldDefinition.h"
 #include "hazelcast/util/Util.h"
 #include "AtomicPointer.h"
-#include <string>
 #include <map>
 #include <vector>
-#include <set>
-#include <cassert>
-#include <boost/shared_ptr.hpp>
-
-using namespace std;
 
 namespace hazelcast {
     namespace client {
@@ -51,7 +45,7 @@ namespace hazelcast {
 
                 const FieldDefinition& get(int);
 
-                vector<util::AtomicPointer<ClassDefinition> > &getNestedClassDefinitions();
+                std::vector<util::AtomicPointer<ClassDefinition> > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
 
@@ -86,9 +80,9 @@ namespace hazelcast {
 
                 ClassDefinition& operator = (const ClassDefinition& rhs);
 
-                vector<FieldDefinition> fieldDefinitions;
-                map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
-                vector<util::AtomicPointer<ClassDefinition> > nestedClassDefinitions;
+                std::vector<FieldDefinition> fieldDefinitions;
+                std::map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
+                std::vector<util::AtomicPointer<ClassDefinition> > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;
 

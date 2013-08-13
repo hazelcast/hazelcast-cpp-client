@@ -11,8 +11,6 @@
 
 #include "DataOutput.h"
 #include "ObjectDataOutput.h"
-#include "ConstantSerializers.h"
-#include "SerializationConstraints.h"
 #include "AtomicPointer.h"
 #include "Util.h"
 #include <string>
@@ -37,7 +35,7 @@ namespace hazelcast {
             class DefaultPortableWriter {
             public:
 
-                DefaultPortableWriter(SerializerHolder& serializerHolder, SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& output);
+                DefaultPortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -77,7 +75,6 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
-                    Is_Portable<T>();
                     setPosition(fieldName);
                     dataOutput.writeBoolean(false);
                     write(portable);
@@ -85,7 +82,6 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortableArray(const char *fieldName, const std::vector<T>& values) {
-                    Is_Portable<T>();
                     setPosition(fieldName);
                     int len = values.size();
                     dataOutput.writeInt(len);
@@ -112,8 +108,8 @@ namespace hazelcast {
                 int index;
                 bool raw;
                 DataOutput& dataOutput;
-                SerializerHolder& serializerHolder;
                 SerializationContext& context;
+                SerializerHolder& serializerHolder;
                 ObjectDataOutput objectDataOutput;
                 int begin;
                 int offset;

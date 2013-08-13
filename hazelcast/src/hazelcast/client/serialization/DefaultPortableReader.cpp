@@ -13,12 +13,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DefaultPortableReader::DefaultPortableReader(SerializerHolder& serializerHolder, SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
-            :serializerHolder(serializerHolder)
-            , context(serializationContext)
+            DefaultPortableReader::DefaultPortableReader( SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
+            : context(serializationContext)
+            ,serializerHolder(serializationContext.getSerializerHolder())
             , dataInput(input)
-            , objectDataInput(input, serializerHolder, serializationContext)
-            , finalPosition(input.readInt()) //TODO what happens in case of exception
+            , objectDataInput(input, serializationContext)
+            , finalPosition(input.readInt())
             , offset(input.position())
             , cd(cd)
             , raw(false) {

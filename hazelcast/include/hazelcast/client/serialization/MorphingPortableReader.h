@@ -11,7 +11,6 @@
 
 #include "ClassDefinition.h"
 #include "DataInput.h"
-#include "SerializerHolder.h"
 #include "ObjectDataInput.h"
 #include <string>
 #include <memory>
@@ -23,12 +22,14 @@ namespace hazelcast {
 
         namespace serialization {
 
+            class SerializerHolder;
+
             typedef unsigned char byte;
 
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializerHolder& serializerHolder, SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -46,7 +47,7 @@ namespace hazelcast {
 
                 short readShort(const char *fieldName);
 
-                string readUTF(const char *fieldName);
+                std::string readUTF(const char *fieldName);
 
                 std::vector<byte> readByteArray(const char *fieldName);
 
@@ -105,8 +106,8 @@ namespace hazelcast {
 
                 bool setPosition(const char *);
 
-                SerializerHolder& serializerHolder;
                 SerializationContext& context;
+                SerializerHolder& serializerHolder;
                 DataInput& dataInput;
                 ObjectDataInput objectDataInput;
                 int const finalPosition;

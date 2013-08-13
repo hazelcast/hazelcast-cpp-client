@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <vector>
-#include <iosfwd>
 
 namespace hazelcast {
     namespace client {

@@ -5,6 +5,7 @@
 #define HAZELCAST_MAP_PUT_REQUEST
 
 #include "Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {

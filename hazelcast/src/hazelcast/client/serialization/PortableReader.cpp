@@ -84,9 +84,9 @@ namespace hazelcast {
                 return morphingPortableReader->readByteArray(fieldName);
             }
 
-            std::vector<char> PortableReader::readCharArray(const readCharArray *fieldName) {
+            std::vector<char> PortableReader::readCharArray(const char *fieldName) {
                 if (isDefaultReader)
-                    return defaultPortableReader->readInt(fieldName);
+                    return defaultPortableReader->readCharArray(fieldName);
                 return morphingPortableReader->readCharArray(fieldName);
             }
 

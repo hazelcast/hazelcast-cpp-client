@@ -20,7 +20,7 @@ namespace hazelcast {
 
             class ObjectDataOutput {
             public:
-                ObjectDataOutput(SerializerHolder& serializerHolder, SerializationContext& serializationContext);
+                ObjectDataOutput(SerializationContext& serializationContext);
 
                 ObjectDataOutput();
 
@@ -73,7 +73,7 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const T *object) {
                     if (isEmpty) return;
-                    int type = getSerializerId(*object);
+                    int type = object->getSerializerId();
                     writeBoolean(true);
                     writeInt(type);
                     SerializerBase *serializer = serializerHolder->serializerFor(type);
@@ -87,8 +87,8 @@ namespace hazelcast {
 
             private:
                 DataOutput dataOutput;
-                SerializerHolder *serializerHolder;
                 SerializationContext *context;
+                SerializerHolder *serializerHolder;
                 bool isEmpty;
 
                 int position();

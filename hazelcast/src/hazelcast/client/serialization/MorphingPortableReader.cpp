@@ -7,17 +7,18 @@
 //
 #include "hazelcast/client/serialization/MorphingPortableReader.h"
 #include "hazelcast/client/serialization/DefaultPortableReader.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
 #include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            MorphingPortableReader::MorphingPortableReader(SerializerHolder& serializerHolder, SerializationContext & serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
-            :serializerHolder(serializerHolder)
-            , context(serializationContext)
+            MorphingPortableReader::MorphingPortableReader(SerializationContext & serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
+            : context(serializationContext)
+            , serializerHolder(serializationContext.getSerializerHolder())
             , dataInput(input)
-            , objectDataInput(input, serializerHolder, serializationContext)
+            , objectDataInput(input, serializationContext)
             , finalPosition(input.readInt()) //TODO what happens in case of exception
             , offset(input.position())
             , cd(cd)

@@ -27,14 +27,12 @@ namespace hazelcast {
 
             class SerializationContext;
 
-            class SerializerHolder;
-
             class ClassDefinition;
 
             class PortableSerializer {
             public:
 
-                PortableSerializer(SerializerHolder& serializerHolder, SerializationContext& serializationContext);
+                PortableSerializer(SerializationContext& serializationContext);
 
                 util::AtomicPointer<ClassDefinition> getClassDefinition(const Portable& p);
 
@@ -44,7 +42,6 @@ namespace hazelcast {
 
             private:
                 SerializationContext& context;
-                SerializerHolder& serializerHolder;
 
             };
 

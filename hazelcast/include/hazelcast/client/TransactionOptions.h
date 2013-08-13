@@ -6,7 +6,6 @@
 #ifndef HAZELCAST_TransactionOptions
 #define HAZELCAST_TransactionOptions
 
-#include "IdentifiedDataSerializable.h"
 #include "DataSerializable.h"
 
 namespace hazelcast {

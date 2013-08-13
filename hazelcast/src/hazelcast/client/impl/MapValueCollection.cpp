@@ -23,7 +23,7 @@ namespace hazelcast {
                 return DataSerializableHook::VALUES;
             };
 
-            const vector<serialization::Data>  & MapValueCollection::getValues() const {
+            const std::vector<serialization::Data>  & MapValueCollection::getValues() const {
                 return values;
             };
 

@@ -4,8 +4,6 @@
 
 
 #include "AtomicLongRequest.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {

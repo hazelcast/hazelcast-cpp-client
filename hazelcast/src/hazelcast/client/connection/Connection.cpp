@@ -21,14 +21,14 @@ namespace hazelcast {
                 socket.connect();
             };
 
-            void Connection::write(vector<byte> const& bytes) {
+            void Connection::write(std::vector<byte> const& bytes) {
                 outputSocketStream.write(bytes);
             };
 
             void Connection::write(serialization::Data const & data) {
                 serialization::ObjectDataOutput out;
                 data.writeData(out);
-                auto_ptr<vector<byte> > buffer = out.toByteArray();
+                std::auto_ptr<std::vector<byte> > buffer = out.toByteArray();
                 outputSocketStream.write(&((*buffer.get())[0]), buffer->size());
             };
 

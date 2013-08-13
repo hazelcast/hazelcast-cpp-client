@@ -8,6 +8,8 @@
 #define HAZELCAST_TxnPollRequest
 
 #include "Portable.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include <string>
 
 namespace hazelcast {

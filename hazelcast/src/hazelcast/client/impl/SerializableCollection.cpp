@@ -29,7 +29,7 @@ namespace hazelcast {
                 return protocol::SpiConstants::COLLECTION;
             }
 
-            const vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {
+            const std::vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {
                 return dataCollection;
             };
 

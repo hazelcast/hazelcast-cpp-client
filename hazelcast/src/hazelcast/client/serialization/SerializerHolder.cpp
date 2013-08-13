@@ -4,6 +4,7 @@
 
 
 #include "SerializerHolder.h"
+#include "Serializer.h"
 
 namespace hazelcast {
     namespace client {

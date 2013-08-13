@@ -9,13 +9,10 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "IException.h"
-#include "ConstantSerializers.h"
 #include "IOException.h"
 #include "Serializer.h"
 #include "SerializerHolder.h"
 #include "ClassDefinition.h"
-#include "DataInput.h"
 #include <vector>
 #include <string>
 
@@ -33,12 +30,11 @@ namespace hazelcast {
 
             class DataInput;
 
-
             typedef unsigned char byte;
 
             class ObjectDataInput {
             public:
-                ObjectDataInput(DataInput&, SerializerHolder&, SerializationContext&);
+                ObjectDataInput(DataInput&, SerializationContext&);
 
                 SerializationContext *getSerializationContext();
 
@@ -121,9 +117,9 @@ namespace hazelcast {
                         return object;
                     }
                     const int typeId = readInt();
-                    SerializerBase *serializer = serializerHolder.serializerFor(getSerializerId(object));
+                    SerializerBase *serializer = serializerHolder.serializerFor(object.getSerializerId());
                     if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);;
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->read(*this, object);
                         return object;
                     } else {
@@ -138,8 +134,8 @@ namespace hazelcast {
 
             private:
                 DataInput& dataInput;
-                SerializerHolder& serializerHolder;
                 SerializationContext& serializationContext;
+                SerializerHolder& serializerHolder;
 
                 ObjectDataInput(const ObjectDataInput&);
 

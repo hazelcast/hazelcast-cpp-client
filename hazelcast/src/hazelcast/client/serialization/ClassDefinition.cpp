@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/ClassDefinition.h"
-#include "DataInput.h"
-#include "DataOutput.h"
-#include "IOException.h"
+#include "hazelcast/client/serialization/DataInput.h"
+#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {

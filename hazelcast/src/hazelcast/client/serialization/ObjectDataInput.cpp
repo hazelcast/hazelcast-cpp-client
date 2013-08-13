@@ -7,18 +7,18 @@
 //
 #include "ObjectDataInput.h"
 #include "SerializationContext.h"
+#include "DataInput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(DataInput & dataInput, SerializerHolder& serializerHolder, SerializationContext & context)
+            ObjectDataInput::ObjectDataInput(DataInput & dataInput, SerializationContext & context)
             : dataInput(dataInput)
             , serializationContext(context)
-            , serializerHolder(serializerHolder) {
+            , serializerHolder(context.getSerializerHolder()) {
 
             }
-
 
             ObjectDataInput::ObjectDataInput(ObjectDataInput const & rhs)
             : dataInput(rhs.dataInput)

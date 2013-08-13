@@ -11,11 +11,6 @@
 
 #include "ClassDefinition.h"
 #include "DataInput.h"
-#include "FieldDefinition.h"
-#include "IException.h"
-#include "ConstantSerializers.h"
-#include "SerializationContext.h"
-#include "SerializationConstraints.h"
 #include "ObjectDataInput.h"
 #include <string>
 #include <memory>
@@ -31,12 +26,14 @@ namespace hazelcast {
 
             class SerializerHolder;
 
+            class SerializationContext;
+
             typedef unsigned char byte;
 
             class DefaultPortableReader {
             public:
 
-                DefaultPortableReader(SerializerHolder& serializerHolder, SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                DefaultPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -72,7 +69,6 @@ namespace hazelcast {
 
                 template<typename T>
                 T readPortable(const char *fieldName) {
-                    Is_Portable<T>();
                     T portable;
                     setPosition(fieldName);
                     bool isNull = dataInput.readBoolean();
@@ -85,7 +81,6 @@ namespace hazelcast {
 
                 template<typename T>
                 std::vector< T > readPortableArray(const char *fieldName) {
-                    Is_Portable<T>();
                     std::vector< T > portables;
                     setPosition(fieldName);
                     int len = dataInput.readInt();
@@ -114,8 +109,8 @@ namespace hazelcast {
 
                 void read(DataInput& dataInput, Portable& object, int factoryId, int classId);
 
-                SerializerHolder& serializerHolder;
                 SerializationContext& context;
+                SerializerHolder& serializerHolder;
                 DataInput& dataInput;
                 ObjectDataInput objectDataInput;
                 int const finalPosition;

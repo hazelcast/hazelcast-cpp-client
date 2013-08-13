@@ -12,14 +12,14 @@
 #include "PortableWriter.h"
 #include "DefaultPortableReader.h"
 #include "PortableReader.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableSerializer::PortableSerializer(SerializerHolder& serializerHolder, SerializationContext& serializationContext)
-            : context(serializationContext)
-            , serializerHolder(serializerHolder) {
+            PortableSerializer::PortableSerializer(SerializationContext& serializationContext)
+            : context(serializationContext){
 
             };
 
@@ -42,7 +42,7 @@ namespace hazelcast {
 
             void PortableSerializer::write(DataOutput &dataOutput, const Portable& p) {
                 util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
-                DefaultPortableWriter dpw(serializerHolder, context, cd, dataOutput);
+                DefaultPortableWriter dpw(context, cd, dataOutput);
                 PortableWriter portableWriter(&dpw);
                 p.writePortable(portableWriter);
                 portableWriter.end();
@@ -53,13 +53,13 @@ namespace hazelcast {
 
                 if (context.getVersion() == dataVersion) {
                     cd = context.lookup(factoryId, classId); // using serializationContext.version
-                    DefaultPortableReader defaultPortableReader(serializerHolder, context, dataInput, cd);
+                    DefaultPortableReader defaultPortableReader(context, dataInput, cd);
                     PortableReader reader(&defaultPortableReader);
                     object.readPortable(reader);
                     reader.end();
                 } else {
                     cd = context.lookup(factoryId, classId, dataVersion); // registered during read
-                    MorphingPortableReader morphingPortableReader(serializerHolder, context, dataInput, cd);
+                    MorphingPortableReader morphingPortableReader(context, dataInput, cd);
                     PortableReader reader(&morphingPortableReader);
                     object.readPortable(reader);
                     reader.end();

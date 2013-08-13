@@ -10,6 +10,8 @@
 #include "Data.h"
 #include "Portable.h"
 #include "CollectionPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include <string>
 
 namespace hazelcast {

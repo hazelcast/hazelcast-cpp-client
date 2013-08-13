@@ -6,7 +6,7 @@
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/SerializationContext.h"
-#include <cassert>
+#include "hazelcast/client/connection/Socket.h"
 
 namespace hazelcast {
     namespace client {

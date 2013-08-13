@@ -8,6 +8,8 @@
 #define HAZELCAST_TxnOfferRequest
 
 #include "Portable.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include "Data.h"
 #include <string>
 

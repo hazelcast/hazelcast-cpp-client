@@ -10,30 +10,25 @@
 #define HAZELCAST_SERIALIZATION_SERVICE
 
 #include "SerializationContext.h"
-#include "IException.h"
-#include "ConstantSerializers.h"
 #include "PortableSerializer.h"
 #include "DataSerializer.h"
 #include "Portable.h"
 #include "IdentifiedDataSerializable.h"
 #include "Serializer.h"
 #include "Data.h"
-#include "SerializationConstraints.h"
 #include "ObjectDataInput.h"
 #include "ObjectDataOutput.h"
 #include "DataOutput.h"
 #include "DataInput.h"
 #include "SerializerHolder.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/ConcurrentMap.h"
-#include <iosfwd>
+#include "SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            //TODO change toData's look at temp.cpp
             class SerializationService {
             public:
 
@@ -49,11 +44,10 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(const Portable *portable) {
-                    Is_Portable<T>();
                     const T *object = dynamic_cast<const T *>(portable);
                     Data data;
                     DataOutput output;
-                    serializerHolder.getPortableSerializer().write(output, *object);
+                    getSerializerHolder().getPortableSerializer().write(output, *object);
                     int factoryId = object->getFactoryId();
                     int classId = object->getClassId();
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
@@ -64,11 +58,10 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(const IdentifiedDataSerializable *dataSerializable) {
-                    Is_DataSerializable<T>();
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
-                    ObjectDataOutput output(serializerHolder, serializationContext);
-                    serializerHolder.getDataSerializer().write(output, *object);
+                    ObjectDataOutput output(serializationContext);
+                    getSerializerHolder().getDataSerializer().write(output, *object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
                     return data;
@@ -78,8 +71,8 @@ namespace hazelcast {
                 Data toData(const void *serializable) {
                     const T *object = static_cast<const T *>(serializable);
                     Data data;
-                    ObjectDataOutput output(serializerHolder, serializationContext);
-                    int type = getSerializerId(*object);
+                    ObjectDataOutput output(serializationContext);
+                    int type = object->getSerializerId();
                     SerializerBase *serializer = serializerFor(type);
                     if (serializer) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
@@ -101,7 +94,6 @@ namespace hazelcast {
 
                 template<typename T>
                 inline T toObjectResolved(const Data& data, Portable *tag) {
-                    Is_Portable<T>();
                     T object;
                     if (data.bufferSize() == 0) return object;
                     DataInput dataInput(*(data.buffer.get()));
@@ -110,18 +102,17 @@ namespace hazelcast {
                     int factoryId = data.cd->getFactoryId();
                     int classId = data.cd->getClassId();
                     int version = data.cd->getVersion();
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
+                    getSerializerHolder().getPortableSerializer().read(dataInput, object, factoryId, classId, version);
                     return object;
                 };
 
                 template<typename T>
                 inline T toObjectResolved(const Data& data, IdentifiedDataSerializable *tag) {
-                    Is_DataSerializable<T>();
                     T object;
                     if (data.bufferSize() == 0) return object;
                     DataInput dataInput(*(data.buffer.get()));
-                    ObjectDataInput objectDataInput(dataInput, serializerHolder, serializationContext);
-                    serializerHolder.getDataSerializer().read(objectDataInput, object);
+                    ObjectDataInput objectDataInput(dataInput, serializationContext);
+                    getSerializerHolder().getDataSerializer().read(objectDataInput, object);
                     return object;
                 };
 
@@ -129,10 +120,10 @@ namespace hazelcast {
                 inline T toObjectResolved(const Data& data, void *tag) {
                     T object;
                     DataInput dataInput(*(data.buffer.get()));
-                    ObjectDataInput objectDataInput(dataInput, serializerHolder, serializationContext);
-                    SerializerBase *serializer = serializerFor(getSerializerId(object));
+                    ObjectDataInput objectDataInput(dataInput, serializationContext);
+                    SerializerBase *serializer = serializerFor(object.getSerializerId());
                     if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);;
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->read(objectDataInput, object);
                         return object;
                     } else {
@@ -142,6 +133,8 @@ namespace hazelcast {
 
                 SerializationContext& getSerializationContext();
 
+                SerializerHolder& getSerializerHolder();
+
             private:
                 SerializerBase *serializerFor(int typeId);
 
@@ -150,7 +143,6 @@ namespace hazelcast {
                 void checkServerError(const Data& data);
 
                 SerializationContext serializationContext;
-                SerializerHolder serializerHolder;
 
             };
 

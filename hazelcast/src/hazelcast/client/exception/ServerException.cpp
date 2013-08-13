@@ -4,8 +4,8 @@
 
 
 #include "ServerException.h"
-#include "hazelcast/client/serialization/PortableWriter.h
-#include "hazelcast/client/serialization/PortableReader.h
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {

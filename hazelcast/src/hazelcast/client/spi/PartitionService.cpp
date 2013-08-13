@@ -55,7 +55,7 @@ namespace hazelcast {
                 try{
                     boost::lock_guard<boost::mutex> lg(refreshLock);
                     impl::PartitionsResponse partitionResponse;
-                    auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                    std::auto_ptr<Address> ptr = clusterService.getMasterAddress();
                     if (ptr.get() == NULL) {
                         partitionResponse = getPartitionsFrom();
                     } else {
@@ -93,8 +93,8 @@ namespace hazelcast {
             }
 
             void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
-                const vector<Address>& members = response.getMembers();
-                const vector<int>& ownerIndexes = response.getOwnerIndexes();
+                const std::vector<Address>& members = response.getMembers();
+                const std::vector<int>& ownerIndexes = response.getOwnerIndexes();
                 if (partitionCount == 0) {
                     partitionCount = ownerIndexes.size();
                 }
@@ -108,8 +108,8 @@ namespace hazelcast {
             };
 
             void PartitionService::getInitialPartitions() {
-                vector<connection::Member> memberList = clusterService.getMemberList();
-                for (vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
+                std::vector<connection::Member> memberList = clusterService.getMemberList();
+                for (std::vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
                     impl::PartitionsResponse response = getPartitionsFrom(target);
                     if (!response.isEmpty()) {

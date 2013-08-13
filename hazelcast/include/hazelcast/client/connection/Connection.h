@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 void connect();
 
-                void write(const vector<byte>& bytes);
+                void write(const std::vector<byte>& bytes);
 
                 void write(const serialization::Data&);
 

@@ -8,12 +8,13 @@
 #ifndef HAZELCAST_TxnMapRequest
 #define HAZELCAST_TxnMapRequest
 
-#include <memory>
-#include <bits/stl_vector.h>
 #include "Portable.h"
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
 #include "Data.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
+#include <memory>
 
 namespace hazelcast {
     namespace client {

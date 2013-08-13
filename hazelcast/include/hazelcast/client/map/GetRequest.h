@@ -6,6 +6,7 @@
 
 #include "../serialization/Data.h"
 #include "PortableHook.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {

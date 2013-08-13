@@ -7,18 +7,17 @@
 //
 
 #include "DefaultPortableWriter.h"
-#include "ObjectDataOutput.h"
-#include "Util.h"
 #include "ClassDefinition.h"
+#include "SerializationContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DefaultPortableWriter::DefaultPortableWriter(SerializerHolder& serializerHolder, SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& dataOutput)
-            : serializerHolder(serializerHolder)
-            , context(serializationContext)
-            , objectDataOutput(serializerHolder, serializationContext)
+            DefaultPortableWriter::DefaultPortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& dataOutput)
+            : context(serializationContext)
+            , serializerHolder(serializationContext.getSerializerHolder())
+            , objectDataOutput(serializationContext)
             , dataOutput(dataOutput)
             , index (0)
             , cd(cd)

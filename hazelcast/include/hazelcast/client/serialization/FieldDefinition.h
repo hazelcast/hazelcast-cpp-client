@@ -10,7 +10,6 @@
 #define HAZELCAST_FIELD_DEFINITION
 
 #include "FieldType.h"
-#include "SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
@@ -20,15 +19,14 @@ namespace hazelcast {
 
             class DataOutput;
 
-
             class FieldDefinition {
             public:
 
                 FieldDefinition();
 
-                FieldDefinition(int, std::string, FieldType const&);
+                FieldDefinition(int, const std::string&, FieldType const&);
 
-                FieldDefinition(int, std::string, FieldType const&, int, int);
+                FieldDefinition(int, const std::string&, FieldType const&, int, int);
 
                 FieldType getType() const;
 
