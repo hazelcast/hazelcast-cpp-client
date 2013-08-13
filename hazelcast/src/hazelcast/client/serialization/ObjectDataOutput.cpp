@@ -144,8 +144,7 @@ namespace hazelcast {
                 writeBoolean(true);
             };
 
-            void ObjectDataOutput::writeObject(const Portable *portable) {
-                if (isEmpty) return;
+            void ObjectDataOutput::writePortable(const Portable *portable) {
                 writeBoolean(true);
                 writeInt(portable->getSerializerId());
                 util::AtomicPointer <ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
@@ -158,8 +157,7 @@ namespace hazelcast {
 
             };
 
-            void ObjectDataOutput::writeObject(const IdentifiedDataSerializable *dataSerializable) {
-                if (isEmpty) return;
+            void ObjectDataOutput::writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable) {
                 writeBoolean(true);
                 writeInt(dataSerializable->getSerializerId());
                 serializerHolder->getDataSerializer().write(*this, *dataSerializable);

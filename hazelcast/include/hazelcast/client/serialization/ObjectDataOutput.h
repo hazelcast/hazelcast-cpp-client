@@ -69,13 +69,24 @@ namespace hazelcast {
 
                 void writeNullObject();
 
-                void writeObject(const Portable *portable);
-
-                void writeObject(const IdentifiedDataSerializable *dataSerializable);
+                template<typename T>
+                void writeObject(const Portable *portable) {
+                    if (isEmpty) return;
+                    const T *object = dynamic_cast<const T *>(portable);
+                    writePortable(portable);
+                };
 
                 template<typename T>
-                void writeObject(const T *object) {
+                void writeObject(const IdentifiedDataSerializable *dataSerializable) {
                     if (isEmpty) return;
+                    const T *object = dynamic_cast<const T *>(dataSerializable);
+                    writeIdentifiedDataSerializable(dataSerializable);
+                };
+
+                template<typename T>
+                void writeObject(const void *serializable) {
+                    if (isEmpty) return;
+                    const T *object = dynamic_cast<const T *>(serializable);
                     int type = object->getSerializerId();
                     writeBoolean(true);
                     writeInt(type);
@@ -89,7 +100,7 @@ namespace hazelcast {
                 };
 
             private:
-                DataOutput* dataOutput;
+                DataOutput *dataOutput;
                 SerializationContext *context;
                 SerializerHolder *serializerHolder;
                 bool isEmpty;
@@ -99,6 +110,10 @@ namespace hazelcast {
                 void position(int newPos);
 
                 void reset();
+
+                void writePortable(const Portable *portable);
+
+                void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
 
                 ObjectDataOutput(const ObjectDataOutput&);
 

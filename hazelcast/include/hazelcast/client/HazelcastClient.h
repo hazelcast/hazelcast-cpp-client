@@ -105,6 +105,8 @@ namespace hazelcast {
 
             ILock getILock(const std::string& instanceName);
 
+//            IExecutorService getExecutorService(const std::string& instanceName);
+
             ISemaphore getISemaphore(const std::string& instanceName);
 
             ClientConfig& getClientConfig();

@@ -5,7 +5,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/TransactionContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -120,12 +119,13 @@ namespace hazelcast {
         };
 
         ILock HazelcastClient::getILock(const std::string& instanceName) {
-            return getDistributedObject< ILock >(instanceName);;
+            return getDistributedObject< ILock >(instanceName);
         };
 
+//       IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
+//        return getDistributedObject< IExecutorService >(instanceName)
+//    }
 
-
-//        @Override TODO
 //        public String addDistributedObjectListener(DistributedObjectListener distributedObjectListener) {
 //        return proxyManager.addDistributedObjectListener(distributedObjectListener);
 //    }
@@ -134,49 +134,15 @@ namespace hazelcast {
 //        return proxyManager.removeDistributedObjectListener(registrationId);
 //    }
 
-//        @Override
-//        public IExecutorService getExecutorService(String name) {
-//        return getDistributedObject(DistributedExecutorService.SERVICE_NAME, name);
-//    }
-//
-//        @Override
-//        public <T> T executeTransaction(TransactionalTask<T> task) throws TransactionException {
-//        return executeTransaction(TransactionOptions.getDefault(), task);
-//    }
-//
-//        @Override
-//        public <T> T executeTransaction(TransactionOptions options, TransactionalTask<T> task) throws TransactionException {
-//        final TransactionContext context = newTransactionContext(options);
-//        context.beginTransaction();
-//        try {
-//            final T value = task.execute(context);
-//            context.commitTransaction();
-//            return value;
-//        } catch (Throwable e) {
-//            context.rollbackTransaction();
-//            if (e instanceof TransactionException) {
-//                throw (TransactionException) e;
-//            }
-//            if (e.getCause() instanceof TransactionException) {
-//                throw (TransactionException) e.getCause();
-//            }
-//            if (e instanceof RuntimeException) {
-//                throw (RuntimeException) e;
-//            }
-//            throw new TransactionException(e);
-//        }
-//    }
-//
-
         TransactionContext HazelcastClient::newTransactionContext() {
-            TransactionOptions options;
-            return newTransactionContext(options);
+            TransactionOptions defaultOptions;
+            return newTransactionContext(defaultOptions);
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
             return TransactionContext(impl->clusterService, impl->serializationService, impl->connectionManager, options);
         }
-//
+
 //        void shutdown() {
 //            CLIENTS.remove(id);
 //            executionService.shutdown();
@@ -185,20 +151,6 @@ namespace hazelcast {
 //            connectionManager.shutdown();
 //        }
 //
-//        public static Collection<HazelcastInstance> getAllHazelcastClients() {
-//        return Collections.<HazelcastInstance>unmodifiableCollection(CLIENTS.values());
-//    }
-//
-//        public static void shutdownAll() {
-//        for (HazelcastClientProxy proxy : CLIENTS.values()) {
-//            try {
-//                proxy.client.getLifecycleService().shutdown();
-//            } catch (Exception ignored) {
-//            }
-//            proxy.client = null;
-//        }
-//        CLIENTS.clear();
-//    }
 
 
     }
