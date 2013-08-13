@@ -60,7 +60,8 @@ namespace hazelcast {
                 Data toData(const IdentifiedDataSerializable *dataSerializable) {
                     const T *object = dynamic_cast<const T *>(dataSerializable);
                     Data data;
-                    ObjectDataOutput output(serializationContext);
+                    DataOutput dataOutput;
+                    ObjectDataOutput output(dataOutput, serializationContext);
                     getSerializerHolder().getDataSerializer().write(output, *object);
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_DATA);
                     data.setBuffer(output.toByteArray());
@@ -71,7 +72,8 @@ namespace hazelcast {
                 Data toData(const void *serializable) {
                     const T *object = static_cast<const T *>(serializable);
                     Data data;
-                    ObjectDataOutput output(serializationContext);
+                    DataOutput dataOutput;
+                    ObjectDataOutput output(dataOutput, serializationContext);
                     int type = object->getSerializerId();
                     SerializerBase *serializer = serializerFor(type);
                     if (serializer) {

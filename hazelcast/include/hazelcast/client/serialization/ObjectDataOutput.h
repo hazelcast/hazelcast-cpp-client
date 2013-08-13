@@ -8,7 +8,6 @@
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
-#include "DataOutput.h"
 #include "IOException.h"
 #include "SerializerHolder.h"
 #include "Serializer.h"
@@ -18,9 +17,13 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
+            typedef unsigned char byte;
+
+            class DataOutput;
+
             class ObjectDataOutput {
             public:
-                ObjectDataOutput(SerializationContext& serializationContext);
+                ObjectDataOutput(DataOutput& dataOutput, SerializationContext& serializationContext);
 
                 ObjectDataOutput();
 
@@ -86,7 +89,7 @@ namespace hazelcast {
                 };
 
             private:
-                DataOutput dataOutput;
+                DataOutput* dataOutput;
                 SerializationContext *context;
                 SerializerHolder *serializerHolder;
                 bool isEmpty;

@@ -178,7 +178,7 @@ public:
 
         Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
-        ObjectDataOutput out;
+        DataOutput out;
         data.writeData(out);
 
         std::auto_ptr< vector < byte> > xxx = out.toByteArray();
@@ -198,7 +198,7 @@ public:
         serialization::SerializationService serializationService(1);
         TestMainPortable mainPortable = getTestMainPortable();
         Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-        ObjectDataOutput out;
+        DataOutput out;
         data.writeData(out);
         std::vector<byte>& outBuffer = *(out.toByteArray().get());
         int size = outBuffer.size();

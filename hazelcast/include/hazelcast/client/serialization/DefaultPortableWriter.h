@@ -107,9 +107,9 @@ namespace hazelcast {
 
                 int index;
                 bool raw;
-                DataOutput& dataOutput;
                 SerializationContext& context;
                 SerializerHolder& serializerHolder;
+                DataOutput& dataOutput;
                 ObjectDataOutput objectDataOutput;
                 int begin;
                 int offset;
