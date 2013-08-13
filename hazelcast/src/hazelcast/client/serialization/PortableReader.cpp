@@ -1,140 +1,137 @@
 //
-//  PortableReader.cpp
-//  Server
-//
-//  Created by sancar koyunlu on 1/10/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
-#include "hazelcast/client/serialization/SerializationContext.h"
-#include "hazelcast/client/serialization/PortableReader.h"
+// Created by sancar koyunlu on 8/10/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            PortableReader::PortableReader(DefaultPortableReader *defaultPortableReader)
+            : defaultPortableReader(defaultPortableReader)
+            , morphingPortableReader(NULL)
+            , isDefaultReader(true) {
 
-            PortableReader::PortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
-            : dataInput(input)
-            , context(serializationContext)
-            , objectDataInput(input, serializationContext),
-            , finalPosition(input.readInt()) //TODO what happens in case of exception
-            , offset(input.position())
-            , cd(cd)
-            , raw(false) {
+
+            };
+
+            PortableReader::PortableReader(MorphingPortableReader *morphingPortableReader)
+            : defaultPortableReader(NULL)
+            , morphingPortableReader(morphingPortableReader)
+            , isDefaultReader(false) {
 
             };
 
             int PortableReader::readInt(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readInt();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readInt(fieldName);
+                return morphingPortableReader->readInt(fieldName);
+            }
 
             long PortableReader::readLong(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readLong();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readLong(fieldName);
+                return morphingPortableReader->readLong(fieldName);
+            }
 
             bool PortableReader::readBoolean(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readBoolean();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readBoolean(fieldName);
+                return morphingPortableReader->readBoolean(fieldName);
+            }
 
             byte PortableReader::readByte(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readByte();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readByte(fieldName);
+                return morphingPortableReader->readByte(fieldName);
+            }
 
             char PortableReader::readChar(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readChar();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readChar(fieldName);
+                return morphingPortableReader->readChar(fieldName);
+            }
 
             double PortableReader::readDouble(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readDouble();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readDouble(fieldName);
+                return morphingPortableReader->readDouble(fieldName);
+            }
 
             float PortableReader::readFloat(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readFloat();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readFloat(fieldName);
+                return morphingPortableReader->readFloat(fieldName);
+            }
 
             short PortableReader::readShort(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readShort();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readShort(fieldName);
+                return morphingPortableReader->readShort(fieldName);
+            }
 
             string PortableReader::readUTF(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readUTF();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readUTF(fieldName);
+                return morphingPortableReader->readUTF(fieldName);
+            }
 
-            std::vector <byte> PortableReader::readByteArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readByteArray();
-            };
+            std::vector<byte> PortableReader::readByteArray(const char *fieldName) {
+                if (isDefaultReader)
+                    return defaultPortableReader->readByteArray(fieldName);
+                return morphingPortableReader->readByteArray(fieldName);
+            }
 
-            std::vector<char> PortableReader::readCharArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readCharArray();
-            };
+            std::vector<char> PortableReader::readCharArray(const readCharArray *fieldName) {
+                if (isDefaultReader)
+                    return defaultPortableReader->readInt(fieldName);
+                return morphingPortableReader->readCharArray(fieldName);
+            }
 
             std::vector<int> PortableReader::readIntArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readIntArray();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readIntArray(fieldName);
+                return morphingPortableReader->readIntArray(fieldName);
+            }
 
             std::vector<long> PortableReader::readLongArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readLongArray();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readLongArray(fieldName);
+                return morphingPortableReader->readLongArray(fieldName);
+            }
 
             std::vector<double> PortableReader::readDoubleArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readDoubleArray();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readDoubleArray(fieldName);
+                return morphingPortableReader->readDoubleArray(fieldName);
+            }
 
             std::vector<float> PortableReader::readFloatArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readFloatArray();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readFloatArray(fieldName);
+                return morphingPortableReader->readFloatArray(fieldName);
+            }
 
             std::vector<short> PortableReader::readShortArray(const char *fieldName) {
-                setPosition(fieldName);
-                return dataInput.readShortArray();
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->readShortArray(fieldName);
+                return morphingPortableReader->readShortArray(fieldName);
+            }
 
-
-            void PortableReader::setPosition(char const *fieldName) {
-                dataInput.position(getPosition(fieldName));
-                const FieldDefinition& fd = cd->get(fieldName);
-                currentFactoryId = fd.getFactoryId();
-                currentClassId = fd.getClassId();
-            };
-
-            int PortableReader::getPosition(const char *fieldName) {
-                if (raw) {
-                    throw exception::IException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
-                }
-                if (!cd->isFieldDefinitionExists(fieldName))
-                    throw exception::IException("PortableReader::getPosition ", " unknownField " + std::string(fieldName));
-                dataInput.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
-                return dataInput.readInt();
-            };
-
-            ObjectDataInput *PortableReader::getRawDataInput() {
-                if (!raw) {
-                    dataInput.position(offset + cd->getFieldCount() * 4);
-                    int pos = dataInput.readInt();
-                    dataInput.position(pos);
-                }
-                raw = true;
-                dataInput.setSerializationContext(&context);
-                return &objectDataInput; //TODO why return pointer not reference
-            };
+            ObjectDataInput& PortableReader::getRawDataInput() {
+                if (isDefaultReader)
+                    return defaultPortableReader->getRawDataInput();
+                return morphingPortableReader->getRawDataInput();
+            }
 
             void PortableReader::end() {
-                dataInput.position(finalPosition);
-            };
+                if (isDefaultReader)
+                    return defaultPortableReader->end();
+                return morphingPortableReader->end();
+
+            }
 
         }
     }

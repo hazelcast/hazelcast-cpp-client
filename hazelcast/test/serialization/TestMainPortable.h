@@ -87,8 +87,8 @@ public:
         return 1;
     }
 
-    template<typename HzWriter>
-    inline void writePortable(HzWriter& writer) const{
+
+    inline void writePortable(serialization::PortableWriter& writer) const{
         writer.writeByte("b", b);
         writer.writeBoolean("bool", boolean);
         writer.writeChar("c", c);
@@ -101,8 +101,8 @@ public:
         writer.writePortable("p", p);
     };
 
-    template<typename HzReader>
-    inline void readPortable(HzReader& reader) {
+
+    inline void readPortable(serialization::PortableReader& reader) {
         null = false;
         b = reader.readByte("b");
         boolean = reader.readBoolean("bool");

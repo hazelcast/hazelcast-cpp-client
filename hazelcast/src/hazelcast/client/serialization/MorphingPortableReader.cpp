@@ -6,16 +6,18 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/MorphingPortableReader.h"
-#include "IOException.h"
+#include "hazelcast/client/serialization/DefaultPortableReader.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            MorphingPortableReader::MorphingPortableReader(SerializationContext & serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
-            : dataInput(input)
+            MorphingPortableReader::MorphingPortableReader(SerializerHolder& serializerHolder, SerializationContext & serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
+            :serializerHolder(serializerHolder)
             , context(serializationContext)
-            , objectDataInput(input, serializationContext)
+            , dataInput(input)
+            , objectDataInput(input, serializerHolder, serializationContext)
             , finalPosition(input.readInt()) //TODO what happens in case of exception
             , offset(input.position())
             , cd(cd)
@@ -251,7 +253,7 @@ namespace hazelcast {
                 }
             }
 
-            ObjectDataInput *MorphingPortableReader::getRawDataInput() {
+            ObjectDataInput& MorphingPortableReader::getRawDataInput() {
                 if (!raw) {
                     dataInput.position(offset + cd->getFieldCount() * 4);
                     int pos = dataInput.readInt();
@@ -260,11 +262,15 @@ namespace hazelcast {
                 }
                 raw = true;
                 // TODO input.setSerializationContext(&context);  ? why missing
-                return &objectDataInput; //TODO why return pointer not reference
+                return objectDataInput; //TODO why return pointer not reference
             };
 
             void MorphingPortableReader::end() {
                 dataInput.position(finalPosition);
+            };
+
+            void MorphingPortableReader::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion) {
+                serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, dataVersion);
             };
 
         }

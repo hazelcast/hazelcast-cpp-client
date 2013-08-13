@@ -4,6 +4,8 @@
 
 
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,6 +36,27 @@ namespace hazelcast {
 
             int AuthenticationRequest::getClassId() const {
                 return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
+            };
+
+            void AuthenticationRequest::writePortable(serialization::PortableWriter& writer) const{
+                writer.writePortable("credentials", credentials);
+                if (principal == NULL) {
+                    writer.writeNullPortable("principal",  -3, 3);
+                } else {
+                    writer.writePortable("principal", *principal);
+                }
+                writer.writeBoolean("reAuth", reAuth);
+                writer.writeBoolean("firstConnection", firstConnection);
+            };
+
+
+            void AuthenticationRequest::readPortable(serialization::PortableReader& reader) {
+                credentials = reader.template readPortable<Credentials>("credentials");
+                protocol::Principal *principal = new protocol::Principal();
+                *principal = reader.template readPortable<Principal>("principal");
+                this->principal = principal;
+                reAuth = reader.readBoolean("reAuth");
+                firstConnection = reader.readBoolean("firstConnection");
             };
 
         }

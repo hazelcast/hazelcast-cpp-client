@@ -31,18 +31,18 @@ namespace hazelcast {
                 }
 
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
             private:
                 std::string name;

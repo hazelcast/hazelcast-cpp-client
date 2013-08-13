@@ -9,6 +9,8 @@
 #define HAZELCAST_AddAndGetRequest
 
 #include "AtomicLongRequest.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <string>
 
 namespace hazelcast {
@@ -26,13 +28,13 @@ namespace hazelcast {
                     return AtomicLongPortableHook::ADD_AND_GET;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     AtomicLongRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     AtomicLongRequest::readPortable(reader);
                 };
 

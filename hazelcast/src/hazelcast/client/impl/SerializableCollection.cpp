@@ -34,7 +34,7 @@ namespace hazelcast {
             };
 
 
-            void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) {
+            void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); ++i) {
                     dataCollection[i]->writeData(writer);

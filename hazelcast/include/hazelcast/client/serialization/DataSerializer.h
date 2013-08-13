@@ -5,37 +5,25 @@
 #ifndef HAZELCAST_DATA_SERIALIZER
 #define HAZELCAST_DATA_SERIALIZER
 
-#include "DataOutput.h"
 
 namespace hazelcast {
     namespace client {
+
+        class IdentifiedDataSerializable;
+
         namespace serialization {
+            class ObjectDataOutput;
+
+            class ObjectDataInput;
+
 
             class DataSerializer {
             public:
                 DataSerializer();
 
-                template <typename T>
-                void write(DataOutput &out, T& object) {
-                    out.writeBoolean(true);
-                    out.writeInt(object.getFactoryId());
-                    out.writeInt(object.getClassId());
-                    object.writeData(out);
-                };
+                void write(ObjectDataOutput &out, const IdentifiedDataSerializable& object);
 
-                template <typename T>
-                void read(DataInput& in, T& object) {
-                    bool identified = in.readBoolean();
-                    if (!identified) {
-                        throw exception::IOException("void DataSerializer::read", " DataSerializable is not identified");
-                    }
-                    in.readInt(); //factoryId
-                    in.readInt(); //classId
-                    //TODO factoryId and classId is not used!!!
-                    object.readData(in);
-                };
-
-                ~DataSerializer();
+                void read(ObjectDataInput& in, IdentifiedDataSerializable& object);
 
             };
         }

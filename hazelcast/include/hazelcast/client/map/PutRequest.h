@@ -4,50 +4,27 @@
 #ifndef HAZELCAST_MAP_PUT_REQUEST
 #define HAZELCAST_MAP_PUT_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
+
+        namespace serialization {
+            class Data;
+        }
+
         namespace map {
             class PutRequest : public Portable {
             public:
-                PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
-                :name(name)
-                , key(key)
-                , value(value)
-                , threadId(threadId)
-                , ttl(ttl) {
+                PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::PUT;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("t", threadId);
-                    writer.writeLong("ttl", ttl);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                    value.writeData(*out);
-                };
-
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    name = reader.readUTF("n");
-                    threadId = reader.readInt("t");
-                    ttl = reader.readLong("ttl");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                    value.readData(*in);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

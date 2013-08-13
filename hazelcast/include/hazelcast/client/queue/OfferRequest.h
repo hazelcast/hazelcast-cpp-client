@@ -34,20 +34,20 @@ namespace hazelcast {
                     return queue::QueuePortableHook::OFFER;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeLong("t", timeoutInMillis);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    data.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    data.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
-                    timeoutInMillis = reader.readUTF("t");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    data.readData(*in);
+                    timeoutInMillis = reader.readLong("t");
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    data.readData(in);
                 };
             private:
                 serialization::Data& data;

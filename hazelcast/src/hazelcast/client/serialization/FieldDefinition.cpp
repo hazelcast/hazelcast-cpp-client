@@ -54,7 +54,7 @@ namespace hazelcast {
             };
 
 
-            void FieldDefinition::writeData(ObjectDataOutput & dataOutput) {
+            void FieldDefinition::writeData(DataOutput & dataOutput) {
                 dataOutput.writeInt(index);
                 dataOutput.writeUTF(fieldName);
                 dataOutput.writeByte(type.getId());
@@ -62,7 +62,7 @@ namespace hazelcast {
                 dataOutput.writeInt(classId);
             };
 
-            void FieldDefinition::readData(ObjectDataInput & dataInput) {
+            void FieldDefinition::readData(DataInput & dataInput) {
                 index = dataInput.readInt();
                 fieldName = dataInput.readUTF();
                 type.id = dataInput.readByte();

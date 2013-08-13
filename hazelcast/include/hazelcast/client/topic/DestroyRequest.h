@@ -29,13 +29,13 @@ namespace hazelcast {
                     return TopicPortableHook::DESTROY;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", instanceName);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     instanceName = reader.readUTF("n");
                 };
             private:

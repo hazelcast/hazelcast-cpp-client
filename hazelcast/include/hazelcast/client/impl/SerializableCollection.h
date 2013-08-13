@@ -9,13 +9,13 @@
 
 #include "../serialization/Data.h"
 #include "../serialization/SerializationConstants.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class SerializableCollection : public DataSerializable {
+            class SerializableCollection : public IdentifiedDataSerializable {
             public:
                 SerializableCollection();
 
@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

@@ -20,13 +20,13 @@ namespace hazelcast {
 
                 int getFactoryId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                 };
             private:

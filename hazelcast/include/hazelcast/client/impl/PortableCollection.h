@@ -9,6 +9,8 @@
 #include "ProtocolConstants.h"
 #include "Data.h"
 #include "Portable.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <vector>
 
 
@@ -25,27 +27,27 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeBool("l", true);
+
+                void writePortable(serialization::PortableWriter& writer) const {
+                    writer.writeBoolean("l", true);
                     writer.writeInt("s", collection.size());
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     for (int i = 0; i < collection.size(); ++i) {
-                        collection[i].writeData(*out);
+                        collection[i].writeData(out);
                     }
 
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    bool isList = reader.readBool("l");
+
+                void readPortable(serialization::PortableReader& reader) {
+                    bool isList = reader.readBoolean("l");
                     int size = reader.readInt("s");
                     if (size < 0)
                         return;
                     collection.resize(size);
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
-                        collection[i].readData(*in);
+                        collection[i].readData(in);
                     }
                 };
             private:

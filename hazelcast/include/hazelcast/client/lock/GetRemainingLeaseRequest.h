@@ -30,16 +30,16 @@ namespace hazelcast {
                     return LockPortableHook::FACTORY_ID;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+
+                void writePortable(serialization::PortableWriter& writer) const {
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+
+                void readPortable(serialization::PortableReader& reader) {
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
             private:
 

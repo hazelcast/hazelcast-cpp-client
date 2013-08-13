@@ -13,7 +13,6 @@
 #include "FieldDefinition.h"
 #include "hazelcast/util/Util.h"
 #include "AtomicPointer.h"
-#include <iosfwd>
 #include <string>
 #include <map>
 #include <vector>
@@ -27,9 +26,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class ObjectDataInput;
+            class DataInput;
 
-            class ObjectDataOutput;
+            class DataOutput;
 
             typedef unsigned char byte;
 
@@ -74,9 +73,9 @@ namespace hazelcast {
 
                 void setVersion(int);
 
-                void writeData(ObjectDataOutput& dataOutput);
+                void writeData(DataOutput& dataOutput);
 
-                void readData(ObjectDataInput& dataInput);
+                void readData(DataInput& dataInput);
 
             private:
                 int classId;

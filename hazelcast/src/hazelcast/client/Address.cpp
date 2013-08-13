@@ -1,7 +1,7 @@
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,7 @@ namespace hazelcast {
         bool Address::operator ==(const Address& rhs) const {
             if (rhs.host.compare(host) != 0) {
                 return false;
-            }else {
+            } else {
                 return rhs.port == port;
             }
         };
@@ -49,7 +49,7 @@ namespace hazelcast {
             return protocol::ProtocolConstants::ADDRESS_ID;
         };
 
-        void Address::writeData(serialization::ObjectDataOutput & writer) {
+        void Address::writeData(serialization::ObjectDataOutput & writer) const {
             writer.writeInt(port);
             writer.writeByte(type);
             int size = host.size();

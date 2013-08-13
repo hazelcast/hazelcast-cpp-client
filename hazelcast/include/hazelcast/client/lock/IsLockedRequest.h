@@ -38,18 +38,18 @@ namespace hazelcast {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("tid", threadId);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     threadId = reader.readInt("tid");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
             private:
                 int threadId;

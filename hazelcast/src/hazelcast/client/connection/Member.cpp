@@ -61,7 +61,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::MEMBER_ID;
             };
 
-            void Member::writeData(serialization::ObjectDataOutput & writer) {
+            void Member::writeData(serialization::ObjectDataOutput & writer) const {
                 address.writeData(writer);
                 writer.writeUTF(uuid);
             };

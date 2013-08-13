@@ -14,11 +14,17 @@
 #include "IOException.h"
 #include "Serializer.h"
 #include "SerializerHolder.h"
+#include "ClassDefinition.h"
+#include "DataInput.h"
 #include <vector>
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        class Portable;
+
+        class IdentifiedDataSerializable;
+
         namespace serialization {
 
             class SerializationService;
@@ -27,15 +33,12 @@ namespace hazelcast {
 
             class DataInput;
 
+
             typedef unsigned char byte;
 
             class ObjectDataInput {
             public:
-                ObjectDataInput(DataInput&, SerializerHolder&, SerializationContext&);//TODO 1 is both constructors are needed
-
-                ObjectDataInput(const std::vector<byte>&, SerializerHolder&, SerializationContext&);
-
-                void setSerializationContext(SerializationContext *context);
+                ObjectDataInput(DataInput&, SerializerHolder&, SerializationContext&);
 
                 SerializationContext *getSerializationContext();
 
@@ -91,16 +94,16 @@ namespace hazelcast {
                     const int typeId = readInt();
 
                     ClassDefinition classDefinition;
-                    classDefinition.readData(*this);
+                    classDefinition.readData(dataInput);
                     int factoryId = classDefinition.getFactoryId();
                     int classId = classDefinition.getClassId();
                     int version = classDefinition.getVersion();
 
-                    serializerHolder.getPortableSerializer().read(*this, object, factoryId, classId, version);
+                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
                 };
 
                 template<typename  T>
-                T readObjectResolved(DataSerializable *tag) {
+                T readObjectResolved(IdentifiedDataSerializable *tag) {
                     bool isNull = readBoolean();
                     T object;
                     if (isNull) {
@@ -134,19 +137,13 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-                const std::vector<byte>& buffer;
-                int pos;
+                DataInput& dataInput;
                 SerializerHolder& serializerHolder;
                 SerializationContext& serializationContext;
 
-                static int const STRING_CHUNK_SIZE = 16 * 1024;
-
-                std::string readShortUTF();
-
                 ObjectDataInput(const ObjectDataInput&);
 
-                ObjectDataInput& operator = (const ObjectDataInput&);
-
+                void operator = (const ObjectDataInput&);
             };
         }
     }

@@ -2,7 +2,7 @@
 #define HAZELCAST_ADDRESS
 
 #include "../util/Util.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <string>
 #include <sstream>
 #include <iterator>
@@ -15,7 +15,7 @@ namespace hazelcast {
             class ObjectDataOutput;
         }
 
-        class Address : public DataSerializable {
+        class Address : public IdentifiedDataSerializable {
         public:
             //TODO type IPV4 IPV6
             Address();
@@ -34,7 +34,7 @@ namespace hazelcast {
 
             int getClassId() const;
 
-            void writeData(serialization::ObjectDataOutput& writer);
+            void writeData(serialization::ObjectDataOutput& writer) const;
 
             void readData(serialization::ObjectDataInput& reader);
 
@@ -64,7 +64,6 @@ namespace hazelcast {
         };
     }
 };
-
 
 
 #endif /* HAZELCAST_ADDRESS */

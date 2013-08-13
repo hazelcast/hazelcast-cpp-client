@@ -27,7 +27,7 @@ namespace hazelcast {
                 return DataSerializableHook::KEY_SET;
             }
 
-            void MapKeySet::writeData(serialization::ObjectDataOutput& writer) {
+            void MapKeySet::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(keySet.size());
                 for (int i = 0; i < keySet.size(); ++i) {
                     keySet[i].writeData(writer);

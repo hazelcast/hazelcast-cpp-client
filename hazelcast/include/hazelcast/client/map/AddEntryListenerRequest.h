@@ -46,8 +46,8 @@ namespace hazelcast {
                     return PortableHook::ADD_ENTRY_LISTENER;
                 }
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
+
+                inline void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                     writer.writeBoolean("i", includeValue);
                     writer.writeBoolean("key", hasKey);
@@ -56,13 +56,13 @@ namespace hazelcast {
                         writer.writeUTF("p", sql);
                     }
                     if (hasKey) {
-                        serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                        key.writeData(*out);
+                        serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                        key.writeData(out);
                     }
                 };
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
+
+                inline void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                     includeValue = reader.readBoolean("i");
                     hasKey = reader.readBoolean("key");
@@ -71,8 +71,8 @@ namespace hazelcast {
                         sql = reader.readUTF("p");
                     }
                     if (hasKey) {
-                        serialization::ObjectDataInput *in = reader.getRawDataInput();
-                        key.readData(*in);
+                        serialization::ObjectDataInput &in = reader.getRawDataInput();
+                        key.readData(in);
                     }
                 };
             private:

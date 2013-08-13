@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class Member : public DataSerializable {
+            class Member : public IdentifiedDataSerializable {
 
             public:
                 Member();
@@ -37,7 +37,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

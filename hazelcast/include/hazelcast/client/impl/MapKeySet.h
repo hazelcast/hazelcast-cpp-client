@@ -8,13 +8,13 @@
 #define HAZELCAST_MAP_KEY_SET
 
 #include "../serialization/Data.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapKeySet : public DataSerializable {
+            class MapKeySet : public IdentifiedDataSerializable {
             public:
                 MapKeySet();
 
@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 const std::vector<serialization::Data>& getKeySet() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

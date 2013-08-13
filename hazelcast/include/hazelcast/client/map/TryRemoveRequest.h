@@ -28,22 +28,22 @@ namespace hazelcast {
                     return PortableHook::TRY_REMOVE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeLong("timeout", timeout);
                     writer.writeUTF("n", name);
                     writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     timeout = reader.readLong("timeout");
                     name = reader.readUTF("n");
                     threadId = reader.readInt("t");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
 
             private:

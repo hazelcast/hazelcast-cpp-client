@@ -10,21 +10,17 @@
 #define HAZELCAST_MORPHING_PORTABLE_READER
 
 #include "ClassDefinition.h"
+#include "DataInput.h"
+#include "SerializerHolder.h"
 #include "ObjectDataInput.h"
-#include "FieldDefinition.h"
-#include "IException.h"
-#include "PortableReader.h"
-#include "ConstantSerializers.h"
-#include "SerializationContext.h"
-#include <iostream>
 #include <string>
 #include <memory>
 
-
-using namespace std;
-
 namespace hazelcast {
     namespace client {
+
+        class Portable;
+
         namespace serialization {
 
             typedef unsigned char byte;
@@ -32,7 +28,7 @@ namespace hazelcast {
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                MorphingPortableReader(SerializerHolder& serializerHolder, SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -67,23 +63,6 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                void read(DataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
-
-                    util::AtomicPointer<ClassDefinition> cd;
-                    if (context.getVersion() == dataVersion) {
-                        cd = context.lookup(factoryId, classId); // using serializationContext.version
-                        PortableReader reader(context, dataInput, cd);
-                        object.readPortable(reader);
-                        reader.end();
-                    } else {
-                        cd = context.lookup(factoryId, classId, dataVersion); // registered during read
-                        MorphingPortableReader reader(context, dataInput, cd);
-                        object.readPortable(reader);
-                        reader.end();
-                    }
-                };
-
-                template<typename T>
                 T readPortable(const char *fieldName) {
                     T portable;
                     if (setPosition(fieldName))
@@ -109,7 +88,7 @@ namespace hazelcast {
                             dataInput.position(offset + i * sizeof (int));
                             int start = dataInput.readInt();
                             dataInput.position(start);
-                            read(dataInput, portables[i], currentFactoryId, currentClassId, cd->getVersion());
+                            serializerHolder.getPortableSerializer().read(dataInput, portables[i], currentFactoryId, currentClassId, cd->getVersion());
                         }
                     }
                     return portables;
@@ -117,17 +96,19 @@ namespace hazelcast {
 
                 void end();
 
-                ObjectDataInput *getRawDataInput();
+                ObjectDataInput& getRawDataInput();
 
             private:
+                void read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion);
 
                 int getPosition(const char *);
 
                 bool setPosition(const char *);
 
-                DataInput& dataInput;
+                SerializerHolder& serializerHolder;
                 SerializationContext& context;
-                ObjectDataInput& objectDataInput;
+                DataInput& dataInput;
+                ObjectDataInput objectDataInput;
                 int const finalPosition;
                 int offset;
                 bool raw;

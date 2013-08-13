@@ -24,28 +24,28 @@ namespace hazelcast {
 
                 };
 
-                int getFactoryId() {
+                int getFactoryId() const {
                     return PortableHook::F_ID;
                 };
 
-                int getClassId() {
+                int getClassId() const {
                     return PortableHook::EVICT;
                 };
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
+
+                inline void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                     writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
+
+                inline void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                     threadId = reader.readInt("t");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
             private:
                 serialization::Data& key;

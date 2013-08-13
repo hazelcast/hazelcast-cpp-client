@@ -14,6 +14,7 @@
 #include "../protocol/ProtocolConstants.h"
 #include "IException.h"
 #include "AtomicPointer.h"
+#include "ObjectDataInput.h"
 #include <vector>
 #include <iosfwd>
 

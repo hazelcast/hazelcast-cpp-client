@@ -27,7 +27,7 @@ namespace hazelcast {
                 return values;
             };
 
-            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) {
+            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(values.size());
                 for (int i = 0; i < values.size(); ++i) {
                     values[i].writeData(writer);

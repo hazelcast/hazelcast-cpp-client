@@ -31,7 +31,7 @@ namespace hazelcast {
                 return entrySet;
             }
 
-            void MapEntrySet::writeData(serialization::ObjectDataOutput& writer) {
+            void MapEntrySet::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(entrySet.size());
                 for (int i = 0; i < entrySet.size(); ++i) {
                     entrySet[i].first.writeData(writer);

@@ -93,22 +93,22 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     util::writeNullableData(out, key.get());
                     util::writeNullableData(out, value.get());
                     util::writeNullableData(out, newValue.get());
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key->readData(*in);
-                    value->readData(*in);
-                    newValue->readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key->readData(in);
+                    value->readData(in);
+                    newValue->readData(in);
                 };
 
             private:

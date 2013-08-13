@@ -28,19 +28,19 @@ namespace hazelcast {
                     return CollectionPortableHook::INDEX_OF;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeBoolean("l", last);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    value.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    value.writeData(out);
                     CollectionRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     last = reader.readBoolean("l");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    value.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    value.readData(in);
                     CollectionRequest::readPortable(reader);
                 };
 

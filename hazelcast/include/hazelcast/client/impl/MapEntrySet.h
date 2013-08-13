@@ -8,14 +8,14 @@
 #define HAZELCAST_MAP_ENTRY_SET
 
 #include "Data.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <vector>
 
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapEntrySet : public DataSerializable {
+            class MapEntrySet : public IdentifiedDataSerializable {
             public:
                 MapEntrySet();
 
@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 std::vector<std::pair<serialization::Data, serialization::Data > >& getEntrySet();
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

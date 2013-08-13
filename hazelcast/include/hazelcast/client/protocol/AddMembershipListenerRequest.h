@@ -9,7 +9,7 @@
 
 #include "ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +19,7 @@ namespace hazelcast {
             class ObjectDataInput;
         }
         namespace protocol {
-            class AddMembershipListenerRequest : public DataSerializable {
+            class AddMembershipListenerRequest : public IdentifiedDataSerializable {
             public:
                 AddMembershipListenerRequest();
 

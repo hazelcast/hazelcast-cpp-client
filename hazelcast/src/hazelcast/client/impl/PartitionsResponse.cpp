@@ -42,7 +42,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::PARTITIONS;
             };
 
-            void PartitionsResponse::writeData(serialization::ObjectDataOutput& writer) {
+            void PartitionsResponse::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(members.size());
                 for (int i = 0; i < members.size(); i++) {
                     members[i].writeData(writer);

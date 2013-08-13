@@ -12,6 +12,8 @@
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
 #include "TransactionOptions.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,16 +36,16 @@ namespace hazelcast {
                     return TxnPortableHook::CREATE;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    options.writeData(*out);
+
+                void writePortable(serialization::PortableWriter& writer) const {
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    options.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    options.readData(*in);
+
+                void readPortable(serialization::PortableReader& reader) {
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    options.readData(in);
                 };
 
             private:

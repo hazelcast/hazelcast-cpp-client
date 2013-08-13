@@ -6,6 +6,7 @@
 #ifndef HAZELCAST_TransactionOptions
 #define HAZELCAST_TransactionOptions
 
+#include "IdentifiedDataSerializable.h"
 #include "DataSerializable.h"
 
 namespace hazelcast {
@@ -57,6 +58,7 @@ namespace hazelcast {
             int durability;
 
             TransactionType transactionType;
+
         };
     }
 }

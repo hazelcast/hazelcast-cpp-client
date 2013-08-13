@@ -1,38 +1,25 @@
 //
-//  PortableWriter.h
-//  Server
-//
-//  Created by sancar koyunlu on 1/10/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+// Created by sancar koyunlu on 8/10/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#ifndef HAZELCAST_PORTABLE_WRITER
-#define HAZELCAST_PORTABLE_WRITER
 
-#include "DataOutput.h"
-#include "FieldDefinition.h"
-#include "IException.h"
-#include "FieldType.h"
-#include "SerializationContext.h"
+
+
+#ifndef HAZELCAST_PortableWriter
+#define HAZELCAST_PortableWriter
+
+#include "DefaultPortableWriter.h"
 #include "ClassDefinitionWriter.h"
-#include "ConstantSerializers.h"
-#include "SerializationConstraints.h"
-#include <string>
-#include <set>
-#include <vector>
-
-using namespace std;
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class ClassDefinition;
-
             class PortableWriter {
             public:
+                PortableWriter(DefaultPortableWriter *defaultPortableWriter);
 
-                PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& output);
+                PortableWriter(ClassDefinitionWriter *classDefinitionWriter);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -72,73 +59,28 @@ namespace hazelcast {
 
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
-                    Is_Portable<T>();
-                    setPosition(fieldName);
-                    dataOutput.writeBoolean(false);
-                    write(portable);
+                    if (isDefaultWriter)
+                        return defaultPortableWriter->writePortable(fieldName, portable);
+                    return classDefinitionWriter->writePortable(fieldName, portable);
+
                 };
 
                 template <typename T>
                 void writePortableArray(const char *fieldName, const std::vector<T>& values) {
-                    Is_Portable<T>();
-                    setPosition(fieldName);
-                    int len = values.size();
-                    dataOutput.writeInt(len);
-                    if (len > 0) {
-                        int offset = dataOutput.position();
-                        dataOutput.position(offset + len * sizeof (int));
-                        for (int i = 0; i < len; i++) {
-                            dataOutput.writeInt(offset + i * sizeof (int), dataOutput.position());
-                            write(values[i]);
-                        }
-                    }
+                    if (isDefaultWriter)
+                        return defaultPortableWriter->writePortableArray(fieldName, values);
+                    return classDefinitionWriter->writePortableArray(fieldName, values);
                 };
 
-                ObjectDataOutput *getRawDataOutput();
+                ObjectDataOutput& getRawDataOutput();
 
             private:
-
-                void setPosition(const char *fieldName);
-
-                template <typename T>
-                util::AtomicPointer<ClassDefinition> getClassDefinition(const T& p) {
-                    util::AtomicPointer<ClassDefinition> cd;
-
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-                    if (context.isClassDefinitionExists(factoryId, classId)) {
-                        cd = context.lookup(factoryId, classId);
-                    } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
-                        p.writePortable(classDefinitionWriter);
-                        cd = classDefinitionWriter.getClassDefinition();
-                        cd = context.registerClassDefinition(cd);
-                    }
-
-                    return cd;
-                };
-
-                template <typename T>
-                void write(const T& p) {
-                    util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
-                    PortableWriter portableWriter(context, cd, dataOutput);
-                    p.writePortable(portableWriter);
-                    portableWriter.end();
-                };
-
-                int index;
-                bool raw;
-                DataOutput& dataOutput;
-                SerializationContext& context;
-                ObjectDataOutput& objectDataOutput;
-                int begin;
-                int offset;
-                std::set<const char *, util::cStrCmp> writtenFields;
-                util::AtomicPointer<ClassDefinition> cd;
-
+                bool isDefaultWriter;
+                DefaultPortableWriter *defaultPortableWriter;
+                ClassDefinitionWriter *classDefinitionWriter;
             };
-
         }
     }
 }
-#endif /* HAZELCAST_PORTABLE_WRITER */
+
+#endif //HAZELCAST_PortableWriter

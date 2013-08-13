@@ -7,8 +7,8 @@
 //
 
 #include "hazelcast/client/serialization/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/PortableSerializer.h"
-#include "IOException.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -128,9 +128,33 @@ namespace hazelcast {
 
             };
 
-            ObjectDataOutput *ClassDefinitionWriter::getRawDataOutput() {
-                return &emptyDataOutput;
+            ObjectDataOutput& ClassDefinitionWriter::getRawDataOutput() {
+                return emptyDataOutput;
             };
+
+            void ClassDefinitionWriter::end() {
+
+            };
+
+            util::AtomicPointer<ClassDefinition> ClassDefinitionWriter::getOrBuildClassDefinition(const Portable& p) {
+                util::AtomicPointer<ClassDefinition> cd;
+
+                int factoryId = p.getFactoryId();
+                int classId = p.getClassId();
+                if (context.isClassDefinitionExists(factoryId, classId)) {
+                    cd = context.lookup(factoryId, classId);
+                } else {
+                    ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
+                    PortableWriter cdw(&classDefinitionWriter);
+                    p.writePortable(cdw);
+                    cd = classDefinitionWriter.getClassDefinition();
+                    cd = context.registerClassDefinition(cd);
+                }
+
+                return cd;
+            };
+
+
         }
 
     }

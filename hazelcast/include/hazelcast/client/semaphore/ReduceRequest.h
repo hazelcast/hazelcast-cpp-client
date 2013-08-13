@@ -27,13 +27,13 @@ namespace hazelcast {
                     return SemaphorePortableHook::REDUCE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     SemaphoreRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     SemaphoreRequest::readPortable(reader);
                 };
             };
