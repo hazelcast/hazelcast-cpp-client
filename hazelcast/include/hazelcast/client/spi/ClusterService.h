@@ -71,12 +71,12 @@ namespace hazelcast {
                             connectionManager.releaseConnection(connection);
                             return response;
                         } catch (exception::IOException& e) {
-                            if(connection != NULL){
+                            if (connection != NULL) {
                                 std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                                 delete connection;
                             }
                             if (redoOperation /*|| obj instanceof RetryableRequest*/) {
-                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what())<< std::endl;
+                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();
                                 continue;
                             }
@@ -155,6 +155,14 @@ namespace hazelcast {
                     }
                     stream->end();
                 };
+
+                template< typename Response, typename Request>
+                Response sendAndReceiveFixedConnection(connection::Connection *connection, const Request& request) {
+                    serialization::Data data = serializationService.toData<Request>(&request);
+                    connection->write(data);
+                    serialization::Data response = connection->read(serializationService.getSerializationContext());
+                    return serializationService.toObject<Response>(response);
+                }
 
                 std::auto_ptr<Address> getMasterAddress();
 

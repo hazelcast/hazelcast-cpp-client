@@ -5,6 +5,7 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/TransactionContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,7 +28,7 @@ namespace hazelcast {
             };
 
 
-            ~HazelcastClientImpl(){
+            ~HazelcastClientImpl() {
                 //TODO shutdown the threads ????
                 lifecycleService.setShutdown();
             }
@@ -166,15 +167,15 @@ namespace hazelcast {
 //        }
 //    }
 //
-//        @Override
-//        public TransactionContext newTransactionContext() {
-//        return newTransactionContext(TransactionOptions.getDefault());
-//    }
-//
-//        @Override
-//        public TransactionContext newTransactionContext(TransactionOptions options) {
-//        return new TransactionContextProxy(this, options);
-//    }
+
+        TransactionContext HazelcastClient::newTransactionContext() {
+            TransactionOptions options;
+            return newTransactionContext(options);
+        }
+
+        TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
+            return TransactionContext(impl->clusterService, impl->serializationService, impl->connectionManager, options);
+        }
 //
 //        void shutdown() {
 //            CLIENTS.remove(id);

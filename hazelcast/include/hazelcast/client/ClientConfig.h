@@ -9,10 +9,16 @@
 #include "spi/EventListener.h"
 #include <vector>
 #include <set>
+#include <memory>
 
 namespace hazelcast {
     namespace client {
 
+        namespace connection {
+
+            class SocketInterceptor;
+
+        }
         class ClientConfig {
         public:
 
@@ -50,6 +56,10 @@ namespace hazelcast {
 
             bool isRedoOperation() const;
 
+            void setSocketInterceptor(connection::SocketInterceptor *socketInterceptor);
+
+            std::auto_ptr<connection::SocketInterceptor> getSocketInterceptor();
+
             /**
            * Adds a listener object to configuration to be registered when {@code HazelcastClient} starts.
            *
@@ -64,7 +74,6 @@ namespace hazelcast {
             LoadBalancer *const getLoadBalancer();
 
             void setLoadBalancer(LoadBalancer *loadBalancer);
-
 
 
         private:
@@ -145,7 +154,7 @@ namespace hazelcast {
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.
              */
-//            SocketInterceptor socketInterceptor = null;
+            std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
 
             /**
              * Can be used instead of {@link GroupConfig} in Hazelcast EE.

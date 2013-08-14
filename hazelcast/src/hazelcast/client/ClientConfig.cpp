@@ -1,4 +1,5 @@
 #include "hazelcast/client/ClientConfig.h"
+#include "SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {
@@ -12,6 +13,7 @@ namespace hazelcast {
         , attemptPeriod(3000)
         , credentials(NULL)
         , loadBalancer(NULL)
+        , socketInterceptor(NULL)
         , isDefaultCredentialsInitialized(false)
         , defaultLoadBalancer(new impl::RoundRobinLB) {
         };
@@ -117,6 +119,15 @@ namespace hazelcast {
             }
             return *credentials;
         };
+
+        void ClientConfig::setSocketInterceptor(connection::SocketInterceptor *socketInterceptor) {
+            this->socketInterceptor.reset(socketInterceptor);
+        }
+
+        std::auto_ptr<connection::SocketInterceptor> ClientConfig::getSocketInterceptor(){
+            return socketInterceptor;
+        };
+
 
     }
 }

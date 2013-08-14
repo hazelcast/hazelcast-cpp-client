@@ -7,6 +7,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/connection/SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,7 +17,8 @@ namespace hazelcast {
             , serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
-            , principal(NULL) {
+            , principal(NULL)
+            , socketInterceptor(clientConfig.getSocketInterceptor()){
 
             };
 
@@ -84,6 +86,9 @@ namespace hazelcast {
             void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
                 connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
+                if(socketInterceptor.get() != NULL){
+                    socketInterceptor.get()->onConnect(connection.getSocket());
+                }
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());
                 auth.setPrincipal(principal);
                 auth.setReAuth(reAuth);

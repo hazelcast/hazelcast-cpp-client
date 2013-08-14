@@ -7,6 +7,9 @@
 #include "ISet.h"
 #include "IList.h"
 #include "ITopic.h"
+#include "TransactionOptions.h"
+#include "TransactionContext.h"
+#include "TransactionalTaskContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,6 +45,10 @@ namespace hazelcast {
         class ISemaphore;
 
         class ILock;
+
+        class TransactionContext;
+
+        class TransactionOptions;
 
         class HazelcastClient {
             friend class spi::ClientContext;
@@ -100,8 +107,32 @@ namespace hazelcast {
 
             ISemaphore getISemaphore(const std::string& instanceName);
 
-
             ClientConfig& getClientConfig();
+
+            TransactionContext newTransactionContext();
+
+            TransactionContext newTransactionContext(const TransactionOptions& options);
+
+            template<typename T, typename TransactionalTask >
+            T executeTransaction(const TransactionalTask& task) {
+                TransactionOptions defaultOptions;
+                return executeTransaction(defaultOptions, task);
+            };
+
+            template<typename T, typename TransactionalTask >
+            T executeTransaction(const TransactionOptions& options, TransactionalTask& task) {
+                TransactionContext context = newTransactionContext(options);
+                TransactionalTaskContext transactionalTaskContext(context);
+                context.beginTransaction();
+                try {
+                    T value = task.execute(transactionalTaskContext);
+                    context.commitTransaction();
+                    return value;
+                } catch (std::exception& e) {
+                    context.rollbackTransaction();
+                    throw e;
+                }
+            };
 
 
         private:

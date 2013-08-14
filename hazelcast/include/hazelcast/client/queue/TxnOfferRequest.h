@@ -1,35 +1,31 @@
 //
-// Created by sancar koyunlu on 5/23/13.
+// Created by sancar koyunlu on 8/5/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#ifndef HAZELCAST_QUEUE_REMOVE_REQUEST
-#define HAZELCAST_QUEUE_REMOVE_REQUEST
 
-#include "../serialization/Data.h"
-#include "QueuePortableHook.h"
+
+
+#ifndef HAZELCAST_TxnOfferRequest
+#define HAZELCAST_TxnOfferRequest
+
+#include "Portable.h"
+#include "Data.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class RemoveRequest : public Portable {
+            class TxnOfferRequest : public Portable{
             public:
+                TxnOfferRequest(const std::string& name,  serialization::Data& );
 
-                RemoveRequest(const std::string& name, serialization::Data& data)
-                :name(name)
-                , data(data) {
+                int getFactoryId() const;
 
-                };
-
-                int getFactoryId() const {
-                    return QueuePortableHook::F_ID;
-                }
-
-                int getClassId() const {
-                    return QueuePortableHook::REMOVE;
-                }
+                int getClassId() const;
 
                 template<typename HzWriter>
                 void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("n", name);
+                    writer.writeUTF("n",name);
+                    writer.writeLong("t",timeout);
                     serialization::ObjectDataOutput *out = writer.getRawDataOutput();
                     data.writeData(*out);
                 };
@@ -37,15 +33,17 @@ namespace hazelcast {
                 template<typename HzReader>
                 void readPortable(HzReader& reader) {
                     name = reader.readUTF("n");
+                    timeout = reader.readLong("t");
                     serialization::ObjectDataInput *in = reader.getRawDataInput();
                     data.readData(*in);
                 };
             private:
-                serialization::Data& data;
                 std::string name;
+                long timeout;
+                serialization::Data& data;
             };
         }
     }
 }
 
-#endif //HAZELCAST_QUEUE_REMOVE_REQUEST
+#endif //HAZELCAST_TxnOfferRequest

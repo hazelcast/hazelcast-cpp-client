@@ -32,6 +32,8 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
+            class SocketInterceptor;
+
             class ConnectionManager {
             public:
 
@@ -60,6 +62,7 @@ namespace hazelcast {
                 ClientConfig& clientConfig;
                 protocol::Principal *principal;
                 HeartBeatChecker heartBeatChecker;
+                std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
 
             };
         }
