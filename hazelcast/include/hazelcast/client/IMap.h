@@ -49,6 +49,7 @@
 #include "impl/EntryEventHandler.h"
 #include "impl/PortableEntryEvent.h"
 #include "serialization/SerializationService.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <string>
 #include <map>
 #include <set>
@@ -385,16 +386,22 @@ namespace hazelcast {
                 invoke<bool>(request);
             };
 
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
+            void destroy(){
+                map::DestroyRequest request (instanceName);
+                invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+            };
+
         private:
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;
             };
 
-            void onDestroy() {
-                map::DestroyRequest request (instanceName);
-                invoke<bool>(request);
-            };
 
             template<typename T>
             serialization::Data toData(const T& object) {

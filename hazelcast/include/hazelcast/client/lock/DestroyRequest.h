@@ -19,7 +19,6 @@ namespace hazelcast {
         namespace lock {
             class DestroyRequest : public Portable {
             public:
-            public:
                 DestroyRequest(const serialization::Data& key)
                 :key(key) {
                 };

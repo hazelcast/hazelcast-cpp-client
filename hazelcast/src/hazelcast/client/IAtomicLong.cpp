@@ -4,7 +4,8 @@
 #include "hazelcast/client/atomiclong/GetAndAddRequest.h"
 #include "hazelcast/client/atomiclong/GetAndSetRequest.h"
 #include "hazelcast/client/atomiclong/SetRequest.h"
-
+#include "hazelcast/client/atomiclong/DestroyRequest.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -63,6 +64,12 @@ namespace hazelcast {
         void IAtomicLong::set(long newValue) {
             atomiclong::SetRequest request(instanceName, newValue);
             invoke<bool>(request);
+        };
+
+        void IAtomicLong::destroy() {
+            atomiclong::DestroyRequest request(instanceName);
+            invoke<bool>(request);
+            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
         };
 
 

@@ -1,10 +1,11 @@
+#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -28,6 +29,7 @@ namespace hazelcast {
 
 
             ~HazelcastClientImpl() {
+                //TODO check if already shutdown
                 //TODO shutdown the threads ????
                 lifecycleService.setShutdown();
             }
@@ -40,6 +42,7 @@ namespace hazelcast {
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
+            spi::DistributedObjectListenerService distributedObjectListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
@@ -65,10 +68,17 @@ namespace hazelcast {
             delete impl;
         };
 
+        void HazelcastClient::triggerDistributedObjectAdded(const std::string& name) {
+            impl->distributedObjectListenerService.addDistributedObject(name);
+        };
+
+        void HazelcastClient::triggerDistributedObjectRemoved(const std::string& name) {
+            impl->distributedObjectListenerService.removeDistributedObject(name);
+        };
+
         serialization::SerializationService& HazelcastClient::getSerializationService() {
             return impl->serializationService;
         };
-
 
         ClientConfig& HazelcastClient::getClientConfig() {
             return impl->clientConfig;
@@ -96,6 +106,10 @@ namespace hazelcast {
 
         spi::ServerListenerService& HazelcastClient::getServerListenerService() {
             return impl->serverListenerService;
+        };
+
+        spi::DistributedObjectListenerService& HazelcastClient::getDistributedObjectListenerService() {
+            return impl->distributedObjectListenerService;
         };
 
         connection::ConnectionManager & HazelcastClient::getConnectionManager() {
@@ -126,13 +140,13 @@ namespace hazelcast {
 //        return getDistributedObject< IExecutorService >(instanceName)
 //    }
 
-//        public String addDistributedObjectListener(DistributedObjectListener distributedObjectListener) {
-//        return proxyManager.addDistributedObjectListener(distributedObjectListener);
-//    }
-//
-//        public boolean removeDistributedObjectListener(String registrationId) {
-//        return proxyManager.removeDistributedObjectListener(registrationId);
-//    }
+        void HazelcastClient::addDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
+            impl->distributedObjectListenerService.addDistributedObjectListener(distributedObjectListener);
+        };
+
+        bool HazelcastClient::removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
+            impl->distributedObjectListenerService.removeDistributedObjectListener(distributedObjectListener);
+        };
 
         TransactionContext HazelcastClient::newTransactionContext() {
             TransactionOptions defaultOptions;
@@ -144,8 +158,7 @@ namespace hazelcast {
         }
 
 //        void shutdown() {
-//            CLIENTS.remove(id);
-//            executionService.shutdown();
+        //TODO shutdown the threads ????
 //            partitionService.stop();
 //            clusterService.stop();
 //            connectionManager.shutdown();

@@ -14,6 +14,7 @@
 #include "topic/AddMessageListenerRequest.h"
 #include "TopicEventHandler.h"
 #include "serialization/SerializationService.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <string>
 
 namespace hazelcast {
@@ -45,9 +46,10 @@ namespace hazelcast {
                 return context->getServerListenerService().stopListening(instanceName, registrationId);
             };
 
-            void onDestroy() {
+            void destroy() {
                 topic::DestroyRequest request(instanceName);
                 invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
             };
 
             std::string getName() {

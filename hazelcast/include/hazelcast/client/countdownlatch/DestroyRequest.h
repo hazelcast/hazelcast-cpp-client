@@ -9,13 +9,16 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "CountDownLatchPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class DestroyRequest : public Portable{
+            class DestroyRequest : public Portable {
+            public:
                 DestroyRequest(const std::string& instanceName)
                 : instanceName(instanceName) {
 

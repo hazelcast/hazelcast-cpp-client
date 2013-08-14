@@ -21,6 +21,7 @@
 #include "IllegalStateException.h"
 #include "InterruptedException.h"
 #include "NoSuchElementException.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -236,9 +237,14 @@ namespace hazelcast {
                 invoke<bool>(request);
             };
 
-            void onDestroy() {
+            /**
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            void destroy(){
                 queue::DestroyRequest request(instanceName);
                 invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
             };
 
             std::string getName() {

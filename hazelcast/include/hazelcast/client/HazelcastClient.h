@@ -32,6 +32,8 @@ namespace hazelcast {
             class LifecycleService;
 
             class ServerListenerService;
+
+            class DistributedObjectListenerService;
         }
 
         class ClientConfig;
@@ -45,6 +47,8 @@ namespace hazelcast {
         class ISemaphore;
 
         class ILock;
+
+        class DistributedObjectListener;
 
         class TransactionContext;
 
@@ -64,6 +68,7 @@ namespace hazelcast {
             T getDistributedObject(const std::string& instanceName) {
                 T t;
                 t.init(instanceName, &getClientContext());
+                triggerDistributedObjectAdded(instanceName);
                 return t;
             };
 
@@ -111,6 +116,10 @@ namespace hazelcast {
 
             ClientConfig& getClientConfig();
 
+            void addDistributedObjectListener(DistributedObjectListener *distributedObjectListener);
+
+            bool removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener);
+
             TransactionContext newTransactionContext();
 
             TransactionContext newTransactionContext(const TransactionOptions& options);
@@ -142,6 +151,10 @@ namespace hazelcast {
 
             HazelcastClientImpl *impl;
 
+            void triggerDistributedObjectAdded(const std::string& name);
+
+            void triggerDistributedObjectRemoved(const std::string& name);
+
             spi::ClientContext& getClientContext();
 
             connection::ConnectionManager& getConnectionManager();
@@ -157,6 +170,8 @@ namespace hazelcast {
             spi::LifecycleService & getLifecycleService();
 
             spi::ServerListenerService& getServerListenerService();
+
+            spi::DistributedObjectListenerService& getDistributedObjectListenerService();
 
             HazelcastClient(const HazelcastClient& rhs);
 

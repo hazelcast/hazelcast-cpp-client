@@ -176,6 +176,10 @@ namespace hazelcast {
                 return invoke<bool>(request);
             }
 
+            void destroy() {
+                //TODO
+            }
+
         private:
             txn::TransactionProxy *transaction;
             std::string name;

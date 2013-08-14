@@ -9,6 +9,8 @@
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/lock/DestroyRequest.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -74,6 +76,12 @@ namespace hazelcast {
         bool ILock::tryLock(long timeInMillis) {
             lock::LockRequest request(key, util::getThreadId(), -1, timeInMillis);
             return invoke<bool>(request);
+        };
+
+        void ILock::destroy() {
+            lock::DestroyRequest request(key);
+            invoke<bool>(request);
+            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
         };
 
     }
