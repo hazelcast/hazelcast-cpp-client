@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryResultEntry : public DataSerializable {
+            class QueryResultEntry : public IdentifiedDataSerializable {
             public:
                 QueryResultEntry() {
 

@@ -8,13 +8,13 @@
 #define HAZELCAST_MAP_VALUE_COLLECTION
 
 #include "../serialization/Data.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapValueCollection : public DataSerializable{
+            class MapValueCollection : public IdentifiedDataSerializable {
             public:
                 MapValueCollection();
 
@@ -22,7 +22,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

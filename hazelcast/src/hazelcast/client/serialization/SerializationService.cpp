@@ -16,13 +16,11 @@ namespace hazelcast {
         namespace serialization {
 
             SerializationService::SerializationService(int version)
-            : serializationContext(version)
-            , portableSerializer(serializationContext) {
+            : serializationContext(version) {
             };
 
             SerializationService::SerializationService(SerializationService const & rhs)
-            : serializationContext(1)
-            , portableSerializer(serializationContext) {
+            : serializationContext(1) {
             };
 
 
@@ -30,16 +28,20 @@ namespace hazelcast {
                 return serializationContext;
             };
 
+            SerializerHolder& SerializationService::getSerializerHolder() {
+                return serializationContext.getSerializerHolder();
+            };
+
             SerializationService::~SerializationService() {
             };
 
 
             bool SerializationService::registerSerializer(SerializerBase *serializer) {
-                return serializerHolder.registerSerializer(serializer);
+                return getSerializerHolder().registerSerializer(serializer);
             };
 
             SerializerBase *SerializationService::serializerFor(int typeId) {
-                return serializerHolder.serializerFor(typeId);
+                return getSerializerHolder().serializerFor(typeId);
             };
 
             void SerializationService::checkServerError(const Data & data) {

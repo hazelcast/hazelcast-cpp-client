@@ -1,29 +1,38 @@
 //
-// Created by sancar koyunlu on 6/28/13.
+// Created by sancar koyunlu on 8/12/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
+
+
 
 #ifndef HAZELCAST_DataSerializable
 #define HAZELCAST_DataSerializable
 
-#include "SerializationConstants.h"
-#include "ConstantSerializers.h"
 
 namespace hazelcast {
     namespace client {
 
+        typedef unsigned char byte;
+
+        namespace serialization {
+            class ObjectDataOutput;
+
+            class ObjectDataInput;
+        }
+
         class DataSerializable {
         public:
-            typedef unsigned char byte;
 
-            virtual ~DataSerializable() {
+            virtual ~DataSerializable();
 
-            };
+            virtual void writeData(serialization::ObjectDataOutput& writer) const = 0;
 
-            virtual int getSerializerId() const {
-                return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
-            }
+            virtual void readData(serialization::ObjectDataInput& reader) = 0;
+
+//            virtual int getSerializerId() const;
+
         };
     }
 }
+
 
 #endif //HAZELCAST_DataSerializable

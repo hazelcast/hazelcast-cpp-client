@@ -42,7 +42,7 @@ namespace hazelcast {
                 return name;
             }
 
-            void onDestroy() {
+            void destroy() {
                 //TODO
             }
 

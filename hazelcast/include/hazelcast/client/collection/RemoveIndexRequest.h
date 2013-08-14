@@ -27,15 +27,15 @@ namespace hazelcast {
                     return CollectionPortableHook::REMOVE_INDEX;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("i", index);
                     writer.writeInt("t", threadId);
                     CollectionRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     index = reader.readInt("i");
                     threadId = reader.readInt("t");
                     CollectionRequest::readPortable(reader);

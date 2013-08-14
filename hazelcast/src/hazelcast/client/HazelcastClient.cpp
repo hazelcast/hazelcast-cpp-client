@@ -1,11 +1,11 @@
+#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -29,6 +29,7 @@ namespace hazelcast {
 
 
             ~HazelcastClientImpl() {
+                //TODO check if already shutdown
                 //TODO shutdown the threads ????
                 lifecycleService.setShutdown();
             }
@@ -41,6 +42,7 @@ namespace hazelcast {
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
+            spi::DistributedObjectListenerService distributedObjectListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
@@ -66,10 +68,17 @@ namespace hazelcast {
             delete impl;
         };
 
+        void HazelcastClient::triggerDistributedObjectAdded(const std::string& name) {
+            impl->distributedObjectListenerService.addDistributedObject(name);
+        };
+
+        void HazelcastClient::triggerDistributedObjectRemoved(const std::string& name) {
+            impl->distributedObjectListenerService.removeDistributedObject(name);
+        };
+
         serialization::SerializationService& HazelcastClient::getSerializationService() {
             return impl->serializationService;
         };
-
 
         ClientConfig& HazelcastClient::getClientConfig() {
             return impl->clientConfig;
@@ -99,6 +108,10 @@ namespace hazelcast {
             return impl->serverListenerService;
         };
 
+        spi::DistributedObjectListenerService& HazelcastClient::getDistributedObjectListenerService() {
+            return impl->distributedObjectListenerService;
+        };
+
         connection::ConnectionManager & HazelcastClient::getConnectionManager() {
             return impl->connectionManager;
         };
@@ -120,85 +133,37 @@ namespace hazelcast {
         };
 
         ILock HazelcastClient::getILock(const std::string& instanceName) {
-            return getDistributedObject< ILock >(instanceName);;
+            return getDistributedObject< ILock >(instanceName);
         };
 
-
-
-//        @Override TODO
-//        public String addDistributedObjectListener(DistributedObjectListener distributedObjectListener) {
-//        return proxyManager.addDistributedObjectListener(distributedObjectListener);
-//    }
-//
-//        public boolean removeDistributedObjectListener(String registrationId) {
-//        return proxyManager.removeDistributedObjectListener(registrationId);
+//       IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
+//        return getDistributedObject< IExecutorService >(instanceName)
 //    }
 
-//        @Override
-//        public IExecutorService getExecutorService(String name) {
-//        return getDistributedObject(DistributedExecutorService.SERVICE_NAME, name);
-//    }
-//
-//        @Override
-//        public <T> T executeTransaction(TransactionalTask<T> task) throws TransactionException {
-//        return executeTransaction(TransactionOptions.getDefault(), task);
-//    }
-//
-//        @Override
-//        public <T> T executeTransaction(TransactionOptions options, TransactionalTask<T> task) throws TransactionException {
-//        final TransactionContext context = newTransactionContext(options);
-//        context.beginTransaction();
-//        try {
-//            final T value = task.execute(context);
-//            context.commitTransaction();
-//            return value;
-//        } catch (Throwable e) {
-//            context.rollbackTransaction();
-//            if (e instanceof TransactionException) {
-//                throw (TransactionException) e;
-//            }
-//            if (e.getCause() instanceof TransactionException) {
-//                throw (TransactionException) e.getCause();
-//            }
-//            if (e instanceof RuntimeException) {
-//                throw (RuntimeException) e;
-//            }
-//            throw new TransactionException(e);
-//        }
-//    }
-//
+        void HazelcastClient::addDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
+            impl->distributedObjectListenerService.addDistributedObjectListener(distributedObjectListener);
+        };
+
+        bool HazelcastClient::removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
+            impl->distributedObjectListenerService.removeDistributedObjectListener(distributedObjectListener);
+        };
 
         TransactionContext HazelcastClient::newTransactionContext() {
-            TransactionOptions options;
-            return newTransactionContext(options);
+            TransactionOptions defaultOptions;
+            return newTransactionContext(defaultOptions);
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
             return TransactionContext(impl->clusterService, impl->serializationService, impl->connectionManager, options);
         }
-//
+
 //        void shutdown() {
-//            CLIENTS.remove(id);
-//            executionService.shutdown();
+        //TODO shutdown the threads ????
 //            partitionService.stop();
 //            clusterService.stop();
 //            connectionManager.shutdown();
 //        }
 //
-//        public static Collection<HazelcastInstance> getAllHazelcastClients() {
-//        return Collections.<HazelcastInstance>unmodifiableCollection(CLIENTS.values());
-//    }
-//
-//        public static void shutdownAll() {
-//        for (HazelcastClientProxy proxy : CLIENTS.values()) {
-//            try {
-//                proxy.client.getLifecycleService().shutdown();
-//            } catch (Exception ignored) {
-//            }
-//            proxy.client = null;
-//        }
-//        CLIENTS.clear();
-//    }
 
 
     }

@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryDataResultStream : public DataSerializable {
+            class QueryDataResultStream : public IdentifiedDataSerializable {
             public:
                 QueryDataResultStream()
                 :isSet(true){

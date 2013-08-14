@@ -45,7 +45,7 @@ namespace hazelcast {
                 }
                 std::vector<byte> decompressed = decompress(*(compressedBinary.get()));
 
-                ObjectDataInput dataInput(decompressed);
+                DataInput dataInput(decompressed);
                 util::AtomicPointer<ClassDefinition> cd(new ClassDefinition);
                 cd->readData(dataInput);
                 cd->setBinary(compressedBinary);
@@ -67,7 +67,7 @@ namespace hazelcast {
                 }
 
                 if (cd->getBinary().size() == 0) {
-                    ObjectDataOutput output;
+                    DataOutput output;
                     cd->writeData(output);
                     std::auto_ptr< std::vector<byte> > binary = output.toByteArray();
                     compress(*(binary.get()));

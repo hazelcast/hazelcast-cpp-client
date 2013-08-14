@@ -28,14 +28,14 @@ namespace hazelcast {
                     return queue::QueuePortableHook::ADD_LISTENER;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeBoolean("i", includeValue);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                     includeValue = reader.readBoolean("i");
                 };

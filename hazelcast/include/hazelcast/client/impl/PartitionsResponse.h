@@ -8,13 +8,13 @@
 #define HAZELCAST_PARTITION_RESPONSE
 
 #include "../Address.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PartitionsResponse : public DataSerializable{
+            class PartitionsResponse : public IdentifiedDataSerializable {
             public:
                 PartitionsResponse();
 
@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

@@ -96,6 +96,11 @@ namespace hazelcast {
              * @param newValue the new value
              */
             void set(long newValue);
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
+            void destroy();
 
         private:
             template<typename Response, typename Request>

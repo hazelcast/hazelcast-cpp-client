@@ -39,7 +39,7 @@ namespace hazelcast {
 
             }
 
-            void MembershipEvent::writeData(serialization::ObjectDataOutput& writer) {
+            void MembershipEvent::writeData(serialization::ObjectDataOutput& writer) const {
                 member.writeData(writer);
                 writer.writeInt(eventType);
             }

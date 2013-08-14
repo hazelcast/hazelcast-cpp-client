@@ -9,6 +9,7 @@
 #include "collection/RemoveIndexRequest.h"
 #include "collection/IndexOfRequest.h"
 #include "collection/AddItemListenerRequest.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <stdexcept>
 
 
@@ -151,6 +152,16 @@ namespace hazelcast {
                     set[fromIndex - i] = toObject<E>(collection[i]);
                 }
                 return set;
+            };
+
+            /**
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            void destroy() {
+                collection::DestroyRequest request(proxyId);
+                invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(proxyId.getKeyName());
             };
 
         private:

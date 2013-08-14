@@ -31,15 +31,15 @@ namespace hazelcast {
                     return PortableHook::SQL_QUERY;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeUTF("t", iterationType);
                     writer.writeUTF("sql", sql);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                     iterationType = reader.readUTF("t");
                     sql = reader.readUTF("sql");

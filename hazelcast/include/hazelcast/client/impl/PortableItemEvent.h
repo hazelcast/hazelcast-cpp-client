@@ -14,6 +14,8 @@
 #include "Portable.h"
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,25 +38,25 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("e", eventType);
                     writer.writeUTF("u", uuid);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    out->writeBoolean(true);
-                    item.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    out.writeBoolean(true);
+                    item.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     int type = reader.readInt("e");
 //                    eventType = type;
                     uuid = reader.readUTF("u");
                     bool isNotNull;
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    isNotNull = in->readBoolean();
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    isNotNull = in.readBoolean();
                     if (isNotNull)
-                        item.readData(*in);
+                        item.readData(in);
                 };
 
             private:

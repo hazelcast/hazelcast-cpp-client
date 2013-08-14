@@ -3,6 +3,8 @@
 #include "hazelcast/client/countdownlatch/CountDownRequest.h"
 #include "hazelcast/client/countdownlatch/GetCountRequest.h"
 #include "hazelcast/client/countdownlatch/SetCountRequest.h"
+#include "hazelcast/client/countdownlatch/DestroyRequest.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,6 +38,12 @@ namespace hazelcast {
         bool ICountDownLatch::trySetCount(int count) {
             countdownlatch::SetCountRequest request(instanceName, count);
             return invoke<bool>(request);
+        };
+
+        void ICountDownLatch::destroy() {
+            countdownlatch::DestroyRequest request(instanceName);
+            invoke<bool>(request);
+            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
         };
 
 

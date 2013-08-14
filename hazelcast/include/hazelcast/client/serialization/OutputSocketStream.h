@@ -12,12 +12,15 @@
 
 #include <string>
 #include <vector>
-#include "../connection/Socket.h"
 
 namespace hazelcast {
     namespace client {
-
+        namespace connection {
+            class Socket;
+        }
         namespace serialization {
+
+            typedef unsigned char byte;
 
             class OutputSocketStream {
             public:

@@ -12,6 +12,8 @@
 #include "../serialization/Data.h"
 #include "CollectionPortableHook.h"
 #include "CollectionKeyBasedRequest.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <vector>
 
 namespace hazelcast {
@@ -38,27 +40,27 @@ namespace hazelcast {
                     return CollectionPortableHook::ADD_ALL;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("i", index);
                     writer.writeInt("t", threadId);
                     writer.writeInt("s", dataList.size());
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     for (int i = 0; i < dataList.size(); ++i) {
-                        dataList[i].writeData(*out);
+                        dataList[i].writeData(out);
                     }
                     CollectionKeyBasedRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     index = reader.readInt("i");
                     threadId = reader.readInt("t");
                     int size = reader.readInt("s");
                     dataList.resize(size);
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
-                        dataList[i].readData(*in);
+                        dataList[i].readData(in);
                     }
                     CollectionKeyBasedRequest::readPortable(reader);
                 };

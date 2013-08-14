@@ -10,6 +10,8 @@
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
 #include "LockPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <string>
 
 namespace hazelcast {
@@ -42,20 +44,20 @@ namespace hazelcast {
                     return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("tid", threadId);
                     writer.writeBoolean("force", force);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     threadId = reader.readInt("tid");
                     force = reader.readBoolean("force");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
                 };
             private:
 

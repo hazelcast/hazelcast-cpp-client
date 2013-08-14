@@ -5,7 +5,9 @@
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
+#include "hazelcast/client/semaphore/DestroyRequest.h"
 #include "hazelcast/client/exception/InterruptedException.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 
 namespace hazelcast {
@@ -91,6 +93,12 @@ namespace hazelcast {
                 throw exception::IException("ISemaphore::checkNegative", "Permits cannot be negative!");
             }
         };
+
+        void ISemaphore::destroy() {
+            semaphore::DestroyRequest request(instanceName);
+            invoke<bool>(request);
+            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        }
 
 
     }

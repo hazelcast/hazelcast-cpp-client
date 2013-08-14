@@ -34,7 +34,7 @@ namespace hazelcast {
 
         int getThreadId();
 
-        void writeNullableData(client::serialization::ObjectDataOutput * out, client::serialization::Data * data);
+        void writeNullableData(client::serialization::ObjectDataOutput & out, client::serialization::Data *data);
 
         long getCurrentTimeMillis();
 

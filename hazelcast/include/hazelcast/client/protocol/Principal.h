@@ -22,17 +22,10 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("uuid", uuid);
-                    writer.writeUTF("ownerUuid", ownerUuid);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    uuid = reader.readUTF("uuid");
-                    ownerUuid = reader.readUTF("ownerUuid");
-                };
+                void readPortable(serialization::PortableReader& reader);
+
             private:
                 std::string uuid;
                 std::string ownerUuid;

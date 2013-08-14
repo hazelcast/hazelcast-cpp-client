@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/Data.h"
+#include "SerializationConstants.h"
 
 
 namespace hazelcast {
@@ -113,7 +114,7 @@ namespace hazelcast {
                 this->type = type;
             };
 
-            void Data::setBuffer(auto_ptr<vector<unsigned char> > buffer) {
+            void Data::setBuffer(std::auto_ptr<std::vector<unsigned char> > buffer) {
                 this->buffer = buffer;
             };
 

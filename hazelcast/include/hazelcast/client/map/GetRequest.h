@@ -6,39 +6,28 @@
 
 #include "../serialization/Data.h"
 #include "PortableHook.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
+
+        namespace serialization {
+            class Data;
+        }
         namespace map {
-            class GetRequest : public Portable{
+
+            class GetRequest : public Portable {
             public:
-                GetRequest(std::string& name, serialization::Data& key)
-                :name(name)
-                , key(key) {
+                GetRequest(std::string& name, serialization::Data& key);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::GET;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    name = reader.readUTF("n");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                };
             private:
                 serialization::Data& key;
                 std::string name;

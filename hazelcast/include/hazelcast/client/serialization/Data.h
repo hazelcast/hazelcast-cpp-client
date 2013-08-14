@@ -11,12 +11,9 @@
 
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
-#include "../protocol/ProtocolConstants.h"
-#include "IException.h"
+#include "ProtocolConstants.h"
 #include "AtomicPointer.h"
 #include <vector>
-#include <iosfwd>
-
 
 namespace hazelcast {
     namespace client {
@@ -56,7 +53,7 @@ namespace hazelcast {
                 int hashCode();
 
                 template<typename  Out>
-                void writeData(Out & dataOutput) const{
+                void writeData(Out & dataOutput) const {
                     dataOutput.writeInt(type);
                     if (cd != NULL) {
                         dataOutput.writeInt(cd->getClassId());
@@ -90,7 +87,7 @@ namespace hazelcast {
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
-                        SerializationContext* serializationContext = dataInput.getSerializationContext();
+                        SerializationContext *serializationContext = dataInput.getSerializationContext();
                         if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
                             cd = serializationContext->lookup(factoryId, classId, version);
                             dataInput.skipBytes(classDefSize);

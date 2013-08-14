@@ -4,6 +4,8 @@
 
 
 #include "hazelcast/client/protocol/Credentials.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 
 namespace hazelcast {
@@ -42,6 +44,19 @@ namespace hazelcast {
             int Credentials::getClassId() const {
                 return protocol::SpiConstants::USERNAME_PWD_CRED;
             }
+
+            void Credentials::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("principal", principal);//dev
+                writer.writeUTF("endpoint", endpoint);//"
+                writer.writeByteArray("pwd", password);//dev-pass
+            };
+
+
+            void Credentials::readPortable(serialization::PortableReader& reader) {
+                principal = reader.readUTF("principal");
+                endpoint = reader.readUTF("endpoint");
+                password = reader.readByteArray("pwd");
+            };
 
 
         }

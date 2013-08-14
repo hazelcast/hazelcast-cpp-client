@@ -64,6 +64,12 @@ namespace hazelcast {
 
             bool tryLock(long timeInMillis);
 
+            /**
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            void destroy();
+
         private:
             template<typename Response, typename Request>
             Response invoke(const Request& request) {

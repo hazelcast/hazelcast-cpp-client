@@ -19,6 +19,7 @@
 #include "collection/MultiMapLockRequest.h"
 #include "collection/MultiMapUnlockRequest.h"
 #include "impl/PortableCollection.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <string>
 #include <map>
 #include <set>
@@ -418,6 +419,15 @@ namespace hazelcast {
                 invoke<bool>(request, keyData);
             };
 
+            /**
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            void destroy() {
+                collection::DestroyRequest request (proxyId);
+                invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(proxyId.getKeyName());
+            };
         private:
             std::vector<V> toObjectCollection(impl::PortableCollection result) {
                 vector<serialization::Data> const & dataCollection = result.getCollection();
@@ -428,10 +438,6 @@ namespace hazelcast {
                 return collection;
             };
 
-            void onDestroy() {
-                collection::DestroyRequest request (proxyId);
-                invoke<bool>(request);
-            };
 
             template<typename T>
             serialization::Data toData(const T& object) {

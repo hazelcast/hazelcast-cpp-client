@@ -67,7 +67,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool await(long timeoutInMillis) throw(exception::IException);
+            bool await(long timeoutInMillis);
 
             /**
              * Decrements the count of the latch, releasing all waiting threads if
@@ -110,6 +110,13 @@ namespace hazelcast {
              * @throws IllegalArgumentException if {@code count} is negative
              */
             bool trySetCount(int count);
+
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
+            void destroy();
+
 
         private:
             template<typename Response, typename Request>

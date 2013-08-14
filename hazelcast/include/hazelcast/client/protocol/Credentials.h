@@ -31,20 +31,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const{
-                    writer.writeUTF("principal", principal);//dev
-                    writer.writeUTF("endpoint", endpoint);//"
-                    writer.writeByteArray("pwd", password);//dev-pass
-                };
-
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    principal = reader.readUTF("principal");
-                    endpoint = reader.readUTF("endpoint");
-                    password = reader.readByteArray("pwd");
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 std::string principal;

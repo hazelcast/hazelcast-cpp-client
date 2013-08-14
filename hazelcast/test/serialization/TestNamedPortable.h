@@ -30,14 +30,14 @@ public:
         return 3;
     }
 
-    template<typename HzWriter>
-    inline void writePortable(HzWriter& writer) const {
+
+    inline void writePortable(serialization::PortableWriter& writer) const {
         writer.writeUTF("name", name);
         writer.writeInt("myint", k);
     };
 
-    template<typename HzReader>
-    inline void readPortable(HzReader& reader) {
+
+    inline void readPortable(serialization::PortableReader& reader) {
         name = reader.readUTF("name");
         k = reader.readInt("myint");
     };

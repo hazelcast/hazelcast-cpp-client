@@ -26,14 +26,14 @@ namespace hazelcast {
                     return AtomicLongPortableHook::COMPARE_AND_SET;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     AtomicLongRequest::writePortable(writer);
                     writer.writeLong("e", expect);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     AtomicLongRequest::readPortable(reader);
                     expect = reader.readLong("e");
                 };

@@ -44,6 +44,12 @@ namespace hazelcast {
              */
             long newId();
 
+           /**
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            void destroy();
+
         private:
             std::string instanceName;
             spi::ClientContext *context;

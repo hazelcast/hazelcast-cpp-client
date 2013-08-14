@@ -7,8 +7,8 @@
 //
 
 #include "hazelcast/client/serialization/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/PortableSerializer.h"
-#include "IOException.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {
@@ -75,7 +75,7 @@ namespace hazelcast {
 
             };
 
-            void ClassDefinitionWriter::writeUTF(const char *fieldName, const string& value) {
+            void ClassDefinitionWriter::writeUTF(const char *fieldName, const std::string& value) {
                 addField(fieldName, FieldTypes::TYPE_UTF);
 
             };
@@ -128,9 +128,19 @@ namespace hazelcast {
 
             };
 
-            ObjectDataOutput *ClassDefinitionWriter::getRawDataOutput() {
-                return &emptyDataOutput;
+            ObjectDataOutput& ClassDefinitionWriter::getRawDataOutput() {
+                return emptyDataOutput;
             };
+
+            void ClassDefinitionWriter::end() {
+
+            };
+
+            util::AtomicPointer<ClassDefinition> ClassDefinitionWriter::getOrBuildClassDefinition(const Portable& p) {
+                return context.getSerializerHolder().getPortableSerializer().getClassDefinition(p);
+            };
+
+
         }
 
     }

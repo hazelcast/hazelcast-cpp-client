@@ -13,7 +13,8 @@ namespace hazelcast {
         namespace serialization {
 
             SerializationContext::SerializationContext(int version)
-            : contextVersion(version) {
+            : contextVersion(version)
+            , serializerHolder(*this) {
 //                portableContextMap[-1] = new PortableContext(this); //TODO right now hardcoded : will changed as configurable (may be)
 //                portableContextMap[1] = new PortableContext(this);
 //                portableContextMap[-3] = new PortableContext(this);
@@ -23,10 +24,13 @@ namespace hazelcast {
             SerializationContext::~SerializationContext() {
             };
 
-            SerializationContext::SerializationContext(const SerializationContext& rhs) {
+            SerializationContext::SerializationContext(const SerializationContext& rhs)
+            :serializerHolder(*this) {
+                //private
             };
 
             void SerializationContext::operator = (const SerializationContext& rhs) {
+                //private
             };
 
             bool SerializationContext::isClassDefinitionExists(int factoryId, int classId) {
@@ -50,8 +54,8 @@ namespace hazelcast {
             };
 
             void SerializationContext::registerNestedDefinitions(util::AtomicPointer<ClassDefinition> cd) {
-                vector<util::AtomicPointer<ClassDefinition> > nestedDefinitions = cd->getNestedClassDefinitions();
-                for (vector<util::AtomicPointer<ClassDefinition> >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
+                std::vector<util::AtomicPointer<ClassDefinition> > nestedDefinitions = cd->getNestedClassDefinitions();
+                for (std::vector<util::AtomicPointer<ClassDefinition> >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
                     registerClassDefinition(*it);
                     registerNestedDefinitions(*it);
                 }
@@ -67,6 +71,10 @@ namespace hazelcast {
 
             int SerializationContext::getVersion() {
                 return contextVersion;
+            };
+
+            SerializerHolder& SerializationContext::getSerializerHolder() {
+                return serializerHolder;
             };
 
             PortableContext& SerializationContext::getPortableContext(int factoryId) {

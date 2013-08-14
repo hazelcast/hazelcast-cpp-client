@@ -44,20 +44,20 @@ namespace hazelcast {
                     return TopicPortableHook::PORTABLE_MESSAGE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeLong("pt", publishTime);
                     writer.writeUTF("u", uuid);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    message.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    message.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     publishTime = reader.readLong("pt");
                     uuid = reader.readUTF("u");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    message.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    message.readData(in);
                 };
             private:
                 serialization::Data message;

@@ -25,13 +25,13 @@ namespace hazelcast {
                     return CollectionPortableHook::GET_ALL;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     CollectionRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     CollectionRequest::readPortable(reader);
                 };
 

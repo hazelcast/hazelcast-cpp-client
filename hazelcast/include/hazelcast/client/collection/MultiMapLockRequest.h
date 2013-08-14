@@ -45,24 +45,24 @@ namespace hazelcast {
                     return CollectionPortableHook::LOCK;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("tid", threadId);
                     writer.writeLong("ttl", ttl);
                     writer.writeLong("timeout", timeout);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                    proxyId.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
+                    proxyId.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     threadId = reader.readInt("tid");
                     ttl = reader.readLong("ttl");
                     timeout = reader.readLong("timeout");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                    proxyId.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
+                    proxyId.readData(in);
                 };
 
             private:

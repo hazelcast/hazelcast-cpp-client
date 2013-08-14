@@ -10,52 +10,54 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_BUILDER
 #define HAZELCAST_CLASS_DEFINITION_BUILDER
 
-#include <iostream>
-#include "ClassDefinition.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            
+            class ClassDefinition;
+            
             class ClassDefinitionBuilder {
             public:
 
                 ClassDefinitionBuilder(int, int);
 
-                ClassDefinitionBuilder& addIntField(std::string);
+                ClassDefinitionBuilder& addIntField(const std::string&);
 
-                ClassDefinitionBuilder& addLongField(std::string);
+                ClassDefinitionBuilder& addLongField(const std::string&);
 
-                ClassDefinitionBuilder& addBooleanField(std::string);
+                ClassDefinitionBuilder& addBooleanField(const std::string&);
 
-                ClassDefinitionBuilder& addByteField(std::string);
+                ClassDefinitionBuilder& addByteField(const std::string&);
 
-                ClassDefinitionBuilder& addCharField(std::string);
+                ClassDefinitionBuilder& addCharField(const std::string&);
 
-                ClassDefinitionBuilder& addDoubleField(std::string);
+                ClassDefinitionBuilder& addDoubleField(const std::string&);
 
-                ClassDefinitionBuilder& addFloatField(std::string);
+                ClassDefinitionBuilder& addFloatField(const std::string&);
 
-                ClassDefinitionBuilder& addShortField(std::string);
+                ClassDefinitionBuilder& addShortField(const std::string&);
 
-                ClassDefinitionBuilder& addUTFField(std::string);
+                ClassDefinitionBuilder& addUTFField(const std::string&);
 
-                ClassDefinitionBuilder& addPortableField(std::string, int, int);
+                ClassDefinitionBuilder& addPortableField(const std::string&, int, int);
 
-                ClassDefinitionBuilder& addIntArrayField(std::string);
+                ClassDefinitionBuilder& addIntArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addLongArrayField(std::string);
+                ClassDefinitionBuilder& addLongArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addByteArrayField(std::string);
+                ClassDefinitionBuilder& addByteArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addCharArrayField(std::string);
+                ClassDefinitionBuilder& addCharArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addDoubleArrayField(std::string);
+                ClassDefinitionBuilder& addDoubleArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addFloatArrayField(std::string);
+                ClassDefinitionBuilder& addFloatArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addShortArrayField(std::string);
+                ClassDefinitionBuilder& addShortArrayField(const std::string&);
 
-                ClassDefinitionBuilder& addPortableArrayField(std::string, int, int);
+                ClassDefinitionBuilder& addPortableArrayField(const std::string&, int, int);
 
                 ClassDefinition *build();
 

@@ -1,40 +1,24 @@
 //
-//  PortableReader.h
-//  Server
-//
-//  Created by sancar koyunlu on 1/10/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+// Created by sancar koyunlu on 8/10/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#ifndef HAZELCAST_PORTABLE_READER
-#define HAZELCAST_PORTABLE_READER
 
-#include "ClassDefinition.h"
-#include "ObjectDataInput.h"
-#include "FieldDefinition.h"
-#include "IException.h"
-#include "ConstantSerializers.h"
-#include "SerializationContext.h"
-#include "SerializationConstraints.h"
-#include <iostream>
-#include <string>
-#include <memory>
 
-using namespace std;
+
+#ifndef HAZELCAST_PortableReader
+#define HAZELCAST_PortableReader
+
+#include "DefaultPortableReader.h"
+#include "MorphingPortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-
-
-            class BufferObjectDataInput;
-
-            typedef unsigned char byte;
-
             class PortableReader {
             public:
+                PortableReader(DefaultPortableReader *defaultPortableReader);
 
-                PortableReader(SerializationContext& serializationContext, ObjectDataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                PortableReader(MorphingPortableReader *morphingPortableReader);
 
                 int readInt(const char *fieldName);
 
@@ -70,67 +54,31 @@ namespace hazelcast {
 
                 template<typename T>
                 T readPortable(const char *fieldName) {
-                    Is_Portable<T>();
-                    T portable;
-                    setPosition(fieldName);
-                    bool isNull = input.readBoolean();
-                    if (isNull) {
-                        return portable;
-                    }
-                    read(input, portable, currentFactoryId, currentClassId);
-                    return portable;
+                    if (isDefaultReader)
+                        return defaultPortableReader->readPortable<T>(fieldName);
+                    return morphingPortableReader->readPortable<T>(fieldName);
                 };
 
                 template<typename T>
                 std::vector< T > readPortableArray(const char *fieldName) {
-                    Is_Portable<T>();
-                    std::vector< T > portables;
-                    setPosition(fieldName);
-                    int len = input.readInt();
-                    portables.resize(len, T());
-                    if (len > 0) {
-                        int offset = input.position();
-                        for (int i = 0; i < len; i++) {
-                            input.position(offset + i * sizeof (int));
-                            int start = input.readInt();
-                            input.position(start);
-
-                            read(input, portables[i], currentFactoryId, currentClassId);
-                        }
-                    }
-                    return portables;
+                    if (isDefaultReader)
+                        return defaultPortableReader->readPortableArray<T>(fieldName);
+                    return morphingPortableReader->readPortableArray<T>(fieldName);
                 };
 
-                ObjectDataInput *getRawDataInput();
+                ObjectDataInput& getRawDataInput();
 
                 void end();
 
             private:
-                int getPosition(const char *);
+                bool isDefaultReader;
+                DefaultPortableReader *defaultPortableReader;
+                MorphingPortableReader *morphingPortableReader;
 
-                void setPosition(const char *);
-
-                template<typename T>
-                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId) {
-                    util::AtomicPointer<ClassDefinition> cd;
-                    cd = context.lookup(factoryId, classId); // using serializationContext.version
-                    PortableReader reader(context, dataInput, cd);
-                    object.readPortable(reader);
-                    reader.end();
-                };
-
-                ObjectDataInput& input;
-                int const finalPosition;
-                int offset;
-                bool raw;
-                SerializationContext& context;
-                util::AtomicPointer<ClassDefinition> cd;
-                int currentFactoryId;
-                int currentClassId;
             };
-
-
         }
     }
 }
-#endif /* HAZELCAST_PORTABLE_READER */
+
+
+#endif //HAZELCAST_PortableReader

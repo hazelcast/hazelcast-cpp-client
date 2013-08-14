@@ -29,21 +29,21 @@ namespace hazelcast {
                     return CollectionPortableHook::SET;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("i", index);
                     writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    value.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    value.writeData(out);
                     CollectionKeyBasedRequest::writePortable(writer);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     index = reader.readInt("i");
                     threadId = reader.readInt("t");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    reader >> value;
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    value.readData(in);
                     CollectionKeyBasedRequest::readPortable(reader);
                 };
 

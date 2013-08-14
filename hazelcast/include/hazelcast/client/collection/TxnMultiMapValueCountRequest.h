@@ -20,18 +20,18 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     TxnMultiMapRequest::writePortable(writer);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    data.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    data.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     TxnMultiMapRequest::readPortable(reader);
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    data.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    data.readData(in);
                 };
             private:
                 serialization::Data& data;

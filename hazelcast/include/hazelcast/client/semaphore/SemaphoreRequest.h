@@ -9,6 +9,8 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "SemaphorePortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <string>
 
 namespace hazelcast {
@@ -26,14 +28,14 @@ namespace hazelcast {
                     return SemaphorePortableHook::F_ID;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", instanceName);
                     writer.writeInt("p", permitCount);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     instanceName = reader.readUTF("n");
                     permitCount = reader.readInt("p");
                 };

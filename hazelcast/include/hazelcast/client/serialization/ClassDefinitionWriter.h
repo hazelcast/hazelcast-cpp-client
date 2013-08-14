@@ -9,20 +9,22 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_WRITER
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
-#include "FieldDefinition.h"
 #include "IException.h"
 #include "FieldType.h"
 #include "ClassDefinition.h"
-#include "SerializationContext.h"
-#include "EmptyDataOutput.h"
-#include "ConstantSerializers.h"
+#include "ObjectDataOutput.h"
+#include "FieldDefinition.h"
 #include <string>
-#include <iosfwd>
 
 
 namespace hazelcast {
     namespace client {
+
+        class Portable;
+
         namespace serialization {
+
+            class SerializationContext;
 
             class ClassDefinitionWriter {
             public:
@@ -45,7 +47,7 @@ namespace hazelcast {
 
                 void writeShort(const char *fieldName, short value);
 
-                void writeUTF(const char *fieldName, const string& str);
+                void writeUTF(const char *fieldName, const std::string& str);
 
                 void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
@@ -79,25 +81,11 @@ namespace hazelcast {
 
                 util::AtomicPointer<ClassDefinition> getClassDefinition();
 
-                ObjectDataOutput *getRawDataOutput();
+                ObjectDataOutput& getRawDataOutput();
 
-                template <typename T>
-                util::AtomicPointer<ClassDefinition> getOrBuildClassDefinition(const T& p) {
-                    util::AtomicPointer<ClassDefinition> cd;
+                util::AtomicPointer<ClassDefinition> getOrBuildClassDefinition(const Portable& p);
 
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-                    if (context.isClassDefinitionExists(factoryId, classId)) {
-                        cd = context.lookup(factoryId, classId);
-                    } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
-                        p.writePortable(classDefinitionWriter);
-                        cd = classDefinitionWriter.getClassDefinition();
-                        cd = context.registerClassDefinition(cd);
-                    }
-
-                    return cd;
-                };
+                void end();
 
             private:
                 void addField(const char *fieldName, FieldType const&);
@@ -113,9 +101,9 @@ namespace hazelcast {
                 int classId;
                 int index;
                 bool raw;
+                ObjectDataOutput emptyDataOutput;
                 util::AtomicPointer<ClassDefinition> cd;
                 SerializationContext& context;
-                EmptyDataOutput emptyDataOutput;
 
             };
 

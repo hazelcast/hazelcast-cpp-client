@@ -58,10 +58,10 @@ namespace hazelcast {
             Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;
                 if (!members.empty()) {
-                    vector<Address> clusterAddresses = getClusterAddresses();
+                    std::vector<Address> clusterAddresses = getClusterAddresses();
                     addresses.insert(addresses.begin(), clusterAddresses.begin(), clusterAddresses.end());
                 }
-                vector<Address> configAddresses = getConfigAddresses();
+                std::vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(addresses.end(), configAddresses.begin(), configAddresses.end());
                 return clusterService.connectToOne(addresses);
             };
@@ -82,8 +82,8 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                const vector<serialization::Data *>& collection = coll.getCollection();
-                for (vector<serialization::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
+                const std::vector<serialization::Data *>& collection = coll.getCollection();
+                for (std::vector<serialization::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
                     Member member = serializationService.toObject<Member>(**it);
                     members.push_back(member);
                 }
@@ -145,7 +145,7 @@ namespace hazelcast {
                 return socketAddresses;
             };
 
-            vector<Address>  ClusterListenerThread::getConfigAddresses() const {
+            std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
                 std::vector<Address>  & configAddresses = clientConfig.getAddresses();
 

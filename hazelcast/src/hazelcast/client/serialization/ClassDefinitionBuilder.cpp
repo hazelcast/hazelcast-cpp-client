@@ -8,7 +8,8 @@
 
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "IOException.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,70 +20,70 @@ namespace hazelcast {
             , cd(new ClassDefinition(factoryId, classId, -1)) {
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addIntField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addIntField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_INT);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addLongField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addLongField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_LONG);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addBooleanField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addBooleanField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_BOOLEAN);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addByteField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addByteField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_BYTE);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addCharField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addCharField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_CHAR);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addDoubleField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addDoubleField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_DOUBLE);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addFloatField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addFloatField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_FLOAT);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addShortField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addShortField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_SHORT);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addUTFField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addUTFField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_UTF);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableField(string fieldName, int factoryId, int classId) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableField(const std::string& fieldName, int factoryId, int classId) {
                 check();
                 if (classId == Data::NO_CLASS_ID) {
                     throw  exception::IOException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
@@ -92,56 +93,56 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addIntArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addIntArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_INT_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addLongArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addLongArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_LONG_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addByteArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addByteArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addCharArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addCharArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addDoubleArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addDoubleArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addFloatArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addFloatArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addShortArrayField(string fieldName) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addShortArrayField(const std::string& fieldName) {
                 check();
                 FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                 cd->add(fd);
                 return *this;
             }
 
-            ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableArrayField(string fieldName, int factoryId, int classId) {
+            ClassDefinitionBuilder & ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, int factoryId, int classId) {
                 check();
                 if (classId == Data::NO_CLASS_ID) {
                     throw  exception::IOException("ClassDefinitionBuilder::addPortableArrayField", "Portable class id cannot be zero!");

@@ -29,12 +29,12 @@ namespace hazelcast {
                 return protocol::SpiConstants::COLLECTION;
             }
 
-            const vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {
+            const std::vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {
                 return dataCollection;
             };
 
 
-            void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) {
+            void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); ++i) {
                     dataCollection[i]->writeData(writer);

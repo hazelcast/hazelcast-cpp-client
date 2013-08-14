@@ -178,16 +178,17 @@ public:
 
         Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
-        ObjectDataOutput out;
+        DataOutput out;
         data.writeData(out);
 
         std::auto_ptr< vector < byte> > xxx = out.toByteArray();
 
         serialization::SerializationService serializationService2(1);
-        serialization::ObjectDataInput dataInput(*(xxx.get()));
+
+        DataInput dataInput(*(xxx.get()));
+        serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
         Data newData;
-        dataInput.setSerializationContext(&serializationService2.getSerializationContext());
-        newData.readData(dataInput);
+        newData.readData(objectDataInput);
         TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
         assertEqual(mainPortable, returnedPortable);
     };
@@ -197,7 +198,7 @@ public:
         serialization::SerializationService serializationService(1);
         TestMainPortable mainPortable = getTestMainPortable();
         Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-        ObjectDataOutput out;
+        DataOutput out;
         data.writeData(out);
         std::vector<byte>& outBuffer = *(out.toByteArray().get());
         int size = outBuffer.size();
@@ -223,11 +224,13 @@ public:
 
         byte *tempPtr = (byte *) bytes;
         std::vector<byte> buffer(tempPtr, tempPtr + size);
-        serialization::ObjectDataInput dataInput(buffer);
+
+        DataInput dataInput(buffer);
+        serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
 
         serialization::Data data;
-        dataInput.setSerializationContext(&serializationService.getSerializationContext());
-        data.readData(dataInput);
+
+        data.readData(objectDataInput);
 
         TestMainPortable tmp1 = serializationService.toObject<TestMainPortable>(data);
 

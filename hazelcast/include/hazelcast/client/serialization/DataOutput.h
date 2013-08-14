@@ -1,18 +1,15 @@
 //
-//  BufferedDataOutput.h
-//  Server
-//
-//  Created by sancar koyunlu on 1/3/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+// Created by sancar koyunlu on 8/7/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#ifndef HAZELCAST_EMPTY_DATA_OUTPUT
-#define HAZELCAST_EMPTY_DATA_OUTPUT
 
-#include "IException.h"
-#include "ObjectDataOutput.h"
+
+#ifndef HAZELCAST_DataOutput
+#define HAZELCAST_DataOutput
+
+
+#include <memory>
 #include <vector>
-#include <iosfwd>
 
 namespace hazelcast {
     namespace client {
@@ -20,8 +17,14 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class EmptyDataOutput : public ObjectDataOutput {
+            class DataOutput {
             public:
+
+                DataOutput();
+
+                virtual ~DataOutput();
+
+                std::auto_ptr< std::vector<byte> > toByteArray();
 
                 void write(const std::vector<byte>& bytes);
 
@@ -67,8 +70,21 @@ namespace hazelcast {
 
                 void reset();
 
+                static int const STRING_CHUNK_SIZE = 16 * 1024;
+                static int const DEFAULT_SIZE = 4 * 1024;
+
+            private:
+                std::auto_ptr< std::vector<byte> > outputStream;
+
+                void writeShortUTF(const std::string&);
+
+                DataOutput(const DataOutput& rhs);
+
+                DataOutput& operator = (const DataOutput& rhs);
+
             };
         }
     }
 }
-#endif /* HAZELCAST_DATA_OUTPUT */
+
+#endif //HAZELCAST_DataOutput
