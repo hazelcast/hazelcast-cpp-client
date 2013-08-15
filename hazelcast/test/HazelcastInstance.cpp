@@ -25,9 +25,10 @@ HazelcastInstance::HazelcastInstance()
         cout << "There was a problem opening file for reading." << endl;
     }
     
-    while (infile >> pid) {
+    if (infile >> pid) {
         cout << "PID value from file is " << pid << endl;
     }
+    sleep(3);
 };
 
 void HazelcastInstance::terminate(){
