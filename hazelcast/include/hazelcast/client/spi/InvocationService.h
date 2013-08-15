@@ -31,6 +31,11 @@ namespace hazelcast {
                     return invokeOnRandomTarget<Response>(request);
                 };
 
+                template<typename Response, typename Request >
+                Response invokeOnTarget(const Request& request, const Address& target) {
+                    return clusterService.sendAndReceive<Response>(target, request);
+                };
+
                 template<typename Request, typename  ResponseHandler>
                 void invokeOnRandomTarget(const Request& request, const ResponseHandler& handler) {
                     clusterService.sendAndHandle(request, handler);
@@ -45,16 +50,12 @@ namespace hazelcast {
                     invokeOnRandomTarget(request, handler);
                 };
 
-            private :
                 template<typename Request, typename  ResponseHandler>
                 void invokeOnTarget(const Request& request, const Address& target, const ResponseHandler&  handler) {
                     clusterService.sendAndHandle(target, request, handler);
                 }
 
-                template<typename Response, typename Request >
-                Response invokeOnTarget(const Request& request, const Address& target) {
-                    return clusterService.sendAndReceive<Response>(target, request);
-                };
+            private :
 
                 ClusterService& clusterService;
                 PartitionService& partitionService;

@@ -16,20 +16,10 @@
 namespace hazelcast {
     namespace client {
 
-
         template<typename E>
         class ISet {
+            friend class HazelcastClient;
         public:
-
-            ISet() {
-
-            };
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                context = clientContext;
-                key = toData(instanceName);
-                proxyId = collection::CollectionProxyId("hz:set:", instanceName, collection::CollectionProxyId::SET);
-            };
 
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
@@ -138,6 +128,16 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request, key);
+            };
+
+            ISet() {
+
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                context = clientContext;
+                key = toData(instanceName);
+                proxyId = collection::CollectionProxyId("hz:set:", instanceName, collection::CollectionProxyId::SET);
             };
 
             collection::CollectionProxyId proxyId;

@@ -48,6 +48,8 @@ namespace hazelcast {
 
         class ILock;
 
+        class IExecutorService;
+
         class DistributedObjectListener;
 
         class TransactionContext;
@@ -110,7 +112,7 @@ namespace hazelcast {
 
             ILock getILock(const std::string& instanceName);
 
-//            IExecutorService getExecutorService(const std::string& instanceName);
+            IExecutorService getExecutorService(const std::string& instanceName);
 
             ISemaphore getISemaphore(const std::string& instanceName);
 

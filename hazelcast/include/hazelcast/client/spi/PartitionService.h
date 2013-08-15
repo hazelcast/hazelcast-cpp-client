@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 util::AtomicPointer<Address> getPartitionOwner(int partitionId);
 
-                int getPartitionId(serialization::Data& key);
+                int getPartitionId(const serialization::Data& key);
 
             private:
 

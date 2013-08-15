@@ -12,13 +12,9 @@
 namespace hazelcast {
     namespace client {
 
-
         class ISemaphore {
+            friend class HazelcastClient;
         public:
-
-            ISemaphore();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Try to initialize this ISemaphore instance with given permit count
@@ -271,6 +267,11 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
+
+            ISemaphore();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
+
 
             serialization::Data key;
             std::string instanceName;
