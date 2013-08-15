@@ -17,11 +17,8 @@ namespace hazelcast {
         }
 
         class ICountDownLatch {
+            friend class HazelcastClient;
         public:
-
-            ICountDownLatch();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Causes the current thread to wait until the latch has counted down to
@@ -123,6 +120,10 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
+
+            ICountDownLatch();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             serialization::Data key;
             std::string instanceName;

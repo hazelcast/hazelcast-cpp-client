@@ -5,7 +5,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
+#include "hazelcast/client/IExecutorService.h"
 
 namespace hazelcast {
     namespace client {
@@ -136,9 +136,9 @@ namespace hazelcast {
             return getDistributedObject< ILock >(instanceName);
         };
 
-//       IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
-//        return getDistributedObject< IExecutorService >(instanceName)
-//    }
+        IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
+            return getDistributedObject< IExecutorService >(instanceName);
+        }
 
         void HazelcastClient::addDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
             impl->distributedObjectListenerService.addDistributedObjectListener(distributedObjectListener);

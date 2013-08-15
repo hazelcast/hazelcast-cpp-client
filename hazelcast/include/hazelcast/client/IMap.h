@@ -397,6 +397,10 @@ namespace hazelcast {
             };
 
         private:
+            IMap(){
+
+            }
+
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;

@@ -32,17 +32,9 @@ namespace hazelcast {
 
         template<typename K, typename V>
         class MultiMap {
+            friend class HazelcastClient;
+
         public:
-
-            MultiMap() {
-
-            };
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                context = clientContext;
-                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::MULTI_MAP);
-            };
-
             /**
              * Stores a key-value pair in the multimap.
              * <p/>
@@ -457,6 +449,15 @@ namespace hazelcast {
             template<typename Response, typename Request>
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
+            };
+
+            MultiMap() {
+
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                context = clientContext;
+                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::MULTI_MAP);
             };
 
             collection::CollectionProxyId proxyId;

@@ -82,7 +82,7 @@ namespace hazelcast {
             };
 
 
-            int Data::hashCode() {
+            int Data::hashCode() const{
                 if (buffer.get() == NULL) return INT_MIN;
                 // FNV (Fowler/Noll/Vo) Hash "1a"
                 const int prime = 0x01000193;
@@ -93,7 +93,7 @@ namespace hazelcast {
                 return hash;
             };
 
-            int Data::getPartitionHash() {
+            int Data::getPartitionHash() const{
                 if (partitionHash == -1) {
                     if (buffer.get() != NULL) {
                         partitionHash = hashCode();

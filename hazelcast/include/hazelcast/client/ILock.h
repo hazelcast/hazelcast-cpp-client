@@ -15,12 +15,8 @@
 namespace hazelcast {
     namespace client {
         class ILock {
+            friend class HazelcastClient;
         public:
-
-            ILock();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
-
 
             void lock();
 
@@ -75,6 +71,10 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
+
+            ILock();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             serialization::Data key;
             spi::ClientContext *context;

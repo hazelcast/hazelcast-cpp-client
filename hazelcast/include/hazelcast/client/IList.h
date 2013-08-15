@@ -16,19 +16,10 @@
 namespace hazelcast {
     namespace client {
 
-
         template<typename E>
         class IList {
+            friend class HazelcastClient;
         public:
-            IList() {
-
-            };
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                context = clientContext;
-                key = toData(instanceName);
-                proxyId = collection::CollectionProxyId("hz:list:", instanceName, collection::CollectionProxyId::LIST);
-            };
 
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
@@ -188,6 +179,17 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request, key);
             };
+
+            IList() {
+
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                context = clientContext;
+                key = toData(instanceName);
+                proxyId = collection::CollectionProxyId("hz:list:", instanceName, collection::CollectionProxyId::LIST);
+            };
+
 
             collection::CollectionProxyId proxyId;
             spi::ClientContext *context;

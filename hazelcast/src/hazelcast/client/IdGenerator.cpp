@@ -51,7 +51,7 @@ namespace hazelcast {
         void IdGenerator::destroy() {
             atomicLong.destroy();
             context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
-        }                        ;
+        };
 
     }
 }
