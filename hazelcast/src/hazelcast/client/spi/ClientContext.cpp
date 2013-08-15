@@ -6,6 +6,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "DistributedObjectListenerService.h"
 
 using namespace hazelcast::client;
 
@@ -50,6 +51,10 @@ namespace hazelcast {
             connection::ConnectionManager & ClientContext::getConnectionManager() {
                 return hazelcastClient.getConnectionManager();
             };
+
+            DistributedObjectListenerService& ClientContext::getDistributedObjectListenerService() {
+                return hazelcastClient.getDistributedObjectListenerService();
+            }
 
 
         }

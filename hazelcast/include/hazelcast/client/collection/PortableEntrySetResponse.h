@@ -39,24 +39,24 @@ namespace hazelcast {
                     return CollectionPortableHook::ENTRY_SET_RESPONSE;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeInt("s", entrySet.size());
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     for (int i = 0; i < entrySet.size(); ++i) {
-                        entrySet[i].first.writeData(*out);
-                        entrySet[i].second.writeData(*out);
+                        entrySet[i].first.writeData(out);
+                        entrySet[i].second.writeData(out);
                     }
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     int size = reader.readInt("s");
                     entrySet.resize(size);
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
                     for (int i = 0; i < size; ++i) {
-                        entrySet[i].first.readData(*in);
-                        entrySet[i].second.readData(*in);
+                        entrySet[i].first.readData(in);
+                        entrySet[i].second.readData(in);
                     }
                 };
 

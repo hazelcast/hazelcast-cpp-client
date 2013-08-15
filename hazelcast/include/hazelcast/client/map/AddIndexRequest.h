@@ -32,15 +32,15 @@ namespace hazelcast {
                     return PortableHook::ADD_INDEX;
                 }
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
+
+                inline void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                     writer.writeUTF("a", attribute);
                     writer.writeBoolean("o", ordered);
                 };
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
+
+                inline void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                     attribute = reader.readUTF("a");
                     ordered = reader.readBoolean("o");

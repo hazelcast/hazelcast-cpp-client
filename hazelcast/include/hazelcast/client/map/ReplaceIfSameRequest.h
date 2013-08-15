@@ -29,24 +29,24 @@ namespace hazelcast {
                     return PortableHook::REPLACE_IF_SAME;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                    value.writeData(*out);
-                    testValue.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
+                    value.writeData(out);
+                    testValue.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                     threadId = reader.readInt("t");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                    value.readData(*in);
-                    testValue.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
+                    value.readData(in);
+                    testValue.readData(in);
                 };
 
             private:

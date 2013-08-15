@@ -30,18 +30,18 @@ public:
         return 6;
     }
 
-    template<typename HzWriter>
-    inline void writePortable(HzWriter& writer) const{
+
+    inline void writePortable(serialization::PortableWriter& writer) const{
         writer.writeLong("l", l);
         writer.writeInt("i", i);
         writer.writeUTF("s", s);
     };
 
-    template<typename HzReader>
-    inline void readPortable(HzReader& reader) {
+
+    inline void readPortable(serialization::PortableReader& reader) {
         l = reader.readLong("l");
-        serialization::ObjectDataInput *in = reader.getRawDataInput();
-        i = in->readInt();
+        serialization::ObjectDataInput &in = reader.getRawDataInput();
+        i = in.readInt();
         s = reader.readLong("s");
     };
     

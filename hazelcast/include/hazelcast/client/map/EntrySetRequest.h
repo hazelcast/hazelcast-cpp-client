@@ -25,13 +25,13 @@ namespace hazelcast {
                     return PortableHook::ENTRY_SET;
                 }
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
+
+                inline void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                 };
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
+
+                inline void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                 };
             private:

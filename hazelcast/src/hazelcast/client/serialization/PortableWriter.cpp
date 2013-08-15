@@ -1,152 +1,145 @@
 //
-//  PortableWriter.cpp
-//  Server
-//
-//  Created by sancar koyunlu on 1/10/13.
-//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
-//
+// Created by sancar koyunlu on 8/10/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "IOException.h"
+
+#include "PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            PortableWriter::PortableWriter(DefaultPortableWriter *defaultPortableWriter)
+            :defaultPortableWriter(defaultPortableWriter)
+            , classDefinitionWriter(NULL)
+            , isDefaultWriter(true) {
 
-            PortableWriter::PortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, ObjectDataOutput& out)
-            : context(serializationContext)
-            , output(out)
-            , index (0)
-            , cd(cd)
-            , raw(false)
-            , begin(output.position())
-            , offset(output.position() + sizeof(int)) {
-                int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof (int);
-                this->output.position(offset + fieldIndexesLength);
-            };
+            }
+
+            PortableWriter::PortableWriter(ClassDefinitionWriter *classDefinitionWriter)
+            :defaultPortableWriter(NULL)
+            , classDefinitionWriter(classDefinitionWriter)
+            , isDefaultWriter(false) {
+
+            }
 
             void PortableWriter::writeInt(const char *fieldName, int value) {
-                setPosition(fieldName);
-                output.writeInt(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeInt(fieldName, value);
+                return classDefinitionWriter->writeInt(fieldName, value);
+            }
 
             void PortableWriter::writeLong(const char *fieldName, long value) {
-                setPosition(fieldName);
-                output.writeLong(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeLong(fieldName, value);
+                return classDefinitionWriter->writeLong(fieldName, value);
+            }
 
             void PortableWriter::writeBoolean(const char *fieldName, bool value) {
-                setPosition(fieldName);
-                output.writeBoolean(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeBoolean(fieldName, value);
+                return classDefinitionWriter->writeBoolean(fieldName, value);
+            }
 
             void PortableWriter::writeByte(const char *fieldName, byte value) {
-                setPosition(fieldName);
-                output.writeByte(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeByte(fieldName, value);
+                return classDefinitionWriter->writeByte(fieldName, value);
+            }
 
             void PortableWriter::writeChar(const char *fieldName, int value) {
-                setPosition(fieldName);
-                output.writeChar(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeChar(fieldName, value);
+                return classDefinitionWriter->writeChar(fieldName, value);
+            }
 
             void PortableWriter::writeDouble(const char *fieldName, double value) {
-                setPosition(fieldName);
-                output.writeDouble(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeDouble(fieldName, value);
+                return classDefinitionWriter->writeDouble(fieldName, value);
+            }
 
             void PortableWriter::writeFloat(const char *fieldName, float value) {
-                setPosition(fieldName);
-                output.writeFloat(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeFloat(fieldName, value);
+                return classDefinitionWriter->writeFloat(fieldName, value);
+            }
 
             void PortableWriter::writeShort(const char *fieldName, short value) {
-                setPosition(fieldName);
-                output.writeShort(value);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeShort(fieldName, value);
+                return classDefinitionWriter->writeShort(fieldName, value);
+            }
 
-            void PortableWriter::writeUTF(const char *fieldName, const string& value) {
-                setPosition(fieldName);
-                output.writeUTF(value);
-            };
+            void PortableWriter::writeUTF(const char *fieldName, const string& str) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeUTF(fieldName, str);
+                return classDefinitionWriter->writeUTF(fieldName, str);
+            }
 
             void PortableWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
-                setPosition(fieldName);
-                output.writeBoolean(true);
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeNullPortable(fieldName, factoryId, classId);
+                return classDefinitionWriter->writeNullPortable(fieldName, factoryId, classId);
+            }
 
-            void PortableWriter::writeByteArray(const char *fieldName, const vector<byte>  & bytes) {
-                setPosition(fieldName);
-                output.writeByteArray(bytes);
-            };
+            void PortableWriter::writeByteArray(const char *fieldName, const std::vector<byte>& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeByteArray(fieldName, data);
+                return classDefinitionWriter->writeByteArray(fieldName, data);
+            }
 
-            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char >&  data) {
-                setPosition(fieldName);
-                output.writeCharArray(data);
-            };
+            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char >& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeCharArray(fieldName, data);
+                return classDefinitionWriter->writeCharArray(fieldName, data);
+            }
 
-            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short >&  data) {
-                setPosition(fieldName);
-                output.writeShortArray(data);
-            };
+            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short >& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeShortArray(fieldName, data);
+                return classDefinitionWriter->writeShortArray(fieldName, data);
+            }
 
-            void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int>&  data) {
-                setPosition(fieldName);
-                output.writeIntArray(data);
-            };
+            void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int>& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeIntArray(fieldName, data);
+                return classDefinitionWriter->writeIntArray(fieldName, data);
+            }
 
-            void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long >&  data) {
-                setPosition(fieldName);
-                output.writeLongArray(data);
-            };
+            void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long >& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeLongArray(fieldName, data);
+                return classDefinitionWriter->writeLongArray(fieldName, data);
+            }
 
-            void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float >&  data) {
-                setPosition(fieldName);
-                output.writeFloatArray(data);
-            };
+            void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float >& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeFloatArray(fieldName, data);
+                return classDefinitionWriter->writeFloatArray(fieldName, data);
+            }
 
-            void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double >&  data) {
-                setPosition(fieldName);
-                output.writeDoubleArray(data);
-            };
-
-            void PortableWriter::setPosition(const char *fieldName) {
-                if (raw) throw exception::IOException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");
-                if (!cd->isFieldDefinitionExists(fieldName)) {
-                    std::string error;
-                    error += "HazelcastSerializationException( Invalid field name: '";
-                    error += fieldName;
-                    error += "' for ClassDefinition {id: "; //TODO add factory ID
-                    error += hazelcast::util::to_string(cd->getClassId());
-                    error += ", version: ";
-                    error += hazelcast::util::to_string(cd->getVersion());
-                    error += "}";
-
-                    throw exception::IOException("PortableWriter::setPosition", error);
-                }
-
-                if (writtenFields.count(fieldName) != 0)
-                    throw exception::IOException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
-                writtenFields.insert(fieldName);
-                output.writeInt(offset + cd->get(fieldName).getIndex() * sizeof (int), output.position());
-
-            };
-
-            ObjectDataOutput *PortableWriter::getRawDataOutput() {
-                if (!raw) {
-                    int pos = output.position();
-                    int index = cd->getFieldCount(); // last index
-                    output.writeInt(offset + index * sizeof(int), pos);
-                }
-                raw = true;
-                return &output; //TODO why return pointer not reference
-            };
+            void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double >& data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeDoubleArray(fieldName, data);
+                return classDefinitionWriter->writeDoubleArray(fieldName, data);
+            }
 
             void PortableWriter::end() {
-                output.writeInt(begin, output.position()); // write final offset
-            };
+                if (isDefaultWriter)
+                    return defaultPortableWriter->end();
+                return classDefinitionWriter->end();
+            }
+
+            ObjectDataOutput& PortableWriter::getRawDataOutput() {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->getRawDataOutput();
+                return classDefinitionWriter->getRawDataOutput();
+            }
 
 
         }
+
+
     }
 }
+

@@ -7,11 +7,14 @@
 #ifndef HAZELCAST_INPUT_SOCKET_STREAM
 #define HAZELCAST_INPUT_SOCKET_STREAM
 
-#include "../connection/Socket.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
+
+        namespace connection{
+            class Socket;
+        }
 
         namespace serialization {
 

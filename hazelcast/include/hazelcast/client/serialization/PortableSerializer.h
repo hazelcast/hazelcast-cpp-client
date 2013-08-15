@@ -9,73 +9,36 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
-#include "SerializationContext.h"
-#include "ClassDefinition.h"
-#include "ClassDefinitionWriter.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "MorphingPortableReader.h"
-#include "Serializer.h"
-#include "Portable.h"
-#include "hazelcast/util/Util.h"
+#include "AtomicPointer.h"
 #include <vector>
 #include <map>
 #include <memory>
 
 namespace hazelcast {
     namespace client {
+
+        class Portable;
+
         namespace serialization {
 
-            class ObjectDataInput;
+            class DataOutput;
 
-            class ObjectDataOutput;
+            class DataInput;
+
+            class SerializationContext;
+
+            class ClassDefinition;
 
             class PortableSerializer {
             public:
 
                 PortableSerializer(SerializationContext& serializationContext);
 
-                template <typename T>
-                util::AtomicPointer<ClassDefinition> getClassDefinition(T& p) {
-                    util::AtomicPointer<ClassDefinition> cd;
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-                    if (context.isClassDefinitionExists(factoryId, classId)) {
-                        cd = context.lookup(factoryId, classId);
-                    } else {
-                        ClassDefinitionWriter classDefinitionWriter(factoryId, classId, context.getVersion(), context);
-                        p.writePortable(classDefinitionWriter);
-                        cd = classDefinitionWriter.getClassDefinition();
-                        cd = context.registerClassDefinition(cd);
-                    }
+                util::AtomicPointer<ClassDefinition> getClassDefinition(const Portable& p);
 
-                    return cd;
-                };
+                void write(DataOutput &dataOutput, const Portable& p);
 
-                template <typename T>
-                void write(ObjectDataOutput &dataOutput, const T& p) {
-                    util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
-                    PortableWriter portableWriter(context, cd, dataOutput);
-                    p.writePortable(portableWriter);
-                    portableWriter.end();
-                };
-
-                template <typename T>
-                void read(ObjectDataInput& dataInput, T& object, int factoryId, int classId, int dataVersion) {
-                    util::AtomicPointer<ClassDefinition> cd;
-
-                    if (context.getVersion() == dataVersion) {
-                        cd = context.lookup(factoryId, classId); // using serializationContext.version
-                        PortableReader reader(context, dataInput, cd);
-                        object.readPortable(reader);
-                        reader.end();
-                    } else {
-                        cd = context.lookup(factoryId, classId, dataVersion); // registered during read
-                        MorphingPortableReader reader(context, dataInput, cd);
-                        object.readPortable(reader);
-                        reader.end();
-                    }
-                };
+                void read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion);
 
             private:
                 SerializationContext& context;

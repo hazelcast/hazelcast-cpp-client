@@ -57,6 +57,7 @@ namespace hazelcast {
             int durability;
 
             TransactionType transactionType;
+
         };
     }
 }

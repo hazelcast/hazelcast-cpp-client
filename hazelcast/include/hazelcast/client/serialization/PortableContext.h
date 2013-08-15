@@ -10,10 +10,9 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include <iostream>
-#include <map>
-#include <vector>
 #include "ConcurrentSmartMap.h"
+#include <vector>
+#include <map>
 
 
 namespace hazelcast {

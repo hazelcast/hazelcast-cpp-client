@@ -4,6 +4,8 @@
 
 
 #include "ServerException.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,6 +29,19 @@ namespace hazelcast {
             int ServerException::getClassId() const {
                 return protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID;
             }
+
+            void ServerException::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("m", message);
+                writer.writeUTF("d", details);
+                writer.writeInt("t", type);
+            };
+
+
+            void ServerException::readPortable(serialization::PortableReader& reader) {
+                message = reader.readUTF("m");
+                details = reader.readUTF("d");
+                type = reader.readInt("t");
+            };
 
         }
     }

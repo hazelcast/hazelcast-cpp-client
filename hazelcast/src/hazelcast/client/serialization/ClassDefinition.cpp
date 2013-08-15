@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/ClassDefinition.h"
-#include "ObjectDataInput.h"
-#include "ObjectDataOutput.h"
-#include "IOException.h"
+#include "hazelcast/client/serialization/DataInput.h"
+#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -121,7 +121,7 @@ namespace hazelcast {
                 this->binary.reset(binary.release());
             };
 
-            void ClassDefinition::writeData(ObjectDataOutput& dataOutput) {
+            void ClassDefinition::writeData(DataOutput& dataOutput) {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
@@ -136,7 +136,7 @@ namespace hazelcast {
                 }
             };
 
-            void ClassDefinition::readData(ObjectDataInput& dataInput) {
+            void ClassDefinition::readData(DataInput& dataInput) {
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
                 version = dataInput.readInt();

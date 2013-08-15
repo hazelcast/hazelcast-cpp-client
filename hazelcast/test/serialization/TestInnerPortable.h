@@ -78,8 +78,8 @@ public:
         return !(*this == m);
     };
 
-    template<typename HzWriter>
-    void writePortable(HzWriter& writer) const {
+
+    void writePortable(serialization::PortableWriter& writer) const {
         writer.writeByteArray("b", bb);
         writer.writeCharArray("c", cc);
         writer.writeShortArray("s", ss);
@@ -90,8 +90,8 @@ public:
         writer.writePortableArray("nn", nn);
     };
 
-    template<typename HzReader>
-    void readPortable(HzReader& reader) {
+
+    void readPortable(serialization::PortableReader& reader) {
         bb = reader.readByteArray("b");
         cc = reader.readCharArray("c");
         ss = reader.readShortArray("s");

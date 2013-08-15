@@ -10,10 +10,10 @@
 #include "hazelcast/client/serialization/SerializationConstants.h"
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 
 
-class TestDataSerializable : public hazelcast::client::DataSerializable {
+class TestDataSerializable : public hazelcast::client::IdentifiedDataSerializable {
 public:
     TestDataSerializable() {
 

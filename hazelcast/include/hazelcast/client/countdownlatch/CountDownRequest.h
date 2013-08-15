@@ -9,6 +9,9 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "CountDownLatchPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,28 +19,16 @@ namespace hazelcast {
         namespace countdownlatch {
             class CountDownRequest : public Portable {
             public:
-                CountDownRequest(const std::string& instanceName)
-                : instanceName(instanceName) {
+                CountDownRequest(const std::string& instanceName);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return CountDownLatchPortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return CountDownLatchPortableHook::COUNT_DOWN;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("name", instanceName);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    instanceName = reader.readUTF("name");
-                };
             private:
 
                 std::string instanceName;

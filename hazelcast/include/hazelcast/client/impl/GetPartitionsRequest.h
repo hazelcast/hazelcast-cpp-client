@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_GET_PARTITIONS_REQUEST
 #define HAZELCAST_GET_PARTITIONS_REQUEST
 
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 #include "../protocol/ProtocolConstants.h"
 #include "../serialization/SerializationConstants.h"
 
@@ -21,7 +21,7 @@ namespace hazelcast {
         namespace impl {
 
 
-            class GetPartitionsRequest : public DataSerializable {
+            class GetPartitionsRequest : public IdentifiedDataSerializable {
             public:
                 GetPartitionsRequest();
 

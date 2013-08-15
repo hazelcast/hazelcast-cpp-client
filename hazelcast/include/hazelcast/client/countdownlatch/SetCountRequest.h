@@ -9,6 +9,8 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "CountDownLatchPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 #include <string>
 
 namespace hazelcast {
@@ -34,14 +36,14 @@ namespace hazelcast {
                     return CountDownLatchPortableHook::SET_COUNT;
                 };
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", instanceName);
                     writer.writeLong("count", count);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     instanceName = reader.readUTF("name");
                     count = reader.readLong("count");
                 };

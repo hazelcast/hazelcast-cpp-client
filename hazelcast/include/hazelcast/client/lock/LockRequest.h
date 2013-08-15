@@ -20,47 +20,19 @@ namespace hazelcast {
             class LockRequest : public Portable {
             public:
             public:
-                LockRequest(const serialization::Data& key, int threadId)
-                :key(key)
-                , threadId(threadId)
-                , ttl(-1)
-                , timeout(-1) {
-                };
+                LockRequest(const serialization::Data& key, int threadId);
 
-                LockRequest(const serialization::Data& key, int threadId, long ttl, long timeout)
-                :key(key)
-                , threadId(threadId)
-                , ttl(ttl)
-                , timeout(timeout) {
-                };
+                LockRequest(const serialization::Data& key, int threadId, long ttl, long timeout);
 
-                int getClassId() const {
-                    return LockPortableHook::LOCK;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return LockPortableHook::FACTORY_ID;
-                };
+                int getFactoryId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeInt("tid", threadId);
-                    writer.writeLong("ttl", ttl);
-                    writer.writeLong("timeout", timeout);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    threadId = reader.readInt("tid");
-                    ttl = reader.readLong("ttl");
-                    timeout = reader.readLong("timeout");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                };
+                void readPortable(serialization::PortableReader& reader);
+
             private:
-
                 serialization::Data key;
                 int threadId;
                 long ttl;

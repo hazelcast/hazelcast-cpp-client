@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class CollectionProxyId : public DataSerializable {
+            class CollectionProxyId : public IdentifiedDataSerializable {
             public:
                 enum CollectionProxyType {
                     MULTI_MAP, LIST, SET

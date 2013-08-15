@@ -4,7 +4,7 @@
 namespace hazelcast {
     namespace client {
 
-        GroupConfig::GroupConfig() : name("pass"), password("dev-pass") {
+        GroupConfig::GroupConfig() : name("dev"), password("dev-pass") {
 
         };
 

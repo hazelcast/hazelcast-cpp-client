@@ -41,10 +41,15 @@
 #include "map/QueryDataResultStream.h"
 #include "map/EntryView.h"
 #include "map/AddEntryListenerRequest.h"
+#include "map/ExecuteOnKeyRequest.h"
+#include "map/ExecuteOnAllKeysRequest.h"
+#include "map/AddInterceptorRequest.h"
+#include "map/RemoveInterceptorRequest.h"
 #include "impl/EntryListener.h"
 #include "impl/EntryEventHandler.h"
 #include "impl/PortableEntryEvent.h"
 #include "serialization/SerializationService.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include <string>
 #include <map>
 #include <set>
@@ -57,6 +62,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class IMap {
             friend class HazelcastClient;
+
         public:
 
             bool containsKey(const K& key) {
@@ -158,7 +164,7 @@ namespace hazelcast {
             void set(const K& key, const V& value, long ttl) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::SetRequest request(instanceName, keyData, valueData,util::getThreadId(), ttl);
+                map::SetRequest request(instanceName, keyData, valueData, util::getThreadId(), ttl);
                 invoke<bool>(request, keyData);
             };
 
@@ -203,15 +209,16 @@ namespace hazelcast {
                 invoke<bool>(request, keyData);
             };
 
-//        String addInterceptor(MapInterceptor interceptor) {
-//                MapAddInterceptorRequest request = new MapAddInterceptorRequest(name, interceptor);
-//                return invoke(request);
-//            }
-//
-//        void removeInterceptor(String id) {
-//                MapRemoveInterceptorRequest request = new MapRemoveInterceptorRequest(name, id);
-//                invoke(request);
-//            }
+            template<typename MapInterceptor>
+            std::string addInterceptor(const MapInterceptor& interceptor) {
+                map::AddInterceptorRequest<MapInterceptor> request(instanceName, interceptor);
+                return invoke<std::string>(request);
+            }
+
+            void removeInterceptor(const std::string& id) {
+                map::RemoveInterceptorRequest request(instanceName, id);
+                invoke<bool>(request);
+            }
 
             template < typename L>
             long addEntryListener(L& listener, bool includeValue) {
@@ -295,7 +302,7 @@ namespace hazelcast {
                 map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
                 const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<K> keySet(dataResult.size());
-                for (int i = 0; i <dataResult.size(); ++i) {
+                for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = toObject<K>(dataResult[i].key);
                 }
                 return keySet;
@@ -328,24 +335,26 @@ namespace hazelcast {
                 invoke<bool>(request);
             };
 
-//        Object executeOnKey(K key, EntryProcessor entryProcessor) { TODO
-//                final Data keyData = toData(key);
-//                MapExecuteOnKeyRequest request = new MapExecuteOnKeyRequest(name, entryProcessor, keyData);
-//                return invoke(request, keyData);
-//            }
-//
-//        Map<K, Object> executeOnEntries(EntryProcessor entryProcessor) {
-//                MapExecuteOnAllKeysRequest request = new MapExecuteOnAllKeysRequest(name, entryProcessor);
-//                MapEntrySet entrySet = invoke(request);
-//                Map<K, Object> result = new HashMap<K, Object>();
-//                for (Entry<Data, Data> dataEntry : entrySet.getEntrySet()) {
-//                    final Data keyData = dataEntry.getKey();
-//                    final Data valueData = dataEntry.getValue();
-//                    K key = toObject(keyData);
-//                    result.put(key, toObject(valueData));
-//                }
-//                return result;
-//            }
+            template<typename ResultType, typename EntryProcessor>
+            ResultType executeOnKey(const K& key, EntryProcessor& entryProcessor) {
+                serialization::Data keyData = toData(key);
+                map::ExecuteOnKeyRequest<EntryProcessor> request(instanceName, entryProcessor, keyData);
+                return invoke<ResultType>(request, keyData);
+            }
+
+            template<typename ResultType, typename EntryProcessor>
+            std::map<K, ResultType> executeOnEntries(EntryProcessor& entryProcessor) {
+                map::ExecuteOnAllKeysRequest<EntryProcessor> request(instanceName, entryProcessor);
+                map::MapEntrySet mapEntrySet = invoke< map::MapEntrySet>(request);
+                std::map<K, ResultType> result;
+                const std::vector< std::pair< serialization::Data, serialization::Data> >  & entrySet = mapEntrySet.getEntrySet();
+                for (std::vector< std::pair< serialization::Data, serialization::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
+                    K key = toObject<K>(it->first);
+                    ResultType resultType = toObject<ResultType>(it->second);
+                    result[key] = resultType;
+                }
+                return result;
+            }
 
             void set(K key, V value) {
                 set(key, value, -1);
@@ -377,16 +386,22 @@ namespace hazelcast {
                 invoke<bool>(request);
             };
 
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
+            void destroy(){
+                map::DestroyRequest request (instanceName);
+                invoke<bool>(request);
+                context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+            };
+
         private:
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;
             };
 
-            void onDestroy() {
-                map::DestroyRequest request (instanceName);
-                invoke<bool>(request);
-            };
 
             template<typename T>
             serialization::Data toData(const T& object) {

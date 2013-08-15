@@ -37,26 +37,26 @@ public:
         return 4;
     }
 
-    template<typename HzWriter>
-    inline void writePortable(HzWriter& writer) const{
+
+    inline void writePortable(serialization::PortableWriter& writer) const{
         writer.writeLong("l", l);
         writer.writeCharArray("c", c);
         writer.writePortable("p", p);
-        ObjectDataOutput *out = writer.getRawDataOutput();
-        out->writeInt(k);
-        out->writeUTF(s);
-        ds.writeData(*out);
+        ObjectDataOutput& out = writer.getRawDataOutput();
+        out.writeInt(k);
+        out.writeUTF(s);
+        ds.writeData(out);
     };
 
-    template<typename HzReader>
-    inline void readPortable(HzReader& reader) {
+
+    inline void readPortable(serialization::PortableReader& reader) {
         l = reader.readLong("l");
         c = reader.readCharArray("c");
         p = reader.template readPortable<TestNamedPortable>("p");
-        ObjectDataInput *in = reader.getRawDataInput();
-        k = in->readInt();
-        s = in->readUTF();
-        ds.readData(*in);
+        ObjectDataInput& in = reader.getRawDataInput();
+        k = in.readInt();
+        s = in.readUTF();
+        ds.readData(in);
     };
 
     TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {

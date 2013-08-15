@@ -30,27 +30,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const{
-                    writer.writePortable("credentials", credentials);
-                    if (principal == NULL) {
-                        writer.writeNullPortable("principal",  -3, 3);
-                    } else {
-                        writer.writePortable("principal", *principal);
-                    }
-                    writer.writeBoolean("reAuth", reAuth);
-                    writer.writeBoolean("firstConnection", firstConnection);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    credentials = reader.template readPortable<Credentials>("credentials");
-                    protocol::Principal *principal = new protocol::Principal();
-                    *principal = reader.template readPortable<Principal>("principal");
-                    this->principal = principal;
-                    reAuth = reader.readBoolean("reAuth");
-                    firstConnection = reader.readBoolean("firstConnection");
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 Credentials credentials;

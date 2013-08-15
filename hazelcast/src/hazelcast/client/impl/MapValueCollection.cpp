@@ -23,11 +23,11 @@ namespace hazelcast {
                 return DataSerializableHook::VALUES;
             };
 
-            const vector<serialization::Data>  & MapValueCollection::getValues() const {
+            const std::vector<serialization::Data>  & MapValueCollection::getValues() const {
                 return values;
             };
 
-            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) {
+            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeInt(values.size());
                 for (int i = 0; i < values.size(); ++i) {
                     values[i].writeData(writer);

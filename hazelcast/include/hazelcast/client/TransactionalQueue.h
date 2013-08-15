@@ -66,7 +66,7 @@ namespace hazelcast {
                 return invoke<int>(request);
             }
 
-            void onDestroy() {
+            void destroy() {
                 //TODO
             }
 

@@ -8,6 +8,8 @@
 #define HAZELCAST_TxnPollRequest
 
 #include "Portable.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include <string>
 
 namespace hazelcast {
@@ -21,14 +23,14 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeLong("t", timeout);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                     timeout = reader.readLong("t");
                 };

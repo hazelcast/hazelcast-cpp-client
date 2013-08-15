@@ -53,7 +53,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire()throw ( exception::IException);
+            void acquire();
 
             /**
              * <p>Acquires the given number of permits, if they are available,
@@ -86,7 +86,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            void acquire(int permits)throw ( exception::IException);
+            void acquire(int permits);
 
 
             /**
@@ -214,7 +214,7 @@ namespace hazelcast {
              * @throws InterruptedException       if the current thread is interrupted
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(long timeoutInMillis) throw ( exception::IException);
+            bool tryAcquire(long timeoutInMillis);
 
             /**
              * Acquires the given number of permits, if they are available and
@@ -257,8 +257,12 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(int permits, long timeoutInMillis) throw ( exception::IException);
-
+            bool tryAcquire(int permits, long timeoutInMillis) ;
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
+            void destroy();
 
         private:
             void checkNegative(int permits);

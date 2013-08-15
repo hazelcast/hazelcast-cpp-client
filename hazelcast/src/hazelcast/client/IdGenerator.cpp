@@ -1,4 +1,5 @@
 #include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -6,7 +7,7 @@ namespace hazelcast {
         IdGenerator::IdGenerator()
         : local(new boost::atomic<int>(-1))
         , residue(new boost::atomic<int>(BLOCK_SIZE))
-        , localLock(new boost::mutex){
+        , localLock(new boost::mutex) {
 
         };
 
@@ -46,5 +47,11 @@ namespace hazelcast {
             }
             return int(*local) * BLOCK_SIZE + value;
         };
+
+        void IdGenerator::destroy() {
+            atomicLong.destroy();
+            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        }                        ;
+
     }
 }

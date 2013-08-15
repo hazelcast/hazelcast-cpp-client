@@ -9,13 +9,13 @@
 #define HAZELCAST_MEMBERSHIP_EVENT
 
 #include "Member.h"
-#include "DataSerializable.h"
+#include "IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            class MembershipEvent : public DataSerializable {
+            class MembershipEvent : public IdentifiedDataSerializable {
             public:
                 enum {
                     MEMBER_ADDED = 1,
@@ -34,7 +34,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer);
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

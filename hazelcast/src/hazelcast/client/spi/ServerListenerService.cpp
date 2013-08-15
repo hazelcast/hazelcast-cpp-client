@@ -16,7 +16,7 @@ namespace hazelcast {
             };
 
             ServerListenerService::~ServerListenerService() {
-                vector<util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
+                std::vector<util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
                 values.clear();
             };
 

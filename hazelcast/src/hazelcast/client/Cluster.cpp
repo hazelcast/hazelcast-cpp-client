@@ -22,7 +22,7 @@ namespace hazelcast {
             return clusterService.removeMembershipListener(listener);
         };
 
-        vector<hazelcast::client::connection::Member>  Cluster::getMembers() {
+        std::vector<hazelcast::client::connection::Member>  Cluster::getMembers() {
             return clusterService.getMemberList();
         };
 

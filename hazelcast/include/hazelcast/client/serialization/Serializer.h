@@ -7,8 +7,6 @@
 #ifndef HAZELCAST_TYPE_SERIALIZER
 #define HAZELCAST_TYPE_SERIALIZER
 
-#include <iostream>
-
 namespace hazelcast {
     namespace client {
         namespace serialization {

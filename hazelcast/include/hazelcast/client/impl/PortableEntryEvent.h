@@ -12,6 +12,8 @@
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
 #include "Portable.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -55,30 +57,30 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    out->writeInt(eventType);
-                    out->writeUTF(uuid);
-                    key.writeData(*out);
-                    out->writeBoolean(true);
-                    value.writeData(*out);
-                    out->writeBoolean(true);
-                    oldValue.writeData(*out);
+
+                void writePortable(serialization::PortableWriter& writer) const {
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    out.writeInt(eventType);
+                    out.writeUTF(uuid);
+                    key.writeData(out);
+                    out.writeBoolean(true);
+                    value.writeData(out);
+                    out.writeBoolean(true);
+                    oldValue.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    int type = in->readInt();
+
+                void readPortable(serialization::PortableReader& reader) {
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    int type = in.readInt();
 //                    eventType = type;
-                    key.readData(*in);
-                    bool isNotNull = in->readBoolean();
+                    key.readData(in);
+                    bool isNotNull = in.readBoolean();
                     if (isNotNull)
-                        value.readData(*in);
-                    isNotNull = in->readBoolean();
+                        value.readData(in);
+                    isNotNull = in.readBoolean();
                     if (isNotNull)
-                        oldValue.readData(*in);
+                        oldValue.readData(in);
                 };
 
             private:

@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace exception {
 
 
-            class ServerException : public Portable , public std::exception{
+            class ServerException : public Portable, public std::exception {
 
             public:
                 ServerException();
@@ -33,19 +33,9 @@ namespace hazelcast {
 
                 int getFactoryId() const;
 
-                template<typename HzWriter>
-                inline void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("m", message);
-                    writer.writeUTF("d", details);
-                    writer.writeInt("t", type);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzReader>
-                inline void readPortable(HzReader& reader) {
-                    message = reader.readUTF("m");
-                    details = reader.readUTF("d");
-                    type = reader.readInt("t");
-                };
+                void readPortable(serialization::PortableReader& reader);
             };
         }
     }

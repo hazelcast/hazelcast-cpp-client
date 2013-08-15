@@ -30,26 +30,26 @@ namespace hazelcast {
                     return PortableHook::TRY_PUT;
                 }
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
+
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeLong("timeout", timeout);
                     writer.writeUTF("n", name);
                     writer.writeInt("t", threadId);
                     writer.writeLong("ttl", ttl);
-                    serialization::ObjectDataOutput *out = writer.getRawDataOutput();
-                    key.writeData(*out);
-                    value.writeData(*out);
+                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    key.writeData(out);
+                    value.writeData(out);
                 };
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
+
+                void readPortable(serialization::PortableReader& reader) {
                     timeout = reader.readLong("timeout");
                     name = reader.readUTF("n");
                     threadId = reader.readInt("t");
                     ttl = reader.readLong("ttl");
-                    serialization::ObjectDataInput *in = reader.getRawDataInput();
-                    key.readData(*in);
-                    value.readData(*in);
+                    serialization::ObjectDataInput &in = reader.getRawDataInput();
+                    key.readData(in);
+                    value.readData(in);
                 };
             private:
                 serialization::Data& key;

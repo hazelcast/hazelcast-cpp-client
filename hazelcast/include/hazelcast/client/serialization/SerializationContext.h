@@ -10,6 +10,7 @@
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
 #include "ConcurrentSmartMap.h"
+#include "SerializerHolder.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -50,6 +51,8 @@ namespace hazelcast {
 
                 int getVersion();
 
+                SerializerHolder& getSerializerHolder();
+
             private:
 
                 SerializationContext(const SerializationContext&);
@@ -60,6 +63,7 @@ namespace hazelcast {
 
                 int contextVersion;
                 util::ConcurrentSmartMap<int, PortableContext> portableContextMap;
+                SerializerHolder serializerHolder;
 
             };
 

@@ -9,6 +9,9 @@
 
 #include "../serialization/SerializationConstants.h"
 #include "AtomicLongPortableHook.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,27 +20,14 @@ namespace hazelcast {
 
             class AtomicLongRequest : public Portable {
             public:
-                AtomicLongRequest(const std::string& instanceName, long delta)
-                :instanceName(instanceName)
-                , delta(delta) {
+                AtomicLongRequest(const std::string& instanceName, long delta);
 
-                };
+                virtual int getFactoryId() const;
 
-                virtual int getFactoryId() const {
-                    return AtomicLongPortableHook::F_ID;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                template<typename HzWriter>
-                void writePortable(HzWriter& writer) const {
-                    writer.writeUTF("n", instanceName);
-                    writer.writeLong("d", delta);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-                template<typename HzReader>
-                void readPortable(HzReader& reader) {
-                    instanceName = reader.readUTF("n");
-                    delta = reader.readLong("d");
-                };
             private:
                 long delta;
                 std::string instanceName;

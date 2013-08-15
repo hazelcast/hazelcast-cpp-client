@@ -29,6 +29,8 @@ namespace hazelcast {
 
             class ServerListenerService;
 
+            class DistributedObjectListenerService;
+
             class ClientContext {
             public:
 
@@ -50,6 +52,7 @@ namespace hazelcast {
 
                 connection::ConnectionManager& getConnectionManager();
 
+                DistributedObjectListenerService& getDistributedObjectListenerService();
 
             private:
                 HazelcastClient& hazelcastClient;
