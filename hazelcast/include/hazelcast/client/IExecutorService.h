@@ -19,6 +19,7 @@
 #include "ShutdownRequest.h"
 #include "Member.h"
 #include "IsShutdownRequest.h"
+#include "MultiExecutionCallbackWrapper.h"
 
 namespace hazelcast {
     namespace client {
@@ -118,24 +119,6 @@ namespace hazelcast {
                 executor::RunnableAdapter<Runnable> callable;
                 return submitToKeyOwnerInternalWithDefaultResult(callable, key, result);
             }
-
-            /**
-             * Submits a Runnable task for execution and returns a Future
-             * representing that task. The Future's <tt>get</tt> method will
-             * return <tt>null</tt> upon <em>successful</em> completion.
-             *
-             * @param task the task to submit
-             * @return a Future representing pending completion of the task
-             * @throws RejectedExecutionException if the task cannot be
-             *         scheduled for execution
-             * @throws NullPointerException if the task is null
-             */
-//            template<typename Result, typename Runnable> //TODO
-//            Future<Result> submit(const Runnable& command) {
-//                serialization::Data key = getTaskPartitionKey(command);
-//                executor::RunnableAdapter<Runnable> callable;
-//                return submitToKeyOwnerInternal(callable, key);
-//            }
 
             /**
              * Executes the given tasks, returning a list of Futures holding
@@ -302,7 +285,6 @@ namespace hazelcast {
                 return result;
             };
 
-
             /**
              * Submits task to all cluster members and returns
              * map of Member-Future pairs representing pending completion of the task on each member
@@ -324,7 +306,12 @@ namespace hazelcast {
              * @param task task
              * @param callback callback
              */
-//                    void submit(Runnable task, ExecutionCallback callback);
+
+            template<typename Result, typename Callable, typename ExecutionCallback>
+            void submit(const Callable& task, const ExecutionCallback& callback) {
+                serialization::Data partitionKey = getTaskPartitionKey(task);
+                return submitToKeyOwnerInternalWithCallback<Result>(task, partitionKey, callback);
+            };
 
             /**
              * Submits task to owner of the specified key. Caller will be notified for the result of the task by
@@ -333,7 +320,11 @@ namespace hazelcast {
              * @param task task
              * @param callback callback
              */
-//                    void submitToKeyOwner(Runnable task, Object key, ExecutionCallback callback);
+            template<typename Result, typename Callable, typename Key, typename ExecutionCallback>
+            void submitToKeyOwner(const Callable& task, const Key& result, const ExecutionCallback& callback) {
+                serialization::Data partitionKey = toData(result);
+                submitToKeyOwnerInternalWithCallback<Result>(task, partitionKey, callback);
+            };
 
             /**
              * Submits task to the specified member. Caller will be notified for the result of the task by
@@ -342,7 +333,15 @@ namespace hazelcast {
              * @param task task
              * @param callback callback
              */
-//                    void submitToMember(Runnable task, Member member, ExecutionCallback callback);
+
+            template<typename Result, typename Callable, typename ExecutionCallback>
+            void submitToMember(const Callable& task, const connection::Member& member, const ExecutionCallback& callback) {
+                if (context->getClusterService().isMemberExists(member.getAddress())) {
+                    submitToTargetInternalWithCallback<Result>(task, member.getAddress(), callback);
+                } else {
+                    throw exception::IException("IExecuterService::executeOnMember()", "Member is not available!!!");
+                }
+            };
 
             /**
              * Submits task to the specified members. Caller will be notified for the result of the each task by
@@ -352,7 +351,14 @@ namespace hazelcast {
              * @param task task
              * @param callback callback
              */
-//                    void submitToMembers(Runnable task, Collection<Member> members, MultiExecutionCallback callback);
+            template<typename Result, typename Callable, typename MultiExecutionCallback>
+            void submitToMembers(const Callable& task, const std::vector<connection::Member>& members, const MultiExecutionCallback& callback) {
+                std::map<connection::Member, Future<Result> > result;
+                std::vector<connection::Member>::const_iterator it;
+                for (it = members.begin(); it != members.end(); ++it) {
+                    submitToMemberMulti<Result>(task, *it, callback);
+                }
+            };
 
             /**
              * Submits task to the all cluster members. Caller will be notified for the result of the each task by
@@ -362,54 +368,11 @@ namespace hazelcast {
              * @param task task
              * @param callback callback
              */
-//                    void submitToAllMembers(Runnable task, MultiExecutionCallback callback);
-
-            /**
-             * Submits task to a random member. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
-             *
-             * @param task task
-             * @param callback callback
-             */
-//                    <T> void submit(Callable<T> task, ExecutionCallback<T> callback);
-
-            /**
-             * Submits task to owner of the specified key. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
-             *
-             * @param task task
-             * @param callback callback
-             */
-//                    <T> void submitToKeyOwner(Callable<T> task, Object key, ExecutionCallback<T> callback);
-
-            /**
-             * Submits task to the specified member. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
-             *
-             * @param task task
-             * @param callback callback
-             */
-//                    <T> void submitToMember(Callable<T> task, Member member, ExecutionCallback<T> callback);
-
-            /**
-             * Submits task to the specified members. Caller will be notified for the result of the each task by
-             * {@link MultiExecutionCallback#onResponse(Member, Object)} and when all tasks are completed
-             * {@link MultiExecutionCallback#onResponse(Member, Object)} will be called.
-             *
-             * @param task task
-             * @param callback callback
-             */
-//                    <T> void submitToMembers(Callable<T> task, Collection<Member> members, MultiExecutionCallback callback);
-
-            /**
-             * Submits task to the all cluster members. Caller will be notified for the result of the each task by
-             * {@link MultiExecutionCallback#onResponse(Member, Object)} and when all tasks are completed
-             * {@link MultiExecutionCallback#onResponse(Member, Object)} will be called.
-             *
-             * @param task task
-             * @param callback callback
-             */
-//                    <T> void submitToAllMembers(Callable<T> task, MultiExecutionCallback callback);
+            template<typename Result, typename Callable, typename MultiExecutionCallback>
+            void submitAllToMembers(const Callable& task, const MultiExecutionCallback& callback) {
+                std::vector<connection::Member> members = context->getClusterService().getMemberList();
+                submitToMembers<Result>(task, members);
+            }
 
 
         private:
@@ -427,21 +390,27 @@ namespace hazelcast {
             }
 
             template<typename Result, typename Callable >
-            Future<Result> submitToKeyOwnerInternalWithDefaultResult(const Callable& task, const serialization::Data& partitionKey, const Result& result) {
-                spi::PartitionService & partitionService = context->getPartitionService();
-                int partitionId = partitionService.getPartitionId(partitionKey);
-                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
-                return submitToTargetInternalWithDefaultResult(task, *pointer, result);
-            }
-
-
-            template<typename Result, typename Callable >
             Future<Result> submitToTargetInternal(const Callable& task, const Address& address) {
                 executor::TargetCallableRequest<Callable> request(instanceName, task, address);
                 util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>);
                 Future<Result> future(futureBase);
                 boost::thread asyncInvokeThread(boost::bind(&IExecutorService::asyncInvoke, boost::cref(request), boost::cref(address)), boost::cref(future));
                 return future;
+            }
+
+            template<typename Result, typename Callable>
+            void asyncInvoke(const executor::TargetCallableRequest<Callable> & request, const Address& address, const Future<Result>& future) {
+                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>(invoke<Result>(request, address)));
+                future.updateBasePtr(futureBase);
+            }
+
+            /**************** WITH DEFAULT RESULT ******************/
+            template<typename Result, typename Callable >
+            Future<Result> submitToKeyOwnerInternalWithDefaultResult(const Callable& task, const serialization::Data& partitionKey, const Result& result) {
+                spi::PartitionService & partitionService = context->getPartitionService();
+                int partitionId = partitionService.getPartitionId(partitionKey);
+                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
+                return submitToTargetInternalWithDefaultResult(task, *pointer, result);
             }
 
             template<typename Result, typename Callable >
@@ -454,17 +423,62 @@ namespace hazelcast {
             }
 
             template<typename Result, typename Callable>
-            void asyncInvoke(const executor::TargetCallableRequest<Callable> & request, const Address& address, const Future<Result>& future) {
-                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>(invoke<Result>(request, address)));
-                future.updateBasePtr(futureBase);
-            }
-
-            template<typename Result, typename Callable>
             void asyncInvokeWithDefaultResult(const executor::TargetCallableRequest<Callable> & request, const Address& address, const Future<Result>& future, const Result& result) {
                 invoke<bool>(request, address);
                 util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>(result));
                 future.updateBasePtr(futureBase);
             }
+            /**************** WITH DEFAULT RESULT ******************/
+
+            /**************** WITH CALLBACK ******************/
+            template<typename Result, typename Callable, typename ExecutionCallback>
+            void submitToKeyOwnerInternalWithCallback(const Callable& task, const serialization::Data& partitionKey, const ExecutionCallback& callback) {
+                spi::PartitionService & partitionService = context->getPartitionService();
+                int partitionId = partitionService.getPartitionId(partitionKey);
+                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
+                submitToTargetInternalWithCallback<Result>(task, *pointer, callback);
+            }
+
+            template<typename Result, typename Callable, typename ExecutionCallback>
+            void submitToTargetInternalWithCallback(const Callable& task, const Address& address, const ExecutionCallback& callback) {
+                executor::TargetCallableRequest<Callable> request(instanceName, task, address);
+                boost::thread asyncInvokeThread(boost::bind(&IExecutorService::asyncInvokeWithCallback<Result>, boost::cref(request), boost::cref(address)), boost::cref(callback));
+            }
+
+            template<typename Result, typename Callable, typename ExecutionCallback>
+            void asyncInvokeWithCallback(const executor::TargetCallableRequest<Callable> & request, const Address& address, const ExecutionCallback& callback) {
+                try{
+                    Result result = invoke<Result>(request, address);
+                    callback.onResponse(result);
+                } catch(std::exception& e){
+                    callback.onFailure(e.what());
+                }
+            }
+
+            template<typename Result, typename Callable, typename MultiExecutionCallback>
+            void submitToMemberMulti(const Callable& task, const connection::Member& member, const MultiExecutionCallback& callback) {
+                Address const & address = member.getAddress();
+                if (context->getClusterService().isMemberExists(address)) {
+                    executor::TargetCallableRequest<Callable> request(instanceName, task, address);
+                    impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > wrapper(callback);
+                    boost::thread asyncInvokeThread(boost::bind(&IExecutorService::asyncInvokeWithMultiCallback<Result>, boost::cref(request), boost::cref(member)), boost::cref(wrapper));
+                } else {
+                    throw exception::IException("IExecuterService::executeOnMember()", "Member is not available!!!");
+                }
+            };
+
+            template<typename Result, typename Callable, typename MultiExecutionCallback>
+            void asyncInvokeWithMultiCallback(const executor::TargetCallableRequest<Callable> & request, const connection::Member& member, const impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback>& callback) {
+                try{
+                    Result result = invoke<Result>(request, member.getAddress());
+                    callback.onResponse(member, result);
+                } catch(std::exception& e){
+                    //TODO ignored why?
+                }
+            }
+
+
+            /**************** WITH CALLBACK ******************/
 
             template<typename Result, typename Request>
             Result invoke(const Request& request, const Address& target) {

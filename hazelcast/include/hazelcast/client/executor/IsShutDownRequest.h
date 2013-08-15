@@ -29,7 +29,7 @@ namespace hazelcast {
                 void readData(serialization::ObjectDataInput& reader);
 
             private:
-                const std::string& instanceName;
+                std::string instanceName;
 
             };
         }
