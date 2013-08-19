@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
 //    generatorTest.executeTests();
 //    return 0;
 
-    sampleCountDownLatchUsage();
-//    return testSpeed();
+//    sampleCountDownLatchUsage();
+    return testSpeed();
 //    return deneme::init();
 };
 

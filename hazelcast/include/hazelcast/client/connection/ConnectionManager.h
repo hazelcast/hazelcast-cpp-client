@@ -37,32 +37,22 @@ namespace hazelcast {
             class ConnectionManager {
             public:
 
-                ConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService&, ClientConfig&);
+                virtual Connection *newConnection(const Address& address) = 0;
 
-                ~ConnectionManager();
+                virtual Connection *getRandomConnection() = 0;
 
-                Connection *newConnection(const Address& address);
+                virtual Connection *getConnection(const Address& address) = 0;
 
-                Connection *getRandomConnection();
+                virtual void releaseConnection(Connection *connection) = 0;
 
-                Connection *getConnection(const Address& address);
+                virtual util::AtomicPointer <ConnectionPool> getConnectionPool(const Address& address) = 0;
 
-                void releaseConnection(Connection *connection);
+                virtual void removeConnectionPool(const Address& address) = 0;
 
-                util::AtomicPointer <ConnectionPool> getConnectionPool(const Address& address);
-
-                void removeConnectionPool(const Address& address);
-
-                void authenticate(Connection& connection, bool reAuth, bool firstConnection);
+                virtual void authenticate(Connection& connection, bool reAuth, bool firstConnection) = 0;
 
             private:
-                util::ConcurrentSmartMap<Address, ConnectionPool , addressComparator> poolMap;
-                spi::ClusterService& clusterService;
-                serialization::SerializationService& serializationService;
-                ClientConfig& clientConfig;
-                protocol::Principal *principal;
-                HeartBeatChecker heartBeatChecker;
-                std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
+
 
             };
         }
