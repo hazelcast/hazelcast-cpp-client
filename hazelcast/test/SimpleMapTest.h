@@ -115,7 +115,7 @@ public:
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
-        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
+//        clientConfig.setSmart(false);
 
         try {
             boost::thread monitor(printStats);

@@ -1,12 +1,12 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include "ConcurrentSmartMap.h"
 #include "HeartBeatChecker.h"
-#include "ConnectionPool.h"
+#include "Address.h"
 
 namespace hazelcast {
     namespace client {
@@ -32,26 +32,38 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
+            class ConnectionPool;
+
             class SocketInterceptor;
 
             class ConnectionManager {
             public:
+                ConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService& serializationService, ClientConfig& clientConfig);
 
-                virtual Connection *newConnection(const Address& address) = 0;
+                ~ConnectionManager();
 
-                virtual Connection *getRandomConnection() = 0;
+                virtual Connection *newConnection(const Address& address);
 
-                virtual Connection *getConnection(const Address& address) = 0;
+                virtual Connection *getConnection(const Address& address);
 
-                virtual void releaseConnection(Connection *connection) = 0;
+                virtual Connection *getRandomConnection();
 
-                virtual util::AtomicPointer <ConnectionPool> getConnectionPool(const Address& address) = 0;
+                virtual void releaseConnection(Connection *connection);
 
-                virtual void removeConnectionPool(const Address& address) = 0;
+                virtual util::AtomicPointer <ConnectionPool> getConnectionPool(const Address& address);
 
-                virtual void authenticate(Connection& connection, bool reAuth, bool firstConnection) = 0;
+                virtual void removeConnectionPool(const Address& address);
 
-            private:
+                virtual void authenticate(Connection& connection, bool reAuth, bool firstConnection);
+
+            protected:
+                util::ConcurrentSmartMap<Address, ConnectionPool, addressComparator> poolMap;
+                spi::ClusterService& clusterService;
+                serialization::SerializationService& serializationService;
+                ClientConfig& clientConfig;
+                protocol::Principal *principal;
+                HeartBeatChecker heartBeatChecker;
+                std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
 
 
             };

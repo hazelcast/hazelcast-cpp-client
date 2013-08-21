@@ -124,9 +124,17 @@ namespace hazelcast {
             this->socketInterceptor.reset(socketInterceptor);
         }
 
-        std::auto_ptr<connection::SocketInterceptor> ClientConfig::getSocketInterceptor(){
+        std::auto_ptr<connection::SocketInterceptor> ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
         };
+
+        void ClientConfig::setSmart(bool smart) {
+            this->smart = smart;
+        }
+
+        bool ClientConfig::isSmart() const {
+            return smart;
+        }
 
 
     }
