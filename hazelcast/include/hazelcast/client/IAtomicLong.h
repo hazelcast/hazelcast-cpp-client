@@ -14,11 +14,11 @@ namespace hazelcast {
         }
 
         class IAtomicLong {
+            friend class HazelcastClient;
+
+            friend class IdGenerator;
+
         public:
-
-            IAtomicLong();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Returns the name of this IAtomicLong instance.
@@ -96,6 +96,7 @@ namespace hazelcast {
              * @param newValue the new value
              */
             void set(long newValue);
+
             /**
              * Destroys this object cluster-wide.
              * Clears and releases all resources for this object.
@@ -107,6 +108,11 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
+
+            IAtomicLong();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
+
 
             serialization::Data key;
             std::string instanceName;

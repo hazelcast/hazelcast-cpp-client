@@ -58,6 +58,10 @@ namespace hazelcast {
 
             void setSocketInterceptor(connection::SocketInterceptor *socketInterceptor);
 
+            bool isSmart() const;
+
+            void setSmart(bool smart);
+
             std::auto_ptr<connection::SocketInterceptor> getSocketInterceptor();
 
             /**

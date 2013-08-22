@@ -38,7 +38,7 @@ namespace hazelcast {
 
                 int totalSize() const;
 
-                int getPartitionHash();
+                int getPartitionHash()const;
 
                 void setPartitionHash(int partitionHash);
 
@@ -50,7 +50,7 @@ namespace hazelcast {
 
                 bool isServerError() const;
 
-                int hashCode();
+                int hashCode() const;
 
                 template<typename  Out>
                 void writeData(Out & dataOutput) const {
@@ -109,10 +109,10 @@ namespace hazelcast {
                 int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
-                int partitionHash;
 
 
             private:
+                mutable int partitionHash;
 
                 bool isError;
                 static int const FACTORY_ID = 0;

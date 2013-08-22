@@ -5,7 +5,9 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
+#include "hazelcast/client/IExecutorService.h"
+#include "hazelcast/client/connection/SmartConnectionManager.h"
+#include "hazelcast/client/connection/DummyConnectionManager.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,8 +18,9 @@ namespace hazelcast {
             : clientConfig(clientConfig)
             , lifecycleService(client, this->clientConfig)
             , serializationService(0)
-            , clusterService(partitionService, lifecycleService, connectionManager, serializationService, this->clientConfig)
-            , connectionManager(clusterService, serializationService, this->clientConfig)
+            , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clusterService, serializationService, this->clientConfig)
+                                                       : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
+            , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
             , serverListenerService(invocationService)
@@ -37,8 +40,8 @@ namespace hazelcast {
             ClientConfig clientConfig;
             spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
+            std::auto_ptr< connection::ConnectionManager> connectionManager;
             spi::ClusterService clusterService;
-            connection::ConnectionManager connectionManager;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
@@ -113,7 +116,7 @@ namespace hazelcast {
         };
 
         connection::ConnectionManager & HazelcastClient::getConnectionManager() {
-            return impl->connectionManager;
+            return *(impl->connectionManager);
         };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
@@ -136,9 +139,9 @@ namespace hazelcast {
             return getDistributedObject< ILock >(instanceName);
         };
 
-//       IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
-//        return getDistributedObject< IExecutorService >(instanceName)
-//    }
+        IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
+            return getDistributedObject< IExecutorService >(instanceName);
+        }
 
         void HazelcastClient::addDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
             impl->distributedObjectListenerService.addDistributedObjectListener(distributedObjectListener);
@@ -154,7 +157,7 @@ namespace hazelcast {
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
-            return TransactionContext(impl->clusterService, impl->serializationService, impl->connectionManager, options);
+            return TransactionContext(impl->clusterService, impl->serializationService, *(impl->connectionManager), options);
         }
 
 //        void shutdown() {

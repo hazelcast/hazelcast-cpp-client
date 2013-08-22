@@ -1,13 +1,15 @@
 //
-// Created by sancar koyunlu on 5/21/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+// Created by sancar koyunlu on 8/21/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/connection/SocketInterceptor.h"
+#include "ConnectionManager.h"
+#include "ConnectionPool.h"
+#include "ClientConfig.h"
+#include "Connection.h"
+#include "ClusterService.h"
+#include "AuthenticationRequest.h"
+#include "SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +20,7 @@ namespace hazelcast {
             , clientConfig(clientConfig)
             , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
             , principal(NULL)
-            , socketInterceptor(clientConfig.getSocketInterceptor()){
+            , socketInterceptor(clientConfig.getSocketInterceptor()) {
 
             };
 
@@ -35,10 +37,6 @@ namespace hazelcast {
                 return connection;
             };
 
-            Connection *ConnectionManager::getRandomConnection() {
-                const Address& address = clientConfig.getLoadBalancer()->next().getAddress();
-                return getConnection(address);
-            }
 
             Connection *ConnectionManager::getConnection(const Address& address) {
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(address);
@@ -53,6 +51,12 @@ namespace hazelcast {
                 }
                 return connection;
             };
+
+
+            Connection *ConnectionManager::getRandomConnection() {
+                const Address& address = clientConfig.getLoadBalancer()->next().getAddress();
+                return getConnection(address);
+            }
 
             void ConnectionManager::releaseConnection(Connection *connection) {
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(connection->getEndpoint());
@@ -86,7 +90,7 @@ namespace hazelcast {
             void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
                 connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
-                if(socketInterceptor.get() != NULL){
+                if (socketInterceptor.get() != NULL) {
                     socketInterceptor.get()->onConnect(connection.getSocket());
                 }
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());

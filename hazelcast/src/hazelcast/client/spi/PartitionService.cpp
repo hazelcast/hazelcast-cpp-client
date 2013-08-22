@@ -33,7 +33,7 @@ namespace hazelcast {
                 return partitions.get(partitionId);
             };
 
-            int PartitionService::getPartitionId(serialization::Data & key) {
+            int PartitionService::getPartitionId(const serialization::Data & key) {
                 const int pc = partitionCount;
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;

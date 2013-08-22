@@ -21,13 +21,9 @@ namespace hazelcast {
     namespace client {
         template <typename E>
         class ITopic {
-        public:
+            friend class HazelcastClient;
 
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                this->context = clientContext;
-                this->instanceName = instanceName;
-                key = context->getSerializationService().toData<std::string>(&instanceName);
-            };
+        public:
 
             void publish(E message) {
                 serialization::Data data = context->getSerializationService().toData<E>(&message);
@@ -61,6 +57,17 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
+
+            ITopic(){
+
+            };
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
+                this->context = clientContext;
+                this->instanceName = instanceName;
+                key = context->getSerializationService().toData<std::string>(&instanceName);
+            };
+
 
             std::string instanceName;
             serialization::Data key;

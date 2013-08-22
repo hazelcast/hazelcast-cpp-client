@@ -17,15 +17,12 @@ namespace hazelcast {
         }
 
         class IdGenerator {
+            friend class HazelcastClient;
+
         public:
             enum {
                 BLOCK_SIZE = 1000
             };
-
-            IdGenerator();
-
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
 
             /**
              * Try to initialize this IdGenerator instance with given id
@@ -44,10 +41,10 @@ namespace hazelcast {
              */
             long newId();
 
-           /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
+            /**
+             * Destroys this object cluster-wide.
+             * Clears and releases all resources for this object.
+             */
             void destroy();
 
         private:
@@ -57,6 +54,10 @@ namespace hazelcast {
             boost::shared_ptr< boost::mutex > localLock;
             boost::shared_ptr< boost::atomic<int> > local;
             boost::shared_ptr< boost::atomic<int> > residue;
+
+            IdGenerator();
+
+            void init(const std::string& instanceName, spi::ClientContext *clientContext);
         };
     }
 }
