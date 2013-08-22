@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class SizeRequest : public Portable{
+            class SizeRequest : public Portable, public RetryableRequest {
             public:
                 SizeRequest(const std::string& name)
                 :name(name) {

@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class GetCountRequest : public Portable {
+            class GetCountRequest : public Portable, public RetryableRequest {
             public:
                 GetCountRequest(const std::string& instanceName);
 

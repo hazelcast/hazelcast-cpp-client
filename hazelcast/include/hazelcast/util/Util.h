@@ -13,6 +13,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "Conversion.h"
+#include "RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -37,6 +39,12 @@ namespace hazelcast {
         void writeNullableData(client::serialization::ObjectDataOutput & out, client::serialization::Data *data);
 
         long getCurrentTimeMillis();
+
+
+        template<typename Request>
+        bool isRetryable(Request& request) {
+            return util::Conversion<Request, client::RetryableRequest>::exists;
+        };
 
     }
 }

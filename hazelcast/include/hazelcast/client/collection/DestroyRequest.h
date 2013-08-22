@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class DestroyRequest : public CollectionRequest {
+            class DestroyRequest : public CollectionRequest ,public RetryableRequest{
             public:
                 DestroyRequest(const CollectionProxyId& id)
                 : CollectionRequest(id) {

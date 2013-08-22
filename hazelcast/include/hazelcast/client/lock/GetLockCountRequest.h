@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            class GetLockCountRequest : public Portable{
+            class GetLockCountRequest : public Portable, public RetryableRequest {
             public:
                 GetLockCountRequest(const serialization::Data& key)
                 :key(key) {

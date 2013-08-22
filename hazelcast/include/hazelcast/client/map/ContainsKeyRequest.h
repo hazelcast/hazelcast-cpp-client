@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ContainsKeyRequest : public Portable{
+            class ContainsKeyRequest : public Portable, public RetryableRequest {
             public:
                 ContainsKeyRequest(const std::string& name, serialization::Data& key)
                 :name(name)

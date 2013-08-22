@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetAllRequest : public Portable {
+            class GetAllRequest : public Portable ,public RetryableRequest{
             public:
                 GetAllRequest(const std::string& name, std::vector<serialization::Data>& keys)
                 :name(name)

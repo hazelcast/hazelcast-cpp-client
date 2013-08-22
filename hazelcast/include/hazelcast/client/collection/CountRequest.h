@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class CountRequest : public CollectionKeyBasedRequest {
+            class CountRequest : public CollectionKeyBasedRequest, public RetryableRequest {
             public:
                 CountRequest(const CollectionProxyId& id, const serialization::Data& key)
                 : CollectionKeyBasedRequest(id, key) {

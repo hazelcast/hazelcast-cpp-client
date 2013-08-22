@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            class IsLockedRequest {
+            class IsLockedRequest : public Portable , public RetryableRequest{
             public:
                 IsLockedRequest(const serialization::Data& key)
                 :key(key) {

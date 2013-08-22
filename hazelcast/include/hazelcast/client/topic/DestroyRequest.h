@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class DestroyRequest : public Portable{
+            class DestroyRequest : public Portable, public RetryableRequest {
             public:
                 DestroyRequest(const std::string& instanceName)
                 : instanceName(instanceName) {

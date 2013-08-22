@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ContainsValueRequest : public Portable {
+            class ContainsValueRequest : public Portable, public RetryableRequest {
             public:
                 ContainsValueRequest(const std::string& name, serialization::Data& value)
                 :name(name)

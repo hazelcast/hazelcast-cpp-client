@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class ClearRequest : public CollectionRequest {
+            class ClearRequest : public CollectionRequest ,public RetryableRequest{
             public:
                 ClearRequest(const CollectionProxyId& id)
                 : CollectionRequest(id) {

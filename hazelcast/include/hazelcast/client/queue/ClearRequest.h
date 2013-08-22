@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class ClearRequest : public Portable{
+            class ClearRequest : public Portable, public RetryableRequest {
             public:
                 ClearRequest(const std::string& name)
                 :name(name) {

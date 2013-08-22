@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace executor {
-            class ShutdownRequest : public IdentifiedDataSerializable {
+            class ShutdownRequest : public IdentifiedDataSerializable, public RetryableRequest {
             public:
                 ShutdownRequest(const std::string& instanceName);
 

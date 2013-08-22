@@ -46,7 +46,7 @@ namespace hazelcast {
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             delete connection;
-                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                            if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying " << std::endl;
                                 beforeRetry();
                                 continue;
@@ -75,7 +75,7 @@ namespace hazelcast {
                                 std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                                 delete connection;
                             }
-                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                            if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();
                                 continue;
@@ -101,7 +101,7 @@ namespace hazelcast {
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             delete connection;
-                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                            if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();
                                 continue;
@@ -136,7 +136,7 @@ namespace hazelcast {
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             delete connection;
-                            if (redoOperation /*|| obj instanceof RetryableRequest*/) {
+                            if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();
                                 continue;

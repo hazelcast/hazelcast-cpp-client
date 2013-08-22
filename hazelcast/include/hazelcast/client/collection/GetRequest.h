@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class GetRequest : public CollectionKeyBasedRequest {
+            class GetRequest : public CollectionKeyBasedRequest, public RetryableRequest {
             public:
                 GetRequest(const CollectionProxyId& id, const serialization::Data& key, int index)
                 : CollectionKeyBasedRequest(id, key), index(index) {

@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class ValuesRequest : public CollectionRequest {
+            class ValuesRequest : public CollectionRequest ,public RetryableRequest{
             public:
                 ValuesRequest(const CollectionProxyId& id)
                 : CollectionRequest(id) {

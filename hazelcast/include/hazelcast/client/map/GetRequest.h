@@ -16,7 +16,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class GetRequest : public Portable {
+            class GetRequest : public Portable ,public RetryableRequest{
             public:
                 GetRequest(std::string& name, serialization::Data& key);
 

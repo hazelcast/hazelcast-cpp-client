@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class MultiMapIsLockedRequest : public Portable{
+            class MultiMapIsLockedRequest : public Portable,public RetryableRequest{
             public:
                 MultiMapIsLockedRequest(const CollectionProxyId& id, const serialization::Data& key, int threadId)
                 :proxyId(id)

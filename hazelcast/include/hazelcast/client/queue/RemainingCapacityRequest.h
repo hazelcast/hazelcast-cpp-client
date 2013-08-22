@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class RemainingCapacityRequest : public Portable{
+            class RemainingCapacityRequest : public Portable, public RetryableRequest {
             public:
                 RemainingCapacityRequest(const std::string& name)
                 :name(name) {

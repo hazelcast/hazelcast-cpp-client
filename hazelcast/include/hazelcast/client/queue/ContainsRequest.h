@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class ContainsRequest : public Portable{
+            class ContainsRequest : public Portable, public RetryableRequest {
             public:
 
                 ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList)
@@ -25,8 +25,7 @@ namespace hazelcast {
 
                 int getClassId() const {
                     return queue::QueuePortableHook::CONTAINS;
-                } ;
-
+                };
 
 
                 void writePortable(serialization::PortableWriter& writer) const {

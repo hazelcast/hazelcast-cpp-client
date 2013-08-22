@@ -11,11 +11,13 @@
 #include "CollectionProxyId.h"
 #include "CollectionRequest.h"
 #include "../serialization/Data.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class ContainsRequest : public CollectionRequest {
+            class ContainsRequest : public CollectionRequest ,public RetryableRequest{
             public:
                 ContainsRequest(const CollectionProxyId& id, const serialization::Data& value)
                 : CollectionRequest(id)

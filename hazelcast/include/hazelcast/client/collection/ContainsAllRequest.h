@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class ContainsAllRequest : public CollectionKeyBasedRequest {
+            class ContainsAllRequest : public CollectionKeyBasedRequest ,public RetryableRequest{
             public:
                 ContainsAllRequest(const CollectionProxyId& id, const serialization::Data& key, const std::vector<serialization::Data>& dataList)
                 :CollectionKeyBasedRequest(id, key)

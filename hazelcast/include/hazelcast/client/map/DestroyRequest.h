@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class DestroyRequest : public Portable{
+            class DestroyRequest : public Portable, public RetryableRequest {
             public:
                 DestroyRequest(const std::string& name)
                 :name(name) {

@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            class GetRemainingLeaseRequest : public Portable {
+            class GetRemainingLeaseRequest : public Portable, public RetryableRequest {
             public:
                 GetRemainingLeaseRequest(const serialization::Data& key)
                 :key(key) {
