@@ -144,23 +144,16 @@ namespace hazelcast {
             template<typename Result, typename Callable>
             std::vector< Future<Result> > invokeAll(const std::vector<Callable>& tasks) {
                 std::vector< Future<Result> > futures(tasks.size());
-                std::vector< Future<Result> > result(tasks.size());
                 typename std::vector<Callable>::iterator it;
                 int i = 0;
                 for (it = tasks.begin(); it != tasks.end(); ++it) {
                     futures[i++] = submit<Result>(*it);
                 }
                 typename std::vector< Future<Result> >::iterator future_it;
-                i = 0;
                 for (future_it = futures.begin(); future_it != futures.end(); ++future_it) {
-                    try {
-                        result[i] = (*it).get();
-                    } catch (std::exception& e) {
-                        //TODO add has_exception method to Future
-                    }
-                    i++;
+                    (*future_it).get();
                 }
-                return result;
+                return futures;
             }
 
             /**
@@ -392,16 +385,21 @@ namespace hazelcast {
             template<typename Result, typename Callable >
             Future<Result> submitToTargetInternal(const Callable& task, const Address& address) {
                 executor::TargetCallableRequest<Callable> request(instanceName, task, address);
-                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>);
-                Future<Result> future(futureBase);
+                Future<Result> future;
                 boost::thread asyncInvokeThread(boost::bind(&IExecutorService::asyncInvoke, boost::cref(request), boost::cref(address)), boost::cref(future));
                 return future;
             }
 
             template<typename Result, typename Callable>
             void asyncInvoke(const executor::TargetCallableRequest<Callable> & request, const Address& address, const Future<Result>& future) {
-                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>(invoke<Result>(request, address)));
-                future.updateBasePtr(futureBase);
+                Result *result = NULL;
+                try{
+                    future->setValue(new Result(invoke<Result>(request, address)));
+                } catch(exception::ServerException& ex){
+                    future->setException(new exception::IException("ServerNode", ex.what()));
+                } catch(...){
+                    std::cerr << "Exception in IExecuterService::asyncInvoke" << std::endl;
+                }
             }
 
             /**************** WITH DEFAULT RESULT ******************/
@@ -416,17 +414,22 @@ namespace hazelcast {
             template<typename Result, typename Callable >
             Future<Result> submitToTargetInternalWithDefaultResult(const Callable& task, const Address& address, const Result& result) {
                 executor::TargetCallableRequest<Callable> request(instanceName, task, address);
-                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>);
-                Future<Result> future(futureBase);
+                Future<Result> future;
                 boost::thread asyncInvokeThread(boost::bind(&IExecutorService::asyncInvokeWithDefaultResult, boost::cref(request), boost::cref(address)), boost::cref(future), boost::cref(result));
                 return future;
             }
 
             template<typename Result, typename Callable>
             void asyncInvokeWithDefaultResult(const executor::TargetCallableRequest<Callable> & request, const Address& address, const Future<Result>& future, const Result& result) {
-                invoke<bool>(request, address);
-                util::AtomicPointer<pImpl::FutureBase<Result> > futureBase(new pImpl::FutureBase<Result>(result));
-                future.updateBasePtr(futureBase);
+                Result *r = NULL;
+                try{
+                    invoke<bool>(request, address);
+                    future->setValue(new Result(result));
+                } catch(exception::ServerException& ex){
+                    future->setException(new exception::IException("ServerNode", ex.what()));
+                } catch(...){
+                    std::cerr << "Exception in IExecuterService::asyncInvokeWithDefaultResult" << std::endl;
+                }
             }
             /**************** WITH DEFAULT RESULT ******************/
 

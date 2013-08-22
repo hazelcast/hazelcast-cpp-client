@@ -40,23 +40,20 @@ namespace hazelcast {
             class FutureBase {
             public:
                 FutureBase()
-                :isValid(false) {
+                :result(NULL)
+                , exception(NULL) {
 
                 };
 
-                FutureBase(R *t)
-                :isValid(true)
-                , result(t) {
-
-                }
-
                 R& get() {
                     wait();
+                    if (exception != NULL)
+                        throw exception;
                     return *result;
                 };
 
                 bool valid() const {
-                    return isValid;
+                    return result != NULL;
                 };
 
                 void wait() {
@@ -72,11 +69,23 @@ namespace hazelcast {
                 };
 
 
+                void setValue(R *value) {
+                    result.reset(value);
+                    condition.notify_all();
+                };
+
+                void setException(std::exception *exception) {
+                    this->exception.reset(exception);
+                    condition.notify_all();
+                }
+
             private:
                 bool isValid;
                 std::auto_ptr< R > result;
+                std::auto_ptr< std::exception> exception;
                 boost::condition_variable condition;
                 boost::unique_lock< boost::mutex > lock;
+
             };
 
         }
@@ -104,14 +113,15 @@ namespace hazelcast {
         private:
             util::AtomicPointer<pImpl::FutureBase<R> > basePtr;
 
-            Future(util::AtomicPointer<pImpl::FutureBase<R> > basePtr):
-            basePtr(basePtr) {
+            Future():
+            basePtr(new pImpl::FutureBase<R>) {
 
             };
 
-            void updateBasePtr(util::AtomicPointer<pImpl::FutureBase<R> > basePtr) {
-                this->basePtr = basePtr;
+            pImpl::FutureBase<R>& operator ->() {
+                return *(basePtr.get());
             }
+
         };
 
 
