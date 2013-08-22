@@ -36,8 +36,8 @@ namespace hazelcast {
                 };
 
                 void writeData(serialization::ObjectDataOutput& out) const {
-//                    writer << key;
-//                    writer << value;TODO ???
+                    out.writeObject(&key);
+                    out.writeObject(&value);
                     out.writeLong(cost);
                     out.writeLong(creationTime);
                     out.writeLong(expirationTime);
@@ -49,8 +49,8 @@ namespace hazelcast {
                 };
 
                 void readData(serialization::ObjectDataInput& in) {
-//                    reader >> key;  TODO ???
-//                    reader >> value;
+                    key = in.readObject<K>();
+                    value = in.readObject<V>();
                     cost = in.readLong();
                     creationTime = in.readLong();
                     expirationTime = in.readLong();

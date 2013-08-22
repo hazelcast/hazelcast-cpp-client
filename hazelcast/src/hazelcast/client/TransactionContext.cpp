@@ -11,7 +11,7 @@ namespace hazelcast {
         : CONNECTION_TRY_COUNT(5)
         , connectionManager(connectionManager)
         , options(options)
-        , txnConnection(connect())//TODO exception ?
+        , txnConnection(connect())
         , transaction(this->options, clusterService, serializationService, txnConnection) {
 
         }

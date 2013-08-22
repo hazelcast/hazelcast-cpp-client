@@ -15,11 +15,10 @@ namespace hazelcast {
 
             };
 
-            Credentials::Credentials(std::string principal, std::string password)
+            Credentials::Credentials(std::string& principal, std::string& password)
             : principal(principal) {
                 char const *pasw = password.c_str();
-                std::vector<byte> pwd(pasw, pasw + 8); //TODO
-                this->password = pwd;
+                this->password.insert(this->password.begin(), pasw, pasw + password.size());
             };
 
             void Credentials::setPrincipal(std::string const & principal) {
@@ -32,8 +31,7 @@ namespace hazelcast {
 
             void Credentials::setPassword(std::string const & password) {
                 char const *pasw = password.c_str();
-                std::vector<byte> pwd(pasw, pasw + 8); //TODO
-                this->password = pwd;
+                this->password.insert(this->password.begin(), pasw, pasw + password.size());
             };
 
             int Credentials::getFactoryId() const {

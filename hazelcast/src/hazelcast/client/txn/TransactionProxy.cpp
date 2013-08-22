@@ -43,7 +43,7 @@ namespace hazelcast {
                         throw exception::IllegalStateException("TransactionProxy::begin()", "Transaction is already active");
                     }
                     checkThread();
-//                    if (threadFlag.get() != null) {  TODO
+//                    if (threadFlag.get() != null) {  TODO ask ali abi
 //                        throw new IllegalStateException("Nested transactions are not allowed!");
 //                    }
 //                    threadFlag.set(Boolean.TRUE);

@@ -29,7 +29,6 @@ namespace hazelcast {
                 }
                 in.readInt(); //factoryId
                 in.readInt(); //classId
-                //TODO factoryId and classId is not used!!!
                 object.readData(in);
             };
 

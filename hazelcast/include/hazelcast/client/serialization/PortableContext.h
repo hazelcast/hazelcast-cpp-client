@@ -45,9 +45,9 @@ namespace hazelcast {
             private:
                 void compress(std::vector<byte>&);
 
-                long combineToLong(int x, int y) const;  //TODO move to util
+                long combineToLong(int x, int y) const;
 
-                int extractInt(long value, bool lowerBits) const;  //TODO move to util
+                int extractInt(long value, bool lowerBits) const;
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 

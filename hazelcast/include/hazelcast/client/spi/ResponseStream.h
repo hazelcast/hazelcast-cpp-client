@@ -37,7 +37,6 @@ namespace hazelcast {
                 void end() {
                     boost::lock_guard<boost::mutex> log(endMutex);
                     if (!isEnded) {
-                        //connection.close(); TODO
                         isEnded = true;
                     }
                 };

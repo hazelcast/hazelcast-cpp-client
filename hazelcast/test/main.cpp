@@ -39,8 +39,8 @@ void sampleCountDownLatchUsage() {
 int main(int argc, char **argv) {
     //QueueTest queueTest;
     //queueTest.executeTests();
-    //SerializationTest serializationTest;
-    //serializationTest.executeTests();
+    SerializationTest serializationTest;
+    serializationTest.executeTests();
     //MapTest mapTest;
     //mapTest.executeTests();
     //IAtomicLongTest atomTest;
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 //    return 0;
 
 //    sampleCountDownLatchUsage();
-    return testSpeed();
+//    return testSpeed();
 //    return deneme::init();
 };
 

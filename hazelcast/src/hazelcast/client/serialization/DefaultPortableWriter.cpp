@@ -119,10 +119,11 @@ namespace hazelcast {
                     std::string error;
                     error += "HazelcastSerializationException( Invalid field name: '";
                     error += fieldName;
-                    error += "' for ClassDefinition {id: "; //TODO add factory ID
-                    error += hazelcast::util::to_string(cd->getClassId());
+                    error += "' for ClassDefinition {id: ";
+                    error += ", factoryId:" + util::to_string(cd->getFactoryId());
+                    error += util::to_string(cd->getClassId());
                     error += ", version: ";
-                    error += hazelcast::util::to_string(cd->getVersion());
+                    error += util::to_string(cd->getVersion());
                     error += "}";
 
                     throw exception::IOException("PortableWriter::setPosition", error);

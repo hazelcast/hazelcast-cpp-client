@@ -13,9 +13,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DefaultPortableReader::DefaultPortableReader( SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
+            DefaultPortableReader::DefaultPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd)
             : context(serializationContext)
-            ,serializerHolder(serializationContext.getSerializerHolder())
+            , serializerHolder(serializationContext.getSerializerHolder())
             , dataInput(input)
             , objectDataInput(input, serializationContext)
             , finalPosition(input.readInt())
@@ -130,7 +130,7 @@ namespace hazelcast {
                     dataInput.position(pos);
                 }
                 raw = true;
-                return objectDataInput; //TODO why return pointer not reference
+                return objectDataInput;
             };
 
             void DefaultPortableReader::read(DataInput& dataInput, Portable& object, int factoryId, int classId) {

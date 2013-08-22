@@ -126,7 +126,6 @@ namespace hazelcast {
 
             void DataOutput::writeCharArray(const std::vector<char>& data) {
                 writeInt(data.size());
-//                outputStream->insert(outputStream->end(), data.begin(), data.end());//TODO
                 for (int i = 0; i < data.size(); ++i) {
                     writeChar(data[i]);
                 }

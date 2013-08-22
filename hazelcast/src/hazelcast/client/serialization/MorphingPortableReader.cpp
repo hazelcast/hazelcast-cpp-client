@@ -19,7 +19,7 @@ namespace hazelcast {
             , serializerHolder(serializationContext.getSerializerHolder())
             , dataInput(input)
             , objectDataInput(input, serializationContext)
-            , finalPosition(input.readInt()) //TODO what happens in case of exception
+            , finalPosition(input.readInt())
             , offset(input.position())
             , cd(cd)
             , raw(false)
@@ -262,8 +262,7 @@ namespace hazelcast {
 
                 }
                 raw = true;
-                // TODO input.setSerializationContext(&context);  ? why missing
-                return objectDataInput; //TODO why return pointer not reference
+                return objectDataInput;
             };
 
             void MorphingPortableReader::end() {

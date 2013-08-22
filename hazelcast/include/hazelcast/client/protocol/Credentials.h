@@ -19,7 +19,7 @@ namespace hazelcast {
             public:
                 Credentials();
 
-                Credentials(std::string principal, std::string password);
+                Credentials(std::string& principal, std::string& password);
 
                 void setPrincipal(const std::string& principal);
 
