@@ -29,7 +29,7 @@ namespace hazelcast {
                 serialization::DataOutput out;
                 data.writeData(out);
                 std::auto_ptr<std::vector<byte> > buffer = out.toByteArray();
-                outputSocketStream.write(&((*buffer.get())[0]), buffer->size());
+                outputSocketStream.write(*buffer);
             };
 
             serialization::Data Connection::read(serialization::SerializationContext & serializationContext) {

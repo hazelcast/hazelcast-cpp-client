@@ -18,7 +18,7 @@ namespace hazelcast {
                 std::set<spi::EventListener *> listeners = config.getListeners();
                 if (!listeners.empty()) {
                     for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                        LifecycleListener *listener = dynamic_cast<LifecycleListener *>(*it);
+                        LifecycleListener *listener = static_cast<LifecycleListener *>(*it);
                         if (listener) {
                             addLifecycleListener(listener);
                         }

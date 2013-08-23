@@ -72,21 +72,21 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const Portable *portable) {
                     if (isEmpty) return;
-                    const T *object = dynamic_cast<const T *>(portable);
+                    const T *object = static_cast<const T *>(portable);
                     writePortable(portable);
                 };
 
                 template<typename T>
                 void writeObject(const IdentifiedDataSerializable *dataSerializable) {
                     if (isEmpty) return;
-                    const T *object = dynamic_cast<const T *>(dataSerializable);
+                    const T *object = static_cast<const T *>(dataSerializable);
                     writeIdentifiedDataSerializable(dataSerializable);
                 };
 
                 template<typename T>
                 void writeObject(const void *serializable) {
                     if (isEmpty) return;
-                    const T *object = dynamic_cast<const T *>(serializable);
+                    const T *object = static_cast<const T *>(serializable);
                     int type = object->getSerializerId();
                     writeBoolean(true);
                     writeInt(type);

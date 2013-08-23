@@ -46,8 +46,8 @@ namespace hazelcast {
                 (*outputStream)[index] = char(0xff & i);
             }
 
-            void DataOutput::writeByte(int i) {
-                outputStream->push_back(char(0xff & i));
+            void DataOutput::writeByte(byte i) {
+                outputStream->push_back(i);
             };
 
             void DataOutput::writeShort(int v) {
@@ -75,7 +75,7 @@ namespace hazelcast {
                 writeByte((l >> 24));
                 writeByte((l >> 16));
                 writeByte((l >> 8));
-                writeByte((int) l);
+                writeByte(l);
             };
 
             void DataOutput::writeFloat(float x) {

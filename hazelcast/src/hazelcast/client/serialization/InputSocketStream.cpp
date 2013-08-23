@@ -33,9 +33,7 @@ namespace hazelcast {
             };
 
             void InputSocketStream::readFully(std::vector<byte>& bytes) {
-                byte temp[bytes.size()];
-                socket.receive(temp, bytes.size());
-                bytes = std::vector<byte >(temp, temp + bytes.size());
+                socket.receive(bytes.data(), bytes.size());
             };
 
             int InputSocketStream::skipBytes(int i) {
@@ -68,14 +66,12 @@ namespace hazelcast {
             };
 
             int InputSocketStream::readInt() {
-                byte a = readByte();
-                byte b = readByte();
-                byte c = readByte();
-                byte d = readByte();
-                return (0xff000000 & (a << 24)) |
-                        (0x00ff0000 & (b << 16)) |
-                        (0x0000ff00 & (c << 8)) |
-                        (0x000000ff & d);
+                byte s[4];
+                socket.receive(s, sizeof(byte) * 4);
+                return (0xff000000 & (s[0] << 24)) |
+                        (0x00ff0000 & (s[1] << 16)) |
+                        (0x0000ff00 & (s[2] << 8)) |
+                        (0x000000ff & s[3]);
             };
 
             long InputSocketStream::readLong() {

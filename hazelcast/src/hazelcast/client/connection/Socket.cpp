@@ -27,12 +27,12 @@ namespace hazelcast {
                     throw exception::IOException("Socket::connect", strerror(errno));
             }
 
-            void Socket::send(const void *buffer, int len) const{
+            void Socket::send(const void *buffer, int len) const {
                 if (::send(socketId, buffer, len, 0) == -1)
                     throw exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             };
 
-            void Socket::receive(void *buffer, int len) const{
+            void Socket::receive(void *buffer, int len) const {
                 int size = ::recv(socketId, buffer, len, 0);
                 if (size == -1)
                     throw exception::IOException("Socket::receive", "Error socket read");

@@ -44,7 +44,7 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(const Portable *portable) {
-                    const T *object = dynamic_cast<const T *>(portable);
+                    const T *object = static_cast<const T *>(portable);
                     Data data;
                     DataOutput output;
                     getSerializerHolder().getPortableSerializer().write(output, *object);
@@ -58,7 +58,7 @@ namespace hazelcast {
 
                 template<typename T>
                 Data toData(const IdentifiedDataSerializable *dataSerializable) {
-                    const T *object = dynamic_cast<const T *>(dataSerializable);
+                    const T *object = static_cast<const T *>(dataSerializable);
                     Data data;
                     DataOutput dataOutput;
                     ObjectDataOutput output(dataOutput, serializationContext);

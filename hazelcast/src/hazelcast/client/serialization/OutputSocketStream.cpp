@@ -1,4 +1,3 @@
-
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "Socket.h"
 #include "IOException.h"
@@ -13,16 +12,7 @@ namespace hazelcast {
             }
 
             void OutputSocketStream::write(const std::vector<byte>& bytes) {
-                for (int i = 0; i < bytes.size(); i++)
-                    writeByte(bytes[i]);
-            };
-
-            void OutputSocketStream::write(char const *bytes, int length) {
-                socket.send((void *) bytes, sizeof (char) * length);
-            };
-
-            void OutputSocketStream::write(byte const *bytes, int length) {
-                socket.send((void *) bytes, sizeof (byte) * length);
+                socket.send((void *) bytes.data(), sizeof (char) * bytes.size());
             };
 
             void OutputSocketStream::writeBoolean(bool i) {
@@ -80,7 +70,7 @@ namespace hazelcast {
                 writeLong(u.l);
             };
 
-            void OutputSocketStream::writeUTF(std::string str) {
+            void OutputSocketStream::writeUTF(const std::string& str) {
                 bool isNull = str.empty();
                 writeBoolean(isNull);
                 if (isNull)
@@ -98,7 +88,7 @@ namespace hazelcast {
 
             //private functions
 
-            void OutputSocketStream::writeShortUTF(std::string str) {
+            void OutputSocketStream::writeShortUTF(const std::string& str) {
                 int stringLen = (int) str.length();
                 int utfLength = 0;
                 int count = 0;
@@ -115,7 +105,7 @@ namespace hazelcast {
                 if (utfLength > 65535) {
                     throw exception::IOException("OutputSocketStream::writeShortUTF", "encoded string too long:" + util::to_string(utfLength) + " bytes");
                 }
-                char byteArray[utfLength];
+                std::vector<byte> byteArray(utfLength);
                 int i;
                 for (i = 0; i < stringLen; i++) {
                     if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -135,7 +125,7 @@ namespace hazelcast {
                     }
                 }
                 writeShort(utfLength);
-                write(byteArray, utfLength);
+                write(byteArray);
             };
 
         }

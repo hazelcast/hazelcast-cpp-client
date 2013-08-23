@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 void writeBoolean(bool b);
 
-                void writeByte(int i);
+                void writeByte(byte i);
 
                 void writeShort(int i);
 
