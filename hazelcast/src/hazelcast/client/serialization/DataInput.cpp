@@ -189,10 +189,8 @@ namespace hazelcast {
 
             std::vector <byte> DataInput::readByteArray() {
                 int len = readInt();
-                std::vector <byte> values(len);
-                for (int i = 0; i < len; i++) {
-                    values[i] = readByte();
-                }
+                std::vector <byte> values(buffer.begin() + pos , buffer.begin() + pos + len);
+                pos += len;
                 return values;
             };
 

@@ -76,13 +76,17 @@ public:
         server_port = port;
     };
 
-    void op(HazelcastClient* hazelcastClient) {
-        IMap<int, vector<byte> > map = hazelcastClient->getMap<int, vector<byte > >("default");
+    void op(HazelcastClient* a) {
+//        ClientConfig clientConfig;
+//        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
+//        HazelcastClient hazelcastClient(clientConfig);
+//        IMap<int, vector<byte> > map = hazelcastClient.getMap<int, vector<byte > >("default");
+        IMap<int, vector<byte> > map = a->getMap<int, vector<byte > >("default");
         char temp[VALUE_SIZE];
         std::vector<byte> value(temp, temp + VALUE_SIZE);
-        for(int i = 0 ; i < ENTRY_COUNT ; i++){
-              map.put(i, value);
-        }
+//        for(int i = 0 ; i < ENTRY_COUNT ; i++){
+//              map.put(i, value);
+//        }
         while (true) {
             int key = rand() % ENTRY_COUNT;
             int operation = ((int) (rand() % 100));

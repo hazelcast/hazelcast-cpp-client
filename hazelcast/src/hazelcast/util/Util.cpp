@@ -20,11 +20,7 @@ namespace hazelcast {
         };
 
         int getThreadId() {
-            std::stringstream s;
-            s << boost::this_thread::get_id();
-            int threadNumber;
-            sscanf(s.str().c_str(), "%ix", &threadNumber);
-            return threadNumber;
+            return hash_value(boost::this_thread::get_id());;
         };
 
         void writeNullableData(client::serialization::ObjectDataOutput& out, client::serialization::Data *data) {

@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace util {
         template <typename K, typename V, typename Comparator  = std::less<K> >
         /**
-        * Put once read multiple thread safe map
+        * Put once, read multiple thread safe map
         * Deletes nothing.
         * the ptr getted by any operation should be deleted
         * only if it is certain that they will never be used again.
