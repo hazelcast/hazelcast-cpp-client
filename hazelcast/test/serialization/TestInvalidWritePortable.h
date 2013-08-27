@@ -7,52 +7,37 @@
 
 
 
+
 #ifndef __TestInvalidWritePortable_H_
 #define __TestInvalidWritePortable_H_
 
-#include <iostream>
+#include "Portable.h"
+#include <string>
 
+namespace hazelcast {
+    namespace client {
+        namespace test {
+            class TestInvalidWritePortable : public Portable {
+            public:
+                TestInvalidWritePortable();
 
-using namespace hazelcast::client::serialization;
+                TestInvalidWritePortable(long l, int i, std::string s);
 
-class TestInvalidWritePortable : public Portable {
-public:
+                int getFactoryId() const;
 
-    TestInvalidWritePortable() {
+                int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
+
+                void readPortable(serialization::PortableReader& reader);
+
+                long l;
+                int i;
+                std::string s;
+            };
+        }
     }
-
-    TestInvalidWritePortable(long l, int i, std::string s) {
-        this->l = l;
-        this->i = i;
-        this->s = l;
-    }
-
-    inline int getFactoryId() const {
-        return 1;
-    }
-
-    inline int getClassId() const {
-        return 5;
-    }
-
-    inline void writePortable(serialization::PortableWriter& writer) const {
-        writer.writeLong("l", l);
-        serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-        out.writeInt(i);
-        writer.writeUTF("s", s);
-    };
-
-    inline void readPortable(serialization::PortableReader& reader) {
-        l = reader.readLong("l");
-        i = reader.readInt("i");
-        s = reader.readLong("s");
-    };
-
-    long l;
-    int i;
-    std::string s;
-};
+}
 
 
 #endif //__TestInvalidWritePortable_H_

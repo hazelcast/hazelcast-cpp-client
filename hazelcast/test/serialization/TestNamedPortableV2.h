@@ -4,61 +4,36 @@
 
 #include "TestNamedPortable.h"
 
-using namespace hazelcast::client::serialization;
+namespace hazelcast {
+    namespace client {
+        namespace test {
+            class TestNamedPortableV2 : public Portable {
+            public:
+                TestNamedPortableV2();
 
-class TestNamedPortableV2 : public hazelcast::client::Portable {
-public:
-    TestNamedPortableV2() {
+                TestNamedPortableV2(std::string name, int v);
 
-    };
+                bool operator ==(TestNamedPortableV2 & m);
 
-    TestNamedPortableV2(std::string name, int v) : name(name), k(v * 10), v(v) {
-    };
+                bool operator !=(TestNamedPortableV2 & m);
 
-    bool operator ==(TestNamedPortableV2 & m) {
-        if (this == &m)
-            return true;
-        if (k != m.k)
-            return false;
-        if (name.compare(m.name))
-            return false;
-        if (v != m.v) return false;
-        return true;
-    };
+                int getFactoryId() const;
 
-    bool operator !=(TestNamedPortableV2 & m) {
-        return !(*this == m);
-    };
+                int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-    inline int getFactoryId() const{
-        return 1;
+                std::string name;
+                int k;
+                int v;
+
+            };
+
+        }
     }
-
-    inline int getClassId() const{
-        return 3;
-    }
-
-
-    inline void writePortable(serialization::PortableWriter& writer) const{
-        writer.writeInt("v", v);
-        writer.writeUTF("name", name);
-        writer.writeInt("myint", k);
-    };
-
-
-    inline void readPortable(serialization::PortableReader& reader) {
-        v = reader.readInt("v");
-        name = reader.readUTF("name");
-        k = reader.readInt("myint");
-    };
-    
-    std::string name;
-    int k;
-    int v;
-
-};
+}
 
 
 #endif

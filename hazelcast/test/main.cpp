@@ -1,7 +1,10 @@
 //#include "deneme.h"
 #include "SimpleMapTest.h"
-#include "serializationTest.h"
 #include "CountDownLatch.h"
+#include "HazelcastInstanceFactory.h"
+#include "ClientSerializationTest.h"
+#include "ClientMapTest.h"
+#include "testUtil.h"
 
 int testSpeed() {
     SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
@@ -37,12 +40,13 @@ void sampleCountDownLatchUsage() {
 }
 
 int main(int argc, char **argv) {
+    test::HazelcastInstanceFactory factory;
+    test::ClientSerializationTest serializationTest;
+    serializationTest.executeTests();
+    test::ClientMapTest mapTest(factory);
+    mapTest.executeTests();
     //QueueTest queueTest;
     //queueTest.executeTests();
-//    SerializationTest serializationTest;
-//    serializationTest.executeTests();
-    //MapTest mapTest;
-    //mapTest.executeTests();
     //IAtomicLongTest atomTest;
     //atomTest.executeTests();
 //    IdGeneratorTest generatorTest;
@@ -50,7 +54,7 @@ int main(int argc, char **argv) {
 //    return 0;
 
 //    sampleCountDownLatchUsage();
-    return testSpeed();
+//    return testSpeed();
 //    return deneme::init();
 };
 

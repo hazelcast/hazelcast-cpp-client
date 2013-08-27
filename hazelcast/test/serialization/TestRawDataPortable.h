@@ -12,78 +12,40 @@
 
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
-#include <iostream>
+#include <vector>
 
+namespace hazelcast {
+    namespace client {
+        namespace test {
 
-class TestRawDataPortable : public hazelcast::client::Portable {
-public:
+            class TestRawDataPortable : public Portable {
+            public:
+                TestRawDataPortable();
 
-    long l;
-    std::vector<char> c;
-    TestNamedPortable p;
-    int k;
-    std::string s;
-    TestDataSerializable ds;
+                inline int getFactoryId() const;
 
-    TestRawDataPortable() {
+                inline int getClassId() const;
 
-    };
+                inline void writePortable(serialization::PortableWriter& writer) const;
 
-    inline int getFactoryId() const{
-        return 1;
+                inline void readPortable(serialization::PortableReader& reader);
+
+                TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
+
+                bool operator ==(const TestRawDataPortable& m) const;
+
+                bool operator !=(const TestRawDataPortable& m) const;
+
+                long l;
+                std::vector<char> c;
+                TestNamedPortable p;
+                int k;
+                std::string s;
+                TestDataSerializable ds;
+            };
+        }
     }
-
-    inline int getClassId()const {
-        return 4;
-    }
-
-
-    inline void writePortable(serialization::PortableWriter& writer) const{
-        writer.writeLong("l", l);
-        writer.writeCharArray("c", c);
-        writer.writePortable("p", p);
-        ObjectDataOutput& out = writer.getRawDataOutput();
-        out.writeInt(k);
-        out.writeUTF(s);
-        ds.writeData(out);
-    };
-
-
-    inline void readPortable(serialization::PortableReader& reader) {
-        l = reader.readLong("l");
-        c = reader.readCharArray("c");
-        p = reader.template readPortable<TestNamedPortable>("p");
-        ObjectDataInput& in = reader.getRawDataInput();
-        k = in.readInt();
-        s = in.readUTF();
-        ds.readData(in);
-    };
-
-    TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
-        this->l = l;
-        this->c = c;
-        this->p = p;
-        this->k = k;
-        this->s = s;
-        this->ds = ds;
-    };
-
-    bool operator ==(const TestRawDataPortable& m) const {
-        if (this == &m)
-            return true;
-        if (l != m.l) return false;
-        if (c != m.c) return false;
-        if (p != m.p) return false;
-        if (k != m.k) return false;
-        if (ds != m.ds) return false;
-        if (s.compare(m.s) != 0) return false;
-        return true;
-    };
-
-    bool operator !=(const TestRawDataPortable& m) const {
-        return !(*this == m);
-    };
-};
+}
 
 
 #endif //__RawDataPortable_H_

@@ -122,22 +122,19 @@ namespace hazelcast {
             };
 
             Future<V> putAsync(const K& key, const V& value) {
-                util::AtomicPointer<pImpl::FutureBase<V> > futureBase(new pImpl::FutureBase<V>);
-                Future<V> future(futureBase);
+                Future<V> future;
                 boost::thread t(boost::bind(&IMap<K, V>::asyncPutThread, boost::cref(key), boost::cref(value), -1, boost::cref(future)));
                 return future;
             };
 
             Future<V> getAsync(const K& key) {
-                util::AtomicPointer<pImpl::FutureBase<V> > futureBase(new pImpl::FutureBase<V>);
-                Future<V> future(futureBase);
+                Future<V> future;
                 boost::thread t(boost::bind(&IMap<K, V>::asyncGetThread, boost::cref(key), boost::cref(future)));
                 return future;
             };
 
             Future<V> removeAsync(const K& key) {
-                util::AtomicPointer<pImpl::FutureBase<V> > futureBase(new pImpl::FutureBase<V>);
-                Future<V> future(futureBase);
+                Future<V> future;
                 boost::thread t(boost::bind(&IMap<K, V>::asyncRemoveThread, boost::cref(key), boost::cref(future)));
                 return future;
             };

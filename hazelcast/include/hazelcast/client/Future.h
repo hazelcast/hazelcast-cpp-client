@@ -91,9 +91,16 @@ namespace hazelcast {
         }
         template<typename R>
         class Future {
-            friend class IExecutorService;
-
         public:
+            Future():
+            basePtr(new pImpl::FutureBase<R>) {
+
+            };
+
+            pImpl::FutureBase<R>& operator ->() {
+                return *(basePtr.get());
+            }
+
             R& get() {
                 return basePtr->get();
             };
@@ -113,14 +120,6 @@ namespace hazelcast {
         private:
             util::AtomicPointer<pImpl::FutureBase<R> > basePtr;
 
-            Future():
-            basePtr(new pImpl::FutureBase<R>) {
-
-            };
-
-            pImpl::FutureBase<R>& operator ->() {
-                return *(basePtr.get());
-            }
 
         };
 
