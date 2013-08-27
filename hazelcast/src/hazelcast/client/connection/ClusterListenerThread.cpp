@@ -70,7 +70,7 @@ namespace hazelcast {
                 protocol::AddMembershipListenerRequest requestObject;
                 serialization::Data request = serializationService.toData<protocol::AddMembershipListenerRequest>(&requestObject);
                 conn->write(request);
-                serialization::Data response = conn->read(serializationService.getSerializationContext());
+                serialization::Data response = conn->read();
                 impl::SerializableCollection coll = serializationService.toObject<impl::SerializableCollection >(response);
 
 
@@ -110,7 +110,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::listenMembershipEvents() {
                 while (true) {
-                    serialization::Data data = conn->read(serializationService.getSerializationContext());
+                    serialization::Data data = conn->read();
                     MembershipEvent event = serializationService.toObject<MembershipEvent>(data);
                     Member member = event.getMember();
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {

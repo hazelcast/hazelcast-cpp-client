@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 template<typename T>
                 T read() {
-                    serialization::Data data = connection.read(serializationService.getSerializationContext());
+                    serialization::Data data = connection.read();
                     return serializationService.toObject<T>(data);
                 };
 

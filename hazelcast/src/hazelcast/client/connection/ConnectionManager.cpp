@@ -100,10 +100,10 @@ namespace hazelcast {
 
                 serialization::Data toData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.write(toData);
-                serialization::Data data1 = connection.read(serializationService.getSerializationContext());
+                serialization::Data data1 = connection.read();
                 Address address = serializationService.toObject<Address>(data1);
                 connection.setEndpoint(address);
-                serialization::Data data2 = connection.read(serializationService.getSerializationContext());
+                serialization::Data data2 = connection.read();
 
                 this->principal = new protocol::Principal(serializationService.toObject<protocol::Principal>(data2));
             };

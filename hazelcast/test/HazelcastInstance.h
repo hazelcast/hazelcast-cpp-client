@@ -9,20 +9,32 @@
 #ifndef __hazelcast__hazelcastInstance__
 #define __hazelcast__hazelcastInstance__
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 
-class HazelcastInstance {
-public:
-    HazelcastInstance();
-    
-    void terminate();
+namespace hazelcast {
+    namespace client {
+        namespace test {
 
-    ~HazelcastInstance();
-private:
-    std::string pid;
-    bool isTerminated;
-};
+            class HazelcastInstanceFactory;
+
+            class HazelcastInstance {
+            public:
+                friend class HazelcastInstanceFactory;
+
+                void shutdown();
+
+                ~HazelcastInstance();
+
+            private:
+                HazelcastInstance(HazelcastInstanceFactory&, int);
+
+                HazelcastInstanceFactory& factory;
+                int id;
+                bool isShutDown;
+
+            };
+        }
+    }
+}
 
 #endif /* defined(__hazelcast__hazelcastInstance__) */

@@ -5,6 +5,7 @@
 
 #include "Connection.h"
 #include "DataOutput.h"
+#include "SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -32,9 +33,9 @@ namespace hazelcast {
                 outputSocketStream.write(*buffer);
             };
 
-            serialization::Data Connection::read(serialization::SerializationContext & serializationContext) {
+            serialization::Data Connection::read() {
                 serialization::Data data;
-                inputSocketStream.setSerializationContext(&serializationContext);
+                inputSocketStream.setSerializationContext(&(serializationService.getSerializationContext()));
                 data.readData(inputSocketStream);
                 lastRead = clock();
                 return data;

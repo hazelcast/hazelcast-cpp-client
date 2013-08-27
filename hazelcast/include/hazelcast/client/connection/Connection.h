@@ -31,7 +31,7 @@ namespace hazelcast {
 
                 void write(const serialization::Data&);
 
-                serialization::Data read(serialization::SerializationContext & serializationContext);
+                serialization::Data read();
 
                 const Address& getEndpoint() const;
 

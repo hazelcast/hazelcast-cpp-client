@@ -39,7 +39,7 @@ namespace hazelcast {
                             connection = getRandomConnection();
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
-                            serialization::Data responseData = connection->read(serializationService.getSerializationContext());
+                            serialization::Data responseData = connection->read();
                             Response response = serializationService.toObject<Response>(responseData);
                             connectionManager.releaseConnection(connection);
                             return response;
@@ -66,7 +66,7 @@ namespace hazelcast {
                             connection = getConnection(address);
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
-                            serialization::Data responseData = connection->read(serializationService.getSerializationContext());
+                            serialization::Data responseData = connection->read();
                             Response response = serializationService.toObject<Response>(responseData);
                             connectionManager.releaseConnection(connection);
                             return response;
@@ -160,7 +160,7 @@ namespace hazelcast {
                 Response sendAndReceiveFixedConnection(connection::Connection *connection, const Request& request) {
                     serialization::Data data = serializationService.toData<Request>(&request);
                     connection->write(data);
-                    serialization::Data response = connection->read(serializationService.getSerializationContext());
+                    serialization::Data response = connection->read();
                     return serializationService.toObject<Response>(response);
                 }
 
