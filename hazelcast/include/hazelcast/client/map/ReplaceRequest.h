@@ -32,6 +32,7 @@ namespace hazelcast {
                 void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeInt("t", threadId);
+                    writer.writeLong("ttl", -1);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     key.writeData(out);
                     value.writeData(out);

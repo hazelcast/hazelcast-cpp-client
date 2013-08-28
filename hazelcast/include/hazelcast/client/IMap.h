@@ -395,7 +395,7 @@ namespace hazelcast {
                 entryDataSet.resize(m.size());
                 int i = 0;
                 for (typename std::map<K, V>::const_iterator it = m.begin(); it != m.end(); ++it) {
-                    entryDataSet[i] = std::make_pair(toData(it->first), toData(it->second));
+                    entryDataSet[i++] = std::make_pair(toData(it->first), toData(it->second));
                 }
                 map::PutAllRequest request(instanceName, entrySet);
                 invoke<bool>(request);

@@ -89,14 +89,12 @@ namespace hazelcast {
 
                 void testPutIfAbsentTtl();
 
-                void destroy();
-
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IMap<std::string, std::string> > iMap;
+                std::auto_ptr<IMap<std::string, std::string> > imap;
             };
         }
     }

@@ -43,8 +43,12 @@ namespace hazelcast {
                 int size = reader.readInt();
                 entrySet.resize(size);
                 for (int i = 0; i < size; i++) {
-                    entrySet[i].first.readData(reader);
-                    entrySet[i].second.readData(reader);
+                    serialization::Data data;
+                    data.readData(reader);
+                    entrySet[i].first = data;
+                    serialization::Data data2;
+                    data2.readData(reader);
+                    entrySet[i].second = data2;
                 }
             };
         }

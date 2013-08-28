@@ -16,13 +16,13 @@ namespace hazelcast {
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
                 system("java -cp ./hazelcast-3.0.jar:.  ClientTCPIPListener & ");
-                std::cout << "waiting" << std::endl;
-                boost::this_thread::sleep(boost::posix_time::seconds(2));
+                boost::this_thread::sleep(boost::posix_time::seconds(1));
                 try{
                     socket.connect();
                 } catch(std::exception& e ){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
+                    system("killall -9 java");
                 }
             }
 
@@ -31,11 +31,12 @@ namespace hazelcast {
                 outputSocketStream.writeInt(END);
                 try{
                     inputSocketStream.readInt();
+                    system("killall -9 java");
                 } catch(std::exception& e ){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
+                    system("killall -9 java");
                 }
-                system("killall -9 java");
                 system("killall -9 java");
             }
 
@@ -46,6 +47,7 @@ namespace hazelcast {
                 if (i != OK) {
                     std::cout << "void HazelcastInstanceFactory::shutdownInstance(int id):" << i << std::endl;
                     std::cout.flush();
+                    system("killall -9 java");
                 }
             };
 
@@ -60,6 +62,7 @@ namespace hazelcast {
                 }   catch(std::exception& e){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
+                    system("killall -9 java");
                 }
 
             };
@@ -67,8 +70,6 @@ namespace hazelcast {
             HazelcastInstance HazelcastInstanceFactory::newHazelcastInstance() {
                 outputSocketStream.writeInt(START);
                 int i = inputSocketStream.readInt();
-                std::cout << i << std::endl;
-                std::cout.flush();
                 return HazelcastInstance(*this, i);
             };
 

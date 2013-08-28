@@ -6,6 +6,7 @@
 #include "ClientMapTest.h"
 #include "HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
+#include "CountDownLatch.h"
 
 
 namespace hazelcast {
@@ -17,7 +18,7 @@ namespace hazelcast {
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory.newHazelcastInstance())
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
-            , iMap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
+            , imap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
 
             };
 
@@ -27,10 +28,11 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
+                addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
                 addTest(&ClientMapTest::testRemoveIfSame, "testRemoveIfSame");
-                addTest(&ClientMapTest::testContains, "testContains");
+                addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
                 addTest(&ClientMapTest::testReplace, "testReplace");
                 addTest(&ClientMapTest::testPutTtl, "testPutTtl");
                 addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
@@ -49,7 +51,6 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testAsyncPut, "testAsyncPut");
                 addTest(&ClientMapTest::testAsyncRemove, "testAsyncRemove");
                 addTest(&ClientMapTest::testValues, "testValues");
-                addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
                 addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
                 addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
 
@@ -62,100 +63,181 @@ namespace hazelcast {
             };
 
             void ClientMapTest::beforeTest() {
-                iMap->clear();
+                imap->clear();
             };
 
             void ClientMapTest::afterTest() {
-                iMap->clear();
+                imap->clear();
             };
 
             void ClientMapTest::fillMap() {
                 for (int i = 0; i < 10; i++) {
                     std::string key = "key";
-                    key += hazelcast::util::to_string(i);
+                    key += util::to_string(i);
                     std::string value = "value";
-                    value += hazelcast::util::to_string(i);
-                    iMap->put(key, value);
+                    value += util::to_string(i);
+                    imap->put(key, value);
                 }
             }
 
-            void ClientMapTest::testGet() {
-                fillMap();
-                for (int i = 0; i < 10; i++) {
-                    std::string key = "key";
-                    key += hazelcast::util::to_string(i);
-                    std::string temp = iMap->get(key);
+            class MyListener {
+            public:
+                MyListener(util::CountDownLatch& latch, util::CountDownLatch& nullLatch)
+                :latch(latch)
+                , nullLatch(nullLatch) {
+                };
 
-                    std::string value = "value";
-                    value += hazelcast::util::to_string(i);
-                    assertEqual(temp, value);
+                void entryAdded() {
+                };
+
+                void entryRemoved(impl::EntryEvent<std::string, std::string>& event) {
                 }
-            }
 
-            void ClientMapTest::testRemoveAndDelete() {
-                fillMap();
-                std::string temp = iMap->remove("key10");
-                assertEqual(temp, "");
-                iMap->deleteEntry("key9");
-                assertEqual(iMap->size(), 9);
-                for (int i = 0; i < 9; i++) {
-                    std::string key = "key";
-                    key += hazelcast::util::to_string(i);
-                    std::string temp = iMap->remove(key);
-                    std::string value = "value";
-                    value += hazelcast::util::to_string(i);
-                    assertEqual(temp, value);
+                void entryUpdated(impl::EntryEvent<std::string, std::string>& event) {
                 }
-                assertEqual(iMap->size(), 0);
-            }
 
-            void ClientMapTest::testRemoveIfSame() {
-                fillMap();
+                void entryEvicted(impl::EntryEvent<std::string, std::string>& event) {
+                    const std::string & value = event.getValue();
+                    const std::string & oldValue = event.getOldValue();
+                    if (value.compare("")) {
+                        nullLatch.countDown();
+                    }
+                    if (oldValue.compare("")) {
+                        nullLatch.countDown();
+                    }
+                    latch.countDown();
+                }
 
-                assertFalse(iMap->remove("key2", "value"));
-                assertEqual(iMap->size(), 10);
+            private:
+                util::CountDownLatch& nullLatch;
+                util::CountDownLatch& latch;
+            };
 
-                assertTrue((iMap->remove("key2", "value1")));
-                assertEqual(iMap->size(), 9);
+            void ClientMapTest::testIssue537() {
+                util::CountDownLatch latch(2);
+                util::CountDownLatch nullLatch(2);
+                MyListener myListener(latch, nullLatch);
+//                long id = imap->addEntryListener(myListener, true);
+
+                imap->put("key1", "value1", 2 * 1000);
+
+                assertTrue(latch.await(10 * 1000));
+                assertTrue(nullLatch.await(1000));
+
+//                imap->removeEntryListener(id);
+
+                imap->put("key2", "value2");
+                // This method contains CountDownLatch
+                assertEqual(1, imap->size());
 
             }
 
             void ClientMapTest::testContains() {
                 fillMap();
 
-                assertFalse(iMap->containsKey("key10"));
-                assertTrue(iMap->containsKey("key1"));
+                assertFalse(imap->containsKey("key10"));
+                assertTrue(imap->containsKey("key1"));
 
-                assertFalse(iMap->containsValue("value10"));
-                assertTrue(iMap->containsValue("value1"));
+                assertFalse(imap->containsValue("value10"));
+                assertTrue(imap->containsValue("value1"));
+
+            }
+
+            void ClientMapTest::testGet() {
+                fillMap();
+                for (int i = 0; i < 10; i++) {
+                    std::string key = "key";
+                    key += util::to_string(i);
+                    std::string temp = imap->get(key);
+
+                    std::string value = "value";
+                    value += util::to_string(i);
+                    assertEqual(temp, value);
+                }
+            }
+
+            void ClientMapTest::testRemoveAndDelete() {
+                fillMap();
+                std::string temp = imap->remove("key10");
+                assertEqual(temp, "");
+                imap->deleteEntry("key9");
+                assertEqual(imap->size(), 9);
+                for (int i = 0; i < 9; i++) {
+                    std::string key = "key";
+                    key += util::to_string(i);
+                    std::string temp = imap->remove(key);
+                    std::string value = "value";
+                    value += util::to_string(i);
+                    assertEqual(temp, value);
+                }
+                assertEqual(imap->size(), 0);
+            }
+
+            void ClientMapTest::testRemoveIfSame() {
+                fillMap();
+
+                assertFalse(imap->remove("key2", "value"));
+                assertEqual(10, imap->size());
+
+                assertTrue((imap->remove("key2", "value2")));
+                assertEqual(9, imap->size());
+
+            }
+
+            void ClientMapTest::testGetAllPutAll() {
+
+                std::map<std::string, std::string> mapTemp;
+
+                for (int i = 0; i < 100; i++) {
+                    mapTemp[util::to_string(i)] = util::to_string(i);
+                }
+                imap->putAll(mapTemp);
+                assertEqual(imap->size(), 100);
+
+                vector<pair<string, string> > entrySet = imap->entrySet();
+                for (int i = 0; i < 100; i++) {
+                    string expected = util::to_string(i);
+                    string actual = imap->get(util::to_string(i));
+                    assertEqual(expected, actual);
+                }
+
+                std::set<std::string> tempSet;
+                tempSet.insert(util::to_string(1));
+                tempSet.insert(util::to_string(3));
+
+                std::map<std::string, std::string> m2 = imap->getAll(tempSet);
+
+                assertEqual(m2.size(), 2);
+                assertEqual(m2[util::to_string(1)], "1");
+                assertEqual(m2[util::to_string(3)], "3");
 
             }
 
             void ClientMapTest::testReplace() {
-                std::string temp = iMap->replace("key1", "value");
+                std::string temp = imap->replace("key1", "value");
                 assertEqual(temp, "");
 
                 std::string tempKey = "key1";
                 std::string tempValue = "value1";
-                iMap->put(tempKey, tempValue);
+                imap->put(tempKey, tempValue);
 
-                assertEqual("value1", iMap->replace("key1", "value2"));
-                assertEqual("value2", iMap->get("key1"));
+                assertEqual("value1", imap->replace("key1", "value2"));
+                assertEqual("value2", imap->get("key1"));
 
-                assertEqual(false, iMap->replace("key1", "value1", "value3"));
-                assertEqual("value2", iMap->get("key1"));
+                assertEqual(false, imap->replace("key1", "value1", "value3"));
+                assertEqual("value2", imap->get("key1"));
 
-                assertEqual(true, iMap->replace("key1", "value2", "value3"));
-                assertEqual("value3", iMap->get("key1"));
+                assertEqual(true, imap->replace("key1", "value2", "value3"));
+                assertEqual("value3", imap->get("key1"));
             }
 
             void ClientMapTest::testPutTtl() {
 
-                iMap->put("key1", "value1", 1000);
-                std::string temp = iMap->get("key1");
+                imap->put("key1", "value1", 1000);
+                std::string temp = imap->get("key1");
                 assertEqual(temp, "");
                 boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
-                std::string temp2 = iMap->get("key1");
+                std::string temp2 = imap->get("key1");
                 assertEqual(temp2, "");
             }
 
@@ -172,12 +254,6 @@ namespace hazelcast {
 
             }
 
-            void ClientMapTest::testIssue537() {
-
-                // This method contains CountDownLatch
-                assertTrue(false);
-
-            }
 
             void ClientMapTest::testListener() {
 
@@ -225,20 +301,20 @@ namespace hazelcast {
 
                 fillMap();
                 vector<std::string> tempVector;
-                tempVector = iMap->values("this , value1");
+                tempVector = imap->values("this , value1");
 
                 vector<std::string>::iterator it = tempVector.begin();
                 assertEqual("value1", *it);
 
                 vector<std::string> tempVector2;
-                tempVector2 = iMap->keySet("this , value1");
+                tempVector2 = imap->keySet("this , value1");
 
                 vector<std::string>::iterator it2 = tempVector2.begin();
                 assertEqual("key1", *it2);
 
 
                 std::vector<std::pair<std::string, std::string> > tempVector3;
-                tempVector3 = iMap->entrySet("this , value1");
+                tempVector3 = imap->entrySet("this , value1");
 
                 std::vector<std::pair<std::string, std::string> > ::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);
@@ -255,18 +331,18 @@ namespace hazelcast {
 
             void ClientMapTest::testSet() {
 
-                iMap->set("key1", "value1");
-                assertEqual("value1", iMap->get("key1"));
+                imap->set("key1", "value1");
+                assertEqual("value1", imap->get("key1"));
 
-                iMap->set("key1", "value2");
-                assertEqual("value2", iMap->get("key1"));
+                imap->set("key1", "value2");
+                assertEqual("value2", imap->get("key1"));
 
-                iMap->set("key1", "value3", 1000);
-                assertEqual("value3", iMap->get("key1"));
+                imap->set("key1", "value3", 1000);
+                assertEqual("value3", imap->get("key1"));
 
                 boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
 
-                assertEqual(iMap->get("key1"), "");
+                assertEqual(imap->get("key1"), "");
 
             }
 
@@ -295,39 +371,13 @@ namespace hazelcast {
 
                 fillMap();
                 vector<std::string> tempVector;
-                tempVector = iMap->values("this , value1");
+                tempVector = imap->values("this , value1");
                 assertEqual(1, tempVector.size());
 
                 vector<std::string>::iterator it = tempVector.begin();
                 assertEqual("value1", *it);
             }
 
-            void ClientMapTest::testGetAllPutAll() {
-
-                std::map<std::string, std::string> mapTemp;
-
-                for (int i = 0; i < 100; i++) {
-                    mapTemp[hazelcast::util::to_string(i)] = hazelcast::util::to_string(i);
-                }
-                iMap->putAll(mapTemp);
-                assertEqual(iMap->size(), 100);
-                for (int i = 0; i < 100; i++) {
-                    assertEqual(iMap->get(hazelcast::util::to_string(i)), hazelcast::util::to_string(i));
-                }
-
-                IMap<std::string, std::string> iMap2 = client->getMap<std::string, std::string >("dev");
-
-                std::set<std::string> tempSet;
-                tempSet.insert(hazelcast::util::to_string(1));
-                tempSet.insert(hazelcast::util::to_string(3));
-
-                iMap2.getAll(tempSet);
-
-                assertEqual(iMap2.size(), 2);
-                assertEqual(iMap2.get(hazelcast::util::to_string(1)), "1");
-                assertEqual(iMap2.get(hazelcast::util::to_string(3)), "3");
-
-            }
 
             void ClientMapTest::testPutIfAbsent() {
 
