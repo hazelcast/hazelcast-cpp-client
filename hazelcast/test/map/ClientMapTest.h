@@ -10,11 +10,10 @@
 #include "iTest.h"
 #include "ClientConfig.h"
 #include "IMap.h"
+#include "HazelcastInstance.h"
 
 namespace hazelcast {
     namespace client {
-
-//        template class IMap<std::string, std::string>;
 
         class HazelcastClient;
 
@@ -25,6 +24,8 @@ namespace hazelcast {
             class ClientMapTest : public iTest::iTestFixture<ClientMapTest> {
             public:
                 ClientMapTest(HazelcastInstanceFactory&);
+
+                ~ClientMapTest();
 
                 void addTests();
 
@@ -43,10 +44,6 @@ namespace hazelcast {
                 void testRemoveAndDelete();
 
                 void testRemoveIfSame();
-
-                void flush();
-
-                void clear();
 
                 void testContains();
 
@@ -95,18 +92,14 @@ namespace hazelcast {
                 void destroy();
 
             private:
+                HazelcastInstanceFactory& hazelcastInstanceFactory;
+                HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<IMap<std::string, std::string> > iMap;
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
             };
         }
     }
 }
-
-class ClientMapTest {
-
-};
-
 
 #endif //HAZELCAST_ClientMapTest

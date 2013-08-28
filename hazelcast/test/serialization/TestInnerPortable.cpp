@@ -1,6 +1,6 @@
 #include "TestInnerPortable.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,6 +22,9 @@ namespace hazelcast {
                     std::vector<TestNamedPortable> n):bb(b), cc(c), ss(s), ii(i), ll(l), ff(f), dd(d), nn(n) {
             };
 
+            TestInnerPortable::~TestInnerPortable() {
+            }
+
             TestInnerPortable& TestInnerPortable::operator = (const TestInnerPortable& rhs) {
                 bb = rhs.bb;
                 cc = rhs.cc;
@@ -41,10 +44,6 @@ namespace hazelcast {
             int TestInnerPortable::getFactoryId() const {
                 return 1;
             };
-
-            TestInnerPortable::~TestInnerPortable() {
-            }
-
 
             bool TestInnerPortable::operator ==(const TestInnerPortable& m) const {
                 if (bb != m.bb) return false;

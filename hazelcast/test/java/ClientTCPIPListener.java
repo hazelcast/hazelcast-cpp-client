@@ -42,7 +42,7 @@ public class ClientTCPIPListener {
 
     public static void main(String args[]) throws IOException {
 
-        final ServerSocket welcomeSocket = new ServerSocket(6000);
+        final ServerSocket welcomeSocket = new ServerSocket(6543);
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         while (true) {

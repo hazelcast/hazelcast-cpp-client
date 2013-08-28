@@ -1,11 +1,11 @@
 //#include "deneme.h"
 //#include "SimpleMapTest.h"
 //#include "CountDownLatch.h"
-//#include "HazelcastInstanceFactory.h"
+#include "HazelcastInstanceFactory.h"
 #include "ClientSerializationTest.h"
-//#include "ClientMapTest.h"
-#include "testUtil.h"
+#include "ClientMapTest.h"
 
+using namespace hazelcast::client::test;
 //int testSpeed() {
 //    SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
 //    s.run();
@@ -40,11 +40,11 @@
 //}
 
 int main(int argc, char **argv) {
-    hazelcast::client::test::ClientSerializationTest serializationTest;
+    ClientSerializationTest serializationTest;
     serializationTest.executeTests();
-//    hazelcast::client::test::HazelcastInstanceFactory factory;
-//    test::ClientMapTest mapTest(factory);
-//    mapTest.executeTests();
+    HazelcastInstanceFactory factory;
+    ClientMapTest mapTest(factory);
+    mapTest.executeTests();
     //QueueTest queueTest;
     //queueTest.executeTests();
     //IAtomicLongTest atomTest;

@@ -15,9 +15,9 @@ namespace hazelcast {
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-                system("pwd");
                 system("java -cp ./hazelcast-3.0.jar:.  ClientTCPIPListener & ");
-                boost::this_thread::sleep(boost::posix_time::seconds(1));
+                std::cout << "waiting" << std::endl;
+                boost::this_thread::sleep(boost::posix_time::seconds(2));
                 try{
                     socket.connect();
                 } catch(std::exception& e ){

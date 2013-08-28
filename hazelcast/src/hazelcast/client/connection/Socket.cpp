@@ -38,7 +38,7 @@ namespace hazelcast {
                     throw exception::IOException("Socket::receive", "Error socket read");
                 else if (size == 0) {
                     throw exception::IOException("Socket::receive", "Connection closed by remote");
-                }else if(size != len){
+                } else if (size != len) {
                     throw exception::IOException("Socket::receive", "incomplete data expected:" + util::to_string(len) + ", actual:" + util::to_string(size));
                 }
             };

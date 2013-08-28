@@ -4,8 +4,8 @@
 
 
 #include "ClientMapTest.h"
-#include "IMap.h"
 #include "HazelcastClient.h"
+#include "HazelcastInstanceFactory.h"
 
 
 namespace hazelcast {
@@ -15,9 +15,15 @@ namespace hazelcast {
 
             ClientMapTest::ClientMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , instance(hazelcastInstanceFactory.newHazelcastInstance())
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , iMap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
 
+            };
+
+
+            ClientMapTest::~ClientMapTest() {
+                instance.shutdown();
             };
 
             void ClientMapTest::addTests() {
@@ -50,11 +56,6 @@ namespace hazelcast {
             };
 
             void ClientMapTest::beforeClass() {
-//                ClientConfig clientConfig;
-//                clientConfig.addAddress(Address("localhost", 5701));
-//                client.reset(new HazelcastClient(clientConfig));
-//                iMap.reset(new IMap<std::string, std::string>(client->getMap < std::string, std::string > ("clientMapTest")));
-
             };
 
             void ClientMapTest::afterClass() {
@@ -117,14 +118,6 @@ namespace hazelcast {
                 assertTrue((iMap->remove("key2", "value1")));
                 assertEqual(iMap->size(), 9);
 
-            }
-
-            void ClientMapTest::flush() {
-                //TODO mapStore
-            }
-
-            void ClientMapTest::clear() {
-                iMap->clear();
             }
 
             void ClientMapTest::testContains() {
@@ -346,13 +339,6 @@ namespace hazelcast {
             void ClientMapTest::testPutIfAbsentTtl() {
 
                 // putIfAbsent method is not coded yet
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::destroy() {
-
-                // waiting for framework
                 assertTrue(false);
 
             }
