@@ -1,4 +1,4 @@
-#include "TestMainPortable.h"
+#include "testUtil.h"
 
 namespace hazelcast {
     namespace client {

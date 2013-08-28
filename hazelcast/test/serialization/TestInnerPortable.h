@@ -6,10 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_TestInnerPortable_h
-#define Server_TestInnerPortable_h
+#ifndef Hazelcast_TestInnerPortable_h
+#define Hazelcast_TestInnerPortable_h
 
-#include "Portable.h"
 #include "TestNamedPortable.h"
 #include <vector>
 
@@ -60,7 +59,6 @@ namespace hazelcast {
             };
         }
     }
-
 }
 
 

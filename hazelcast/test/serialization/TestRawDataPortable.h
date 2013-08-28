@@ -22,13 +22,13 @@ namespace hazelcast {
             public:
                 TestRawDataPortable();
 
-                inline int getFactoryId() const;
+                int getFactoryId() const;
 
-                inline int getClassId() const;
+                int getClassId() const;
 
-                inline void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                inline void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader& reader);
 
                 TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
 

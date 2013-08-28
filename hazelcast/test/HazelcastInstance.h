@@ -9,8 +9,6 @@
 #ifndef __hazelcast__hazelcastInstance__
 #define __hazelcast__hazelcastInstance__
 
-#include <iostream>
-
 namespace hazelcast {
     namespace client {
         namespace test {

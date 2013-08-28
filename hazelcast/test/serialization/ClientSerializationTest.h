@@ -2,9 +2,6 @@
 // Created by sancar koyunlu on 8/27/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-
-
-
 #ifndef HAZELCAST_ClientSerializationTest
 #define HAZELCAST_ClientSerializationTest
 

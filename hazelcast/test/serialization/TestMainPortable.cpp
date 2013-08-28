@@ -5,7 +5,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            TestMainPortable::TestMainPortable():null(true) {
+            TestMainPortable::TestMainPortable()
+            :null(true) {
             };
 
             TestMainPortable::TestMainPortable(const TestMainPortable& rhs) {

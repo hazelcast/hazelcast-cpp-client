@@ -85,10 +85,9 @@ namespace hazelcast {
                 ll = reader.readLongArray("l");
                 ff = reader.readFloatArray("f");
                 dd = reader.readDoubleArray("d");
-                nn = reader.template readPortableArray<TestNamedPortable>("nn");
+                nn = reader.readPortableArray<TestNamedPortable>("nn");
             };
 
         }
     }
-
 }
