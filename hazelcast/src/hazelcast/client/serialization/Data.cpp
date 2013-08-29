@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace serialization {
 
             Data::Data()
-            : partitionHash(-1)
+            : partitionHash(0)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
             , isError(false)
             , buffer(new std::vector<byte>) {
@@ -94,7 +94,7 @@ namespace hazelcast {
             };
 
             int Data::getPartitionHash() const{
-                if (partitionHash == -1) {
+                if (partitionHash == 0) {
                     if (buffer.get() != NULL) {
                         partitionHash = hashCode();
                     }

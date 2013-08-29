@@ -51,6 +51,7 @@
 #include "serialization/SerializationService.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include "Future.h"
+#import "PutIfAbsentRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -117,25 +118,25 @@ namespace hazelcast {
 
             Future<V> putAsync(const K& key, const V& value, long ttlInMillis) {
                 Future<V> future;
-                boost::thread t(boost::bind(&IMap<K, V>::asyncPutThread, boost::cref(key), boost::cref(value), ttlInMillis, boost::cref(future)));
+                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), boost::cref(key), boost::cref(value), ttlInMillis, boost::ref(future)));
                 return future;
             };
 
             Future<V> putAsync(const K& key, const V& value) {
                 Future<V> future;
-                boost::thread t(boost::bind(&IMap<K, V>::asyncPutThread, boost::cref(key), boost::cref(value), -1, boost::cref(future)));
+                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), boost::cref(key), boost::cref(value), -1, boost::ref(future)));
                 return future;
             };
 
             Future<V> getAsync(const K& key) {
                 Future<V> future;
-                boost::thread t(boost::bind(&IMap<K, V>::asyncGetThread, boost::cref(key), boost::cref(future)));
+                boost::thread t(boost::bind(asyncGetThread, boost::ref(*this), boost::cref(key), boost::ref(future)));
                 return future;
             };
 
             Future<V> removeAsync(const K& key) {
                 Future<V> future;
-                boost::thread t(boost::bind(&IMap<K, V>::asyncRemoveThread, boost::cref(key), boost::cref(future)));
+                boost::thread t(boost::bind(asyncRemoveThread, boost::ref(*this), boost::cref(key), boost::ref(future)));
                 return future;
             };
 
@@ -159,12 +160,23 @@ namespace hazelcast {
                 return invoke<V>(request, keyData);
             };
 
-            void putTransient(const K& key, const V& value, long ttl) {
+            void putTransient(const K& key, const V& value, long ttlInMillis) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutTransientRequest request(instanceName, keyData, valueData, util::getThreadId(), ttl);
+                map::PutTransientRequest request(instanceName, keyData, valueData, util::getThreadId(), ttlInMillis);
                 invoke<bool>(request, keyData);
             };
+
+            V putIfAbsent(const K& key, const V& value) {
+                return putIfAbsent(key, value, -1);
+            }
+
+            V putIfAbsent(const K& key, const V& value, long ttlInMillis) {
+                serialization::Data keyData = toData(key);
+                serialization::Data valueData = toData(value);
+                map::PutIfAbsentRequest request(instanceName, keyData, valueData, util::getThreadId(), ttlInMillis);
+                return invoke<V>(request, keyData);
+            }
 
             bool replace(const K& key, const V& oldValue, const V& newValue) {
                 serialization::Data keyData = toData(key);
@@ -282,8 +294,9 @@ namespace hazelcast {
 
             std::map< K, V > getAll(const std::set<K>& keys) {
                 std::vector<serialization::Data> keySet(keys.size());
+                int i = 0;
                 for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
-                    keySet.push_back(toData(*it));
+                    keySet[i++] = toData(*it);
                 }
                 map::GetAllRequest request(instanceName, keySet);
                 map::MapEntrySet mapEntrySet = invoke < map::MapEntrySet >(request);
@@ -421,42 +434,6 @@ namespace hazelcast {
 
             }
 
-            void asyncPutThread(const K& key, const V& value, long ttlInMillis, const Future<V>& future) {
-                V *v = NULL;
-                try{
-                    v = new V(put(key, value, ttlInMillis));
-                    future->setValue(v);
-                } catch(std::exception& ex){
-                    future->setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
-                    std::cerr << "Exception in IMap::asyncPutThread" << std::endl;
-                }
-            }
-
-            void asyncRemoveThread(const K& key, const Future<V>& future) {
-                V *v = NULL;
-                try{
-                    v = new V(remove(key));
-                    future->setValue(v);
-                } catch(std::exception& ex){
-                    future->setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
-                    std::cerr << "Exception in IMap::asyncRemoveThread" << std::endl;
-                }
-            }
-
-            void asyncGetThread(const K& key, const Future<V>& future) {
-                V *v = NULL;
-                try{
-                    v = new V(get(key));
-                    future->setValue(v);
-                } catch(std::exception& ex){
-                    future->setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
-                    std::cerr << "Exception in IMap::asyncGetThread" << std::endl;
-                }
-            }
-
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 this->context = clientContext;
                 this->instanceName = instanceName;
@@ -482,6 +459,42 @@ namespace hazelcast {
             Response invoke(const Request& request) {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
+
+            static void asyncPutThread(IMap& map, const K& key, const V& value, long ttlInMillis, Future<V>& future) {
+                V *v = NULL;
+                try{
+                    v = new V(map.put(key, value, ttlInMillis));
+                    future.accessInternal().setValue(v);
+                } catch(std::exception& ex){
+                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
+                } catch(...){
+                    std::cerr << "Exception in IMap::asyncPutThread" << std::endl;
+                }
+            }
+
+            static void asyncRemoveThread(IMap& map, const K& key, Future<V>& future) {
+                V *v = NULL;
+                try{
+                    v = new V(map.remove(key));
+                    future.accessInternal().setValue(v);
+                } catch(std::exception& ex){
+                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
+                } catch(...){
+                    std::cerr << "Exception in IMap::asyncRemoveThread" << std::endl;
+                }
+            }
+
+            static void asyncGetThread(IMap& map, const K& key, Future<V>& future) {
+                V *v = NULL;
+                try{
+                    v = new V(map.get(key));
+                    future.accessInternal().setValue(v);
+                } catch(std::exception& ex){
+                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
+                } catch(...){
+                    std::cerr << "Exception in IMap::asyncGetThread" << std::endl;
+                }
+            }
 
             std::string instanceName;
             spi::ClientContext *context;

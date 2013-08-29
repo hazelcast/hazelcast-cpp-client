@@ -21,19 +21,19 @@ namespace iTest {
     template<typename  Exptected, typename Actual >
     void assertEqual(const Exptected& expected, const Actual& actual, const char *message) {
         if (expected != actual) {
-            std::cout << ">> Assert failed. message : " << message << std::endl;
-
-        } else {
-            std::cout << "OK" << std::endl;
+            iTestException e;
+            e.message.assign(">> Assert failed. message : ");
+            e.message += message;
+            throw e;
         }
     };
 
     template<typename  Exptected, typename Actual >
     void assertEqual(const Exptected& expected, const Actual& actual) {
-        if (expected != actual) {
-            std::cout << ">> Assert failed." << std::endl;
-        } else {
-            std::cout << "OK" << std::endl;
+        if (actual != expected) {
+            iTestException e;
+            e.message.assign(">> Assert failed. message : ");
+            throw e;
         }
     };
 }

@@ -11,6 +11,10 @@
 
 namespace iTest {
 
+    struct iTestException {
+        std::string message;
+    };
+
     template<typename T>
     class iTestFixture {
         typedef void (T::*TestFunction)();
@@ -52,15 +56,22 @@ namespace iTest {
                 TestFunction test = tests[i];
                 std::cout << "======= " << testNames[i] << " ======= " << std::endl;
                 beforeTest();
+                bool isOk = true;
                 try{
                     ((*t).* (test))();
+                }catch(iTestException& e){
+                    std::cout << e.message << std::endl;
+                    isOk = false;
                 }catch(std::exception& e){
                     std::cout << "? " << e.what() << std::endl;
                 }catch(...){
-                    std::cout << "unknown exception at serialization " << std::endl;
+                    std::cout << "unknown exception at iTest " << std::endl;
                 }
                 afterTest();
-                std::cout << "=============================== " << std::endl;
+                if (isOk)
+                    std::cout << "============OK============== " << std::endl;
+                else
+                    std::cout << "============FAILED============== " << std::endl;
             }
             afterClass();
         };

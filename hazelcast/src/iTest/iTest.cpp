@@ -8,33 +8,35 @@
 namespace iTest {
     void assertFalse(bool isFalse, const char *message) {
         if (isFalse) {
-            std::cout << ">> Assert failed. message : " << message << std::endl;
-        } else {
-            std::cout << "OK" << std::endl;
+            iTestException e;
+            e.message.assign(">> Assert failed. message : ");
+            e.message += message;
+            throw e;
         }
     };
 
     void assertFalse(bool isFalse) {
         if (isFalse) {
-            std::cout << ">> Assert failed" << std::endl;
-        } else {
-            std::cout << "OK" << std::endl;
+            iTestException e;
+            e.message.assign(">> Assert failed");
+            throw e;
         }
     };
 
     void assertTrue(bool isTrue, const char *message) {
         if (!isTrue) {
-            std::cout << ">> Assert failed. message : " << message << std::endl;
-        } else {
-            std::cout << "OK" << std::endl;
+            iTestException e;
+            e.message.assign(">> Assert failed. message : ");
+            e.message += message;
+            throw e;
         }
     };
 
     void assertTrue(bool isTrue) {
         if (!isTrue) {
-            std::cout << ">> Assert failed" << std::endl;
-        } else {
-            std::cout << "OK" << std::endl;
+            iTestException e;
+            e.message.assign(">> Assert failed");
+            throw e;
         }
     };
 }

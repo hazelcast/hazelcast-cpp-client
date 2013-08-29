@@ -26,11 +26,11 @@ namespace hazelcast {
 
             };
 
-            bool operator ==(Status status) {
+            bool operator ==(Status status) const{
                 return this->value == status;
             };
 
-            bool operator !=(Status status) {
+            bool operator !=(Status status) const{
                 return !(*this == status);
             };
         };
@@ -41,13 +41,14 @@ namespace hazelcast {
             public:
                 FutureBase()
                 :result(NULL)
-                , exception(NULL) {
+                , exception(NULL)
+                , lock(mutex){
 
                 };
 
                 R& get() {
                     wait();
-                    if (exception != NULL)
+                    if (exception.get() != NULL)
                         throw exception;
                     return *result;
                 };
@@ -83,6 +84,7 @@ namespace hazelcast {
                 bool isValid;
                 std::auto_ptr< R > result;
                 std::auto_ptr< std::exception> exception;
+                boost::mutex mutex;
                 boost::condition_variable condition;
                 boost::unique_lock< boost::mutex > lock;
 
@@ -97,7 +99,11 @@ namespace hazelcast {
 
             };
 
-            pImpl::FutureBase<R>& operator ->() {
+//            pImpl::FutureBase<R>& operator ->() {
+//                return *(basePtr.get());
+//            }
+
+            pImpl::FutureBase<R>& accessInternal() {
                 return *(basePtr.get());
             }
 

@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastInstanceFactory::HazelcastInstanceFactory()
-            : address("localhost", 6000)
+            : address("localhost", 6543)
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {

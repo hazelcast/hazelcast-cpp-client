@@ -28,31 +28,31 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
+                addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
                 addTest(&ClientMapTest::testRemoveIfSame, "testRemoveIfSame");
                 addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
-                addTest(&ClientMapTest::testReplace, "testReplace");
-                addTest(&ClientMapTest::testPutTtl, "testPutTtl");
-                addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
-                addTest(&ClientMapTest::testAsyncPutWithTtl, "testAsyncPutWithTtl");
-                addTest(&ClientMapTest::testIssue537, "testIssue537");
-                addTest(&ClientMapTest::testListener, "testListener");
-                addTest(&ClientMapTest::testTryLock, "testTryLock");
-                addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
-                addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
-                addTest(&ClientMapTest::testLockTtl, "testLockTtl");
-                addTest(&ClientMapTest::testLock, "testLock");
-                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
-                addTest(&ClientMapTest::testPutTransient, "testPutTransient");
-                addTest(&ClientMapTest::testSet, "testSet");
                 addTest(&ClientMapTest::testAsyncGet, "testAsyncGet");
                 addTest(&ClientMapTest::testAsyncPut, "testAsyncPut");
+                addTest(&ClientMapTest::testAsyncPutWithTtl, "testAsyncPutWithTtl");
                 addTest(&ClientMapTest::testAsyncRemove, "testAsyncRemove");
-                addTest(&ClientMapTest::testValues, "testValues");
+                addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
+                addTest(&ClientMapTest::testPutTtl, "testPutTtl");
                 addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
                 addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
+                addTest(&ClientMapTest::testSet, "testSet");
+                addTest(&ClientMapTest::testPutTransient, "testPutTransient");
+                addTest(&ClientMapTest::testLock, "testLock");
+                addTest(&ClientMapTest::testLockTtl, "testLockTtl");
+                addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
+                addTest(&ClientMapTest::testTryLock, "testTryLock");
+                addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
+                addTest(&ClientMapTest::testValues, "testValues");
+                addTest(&ClientMapTest::testReplace, "testReplace");
+                addTest(&ClientMapTest::testListener, "testListener");
+                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
 
             };
 
@@ -194,7 +194,6 @@ namespace hazelcast {
                 imap->putAll(mapTemp);
                 assertEqual(imap->size(), 100);
 
-                vector<pair<string, string> > entrySet = imap->entrySet();
                 for (int i = 0; i < 100; i++) {
                     string expected = util::to_string(i);
                     string actual = imap->get(util::to_string(i));
@@ -213,38 +212,26 @@ namespace hazelcast {
 
             }
 
-            void ClientMapTest::testReplace() {
-                std::string temp = imap->replace("key1", "value");
-                assertEqual(temp, "");
+            void ClientMapTest::testAsyncGet() {
+                fillMap();
+                Future<std::string> f = imap->getAsync("key1");
+                std::string o;
+                FutureStatus status = f.wait_for(0);
+                assertEqual(FutureStatus::TIMEOUT, status);
 
-                std::string tempKey = "key1";
-                std::string tempValue = "value1";
-                imap->put(tempKey, tempValue);
-
-                assertEqual("value1", imap->replace("key1", "value2"));
-                assertEqual("value2", imap->get("key1"));
-
-                assertEqual(false, imap->replace("key1", "value1", "value3"));
-                assertEqual("value2", imap->get("key1"));
-
-                assertEqual(true, imap->replace("key1", "value2", "value3"));
-                assertEqual("value3", imap->get("key1"));
+                o = f.get();
+                assertEqual("value1", o);
             }
 
-            void ClientMapTest::testPutTtl() {
+            void ClientMapTest::testAsyncPut() {
+                fillMap();
+                Future<string> f = imap->putAsync("key3", "value");
+                FutureStatus status = f.wait_for(0);
+                assertEqual(FutureStatus::TIMEOUT, status);
+                std::string & o = f.get();
+                assertEqual("value3", o);
+                assertEqual("value", imap->get("key3"));
 
-                imap->put("key1", "value1", 1000);
-                std::string temp = imap->get("key1");
-                assertEqual(temp, "");
-                boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
-                std::string temp2 = imap->get("key1");
-                assertEqual(temp2, "");
-            }
-
-            void ClientMapTest::testTryPutRemove() {
-
-                // This method contains CountDownLatch
-                assertTrue(false);
             }
 
             void ClientMapTest::testAsyncPutWithTtl() {
@@ -254,8 +241,85 @@ namespace hazelcast {
 
             }
 
+            void ClientMapTest::testAsyncRemove() {
+                fillMap();
+                Future<string> f = imap->removeAsync("key4");
+                FutureStatus status = f.wait_for(0);
+                assertEqual(FutureStatus::TIMEOUT, status);
+                std::string & o = f.get();
+                assertEqual("value4", o);
+                assertEqual(9, imap->size());
 
-            void ClientMapTest::testListener() {
+            }
+
+            void ClientMapTest::testTryPutRemove() {
+
+                // This method contains CountDownLatch
+                assertTrue(false);
+            }
+
+            void ClientMapTest::testPutTtl() {
+                imap->put("key1", "value1", 1000);
+                std::string temp = imap->get("key1");
+                assertEqual(temp, "");
+                boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+                std::string temp2 = imap->get("key1");
+                assertEqual(temp2, "");
+            }
+
+            void ClientMapTest::testPutIfAbsent() {
+                std::string o = imap->putIfAbsent("key1", "value1");
+                assertEqual("", o);
+                assertEqual("value1", imap->putIfAbsent("key1", "value3"));
+            }
+
+            void ClientMapTest::testPutIfAbsentTtl() {
+                assertEqual("", imap->putIfAbsent("key1", "value1", 1000));
+                assertEqual("value1", imap->putIfAbsent("key1", "value3", 1000));
+                boost::this_thread::sleep(boost::posix_time::seconds(2));
+                assertEqual("", imap->putIfAbsent("key1", "value3", 1000));
+                assertEqual("value3", imap->putIfAbsent("key1", "value4", 1000));
+                boost::this_thread::sleep(boost::posix_time::seconds(2));
+            }
+
+            void ClientMapTest::testSet() {
+                imap->set("key1", "value1");
+                assertEqual("value1", imap->get("key1"));
+
+                imap->set("key1", "value2");
+                assertEqual("value2", imap->get("key1"));
+
+                imap->set("key1", "value3", 1000);
+                assertEqual("value3", imap->get("key1"));
+
+                boost::this_thread::sleep(boost::posix_time::seconds(2));
+                assertEqual(imap->get("key1"), "");
+
+            }
+
+
+            void ClientMapTest::testPutTransient() {
+                //TODO mapstore
+                assertTrue(false);
+
+            }
+
+            void ClientMapTest::testLock() {
+
+                // This method contains CountDownLatch
+                assertTrue(false);
+
+            }
+
+
+            void ClientMapTest::testLockTtl() {
+
+                // This method contains CountDownLatch
+                assertTrue(false);
+
+            }
+
+            void ClientMapTest::testLockTtl2() {
 
                 // This method contains CountDownLatch
                 assertTrue(false);
@@ -276,21 +340,36 @@ namespace hazelcast {
 
             }
 
-            void ClientMapTest::testLockTtl2() {
+            void ClientMapTest::testValues() {
 
-                // This method contains CountDownLatch
-                assertTrue(false);
+                fillMap();
+                vector<std::string> tempVector;
+                tempVector = imap->values("this , value1");
+                assertEqual(1, tempVector.size());
 
+                vector<std::string>::iterator it = tempVector.begin();
+                assertEqual("value1", *it);
             }
 
-            void ClientMapTest::testLockTtl() {
+            void ClientMapTest::testReplace() {
+                std::string temp = imap->replace("key1", "value");
+                assertEqual(temp, "");
 
-                // This method contains CountDownLatch
-                assertTrue(false);
+                std::string tempKey = "key1";
+                std::string tempValue = "value1";
+                imap->put(tempKey, tempValue);
 
+                assertEqual("value1", imap->replace("key1", "value2"));
+                assertEqual("value2", imap->get("key1"));
+
+                assertEqual(false, imap->replace("key1", "value1", "value3"));
+                assertEqual("value2", imap->get("key1"));
+
+                assertEqual(true, imap->replace("key1", "value2", "value3"));
+                assertEqual("value3", imap->get("key1"));
             }
 
-            void ClientMapTest::testLock() {
+            void ClientMapTest::testListener() {
 
                 // This method contains CountDownLatch
                 assertTrue(false);
@@ -321,78 +400,6 @@ namespace hazelcast {
                 assertEqual("value1", (*it3).second);
 
             }
-
-            void ClientMapTest::testPutTransient() {
-
-                //TODO mapstore
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::testSet() {
-
-                imap->set("key1", "value1");
-                assertEqual("value1", imap->get("key1"));
-
-                imap->set("key1", "value2");
-                assertEqual("value2", imap->get("key1"));
-
-                imap->set("key1", "value3", 1000);
-                assertEqual("value3", imap->get("key1"));
-
-                boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
-
-                assertEqual(imap->get("key1"), "");
-
-            }
-
-            void ClientMapTest::testAsyncGet() {
-
-                // This method contains Async functions which is not coded yet
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::testAsyncPut() {
-
-                // This method contains Async functions which is not coded yet
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::testAsyncRemove() {
-
-                // This method contains Async functions which is not coded yet
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::testValues() {
-
-                fillMap();
-                vector<std::string> tempVector;
-                tempVector = imap->values("this , value1");
-                assertEqual(1, tempVector.size());
-
-                vector<std::string>::iterator it = tempVector.begin();
-                assertEqual("value1", *it);
-            }
-
-
-            void ClientMapTest::testPutIfAbsent() {
-
-                // putIfAbsent method is not coded yet
-                assertTrue(false);
-
-            }
-
-            void ClientMapTest::testPutIfAbsentTtl() {
-
-                // putIfAbsent method is not coded yet
-                assertTrue(false);
-
-            }
-
         }
     }
 }

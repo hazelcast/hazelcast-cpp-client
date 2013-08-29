@@ -33,19 +33,21 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
-                    writer.writeInt("thread", threadId);
+                    writer.writeInt("t", threadId);
                     writer.writeLong("ttl", ttl);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     key.writeData(out);
+                    value.writeData(out);
                 };
 
 
                 void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
-                    threadId = reader.readInt("thread");
+                    threadId = reader.readInt("t");
                     ttl = reader.readLong("ttl");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();
                     key.readData(in);
+                    value.readData(in);
                 };
 
             private:
