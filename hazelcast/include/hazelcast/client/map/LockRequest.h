@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
-                    writer.writeInt("thread", threadId);
+                    writer.writeInt("tid", threadId);
                     writer.writeLong("ttl", ttl);
                     writer.writeLong("timeout", timeout);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
@@ -49,7 +49,7 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
-                    threadId = reader.readInt("thread");
+                    threadId = reader.readInt("tid");
                     ttl = reader.readLong("ttl");
                     timeout = reader.readLong("timeout");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();

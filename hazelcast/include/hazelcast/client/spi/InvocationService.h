@@ -37,12 +37,12 @@ namespace hazelcast {
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnRandomTarget(const Request& request, const ResponseHandler& handler) {
+                void invokeOnRandomTarget(const Request& request, ResponseHandler& handler) {
                     clusterService.sendAndHandle(request, handler);
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnKeyOwner(const Request& request, serialization::Data& key, const ResponseHandler&  handler) {
+                void invokeOnKeyOwner(const Request& request, serialization::Data& key, ResponseHandler&  handler) {
                     util::AtomicPointer<Address> owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         invokeOnTarget(request, *owner, handler);
@@ -51,7 +51,7 @@ namespace hazelcast {
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnTarget(const Request& request, const Address& target, const ResponseHandler&  handler) {
+                void invokeOnTarget(const Request& request, const Address& target, ResponseHandler&  handler) {
                     clusterService.sendAndHandle(target, request, handler);
                 }
 

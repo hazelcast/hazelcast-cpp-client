@@ -20,8 +20,10 @@ namespace hazelcast {
         namespace impl {
             class PortableEntryEvent : public EventObject, public Portable {
             public:
-                enum EntryEventType {
-                    ADDED, REMOVED, UPDATED, EVICTED
+
+
+                PortableEntryEvent() {
+
                 };
 
                 PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value)
@@ -59,28 +61,23 @@ namespace hazelcast {
 
 
                 void writePortable(serialization::PortableWriter& writer) const {
+                    int i = eventType;
+                    writer.writeInt("e", i);
+                    writer.writeUTF("u", uuid);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    out.writeInt(eventType);
-                    out.writeUTF(uuid);
                     key.writeData(out);
-                    out.writeBoolean(true);
-                    value.writeData(out);
-                    out.writeBoolean(true);
-                    oldValue.writeData(out);
+                    util::writeNullableData(out, &value);
+                    util::writeNullableData(out, &oldValue);
                 };
 
 
                 void readPortable(serialization::PortableReader& reader) {
+                    eventType = reader.readInt("e");
+                    uuid = reader.readUTF("u");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    int type = in.readInt();
-//                    eventType = type;
                     key.readData(in);
-                    bool isNotNull = in.readBoolean();
-                    if (isNotNull)
-                        value.readData(in);
-                    isNotNull = in.readBoolean();
-                    if (isNotNull)
-                        oldValue.readData(in);
+                    util::readNullableData(in, &value);
+                    util::readNullableData(in, &oldValue);
                 };
 
             private:

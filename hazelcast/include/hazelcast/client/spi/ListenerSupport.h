@@ -62,7 +62,7 @@ namespace hazelcast {
 
                 void stop() {
                     active = false;
-                    lastStream.end();
+                    lastStream->end();
                 };
 
 
@@ -77,7 +77,6 @@ namespace hazelcast {
                                 invocationService.invokeOnRandomTarget(request, eventResponseHandler);
                             }
                         }catch(...){
-
                         }
                     }
                 };
@@ -93,7 +92,7 @@ namespace hazelcast {
 
                     void handle(ResponseStream & stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
-                        listenerSupport.lastStream = stream;
+                        listenerSupport.lastStream = &stream;
                         while (listenerSupport.active) {
                             try {
                                 Event event = stream.read<Event>();
@@ -114,7 +113,7 @@ namespace hazelcast {
                 };
 
                 InvocationService& invocationService;
-                ResponseStream& lastStream;
+                ResponseStream *lastStream;
                 bool hasKey;
                 serialization::Data key;
                 Request request;

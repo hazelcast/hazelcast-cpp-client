@@ -26,7 +26,7 @@ namespace hazelcast {
                 return uuid;
             }
 
-            PortableEntryEvent::EntryEventType PortableEntryEvent::getEventType() const {
+            EntryEventType PortableEntryEvent::getEventType() const {
                 return eventType;
             }
 

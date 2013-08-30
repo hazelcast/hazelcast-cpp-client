@@ -89,7 +89,7 @@ namespace hazelcast {
                 };
 
                 template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Address& address, const Request& object, const ResponseHandler&  handler) {
+                void sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
                         connection::Connection *connection = NULL;
@@ -124,7 +124,7 @@ namespace hazelcast {
                 };
 
                 template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Request& object, const ResponseHandler&  handler) {
+                void sendAndHandle(const Request& object, ResponseHandler&  handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
                         connection::Connection *connection = NULL;

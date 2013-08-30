@@ -21,6 +21,8 @@ namespace hazelcast {
         namespace serialization {
             class ObjectDataOutput;
 
+            class ObjectDataInput;
+
             class Data;
         }
     }
@@ -36,7 +38,9 @@ namespace hazelcast {
 
         int getThreadId();
 
-        void writeNullableData(client::serialization::ObjectDataOutput & out, client::serialization::Data *data);
+        void writeNullableData(client::serialization::ObjectDataOutput & out, const client::serialization::Data *data);
+
+        void readNullableData(client::serialization::ObjectDataInput & in, client::serialization::Data *data);
 
         long getCurrentTimeMillis();
 

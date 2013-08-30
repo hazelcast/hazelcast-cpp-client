@@ -29,12 +29,12 @@ namespace hazelcast {
                 };
 
                 AddEntryListenerRequest(const std::string& name, bool includeValue, const std::string& sql)
-                :name(name), includeValue(includeValue), sql(sql), hasPredicate(true) {
+                :name(name), includeValue(includeValue), sql(sql), hasKey(false), hasPredicate(true) {
 
                 };
 
                 AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key)
-                :name(name), includeValue(includeValue), key(key), hasKey(true) {
+                :name(name), includeValue(includeValue), key(key), hasKey(true), hasPredicate(false) {
 
                 };
 

@@ -51,7 +51,7 @@ namespace hazelcast {
             };
 
             bool operator !=(const AtomicPointer &rhs) const {
-                return !(pointer == rhs.pointer);
+                return !(*this == rhs);
             };
 
             void lock() {

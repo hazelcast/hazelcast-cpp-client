@@ -16,6 +16,11 @@ namespace hazelcast {
         namespace impl {
             class EventObject {
             public:
+
+                EventObject(){
+
+                };
+
                 EventObject(const std::string& source)
                 : source(source) {
 

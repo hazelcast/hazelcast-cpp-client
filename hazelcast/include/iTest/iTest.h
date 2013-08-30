@@ -32,7 +32,7 @@ namespace iTest {
     void assertEqual(const Exptected& expected, const Actual& actual) {
         if (actual != expected) {
             iTestException e;
-            e.message.assign(">> Assert failed. message : ");
+            e.message.assign(">> Assert failed");
             throw e;
         }
     };

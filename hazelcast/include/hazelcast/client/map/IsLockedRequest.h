@@ -30,17 +30,16 @@ namespace hazelcast {
                     return PortableHook::IS_LOCKED;
                 }
 
-
-
                 void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", name);
+                    writer.writeUTF("n", name);
+                    writer.writeInt("tid", -1);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     key.writeData(out);
                 };
 
 
                 void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("name");
+                    name = reader.readUTF("n");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();
                     key.readData(in);
                 };

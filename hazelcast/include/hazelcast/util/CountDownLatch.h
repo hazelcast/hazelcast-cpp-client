@@ -20,10 +20,11 @@ namespace hazelcast {
             bool await(long timeInMillis);
 
             void await();
+
         private:
             boost::atomic<int> count;
             boost::condition_variable conditionVariable;
-            boost::mutex  mutex;
+            boost::mutex mutex;
 
         };
     }

@@ -26,11 +26,11 @@ namespace hazelcast {
 
             };
 
-            bool operator ==(Status status) const{
+            bool operator ==(Status status) const {
                 return this->value == status;
             };
 
-            bool operator !=(Status status) const{
+            bool operator !=(Status status) const {
                 return !(*this == status);
             };
         };
@@ -42,7 +42,7 @@ namespace hazelcast {
                 FutureBase()
                 :result(NULL)
                 , exception(NULL)
-                , lock(mutex){
+                , lock(mutex) {
 
                 };
 
@@ -58,10 +58,14 @@ namespace hazelcast {
                 };
 
                 void wait() {
+                    if (result.get() != NULL || exception.get() != NULL)
+                        return;
                     condition.wait(lock);
                 };
 
                 FutureStatus wait_for(long timeInMillis) {
+                    if (result.get() != NULL || exception.get() != NULL)
+                        return FutureStatus::READY;
                     boost::cv_status status = condition.wait_for(lock, boost::chrono::milliseconds(timeInMillis));
                     if (status == boost::cv_status::timeout)
                         return FutureStatus::TIMEOUT;

@@ -156,6 +156,7 @@ namespace hazelcast {
                 output.writeByte(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_BYTE);
                 return data;
             };
 
@@ -167,6 +168,7 @@ namespace hazelcast {
                 output.writeBoolean(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_BOOLEAN);
                 return data;
             };
 
@@ -178,6 +180,7 @@ namespace hazelcast {
                 output.writeChar(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_CHAR);
                 return data;
             };
 
@@ -189,6 +192,7 @@ namespace hazelcast {
                 output.writeShort(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_SHORT);
                 return data;
             };
 
@@ -200,6 +204,7 @@ namespace hazelcast {
                 output.writeInt(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_INTEGER);
                 return data;
             };
 
@@ -211,6 +216,7 @@ namespace hazelcast {
                 output.writeLong(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_LONG);
                 return data;
             };
 
@@ -222,6 +228,7 @@ namespace hazelcast {
                 output.writeFloat(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_FLOAT);
                 return data;
             };
 
@@ -233,6 +240,7 @@ namespace hazelcast {
                 output.writeDouble(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_DOUBLE);
                 return data;
             };
 
@@ -244,6 +252,7 @@ namespace hazelcast {
                 output.writeByteArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY);
                 return data;
             };
 
@@ -255,6 +264,7 @@ namespace hazelcast {
                 output.writeCharArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY);
                 return data;
             };
 
@@ -266,6 +276,7 @@ namespace hazelcast {
                 output.writeShortArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY);
                 return data;
             };
 
@@ -277,6 +288,7 @@ namespace hazelcast {
                 output.writeIntArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY);
                 return data;
             };
 
@@ -288,6 +300,7 @@ namespace hazelcast {
                 output.writeLongArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY);
                 return data;
             };
 
@@ -299,6 +312,7 @@ namespace hazelcast {
                 output.writeFloatArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY);
                 return data;
             };
 
@@ -310,6 +324,7 @@ namespace hazelcast {
                 output.writeDoubleArray(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY);
                 return data;
             };
 
@@ -321,6 +336,7 @@ namespace hazelcast {
                 output.writeUTF(*object);
                 Data data;
                 data.setBuffer(output.toByteArray());
+                data.setType(SerializationConstants::CONSTANT_TYPE_STRING);
                 return data;
             };
 

@@ -46,7 +46,7 @@ namespace hazelcast {
              * @return DistributedObject
              */
             template<typename DistributedObject>
-            DistributedObject getDistributedObject() const{
+            DistributedObject getDistributedObject() const {
 
             };
         private:

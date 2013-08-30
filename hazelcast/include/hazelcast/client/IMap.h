@@ -118,25 +118,25 @@ namespace hazelcast {
 
             Future<V> putAsync(const K& key, const V& value, long ttlInMillis) {
                 Future<V> future;
-                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), boost::cref(key), boost::cref(value), ttlInMillis, boost::ref(future)));
+                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), key, value, ttlInMillis, future));
                 return future;
             };
 
             Future<V> putAsync(const K& key, const V& value) {
                 Future<V> future;
-                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), boost::cref(key), boost::cref(value), -1, boost::ref(future)));
+                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), key, value, -1, future));
                 return future;
             };
 
             Future<V> getAsync(const K& key) {
                 Future<V> future;
-                boost::thread t(boost::bind(asyncGetThread, boost::ref(*this), boost::cref(key), boost::ref(future)));
+                boost::thread t(boost::bind(asyncGetThread, boost::ref(*this), key, future));
                 return future;
             };
 
             Future<V> removeAsync(const K& key) {
                 Future<V> future;
-                boost::thread t(boost::bind(asyncRemoveThread, boost::ref(*this), boost::cref(key), boost::ref(future)));
+                boost::thread t(boost::bind(asyncRemoveThread, boost::ref(*this), key, future));
                 return future;
             };
 
@@ -209,7 +209,7 @@ namespace hazelcast {
             void lock(const K&  key, long leaseTime) {
                 serialization::Data keyData = toData(key);
                 map::LockRequest request (instanceName, keyData, util::getThreadId(), leaseTime, -1);
-                invoke(request, keyData);
+                invoke<bool>(request, keyData);
             };
 
             bool isLocked(const K&  key) {
@@ -460,7 +460,7 @@ namespace hazelcast {
                 return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 
-            static void asyncPutThread(IMap& map, const K& key, const V& value, long ttlInMillis, Future<V>& future) {
+            static void asyncPutThread(IMap& map, const K key, const V value, long ttlInMillis, Future<V> future) {
                 V *v = NULL;
                 try{
                     v = new V(map.put(key, value, ttlInMillis));
@@ -472,7 +472,7 @@ namespace hazelcast {
                 }
             }
 
-            static void asyncRemoveThread(IMap& map, const K& key, Future<V>& future) {
+            static void asyncRemoveThread(IMap& map, const K key, Future<V> future) {
                 V *v = NULL;
                 try{
                     v = new V(map.remove(key));
@@ -484,7 +484,7 @@ namespace hazelcast {
                 }
             }
 
-            static void asyncGetThread(IMap& map, const K& key, Future<V>& future) {
+            static void asyncGetThread(IMap& map, const K key, Future<V> future) {
                 V *v = NULL;
                 try{
                     v = new V(map.get(key));
