@@ -42,7 +42,7 @@ namespace hazelcast {
             };
 
             ~AtomicPointer() {
-
+//                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
             };
 
             bool operator ==(const AtomicPointer &rhs) const {
@@ -62,18 +62,15 @@ namespace hazelcast {
                 accessLock->unlock();
             };
 
-            T operator *() {
-                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
+            T& operator *() {
                 return *pointer;
             };
 
             T *operator ->() const {
-                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
                 return pointer.get();
             };
 
             T *get() {
-                boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
                 return pointer.get();
             };
 

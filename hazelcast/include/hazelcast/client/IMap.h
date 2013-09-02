@@ -38,20 +38,20 @@
 #include "map/ClearRequest.h"
 #include "map/PutAllRequest.h"
 #include "map/QueryRequest.h"
-#include "map/QueryDataResultStream.h"
 #include "map/EntryView.h"
 #include "map/AddEntryListenerRequest.h"
 #include "map/ExecuteOnKeyRequest.h"
 #include "map/ExecuteOnAllKeysRequest.h"
 #include "map/AddInterceptorRequest.h"
 #include "map/RemoveInterceptorRequest.h"
+#include "map/PutIfAbsentRequest.h"
 #include "impl/EntryListener.h"
 #include "impl/EntryEventHandler.h"
 #include "impl/PortableEntryEvent.h"
+#include "impl/QueryResultSet.h"
 #include "serialization/SerializationService.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include "Future.h"
-#import "PutIfAbsentRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -224,7 +224,7 @@ namespace hazelcast {
 
             bool tryLock(const K&  key, long timeInMillis) {
                 serialization::Data keyData = toData(key);
-                map::LockRequest request(instanceName, keyData, util::getThreadId(), 0, timeInMillis);
+                map::LockRequest request(instanceName, keyData, util::getThreadId(), LONG_MAX, timeInMillis);
 
                 return invoke<bool>(request, keyData);;
             };
@@ -256,7 +256,7 @@ namespace hazelcast {
             long addEntryListener(L& listener, bool includeValue) {
                 map::AddEntryListenerRequest request(instanceName, includeValue);
                 impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, entryEventHandler);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
             };
 
             template < typename L>
@@ -264,11 +264,11 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 map::AddEntryListenerRequest request(instanceName, includeValue, keyData);
                 impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(instanceName, request, keyData, entryEventHandler);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, keyData, entryEventHandler);
             };
 
             bool removeEntryListener(long registrationId) {
-                return context->getServerListenerService().stopListening(instanceName, registrationId);
+                return context->getServerListenerService().stopListening(registrationId);
             };
 
 
@@ -332,8 +332,8 @@ namespace hazelcast {
 
             std::vector<K> keySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "KEY", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
-                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                impl::QueryResultSet queryDataResultStream = invoke<impl::QueryResultSet>(request);
+                const vector<impl::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<K> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = toObject<K>(dataResult[i].key);
@@ -343,8 +343,8 @@ namespace hazelcast {
 
             std::vector<V> values(const std::string& sql) {
                 map::QueryRequest request(instanceName, "VALUE", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
-                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                impl::QueryResultSet queryDataResultStream = invoke<impl::QueryResultSet>(request);
+                const vector<impl::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<V> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = toObject<V>(dataResult[i].value);
@@ -354,8 +354,8 @@ namespace hazelcast {
 
             std::vector<std::pair<K, V> > entrySet(const std::string& sql) {
                 map::QueryRequest request(instanceName, "ENTRY", sql);
-                map::QueryDataResultStream queryDataResultStream = invoke<map::QueryDataResultStream>(request);
-                const vector<map::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
+                impl::QueryResultSet queryDataResultStream = invoke<impl::QueryResultSet>(request);
+                const vector<impl::QueryResultEntry>  & dataResult = queryDataResultStream.getResultData();
                 std::vector<std::pair<K, V> > keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     keySet[i] = std::make_pair(toObject<K>(dataResult[i].key), toObject<V>(dataResult[i].value));
@@ -395,7 +395,7 @@ namespace hazelcast {
 
             int size() {
                 map::SizeRequest request(instanceName);
-                return invoke<int>(request);;
+                return invoke<int>(request);
             };
 
             bool isEmpty() {

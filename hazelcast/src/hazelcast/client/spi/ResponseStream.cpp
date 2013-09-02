@@ -10,7 +10,7 @@ namespace hazelcast {
 
         namespace spi {
 
-            ResponseStream::ResponseStream(serialization::SerializationService& serializationService, connection::Connection& connection)
+            ResponseStream::ResponseStream(serialization::SerializationService& serializationService, connection::Connection* connection)
             :serializationService(serializationService)
             , connection(connection) {
 

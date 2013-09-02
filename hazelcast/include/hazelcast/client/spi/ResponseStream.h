@@ -26,24 +26,25 @@ namespace hazelcast {
 
             class ResponseStream {
             public:
-                ResponseStream(serialization::SerializationService& serializationService, connection::Connection& connection);
+                ResponseStream(serialization::SerializationService& serializationService, connection::Connection* connection);
 
                 template<typename T>
                 T read() {
-                    serialization::Data data = connection.read();
+                    serialization::Data data = connection->read();
                     return serializationService.toObject<T>(data);
                 };
 
                 void end() {
                     boost::lock_guard<boost::mutex> log(endMutex);
                     if (!isEnded) {
+                        delete connection;
                         isEnded = true;
                     }
                 };
 
             private:
                 serialization::SerializationService& serializationService;
-                connection::Connection& connection;
+                connection::Connection* connection;
                 volatile bool isEnded;
                 boost::mutex endMutex;
             };

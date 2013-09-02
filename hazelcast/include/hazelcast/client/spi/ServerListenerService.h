@@ -28,43 +28,34 @@ namespace hazelcast {
                 ~ServerListenerService();
 
                 template <typename Request, typename EventHandler, typename Event>
-                long listen(const std::string& instanceName, const Request& registrationRequest, const serialization::Data& key, const EventHandler& eventHandler) {
+                long listen(const Request& registrationRequest, const serialization::Data& key, const EventHandler& eventHandler) {
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler, key);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
-
-                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
-                    m->put(registrationId, listenerSupport);
-
-                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
-                    if (oldMap != NULL) {
-                        m.reset();
-                        oldMap->put(registrationId, listenerSupport);
-                    }
+                    lock.lock();
+                    allListeners[registrationId] = listenerSupport;
                     listenerSupport->listen();
+                    lock.unlock();
                     return registrationId;
                 };
 
                 template <typename Request, typename EventHandler, typename Event>
-                long listen(const std::string& instanceName, const Request& registrationRequest, const EventHandler& eventHandler) {
-                    ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
+                long listen(const Request& registrationRequest, const EventHandler& eventHandler) {
+                    ListenerSupport <Request, EventHandler, Event> *support = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
+                    ListenerSupportBase *listenerSupport = support;
                     long registrationId = reinterpret_cast<long>(listenerSupport);
+                    lock.lock();
 
-                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > m(new util::ConcurrentSmartMap<long, ListenerSupportBase>);
-                    m->put(registrationId, listenerSupport);
-
-                    util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > oldMap = allListeners.putIfAbsent(instanceName, m);
-                    if (oldMap != NULL) {
-                        m.reset();
-                        oldMap->put(registrationId, listenerSupport);
-                    }
+                    allListeners[registrationId] = listenerSupport;
                     listenerSupport->listen();
+                    lock.unlock();
                     return registrationId;
                 };
 
-                bool stopListening(const std::string& instanceName, long registrationId);
+                bool stopListening(long registrationId);
 
             private:
-                util::ConcurrentSmartMap<std::string, util::ConcurrentSmartMap<long, ListenerSupportBase> > allListeners;
+                std::map<long, ListenerSupportBase *> allListeners;
+                boost::mutex lock;
                 InvocationService& invocationService;
             };
         }

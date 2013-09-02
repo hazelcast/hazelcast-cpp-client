@@ -97,7 +97,7 @@ namespace hazelcast {
                             connection = getConnection(address);
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
-                            stream.reset(new ResponseStream(serializationService, *connection));
+                            stream.reset(new ResponseStream(serializationService, connection));
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             delete connection;
@@ -132,10 +132,11 @@ namespace hazelcast {
                             connection = getRandomConnection();
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
-                            stream.reset(new ResponseStream(serializationService, *connection));
+                            stream.reset(new ResponseStream(serializationService, connection));
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                            delete connection;
+                            if(connection != NULL)
+                                delete connection;
                             if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();

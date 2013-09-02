@@ -20,13 +20,14 @@ namespace hazelcast {
                     REMOVE_BACKUP = 4,
                     DATA_RECORD = 5,
                     OBJECT_RECORD = 6,
-                    KEY_SET = 7,
-                    VALUES = 8,
-                    ENTRY_SET = 9,
-                    ENTRY_VIEW = 10,
-                    MAP_STATS = 11,
-                    QUERY_RESULT_ENTRY = 12,
-                    QUERY_RESULT_STREAM = 13
+                    CACHED_RECORD = 7,
+                    KEY_SET = 8,
+                    VALUES = 9,
+                    ENTRY_SET =10,
+                    ENTRY_VIEW = 11,
+                    MAP_STATS = 12,
+                    QUERY_RESULT_ENTRY = 13,
+                    QUERY_RESULT_SET = 14
                 };
             }
 

@@ -6,6 +6,7 @@
 
 #include "../serialization/Data.h"
 #include "PortableHook.h"
+#include "hazelcast/client/map/DataSerializableHook.h"
 
 namespace hazelcast {
     namespace client {

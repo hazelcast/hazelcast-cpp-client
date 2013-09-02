@@ -16,15 +16,21 @@ namespace hazelcast {
             };
 
             ServerListenerService::~ServerListenerService() {
-                std::vector<util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > > values = allListeners.values();
-                values.clear();
+                boost::lock_guard<boost::mutex> lockGuard(lock);
+                std::map<long, ListenerSupportBase *>::iterator it;
+                for (it = allListeners.begin(); it != allListeners.end(); it++) {
+                    delete it->second;
+                }
             };
 
-            bool ServerListenerService::stopListening(const std::string& instanceName, long registrationId) {
-                util::AtomicPointer<util::ConcurrentSmartMap<long, ListenerSupportBase> > pMap = allListeners.get(instanceName);
-                util::AtomicPointer<ListenerSupportBase> listenerSupportBase = pMap->remove(registrationId);
-                if (listenerSupportBase != NULL) {
+            bool ServerListenerService::stopListening(long registrationId) {
+                boost::lock_guard<boost::mutex> lockGuard(lock);
+                if (allListeners.count(registrationId) > 0) {
+                    ListenerSupportBase *listenerSupportBase = allListeners[registrationId];
+                    //deletion of the listener object is responsibility of EventResponseHandler and
+                    // object will be deleted at next cycle(after seeing active is false)
                     listenerSupportBase->stop();
+                    allListeners.erase(registrationId);
                     return true;
                 }
                 return false;

@@ -68,8 +68,8 @@ namespace hazelcast {
 
             private:
                 void listenImpl() {
+                    EventResponseHandler eventResponseHandler(this);
                     while (active) {
-                        EventResponseHandler eventResponseHandler(*this);
                         try{
                             if (hasKey) {
                                 invocationService.invokeOnKeyOwner(request, key, eventResponseHandler);
@@ -85,18 +85,18 @@ namespace hazelcast {
                 class EventResponseHandler {
 
                 public:
-                    EventResponseHandler(ListenerSupport& listenerSupport)
+                    EventResponseHandler(ListenerSupport* listenerSupport)
                     : listenerSupport(listenerSupport) {
 
                     };
 
                     void handle(ResponseStream & stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
-                        listenerSupport.lastStream = &stream;
-                        while (listenerSupport.active) {
+                        listenerSupport->lastStream = &stream;
+                        while (listenerSupport->active) {
                             try {
                                 Event event = stream.read<Event>();
-                                listenerSupport.eventHandler.handle(event);
+                                listenerSupport->eventHandler.handle(event);
                             } catch(exception::IOException& e){
                                 throw e;
                             } catch (exception::IException& e) {
@@ -104,12 +104,12 @@ namespace hazelcast {
                                     stream.end();
                                 } catch (exception::IOException& ignored) {
                                 }
-                                listenerSupport.active = false;
+                                listenerSupport->active = false;
                             }
                         }
                     };
                 private :
-                    ListenerSupport & listenerSupport;
+                    std::auto_ptr<ListenerSupport> listenerSupport;
                 };
 
                 InvocationService& invocationService;
@@ -118,7 +118,7 @@ namespace hazelcast {
                 serialization::Data key;
                 Request request;
                 EventHandler eventHandler;
-                volatile bool active;
+                boost::atomic<bool> active;
 
             };
         }

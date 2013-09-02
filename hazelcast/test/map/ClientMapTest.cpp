@@ -28,7 +28,7 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
-//                addTest(&ClientMapTest::testIssue537, "testIssue537");
+                addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -36,7 +36,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
                 addTest(&ClientMapTest::testAsyncGet, "testAsyncGet");
                 addTest(&ClientMapTest::testAsyncPut, "testAsyncPut");
-//                addTest(&ClientMapTest::testAsyncPutWithTtl, "testAsyncPutWithTtl");
+                addTest(&ClientMapTest::testAsyncPutWithTtl, "testAsyncPutWithTtl");
                 addTest(&ClientMapTest::testAsyncRemove, "testAsyncRemove");
                 addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
                 addTest(&ClientMapTest::testPutTtl, "testPutTtl");
@@ -49,10 +49,10 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
                 addTest(&ClientMapTest::testTryLock, "testTryLock");
                 addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
-//                addTest(&ClientMapTest::testValues, "testValues");
+                addTest(&ClientMapTest::testValues, "testValues");
                 addTest(&ClientMapTest::testReplace, "testReplace");
                 addTest(&ClientMapTest::testListener, "testListener");
-//                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
+                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
 
             };
 
@@ -432,7 +432,7 @@ namespace hazelcast {
                 util::CountDownLatch latch(1);
                 boost::thread t1(boost::bind(testTryLockThread1, &latch, imap.get()));
 
-                assertTrue(latch.await(5 * 1000));
+                assertTrue(latch.await(100 * 1000));
 
                 assertTrue(imap->isLocked("key1"));
 
@@ -465,7 +465,7 @@ namespace hazelcast {
 
                 fillMap();
                 vector<std::string> tempVector;
-                tempVector = imap->values("this , value1");
+                tempVector = imap->values("this == value1");
                 assertEqual(1, tempVector.size());
 
                 vector<std::string>::iterator it = tempVector.begin();
@@ -490,8 +490,63 @@ namespace hazelcast {
                 assertEqual("value3", imap->get("key1"));
             }
 
+            class SampleEntryListener {
+            public:
+                SampleEntryListener(util::CountDownLatch& addLatch, util::CountDownLatch& removeLatch)
+                :addLatch(addLatch)
+                , removeLatch(removeLatch) {
+                };
+
+                void entryAdded(impl::EntryEvent<std::string, std::string>& event) {
+                    addLatch.countDown();
+                };
+
+                void entryRemoved(impl::EntryEvent<std::string, std::string>& event) {
+                    removeLatch.countDown();
+                }
+
+                void entryUpdated(impl::EntryEvent<std::string, std::string>& event) {
+                }
+
+                void entryEvicted(impl::EntryEvent<std::string, std::string>& event) {
+                }
+
+            private:
+                util::CountDownLatch& addLatch;
+                util::CountDownLatch& removeLatch;
+            };
+
             void ClientMapTest::testListener() {
-                assertTrue(false);
+                util::CountDownLatch latch1Add(5);
+                util::CountDownLatch latch1Remove(2);
+
+                util::CountDownLatch latch2Add(1);
+                util::CountDownLatch latch2Remove(1);
+
+                SampleEntryListener listener1(latch1Add, latch1Remove);
+                SampleEntryListener listener2(latch2Add, latch2Remove);
+
+                long listener1ID = imap->addEntryListener(listener1, false);
+                long listener2ID = imap->addEntryListener(listener2, "key3", true);
+
+                boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+                imap->put("key1", "value1");
+                imap->put("key2", "value2");
+                imap->put("key3", "value3");
+                imap->put("key4", "value4");
+                imap->put("key5", "value5");
+
+                imap->remove("key1");
+                imap->remove("key3");
+
+                assertTrue(latch1Add.await(10 * 1000));
+                assertTrue(latch1Remove.await(10 * 1000));
+                assertTrue(latch2Add.await(5 * 1000));
+                assertTrue(latch2Remove.await(5 * 1000));
+                
+                imap->removeEntryListener(listener1ID);
+                imap->removeEntryListener(listener2ID);
 
             }
 
@@ -499,20 +554,20 @@ namespace hazelcast {
 
                 fillMap();
                 vector<std::string> tempVector;
-                tempVector = imap->values("this , value1");
+                tempVector = imap->values("this = 'value1'");
 
                 vector<std::string>::iterator it = tempVector.begin();
                 assertEqual("value1", *it);
 
                 vector<std::string> tempVector2;
-                tempVector2 = imap->keySet("this , value1");
+                tempVector2 = imap->keySet("this = 'value1'");
 
                 vector<std::string>::iterator it2 = tempVector2.begin();
                 assertEqual("key1", *it2);
 
 
                 std::vector<std::pair<std::string, std::string> > tempVector3;
-                tempVector3 = imap->entrySet("this , value1");
+                tempVector3 = imap->entrySet("this == value1");
 
                 std::vector<std::pair<std::string, std::string> > ::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);

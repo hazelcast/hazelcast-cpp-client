@@ -96,6 +96,7 @@ namespace hazelcast {
                     int version = classDefinition.getVersion();
 
                     serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
+                    return object;
                 };
 
                 template<typename  T>
@@ -107,6 +108,7 @@ namespace hazelcast {
                     }
                     const int typeId = readInt();
                     serializerHolder.getDataSerializer().read(*this, object);
+                    return object;
                 };
 
                 template<typename  T>
