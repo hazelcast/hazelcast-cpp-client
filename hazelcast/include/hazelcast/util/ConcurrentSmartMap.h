@@ -17,8 +17,7 @@ namespace hazelcast {
     namespace util {
 
 
-
-        template <typename K, typename V, typename Comparator  = std::less<K>, typename Hasher >
+        template <typename K, typename V, typename Comparator  = std::less<K> >
         class ConcurrentSmartMap {
         public:
             ConcurrentSmartMap() {
@@ -38,7 +37,7 @@ namespace hazelcast {
              * @return the previous value associated with the specified key,
              *         or <tt>null</tt> if there was no mapping for the key
              */
-            AtomicPointer<V , Hasher> putIfAbsent(const K& key, AtomicPointer<V ,Hasher> value) {
+            AtomicPointer<V> putIfAbsent(const K& key, AtomicPointer<V > value) {
                 boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     return internalMap[key];
@@ -48,14 +47,14 @@ namespace hazelcast {
                 }
             };
 
-            AtomicPointer<V, Hasher> put(const K& key, V *value) {
+            AtomicPointer<V> put(const K& key, V *value) {
                 boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
-                    AtomicPointer<V, Hasher> tempValue = internalMap[key];
-                    internalMap[key] = AtomicPointer<V, Hasher>(value);
+                    AtomicPointer<V> tempValue = internalMap[key];
+                    internalMap[key] = AtomicPointer<V>(value);
                     return tempValue;
                 } else {
-                    internalMap[key] = AtomicPointer<V, Hasher>(value);
+                    internalMap[key] = AtomicPointer<V>(value);
                     return NULL;
                 }
             };
@@ -65,7 +64,7 @@ namespace hazelcast {
              * or {@code null} if this map contains no mapping for the key.
              *
              */
-            AtomicPointer<V, Hasher> get(const K& key) {
+            AtomicPointer<V> get(const K& key) {
                 boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
@@ -73,10 +72,10 @@ namespace hazelcast {
                     return NULL;
             };
 
-            AtomicPointer<V , Hasher> remove(const K& key) {
+            AtomicPointer<V> remove(const K& key) {
                 boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
-                    AtomicPointer<V, Hasher> value = internalMap[key];
+                    AtomicPointer<V> value = internalMap[key];
                     internalMap.erase(internalMap.find(key));
                     return value;
                 }
@@ -84,11 +83,11 @@ namespace hazelcast {
                     return NULL;
             };
 
-            std::vector<AtomicPointer<V, Hasher> > values() {
+            std::vector<AtomicPointer<V> > values() {
                 boost::lock_guard<boost::mutex> lg(mapLock);
-                std::vector<AtomicPointer<V, Hasher> > val(internalMap.size());
+                std::vector<AtomicPointer<V> > val(internalMap.size());
                 int i = 0;
-                for (typename std::map<K, AtomicPointer<V, Hasher> >::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
+                for (typename std::map<K, AtomicPointer<V> >::iterator it = internalMap.begin(); it != internalMap.end(); ++it) {
                     val[i++] = it->second;
                 }
                 return val;
@@ -105,7 +104,7 @@ namespace hazelcast {
             };
 
         private:
-            std::map<K, AtomicPointer<V, Hasher>, Comparator> internalMap;
+            std::map<K, AtomicPointer<V>, Comparator> internalMap;
             mutable boost::mutex mapLock;
 
         };

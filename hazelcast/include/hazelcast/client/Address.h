@@ -38,6 +38,8 @@ namespace hazelcast {
 
             void readData(serialization::ObjectDataInput& reader);
 
+            int hashCode() const;
+
         private:
             static const byte IPv4 = 4;
             static const byte IPv6 = 6;
@@ -45,6 +47,7 @@ namespace hazelcast {
             std::string host;
             int port;
             byte type;
+            mutable int hash;
         };
 
         struct addressComparator {

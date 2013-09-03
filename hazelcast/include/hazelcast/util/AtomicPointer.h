@@ -17,7 +17,7 @@
 namespace hazelcast {
     namespace util {
 
-        template <typename T, typename Hasher >
+        template <typename T>
         class AtomicPointer {
         public:
             AtomicPointer()
@@ -26,7 +26,7 @@ namespace hazelcast {
 
             AtomicPointer(T *const p)
             :pointer(p)
-            , accessLock(LockSupport::getLock(Hasher(*((*pointer).get())))) {
+            , accessLock(LockSupport::getLock((*pointer).get()->hashCode())) {
 
             };
 
