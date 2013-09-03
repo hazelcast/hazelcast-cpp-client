@@ -7,6 +7,7 @@
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/client/Address.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -32,7 +33,7 @@ namespace hazelcast {
 
                 Address address;
             private:
-                volatile bool active;
+                boost::atomic<bool> active;
                 hazelcast::util::ConcurrentQueue<Connection *> queue;
                 hazelcast::client::serialization::SerializationService& serializationService;
                 ConnectionManager &connectionManager;
