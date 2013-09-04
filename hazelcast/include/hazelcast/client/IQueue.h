@@ -58,7 +58,7 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeItemListener(long registrationId) {
-                return context->getServerListenerService().stopListening(instanceName, registrationId);
+                return context->getServerListenerService().stopListening(registrationId);
             };
 
             bool add(const E& e) {

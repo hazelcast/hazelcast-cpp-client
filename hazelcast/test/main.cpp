@@ -1,4 +1,8 @@
 #include "SimpleMapTest.h"
+#include "HazelcastInstanceFactory.h"
+#include "ClientSerializationTest.h"
+#include "ClientQueueTest.h"
+#include "ClientMapTest.h"
 #include "testUtil.h"
 
 using namespace hazelcast::client::test;
@@ -11,21 +15,18 @@ int testSpeed() {
 
 
 int main(int argc, char **argv) {
-//    ClientSerializationTest serializationTest;
-//    serializationTest.executeTests();
-//    HazelcastInstanceFactory factory;
-//    ClientMapTest mapTest(factory);
-//    mapTest.executeTests();
-    //QueueTest queueTest;
-    //queueTest.executeTests();
+    ClientSerializationTest serializationTest;
+    serializationTest.executeTests();
+    HazelcastInstanceFactory factory;
+    ClientMapTest mapTest(factory);
+    mapTest.executeTests();
+    ClientQueueTest queueTest(factory);
+    queueTest.executeTests();
     //IAtomicLongTest atomTest;
     //atomTest.executeTests();
 //    IdGeneratorTest generatorTest;
 //    generatorTest.executeTests();
-//    return 0;
-
-//    sampleCountDownLatchUsage();
-    return testSpeed();
-//    return deneme::init();
+    testSpeed();
+    return 0;
 };
 
