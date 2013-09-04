@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_QUERY_REQUEST
 #define HAZELCAST_QUERY_REQUEST
 
-#include "../serialization/SerializationConstants.h"
+
 #include "PortableHook.h"
 #include <string>
 

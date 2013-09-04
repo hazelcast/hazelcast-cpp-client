@@ -26,12 +26,12 @@ namespace hazelcast {
                 }
 
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                 };
 
 
-                inline void readPortable(serialization::PortableReader& reader) {
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                 };
             private:

@@ -8,7 +8,7 @@
 #define HAZELCAST_MAP_EVICT_REQUEST
 
 #include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+
 #include "../serialization/Data.h"
 #include <string>
 
@@ -33,7 +33,7 @@ namespace hazelcast {
                 };
 
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                     writer.writeInt("t", threadId);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
@@ -41,7 +41,7 @@ namespace hazelcast {
                 };
 
 
-                inline void readPortable(serialization::PortableReader& reader) {
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                     threadId = reader.readInt("t");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();

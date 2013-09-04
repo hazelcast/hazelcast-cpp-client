@@ -4,8 +4,7 @@
 #ifndef HAZELCAST_QUEUE_MAX_SIZE_REQUEST
 #define HAZELCAST_QUEUE_MAX_SIZE_REQUEST
 
-#include "../serialization/SerializationConstants.h"
-#include "QueuePortableHook.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,31 +12,16 @@ namespace hazelcast {
         namespace queue {
             class DrainRequest : public Portable {
             public:
-                DrainRequest(const std::string& name, bool maxSize)
-                :name(name)
-                , maxSize(maxSize) {
+                DrainRequest(const std::string& name, bool maxSize);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return queue::QueuePortableHook::DRAIN;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("m", maxSize);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    maxSize = reader.readInt("m");
-                };
             private:
                 std::string name;
                 int maxSize;

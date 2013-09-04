@@ -4,41 +4,25 @@
 #ifndef HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 #define HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
             class GetEntryViewRequest : public Portable, public RetryableRequest {
             public:
-                GetEntryViewRequest(const std::string& name, serialization::Data& key)
-                :name(name)
-                , key(key) {
+                GetEntryViewRequest(const std::string& name, serialization::Data& key);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::GET_ENTRY_VIEW;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
                 serialization::Data& key;
                 std::string name;

@@ -1,38 +1,36 @@
 //
-// Created by sancar koyunlu on 8/12/13.
+// Created by sancar koyunlu on 9/4/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-
-#include "hazelcast/client/map/GetRequest.h"
+#include "ContainsKeyRequest.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
-#include "PortableHook.h"
-#include "Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest(std::string& name, serialization::Data& key)
+            ContainsKeyRequest::ContainsKeyRequest(const std::string& name, serialization::Data& key)
             :name(name)
             , key(key) {
-
             };
 
-            int GetRequest::getFactoryId() const {
+            int ContainsKeyRequest::getFactoryId() const {
                 return PortableHook::F_ID;
             }
 
-            int GetRequest::getClassId() const {
-                return PortableHook::GET;
+            int ContainsKeyRequest::getClassId() const {
+                return PortableHook::CONTAINS_KEY;
             }
 
-            void GetRequest::writePortable(serialization::PortableWriter& writer) const {
+
+            void ContainsKeyRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 
-            void GetRequest::readPortable(serialization::PortableReader& reader) {
+
+            void ContainsKeyRequest::readPortable(serialization::PortableReader& reader) {
                 name = reader.readUTF("n");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 key.readData(in);

@@ -1,0 +1,41 @@
+//
+// Created by sancar koyunlu on 9/4/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+#include "hazelcast/client/queue/DrainRequest.h"
+#include "QueuePortableHook.h"
+#include "PortableReader.h"
+#include "PortableWriter.h"
+
+namespace hazelcast {
+    namespace client {
+        namespace queue {
+            DrainRequest::DrainRequest(const std::string& name, bool maxSize)
+            :name(name)
+            , maxSize(maxSize) {
+
+            };
+
+            int DrainRequest::getFactoryId() const {
+                return queue::QueuePortableHook::F_ID;
+            }
+
+            int DrainRequest::getClassId() const {
+                return queue::QueuePortableHook::DRAIN;
+            };
+
+
+            void DrainRequest::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("n", name);
+                writer.writeInt("m", maxSize);
+            };
+
+            void DrainRequest::readPortable(serialization::PortableReader& reader) {
+                name = reader.readUTF("n");
+                maxSize = reader.readInt("m");
+            };
+        }
+    }
+}
+

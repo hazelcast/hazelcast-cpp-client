@@ -23,7 +23,7 @@ namespace hazelcast {
                     CACHED_RECORD = 7,
                     KEY_SET = 8,
                     VALUES = 9,
-                    ENTRY_SET =10,
+                    ENTRY_SET = 10,
                     ENTRY_VIEW = 11,
                     MAP_STATS = 12,
                     QUERY_RESULT_ENTRY = 13,

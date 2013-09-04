@@ -4,51 +4,25 @@
 #ifndef HAZELCAST_QUEUE_OFFER_REQUEST
 #define HAZELCAST_QUEUE_OFFER_REQUEST
 
-#include "../serialization/Data.h"
-#include "QueuePortableHook.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace queue {
             class OfferRequest : public Portable {
             public:
-                OfferRequest(const std::string& name, serialization::Data& data, long timeout)
-                :name(name)
-                , timeoutInMillis(timeout)
-                , data(data) {
+                OfferRequest(const std::string& name, serialization::Data& data, long timeout);
 
-                };
+                OfferRequest(const std::string& name, serialization::Data& data);
 
-                OfferRequest(const std::string& name, serialization::Data& data)
-                :name(name)
-                , timeoutInMillis(0)
-                , data(data) {
+                int getFactoryId() const;
 
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                int getClassId() const {
-                    return queue::QueuePortableHook::OFFER;
-                }
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeLong("t", timeoutInMillis);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    data.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    timeoutInMillis = reader.readLong("t");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    data.readData(in);
-                };
             private:
                 serialization::Data& data;
                 std::string name;

@@ -7,13 +7,13 @@
 #define MAP_KEY_SET_REQUEST
 
 #include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class KeySetRequest : public Portable{
+            class KeySetRequest : public Portable {
             public:
                 KeySetRequest(const std::string& name)
                 :name(name) {
@@ -29,12 +29,12 @@ namespace hazelcast {
                 }
 
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                 };
 
 
-                inline void readPortable(serialization::PortableReader& reader) {
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                 };
             private:

@@ -1,8 +1,8 @@
 #include "SimpleMapTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "ClientSerializationTest.h"
-#include "ClientQueueTest.h"
 #include "ClientMapTest.h"
+#include "ClientQueueTest.h"
 #include "testUtil.h"
 
 using namespace hazelcast::client::test;

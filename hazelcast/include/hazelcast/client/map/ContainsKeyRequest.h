@@ -12,32 +12,16 @@ namespace hazelcast {
         namespace map {
             class ContainsKeyRequest : public Portable, public RetryableRequest {
             public:
-                ContainsKeyRequest(const std::string& name, serialization::Data& key)
-                :name(name)
-                , key(key) {
-                };
+                ContainsKeyRequest(const std::string& name, serialization::Data& key);
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getFactoryId() const;
 
-                int getClassId() const {
-                    return PortableHook::CONTAINS_KEY;
-                }
+                int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
                 serialization::Data& key;
                 std::string name;

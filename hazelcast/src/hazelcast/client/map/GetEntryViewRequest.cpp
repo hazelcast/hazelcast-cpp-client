@@ -1,38 +1,40 @@
 //
-// Created by sancar koyunlu on 8/12/13.
+// Created by sancar koyunlu on 9/4/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/map/GetRequest.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "GetEntryViewRequest.h"
 #include "PortableHook.h"
 #include "Data.h"
+#include "PortableReader.h"
+#include "PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest(std::string& name, serialization::Data& key)
+            GetEntryViewRequest::GetEntryViewRequest(const std::string& name, serialization::Data& key)
             :name(name)
             , key(key) {
 
             };
 
-            int GetRequest::getFactoryId() const {
+            int GetEntryViewRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            }
+            };
 
-            int GetRequest::getClassId() const {
-                return PortableHook::GET;
-            }
+            int GetEntryViewRequest::getClassId() const {
+                return PortableHook::GET_ENTRY_VIEW;
+            };
 
-            void GetRequest::writePortable(serialization::PortableWriter& writer) const {
+
+            void GetEntryViewRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 
-            void GetRequest::readPortable(serialization::PortableReader& reader) {
+
+            void GetEntryViewRequest::readPortable(serialization::PortableReader& reader) {
                 name = reader.readUTF("n");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 key.readData(in);
@@ -40,3 +42,4 @@ namespace hazelcast {
         }
     }
 }
+

@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_MAP_CLEAR_REQUEST
 #define HAZELCAST_MAP_CLEAR_REQUEST
 
-#include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,28 +16,16 @@ namespace hazelcast {
         namespace map {
             class ClearRequest : public Portable, public RetryableRequest {
             public:
-                ClearRequest(const std::string& name)
-                :name(name) {
+                ClearRequest(const std::string& name);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::CLEAR;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                };
-
-
-                inline void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                };
             private:
                 std::string name;
             };

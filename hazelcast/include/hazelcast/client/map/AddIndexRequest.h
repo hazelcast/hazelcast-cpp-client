@@ -7,8 +7,7 @@
 #ifndef HAZELCAST_ADD_INDEX_REQUEST
 #define HAZELCAST_ADD_INDEX_REQUEST
 
-#include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,34 +16,16 @@ namespace hazelcast {
 
             class AddIndexRequest : public Portable {
             public:
-                AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered)
-                :name(name)
-                , attribute(attribute)
-                , ordered(ordered) {
+                AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::ADD_INDEX;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", name);
-                    writer.writeUTF("a", attribute);
-                    writer.writeBoolean("o", ordered);
-                };
-
-
-                inline void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("name");
-                    attribute = reader.readUTF("a");
-                    ordered = reader.readBoolean("o");
-                };
             private:
                 std::string name;
                 std::string attribute;

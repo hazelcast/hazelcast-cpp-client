@@ -7,7 +7,7 @@
 #define HAZELCAST_MAP_DESTROY_REQUEST
 
 #include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+
 #include <string>
 
 namespace hazelcast {
@@ -29,12 +29,12 @@ namespace hazelcast {
                 }
 
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("name", name);
                 };
 
 
-                inline void readPortable(serialization::PortableReader& reader) {
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("name");
                 };
             private:

@@ -4,44 +4,23 @@
 #ifndef HAZELCAST_MAP_DELETE_REQUEST
 #define HAZELCAST_MAP_DELETE_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
             class DeleteRequest : public Portable {
             public:
-                DeleteRequest(const std::string& name, serialization::Data& key, int threadId)
-                :name(name)
-                , key(key)
-                , threadId(threadId) {
+                DeleteRequest(const std::string& name, serialization::Data& key, int threadId);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::DELETE;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    threadId = reader.readInt("t");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
                 serialization::Data& key;
                 std::string name;

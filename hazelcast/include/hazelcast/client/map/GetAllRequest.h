@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class GetAllRequest : public Portable ,public RetryableRequest{
+            class GetAllRequest : public Portable, public RetryableRequest {
             public:
                 GetAllRequest(const std::string& name, std::vector<serialization::Data>& keys)
                 :name(name)
@@ -27,7 +27,7 @@ namespace hazelcast {
                 }
 
 
-                inline void writePortable(serialization::PortableWriter& writer) const {
+                void writePortable(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", name);
                     writer.writeInt("size", keys.size());
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
@@ -37,7 +37,7 @@ namespace hazelcast {
                 };
 
 
-                inline void readPortable(serialization::PortableReader& reader) {
+                void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
                     int size = reader.readInt("size");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();

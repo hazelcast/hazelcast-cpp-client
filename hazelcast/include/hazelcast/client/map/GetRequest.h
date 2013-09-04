@@ -4,8 +4,6 @@
 #ifndef HAZELCAST_MAP_GET_REQUEST
 #define HAZELCAST_MAP_GET_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
 #include "Portable.h"
 
 namespace hazelcast {
@@ -16,7 +14,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class GetRequest : public Portable ,public RetryableRequest{
+            class GetRequest : public Portable, public RetryableRequest {
             public:
                 GetRequest(std::string& name, serialization::Data& key);
 

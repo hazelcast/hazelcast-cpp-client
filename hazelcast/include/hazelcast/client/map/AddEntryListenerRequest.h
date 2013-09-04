@@ -7,8 +7,7 @@
 #ifndef HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 #define HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 
-#include "PortableHook.h"
-#include "../serialization/SerializationConstants.h"
+#include "Portable.h"
 #include "Data.h"
 #include <string>
 
@@ -18,63 +17,22 @@ namespace hazelcast {
 
             class AddEntryListenerRequest : public Portable {
             public:
-                AddEntryListenerRequest(const std::string& name, bool includeValue)
-                :name(name), includeValue(includeValue), hasKey(false), hasPredicate(false) {
+                AddEntryListenerRequest(const std::string& name, bool includeValue);
 
-                }
+                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key, const std::string& sql);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key, const std::string& sql)
-                :name(name), includeValue(includeValue), key(key), sql(sql), hasKey(true), hasPredicate(true) {
+                AddEntryListenerRequest(const std::string& name, bool includeValue, const std::string& sql);
 
-                };
+                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const std::string& sql)
-                :name(name), includeValue(includeValue), sql(sql), hasKey(false), hasPredicate(true) {
+                int getFactoryId() const;
 
-                };
+                int getClassId() const;
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key)
-                :name(name), includeValue(includeValue), key(key), hasKey(true), hasPredicate(false) {
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
-
-                int getClassId() const {
-                    return PortableHook::ADD_ENTRY_LISTENER;
-                }
-
-
-                inline void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", name);
-                    writer.writeBoolean("i", includeValue);
-                    writer.writeBoolean("key", hasKey);
-                    writer.writeBoolean("pre", hasPredicate);
-                    if (hasPredicate) {
-                        writer.writeUTF("p", sql);
-                    }
-                    if (hasKey) {
-                        serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                        key.writeData(out);
-                    }
-                };
-
-
-                inline void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("name");
-                    includeValue = reader.readBoolean("i");
-                    hasKey = reader.readBoolean("key");
-                    hasPredicate = reader.readBoolean("pre");
-                    if (hasPredicate) {
-                        sql = reader.readUTF("p");
-                    }
-                    if (hasKey) {
-                        serialization::ObjectDataInput &in = reader.getRawDataInput();
-                        key.readData(in);
-                    }
-                };
             private:
                 std::string name;
                 std::string sql;

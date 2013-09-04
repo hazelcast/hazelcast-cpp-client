@@ -5,7 +5,10 @@
 #define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
 #include "../serialization/Data.h"
-#include "QueuePortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
+#include <vector>
+#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -13,40 +16,17 @@ namespace hazelcast {
             class ContainsRequest : public Portable, public RetryableRequest {
             public:
 
-                ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList)
-                :name(name)
-                , dataList(dataList) {
+                ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return queue::QueuePortableHook::CONTAINS;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("s", dataList.size());
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    for (int i = 0; i < dataList.size(); ++i) {
-                        dataList[i].writeData(out);
-                    }
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    int size = reader.readInt("s");
-                    dataList.resize(size);
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    for (int i = 0; i < size; ++i) {
-                        dataList[i].readData(in);
-                    }
-                };
             private:
                 std::vector<serialization::Data>& dataList;
                 std::string name;
