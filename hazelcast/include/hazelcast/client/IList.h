@@ -19,6 +19,7 @@ namespace hazelcast {
         template<typename E>
         class IList {
             friend class HazelcastClient;
+
         public:
 
             template < typename L>
@@ -29,7 +30,7 @@ namespace hazelcast {
             };
 
             bool removeItemListener(long registrationId) {
-                return context->getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
+                return context->getServerListenerService().stopListening(registrationId);
             };
 
             int size() {

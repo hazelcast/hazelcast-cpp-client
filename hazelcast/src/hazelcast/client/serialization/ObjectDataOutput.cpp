@@ -15,8 +15,8 @@ namespace hazelcast {
             ObjectDataOutput::ObjectDataOutput(DataOutput& dataOutput, SerializationContext& serializationContext)
             : context(&serializationContext)
             , serializerHolder(&serializationContext.getSerializerHolder())
-            , isEmpty(false) 
-            , dataOutput(&dataOutput){
+            , isEmpty(false)
+            , dataOutput(&dataOutput) {
 
             };
 
@@ -147,10 +147,10 @@ namespace hazelcast {
             void ObjectDataOutput::writePortable(const Portable *portable) {
                 writeBoolean(true);
                 writeInt(portable->getSerializerId());
-                util::AtomicPointer <ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
+                ClassDefinition *cd = context->lookup(portable->getFactoryId(), portable->getClassId());
                 if (cd == NULL) {
                     ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context->getVersion(), *context);
-                    util::AtomicPointer <ClassDefinition> cd = classDefinitionWriter.getOrBuildClassDefinition(*portable);
+                    cd = classDefinitionWriter.getOrBuildClassDefinition(*portable);
                     cd->writeData(*dataOutput);
                 }
                 serializerHolder->getPortableSerializer().write(*dataOutput, *portable);

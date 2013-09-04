@@ -6,6 +6,7 @@
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
 #include "Member.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -28,11 +29,13 @@ namespace hazelcast {
 
             class ClusterListenerThread {
             public:
-                ClusterListenerThread(ConnectionManager& , ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&,serialization::SerializationService&);
+                ClusterListenerThread(ConnectionManager&, ClientConfig& clientConfig, spi::ClusterService&, spi::LifecycleService&, serialization::SerializationService&);
 
                 void setInitialConnection(connection::Connection *);
 
                 void run();
+
+                boost::atomic<bool> isReady;
             private:
                 ConnectionManager& connectionManager;
                 spi::ClusterService& clusterService;
@@ -42,7 +45,6 @@ namespace hazelcast {
                 Connection *conn;
                 std::vector<Member> members;
                 ClientConfig& clientConfig;
-
 
                 Connection *pickConnection();
 

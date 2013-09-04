@@ -8,7 +8,6 @@
 #define HAZELCAST_SERVER_LISTENER_SERVICE
 
 #include "../serialization/Data.h"
-#include "ConcurrentSmartMap.h"
 #include "ListenerSupport.h"
 #include "ClientContext.h"
 #include "InvocationService.h"
@@ -16,10 +15,7 @@
 
 namespace hazelcast {
     namespace client {
-
-
         namespace spi {
-
 
             class ServerListenerService {
             public:

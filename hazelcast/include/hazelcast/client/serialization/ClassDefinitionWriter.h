@@ -79,11 +79,11 @@ namespace hazelcast {
                     addNestedField(portables[0], fd);
                 };
 
-                util::AtomicPointer<ClassDefinition> getClassDefinition();
+                ClassDefinition *getClassDefinition();
 
                 ObjectDataOutput& getRawDataOutput();
 
-                util::AtomicPointer<ClassDefinition> getOrBuildClassDefinition(const Portable& p);
+                ClassDefinition *getOrBuildClassDefinition(const Portable& p);
 
                 void end();
 
@@ -93,7 +93,7 @@ namespace hazelcast {
                 template <typename T>
                 void addNestedField(T& p, FieldDefinition& fd) {
                     cd->add(fd);
-                    util::AtomicPointer<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
+                    ClassDefinition *nestedCd = getOrBuildClassDefinition(p);
                     cd->add(nestedCd);
                 };
 
@@ -102,7 +102,7 @@ namespace hazelcast {
                 int index;
                 bool raw;
                 ObjectDataOutput emptyDataOutput;
-                util::AtomicPointer<ClassDefinition> cd;
+                ClassDefinition *cd;
                 SerializationContext& context;
 
             };

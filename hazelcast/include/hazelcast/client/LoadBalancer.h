@@ -18,7 +18,7 @@ namespace hazelcast {
 
             virtual void init(Cluster &cluster) = 0;
 
-            virtual const connection::Member& next() = 0;
+            virtual const connection::Member next() = 0;
 
             virtual ~LoadBalancer() {
 

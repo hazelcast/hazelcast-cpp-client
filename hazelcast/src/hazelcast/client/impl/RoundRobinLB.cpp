@@ -19,12 +19,12 @@ namespace hazelcast {
                 cluster.addMembershipListener(this);
             };
 
-            const connection::Member& RoundRobinLB::next() {
-                util::AtomicPointer<std::vector<connection::Member> > members = getMembers();
-                if (members->size() == 0) {
+            const connection::Member RoundRobinLB::next() {
+                std::vector<connection::Member> members = getMembers();
+                if (members.size() == 0) {
                     throw exception::IException("const connection::Member& RoundRobinLB::next()", "No member in member list!!");
                 }
-                return (*members)[++index % members->size()];
+                return members[++index % members.size()];
             }
 
 

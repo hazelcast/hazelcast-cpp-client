@@ -18,13 +18,15 @@ namespace hazelcast {
             , clusterService(clusterService)
             , lifecycleService(lifecycleService)
             , serializationService(serializationService)
-            , conn(NULL) {
+            , conn(NULL)
+            , isReady(false) {
                 ;
             };
 
             void ClusterListenerThread::setInitialConnection(connection::Connection *connection) {
                 this->conn = connection;
             };
+
 
             void ClusterListenerThread::run() {
                 while (true) {
@@ -126,14 +128,15 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member, addressComparator > *map = new std::map<Address, Member, addressComparator>;
+                std::map<Address, Member, addressComparator > map;
                 std::cerr << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                     std::cerr << "\t" << (*it) << std::endl;
-                    (*map)[(*it).getAddress()] = (*it);
+                    map[(*it).getAddress()] = (*it);
                 }
                 std::cerr << "}" << std::endl;
-                clusterService.membersRef.reset(map);
+                clusterService.setMembers(map);
+                isReady = true;
 
             };
 

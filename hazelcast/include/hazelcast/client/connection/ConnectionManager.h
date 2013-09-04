@@ -7,6 +7,7 @@
 
 #include "HeartBeatChecker.h"
 #include "Address.h"
+#include "ConcurrentSmartMap.h"
 
 namespace hazelcast {
     namespace client {

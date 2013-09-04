@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 16;
+int THREAD_COUNT = 1;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
@@ -76,7 +76,7 @@ public:
         server_port = port;
     };
 
-    void op(HazelcastClient* a) {
+    void op(HazelcastClient *a) {
 //        ClientConfig clientConfig;
 //        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
 //        HazelcastClient hazelcastClient(clientConfig);

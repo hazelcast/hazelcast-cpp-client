@@ -19,12 +19,12 @@ namespace hazelcast {
         namespace serialization {
 
             PortableSerializer::PortableSerializer(SerializationContext& serializationContext)
-            : context(serializationContext){
+            : context(serializationContext) {
 
             };
 
-            util::AtomicPointer<ClassDefinition> PortableSerializer::getClassDefinition(const Portable& p) {
-                util::AtomicPointer<ClassDefinition> cd;
+            ClassDefinition *PortableSerializer::getClassDefinition(const Portable& p) {
+                ClassDefinition *cd;
                 int factoryId = p.getFactoryId();
                 int classId = p.getClassId();
                 if (context.isClassDefinitionExists(factoryId, classId)) {
@@ -41,7 +41,7 @@ namespace hazelcast {
             };
 
             void PortableSerializer::write(DataOutput &dataOutput, const Portable& p) {
-                util::AtomicPointer<ClassDefinition> cd = getClassDefinition(p);
+                ClassDefinition *cd = getClassDefinition(p);
                 DefaultPortableWriter dpw(context, cd, dataOutput);
                 PortableWriter portableWriter(&dpw);
                 p.writePortable(portableWriter);
@@ -49,7 +49,7 @@ namespace hazelcast {
             };
 
             void PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion) {
-                util::AtomicPointer<ClassDefinition> cd;
+                ClassDefinition *cd;
 
                 if (context.getVersion() == dataVersion) {
                     cd = context.lookup(factoryId, classId); // using serializationContext.version

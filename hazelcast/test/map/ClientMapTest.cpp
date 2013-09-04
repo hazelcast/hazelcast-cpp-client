@@ -19,7 +19,6 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory.newHazelcastInstance())
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , imap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
-
             };
 
 
@@ -43,7 +42,6 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
                 addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
                 addTest(&ClientMapTest::testSet, "testSet");
-                addTest(&ClientMapTest::testPutTransient, "testPutTransient");
                 addTest(&ClientMapTest::testLock, "testLock");
                 addTest(&ClientMapTest::testLockTtl, "testLockTtl");
                 addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
@@ -337,13 +335,6 @@ namespace hazelcast {
 
             }
 
-
-            void ClientMapTest::testPutTransient() {
-                //TODO mapstore
-                assertTrue(false);
-
-            }
-
             void testLockThread(util::CountDownLatch *latch, IMap<std::string, std::string> *imap) {
                 imap->tryPut("key1", "value2", 1 * 1000);
                 latch->countDown();
@@ -544,7 +535,7 @@ namespace hazelcast {
                 assertTrue(latch1Remove.await(10 * 1000));
                 assertTrue(latch2Add.await(5 * 1000));
                 assertTrue(latch2Remove.await(5 * 1000));
-                
+
                 imap->removeEntryListener(listener1ID);
                 imap->removeEntryListener(listener2ID);
 
@@ -556,8 +547,7 @@ namespace hazelcast {
                 vector<std::string> tempVector;
                 tempVector = imap->values("this = 'value1'");
 
-                vector<std::string>::iterator it = tempVector.begin();
-                assertEqual("value1", *it);
+                assertEqual("value1", tempVector[0]);
 
                 vector<std::string> tempVector2;
                 tempVector2 = imap->keySet("this = 'value1'");

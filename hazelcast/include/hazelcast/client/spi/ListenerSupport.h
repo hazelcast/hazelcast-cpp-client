@@ -85,7 +85,7 @@ namespace hazelcast {
                 class EventResponseHandler {
 
                 public:
-                    EventResponseHandler(ListenerSupport* listenerSupport)
+                    EventResponseHandler(ListenerSupport *listenerSupport)
                     : listenerSupport(listenerSupport) {
 
                     };
@@ -96,6 +96,8 @@ namespace hazelcast {
                         while (listenerSupport->active) {
                             try {
                                 Event event = stream.read<Event>();
+                                if (!listenerSupport->active)
+                                    break;
                                 listenerSupport->eventHandler.handle(event);
                             } catch(exception::IOException& e){
                                 throw e;

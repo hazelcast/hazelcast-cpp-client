@@ -14,7 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DefaultPortableWriter::DefaultPortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& dataOutput)
+            DefaultPortableWriter::DefaultPortableWriter(SerializationContext& serializationContext, ClassDefinition *cd, DataOutput& dataOutput)
             : context(serializationContext)
             , serializerHolder(serializationContext.getSerializerHolder())
             , dataOutput(dataOutput)
@@ -151,7 +151,7 @@ namespace hazelcast {
                 dataOutput.writeInt(begin, dataOutput.position()); // write final offset
             };
 
-            util::AtomicPointer<ClassDefinition> DefaultPortableWriter::getClassDefinition(const Portable& p) {
+            ClassDefinition *DefaultPortableWriter::getClassDefinition(const Portable& p) {
                 return serializerHolder.getPortableSerializer().getClassDefinition(p);
             };
 

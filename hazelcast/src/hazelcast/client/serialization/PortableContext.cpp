@@ -20,6 +20,10 @@ namespace hazelcast {
             };
 
             PortableContext::~PortableContext() {
+                std::vector<ClassDefinition *> values = versionedDefinitions.values();
+                for (int i = 0; i < values.size(); i++) {
+//                    delete values[i]; //TODO commented because of tests
+                }
 
             };
 
@@ -33,26 +37,26 @@ namespace hazelcast {
                 return (versionedDefinitions.containsKey(key));
             };
 
-            util::AtomicPointer<ClassDefinition> PortableContext::lookup(int classId, int version) {
+            ClassDefinition *PortableContext::lookup(int classId, int version) {
                 long key = combineToLong(classId, version);
                 return versionedDefinitions.get(key);
 
             };
 
-            util::AtomicPointer<ClassDefinition> PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > compressedBinary) {
+            ClassDefinition *PortableContext::createClassDefinition(std::auto_ptr< std::vector<byte> > compressedBinary) {
                 if (compressedBinary.get() == NULL || compressedBinary.get()->size() == 0) {
                     throw exception::IOException("PortableContext::createClassDefinition", "Illegal class-definition binary! ");
                 }
                 std::vector<byte> decompressed = decompress(*(compressedBinary.get()));
 
                 DataInput dataInput(decompressed);
-                util::AtomicPointer<ClassDefinition> cd(new ClassDefinition);
+                ClassDefinition *cd = new ClassDefinition();
                 cd->readData(dataInput);
                 cd->setBinary(compressedBinary);
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
-                util::AtomicPointer<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(key, cd);
+                ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
                 if (currentCD == NULL) {
                     serializationContext->registerNestedDefinitions(cd);
                     return cd;
@@ -61,7 +65,7 @@ namespace hazelcast {
                 }
             };
 
-            util::AtomicPointer<ClassDefinition> PortableContext::registerClassDefinition(util::AtomicPointer<ClassDefinition> cd) {
+            ClassDefinition *PortableContext::registerClassDefinition(ClassDefinition *cd) {
                 if (cd->getVersion() < 0) {
                     cd->setVersion(serializationContext->getVersion());
                 }
@@ -75,7 +79,7 @@ namespace hazelcast {
                 }
 
                 long key = combineToLong(cd->getClassId(), cd->getVersion());
-                util::AtomicPointer<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(key, cd);
+                ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
                 if (currentCD == NULL) {
                     serializationContext->registerNestedDefinitions(cd);
                     return cd;

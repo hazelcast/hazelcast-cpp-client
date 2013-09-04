@@ -99,13 +99,9 @@ namespace hazelcast {
         class Future {
         public:
             Future():
-            basePtr(new pImpl::FutureBase<R>) {
+            basePtr(new pImpl::FutureBase<R>, rand()) {//TODO lockId?
 
             };
-
-//            pImpl::FutureBase<R>& operator ->() {
-//                return *(basePtr.get());
-//            }
 
             pImpl::FutureBase<R>& accessInternal() {
                 return *(basePtr.get());

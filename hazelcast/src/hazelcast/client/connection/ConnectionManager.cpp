@@ -40,7 +40,7 @@ namespace hazelcast {
 
             Connection *ConnectionManager::getConnection(const Address& address) {
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(address);
-                if (pool == NULL )
+                if (pool.isNull())
                     return NULL;
                 Connection *connection = NULL;
                 connection = pool->take();
@@ -60,7 +60,7 @@ namespace hazelcast {
 
             void ConnectionManager::releaseConnection(Connection *connection) {
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(connection->getEndpoint());
-                if (pool != NULL) {
+                if (!pool.isNull()) {
                     pool->release(connection);
                 } else {
                     std::cerr << "Closing connection : " << *connection << " reason => Member pool is removed";
@@ -70,17 +70,21 @@ namespace hazelcast {
 
             util::AtomicPointer <ConnectionPool> ConnectionManager::getConnectionPool(const Address& address) {
                 util::AtomicPointer<ConnectionPool> pool = poolMap.get(address);
-                if (pool == NULL) {
-                    if (!clusterService.isMemberExists(address)) {
-                        util::AtomicPointer<ConnectionPool> x;
-                        return x;
-                    }
-                    pool.reset(new ConnectionPool(address, serializationService, *this));
-
-                    util::AtomicPointer<ConnectionPool> previousPool = poolMap.putIfAbsent(address, pool);
-                    return previousPool == NULL ? pool : previousPool;
+                if (!pool.isNull()) {
+                    return pool;
                 }
-                return pool;
+                if (!clusterService.isMemberExists(address)) {
+                    util::AtomicPointer<ConnectionPool> x;
+                    return x;
+                }
+                util::AtomicPointer<ConnectionPool> np(new ConnectionPool(address, serializationService, *this), address.hashCode());
+
+                util::AtomicPointer<ConnectionPool> previousPool = poolMap.putIfAbsent(address, np);
+                if (previousPool.isNull()) {
+                    return np;
+                } else {
+                    return previousPool;
+                }
             };
 
             void ConnectionManager::removeConnectionPool(const Address &address) {

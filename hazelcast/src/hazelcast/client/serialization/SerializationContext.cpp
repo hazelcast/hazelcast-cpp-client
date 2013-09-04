@@ -22,6 +22,10 @@ namespace hazelcast {
             };
 
             SerializationContext::~SerializationContext() {
+                std::vector<PortableContext *> valueArr = portableContextMap.values();
+                for (int i = 0; i < valueArr.size(); i++) {
+                    delete valueArr[i];
+                }
             };
 
             SerializationContext::SerializationContext(const SerializationContext& rhs)
@@ -37,7 +41,7 @@ namespace hazelcast {
                 return isClassDefinitionExists(factoryId, classId, contextVersion);
             };
 
-            util::AtomicPointer<ClassDefinition> SerializationContext::lookup(int factoryId, int classId) {
+            ClassDefinition *SerializationContext::lookup(int factoryId, int classId) {
                 return getPortableContext(factoryId).lookup(classId, contextVersion);
             };
 
@@ -45,28 +49,24 @@ namespace hazelcast {
                 return getPortableContext(factoryId).isClassDefinitionExists(classId, version);
             };
 
-            util::AtomicPointer<ClassDefinition> SerializationContext::lookup(int factoryId, int classId, int version) {
+            ClassDefinition *SerializationContext::lookup(int factoryId, int classId, int version) {
                 return getPortableContext(factoryId).lookup(classId, version);
             };
 
-            util::AtomicPointer<ClassDefinition> SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte> > binary) {
+            ClassDefinition *SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte> > binary) {
                 return getPortableContext(factoryId).createClassDefinition(binary);
             };
 
-            void SerializationContext::registerNestedDefinitions(util::AtomicPointer<ClassDefinition> cd) {
-                std::vector<util::AtomicPointer<ClassDefinition> > nestedDefinitions = cd->getNestedClassDefinitions();
-                for (std::vector<util::AtomicPointer<ClassDefinition> >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
+            void SerializationContext::registerNestedDefinitions(ClassDefinition *cd) {
+                std::vector<ClassDefinition * > nestedDefinitions = cd->getNestedClassDefinitions();
+                for (std::vector<ClassDefinition * >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
                     registerClassDefinition(*it);
                     registerNestedDefinitions(*it);
                 }
             };
 
-            util::AtomicPointer<ClassDefinition> SerializationContext::registerClassDefinition(util::AtomicPointer<ClassDefinition> cd) {
+            ClassDefinition *SerializationContext::registerClassDefinition(ClassDefinition *cd) {
                 return getPortableContext(cd->getFactoryId()).registerClassDefinition(cd);
-            };
-
-            util::AtomicPointer<ClassDefinition> SerializationContext::registerClassDefinition(ClassDefinition *cd) {
-                return getPortableContext(cd->getFactoryId()).registerClassDefinition(util::AtomicPointer<ClassDefinition>(cd));
             };
 
             int SerializationContext::getVersion() {
@@ -85,15 +85,18 @@ namespace hazelcast {
 //                    throw hazelcast::client::IException(message);
 //                }
 //                return portableContextMap.at(factoryId);
-                util::AtomicPointer<PortableContext> value = portableContextMap.get(factoryId);
+                PortableContext *value = portableContextMap.get(factoryId);
                 if (value == NULL) {
-                    value = util::AtomicPointer<PortableContext>(new PortableContext(this));
-                    util::AtomicPointer<PortableContext> current = portableContextMap.putIfAbsent(factoryId, value);
-                    value = current == NULL ? value : current;
+                    value = new PortableContext(this);
+                    PortableContext *current = portableContextMap.putIfAbsent(factoryId, value);
+                    if (current != NULL) {
+                        delete value;
+                        value = current;
+                    }
                 }
 //                PortableContext* temp = portableContextMap.get(factoryId);
 //                temp->setSerializationContext(this);
-                return *(value.get());
+                return *value;
             };
         }
     }

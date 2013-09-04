@@ -18,12 +18,8 @@ namespace hazelcast {
             };
 
             void AbstractLoadBalancer::setMembersRef() {
-                std::vector<connection::Member> memberSet = cluster->getMembers();
-                std::vector<connection::Member> *members = new std::vector<hazelcast::client::connection::Member>;
-                for (std::vector<connection::Member>::iterator it = memberSet.begin(); it != memberSet.end(); ++it) {
-                    members->push_back((*it));
-                }
-                membersRef.reset(members);
+                boost::lock_guard<boost::mutex> lg(membersLock);
+                membersRef = cluster->getMembers();
             };
 
             void AbstractLoadBalancer::memberAdded(const hazelcast::client::connection::MembershipEvent& membershipEvent) {
@@ -34,7 +30,8 @@ namespace hazelcast {
                 setMembersRef();
             };
 
-            util::AtomicPointer<std::vector<connection::Member> > AbstractLoadBalancer::getMembers() {
+            std::vector<connection::Member>  AbstractLoadBalancer::getMembers() {
+                boost::lock_guard<boost::mutex> lg(membersLock);
                 return membersRef;
             };
 

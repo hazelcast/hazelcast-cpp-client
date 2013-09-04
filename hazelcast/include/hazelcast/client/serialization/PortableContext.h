@@ -10,7 +10,7 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include "ConcurrentSmartMap.h"
+#include "ConcurrentMap.h"
 #include <vector>
 #include <map>
 
@@ -36,11 +36,11 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int) const;
 
-                util::AtomicPointer<ClassDefinition> lookup(int, int);
+                ClassDefinition *lookup(int, int);
 
-                util::AtomicPointer<ClassDefinition> createClassDefinition(std::auto_ptr< std::vector<byte> >);
+                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte> >);
 
-                util::AtomicPointer<ClassDefinition> registerClassDefinition(util::AtomicPointer<ClassDefinition>);
+                ClassDefinition *registerClassDefinition(ClassDefinition *);
 
             private:
                 void compress(std::vector<byte>&);
@@ -51,7 +51,7 @@ namespace hazelcast {
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                hazelcast::util::ConcurrentSmartMap<long, ClassDefinition> versionedDefinitions;
+                hazelcast::util::ConcurrentMap<long, ClassDefinition> versionedDefinitions;
 
                 SerializationContext *serializationContext;
             };

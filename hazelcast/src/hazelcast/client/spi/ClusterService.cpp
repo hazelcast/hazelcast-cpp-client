@@ -26,13 +26,13 @@ namespace hazelcast {
 
             void ClusterService::start() {
                 serialization::ClassDefinitionBuilder cd(-3, 3);
-                util::AtomicPointer<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
+                serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
                 serializationService.getSerializationContext().registerClassDefinition(ptr);
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
                 clusterThread.setInitialConnection(connection);
                 boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
-                while (membersRef.get() == NULL) {
+                while (!clusterThread.isReady) {
                     try {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     }catch(...){
@@ -139,7 +139,8 @@ namespace hazelcast {
             };
 
             bool ClusterService::isMemberExists(Address const & address) {
-                return membersRef->count(address) > 0;;
+                boost::lock_guard<boost::mutex> guard(membersLock);
+                return members.count(address) > 0;;
             };
 
             connection::Member ClusterService::getMember(const std::string& uuid) {
@@ -155,11 +156,9 @@ namespace hazelcast {
             std::vector<connection::Member>  ClusterService::getMemberList() {
                 typedef std::map<Address, connection::Member, addressComparator> MemberMap;
                 std::vector<connection::Member> v;
-                if (membersRef == NULL)
-                    return v;
+                boost::lock_guard<boost::mutex> guard(membersLock);
                 typename MemberMap::const_iterator it;
-                boost::lock_guard<util::AtomicPointer< MemberMap > > lockGuard(membersRef);
-                for (it = membersRef->begin(); it != membersRef->end(); it++) {
+                for (it = members.begin(); it != members.end(); it++) {
                     v.push_back(it->second);
                 }
                 return v;
@@ -170,7 +169,10 @@ namespace hazelcast {
                 partitionService.refreshPartitions();
             }
 
-
+            void ClusterService::setMembers(const std::map<Address, connection::Member, addressComparator >& map) {
+                boost::lock_guard<boost::mutex> guard(membersLock);
+                members = map;
+            }
         }
     }
 }

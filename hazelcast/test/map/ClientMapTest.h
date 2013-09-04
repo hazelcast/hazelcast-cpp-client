@@ -71,8 +71,6 @@ namespace hazelcast {
 
                 void testBasicPredicate();
 
-                void testPutTransient();
-
                 void testSet();
 
                 void testAsyncGet();

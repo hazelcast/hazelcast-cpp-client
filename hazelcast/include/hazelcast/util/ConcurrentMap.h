@@ -52,6 +52,21 @@ namespace hazelcast {
             };
 
             /**
+             *
+             * @return the previous value associated with the specified key,
+             *         or <tt>null</tt> if there was no mapping for the key
+             */
+            V *put(const K& key, V *value) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
+                V *returnValue = NULL;
+                if (internalMap.count(key) > 0) {
+                    returnValue = internalMap[key];
+                }
+                internalMap[key] = value;
+                return returnValue;
+            };
+
+            /**
              * Returns the value to which the specified key is mapped,
              * or {@code null} if this map contains no mapping for the key.
              *
@@ -64,6 +79,16 @@ namespace hazelcast {
                     return NULL;
             };
 
+            std::vector<V *> values() {
+                boost::lock_guard<boost::mutex> lg(mapLock);
+                std::vector<V *> valueArray(internalMap.size());
+                typename std::map<K, V *, Comparator>::iterator it;
+                int i = 0;
+                for (it = internalMap.begin(); it != internalMap.end(); it++) {
+                    valueArray[i++] = it->second;
+                }
+                return valueArray;
+            }
 
         private:
             std::map<K, V *, Comparator> internalMap;

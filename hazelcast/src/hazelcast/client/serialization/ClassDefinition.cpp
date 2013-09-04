@@ -51,7 +51,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName().c_str()] = fd;
             };
 
-            void ClassDefinition::add(util::AtomicPointer<ClassDefinition> cd) {
+            void ClassDefinition::add(ClassDefinition *cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -67,7 +67,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            std::vector<util::AtomicPointer<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
+            std::vector<ClassDefinition * >& ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -148,7 +148,7 @@ namespace hazelcast {
                 }
                 size = dataInput.readInt();
                 for (int i = 0; i < size; i++) {
-                    util::AtomicPointer<ClassDefinition> classDefinition(new ClassDefinition);
+                    ClassDefinition *classDefinition = new ClassDefinition();
                     classDefinition->readData(dataInput);
                     add(classDefinition);
                 }

@@ -20,6 +20,13 @@ namespace hazelcast {
 
             };
 
+            PartitionService::~PartitionService() {
+                std::vector<Address *> valArr = partitions.values();
+                for (int i = 0; i < valArr.size(); i++) {
+                    delete valArr[i];
+                }
+            };
+
             void PartitionService::start() {
                 getInitialPartitions();
                 boost::thread partitionListener(boost::bind(&PartitionService::runListener, this));
@@ -29,7 +36,7 @@ namespace hazelcast {
                 boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
             };
 
-            util::AtomicPointer<Address> PartitionService::getPartitionOwner(int partitionId) {
+            Address *PartitionService::getPartitionOwner(int partitionId) {
                 return partitions.get(partitionId);
             };
 

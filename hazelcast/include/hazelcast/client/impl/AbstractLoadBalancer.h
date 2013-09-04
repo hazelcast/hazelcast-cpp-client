@@ -10,6 +10,7 @@
 #include "../../util/AtomicPointer.h"
 #include "../MembershipListener.h"
 #include "../LoadBalancer.h"
+#include "boost/thread/pthread/mutex.hpp"
 #include <vector>
 
 namespace hazelcast {
@@ -25,7 +26,7 @@ namespace hazelcast {
 
                 void setMembersRef();
 
-                util::AtomicPointer<std::vector<connection::Member> > getMembers();
+                std::vector<connection::Member> getMembers();
 
                 virtual void init(Cluster& cluster);
 
@@ -36,7 +37,8 @@ namespace hazelcast {
                 virtual ~AbstractLoadBalancer();
 
             private:
-                util::AtomicPointer<std::vector<connection::Member> > membersRef;
+                boost::mutex membersLock;
+                std::vector<connection::Member> membersRef;
                 Cluster *cluster;
             };
         }

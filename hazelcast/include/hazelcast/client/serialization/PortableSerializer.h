@@ -9,7 +9,6 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
-#include "AtomicPointer.h"
 #include <vector>
 #include <map>
 #include <memory>
@@ -34,7 +33,7 @@ namespace hazelcast {
 
                 PortableSerializer(SerializationContext& serializationContext);
 
-                util::AtomicPointer<ClassDefinition> getClassDefinition(const Portable& p);
+                ClassDefinition *getClassDefinition(const Portable& p);
 
                 void write(DataOutput &dataOutput, const Portable& p);
 

@@ -6,7 +6,7 @@
 #define HAZELCAST_PARTITION_SERVICE
 
 #include "../Address.h"
-#include "ConcurrentSmartMap.h"
+#include "ConcurrentMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,11 +26,13 @@ namespace hazelcast {
             public:
                 PartitionService(ClusterService&, serialization::SerializationService&);
 
+                ~PartitionService();
+
                 void start();
 
                 void refreshPartitions();
 
-                util::AtomicPointer<Address> getPartitionOwner(int partitionId);
+                Address *getPartitionOwner(int partitionId);
 
                 int getPartitionId(const serialization::Data& key);
 
@@ -42,7 +44,7 @@ namespace hazelcast {
 
                 volatile int partitionCount;
 
-                util::ConcurrentSmartMap<int, Address> partitions;
+                util::ConcurrentMap<int, Address> partitions;
 
                 void runListener();
 

@@ -21,21 +21,22 @@ namespace hazelcast {
         class AtomicPointer {
         public:
             AtomicPointer()
-            : accessLock(LockSupport::getLock(0)) {
+            : pointer(new boost::shared_ptr<T>())
+            , accessLock(LockSupport::getLock(rand())) {
             };
 
-            AtomicPointer(T *const p)
-            :pointer(p)
-            , accessLock(LockSupport::getLock((*pointer).get()->hashCode())) {
-
+            AtomicPointer(T *const p, int lockId)
+            : pointer(new boost::shared_ptr<T>(p))
+            , accessLock(LockSupport::getLock(lockId)) {
             };
 
             AtomicPointer(const AtomicPointer &rhs)
-            :pointer(rhs.pointer)
-            , accessLock(rhs.accessLock) {
+            :pointer(new boost::shared_ptr<T>()) {
+                *this = rhs;
             };
 
             void operator = (const AtomicPointer &rhs) {
+                boost::lock_guard<boost::recursive_mutex> lg(*(rhs.accessLock));
                 (*pointer) = *(rhs.pointer);
                 accessLock = rhs.accessLock;
             };
@@ -43,7 +44,13 @@ namespace hazelcast {
             ~AtomicPointer() {
                 boost::lock_guard<boost::recursive_mutex> lg(*accessLock);
                 (*pointer).reset();
+                delete pointer;
             };
+
+            bool isNull() const {
+                T *ptr = pointer->get();
+                return ptr == NULL;
+            }
 
             bool operator ==(const AtomicPointer &rhs) const {
                 return (*pointer) == *(rhs.pointer);

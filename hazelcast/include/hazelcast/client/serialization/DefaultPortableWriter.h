@@ -35,7 +35,7 @@ namespace hazelcast {
             class DefaultPortableWriter {
             public:
 
-                DefaultPortableWriter(SerializationContext& serializationContext, util::AtomicPointer<ClassDefinition> cd, DataOutput& output);
+                DefaultPortableWriter(SerializationContext& serializationContext, ClassDefinition *cd, DataOutput& output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -101,7 +101,7 @@ namespace hazelcast {
 
                 void setPosition(const char *fieldName);
 
-                util::AtomicPointer<ClassDefinition> getClassDefinition(const Portable& p);
+                ClassDefinition *getClassDefinition(const Portable& p);
 
                 void write(const Portable& p);
 
@@ -114,7 +114,7 @@ namespace hazelcast {
                 int begin;
                 int offset;
                 std::set<const char *, util::cStrCmp> writtenFields;
-                util::AtomicPointer<ClassDefinition> cd;
+                ClassDefinition *cd;
 
             };
 

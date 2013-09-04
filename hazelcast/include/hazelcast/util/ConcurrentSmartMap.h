@@ -43,7 +43,7 @@ namespace hazelcast {
                     return internalMap[key];
                 } else {
                     internalMap[key] = value;
-                    return NULL;
+                    return AtomicPointer<V>();
                 }
             };
 
@@ -54,8 +54,8 @@ namespace hazelcast {
                     internalMap[key] = AtomicPointer<V>(value);
                     return tempValue;
                 } else {
-                    internalMap[key] = AtomicPointer<V>(value);
-                    return NULL;
+                    internalMap[key] = AtomicPointer<V>(value, value->hashCode());
+                    return AtomicPointer<V>();
                 }
             };
 
@@ -69,7 +69,7 @@ namespace hazelcast {
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
                 else
-                    return NULL;
+                    return AtomicPointer<V>();
             };
 
             AtomicPointer<V> remove(const K& key) {
@@ -80,7 +80,7 @@ namespace hazelcast {
                     return value;
                 }
                 else
-                    return NULL;
+                    return AtomicPointer<V>();
             };
 
             std::vector<AtomicPointer<V> > values() {

@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 void init(Cluster &cluster);
 
-                const hazelcast::client::connection::Member& next();
+                const hazelcast::client::connection::Member next();
 
             private:
                 boost::atomic<int> index;

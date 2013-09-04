@@ -19,7 +19,7 @@ namespace hazelcast {
             , lifecycleService(client, this->clientConfig)
             , serializationService(0)
             , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clusterService, serializationService, this->clientConfig)
-                                                       : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
+                    : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
             , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
             , partitionService(clusterService, serializationService)
             , invocationService(clusterService, partitionService)
@@ -53,6 +53,7 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig& config)
         :impl(new HazelcastClientImpl(config, *this)) {
+            srand(time(NULL));
             impl->lifecycleService.setStarted();
             impl->clusterService.start();
             impl->partitionService.start();

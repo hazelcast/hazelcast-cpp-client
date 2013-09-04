@@ -12,7 +12,6 @@
 #include "ClassDefinition.h"
 #include "SerializationContext.h"
 #include "ProtocolConstants.h"
-#include "AtomicPointer.h"
 #include <vector>
 
 namespace hazelcast {
@@ -38,7 +37,7 @@ namespace hazelcast {
 
                 int totalSize() const;
 
-                int getPartitionHash()const;
+                int getPartitionHash() const;
 
                 void setPartitionHash(int partitionHash);
 
@@ -105,7 +104,7 @@ namespace hazelcast {
                     partitionHash = dataInput.readInt();
                 }
 
-                util::AtomicPointer<ClassDefinition> cd;
+                ClassDefinition *cd;
                 int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;

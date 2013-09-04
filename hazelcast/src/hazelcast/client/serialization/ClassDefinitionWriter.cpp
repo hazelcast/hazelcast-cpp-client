@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            util::AtomicPointer<ClassDefinition> ClassDefinitionWriter::getClassDefinition() {
+            ClassDefinition *ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 
@@ -136,7 +136,7 @@ namespace hazelcast {
 
             };
 
-            util::AtomicPointer<ClassDefinition> ClassDefinitionWriter::getOrBuildClassDefinition(const Portable& p) {
+            ClassDefinition *ClassDefinitionWriter::getOrBuildClassDefinition(const Portable& p) {
                 return context.getSerializerHolder().getPortableSerializer().getClassDefinition(p);
             };
 

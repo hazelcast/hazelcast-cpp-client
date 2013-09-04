@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-#include "ConcurrentSmartMap.h"
+#include "ConcurrentMap.h"
 #include "SerializerHolder.h"
 #include <map>
 #include <vector>
@@ -35,19 +35,17 @@ namespace hazelcast {
 
                 bool isClassDefinitionExists(int, int);
 
-                util::AtomicPointer<ClassDefinition> lookup(int, int);
+                ClassDefinition *lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                util::AtomicPointer<ClassDefinition> lookup(int, int, int);
+                ClassDefinition *lookup(int, int, int);
 
-                util::AtomicPointer<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
-                void registerNestedDefinitions(util::AtomicPointer<ClassDefinition>);
+                void registerNestedDefinitions(ClassDefinition *);
 
-                util::AtomicPointer<ClassDefinition> registerClassDefinition(util::AtomicPointer<ClassDefinition>);
-
-                util::AtomicPointer<ClassDefinition> registerClassDefinition(ClassDefinition* cd);
+                ClassDefinition *registerClassDefinition(ClassDefinition *);
 
                 int getVersion();
 
@@ -62,7 +60,7 @@ namespace hazelcast {
                 void operator = (const SerializationContext&);
 
                 int contextVersion;
-                util::ConcurrentSmartMap<int, PortableContext> portableContextMap;
+                util::ConcurrentMap<int, PortableContext> portableContextMap;
                 SerializerHolder serializerHolder;
 
             };

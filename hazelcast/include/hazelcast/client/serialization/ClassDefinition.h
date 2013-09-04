@@ -12,7 +12,6 @@
 
 #include "FieldDefinition.h"
 #include "hazelcast/util/Util.h"
-#include "AtomicPointer.h"
 #include <map>
 #include <vector>
 
@@ -37,7 +36,7 @@ namespace hazelcast {
 
                 void add(FieldDefinition&);
 
-                void add(util::AtomicPointer<ClassDefinition>);
+                void add(ClassDefinition *);
 
                 bool isFieldDefinitionExists(const char *);
 
@@ -45,7 +44,7 @@ namespace hazelcast {
 
                 const FieldDefinition& get(int);
 
-                std::vector<util::AtomicPointer<ClassDefinition> > &getNestedClassDefinitions();
+                std::vector<ClassDefinition * > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
 
@@ -82,7 +81,7 @@ namespace hazelcast {
 
                 std::vector<FieldDefinition> fieldDefinitions;
                 std::map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
-                std::vector<util::AtomicPointer<ClassDefinition> > nestedClassDefinitions;
+                std::vector<ClassDefinition * > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;
 

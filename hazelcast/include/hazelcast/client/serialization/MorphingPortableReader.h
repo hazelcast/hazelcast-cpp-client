@@ -29,7 +29,7 @@ namespace hazelcast {
             class MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, util::AtomicPointer<ClassDefinition> cd);
+                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, ClassDefinition *cd);
 
                 int readInt(const char *fieldName);
 
@@ -113,7 +113,7 @@ namespace hazelcast {
                 int const finalPosition;
                 int offset;
                 bool raw;
-                util::AtomicPointer<ClassDefinition> cd;
+                ClassDefinition *cd;
 
                 FieldType currentFieldType;
                 int currentFactoryId;

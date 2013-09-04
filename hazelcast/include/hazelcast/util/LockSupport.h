@@ -8,19 +8,19 @@
 #ifndef HAZELCAST_LockSupport
 #define HAZELCAST_LockSupport
 
-#include <boost/thread/pthread/mutex.hpp>
+#include <boost/thread/pthread/recursive_mutex.hpp>
 
 namespace hazelcast {
     namespace util {
 
         namespace pImpl {
             static const long LOCKS_SIZE = 1024;
-            boost::mutex globalLocks[LOCKS_SIZE];
+            static boost::recursive_mutex globalLocks[LOCKS_SIZE];
         }
 
         class LockSupport {
         public:
-            static boost::mutex *getLock(long hash);
+            static boost::recursive_mutex *getLock(long hash);
         };
     }
 }

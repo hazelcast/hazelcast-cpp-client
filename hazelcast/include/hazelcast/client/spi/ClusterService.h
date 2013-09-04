@@ -81,7 +81,8 @@ namespace hazelcast {
                                 continue;
                             }
                         } catch (exception::IException& e) {
-                            connectionManager.releaseConnection(connection);
+                            if (connection != NULL)
+                                connectionManager.releaseConnection(connection);
                             throw e;
                         }
                     }
@@ -135,7 +136,7 @@ namespace hazelcast {
                             stream.reset(new ResponseStream(serializationService, connection));
                         } catch (exception::IOException& e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                            if(connection != NULL)
+                            if (connection != NULL)
                                 delete connection;
                             if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
@@ -182,6 +183,8 @@ namespace hazelcast {
                 static const int RETRY_COUNT = 20;
                 static const int RETRY_WAIT_TIME = 500;
             private:
+                void setMembers(const std::map<Address, connection::Member, addressComparator >& map);
+
                 connection::ConnectionManager& connectionManager;
                 serialization::SerializationService& serializationService;
                 ClientConfig & clientConfig;
@@ -190,9 +193,10 @@ namespace hazelcast {
 
                 connection::ClusterListenerThread clusterThread;
                 protocol::Credentials& credentials;
-                util::AtomicPointer< std::map<Address, connection::Member, addressComparator > > membersRef;
+                std::map<Address, connection::Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;
                 boost::mutex listenerLock;
+                boost::mutex membersLock;
                 const bool redoOperation;
 
                 void fireMembershipEvent(connection::MembershipEvent& membershipEvent);

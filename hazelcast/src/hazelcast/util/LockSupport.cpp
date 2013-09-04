@@ -8,8 +8,8 @@
 
 namespace hazelcast {
     namespace util {
-        boost::mutex *LockSupport::getLock(long hash) {
-            return &(pImpl::globalLocks[hash % pImpl::LOCKS_SIZE]);
+        boost::recursive_mutex *LockSupport::getLock(long hash) {
+            return &(pImpl::globalLocks[abs(hash) % pImpl::LOCKS_SIZE]);
         }
     }
 }

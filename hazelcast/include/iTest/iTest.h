@@ -18,8 +18,8 @@ namespace iTest {
 
     void assertTrue(bool isTrue);
 
-    template<typename  Exptected, typename Actual >
-    void assertEqual(const Exptected& expected, const Actual& actual, const char *message) {
+    template<typename  Expected, typename Actual >
+    void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
         if (expected != actual) {
             iTestException e;
             e.message.assign(">> Assert failed. message : ");
@@ -28,8 +28,8 @@ namespace iTest {
         }
     };
 
-    template<typename  Exptected, typename Actual >
-    void assertEqual(const Exptected& expected, const Actual& actual) {
+    template<typename  Expected, typename Actual >
+    void assertEqual(const Expected& expected, const Actual& actual) {
         if (actual != expected) {
             iTestException e;
             e.message.assign(">> Assert failed");

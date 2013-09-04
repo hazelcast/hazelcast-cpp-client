@@ -378,7 +378,7 @@ namespace hazelcast {
             Future<Result> submitToKeyOwnerInternal(const Callable& task, const serialization::Data& partitionKey) {
                 spi::PartitionService & partitionService = context->getPartitionService();
                 int partitionId = partitionService.getPartitionId(partitionKey);
-                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
+                Address *pointer = partitionService.getPartitionOwner(partitionId);
                 return submitToTargetInternal(task, *pointer);
             }
 
@@ -407,7 +407,7 @@ namespace hazelcast {
             Future<Result> submitToKeyOwnerInternalWithDefaultResult(const Callable& task, const serialization::Data& partitionKey, const Result& result) {
                 spi::PartitionService & partitionService = context->getPartitionService();
                 int partitionId = partitionService.getPartitionId(partitionKey);
-                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
+                Address *pointer = partitionService.getPartitionOwner(partitionId);
                 return submitToTargetInternalWithDefaultResult(task, *pointer, result);
             }
 
@@ -438,7 +438,7 @@ namespace hazelcast {
             void submitToKeyOwnerInternalWithCallback(const Callable& task, const serialization::Data& partitionKey, const ExecutionCallback& callback) {
                 spi::PartitionService & partitionService = context->getPartitionService();
                 int partitionId = partitionService.getPartitionId(partitionKey);
-                util::AtomicPointer<Address> pointer = partitionService.getPartitionOwner(partitionId);
+                Address *pointer = partitionService.getPartitionOwner(partitionId);
                 submitToTargetInternalWithCallback<Result>(task, *pointer, callback);
             }
 
