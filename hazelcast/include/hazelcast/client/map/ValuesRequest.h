@@ -6,8 +6,8 @@
 #ifndef MAP_VALUES_REQUEST
 #define MAP_VALUES_REQUEST
 
-#include "PortableHook.h"
-
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -15,28 +15,16 @@ namespace hazelcast {
         namespace map {
             class ValuesRequest : public Portable, public RetryableRequest {
             public:
-                ValuesRequest(const std::string& name)
-                :name(name) {
+                ValuesRequest(const std::string& name);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::VALUES;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", name);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("name");
-                };
             private:
                 std::string name;
             };

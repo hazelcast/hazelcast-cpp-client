@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ContainsRequest.h"
+#include "hazelcast/client/queue/ContainsRequest.h"
 #include "QueuePortableHook.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
@@ -47,6 +47,4 @@ namespace hazelcast {
         }
     }
 }
-
-#endif //HAZELCAST_QUEUE_CONTAINS_REQUEST
 

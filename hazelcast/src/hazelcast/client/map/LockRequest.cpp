@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "LockRequest.h"
+#include "hazelcast/client/map/LockRequest.h"
 #include "Data.h"
 #include "PortableHook.h"
 #include "PortableWriter.h"
@@ -57,4 +57,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_LOCK_REQUEST

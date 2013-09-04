@@ -4,47 +4,26 @@
 #ifndef HAZELCAST_MAP_TRY_REMOVE_REQUEST
 #define HAZELCAST_MAP_TRY_REMOVE_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
-            class TryRemoveRequest : public Portable{
+            class TryRemoveRequest : public Portable {
             public:
-                TryRemoveRequest(const std::string& name, serialization::Data& key, int threadId, long timeout)
-                :name(name)
-                , key(key)
-                , threadId(threadId)
-                , timeout(timeout) {
+                TryRemoveRequest(const std::string& name, serialization::Data& key, int threadId, long timeout);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::TRY_REMOVE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeLong("timeout", timeout);
-                    writer.writeUTF("n", name);
-                    writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    timeout = reader.readLong("timeout");
-                    name = reader.readUTF("n");
-                    threadId = reader.readInt("t");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

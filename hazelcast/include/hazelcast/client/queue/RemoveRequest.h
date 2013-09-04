@@ -9,6 +9,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace queue {
             class RemoveRequest : public Portable {
             public:

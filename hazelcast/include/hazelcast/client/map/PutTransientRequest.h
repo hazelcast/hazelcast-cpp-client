@@ -4,48 +4,26 @@
 #ifndef HAZELCAST_MAP_PUT_TRANSIENT_REQUEST
 #define HAZELCAST_MAP_PUT_TRANSIENT_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
-            class PutTransientRequest : public Portable{
+            class PutTransientRequest : public Portable {
             public:
-                PutTransientRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
-                :name(name)
-                , key(key)
-                , value(value)
-                , threadId(threadId)
-                , ttl(ttl) {
+                PutTransientRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::PUT_TRANSIENT;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("thread", threadId);
-                    writer.writeLong("ttl", ttl);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    threadId = reader.readInt("thread");
-                    ttl = reader.readLong("ttl");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

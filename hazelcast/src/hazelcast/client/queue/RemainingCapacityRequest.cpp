@@ -33,9 +33,8 @@ namespace hazelcast {
             void RemainingCapacityRequest::readPortable(serialization::PortableReader& reader) {
                 name = reader.readUTF("n");
             };
-        };
+        }
     }
-}
 }
 
 

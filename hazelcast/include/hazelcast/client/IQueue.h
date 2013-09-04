@@ -13,7 +13,7 @@
 #include "queue/AddAllRequest.h"
 #include "queue/ClearRequest.h"
 #include "queue/DestroyRequest.h"
-#include "queue/ItearatorRequest.h"
+#include "queue/IteratorRequest.h"
 #include "queue/AddListenerRequest.h"
 #include "impl/PortableCollection.h"
 #include "impl/ItemEventHandler.h"
@@ -22,6 +22,7 @@
 #include "InterruptedException.h"
 #include "NoSuchElementException.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -46,7 +47,7 @@ namespace hazelcast {
             long addItemListener(L& listener, bool includeValue) {
                 queue::AddListenerRequest request(instanceName, includeValue);
                 impl::ItemEvent<E> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(instanceName, request, entryEventHandler);
+                return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
             };
 
             /**
@@ -241,7 +242,7 @@ namespace hazelcast {
             * Destroys this object cluster-wide.
             * Clears and releases all resources for this object.
             */
-            void destroy(){
+            void destroy() {
                 queue::DestroyRequest request(instanceName);
                 invoke<bool>(request);
                 context->getDistributedObjectListenerService().removeDistributedObject(instanceName);

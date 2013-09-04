@@ -9,6 +9,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
             class LockRequest : public Portable {
             public:

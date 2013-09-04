@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_QUEUE_DESTROY_REQUEST
 #define HAZELCAST_QUEUE_DESTROY_REQUEST
 
-#include "../serialization/SerializationConstants.h"
-#include "QueuePortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,28 +13,16 @@ namespace hazelcast {
         namespace queue {
             class DestroyRequest : public Portable, public RetryableRequest {
             public:
-                DestroyRequest(const std::string& name)
-                :name(name) {
+                DestroyRequest(const std::string& name);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return queue::QueuePortableHook::DESTROY;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                };
             private:
                 std::string name;
             };

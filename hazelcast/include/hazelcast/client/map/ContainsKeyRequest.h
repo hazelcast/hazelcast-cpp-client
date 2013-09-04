@@ -4,11 +4,15 @@
 #ifndef HAZELCAST_MAP_CONTAINS_KEY_R
 #define HAZELCAST_MAP_CONTAINS_KEY_R
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
             class ContainsKeyRequest : public Portable, public RetryableRequest {
             public:

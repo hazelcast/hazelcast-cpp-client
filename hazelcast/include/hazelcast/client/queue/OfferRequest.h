@@ -5,9 +5,13 @@
 #define HAZELCAST_QUEUE_OFFER_REQUEST
 
 #include "Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace queue {
             class OfferRequest : public Portable {
             public:

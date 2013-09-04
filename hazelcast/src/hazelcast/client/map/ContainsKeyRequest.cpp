@@ -3,6 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "ContainsKeyRequest.h"
+#include "PortableHook.h"
+#include "Data.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
 

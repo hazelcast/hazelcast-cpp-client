@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "RemoveRequest.h"
+#include "hazelcast/client/queue/RemoveRequest.h"
 #include "QueuePortableHook.h"
 #include "Data.h"
 #include "PortableWriter.h"

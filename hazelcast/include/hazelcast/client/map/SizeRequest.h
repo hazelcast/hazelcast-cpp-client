@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_MAP_SIZE_REQUEST
 #define HAZELCAST_MAP_SIZE_REQUEST
 
-#include "PortableHook.h"
-
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -15,28 +15,16 @@ namespace hazelcast {
         namespace map {
             class SizeRequest : public Portable, public RetryableRequest {
             public:
-                SizeRequest(const std::string& name)
-                :name(name) {
+                SizeRequest(const std::string& name);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::SIZE;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                };
             private:
                 std::string name;
             };

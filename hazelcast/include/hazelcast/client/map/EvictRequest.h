@@ -7,46 +7,27 @@
 #ifndef HAZELCAST_MAP_EVICT_REQUEST
 #define HAZELCAST_MAP_EVICT_REQUEST
 
-#include "PortableHook.h"
-
-#include "../serialization/Data.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
             class EvictRequest : public Portable {
             public:
-                EvictRequest(const std::string& name, serialization::Data& key, int threadId)
-                :name(name)
-                , key(key)
-                , threadId(threadId) {
+                EvictRequest(const std::string& name, serialization::Data& key, int threadId);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::EVICT;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", name);
-                    writer.writeInt("t", threadId);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("name");
-                    threadId = reader.readInt("t");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
                 serialization::Data& key;
                 std::string name;

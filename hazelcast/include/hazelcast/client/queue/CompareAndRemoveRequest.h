@@ -4,8 +4,9 @@
 #ifndef HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 
-#include "../serialization/Data.h"
-#include "QueuePortableHook.h"
+#include "Portable.h"
+#include "Data.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -13,47 +14,16 @@ namespace hazelcast {
             class CompareAndRemoveRequest : public Portable {
             public:
 
-                CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain)
-                :name(name)
-                , dataList(dataList)
-                , retain(retain) {
+                CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain);
 
-                };
+                int getFactoryId() const;
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return queue::QueuePortableHook::F_ID;
-                }
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                int getClassId() const {
-                    return queue::QueuePortableHook::COMPARE_AND_REMOVE;
-                }
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeBoolean("r", retain);
-                    writer.writeInt("s", dataList.size());
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    for (int i = 0; i < dataList.size(); ++i) {
-                        dataList[i].writeData(out);
-                    }
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    retain = reader.readBoolean("r");
-                    int size = reader.readInt("s");
-                    dataList.resize(size);
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    for (int i = 0; i < size; ++i) {
-                        dataList[i].readData(in);
-                    }
-                };
             private:
                 std::vector<serialization::Data>& dataList;
                 std::string name;

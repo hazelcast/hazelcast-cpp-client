@@ -5,20 +5,13 @@
 
 #include "TxnMapRequest.h"
 #include "PortableHook.h"
+#include "Data.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-
-            int TxnMapRequest::getFactoryId() const {
-                return PortableHook::F_ID;
-            };
-
-            int TxnMapRequest::getClassId() const {
-                return PortableHook::TXN_REQUEST;
-            };
-
-
             TxnMapRequestType::TxnMapRequestType()
             :value(NONE) {
                 types.resize(11);
@@ -61,6 +54,70 @@ namespace hazelcast {
                 value = types[i];
             };
 
+            //----------------------------------//
+            TxnMapRequest::TxnMapRequest()
+            : key(NULL)
+            , value(NULL)
+            , newValue(NULL) {
+            };
+
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType)
+            : name(name)
+            , requestType(requestType)
+            , key(NULL)
+            , value(NULL)
+            , newValue(NULL) {
+            };
+
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, serialization::Data *key)
+            : name(name)
+            , requestType(requestType)
+            , key(key)
+            , value(NULL)
+            , newValue(NULL) {
+            };
+
+            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value)
+            : name(name)
+            , requestType(requestType)
+            , key(key)
+            , value(value)
+            , newValue(NULL) {
+            };
+
+            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue)
+            : name(name)
+            , requestType(requestType)
+            , key(key)
+            , value(value)
+            , newValue(newValue) {
+            };
+
+            int TxnMapRequest::getFactoryId() const {
+                return PortableHook::F_ID;
+            };
+
+            int TxnMapRequest::getClassId() const {
+                return PortableHook::TXN_REQUEST;
+            };
+
+
+            void TxnMapRequest::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("n", name);
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                util::writeNullableData(out, key.get());
+                util::writeNullableData(out, value.get());
+                util::writeNullableData(out, newValue.get());
+            };
+
+
+            void TxnMapRequest::readPortable(serialization::PortableReader& reader) {
+                name = reader.readUTF("n");
+                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                key->readData(in);
+                value->readData(in);
+                newValue->readData(in);
+            };
 
         }
     }

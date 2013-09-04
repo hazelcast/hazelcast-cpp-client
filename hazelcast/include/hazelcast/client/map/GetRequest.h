@@ -5,6 +5,8 @@
 #define HAZELCAST_MAP_GET_REQUEST
 
 #include "Portable.h"
+#include "RetryableRequest.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {

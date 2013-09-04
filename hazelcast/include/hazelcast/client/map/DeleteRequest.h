@@ -5,9 +5,13 @@
 #define HAZELCAST_MAP_DELETE_REQUEST
 
 #include "Portable.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace map {
             class DeleteRequest : public Portable {
             public:
