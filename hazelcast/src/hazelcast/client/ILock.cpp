@@ -3,12 +3,12 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/lock/LockRequest.h"
 #include "hazelcast/client/lock/UnlockRequest.h"
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/lock/DestroyRequest.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
 

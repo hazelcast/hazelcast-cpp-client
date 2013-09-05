@@ -54,7 +54,6 @@ namespace hazelcast {
                 return endpoint;
             };
 
-
             clock_t Connection::getLastReadTime() const {
                 return lastRead;
             }

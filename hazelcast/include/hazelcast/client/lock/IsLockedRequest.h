@@ -7,53 +7,33 @@
 #ifndef HAZELCAST_IsLockedRequest
 #define HAZELCAST_IsLockedRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "LockPortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace lock {
-            class IsLockedRequest : public Portable , public RetryableRequest{
+            class IsLockedRequest : public Portable, public RetryableRequest {
             public:
-                IsLockedRequest(const serialization::Data& key)
-                :key(key) {
-                };
+                IsLockedRequest(serialization::Data& key);
 
-                IsLockedRequest(const serialization::Data& key, int threadId)
-                :key(key)
-                , threadId(threadId) {
-                };
+                IsLockedRequest(serialization::Data& key, int threadId);
 
-                int getClassId() const {
-                    return LockPortableHook::IS_LOCKED;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return LockPortableHook::FACTORY_ID;
-                };
+                int getFactoryId() const;
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeInt("tid", threadId);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    threadId = reader.readInt("tid");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
                 int threadId;
-                serialization::Data key;
+                serialization::Data& key;
             };
         }
     }

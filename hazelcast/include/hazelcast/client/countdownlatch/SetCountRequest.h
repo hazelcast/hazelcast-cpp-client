@@ -7,50 +7,27 @@
 #ifndef HAZELCAST_SetCountRequest
 #define HAZELCAST_SetCountRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "CountDownLatchPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace countdownlatch {
-            class SetCountRequest {
+            class SetCountRequest : public Portable {
             public:
-                SetCountRequest(const std::string& instanceName, long count)
-                : instanceName(instanceName)
-                , count(count) {
+                SetCountRequest(const std::string& instanceName, int count);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return CountDownLatchPortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                int getClassId() const {
-                    return CountDownLatchPortableHook::SET_COUNT;
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", instanceName);
-                    writer.writeLong("count", count);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    instanceName = reader.readUTF("name");
-                    count = reader.readLong("count");
-                };
             private:
-
                 std::string instanceName;
-                long count;
+                int count;
             };
         }
     }

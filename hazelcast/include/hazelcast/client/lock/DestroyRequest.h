@@ -4,47 +4,33 @@
 
 
 
-#ifndef HAZELCAST_DestroyRequest
-#define HAZELCAST_DestroyRequest
+#ifndef HAZELCAST_Lock_DestroyRequest
+#define HAZELCAST_Lock_DestroyRequest
 
-
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "LockPortableHook.h"
+#include "RetryableRequest.h"
 #include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace lock {
             class DestroyRequest : public Portable, public RetryableRequest {
             public:
-                DestroyRequest(const serialization::Data& key)
-                :key(key) {
-                };
+                DestroyRequest(serialization::Data& key);
 
-                int getClassId() const {
-                    return LockPortableHook::GET_LOCK_COUNT;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return LockPortableHook::FACTORY_ID;
-                };
+                int getFactoryId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
-
-                serialization::Data key;
+                serialization::Data& key;
             };
         }
     }

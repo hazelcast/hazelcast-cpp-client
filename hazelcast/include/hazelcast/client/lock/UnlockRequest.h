@@ -4,64 +4,34 @@
 
 
 
-#ifndef HAZELCAST_UnlockRequest
-#define HAZELCAST_UnlockRequest
+#ifndef HAZELCAST_ILock_UnlockRequest
+#define HAZELCAST_ILock_UnlockRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "LockPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace lock {
-            class UnlockRequest {
+            class UnlockRequest : public Portable {
             public:
-            public:
-                UnlockRequest(const serialization::Data& key, int threadId)
-                :key(key)
-                , threadId(threadId)
-                , force(false) {
-                };
+                UnlockRequest(serialization::Data& key, int threadId);
 
-                UnlockRequest(const serialization::Data& key, int threadId, bool force)
-                :key(key)
-                , threadId(threadId)
-                , force(false) {
-                };
+                UnlockRequest(serialization::Data& key, int threadId, bool force);
 
-                int getClassId() const {
-                    return LockPortableHook::UNLOCK;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return LockPortableHook::FACTORY_ID;
-                };
+                int getFactoryId() const;
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeInt("tid", threadId);
-                    writer.writeBoolean("force", force);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    threadId = reader.readInt("tid");
-                    force = reader.readBoolean("force");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
-
-                serialization::Data key;
+                serialization::Data& key;
                 int threadId;
                 bool force;
             };

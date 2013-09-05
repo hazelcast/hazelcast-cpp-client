@@ -3,22 +3,25 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "LockRequest.h"
+#include "hazelcast/client/lock/LockRequest.h"
 #include "PortableWriter.h"
 #include "PortableReader.h"
+#include "Data.h"
+#include "LockPortableHook.h"
+
 
 namespace hazelcast {
     namespace client {
         namespace lock {
 
-            LockRequest::LockRequest(const serialization::Data& key, int threadId)
+            LockRequest::LockRequest(serialization::Data& key, int threadId)
             :key(key)
             , threadId(threadId)
             , ttl(-1)
             , timeout(-1) {
             };
 
-            LockRequest::LockRequest(const serialization::Data& key, int threadId, long ttl, long timeout)
+            LockRequest::LockRequest(serialization::Data& key, int threadId, long ttl, long timeout)
             :key(key)
             , threadId(threadId)
             , ttl(ttl)

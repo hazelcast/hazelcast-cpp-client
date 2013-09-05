@@ -23,7 +23,6 @@ namespace hazelcast {
 
 
             ClientMapTest::~ClientMapTest() {
-                instance.shutdown();
             };
 
             void ClientMapTest::addTests() {

@@ -4,13 +4,10 @@
 
 
 
-#ifndef HAZELCAST_DestroyRequest
-#define HAZELCAST_DestroyRequest
+#ifndef HAZELCAST_CountDownLatch_DestroyRequest
+#define HAZELCAST_CountDownLatch_DestroyRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "CountDownLatchPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "RetryableRequest.h"
 #include "Portable.h"
 #include <string>
 
@@ -19,30 +16,17 @@ namespace hazelcast {
         namespace countdownlatch {
             class DestroyRequest : public Portable, public RetryableRequest {
             public:
-                DestroyRequest(const std::string& instanceName)
-                : instanceName(instanceName) {
+                DestroyRequest(const std::string& instanceName);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return CountDownLatchPortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return CountDownLatchPortableHook::DESTROY;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
+                void readPortable(serialization::PortableReader& reader);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("name", instanceName);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    instanceName = reader.readUTF("name");
-                };
             private:
-
                 std::string instanceName;
             };
         }

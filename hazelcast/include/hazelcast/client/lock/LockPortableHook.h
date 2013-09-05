@@ -13,7 +13,7 @@ namespace hazelcast {
 
             namespace LockPortableHook {
                 enum {
-                    FACTORY_ID = 15,
+                    FACTORY_ID = -15,
 
                     LOCK = 1,
                     UNLOCK = 2,

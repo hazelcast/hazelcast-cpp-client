@@ -1,20 +1,18 @@
 //
-//  ClientAtomiclLong.h
+//  ClientLockTest.h
 //  hazelcast
 //
-//  Created by Batikan Turkmen on 02.08.2013.
+//  Created by Batikan Turkmen on 15.08.2013.
 //  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
 //
 
-#ifndef hazelcast_ClientAtomicLong_h
-#define hazelcast_ClientAtomicLong_h
+#ifndef hazelcast_ClientLockTest_h
+#define hazelcast_ClientLockTest_h
 
 #include "iTest.h"
 #include "ClientConfig.h"
-#include "IMap.h"
 #include "HazelcastInstance.h"
-#include "IAtomicLong.h"
-
+#include "ILock.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,11 +23,11 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
+            class ClientLockTest : public iTest::iTestFixture<ClientLockTest> {
 
             public:
 
-                IAtomicLongTest(HazelcastInstanceFactory&);
+                ClientLockTest(HazelcastInstanceFactory&);
 
                 void addTests();
 
@@ -41,16 +39,27 @@ namespace hazelcast {
 
                 void afterTest();
 
-                void test();
+                void testLock();
+
+                void testLockTtl();
+
+                void testTryLock();
+
+                void testForceUnlock();
+
+                void testStats();
 
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IAtomicLong > atom;
+                std::auto_ptr<ILock> l;
             };
+
         }
     }
 }
+
+
 #endif

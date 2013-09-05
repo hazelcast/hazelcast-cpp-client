@@ -8,42 +8,30 @@
 #define HAZELCAST_GetRemainingLeaseRequest
 
 
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "LockPortableHook.h"
+#include "Portable.h"
+#include "RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace lock {
             class GetRemainingLeaseRequest : public Portable, public RetryableRequest {
             public:
-                GetRemainingLeaseRequest(const serialization::Data& key)
-                :key(key) {
-                };
+                GetRemainingLeaseRequest(serialization::Data& key);
 
-                int getClassId() const {
-                    return LockPortableHook::GET_REMAINING_LEASE;
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return LockPortableHook::FACTORY_ID;
-                };
+                int getFactoryId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                };
             private:
-
-                serialization::Data key;
+                serialization::Data& key;
             };
         }
     }

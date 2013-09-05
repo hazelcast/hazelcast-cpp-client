@@ -21,7 +21,7 @@ namespace hazelcast {
 
         bool CountDownLatch::await(long timeInMillis) {
             boost::unique_lock<boost::mutex> lock(mutex);
-            if(count == 0){
+            if (count == 0) {
                 return true;
             }
             boost::cv_status status = conditionVariable.wait_for(lock, boost::chrono::milliseconds(timeInMillis));
@@ -33,12 +33,10 @@ namespace hazelcast {
 
         void CountDownLatch::await() {
             boost::unique_lock<boost::mutex> lock(mutex);
-            if(count == 0){
+            if (count == 0) {
                 return;
             }
             conditionVariable.wait(lock);
         }
-
-
     }
 }

@@ -1,20 +1,16 @@
 //
-//  ClientAtomiclLong.h
-//  hazelcast
-//
-//  Created by Batikan Turkmen on 02.08.2013.
-//  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
-//
+// Created by sancar koyunlu on 9/5/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
 
-#ifndef hazelcast_ClientAtomicLong_h
-#define hazelcast_ClientAtomicLong_h
+
+
+#ifndef HAZELCAST_CountDownLatch
+#define HAZELCAST_CountDownLatch
 
 #include "iTest.h"
 #include "ClientConfig.h"
-#include "IMap.h"
 #include "HazelcastInstance.h"
-#include "IAtomicLong.h"
-
+#include "ICountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,11 +21,10 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
-
+            class ICountDownLatchTest : public iTest::iTestFixture<ICountDownLatchTest> {
             public:
 
-                IAtomicLongTest(HazelcastInstanceFactory&);
+                ICountDownLatchTest(HazelcastInstanceFactory&);
 
                 void addTests();
 
@@ -41,16 +36,17 @@ namespace hazelcast {
 
                 void afterTest();
 
-                void test();
+                void testLatch();
 
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IAtomicLong > atom;
+                std::auto_ptr<ICountDownLatch > l;
             };
         }
     }
 }
-#endif
+
+#endif //HAZELCAST_CountDownLatch

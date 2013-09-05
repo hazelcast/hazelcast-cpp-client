@@ -10,58 +10,47 @@
 #define hazelcast_IdGeneratorTest_h
 
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Util.h"
-#include "IdGenerator.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "iTest.h"
+#include "ClientConfig.h"
+#include "HazelcastInstance.h"
+#include "IdGenerator.h"
 
-using namespace hazelcast::client;
-using namespace std;
-using namespace iTest;
+namespace hazelcast {
+    namespace client {
 
+        class HazelcastClient;
 
-class IdGeneratorTest : public iTestFixture<IdGeneratorTest>{
-    
-public:
-    IdGeneratorTest(){
-        
-    };
-    
-    void addTests() {
-        addTest(&IdGeneratorTest::testGenerator, "IdGeneratorTest");
-    };
-    
-    void beforeClass() {
-        ClientConfig clientConfig;
-        clientConfig.addAddress(Address("localhost", 5701));
-        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-        client = new HazelcastClient(clientConfig);
-        generator = new IdGenerator(client->getIdGenerator("IdGeneratorTest"));
-    };
-    
-    void afterClass() {
-        delete client;
-        delete generator;
-    };
-    
-    void beforeTest() {
-    };
-    
-    void afterTest() {
-    };
-    
-    void testGenerator(){
-        assertTrue(generator->init(3569));
-        assertFalse(generator->init(4569));
-        assertEqual(3570, generator->newId());
-    };
+        namespace test {
 
-private:
-    HazelcastClient *client;
-    IdGenerator *generator;
-    
-};
+            class HazelcastInstanceFactory;
 
+            class IdGeneratorTest : public iTest::iTestFixture<IdGeneratorTest> {
+
+            public:
+                IdGeneratorTest(HazelcastInstanceFactory&);
+
+                void addTests();
+
+                void beforeClass();
+
+                void afterClass();
+
+                void beforeTest();
+
+                void afterTest();
+
+                void testGenerator();
+
+            private:
+                HazelcastInstanceFactory& hazelcastInstanceFactory;
+                HazelcastInstance instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<IdGenerator> generator;
+
+            };
+        }
+    }
+}
 
 #endif

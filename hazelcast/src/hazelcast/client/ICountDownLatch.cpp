@@ -45,7 +45,5 @@ namespace hazelcast {
             invoke<bool>(request);
             context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
         };
-
-
     }
 }
