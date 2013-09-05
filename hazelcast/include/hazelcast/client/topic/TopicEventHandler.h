@@ -29,9 +29,9 @@ namespace hazelcast {
 
                 void handle(const PortableMessage& event) {
                     connection::Member member = clusterService.getMember(event.getUuid());
-                    E object = serializationService.toObject(event.getMessage());
+                    E object = serializationService.toObject<E>(event.getMessage());
                     Message<E> message(instanceName, object, event.getPublishTime(), member);
-                    listener.onMessage(object);
+                    listener.onMessage(message);
                 };
 
             private:

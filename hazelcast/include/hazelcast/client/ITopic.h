@@ -15,6 +15,7 @@
 #include "TopicEventHandler.h"
 #include "serialization/SerializationService.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
 #include <string>
 
 namespace hazelcast {
@@ -35,11 +36,11 @@ namespace hazelcast {
             long addMessageListener(L& listener) {
                 topic::AddMessageListenerRequest request(instanceName);
                 topic::TopicEventHandler<E, L> topicEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener);
-                return context->getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(instanceName, request, key, topicEventHandler);
+                return context->getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, key, topicEventHandler);
             }
 
             bool removeMessageListener(long registrationId) {
-                return context->getServerListenerService().stopListening(instanceName, registrationId);
+                return context->getServerListenerService().stopListening(registrationId);
             };
 
             void destroy() {
@@ -58,7 +59,7 @@ namespace hazelcast {
                 return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
-            ITopic(){
+            ITopic() {
 
             };
 

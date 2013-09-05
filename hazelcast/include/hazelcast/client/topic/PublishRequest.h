@@ -7,48 +7,25 @@
 #ifndef HAZELCAST_PublishRequest
 #define HAZELCAST_PublishRequest
 
-
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "TopicPortableHook.h"
+#include "Portable.h"
+#include "Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class PublishRequest {
+            class PublishRequest : public Portable {
             public:
-                PublishRequest(const std::string& instanceName, const serialization::Data& message)
-                : instanceName(instanceName)
-                , message(message) {
+                PublishRequest(const std::string& instanceName, const serialization::Data& message);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return TopicPortableHook::F_ID;
-                };
+                int getClassId() const;
 
-                int getSerializerId() const {
-                    return serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                int getClassId() const {
-                    return TopicPortableHook::PUBLISH;
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", instanceName);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    message.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    instanceName = reader.readUTF("n");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    message.readData(in);
-                };
             private:
                 serialization::Data message;
                 std::string instanceName;

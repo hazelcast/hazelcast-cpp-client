@@ -7,58 +7,33 @@
 #ifndef HAZELCAST_PortableMessage
 #define HAZELCAST_PortableMessage
 
-#include "../serialization/SerializationConstants.h"
-#include "../serialization/Data.h"
-#include "TopicPortableHook.h"
+#include "Portable.h"
+#include "Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class PortableMessage : public Portable{
+            class PortableMessage : public Portable {
             public:
-                PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid)
-                : uuid(uuid)
-                , message(message)
-                , publishTime(publishTime) {
+                PortableMessage();
 
-                };
+                PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid);
 
-                const serialization::Data& getMessage() const {
-                    return message;
-                };
+                const serialization::Data& getMessage() const;
 
-                std::string getUuid() const {
-                    return uuid;
-                };
+                std::string getUuid() const;
 
-                long getPublishTime() const {
-                    return publishTime;
-                };
+                long getPublishTime() const;
 
-                int getFactoryId() const {
-                    return TopicPortableHook::F_ID;
-                };
+                int getFactoryId() const;
 
-                int getClassId() const {
-                    return TopicPortableHook::PORTABLE_MESSAGE;
-                };
+                int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeLong("pt", publishTime);
-                    writer.writeUTF("u", uuid);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    message.writeData(out);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    publishTime = reader.readLong("pt");
-                    uuid = reader.readUTF("u");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    message.readData(in);
-                };
             private:
                 serialization::Data message;
                 std::string uuid;
