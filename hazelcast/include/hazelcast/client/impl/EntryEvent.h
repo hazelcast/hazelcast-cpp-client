@@ -6,7 +6,7 @@
 #define HAZELCAST_ENTRY_EVENT
 
 #include "EventObject.h"
-#include "../connection/Member.h"
+#include "Member.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,7 @@ namespace hazelcast {
                     ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4
                 } value;
 
-                EntryEventType(){
+                EntryEventType() {
 
                 }
 
@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 }
 
-                operator int() const{
+                operator int() const {
                     return value;
                 }
 

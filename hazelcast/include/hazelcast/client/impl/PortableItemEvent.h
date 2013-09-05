@@ -8,23 +8,19 @@
 #define HAZELCAST_PORTABLE_ITEM_EVENT
 
 #include "EventObject.h"
-#include "../connection/Member.h"
 #include "EntryEvent.h"
 #include "Data.h"
 #include "Portable.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "ItemEvent.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
             class PortableItemEvent : public Portable {
             public:
-                enum ItemEventType {
-                    ADDED, REMOVED
-                };
+
+                PortableItemEvent();
 
                 PortableItemEvent(ItemEventType eventType, const serialization::Data& item, const std::string& uuid);
 
@@ -38,26 +34,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeInt("e", eventType);
-                    writer.writeUTF("u", uuid);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    out.writeBoolean(true);
-                    item.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    int type = reader.readInt("e");
-//                    eventType = type;
-                    uuid = reader.readUTF("u");
-                    bool isNotNull;
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    isNotNull = in.readBoolean();
-                    if (isNotNull)
-                        item.readData(in);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data item;

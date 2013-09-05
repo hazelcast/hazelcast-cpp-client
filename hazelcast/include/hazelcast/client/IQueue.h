@@ -46,7 +46,7 @@ namespace hazelcast {
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
                 queue::AddListenerRequest request(instanceName, includeValue);
-                impl::ItemEvent<E> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                impl::ItemEventHandler<E, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
                 return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
             };
 
@@ -106,7 +106,7 @@ namespace hazelcast {
             */
             bool offer(const E& e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
-                queue::OfferRequest request(instanceName, timeoutInMillis, data);
+                queue::OfferRequest request(instanceName, data, timeoutInMillis);
                 bool result;
                 try {
                     result = invoke<bool>(request);
@@ -139,7 +139,7 @@ namespace hazelcast {
             bool remove(const E& o) {
                 serialization::Data data = toData(o);
                 queue::RemoveRequest request(instanceName, data);
-                bool result = invoke(request);
+                bool result = invoke<bool>(request);
                 return result;
             };
 
@@ -150,17 +150,17 @@ namespace hazelcast {
                 return invoke<bool>(request);
             };
 
-            int drainTo(const std::vector<E>& objects) {
+            int drainTo(std::vector<E>& objects) {
                 return drainTo(objects, -1);
             };
 
-            int drainTo(const std::vector<E>& c, int maxElements) {
+            int drainTo(std::vector<E>& c, int maxElements) {
                 queue::DrainRequest request(instanceName, maxElements);
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
                 const std::vector<serialization::Data>& coll = result.getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
                     E e = context->getSerializationService().template toObject<E>(*it);
-                    c.add(e);
+                    c.push_back(e);
                 }
                 return coll.size();
             };
@@ -206,7 +206,7 @@ namespace hazelcast {
             std::vector<E> toArray() {
                 queue::IteratorRequest request(instanceName);
                 impl::PortableCollection result = invoke<impl::PortableCollection>(request);
-                const vector<serialization::Data> const & coll = result.getCollection();
+                std::vector<serialization::Data> const & coll = result.getCollection();
                 return getObjectList(coll);
             };
 
@@ -217,21 +217,22 @@ namespace hazelcast {
             }
 
             bool addAll(const std::vector<E>& c) {
-                vector<serialization::Data> dataList = getDataList(c);
+                std::vector<serialization::Data> dataList = getDataList(c);
                 queue::AddAllRequest request(instanceName, dataList);
                 return invoke<bool>(request);
             }
 
             bool removeAll(const std::vector<E>&c) {
-                queue::CompareAndRemoveRequest request(instanceName, getDataList(c), false);
+                std::vector<serialization::Data> dataList = getDataList(c);
+                queue::CompareAndRemoveRequest request(instanceName, dataList, false);
                 return invoke<bool>(request);
             }
 
             bool retainAll(const std::vector<E>&c) {
-                queue::CompareAndRemoveRequest request(instanceName, getDataList(c), true);
+                std::vector<serialization::Data> dataList = getDataList(c);
+                queue::CompareAndRemoveRequest request(instanceName, dataList, true);
                 return invoke<bool>(request);
             }
-
 
             void clear() {
                 queue::ClearRequest request(instanceName);

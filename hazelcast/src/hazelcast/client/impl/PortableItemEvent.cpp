@@ -4,11 +4,17 @@
 
 
 #include "hazelcast/client/impl/PortableItemEvent.h"
+#include "PortableWriter.h"
+#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            PortableItemEvent::PortableItemEvent(PortableItemEvent::ItemEventType eventType, const serialization::Data& item, const std::string& uuid)
+            PortableItemEvent::PortableItemEvent() {
+
+            }
+
+            PortableItemEvent::PortableItemEvent(ItemEventType eventType, const serialization::Data& item, const std::string& uuid)
             :eventType(eventType)
             , item(item)
             , uuid(uuid) {
@@ -23,7 +29,7 @@ namespace hazelcast {
                 return uuid;
             };
 
-            PortableItemEvent::ItemEventType PortableItemEvent::getEventType() const {
+            ItemEventType PortableItemEvent::getEventType() const {
                 return eventType;
             }
 
@@ -35,6 +41,19 @@ namespace hazelcast {
                 return protocol::SpiConstants::ITEM_EVENT;
             };
 
+            void PortableItemEvent::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeInt("e", eventType);
+                writer.writeUTF("u", uuid);
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                util::writeNullableData(out, &item);
+            };
+
+            void PortableItemEvent::readPortable(serialization::PortableReader& reader) {
+                eventType = reader.readInt("e");;
+                uuid = reader.readUTF("u");
+                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                util::readNullableData(in, &item);
+            };
 
         }
     }

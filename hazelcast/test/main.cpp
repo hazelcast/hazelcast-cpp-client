@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     //atomTest.executeTests();
 //    IdGeneratorTest generatorTest;
 //    generatorTest.executeTests();
-    testSpeed();
+//    testSpeed();
     return 0;
 };
 

@@ -24,7 +24,6 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-
                 void readPortable(serialization::PortableReader& reader);
 
             private:

@@ -6,14 +6,11 @@
 #define HAZELCAST_PORTABLE_ENTRY_EVENT
 
 #include "EventObject.h"
-#include "../connection/Member.h"
 #include "EntryEvent.h"
 #include "Data.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
 #include "Portable.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include <string>
+
 
 namespace hazelcast {
     namespace client {
@@ -22,26 +19,11 @@ namespace hazelcast {
             public:
 
 
-                PortableEntryEvent() {
+                PortableEntryEvent();
 
-                };
+                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value);
 
-                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value)
-                : EventObject(name)
-                , eventType(eventType)
-                , key(key)
-                , value(value) {
-
-                };
-
-                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue)
-                : EventObject(name)
-                , eventType(eventType)
-                , key(key)
-                , value(value)
-                , oldValue(oldValue) {
-
-                };
+                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue);
 
                 const serialization::Data&  getKey() const;
 
@@ -60,25 +42,9 @@ namespace hazelcast {
                 int getClassId() const;
 
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    int i = eventType;
-                    writer.writeInt("e", i);
-                    writer.writeUTF("u", uuid);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    key.writeData(out);
-                    util::writeNullableData(out, &value);
-                    util::writeNullableData(out, &oldValue);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
-
-                void readPortable(serialization::PortableReader& reader) {
-                    eventType = reader.readInt("e");
-                    uuid = reader.readUTF("u");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                    util::readNullableData(in, &value);
-                    util::readNullableData(in, &oldValue);
-                };
+                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data key;

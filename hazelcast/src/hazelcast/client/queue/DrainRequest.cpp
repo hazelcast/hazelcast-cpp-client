@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            DrainRequest::DrainRequest(const std::string& name, bool maxSize)
+            DrainRequest::DrainRequest(const std::string& name, int maxSize)
             :name(name)
             , maxSize(maxSize) {
 
@@ -28,6 +28,7 @@ namespace hazelcast {
 
             void DrainRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
+                writer.writeLong("t", 0);
                 writer.writeInt("m", maxSize);
             };
 

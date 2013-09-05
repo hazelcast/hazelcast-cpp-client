@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace queue {
             class DrainRequest : public Portable {
             public:
-                DrainRequest(const std::string& name, bool maxSize);
+                DrainRequest(const std::string& name, int maxSize);
 
                 int getFactoryId() const;
 

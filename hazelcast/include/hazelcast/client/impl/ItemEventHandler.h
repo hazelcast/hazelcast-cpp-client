@@ -36,16 +36,12 @@ namespace hazelcast {
                         item = serializationService.toObject<E>(event.getItem());
                     }
                     connection::Member member = clusterService.getMember(event.getUuid());
-                    ItemEvent<E> itemEvent(instanceName, event.getEventType(), item, member);
-                    switch (event.getEventType()) {
-                        case PortableItemEvent::ADDED:
-                            listener.entryAdded(itemEvent);
-                            break;
-                        case PortableItemEvent::REMOVED:
-                            listener.entryRemoved(itemEvent);
-                            break;
-                        default:
-                            break;
+                    ItemEventType type = event.getEventType();
+                    ItemEvent<E> itemEvent(instanceName, type, item, member);
+                    if (type == EntryEventType::ADDED) {
+                        listener.itemAdded(itemEvent);
+                    } else if (type == EntryEventType::REMOVED) {
+                        listener.itemRemoved(itemEvent);
                     }
 
                 };

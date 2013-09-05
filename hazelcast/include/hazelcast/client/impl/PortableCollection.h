@@ -5,14 +5,9 @@
 #ifndef HAZELCAST_PORTABLE_COLLECTION
 #define HAZELCAST_PORTABLE_COLLECTION
 
-
-#include "ProtocolConstants.h"
 #include "Data.h"
 #include "Portable.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
 #include <vector>
-
 
 namespace hazelcast {
     namespace client {
@@ -27,29 +22,10 @@ namespace hazelcast {
 
                 int getClassId() const;
 
+                void writePortable(serialization::PortableWriter& writer) const;
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeBoolean("l", true);
-                    writer.writeInt("s", collection.size());
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    for (int i = 0; i < collection.size(); ++i) {
-                        collection[i].writeData(out);
-                    }
+                void readPortable(serialization::PortableReader& reader);
 
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    bool isList = reader.readBoolean("l");
-                    int size = reader.readInt("s");
-                    if (size < 0)
-                        return;
-                    collection.resize(size);
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    for (int i = 0; i < size; ++i) {
-                        collection[i].readData(in);
-                    }
-                };
             private:
                 std::vector<serialization::Data> collection;
             };

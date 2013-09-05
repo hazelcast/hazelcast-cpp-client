@@ -36,7 +36,25 @@ namespace hazelcast {
 
                 void afterTest();
 
+                void testListener();
+
+                void testOfferPoll();
+
+                void testRemainingCapacity();
+
+                void testRemove();
+
+                void testContains();
+
+                void testDrain();
+
+                void testToArray();
+
                 void testAddAll();
+
+                void testRemoveRetain();
+
+                void testClear();
 
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;

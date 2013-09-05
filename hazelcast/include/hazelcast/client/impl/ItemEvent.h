@@ -6,17 +6,47 @@
 #define HAZELCAST_ITEM_EVENT
 
 #include "EventObject.h"
-#include "../connection/Member.h"
+#include "Member.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
+
+            class ItemEventType {
+            public:
+                enum Type {
+                    ADDED = 1, REMOVED = 2
+                } value;
+
+                ItemEventType() {
+
+                }
+
+                ItemEventType(Type value)
+                :value(value) {
+
+                }
+
+                operator int() const {
+                    return value;
+                }
+
+                void operator = (int i) {
+                    switch (i) {
+                        case 1:
+                            value = ADDED;
+                            break;
+                        case 2:
+                            value = REMOVED;
+                            break;
+                    }
+                }
+
+            };
+
             template <typename E>
             class ItemEvent : public EventObject {
             public:
-                enum ItemEventType {
-                    ADDED, REMOVED
-                };
 
                 ItemEvent(const std::string& name, ItemEventType eventType, const E& item, const connection::Member& member)
                 : EventObject(name)

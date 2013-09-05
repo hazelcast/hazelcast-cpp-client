@@ -27,6 +27,7 @@ namespace hazelcast {
 
             void IteratorRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
+                writer.writeLong("t", 0);
             };
 
 

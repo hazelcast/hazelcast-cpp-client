@@ -26,9 +26,9 @@ namespace hazelcast {
                 return queue::QueuePortableHook::COMPARE_AND_REMOVE;
             }
 
-
             void CompareAndRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
+                writer.writeLong("t", 0);
                 writer.writeBoolean("r", retain);
                 writer.writeInt("s", dataList.size());
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
@@ -36,7 +36,6 @@ namespace hazelcast {
                     dataList[i].writeData(out);
                 }
             };
-
 
             void CompareAndRemoveRequest::readPortable(serialization::PortableReader& reader) {
                 name = reader.readUTF("n");
