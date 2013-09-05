@@ -8,6 +8,7 @@
 #include "IdGeneratorTest.h"
 #include "ICountDownLatchTest.h"
 #include "ClientLockTest.h"
+#include "ClientSemaphoreTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -34,6 +35,8 @@ int main(int argc, char **argv) {
     latchTest.executeTests();
     ClientLockTest lockTest(factory);
     lockTest.executeTests();
+    ClientSemaphoreTest semaphoreTest(factory);
+    semaphoreTest.executeTests();
 //    testSpeed();
     return 0;
 };
