@@ -19,10 +19,14 @@ namespace hazelcast {
             template <typename Callable>
             class TargetCallableRequest : public IdentifiedDataSerializable {
             public:
+                TargetCallableRequest() {
+
+                };
+
                 TargetCallableRequest(std::string& name, Callable& callable, Address& address)
-                :name(name)
-                , callable(callable)
-                , address(address) {
+                :name(&name)
+                , callable(&callable)
+                , address(&address) {
 
                 }
 
@@ -35,22 +39,22 @@ namespace hazelcast {
                 }
 
                 void writeData(serialization::ObjectDataOutput & writer) const {
-                    writer.writeUTF(name);
-                    writer.writeObject(&callable);
-                    address.writeData(writer);
+                    writer.writeUTF(*name);
+                    writer.writeObject<Callable>(callable);
+                    address->writeData(writer);
                 }
 
                 void readData(serialization::ObjectDataInput & reader) {
-                    name = reader.readUTF();
-                    callable = reader.readObject<Callable>();
-                    address.readData(reader);
+                    *name = reader.readUTF();
+                    *callable = reader.readObject<Callable>();
+                    address->readData(reader);
                 }
 
 
             private:
-                std::string &name;
-                Callable& callable;
-                Address& address;
+                std::string *name;
+                Callable *callable;
+                Address *address;
             };
         }
     }

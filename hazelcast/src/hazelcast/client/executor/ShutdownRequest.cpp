@@ -18,7 +18,7 @@ namespace hazelcast {
             }
 
             int ShutdownRequest::getClassId() const {
-                return DataSerializableHook::IS_SHUTDOWN_REQUEST;
+                return DataSerializableHook::SHUTDOWN_REQUEST;
             }
 
             void ShutdownRequest::writeData(serialization::ObjectDataOutput& writer) const {

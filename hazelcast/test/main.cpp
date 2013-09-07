@@ -10,6 +10,7 @@
 #include "ClientLockTest.h"
 #include "ClientSemaphoreTest.h"
 #include "ClientTopicTest.h"
+#include "IExecutorServiceTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -40,6 +41,8 @@ int main(int argc, char **argv) {
     semaphoreTest.executeTests();
     ClientTopicTest topicTest(factory);
     topicTest.executeTests();
+    IExecutorServiceTest executorServiceTest(factory);
+    executorServiceTest.executeTests();
 //    testSpeed();
     return 0;
 };

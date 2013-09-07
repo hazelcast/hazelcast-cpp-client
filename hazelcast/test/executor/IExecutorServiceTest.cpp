@@ -1,0 +1,164 @@
+//
+// Created by sancar koyunlu on 9/6/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+#include "IExecutorServiceTest.h"
+#include "HazelcastInstanceFactory.h"
+#include "HazelcastClient.h"
+#include "RunnableTask.h"
+#include "CallableTask.h"
+#include "CountDownLatch.h"
+#include "FailingTask.h"
+
+namespace hazelcast {
+    namespace client {
+
+        class HazelcastClient;
+
+        namespace test {
+            using namespace iTest;
+
+            IExecutorServiceTest::IExecutorServiceTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
+            , service(new IExecutorService(client->getExecutorService("IExecuterServiceTest"))) {
+            };
+
+            void IExecutorServiceTest::addTests() {
+                addTest(&IExecutorServiceTest::testSubmitWithResult, "testSubmitWithResult");
+                addTest(&IExecutorServiceTest::submitCallable1, "submitCallable1");
+                addTest(&IExecutorServiceTest::submitCallable2, "submitCallable2");
+                addTest(&IExecutorServiceTest::submitCallable3, "submitCallable3");
+                addTest(&IExecutorServiceTest::submitCallable4, "submitCallable4");
+                addTest(&IExecutorServiceTest::submitFailingCallable, "submitFailingCallable");
+            };
+
+            void IExecutorServiceTest::beforeClass() {
+
+            };
+
+            void IExecutorServiceTest::afterClass() {
+
+            };
+
+            void IExecutorServiceTest::beforeTest() {
+
+            };
+
+            void IExecutorServiceTest::afterTest() {
+            };
+
+            void IExecutorServiceTest::testSubmitWithResult() {
+                int res = 5;
+                std::string name = "task";
+                RunnableTask runnableTask(name);
+                Future<int> future = service->submit(runnableTask, res);
+                int integer = future.get();
+                assertEqual(res, integer);
+            }
+
+
+            void IExecutorServiceTest::submitCallable1() {
+                std::string name = "naber";
+                CallableTask callableTask(name);
+                Future<std::string> future = service->submitToKeyOwner<std::string>(callableTask, std::string("key"));
+                std::string& result = future.get();
+                assertEqual("naber:result", result);
+            }
+
+            class SampleExecutionCallback {
+            public:
+                SampleExecutionCallback(util::CountDownLatch& latch)
+                :latch(latch) {
+
+                }
+
+                void onResponse(std::string response) {
+                    if (!response.compare("naber:result")) {
+                        latch.countDown();
+                    }
+                }
+
+                void onFailure(std::exception t) {
+                }
+
+            private:
+                util::CountDownLatch& latch;
+            };
+
+            void IExecutorServiceTest::submitCallable2() {
+
+                util::CountDownLatch latch(1);
+                SampleExecutionCallback executionCallback(latch);
+                std::string name("naber");
+                std::string key("key");
+                CallableTask callableTask(name);
+                service->submitToKeyOwner<std::string>(callableTask, key, executionCallback);
+                assertTrue(latch.await(5 * 1000));
+            }
+
+
+            void IExecutorServiceTest::submitCallable3() {
+                std::string name("asd");
+                CallableTask callableTask(name);
+                std::map<connection::Member, Future<std::string> > map = service->submitToAllMembers<std::string>(callableTask);
+                std::map<connection::Member, Future<std::string> >::iterator it;
+                for (it = map.begin(); it != map.end(); it++) {
+                    std::string & s = it->second.get();
+                    assertEqual("asd:result", s);
+                }
+            }
+
+            class SampleMultiExecutionCallback {
+            public:
+                SampleMultiExecutionCallback(util::CountDownLatch& latch)
+                :latch(latch) {
+
+                }
+
+                void onResponse(connection::Member member, std::string response) {
+                    if (!response.compare("asd:result")) {
+                        latch.countDown();
+                    }
+                };
+
+                void onComplete(std::map<connection::Member, std::string >& values) {
+                    std::map<connection::Member, std::string >::iterator it;
+                    for (it = values.begin(); it != values.end(); it++) {
+                        std::string & s = it->second;
+                        if (!s.compare("asd:result")) {
+                            latch.countDown();
+                        }
+                    }
+                };
+
+            private:
+                util::CountDownLatch& latch;
+            };
+
+            void IExecutorServiceTest::submitCallable4() {
+                util::CountDownLatch latch(4);
+                std::string name("asd");
+                CallableTask callableTask(name);
+                SampleMultiExecutionCallback multiExecutionCallback(latch);
+                service->submitToAllMembers<std::string>(callableTask, multiExecutionCallback);
+                assertTrue(latch.await(5 * 1000));
+            }
+
+
+            void IExecutorServiceTest::submitFailingCallable() {
+                std::cout << "Expected exception = > ";
+                try {
+                    FailingTask failingTask;
+                    Future<std::string> f = service->submit<std::string>(failingTask);
+                    std::string & get = f.get();
+                } catch (std::exception e){
+                    std::cout << e.what() << std::endl;
+                }
+            }
+
+        }
+    }
+}

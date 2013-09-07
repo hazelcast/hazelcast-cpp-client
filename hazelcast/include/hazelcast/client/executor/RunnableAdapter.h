@@ -19,8 +19,12 @@ namespace hazelcast {
             template<typename Runnable>
             class RunnableAdapter : public IdentifiedDataSerializable {
             public:
+                RunnableAdapter() {
+
+                }
+
                 RunnableAdapter(Runnable& runnable)
-                :runnable(runnable) {
+                :runnable(&runnable) {
 
                 }
 
@@ -33,15 +37,15 @@ namespace hazelcast {
                 }
 
                 void writeData(serialization::ObjectDataOutput & writer) const {
-                    writer.writeObject(&runnable);
+                    writer.writeObject<Runnable>(runnable);
                 }
 
                 void readData(serialization::ObjectDataInput & reader) {
-                    runnable = reader.readObject<Runnable>();
+                    *runnable = reader.readObject<Runnable>();
                 }
 
             private:
-                Runnable& runnable;
+                Runnable *runnable;
 
 
             };
