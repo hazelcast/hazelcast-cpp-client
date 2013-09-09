@@ -56,10 +56,10 @@ namespace hazelcast {
             int size = host.size();
             writer.writeInt(size);
             if (size != 0) {
-                std::vector<char> temp(size);
+                std::vector<byte> temp;
                 char const *str = host.c_str();
                 temp.insert(temp.begin(), str, str + size);
-                writer.writeCharArray(temp);
+                writer.write(temp);
             }
         };
 

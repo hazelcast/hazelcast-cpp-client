@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 void afterTest();
 
-                void testListener();
+                void testTopicListeners();
 
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;

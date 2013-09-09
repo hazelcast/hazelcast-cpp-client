@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 IExecutorServiceTest(HazelcastInstanceFactory&);
 
+                ~IExecutorServiceTest();
+
                 void addTests();
 
                 void beforeClass();
@@ -52,6 +54,8 @@ namespace hazelcast {
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
+                HazelcastInstance second;
+                HazelcastInstance third;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<IExecutorService > service;

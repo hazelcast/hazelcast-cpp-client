@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 ClientSemaphoreTest(HazelcastInstanceFactory&);
 
+                ~ClientSemaphoreTest();
+
                 void addTests();
 
                 void beforeClass();

@@ -15,14 +15,13 @@ namespace hazelcast {
 
             ClientQueueTest::ClientQueueTest(HazelcastInstanceFactory & hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , q(new IQueue< std::string>(client->getQueue< std::string >("clientQueueTest"))) {
 
             }
 
             ClientQueueTest::~ClientQueueTest() {
-
             }
 
             void ClientQueueTest::addTests() {
@@ -43,7 +42,8 @@ namespace hazelcast {
             }
 
             void ClientQueueTest::afterClass() {
-
+                client.reset();
+                instance.shutdown();
             }
 
             void ClientQueueTest::beforeTest() {

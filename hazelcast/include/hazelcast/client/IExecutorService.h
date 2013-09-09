@@ -290,7 +290,7 @@ namespace hazelcast {
             template<typename Result, typename Callable>
             std::map<connection::Member, Future<Result> > submitToAllMembers(Callable& task) {
                 std::vector<connection::Member> members = context->getClusterService().getMemberList();
-                submitToMembers<Result>(task, members);
+                return submitToMembers<Result>(task, members);
             };
 
             /**
@@ -348,8 +348,9 @@ namespace hazelcast {
             void submitToMembers(Callable& task, const std::vector<connection::Member>& members, MultiExecutionCallback& callback) {
                 std::map<connection::Member, Future<Result> > result;
                 std::vector<connection::Member>::const_iterator it;
+                util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > wrapper(new impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback >(members.size(), callback), rand());
                 for (it = members.begin(); it != members.end(); ++it) {
-                    executorWithCallback.submitMulti<Result>(task, *it, callback);
+                    executorWithCallback.submitMulti<Result>(task, *it, wrapper);
                 }
             };
 
@@ -364,7 +365,7 @@ namespace hazelcast {
             template<typename Result, typename Callable, typename MultiExecutionCallback>
             void submitToAllMembers(Callable& task, MultiExecutionCallback& callback) {
                 std::vector<connection::Member> members = context->getClusterService().getMemberList();
-                submitToMembers<Result>(task, members);
+                submitToMembers<Result>(task, members, callback);
             }
 
 

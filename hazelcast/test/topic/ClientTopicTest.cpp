@@ -14,14 +14,14 @@ namespace hazelcast {
 
             ClientTopicTest::ClientTopicTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {
             };
 
 
             void ClientTopicTest::addTests() {
-                addTest(&ClientTopicTest::testListener, "testListener");
+                addTest(&ClientTopicTest::testTopicListeners, "testTopicListeners");
             };
 
             void ClientTopicTest::beforeClass() {
@@ -44,8 +44,6 @@ namespace hazelcast {
                 };
 
                 void onMessage(topic::Message<std::string> message) {
-                    std::cout << message.getMessageObject() << std::endl;
-                    std::cout << message.getSource() << std::endl;
                     latch.countDown();
                 }
 
@@ -53,16 +51,17 @@ namespace hazelcast {
                 util::CountDownLatch& latch;
             };
 
-            void ClientTopicTest::testListener() {
+            void ClientTopicTest::testTopicListeners() {
 
                 util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
-                topic->addMessageListener(listener);
+                long id = topic->addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic->publish(std::string("naber") + util::to_string(i));
                 }
                 assertTrue(latch.await(20 * 1000));
+                topic->removeMessageListener(id);
 
             }
         }

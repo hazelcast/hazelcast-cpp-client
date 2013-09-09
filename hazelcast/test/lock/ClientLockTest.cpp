@@ -13,11 +13,14 @@ namespace hazelcast {
 
             ClientLockTest::ClientLockTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , l(new ILock(client->getILock("ClientLockTest"))) {
             };
 
+
+            ClientLockTest::~ClientLockTest() {
+            }
 
             void ClientLockTest::addTests() {
                 addTest(&ClientLockTest::testLock, "testLock");
@@ -31,6 +34,8 @@ namespace hazelcast {
             };
 
             void ClientLockTest::afterClass() {
+                client.reset();
+                instance.shutdown();
             };
 
             void ClientLockTest::beforeTest() {

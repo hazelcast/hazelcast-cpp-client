@@ -17,14 +17,13 @@ namespace hazelcast {
 
             class HazelcastInstance {
             public:
-                friend class HazelcastInstanceFactory;
+                HazelcastInstance(HazelcastInstanceFactory&);
 
                 void shutdown();
 
                 ~HazelcastInstance();
 
             private:
-                HazelcastInstance(HazelcastInstanceFactory&, int);
 
                 HazelcastInstanceFactory& factory;
                 int id;

@@ -20,11 +20,14 @@ namespace hazelcast {
 
             IAtomicLongTest::IAtomicLongTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {
             };
 
+
+            IAtomicLongTest::~IAtomicLongTest() {
+            }
 
             void IAtomicLongTest::addTests() {
                 addTest(&IAtomicLongTest::test, "ClientAtomicLongTest");
@@ -35,7 +38,10 @@ namespace hazelcast {
             };
 
             void IAtomicLongTest::afterClass() {
-
+                client.reset();
+                client.reset();
+                client.reset();
+                instance.shutdown();
             };
 
             void IAtomicLongTest::beforeTest() {

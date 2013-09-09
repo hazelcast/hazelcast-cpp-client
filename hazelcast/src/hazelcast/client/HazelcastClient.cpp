@@ -21,7 +21,7 @@ namespace hazelcast {
             , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clusterService, serializationService, this->clientConfig)
                     : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
             , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
-            , partitionService(clusterService, serializationService)
+            , partitionService(clusterService, serializationService, lifecycleService)
             , invocationService(clusterService, partitionService)
             , serverListenerService(invocationService)
             , cluster(clusterService)
@@ -32,8 +32,6 @@ namespace hazelcast {
 
 
             ~HazelcastClientImpl() {
-                //TODO check if already shutdown
-                //TODO shutdown the threads ????
                 lifecycleService.setShutdown();
             }
 
@@ -160,15 +158,6 @@ namespace hazelcast {
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
             return TransactionContext(impl->clusterService, impl->serializationService, *(impl->connectionManager), options);
         }
-
-//        void shutdown() {
-        //TODO shutdown the threads ????
-//            partitionService.stop();
-//            clusterService.stop();
-//            connectionManager.shutdown();
-//        }
-//
-
 
     }
 }

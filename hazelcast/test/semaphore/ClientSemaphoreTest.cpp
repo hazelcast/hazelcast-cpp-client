@@ -19,11 +19,14 @@ namespace hazelcast {
 
             ClientSemaphoreTest::ClientSemaphoreTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , s(new ISemaphore(client->getISemaphore("ClientSemaphoreTest"))) {
             };
 
+
+            ClientSemaphoreTest::~ClientSemaphoreTest() {
+            }
 
             void ClientSemaphoreTest::addTests() {
                 addTest(&ClientSemaphoreTest::testAcquire, "testAcquire");
@@ -34,6 +37,8 @@ namespace hazelcast {
             };
 
             void ClientSemaphoreTest::afterClass() {
+                client.reset();
+                instance.shutdown();
             };
 
             void ClientSemaphoreTest::beforeTest() {

@@ -16,7 +16,7 @@ namespace hazelcast {
 
             ClientMapTest::ClientMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , imap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
             };
@@ -57,6 +57,8 @@ namespace hazelcast {
             };
 
             void ClientMapTest::afterClass() {
+                client.reset();
+                instance.shutdown();
             };
 
             void ClientMapTest::beforeTest() {

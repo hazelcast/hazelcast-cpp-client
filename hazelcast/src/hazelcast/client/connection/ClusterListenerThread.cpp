@@ -29,7 +29,7 @@ namespace hazelcast {
 
 
             void ClusterListenerThread::run() {
-                while (true) {
+                while (lifecycleService.isRunning()) {
                     try{
                         if (conn == NULL) {
                             try {
@@ -111,8 +111,10 @@ namespace hazelcast {
             };
 
             void ClusterListenerThread::listenMembershipEvents() {
-                while (true) {
+                while (lifecycleService.isRunning()) {
                     serialization::Data data = conn->read();
+                    if (!lifecycleService.isRunning())
+                        break;
                     MembershipEvent event = serializationService.toObject<MembershipEvent>(data);
                     Member member = event.getMember();
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {

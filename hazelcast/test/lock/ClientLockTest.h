@@ -29,6 +29,8 @@ namespace hazelcast {
 
                 ClientLockTest(HazelcastInstanceFactory&);
 
+                ~ClientLockTest();
+
                 void addTests();
 
                 void beforeClass();

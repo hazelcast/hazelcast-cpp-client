@@ -20,11 +20,14 @@ namespace hazelcast {
 
             IdGeneratorTest::IdGeneratorTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , generator(new IdGenerator(client->getIdGenerator("clientIdGenerator"))) {
             };
 
+
+            IdGeneratorTest::~IdGeneratorTest() {
+            }
 
             void IdGeneratorTest::addTests() {
                 addTest(&IdGeneratorTest::testGenerator, "clientIdGenerator");
@@ -35,7 +38,8 @@ namespace hazelcast {
             };
 
             void IdGeneratorTest::afterClass() {
-
+                client.reset();
+                instance.shutdown();
             };
 
             void IdGeneratorTest::beforeTest() {

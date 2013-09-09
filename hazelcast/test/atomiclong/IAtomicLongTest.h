@@ -31,6 +31,8 @@ namespace hazelcast {
 
                 IAtomicLongTest(HazelcastInstanceFactory&);
 
+                ~IAtomicLongTest();
+
                 void addTests();
 
                 void beforeClass();

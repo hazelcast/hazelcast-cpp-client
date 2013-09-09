@@ -32,9 +32,15 @@ namespace hazelcast {
 
                 template<typename Result, typename Callable >
                 Future<Result> submit(Callable& task, const Result& result) {
-                    executor::LocalTargetCallableRequest<Callable> request(*instanceName, task);
                     Future<Result> future;
-                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvoke<Result, Callable>, this, boost::cref(request), boost::ref(future), boost::cref(result)));
+                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvoke<Result, Callable>, this, boost::ref(task), future, boost::cref(result)));
+                    return future;
+                }
+
+                template<typename Result, typename Runnable >
+                Future<Result> submit(executor::RunnableAdapter<Runnable> task, const Result& result) {
+                    Future<Result> future;
+                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvoke<Result, executor::RunnableAdapter<Runnable> >, this, task, future, boost::cref(result)));
                     return future;
                 }
 
@@ -43,21 +49,24 @@ namespace hazelcast {
                     spi::PartitionService & partitionService = context->getPartitionService();
                     int partitionId = partitionService.getPartitionId(partitionKey);
                     Address *pointer = partitionService.getPartitionOwner(partitionId);
-                    return submit(task, *pointer, result);
+                    if (pointer != NULL)
+                        return submit(task, *pointer, result);
+                    else
+                        return submit(task, result);
                 }
 
                 template<typename Result, typename Callable >
                 Future<Result> submit(Callable& task, const Address& address, const Result& result) {
-                    executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
                     Future<Result> future;
-                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvokeToAddress, this, boost::cref(request), boost::cref(address), boost::ref(future), boost::cref(result)));
+                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvokeToAddress, this, boost::ref(task), address, future, boost::cref(result)));
                     return future;
                 }
 
 
             private:
                 template<typename Result, typename Callable>
-                void asyncInvokeToAddress(const executor::TargetCallableRequest<Callable> & request, const Address& address, Future<Result>& future, const Result& result) {
+                void asyncInvokeToAddress(Callable& task, Address address, Future<Result> future, const Result& result) {
+                    executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
                     try{
                         invoke<bool>(request, address);
                         future.accessInternal().setValue((new Result(result)));
@@ -69,7 +78,8 @@ namespace hazelcast {
                 }
 
                 template<typename Result, typename Callable>
-                void asyncInvoke(const executor::LocalTargetCallableRequest<Callable> & request, Future<Result>& future, const Result& result) {
+                void asyncInvoke(Callable& callable, Future<Result> future, const Result& result) {
+                    executor::LocalTargetCallableRequest<Callable > request(*instanceName, callable);
                     try{
                         invoke<bool>(request);
                         future.accessInternal().setValue(new Result(result));

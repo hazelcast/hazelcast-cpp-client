@@ -29,6 +29,8 @@ namespace hazelcast {
             public:
                 IdGeneratorTest(HazelcastInstanceFactory&);
 
+                ~IdGeneratorTest();
+
                 void addTests();
 
                 void beforeClass();

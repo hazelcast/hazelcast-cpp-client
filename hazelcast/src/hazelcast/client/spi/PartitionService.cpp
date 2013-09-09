@@ -13,10 +13,11 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            PartitionService::PartitionService(ClusterService & clusterService, serialization::SerializationService & serializationService)
+            PartitionService::PartitionService(ClusterService & clusterService, serialization::SerializationService & serializationService, spi::LifecycleService& lifecycleService)
             :partitionCount(0)
             , clusterService(clusterService)
-            , serializationService(serializationService) {
+            , serializationService(serializationService)
+            , lifecycleService(lifecycleService) {
 
             };
 
@@ -48,9 +49,12 @@ namespace hazelcast {
 
 
             void PartitionService::runListener() {
-                while (true) {
+                while (lifecycleService.isRunning()) {
                     try{
                         boost::this_thread::sleep(boost::posix_time::seconds(10));
+                        if (!lifecycleService.isRunning()) {
+                            break;
+                        }
                         runRefresher();
                     }catch(...){
                         //ignored

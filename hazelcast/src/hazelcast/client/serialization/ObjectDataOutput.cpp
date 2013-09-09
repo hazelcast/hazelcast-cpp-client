@@ -145,7 +145,7 @@ namespace hazelcast {
             };
 
             void ObjectDataOutput::writePortable(const Portable *portable) {
-                writeBoolean(true);
+                writeBoolean(false);
                 writeInt(portable->getSerializerId());
                 ClassDefinition *cd = context->lookup(portable->getFactoryId(), portable->getClassId());
                 if (cd == NULL) {
@@ -158,7 +158,7 @@ namespace hazelcast {
             };
 
             void ObjectDataOutput::writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable) {
-                writeBoolean(true);
+                writeBoolean(false);
                 writeInt(dataSerializable->getSerializerId());
                 serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             };

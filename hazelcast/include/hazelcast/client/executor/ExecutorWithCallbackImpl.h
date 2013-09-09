@@ -11,7 +11,6 @@
 #include "Data.h"
 #include "Address.h"
 #include "InvocationService.h"
-#include "Future.h"
 #include "LocalTargetCallableRequest.h"
 #include "TargetCallableRequest.h"
 #include "MultiExecutionCallbackWrapper.h"
@@ -33,8 +32,7 @@ namespace hazelcast {
 
                 template<typename Result, typename Callable, typename ExecutionCallback>
                 void submit(Callable& task, ExecutionCallback& callback) {
-                    executor::LocalTargetCallableRequest<Callable> request(*instanceName, task);
-                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvoke<Result>, boost::cref(request), boost::ref(callback)));
+                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvoke<Result, Callable, ExecutionCallback>, this, boost::ref(task), boost::ref(callback)));
                 }
 
                 template<typename Result, typename Callable, typename ExecutionCallback>
@@ -42,34 +40,31 @@ namespace hazelcast {
                     spi::PartitionService & partitionService = context->getPartitionService();
                     int partitionId = partitionService.getPartitionId(partitionKey);
                     Address *pointer = partitionService.getPartitionOwner(partitionId);
-                    submit<Result>(task, *pointer, callback);
+                    if (pointer != NULL)
+                        submit<Result>(task, *pointer, callback);
+                    else
+                        return submit<Result>(task, callback);
                 }
 
                 template<typename Result, typename Callable, typename ExecutionCallback>
                 void submit(Callable& task, const Address& address, ExecutionCallback& callback) {
-                    Address lAddress = address;
-                    executor::TargetCallableRequest<Callable> request(*instanceName, task, lAddress);
-                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeToAddress<Result, Callable, ExecutionCallback>, this, boost::cref(request), boost::cref(address), boost::ref(callback)));
+                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeToAddress<Result, Callable, ExecutionCallback>, this, boost::ref(task), address, boost::ref(callback)));
                 }
 
-
                 template<typename Result, typename Callable, typename MultiExecutionCallback>
-                void submitMulti(Callable& task, const connection::Member& member, MultiExecutionCallback& callback) {
+//                void submitMulti(Callable& task, const connection::Member& member, impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback >& callback) {
+                void submitMulti(Callable& task, const connection::Member& member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
                     Address const & address = member.getAddress();
                     if (context->getClusterService().isMemberExists(address)) {
-                        executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
-                        impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > wrapper(callback);
-                        boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeWithMultiCallback<Result, Callable, MultiExecutionCallback>, this, boost::cref(request), boost::cref(member), boost::ref(wrapper)));
+                        boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeWithMultiCallback<Result, Callable, MultiExecutionCallback >, this, boost::ref(task), member, callback));
                     } else {
                         throw exception::IException("IExecuterService::executeOnMember()", "Member is not available!!!");
                     }
                 };
-
-
             private:
-
                 template<typename Result, typename Callable, typename ExecutionCallback>
-                void asyncInvokeToAddress(const executor::TargetCallableRequest<Callable> & request, const Address& address, ExecutionCallback& callback) {
+                void asyncInvokeToAddress(Callable & task, Address address, ExecutionCallback& callback) {
+                    executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
                     try{
                         Result result = invoke<Result>(request, address);
                         callback.onResponse(result);
@@ -79,7 +74,8 @@ namespace hazelcast {
                 }
 
                 template<typename Result, typename Callable, typename ExecutionCallback>
-                void asyncInvoke(const executor::LocalTargetCallableRequest<Callable> & request, ExecutionCallback& callback) {
+                void asyncInvoke(Callable& task, ExecutionCallback& callback) {
+                    executor::LocalTargetCallableRequest<Callable> request(*instanceName, task);
                     try{
                         Result result = invoke<Result>(request);
                         callback.onResponse(result);
@@ -90,10 +86,13 @@ namespace hazelcast {
 
 
                 template<typename Result, typename Callable, typename MultiExecutionCallback>
-                void asyncInvokeWithMultiCallback(const executor::TargetCallableRequest<Callable> & request, const connection::Member& member, const impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback>& callback) {
+//                void asyncInvokeWithMultiCallback(Callable& task, connection::Member member, impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback >& callback) {
+                void asyncInvokeWithMultiCallback(Callable& task, connection::Member member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
+                    Address address = member.getAddress();
+                    executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
                     try{
-                        Result result = invoke<Result>(request, member.getAddress());
-                        callback.onResponse(member, result);
+                        Result result = invoke<Result>(request, address);
+                        callback->onResponse(member, result);
                     } catch(std::exception& e){
                         //TODO ignored why?
                     }

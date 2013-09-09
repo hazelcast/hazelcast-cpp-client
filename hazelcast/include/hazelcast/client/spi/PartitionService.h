@@ -22,9 +22,11 @@ namespace hazelcast {
         namespace spi {
             class ClusterService;
 
+            class LifecycleService;
+
             class PartitionService {
             public:
-                PartitionService(ClusterService&, serialization::SerializationService&);
+                PartitionService(ClusterService&, serialization::SerializationService&, spi::LifecycleService&);
 
                 ~PartitionService();
 
@@ -40,6 +42,8 @@ namespace hazelcast {
 
                 ClusterService& clusterService;
                 serialization::SerializationService& serializationService;
+                spi::LifecycleService& lifecycleService;
+
                 boost::mutex refreshLock;
 
                 volatile int partitionCount;

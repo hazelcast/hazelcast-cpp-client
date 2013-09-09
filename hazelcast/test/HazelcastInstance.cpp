@@ -13,9 +13,9 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            HazelcastInstance::HazelcastInstance(HazelcastInstanceFactory& factory, int id)
+            HazelcastInstance::HazelcastInstance(HazelcastInstanceFactory& factory)
             :factory(factory)
-            , id(id)
+            , id(factory.getInstanceId())
             , isShutDown(false) {
             };
 

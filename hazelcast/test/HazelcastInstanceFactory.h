@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 void shutdownAll();
 
-                HazelcastInstance newHazelcastInstance();
+                int getInstanceId();
 
                 ~HazelcastInstanceFactory();
 

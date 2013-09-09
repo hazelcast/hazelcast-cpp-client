@@ -26,6 +26,8 @@ namespace hazelcast {
 
                 ICountDownLatchTest(HazelcastInstanceFactory&);
 
+                ~ICountDownLatchTest();
+
                 void addTests();
 
                 void beforeClass();

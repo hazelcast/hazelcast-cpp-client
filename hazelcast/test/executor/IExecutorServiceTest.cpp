@@ -21,10 +21,18 @@ namespace hazelcast {
 
             IExecutorServiceTest::IExecutorServiceTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
+            , second(hazelcastInstanceFactory)
+            , third(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , service(new IExecutorService(client->getExecutorService("IExecuterServiceTest"))) {
+
             };
+
+
+            IExecutorServiceTest::~IExecutorServiceTest() {
+
+            }
 
             void IExecutorServiceTest::addTests() {
                 addTest(&IExecutorServiceTest::testSubmitWithResult, "testSubmitWithResult");
@@ -40,7 +48,10 @@ namespace hazelcast {
             };
 
             void IExecutorServiceTest::afterClass() {
-
+                client.reset();
+                instance.shutdown();
+                second.shutdown();
+                third.shutdown();
             };
 
             void IExecutorServiceTest::beforeTest() {
@@ -150,11 +161,11 @@ namespace hazelcast {
 
             void IExecutorServiceTest::submitFailingCallable() {
                 std::cout << "Expected exception = > ";
+                FailingTask failingTask;
+                Future<std::string> f = service->submit<std::string>(failingTask);
                 try {
-                    FailingTask failingTask;
-                    Future<std::string> f = service->submit<std::string>(failingTask);
                     std::string & get = f.get();
-                } catch (std::exception e){
+                } catch (std::exception& e){
                     std::cout << e.what() << std::endl;
                 }
             }

@@ -49,7 +49,7 @@ namespace hazelcast {
                 R& get() {
                     wait();
                     if (exception.get() != NULL)
-                        throw exception;
+                        throw *exception;
                     return *result;
                 };
 
@@ -125,11 +125,7 @@ namespace hazelcast {
 
         private:
             util::AtomicPointer<pImpl::FutureBase<R> > basePtr;
-
-
         };
-
-
     }
 }
 

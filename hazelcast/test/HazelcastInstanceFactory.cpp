@@ -67,11 +67,10 @@ namespace hazelcast {
 
             };
 
-            HazelcastInstance HazelcastInstanceFactory::newHazelcastInstance() {
+            int HazelcastInstanceFactory::getInstanceId() {
                 outputSocketStream.writeInt(START);
-                int i = inputSocketStream.readInt();
-                return HazelcastInstance(*this, i);
-            };
+                return inputSocketStream.readInt();
+            }
 
 
         }

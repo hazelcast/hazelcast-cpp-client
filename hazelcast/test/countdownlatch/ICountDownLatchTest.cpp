@@ -17,10 +17,14 @@ namespace hazelcast {
 
             ICountDownLatchTest::ICountDownLatchTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory.newHazelcastInstance())
+            , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
             , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {
             };
+
+
+            ICountDownLatchTest::~ICountDownLatchTest() {
+            }
 
             void ICountDownLatchTest::addTests() {
                 addTest(&ICountDownLatchTest::testLatch, "ICountDownLatchTest");
@@ -31,7 +35,8 @@ namespace hazelcast {
             };
 
             void ICountDownLatchTest::afterClass() {
-
+                client.reset();
+                instance.shutdown();
             };
 
             void ICountDownLatchTest::beforeTest() {
