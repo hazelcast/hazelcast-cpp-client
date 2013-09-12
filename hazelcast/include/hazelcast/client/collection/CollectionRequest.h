@@ -5,40 +5,30 @@
 #ifndef HAZELCAST_CollectionRequest
 #define HAZELCAST_CollectionRequest
 
-#include "CollectionProxyId.h"
-#include "CollectionPortableHook.h"
+#include "Request.h"
 
 namespace hazelcast {
     namespace client {
         namespace collection {
 
-
-            class CollectionRequest : public Portable {
+            class CollectionRequest : public impl::Request {
             public:
-                CollectionRequest(const CollectionProxyId& id)
-                :id(id) {
+                CollectionRequest(const std::string& name);
 
-                };
+                virtual int getFactoryId() const;
 
-                virtual int getFactoryId() const {
-                    return CollectionPortableHook::F_ID;
-                };
+                virtual void setServiceName(const std::string& name);
 
-                void writePortable(serialization::PortableWriter& writer) const {
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    id.writeData(out);
-                };
+                virtual void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader) {
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    id.readData(in);
-                };
             private:
-                CollectionProxyId id;
+                const std::string& name;
+                const std::string *serviceName;
 
             };
         }
     }
 }
+
 
 #endif //HAZELCAST_CollectionRequest

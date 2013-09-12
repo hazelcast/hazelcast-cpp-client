@@ -4,6 +4,9 @@
 
 
 #include "TxnCollectionRequest.h"
+#include "CollectionPortableHook.h"
+#include "PortableWriter.h"
+#include "Data.h"
 
 
 namespace hazelcast {
@@ -19,6 +22,15 @@ namespace hazelcast {
 
             };
 
+            int TxnCollectionRequest::getFactoryId() const {
+                return CollectionPortableHook::F_ID;
+            };
+
+            void TxnCollectionRequest::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("n", name);
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                util::writeNullableData(out, data);
+            };
         }
     }
 }

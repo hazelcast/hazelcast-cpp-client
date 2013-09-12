@@ -4,6 +4,8 @@
 
 
 #include "TxnListSizeRequest.h"
+#include "CollectionPortableHook.h"
+
 namespace hazelcast {
     namespace client {
         namespace collection {

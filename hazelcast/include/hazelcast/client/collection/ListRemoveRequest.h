@@ -1,0 +1,30 @@
+//
+// Created by sancar koyunlu on 9/12/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+
+#ifndef HAZELCAST_ListRemoveRequest
+#define HAZELCAST_ListRemoveRequest
+
+#include "CollectionRequest.h"
+
+namespace hazelcast {
+    namespace client {
+        namespace list {
+            class ListRemoveRequest : public collection::CollectionRequest {
+            public:
+                ListRemoveRequest(const std::string& name, int index);
+
+                void writePortable(serialization::PortableWriter& writer) const;
+
+                int getClassId() const;
+
+            private:
+                int index;
+            };
+        }
+    }
+}
+
+#endif //HAZELCAST_ListRemoveRequest

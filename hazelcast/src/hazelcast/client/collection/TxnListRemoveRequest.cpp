@@ -4,12 +4,13 @@
 
 
 #include "TxnListRemoveRequest.h"
+#include "CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace collection {
             TxnListRemoveRequest::TxnListRemoveRequest(const std::string& name, serialization::Data *data)
-            :TxnCollectionRequest(name,data) {
+            :TxnCollectionRequest(name, data) {
 
             }
 

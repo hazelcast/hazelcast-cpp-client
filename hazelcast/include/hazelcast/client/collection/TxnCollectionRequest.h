@@ -7,42 +7,27 @@
 #ifndef HAZELCAST_TxnCollectionRequest
 #define HAZELCAST_TxnCollectionRequest
 
-#include "Data.h"
-#include "Portable.h"
-#include "CollectionPortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
+#include "Request.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace collection {
-            class TxnCollectionRequest : public Portable {
+            class TxnCollectionRequest : public impl::Request {
             public:
                 TxnCollectionRequest(const std::string& name);
 
                 TxnCollectionRequest(const std::string& name, serialization::Data *);
 
-                int getFactoryId() const {
-                    return CollectionPortableHook::F_ID;
-                };
+                int getFactoryId() const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                    util::writeNullableData(out, data);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    data->readData(in);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
             private:
-                std::string name;
+                const std::string& name;
                 serialization::Data *data;
             };
         }

@@ -4,6 +4,7 @@
 
 
 #include "TxnSetRemoveRequest.h"
+#include "CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {

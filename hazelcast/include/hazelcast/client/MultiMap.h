@@ -1,25 +1,24 @@
 #ifndef HAZELCAST_MULTI_MAP
 #define HAZELCAST_MULTI_MAP
 
-#include "collection/DestroyRequest.h"
-#include "collection/CollectionProxyId.h"
-#include "collection/PutRequest.h"
-#include "collection/GetRequest.h"
-#include "collection/RemoveRequest.h"
-#include "collection/RemoveAllRequest.h"
-#include "collection/KeySetRequest.h"
-#include "collection/ValuesRequest.h"
-#include "collection/EntrySetRequest.h"
+#include "multimap/PutRequest.h"
+#include "multimap/RemoveRequest.h"
+#include "multimap/RemoveAllRequest.h"
+#include "multimap/KeySetRequest.h"
+#include "multimap/ValuesRequest.h"
+#include "multimap/EntrySetRequest.h"
 #include "collection/PortableEntrySetResponse.h"
-#include "collection/ContainsEntryRequest.h"
-#include "collection/SizeRequest.h"
-#include "collection/ClearRequest.h"
-#include "collection/CountRequest.h"
-#include "collection/AddEntryListenerRequest.h"
-#include "collection/MultiMapLockRequest.h"
-#include "collection/MultiMapUnlockRequest.h"
-#include "impl/PortableCollection.h"
+#include "multimap/ContainsEntryRequest.h"
+#include "multimap/SizeRequest.h"
+#include "multimap/ClearRequest.h"
+#include "multimap/CountRequest.h"
+#include "multimap/AddEntryListenerRequest.h"
+#include "multimap/GetAllRequest.h"
+#include "multimap/MultiMapLockRequest.h"
+#include "multimap/MultiMapUnlockRequest.h"
 #include "hazelcast/client/spi/DistributedObjectListenerService.h"
+#include "PortableCollection.h"
+#include "MultiMapDestroyRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -53,12 +52,12 @@ namespace hazelcast {
             bool put(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                collection::PutRequest request(proxyId, keyData, valueData, -1, util::getThreadId());
+                multimap::PutRequest request(name, keyData, valueData, -1, util::getThreadId());
                 return invoke<V>(request, keyData);
             };
 
             /**
-             * Returns the collection of values associated with the key.
+             * Returns the multimap of values associated with the key.
              * <p/>
              * <p><b>Warning:</b></p>
              * <p>
@@ -68,15 +67,15 @@ namespace hazelcast {
              * </p>
              * <p/>
              * <p><b>Warning-2:</b></p>
-             * The collection is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+             * The multimap is <b>NOT</b> backed by the map,
+             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
              * @param key the key whose associated values are to be returned
-             * @return the collection of the values associated with the key.
+             * @return the multimap of the values associated with the key.
              */
             std::vector<V> get(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::GetRequest request(proxyId, keyData);
+                multimap::GetAllRequest request(name, keyData);
                 return invoke< std::vector<V> >(request, keyData);
             };
 
@@ -95,7 +94,7 @@ namespace hazelcast {
             bool remove(const K& key, const V& value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                collection::RemoveRequest request(proxyId, keyData, valueData, util::getThreadId());
+                multimap::RemoveRequest request(name, keyData, valueData, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
@@ -110,17 +109,17 @@ namespace hazelcast {
              * </p>
              * <p/>
              * <p><b>Warning-2:</b></p>
-             * The collection is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+             * The multimap is <b>NOT</b> backed by the map,
+             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
              * @param key the key of the entries to remove
-             * @return the collection of removed values associated with the given key. Returned collection
+             * @return the multimap of removed values associated with the given key. Returned multimap
              *         might be modifiable but it has no effect on the multimap
              */
             std::vector<V> remove(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::RemoveAllRequest request(proxyId, keyData, util::getThreadId());
-                return toObjectCollection(invoke<impl::PortableCollection>(request, keyData));
+                multimap::RemoveAllRequest request(name, keyData, util::getThreadId());
+                return toObjectCollection(invoke < impl::PortableCollection >(request, keyData));
             };
 
             /**
@@ -134,23 +133,23 @@ namespace hazelcast {
              *         but it has no effect on the multimap
              */
             std::vector<K> keySet() {
-                collection::KeySetRequest request(proxyId);
-                return toObjectCollection(invoke<impl::PortableCollection>(request));
+                multimap::KeySetRequest request(name);
+                return toObjectCollection(invoke < impl::PortableCollection >(request));
             };
 
             /**
-             * Returns the collection of values in the multimap.
+             * Returns the multimap of values in the multimap.
              * <p/>
              * <p><b>Warning:</b></p>
-             * The collection is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+             * The multimap is <b>NOT</b> backed by the map,
+             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
-             * @return the collection of values in the multimap. Returned collection might be modifiable
+             * @return the multimap of values in the multimap. Returned multimap might be modifiable
              *         but it has no effect on the multimap
              */
             std::vector<V> values() {
-                collection::ValuesRequest request(proxyId);
-                return toObjectCollection(invoke<impl::PortableCollection>(request));
+                multimap::ValuesRequest request(name);
+                return toObjectCollection(invoke < impl::PortableCollection >(request));
             };
 
             /**
@@ -164,8 +163,8 @@ namespace hazelcast {
              *         but it has no effect on the multimap
              */
             std::vector< std::pair<K, V> > entrySet() {
-                collection::EntrySetRequest request(proxyId);
-                collection::PortableEntrySetResponse result = invoke<collection::PortableEntrySetResponse>(request);
+                multimap::EntrySetRequest request(name);
+                collection::PortableEntrySetResponse result = invoke < collection::PortableEntrySetResponse >(request);
                 const std::vector< std::pair<serialization::Data, serialization::Data> >& dataEntrySet = result.getEntrySet();
                 std::vector< std::pair<K, V> > entrySet(dataEntrySet.size());
                 for (int i = 0; i < dataEntrySet.size(); ++i) {
@@ -190,7 +189,7 @@ namespace hazelcast {
              */
             bool containsKey(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::ContainsEntryRequest request (proxyId, keyData);
+                multimap::ContainsEntryRequest request (name, keyData);
                 return invoke<bool>(request, keyData);
             };
 
@@ -203,7 +202,7 @@ namespace hazelcast {
              */
             bool containsValue(const V& value) {
                 serialization::Data valueData = toData(value);
-                collection::ContainsEntryRequest request (proxyId, valueData);
+                multimap::ContainsEntryRequest request (name, valueData);
                 return invoke<bool>(request, valueData);
             };
 
@@ -221,7 +220,7 @@ namespace hazelcast {
             bool containsEntry(const K& key, const V& value) {
                 serialization::Data keyData = toData(value);
                 serialization::Data valueData = toData(value);
-                collection::ContainsEntryRequest request (proxyId, keyData, valueData);
+                multimap::ContainsEntryRequest request (name, keyData, valueData);
                 return invoke<bool>(request, keyData);
             };
 
@@ -231,7 +230,7 @@ namespace hazelcast {
              * @return the number of key-value pairs in the multimap.
              */
             int size() {
-                collection::SizeRequest request(proxyId);
+                multimap::SizeRequest request(name);
                 return invoke<int>(request);
             };
 
@@ -239,7 +238,7 @@ namespace hazelcast {
              * Clears the multimap. Removes all key-value pairs.
              */
             void clear() {
-                collection::ClearRequest request(proxyId);
+                multimap::ClearRequest request(name);
                 invoke<bool>(request);
             };
 
@@ -258,7 +257,7 @@ namespace hazelcast {
              */
             int valueCount(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::CountRequest request(proxyId, keyData);
+                multimap::CountRequest request(name, keyData);
                 return invoke<int>(request, keyData);
             };
 
@@ -273,9 +272,9 @@ namespace hazelcast {
              */
             template < typename L>
             long addEntryListener(L& listener, bool includeValue) {
-                collection::AddEntryListenerRequest request(proxyId, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, entryEventHandler);
+                multimap::AddEntryListenerRequest request(name, includeValue);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
             };
 
             /**
@@ -299,9 +298,9 @@ namespace hazelcast {
             template < typename L>
             long addEntryListener(L& listener, const K& key, bool includeValue) {
                 serialization::Data keyData = toData(key);
-                map::AddEntryListenerRequest request(proxyId, includeValue, keyData);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(proxyId.getName() + proxyId.getKeyName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(proxyId.getName() + proxyId.getKeyName(), request, keyData, entryEventHandler);
+                map::AddEntryListenerRequest request(name, includeValue, keyData);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, keyData, entryEventHandler);
             };
 
             /**
@@ -313,7 +312,7 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeEntryListener(long registrationId) {
-                return context->getServerListenerService().stopListening(proxyId.getName() + proxyId.getKeyName(), registrationId);
+                return context->getServerListenerService().stopListening(registrationId);
             };
 
             /**
@@ -339,7 +338,7 @@ namespace hazelcast {
              */
             void lock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId());
+                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -360,7 +359,7 @@ namespace hazelcast {
              */
             bool tryLock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId(), -1, 0);
+                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId(), -1, 0);
                 return invoke<bool>(request, keyData);
             };
 
@@ -388,7 +387,7 @@ namespace hazelcast {
              */
             bool tryLock(const K& key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapLockRequest request(proxyId, keyData, util::getThreadId(), -1, timeoutInMillis);
+                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId(), -1, timeoutInMillis);
                 return invoke<bool>(request, keyData);
             };
 
@@ -407,7 +406,7 @@ namespace hazelcast {
              */
             void unlock(const K& key) {
                 serialization::Data keyData = toData(key);
-                collection::MultiMapUnlockRequest request(proxyId, keyData, util::getThreadId());
+                multimap::MultiMapUnlockRequest request(name, keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -416,18 +415,18 @@ namespace hazelcast {
             * Clears and releases all resources for this object.
             */
             void destroy() {
-                collection::DestroyRequest request (proxyId);
+                multimap::MultiMapDestroyRequest request (name);
                 invoke<bool>(request);
-                context->getDistributedObjectListenerService().removeDistributedObject(proxyId.getKeyName());
+                context->getDistributedObjectListenerService().removeDistributedObject(name);
             };
         private:
             std::vector<V> toObjectCollection(impl::PortableCollection result) {
                 vector<serialization::Data> const & dataCollection = result.getCollection();
-                std::vector<V> collection(dataCollection.size());
+                std::vector<V> multimap(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
-                    collection[i] = toObject<V>(dataCollection[i]);
+                    multimap[i] = toObject<V>(dataCollection[i]);
                 }
-                return collection;
+                return multimap;
             };
 
 
@@ -457,10 +456,10 @@ namespace hazelcast {
 
             void init(const std::string& instanceName, spi::ClientContext *clientContext) {
                 context = clientContext;
-                proxyId = collection::CollectionProxyId(instanceName, collection::CollectionProxyId::MULTI_MAP);
+                name = instanceName;
             };
 
-            collection::CollectionProxyId proxyId;
+            std::string name;
             spi::ClientContext *context;
         };
 

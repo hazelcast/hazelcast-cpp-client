@@ -11,6 +11,7 @@
 #include "CollectionPortableHook.h"
 #include "../serialization/SerializationConstants.h"
 #include "../serialization/Data.h"
+#include "MultiMapPortableHook.h"
 #include <vector>
 
 namespace hazelcast {
@@ -36,7 +37,7 @@ namespace hazelcast {
                 };
 
                 int getClassId() const {
-                    return CollectionPortableHook::ENTRY_SET_RESPONSE;
+                    return multimap::MultiMapPortableHook::ENTRY_SET_RESPONSE;
                 };
 
 
