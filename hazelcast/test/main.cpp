@@ -11,6 +11,7 @@
 #include "ClientSemaphoreTest.h"
 #include "ClientTopicTest.h"
 #include "IExecutorServiceTest.h"
+#include "ClientMultiMapTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -23,26 +24,28 @@ int testSpeed() {
 
 int main(int argc, char **argv) {
     HazelcastInstanceFactory factory;
-    ClientSerializationTest serializationTest;
-    serializationTest.executeTests();
-    ClientMapTest mapTest(factory);
-    mapTest.executeTests();
-    ClientQueueTest queueTest(factory);
-    queueTest.executeTests();
-    IAtomicLongTest atomTest(factory);
-    atomTest.executeTests();
-    IdGeneratorTest generatorTest(factory);
-    generatorTest.executeTests();
-    ICountDownLatchTest latchTest(factory);
-    latchTest.executeTests();
-    ClientLockTest lockTest(factory);
-    lockTest.executeTests();
-    ClientSemaphoreTest semaphoreTest(factory);
-    semaphoreTest.executeTests();
-    ClientTopicTest topicTest(factory);
-    topicTest.executeTests();
-    IExecutorServiceTest executorServiceTest(factory);
-    executorServiceTest.executeTests();
+//    ClientSerializationTest serializationTest;
+//    serializationTest.executeTests();
+//    ClientMapTest mapTest(factory);
+//    mapTest.executeTests();
+    ClientMultiMapTest multiMapTest(factory);
+    multiMapTest.executeTests();
+//    ClientQueueTest queueTest(factory);
+//    queueTest.executeTests();
+//    IAtomicLongTest atomTest(factory);
+//    atomTest.executeTests();
+//    IdGeneratorTest generatorTest(factory);
+//    generatorTest.executeTests();
+//    ICountDownLatchTest latchTest(factory);
+//    latchTest.executeTests();
+//    ClientLockTest lockTest(factory);
+//    lockTest.executeTests();
+//    ClientSemaphoreTest semaphoreTest(factory);
+//    semaphoreTest.executeTests();
+//    ClientTopicTest topicTest(factory);
+//    topicTest.executeTests();
+//    IExecutorServiceTest executorServiceTest(factory);
+//    executorServiceTest.executeTests();
 //    testSpeed();
     return 0;
 };

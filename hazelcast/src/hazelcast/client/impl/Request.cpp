@@ -4,6 +4,7 @@
 
 
 #include "Request.h"
+#include "IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -15,8 +16,6 @@ namespace hazelcast {
             Request::~Request() {
 
             }
-
-
         }
     }
 }

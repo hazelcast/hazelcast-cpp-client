@@ -20,7 +20,7 @@ namespace hazelcast {
         namespace multimap {
             class MultiMapIsLockedRequest : public KeyBasedRequest, public RetryableRequest {
             public:
-                MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key, int threadId);
+                MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key);
 
                 int getFactoryId() const;
 
@@ -28,8 +28,6 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-            private:
-                int threadId;
             };
 
         }

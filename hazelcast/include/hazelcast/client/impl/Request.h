@@ -9,7 +9,6 @@
 #define HAZELCAST_Request
 
 #include "Portable.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {

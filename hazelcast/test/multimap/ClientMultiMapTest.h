@@ -1,18 +1,18 @@
 //
-//  ClientLockTest.h
+//  ClientMultiMapTest.h
 //  hazelcast
 //
-//  Created by Sancar on 15.08.2013.
+//  Created by Sancar on 16.08.2013.
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#ifndef hazelcast_ClientLockTest_h
-#define hazelcast_ClientLockTest_h
+#ifndef hazelcast_ClientMultiMapTest_h
+#define hazelcast_ClientMultiMapTest_h
 
 #include "iTest.h"
 #include "ClientConfig.h"
+#include "MultiMap.h"
 #include "HazelcastInstance.h"
-#include "ILock.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,13 +23,11 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class ClientLockTest : public iTest::iTestFixture<ClientLockTest> {
-
+            class ClientMultiMapTest : public iTest::iTestFixture<ClientMultiMapTest> {
             public:
+                ClientMultiMapTest(HazelcastInstanceFactory&);
 
-                ClientLockTest(HazelcastInstanceFactory&);
-
-                ~ClientLockTest();
+                ~ClientMultiMapTest();
 
                 void addTests();
 
@@ -41,6 +39,14 @@ namespace hazelcast {
 
                 void afterTest();
 
+                void testPutGetRemove();
+
+                void testKeySetEntrySetAndValues();
+
+                void testContains();
+
+                void testListener();
+
                 void testLock();
 
                 void testLockTtl();
@@ -49,19 +55,15 @@ namespace hazelcast {
 
                 void testForceUnlock();
 
-                void testStats();
-
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<ILock> l;
+                std::auto_ptr<MultiMap<std::string, std::string> > mm;
             };
-
         }
     }
 }
-
 
 #endif

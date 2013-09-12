@@ -9,9 +9,13 @@
 #define HAZELCAST_CollectionAddAllRequest
 
 #include "CollectionRequest.h"
+#include <vector>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace collection {
 
             class CollectionAddAllRequest : public CollectionRequest {

@@ -6,6 +6,7 @@
 #define HAZELCAST_CollectionRequest
 
 #include "Request.h"
+#include <string>
 
 namespace hazelcast {
     namespace client {

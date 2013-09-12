@@ -12,7 +12,14 @@ namespace hazelcast {
         namespace multimap {
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, const serialization::Data& key, bool includeValue)
             :name(name)
-            , key(key)
+            , key(&key)
+            , includeValue(includeValue) {
+
+            };
+
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue)
+            :name(name)
+            , key(NULL)
             , includeValue(includeValue) {
 
             };
@@ -30,7 +37,7 @@ namespace hazelcast {
                 writer.writeBoolean("i", includeValue);
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                util::writeNullableData(out, &key);
+                util::writeNullableData(out, key);
             };
 
         }

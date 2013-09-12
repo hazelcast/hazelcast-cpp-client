@@ -2,8 +2,8 @@
 //  ClientTopicTest.h
 //  hazelcast
 //
-//  Created by Batikan Turkmen on 19.08.2013.
-//  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
+//  Created by Sancar on 19.08.2013.
+//  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
 #ifndef hazelcast_ClientTopicTest_h

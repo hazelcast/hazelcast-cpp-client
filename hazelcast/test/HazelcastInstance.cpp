@@ -2,8 +2,8 @@
 //  hazelcastInstance.cpp
 //  hazelcast
 //
-//  Created by Batikan Turkmen on 14.08.2013.
-//  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
+//  Created by Sancar on 14.08.2013.
+//  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
 #include "HazelcastInstance.h"

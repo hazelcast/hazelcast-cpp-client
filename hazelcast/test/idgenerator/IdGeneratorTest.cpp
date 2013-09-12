@@ -2,8 +2,8 @@
 //  IdGeneratorTest.h
 //  hazelcast
 //
-//  Created by Batikan Turkmen on 02.08.2013.
-//  Copyright (c) 2013 Batikan Turkmen. All rights reserved.
+//  Created by Sancar on 02.08.2013.
+//  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
 #include "IdGeneratorTest.h"

@@ -21,6 +21,8 @@ namespace hazelcast {
             public:
                 AddEntryListenerRequest(const std::string& name, const serialization::Data& key, bool includeValue);
 
+                AddEntryListenerRequest(const std::string& name, bool includeValue);
+
                 int getFactoryId() const;
 
                 int getClassId() const;
@@ -29,7 +31,7 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                const serialization::Data &key;
+                const serialization::Data *key;
                 bool includeValue;
             };
 

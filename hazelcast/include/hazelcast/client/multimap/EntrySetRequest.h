@@ -9,6 +9,7 @@
 #define HAZELCAST_EntrySetRequest
 
 #include "AllPartitionsRequest.h"
+#include "RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {

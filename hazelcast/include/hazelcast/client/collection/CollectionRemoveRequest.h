@@ -12,6 +12,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace collection {
             class CollectionRemoveRequest : public CollectionRequest {
             public:

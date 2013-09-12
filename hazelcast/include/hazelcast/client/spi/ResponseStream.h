@@ -3,9 +3,6 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-
-
-
 #ifndef HAZELCAST_RESPONSE_STREAM
 #define HAZELCAST_RESPONSE_STREAM
 
@@ -26,7 +23,7 @@ namespace hazelcast {
 
             class ResponseStream {
             public:
-                ResponseStream(serialization::SerializationService& serializationService, connection::Connection* connection);
+                ResponseStream(serialization::SerializationService& serializationService, connection::Connection *connection);
 
                 template<typename T>
                 T read() {
@@ -44,7 +41,7 @@ namespace hazelcast {
 
             private:
                 serialization::SerializationService& serializationService;
-                connection::Connection* connection;
+                connection::Connection *connection;
                 volatile bool isEnded;
                 boost::mutex endMutex;
             };
