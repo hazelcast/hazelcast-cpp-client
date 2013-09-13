@@ -36,7 +36,8 @@ namespace hazelcast {
             long addMessageListener(L& listener) {
                 topic::AddMessageListenerRequest request(instanceName);
                 topic::TopicEventHandler<E, L> topicEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener);
-                return context->getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, key, topicEventHandler);
+                serialization::Data cloneData = key.clone();
+                return context->getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, cloneData, topicEventHandler);
             }
 
             bool removeMessageListener(long registrationId) {

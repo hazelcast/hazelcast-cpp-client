@@ -96,6 +96,17 @@ namespace hazelcast {
                 return hash;
             };
 
+            Data Data::clone() const {
+                client::serialization::Data newData;
+                std::vector<byte> *buff = newData.buffer.get();
+                buff->insert(buff->begin(), buffer->begin(), buffer->end());
+                newData.type = type;
+                newData.cd = cd;
+                newData.isError = isError;
+                newData.partitionHash = partitionHash;
+                return newData;
+            };
+
             int Data::getPartitionHash() const {
                 if (partitionHash == 0) {
                     if (buffer.get() != NULL) {

@@ -11,17 +11,24 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ContainsEntryRequest::ContainsEntryRequest(const std::string& name, const serialization::Data& key, const serialization::Data& value)
+            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data& key, const std::string& name, const serialization::Data& value)
             : AllPartitionsRequest(name)
             , key(&key)
-            , value(value) {
+            , value(&value) {
+
+            };
+
+            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data& key, const std::string& name)
+            : AllPartitionsRequest(name)
+            , key(&key)
+            , value(NULL) {
 
             };
 
             ContainsEntryRequest::ContainsEntryRequest(const std::string& name, const serialization::Data& value)
             : AllPartitionsRequest(name)
             , key(NULL)
-            , value(value) {
+            , value(&value) {
 
             };
 
@@ -34,7 +41,7 @@ namespace hazelcast {
                 AllPartitionsRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 util::writeNullableData(out, key);
-                util::writeNullableData(out, &value);
+                util::writeNullableData(out, value);
             };
 
 

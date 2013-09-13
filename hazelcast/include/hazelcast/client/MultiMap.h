@@ -166,14 +166,14 @@ namespace hazelcast {
              * @return the set of key-value pairs in the multimap. Returned set might be modifiable
              *         but it has no effect on the multimap
              */
-            std::map<K, V> entrySet() {
+            std::vector<std::pair<K, V> > entrySet() {
                 multimap::EntrySetRequest request(name);
                 multimap::PortableEntrySetResponse result = invoke < multimap::PortableEntrySetResponse >(request);
                 std::vector < std::pair<serialization::Data, serialization::Data> > const & dataEntrySet = result.getEntrySet();
-                std::map<K, V> entrySet;
+                std::vector<std::pair<K, V> > entrySet(dataEntrySet.size());
                 for (int i = 0; i < dataEntrySet.size(); i++) {
-                    entrySet[toObject<K>(dataEntrySet[i].first)] = toObject<V>(dataEntrySet[i].second);
-
+                    entrySet[i].first = toObject<K>(dataEntrySet[i].first);
+                    entrySet[i].second = toObject<V>(dataEntrySet[i].second);
                 }
                 return entrySet;
             };
@@ -193,7 +193,7 @@ namespace hazelcast {
              */
             bool containsKey(const K& key) {
                 serialization::Data keyData = toData(key);
-                multimap::ContainsEntryRequest request (name, keyData);
+                multimap::ContainsEntryRequest request (keyData, name);
                 return invoke<bool>(request, keyData);
             };
 
@@ -222,9 +222,9 @@ namespace hazelcast {
              * @return true if the multimap contains the key-value pair, false otherwise.
              */
             bool containsEntry(const K& key, const V& value) {
-                serialization::Data keyData = toData(value);
+                serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::ContainsEntryRequest request (name, keyData, valueData);
+                multimap::ContainsEntryRequest request (keyData, name, valueData);
                 return invoke<bool>(request, keyData);
             };
 
@@ -302,9 +302,10 @@ namespace hazelcast {
             template < typename L>
             long addEntryListener(L& listener, const K& key, bool includeValue) {
                 serialization::Data keyData = toData(key);
+                serialization::Data cloneData = keyData.clone();
                 multimap::AddEntryListenerRequest request(name, keyData, includeValue);
                 impl::EntryEventHandler<K, V, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, keyData, entryEventHandler);
+                return context->getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
             };
 
             /**

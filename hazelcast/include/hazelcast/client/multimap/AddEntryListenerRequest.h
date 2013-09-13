@@ -31,7 +31,8 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                const serialization::Data *key;
+                serialization::Data key;
+                bool hasKey;
                 bool includeValue;
             };
 

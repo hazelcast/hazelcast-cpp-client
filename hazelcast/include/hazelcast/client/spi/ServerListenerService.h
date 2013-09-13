@@ -24,7 +24,7 @@ namespace hazelcast {
                 ~ServerListenerService();
 
                 template <typename Request, typename EventHandler, typename Event>
-                long listen(const Request& registrationRequest, const serialization::Data& key, const EventHandler& eventHandler) {
+                long listen(const Request& registrationRequest, serialization::Data key, const EventHandler& eventHandler) {
                     ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler, key);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
                     lock.lock();
@@ -36,8 +36,7 @@ namespace hazelcast {
 
                 template <typename Request, typename EventHandler, typename Event>
                 long listen(const Request& registrationRequest, const EventHandler& eventHandler) {
-                    ListenerSupport <Request, EventHandler, Event> *support = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
-                    ListenerSupportBase *listenerSupport = support;
+                    ListenerSupportBase *listenerSupport = new ListenerSupport<Request, EventHandler, Event >(invocationService, registrationRequest, eventHandler);
                     long registrationId = reinterpret_cast<long>(listenerSupport);
                     lock.lock();
 

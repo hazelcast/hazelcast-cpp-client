@@ -262,9 +262,10 @@ namespace hazelcast {
             template < typename L>
             long addEntryListener(L& listener, const K& key, bool includeValue) {
                 serialization::Data keyData = toData(key);
+                serialization::Data cloneData = keyData.clone();
                 map::AddEntryListenerRequest request(instanceName, includeValue, keyData);
                 impl::EntryEventHandler<K, V, L> entryEventHandler(instanceName, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, keyData, entryEventHandler);
+                return context->getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
             };
 
             bool removeEntryListener(long registrationId) {

@@ -120,9 +120,9 @@ namespace hazelcast {
                 assertTrue(mm->containsEntry("key2", "value5"));
             }
 
-            class MyListener {
+            class MyMultiMapListener {
             public:
-                MyListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
+                MyMultiMapListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
                 :addedLatch(addedLatch)
                 , removedLatch(removedLatch) {
                 };
@@ -153,11 +153,11 @@ namespace hazelcast {
                 util::CountDownLatch latch2Add(3);
                 util::CountDownLatch latch2Remove(3);
 
-                MyListener listener2(latch1Add, latch1Remove);
-                MyListener listener1(latch1Add, latch1Remove);
+                MyMultiMapListener listener1(latch1Add, latch1Remove);
+                MyMultiMapListener listener2(latch2Add, latch2Remove);
 
-                mm->addEntryListener(listener1, true);
-                mm->addEntryListener(listener2, "key3", true);
+                long id1 = mm->addEntryListener(listener1, true);
+                long id2 = mm->addEntryListener(listener2, "key3", true);
 
                 mm->put("key1", "value1");
                 mm->put("key1", "value2");
@@ -173,11 +173,15 @@ namespace hazelcast {
 
                 mm->remove("key3");
 
-                assertTrue(latch1Add.await(20 * 1000));
-                assertTrue(latch1Remove.await(20 * 1000));
+                assertTrue(latch1Add.await(20 * 1000), "a");
+                assertTrue(latch1Remove.await(20 * 1000), "b");
 
-                assertTrue(latch2Add.await(20 * 1000));
-                assertTrue(latch2Remove.await(20 * 1000));
+                assertTrue(latch2Add.await(20 * 1000), "c");
+                assertTrue(latch2Remove.await(20 * 1000), "d");
+
+                mm->removeEntryListener(id1);
+                mm->removeEntryListener(id2);
+
             }
 
             void lockThread(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
@@ -245,7 +249,7 @@ namespace hazelcast {
                 assertTrue(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                boost::thread t2(boost::bind(tryLockThread2, mm.get(), &latch));
+                boost::thread t2(boost::bind(tryLockThread2, mm.get(), &latch2));
 
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
                 mm->unlock("key1");
