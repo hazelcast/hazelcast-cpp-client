@@ -12,6 +12,11 @@
 #include "CollectionAddRequest.h"
 #include "CollectionClearRequest.h"
 #include "CollectionDestroyRequest.h"
+#include "ClientContext.h"
+#include "serialization/Data.h"
+#include "ItemEventHandler.h"
+#include "ServerListenerService.h"
+#include "SerializableCollection.h"
 #include <stdexcept>
 
 
@@ -27,8 +32,9 @@ namespace hazelcast {
             template < typename L>
             long addItemListener(L& listener, bool includeValue) {
                 collection::CollectionAddListenerRequest request(name, includeValue);
-                impl::ItemEvent<E> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
+                request.setServiceName(serviceName);
+                impl::ItemEventHandler<E, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return context->getServerListenerService().template listen<collection::CollectionAddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
             };
 
             bool removeItemListener(long registrationId) {
@@ -46,17 +52,19 @@ namespace hazelcast {
 
             bool contains(const E& o) {
                 serialization::Data valueData = toData(o);
-                collection::CollectionContainsRequest request (name, key, valueData);
+                std::vector<serialization::Data> valueSet;
+                valueSet.push_back(valueData);
+                collection::CollectionContainsRequest request (name, valueSet);
                 return invoke<bool>(request);
             };
 
             std::vector<E> toArray() {
-                collection::CollectionGetAllRequest request(name, key);
-                impl::PortableCollection result = invoke<impl::PortableCollection>(request);
-                const std::vector<serialization::Data>& collection = result.getCollection();
+                collection::CollectionGetAllRequest request(name);
+                impl::SerializableCollection result = invoke<impl::SerializableCollection>(request);
+                const std::vector<serialization::Data *>& collection = result.getCollection();
                 std::vector<E> set(collection.size());
                 for (int i = 0; i < collection.size(); ++i) {
-                    set[i] = toObject<E>(collection[i]);
+                    set[i] = toObject<E>(*(collection[i]));
                 }
                 return set;
             };
@@ -64,32 +72,36 @@ namespace hazelcast {
             bool add(const E& e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionAddRequest request(name, valueData);
-                return invoke<E>(request);
+                return invoke<bool>(request);
             };
 
             bool remove(const E& e) {
                 serialization::Data valueData = toData(e);
-                collection::CollectionRemoveRequest request(name, key, valueData, util::getThreadId());
+                collection::CollectionRemoveRequest request(name, valueData);
                 return invoke<bool>(request);
             };
 
             bool containsAll(const std::vector<E>& objects) {
-                collection::CollectionContainsRequest request(name, key, toDataCollection(objects));
+                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                collection::CollectionContainsRequest request(name, dataCollection);
                 return invoke<bool>(request);
             };
 
             bool addAll(const std::vector<E>& objects) {
-                collection::CollectionAddAllRequest request(name, key, util::getThreadId(), toDataCollection(objects));
+                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                collection::CollectionAddAllRequest request(name, dataCollection);
                 return invoke<bool>(request);
             };
 
             bool removeAll(const std::vector<E>& objects) {
-                collection::CollectionCompareAndRemoveRequest request(name, key, util::getThreadId(), false, toDataCollection(objects));
+                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                collection::CollectionCompareAndRemoveRequest request(name, dataCollection, false);
                 return invoke<bool>(request);
             };
 
             bool retainAll(const std::vector<E>& objects) {
-                collection::CollectionCompareAndRemoveRequest request(name, key, util::getThreadId(), true, toDataCollection(objects));
+                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                collection::CollectionCompareAndRemoveRequest request(name, dataCollection, true);
                 return invoke<bool>(request);
             };
 
@@ -110,7 +122,7 @@ namespace hazelcast {
 
         private:
             template<typename T>
-            std::vector<serialization::Data> toDataCollection(const std::vector<T>& objects) {
+            const std::vector<serialization::Data> toDataCollection(const std::vector<T>& objects) {
                 std::vector<serialization::Data> dataCollection(objects.size());
                 for (int i = 0; i < objects.size(); ++i) {
                     dataCollection[i] = toData(objects[i]);
@@ -129,9 +141,9 @@ namespace hazelcast {
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                request.setServiceName(name);
-                return context->getInvocationService().template invokeOnRandomTarget<Response>(request, key);
+            Response invoke(Request& request) {
+                request.setServiceName(serviceName);
+                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
             ISet() {
@@ -147,7 +159,11 @@ namespace hazelcast {
             std::string name;
             spi::ClientContext *context;
             serialization::Data key;
+            static std::string serviceName;
         };
+
+        template<typename E>
+        std::string ISet<E>::serviceName = "hz:impl:setService";
     }
 }
 

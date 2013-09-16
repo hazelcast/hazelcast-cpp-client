@@ -19,7 +19,7 @@ namespace hazelcast {
             class ListSetRequest : public collection::CollectionRequest {
             public:
 
-                ListSetRequest(const std::string& name, const serialization::Data& data, bool last);
+                ListSetRequest(const std::string& name, const serialization::Data& data, int index);
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
@@ -27,7 +27,7 @@ namespace hazelcast {
 
             private:
                 const serialization::Data& data;
-                bool last;
+                int index;
             };
         }
     }

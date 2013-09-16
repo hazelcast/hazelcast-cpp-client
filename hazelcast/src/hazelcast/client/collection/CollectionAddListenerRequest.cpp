@@ -22,7 +22,7 @@ namespace hazelcast {
 
             void CollectionAddListenerRequest::writePortable(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
-                writer.writeInt("i", includeValue);
+                writer.writeBoolean("i", includeValue);
             };
         }
     }

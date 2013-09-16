@@ -12,6 +12,8 @@
 #include "ClientTopicTest.h"
 #include "IExecutorServiceTest.h"
 #include "ClientMultiMapTest.h"
+#include "ClientListTest.h"
+#include "ClientSetTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -28,10 +30,14 @@ int main(int argc, char **argv) {
 //    serializationTest.executeTests();
 //    ClientMapTest mapTest(factory);
 //    mapTest.executeTests();
-    ClientMultiMapTest multiMapTest(factory);
-    multiMapTest.executeTests();
+//    ClientMultiMapTest multiMapTest(factory);
+//    multiMapTest.executeTests();
 //    ClientQueueTest queueTest(factory);
 //    queueTest.executeTests();
+    ClientListTest listTest(factory);
+    listTest.executeTests();
+//    ClientSetTest setTest(factory);
+//    setTest.executeTests();
 //    IAtomicLongTest atomTest(factory);
 //    atomTest.executeTests();
 //    IdGeneratorTest generatorTest(factory);

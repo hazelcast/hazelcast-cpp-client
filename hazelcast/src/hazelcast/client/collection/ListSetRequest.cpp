@@ -11,16 +11,16 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListSetRequest::ListSetRequest(const std::string& name, const serialization::Data& data, bool last)
+            ListSetRequest::ListSetRequest(const std::string& name, const serialization::Data& data, int index)
             : CollectionRequest(name)
             , data(data)
-            , last(last) {
+            , index(index) {
 
             }
 
             void ListSetRequest::writePortable(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
-                writer.writeBoolean("l", last);
+                writer.writeInt("i", index);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();
                 data.writeData(output);
             }
