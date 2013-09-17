@@ -178,8 +178,6 @@ namespace hazelcast {
 
                 void itemAdded(impl::ItemEvent<std::string> itemEvent) {
                     latch.countDown();
-                    std::cout << "counting Down" << std::endl;
-                    std::cout.flush();
                 }
 
                 void itemRemoved(impl::ItemEvent<std::string> item) {
@@ -208,11 +206,11 @@ namespace hazelcast {
 
                 MyListItemListener listener(latch);
                 long registrationId = list->addItemListener(listener, true);
-
+                boost::this_thread::sleep(boost::posix_time::seconds(1));
                 boost::thread t(listenerTestThread, list.get());
-                assertTrue(latch.await(1000 * 20 * 1000));
+                assertTrue(latch.await(20 * 1000));
 
-//                list->removeItemListener(registrationId);
+                list->removeItemListener(registrationId);
             }
 
         }
