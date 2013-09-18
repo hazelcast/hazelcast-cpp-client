@@ -12,6 +12,7 @@
 #include "ResponseStream.h"
 #include "InvocationService.h"
 #include "ClientContext.h"
+#include "CountDownLatch.h"
 #include <boost/thread.hpp>
 
 namespace hazelcast {
@@ -42,7 +43,8 @@ namespace hazelcast {
                 , eventHandler(eventHandler)
                 , key(key)
                 , hasKey(true)
-                , active(true) {
+                , active(true)
+                , latch(1) {
 
                 };
 
@@ -51,12 +53,16 @@ namespace hazelcast {
                 , request(request)
                 , eventHandler(eventHandler)
                 , hasKey(false)
-                , active(true) {
+                , active(true)
+                , latch(1) {
 
                 };
 
                 void listen() {
                     boost::thread listenerThread(boost::bind(&ListenerSupport<Request, EventHandler, Event>::listenImpl, this));
+                    if (!latch.await(1000)) {
+                        throw exception::IException("ListenerSupport::listen", "Could not register listener!!!");
+                    }
                 };
 
 
@@ -93,6 +99,7 @@ namespace hazelcast {
                     void handle(ResponseStream & stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
                         listenerSupport->lastStream = &stream;
+                        listenerSupport->latch.countDown();
                         while (listenerSupport->active) {
                             try {
                                 Event event = stream.read<Event>();
@@ -121,6 +128,7 @@ namespace hazelcast {
                 Request request;
                 EventHandler eventHandler;
                 boost::atomic<bool> active;
+                util::CountDownLatch latch;
 
             };
         }

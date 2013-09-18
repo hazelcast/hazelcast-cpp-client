@@ -4,8 +4,8 @@
 
 
 
-#ifndef HAZELCAST_CountDownLatch
-#define HAZELCAST_CountDownLatch
+#ifndef HAZELCAST_ICountDownLatch
+#define HAZELCAST_ICountDownLatch
 
 #include "iTest.h"
 #include "ClientConfig.h"
@@ -51,4 +51,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CountDownLatch
+#endif //HAZELCAST_ICountDownLatch

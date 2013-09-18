@@ -6,7 +6,6 @@
 #include "ClientListTest.h"
 #include "HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
-#include "CountDownLatch.h"
 
 
 namespace hazelcast {
@@ -206,7 +205,6 @@ namespace hazelcast {
 
                 MyListItemListener listener(latch);
                 long registrationId = list->addItemListener(listener, true);
-                boost::this_thread::sleep(boost::posix_time::seconds(1));
                 boost::thread t(listenerTestThread, list.get());
                 assertTrue(latch.await(20 * 1000));
 
