@@ -81,7 +81,7 @@ namespace hazelcast {
                 int chunkSize = length / STRING_CHUNK_SIZE + 1;
                 for (int i = 0; i < chunkSize; i++) {
                     int beginIndex = std::max(0, i * STRING_CHUNK_SIZE - 1);
-                    int endIndex = std::max((i + 1) * STRING_CHUNK_SIZE - 1, length);
+                    int endIndex = std::min((i + 1) * STRING_CHUNK_SIZE - 1, length);
                     writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
                 }
             };

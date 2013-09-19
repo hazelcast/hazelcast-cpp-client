@@ -9,8 +9,9 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            TxnPollRequest::TxnPollRequest(const std::string& name)
-            :name(name){
+            TxnPollRequest::TxnPollRequest(const std::string& name, long timeout)
+            :name(name)
+            , timeout(timeout) {
 
             }
 

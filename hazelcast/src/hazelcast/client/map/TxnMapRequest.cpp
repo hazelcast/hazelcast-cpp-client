@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace map {
             TxnMapRequestType::TxnMapRequestType()
             :value(NONE) {
-                types.resize(11);
+                types.resize(16);
                 types[0] = NONE;
                 types[1] = CONTAINS_KEY;
                 types[2] = GET;
@@ -27,11 +27,15 @@ namespace hazelcast {
                 types[9] = REMOVE;
                 types[10] = DELETE;
                 types[11] = REMOVE_IF_SAME;
+                types[12] = KEYSET;
+                types[13] = KEYSET_BY_PREDICATE;
+                types[14] = VALUES;
+                types[15] = VALUES_BY_PREDICATE;
             };
 
             TxnMapRequestType::TxnMapRequestType(TxnMapRequestType::Type value)
             :value(value) {
-                types.resize(11);
+                types.resize(16);
                 types[0] = NONE;
                 types[1] = CONTAINS_KEY;
                 types[2] = GET;
@@ -44,6 +48,10 @@ namespace hazelcast {
                 types[9] = REMOVE;
                 types[10] = DELETE;
                 types[11] = REMOVE_IF_SAME;
+                types[12] = KEYSET;
+                types[13] = KEYSET_BY_PREDICATE;
+                types[14] = VALUES;
+                types[15] = VALUES_BY_PREDICATE;
             };
 
             TxnMapRequestType::operator int() const {
@@ -58,7 +66,8 @@ namespace hazelcast {
             TxnMapRequest::TxnMapRequest()
             : key(NULL)
             , value(NULL)
-            , newValue(NULL) {
+            , newValue(NULL)
+            , predicate(NULL) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType)
@@ -66,7 +75,8 @@ namespace hazelcast {
             , requestType(requestType)
             , key(NULL)
             , value(NULL)
-            , newValue(NULL) {
+            , newValue(NULL)
+            , predicate(NULL) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, serialization::Data *key)
@@ -74,7 +84,8 @@ namespace hazelcast {
             , requestType(requestType)
             , key(key)
             , value(NULL)
-            , newValue(NULL) {
+            , newValue(NULL)
+            , predicate(NULL) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value)
@@ -82,7 +93,8 @@ namespace hazelcast {
             , requestType(requestType)
             , key(key)
             , value(value)
-            , newValue(NULL) {
+            , newValue(NULL)
+            , predicate(NULL) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue)
@@ -90,7 +102,17 @@ namespace hazelcast {
             , requestType(requestType)
             , key(key)
             , value(value)
-            , newValue(newValue) {
+            , newValue(newValue)
+            , predicate(NULL) {
+            };
+
+            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, const std::string& predicate)
+            : name(name)
+            , requestType(requestType)
+            , key(NULL)
+            , value(NULL)
+            , newValue(NULL)
+            , predicate(&predicate) {
             };
 
             int TxnMapRequest::getFactoryId() const {
@@ -98,26 +120,25 @@ namespace hazelcast {
             };
 
             int TxnMapRequest::getClassId() const {
-                return PortableHook::TXN_REQUEST;
+                return PortableHook::TXN_REQUEST_WITH_SQL_QUERY;
             };
 
 
             void TxnMapRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
+                writer.writeInt("t", (int) requestType);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                util::writeNullableData(out, key.get());
-                util::writeNullableData(out, value.get());
-                util::writeNullableData(out, newValue.get());
+                util::writeNullableData(out, key);
+                util::writeNullableData(out, value);
+                util::writeNullableData(out, newValue);
+                if (predicate != NULL) {
+                    out.writeBoolean(true);
+                    out.writeUTF(*predicate);
+                } else {
+                    out.writeBoolean(false);
+                }
             };
 
-
-            void TxnMapRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key->readData(in);
-                value->readData(in);
-                newValue->readData(in);
-            };
 
         }
     }

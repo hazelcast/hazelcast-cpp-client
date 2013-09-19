@@ -25,11 +25,11 @@ namespace hazelcast {
             }
 
             void KeySetRequest::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", name);
+                writer.writeUTF("n", name);
             };
 
             void KeySetRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("name");
+                name = reader.readUTF("n");
             };
         }
     }

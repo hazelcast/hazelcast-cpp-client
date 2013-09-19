@@ -50,7 +50,8 @@ namespace hazelcast {
                     EXECUTE_ON_ALL_KEYS = 39,
                     PUT_ALL = 40,
                     DESTROY = 41,
-                    TXN_REQUEST = 42
+                    TXN_REQUEST = 42,
+                    TXN_REQUEST_WITH_SQL_QUERY = 43
                 };
             }
 

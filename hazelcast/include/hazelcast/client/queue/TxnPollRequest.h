@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace queue {
             class TxnPollRequest : public Portable {
             public:
-                TxnPollRequest(const std::string& name);
+                TxnPollRequest(const std::string& name, long timeout);
 
                 int getFactoryId() const;
 

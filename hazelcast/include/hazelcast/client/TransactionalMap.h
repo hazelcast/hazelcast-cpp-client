@@ -8,10 +8,13 @@
 #ifndef HAZELCAST_TransactionalMap
 #define HAZELCAST_TransactionalMap
 
-#include "TxnMapRequest.h"
 #include "SerializationService.h"
 #include "TransactionProxy.h"
 #include "ClusterService.h"
+#include "hazelcast/client/map/DestroyRequest.h"
+#include "TxnMapRequest.h"
+#include "MapKeySet.h"
+#include "MapValueCollection.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,6 +22,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class TransactionalMap {
             friend class TransactionContext;
+
         public:
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#containsKey(Object)}.
@@ -176,8 +180,77 @@ namespace hazelcast {
                 return invoke<bool>(request);
             }
 
+            /**
+            * Transactional implementation of {@link IMap#keySet()}.
+            * <p/>
+            *
+            * @see com.hazelcast.core.IMap#keySet()
+            */
+            std::vector<K> keySet() {
+                map::TxnMapRequest request(name, map::TxnMapRequestType::KEYSET);
+                map::MapKeySet result = invoke<map::MapKeySet>(request);
+                std::vector <serialization::Data> const & keyDataSet = result.getKeySet();
+                std::vector<K> keys(keyDataSet.size());
+                for (int i = 0; i < keyDataSet.size(); i++) {
+                    keys[i] = toObject<K>(keyDataSet[i]);
+                }
+                return keys;
+            }
+
+            /**
+             * Transactional implementation of {@link com.hazelcast.core.IMap#keySet(com.hazelcast.query.Predicate)} .
+             * <p/>
+             *
+             * @see IMap#keySet(com.hazelcast.query.Predicate)
+             */
+            std::vector<K> keySet(const std::string& predicate) {
+                map::TxnMapRequest request(name, map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
+                map::MapKeySet result = invoke<map::MapKeySet>(request);
+                std::vector <serialization::Data> const & keyDataSet = result.getKeySet();
+                std::vector<K> keys(keyDataSet.size());
+                for (int i = 0; i < keyDataSet.size(); i++) {
+                    keys[i] = toObject<K>(keyDataSet[i]);
+                }
+                return keys;
+            }
+
+            /**
+             * Transactional implementation of {@link com.hazelcast.core.IMap#values()}.
+             * <p/>
+             *
+             * @see IMap#values()
+             */
+            std::vector<V> values() {
+                map::TxnMapRequest request(name, map::TxnMapRequestType::VALUES);
+                map::MapValueCollection result = invoke<map::MapValueCollection>(request);
+                std::vector <serialization::Data> const & dataValues = result.getValues();
+                std::vector<V> values(dataValues.size());
+                for (int i = 0; i < dataValues.size(); i++) {
+                    values[i] = toObject<V>(dataValues[i]);
+                }
+                return values;
+            }
+
+            /**
+             * Transactional implementation of {@link com.hazelcast.core.IMap#values(com.hazelcast.query.Predicate)} .
+             * <p/>
+             *
+             * @see IMap#values(com.hazelcast.query.Predicate)
+             */
+            std::vector<V> values(const std::string& predicate) {
+                map::TxnMapRequest request(name, map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
+                map::MapValueCollection result = invoke<map::MapValueCollection>(request);
+                std::vector <serialization::Data> const & dataValues = result.getValues();
+                std::vector<V> values(dataValues.size());
+                for (int i = 0; i < dataValues.size(); i++) {
+                    values[i] = toObject<V>(dataValues[i]);
+                }
+                return values;
+            }
+
             void destroy() {
-                //TODO
+                map::DestroyRequest request (name);
+                invoke<bool>(request);
             }
 
         private:
@@ -192,6 +265,11 @@ namespace hazelcast {
             template<typename T>
             serialization::Data toData(const T& object) {
                 return transaction->getSerializationService().toData<T>(&object);
+            };
+
+            template<typename T>
+            T toObject(const serialization::Data& data) {
+                return transaction->getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>

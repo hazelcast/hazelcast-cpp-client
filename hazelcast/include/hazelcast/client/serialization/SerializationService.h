@@ -45,11 +45,11 @@ namespace hazelcast {
                 template<typename T>
                 Data toData(const Portable *portable) {
                     const T *object = static_cast<const T *>(portable);
-                    Data data;
                     DataOutput output;
                     getSerializerHolder().getPortableSerializer().write(output, *object);
                     int factoryId = object->getFactoryId();
                     int classId = object->getClassId();
+                    Data data;
                     data.setType(serialization::SerializationConstants::CONSTANT_TYPE_PORTABLE);
                     data.cd = serializationContext.lookup(factoryId, classId);
                     data.setBuffer(output.toByteArray());

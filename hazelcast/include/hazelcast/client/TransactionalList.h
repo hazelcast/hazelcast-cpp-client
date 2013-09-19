@@ -13,6 +13,7 @@
 #include "TransactionProxy.h"
 #include "TxnListRemoveRequest.h"
 #include "TxnListSizeRequest.h"
+#include "CollectionDestroyRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,13 +24,13 @@ namespace hazelcast {
         public:
             bool add(const E& e) {
                 serialization::Data data = toData(e);
-                collection::TxnListAddRequest request(name, data);
+                collection::TxnListAddRequest request(name, &data);
                 return invoke<bool>(request);
             }
 
             bool remove(const E& e) {
                 serialization::Data data = toData(e);
-                collection::TxnListRemoveRequest request(name, data);
+                collection::TxnListRemoveRequest request(name, &data);
                 return invoke<bool>(request);
             }
 
@@ -43,7 +44,8 @@ namespace hazelcast {
             }
 
             void destroy() {
-                //TODO
+                collection::CollectionDestroyRequest request(name);
+                invoke<bool>(request);
             }
 
         private:

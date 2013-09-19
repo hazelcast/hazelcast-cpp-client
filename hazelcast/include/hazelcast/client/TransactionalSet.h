@@ -23,13 +23,13 @@ namespace hazelcast {
         public:
             bool add(const E& e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetAddRequest request(name, data);
+                collection::TxnSetAddRequest request(name, &data);
                 return invoke<bool>(request);
             }
 
             bool remove(const E& e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetRemoveRequest request(name, data);
+                collection::TxnSetRemoveRequest request(name, &data);
                 return invoke<bool>(request);
             }
 
@@ -43,7 +43,8 @@ namespace hazelcast {
             }
 
             void destroy() {
-                //TODO
+                collection::CollectionDestroyRequest request(name);
+                invoke<bool>(request);
             }
 
         private:

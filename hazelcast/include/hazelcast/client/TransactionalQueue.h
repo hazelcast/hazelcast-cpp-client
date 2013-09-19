@@ -14,6 +14,7 @@
 #include "InterruptedException.h"
 #include "TxnPollRequest.h"
 #include "TxnSizeRequest.h"
+#include "hazelcast/client/queue/DestroyRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -67,7 +68,8 @@ namespace hazelcast {
             }
 
             void destroy() {
-                //TODO
+                queue::DestroyRequest request(name);
+                invoke<bool>(request);
             }
 
         private:

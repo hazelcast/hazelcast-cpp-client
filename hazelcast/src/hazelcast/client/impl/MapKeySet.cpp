@@ -37,9 +37,10 @@ namespace hazelcast {
 
             void MapKeySet::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
-                keySet.resize(size);
                 for (int i = 0; i < size; i++) {
-                    keySet[i].readData(reader);
+                    serialization::Data data;
+                    data.readData(reader);
+                    keySet.push_back(data);
                 }
             }
 

@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace collection {
             class TxnSetSizeRequest : public TxnCollectionRequest {
             public:
-                TxnSetSizeRequest(const std::string&name, serialization::Data *);
+                TxnSetSizeRequest(const std::string& name);
 
                 int getClassId() const;
             };

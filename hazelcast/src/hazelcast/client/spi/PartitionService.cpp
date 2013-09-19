@@ -8,7 +8,6 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -30,8 +29,14 @@ namespace hazelcast {
 
             void PartitionService::start() {
                 getInitialPartitions();
-                boost::thread partitionListener(boost::bind(&PartitionService::runListener, this));
+                boost::thread *partitionListener = new boost::thread(boost::bind(&PartitionService::runListener, this));
+                partitionListenerThread.reset(partitionListener);
             };
+
+
+            void PartitionService::stop() {
+                partitionListenerThread->interrupt();
+            }
 
             void PartitionService::refreshPartitions() {
                 boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
@@ -56,6 +61,8 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
+                    }catch(boost::thread_interrupted& interrupted){
+                        break;
                     }catch(...){
                         //ignored
                     }

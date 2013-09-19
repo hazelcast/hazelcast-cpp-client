@@ -9,8 +9,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            TxnSetSizeRequest::TxnSetSizeRequest(const std::string& name, serialization::Data *data)
-            :TxnCollectionRequest(name, data) {
+            TxnSetSizeRequest::TxnSetSizeRequest(const std::string& name)
+            :TxnCollectionRequest(name) {
 
             }
 

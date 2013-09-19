@@ -16,9 +16,9 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class TxnOfferRequest : public Portable{
+            class TxnOfferRequest : public Portable {
             public:
-                TxnOfferRequest(const std::string& name,  serialization::Data& );
+                TxnOfferRequest(const std::string& name, long timeoutInMillis, serialization::Data&);
 
                 int getFactoryId() const;
 
@@ -26,8 +26,8 @@ namespace hazelcast {
 
 
                 void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n",name);
-                    writer.writeLong("t",timeout);
+                    writer.writeUTF("n", name);
+                    writer.writeLong("t", timeoutInMillis);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     data.writeData(out);
                 };
@@ -35,13 +35,13 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader& reader) {
                     name = reader.readUTF("n");
-                    timeout = reader.readLong("t");
+                    timeoutInMillis = reader.readLong("t");
                     serialization::ObjectDataInput &in = reader.getRawDataInput();
                     data.readData(in);
                 };
             private:
                 std::string name;
-                long timeout;
+                long timeoutInMillis;
                 serialization::Data& data;
             };
         }

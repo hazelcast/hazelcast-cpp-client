@@ -47,9 +47,9 @@ namespace hazelcast {
                 data = in.readBoolean();
                 iterationType = in.readUTF();
                 int size = in.readInt();
-                q.resize(size);
                 for (int i = 0; i < size; i++) {
-                    q[i] = in.readObject<QueryResultEntry>();
+                    QueryResultEntry queryResultEntry = in.readObject<QueryResultEntry>();
+                    q.push_back(queryResultEntry);
                 }
 
             };

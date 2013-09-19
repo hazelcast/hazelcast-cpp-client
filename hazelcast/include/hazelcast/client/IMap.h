@@ -289,8 +289,13 @@ namespace hazelcast {
 
             std::vector<K> keySet() {
                 map::KeySetRequest request(instanceName);
-                map::MapKeySet mapKeySet = invoke(request);
-                return mapKeySet.getKeySet();
+                map::MapKeySet dataKeySet = invoke<map::MapKeySet>(request);
+                std::vector<serialization::Data> const & dataResult = dataKeySet.getKeySet();
+                std::vector<K> keySet(dataResult.size());
+                for (int i = 0; i < dataResult.size(); ++i) {
+                    keySet[i] = toObject<K>(dataResult[i]);
+                }
+                return keySet;
             };
 
             std::map< K, V > getAll(const std::set<K>& keys) {

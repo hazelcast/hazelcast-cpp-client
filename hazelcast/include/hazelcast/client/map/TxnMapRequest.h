@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMapRequest
 #define HAZELCAST_TxnMapRequest
 
-#include "Portable.h"
+#include "Request.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -34,7 +34,11 @@ namespace hazelcast {
                     SET = 8,
                     REMOVE = 9,
                     DELETE = 10,
-                    REMOVE_IF_SAME = 11
+                    REMOVE_IF_SAME = 11,
+                    KEYSET = 12,
+                    KEYSET_BY_PREDICATE = 13,
+                    VALUES = 14,
+                    VALUES_BY_PREDICATE = 15
 
                 } value;
 
@@ -50,7 +54,7 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class TxnMapRequest : public Portable {
+            class TxnMapRequest : public impl::Request {
             public:
                 TxnMapRequest();
 
@@ -62,20 +66,21 @@ namespace hazelcast {
 
                 TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue);
 
+                TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, const std::string& predicate);
+
                 int getFactoryId() const;
 
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 std::string name;
                 TxnMapRequestType requestType;
-                std::auto_ptr<serialization::Data> key;
-                std::auto_ptr<serialization::Data> value;
-                std::auto_ptr<serialization::Data> newValue;
+                serialization::Data *key;
+                serialization::Data *value;
+                serialization::Data *newValue;
+                const std::string *predicate;
             };
 
         }

@@ -7,7 +7,6 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -28,7 +27,7 @@ namespace hazelcast {
             };
 
 
-            void ClusterListenerThread::run() {
+            void ClusterListenerThread::start() {
                 while (lifecycleService.isRunning()) {
                     try{
                         if (conn == NULL) {
@@ -49,6 +48,8 @@ namespace hazelcast {
                         delete conn;
                         conn = NULL;
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
+//                    }catch(boost::thread_interrupted& interrupted){
+//                        break;
                     }catch(...){
                         std::cerr << "cluster Listener Thread unknown exception\n";
                     }
@@ -56,6 +57,10 @@ namespace hazelcast {
                 }
 
             };
+
+            void ClusterListenerThread::stop() {
+                //TODO 1111
+            }
 
             Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;

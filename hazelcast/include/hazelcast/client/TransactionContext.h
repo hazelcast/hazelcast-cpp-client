@@ -73,7 +73,7 @@ namespace hazelcast {
                     throw exception::IllegalStateException("TransactionContext::getMap(const std::string& name)", message);
                 }
                 T txnObject;
-                txnObject.init(name, this);
+                txnObject.init(name, &transaction);
                 return txnObject;
             }
 

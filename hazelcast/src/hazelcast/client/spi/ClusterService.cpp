@@ -31,7 +31,7 @@ namespace hazelcast {
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
                 clusterThread.setInitialConnection(connection);
-                boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
+                boost::thread clusterListener(boost::bind(&connection::ClusterListenerThread::start, &clusterThread));
                 while (!clusterThread.isReady) {
                     try {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));

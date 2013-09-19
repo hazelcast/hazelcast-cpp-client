@@ -14,6 +14,12 @@
 #include "ClientMultiMapTest.h"
 #include "ClientListTest.h"
 #include "ClientSetTest.h"
+#include "ClientTxnListTest.h"
+#include "ClientTxnMapTest.h"
+#include "ClientTxnMultiMapTest.h"
+#include "ClientTxnQueueTest.h"
+#include "ClientTxnSetTest.h"
+#include "ClientTxnTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -52,6 +58,18 @@ int main(int argc, char **argv) {
     topicTest.executeTests();
     IExecutorServiceTest executorServiceTest(factory);
     executorServiceTest.executeTests();
+    ClientTxnListTest clientTxnListTest(factory);
+    clientTxnListTest.executeTests();
+    ClientTxnMapTest clientTxnMapTest(factory);
+    clientTxnMapTest.executeTests();
+    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
+    clientTxnMultiMapTest.executeTests();
+    ClientTxnQueueTest clientTxnQueueTest(factory);
+    clientTxnQueueTest.executeTests();
+    ClientTxnSetTest clientTxnSetTest(factory);
+    clientTxnSetTest.executeTests();
+    ClientTxnTest clientTxnTest(factory);
+    clientTxnTest.executeTests();
 //    testSpeed();
     return 0;
 };

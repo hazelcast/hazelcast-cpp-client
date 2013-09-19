@@ -7,6 +7,7 @@
 
 #include "../Address.h"
 #include "ConcurrentMap.h"
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -32,6 +33,8 @@ namespace hazelcast {
 
                 void start();
 
+                void stop();
+
                 void refreshPartitions();
 
                 Address *getPartitionOwner(int partitionId);
@@ -45,6 +48,8 @@ namespace hazelcast {
                 spi::LifecycleService& lifecycleService;
 
                 boost::mutex refreshLock;
+
+                std::auto_ptr<boost::thread> partitionListenerThread;
 
                 volatile int partitionCount;
 

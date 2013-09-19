@@ -18,7 +18,7 @@ namespace hazelcast {
             };
 
             TxnCollectionRequest::TxnCollectionRequest(const std::string& name, serialization::Data *data)
-            :name(name) {
+            :name(name), data(data) {
 
             };
 

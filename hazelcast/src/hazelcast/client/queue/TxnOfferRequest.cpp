@@ -9,9 +9,10 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            TxnOfferRequest::TxnOfferRequest(const std::string& name, serialization::Data & data)
+            TxnOfferRequest::TxnOfferRequest(const std::string& name, long timeoutInMillis, serialization::Data & data)
             :name(name)
-            , data(data) {
+            , data(data)
+            , timeoutInMillis(timeoutInMillis) {
 
             }
 

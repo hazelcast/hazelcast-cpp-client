@@ -44,7 +44,11 @@ namespace hazelcast {
                             connectionManager.releaseConnection(connection);
                             return response;
                         } catch (exception::IOException& e) {
-                            std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                            if (connection != NULL) {
+                                std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+                            } else {
+                                std::cerr << std::string(e.what()) << std::endl;
+                            }
                             delete connection;
                             if (redoOperation || util::isRetryable(object)) {
                                 std::cerr << "Retrying " << std::endl;

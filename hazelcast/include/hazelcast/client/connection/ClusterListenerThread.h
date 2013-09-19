@@ -33,7 +33,9 @@ namespace hazelcast {
 
                 void setInitialConnection(connection::Connection *);
 
-                void run();
+                void start();
+
+                void stop();
 
                 boost::atomic<bool> isReady;
             private:

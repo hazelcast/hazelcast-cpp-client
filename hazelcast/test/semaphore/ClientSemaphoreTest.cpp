@@ -6,7 +6,6 @@
 #include "ClientSemaphoreTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastClient.h"
-#include "CountDownLatch.h"
 
 
 namespace hazelcast {
