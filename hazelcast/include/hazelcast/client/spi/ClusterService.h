@@ -31,6 +31,8 @@ namespace hazelcast {
 
                 void start();
 
+                void stop();
+
                 template< typename Response, typename Request >
                 Response sendAndReceive(const Request& object) {
                     while (true) {
@@ -196,6 +198,8 @@ namespace hazelcast {
                 spi::PartitionService& partitionService;
 
                 connection::ClusterListenerThread clusterThread;
+                std::auto_ptr<boost::thread> clusterListenerThread;
+
                 protocol::Credentials& credentials;
                 std::map<Address, connection::Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;

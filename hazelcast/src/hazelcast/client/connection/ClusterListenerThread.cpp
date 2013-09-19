@@ -27,7 +27,7 @@ namespace hazelcast {
             };
 
 
-            void ClusterListenerThread::start() {
+            void ClusterListenerThread::run() {
                 while (lifecycleService.isRunning()) {
                     try{
                         if (conn == NULL) {
@@ -48,8 +48,8 @@ namespace hazelcast {
                         delete conn;
                         conn = NULL;
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-//                    }catch(boost::thread_interrupted& interrupted){
-//                        break;
+                    }catch(boost::thread_interrupted& interrupted){
+                        break;
                     }catch(...){
                         std::cerr << "cluster Listener Thread unknown exception\n";
                     }
@@ -57,10 +57,6 @@ namespace hazelcast {
                 }
 
             };
-
-            void ClusterListenerThread::stop() {
-                //TODO 1111
-            }
 
             Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;

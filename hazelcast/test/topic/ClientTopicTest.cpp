@@ -1,7 +1,6 @@
 #include "ClientTopicTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastClient.h"
-#include "CountDownLatch.h"
 
 
 namespace hazelcast {
@@ -28,6 +27,8 @@ namespace hazelcast {
             };
 
             void ClientTopicTest::afterClass() {
+                client.reset();
+                instance.shutdown();
             };
 
             void ClientTopicTest::beforeTest() {
