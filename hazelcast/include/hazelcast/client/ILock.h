@@ -16,6 +16,7 @@ namespace hazelcast {
     namespace client {
         class ILock {
             friend class HazelcastClient;
+
         public:
 
             void lock();

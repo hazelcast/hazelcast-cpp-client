@@ -13,11 +13,11 @@ namespace hazelcast {
 
         }
 
-        DistributedObjectEvent::EventType DistributedObjectEvent::getEventType() const{
+        DistributedObjectEvent::EventType DistributedObjectEvent::getEventType() const {
             return eventType;
         }
 
-        std::string DistributedObjectEvent::getObjectId() const{
+        std::string DistributedObjectEvent::getObjectId() const {
             return objectId;
         }
 

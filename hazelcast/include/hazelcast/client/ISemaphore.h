@@ -14,6 +14,7 @@ namespace hazelcast {
 
         class ISemaphore {
             friend class HazelcastClient;
+
         public:
 
             /**
@@ -253,7 +254,8 @@ namespace hazelcast {
              * @throws IllegalArgumentException   if {@code permits} is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
-            bool tryAcquire(int permits, long timeoutInMillis) ;
+            bool tryAcquire(int permits, long timeoutInMillis);
+
             /**
              * Destroys this object cluster-wide.
              * Clears and releases all resources for this object.

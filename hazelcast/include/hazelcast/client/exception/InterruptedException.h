@@ -23,5 +23,4 @@ namespace hazelcast {
 }
 
 
-
 #endif //HAZELCAST_InterruptedException

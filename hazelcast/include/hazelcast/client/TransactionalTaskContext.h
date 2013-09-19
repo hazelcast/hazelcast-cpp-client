@@ -15,6 +15,7 @@ namespace hazelcast {
         class TransactionalTaskContext {
         public:
             TransactionalTaskContext(TransactionContext& context);
+
             /**
              * Returns the transactional distributed map instance with the specified name.
              *

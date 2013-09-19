@@ -19,7 +19,7 @@ namespace hazelcast {
 
                 DistributedObjectEvent event(DistributedObjectEvent::CREATED, name);
                 for (std::set<DistributedObjectListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->distributedObjectCreated(event);
+                    (*it)->distributedObjectCreated(event);
                 };
             }
 

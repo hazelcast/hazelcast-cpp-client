@@ -8,7 +8,6 @@
 #include "HazelcastClient.h"
 #include "RunnableTask.h"
 #include "CallableTask.h"
-#include "CountDownLatch.h"
 #include "FailingTask.h"
 
 namespace hazelcast {

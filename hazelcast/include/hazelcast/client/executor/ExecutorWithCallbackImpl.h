@@ -52,7 +52,6 @@ namespace hazelcast {
                 }
 
                 template<typename Result, typename Callable, typename MultiExecutionCallback>
-//                void submitMulti(Callable& task, const connection::Member& member, impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback >& callback) {
                 void submitMulti(Callable& task, const connection::Member& member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
                     Address const & address = member.getAddress();
                     if (context->getClusterService().isMemberExists(address)) {
@@ -86,7 +85,6 @@ namespace hazelcast {
 
 
                 template<typename Result, typename Callable, typename MultiExecutionCallback>
-//                void asyncInvokeWithMultiCallback(Callable& task, connection::Member member, impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback >& callback) {
                 void asyncInvokeWithMultiCallback(Callable& task, connection::Member member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
                     Address address = member.getAddress();
                     executor::TargetCallableRequest<Callable> request(*instanceName, task, address);
@@ -94,7 +92,6 @@ namespace hazelcast {
                         Result result = invoke<Result>(request, address);
                         callback->onResponse(member, result);
                     } catch(std::exception& e){
-                        //TODO ignored why?
                     }
                 }
 

@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class DestroyRequest : public Portable ,public RetryableRequest{
+            class DestroyRequest : public Portable, public RetryableRequest {
             public:
                 DestroyRequest(const std::string& instanceName)
                 :instanceName(instanceName) {

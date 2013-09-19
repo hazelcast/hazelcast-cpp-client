@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class AvailableRequest : public SemaphoreRequest, public RetryableRequest{
+            class AvailableRequest : public SemaphoreRequest, public RetryableRequest {
             public:
                 AvailableRequest(const std::string& instanceName)
                 : SemaphoreRequest(instanceName, -1) {

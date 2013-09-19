@@ -14,10 +14,10 @@ namespace hazelcast {
 
             }
 
-            ServerException::~ServerException() throw(){
+            ServerException::~ServerException() throw() {
             }
 
-            char const *ServerException::what() const throw(){
+            char const *ServerException::what() const throw() {
                 std::string error = message + ":" + details;
                 return error.c_str();
             }

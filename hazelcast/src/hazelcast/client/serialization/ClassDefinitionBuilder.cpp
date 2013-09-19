@@ -8,7 +8,6 @@
 
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {

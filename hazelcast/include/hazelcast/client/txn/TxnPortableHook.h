@@ -24,5 +24,4 @@ namespace hazelcast {
 }
 
 
-
 #endif //HAZELCAST_TxnPortableHook

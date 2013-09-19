@@ -17,6 +17,7 @@ namespace hazelcast {
 
             class DataInput {
                 friend class ObjectDataInput;
+
             public:
                 DataInput(const std::vector<byte>& rhsBuffer);
 

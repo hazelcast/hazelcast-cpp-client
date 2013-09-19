@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class RollbackTxnRequest : public Portable{
+            class RollbackTxnRequest : public Portable {
             public:
                 RollbackTxnRequest() {
 

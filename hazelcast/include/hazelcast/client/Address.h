@@ -17,7 +17,6 @@ namespace hazelcast {
 
         class Address : public IdentifiedDataSerializable {
         public:
-            //TODO type IPV4 IPV6
             Address();
 
             Address(std::string url, int port);

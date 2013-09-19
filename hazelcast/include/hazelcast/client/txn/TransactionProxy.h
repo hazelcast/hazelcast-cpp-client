@@ -46,7 +46,7 @@ namespace hazelcast {
             class TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions& , spi::ClusterService& ,  serialization::SerializationService & , connection::Connection *);
+                TransactionProxy(TransactionOptions&, spi::ClusterService&, serialization::SerializationService &, connection::Connection *);
 
                 std::string getTxnId() const;
 

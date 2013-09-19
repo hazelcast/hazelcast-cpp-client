@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class PutIfAbsentRequest : public Portable{
+            class PutIfAbsentRequest : public Portable {
             public:
                 PutIfAbsentRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
                 :name(name)

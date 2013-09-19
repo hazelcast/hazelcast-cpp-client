@@ -1,7 +1,6 @@
 #include "ClientLockTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastClient.h"
-#include "CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {

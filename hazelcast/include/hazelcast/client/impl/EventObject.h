@@ -17,7 +17,7 @@ namespace hazelcast {
             class EventObject {
             public:
 
-                EventObject(){
+                EventObject() {
 
                 };
 

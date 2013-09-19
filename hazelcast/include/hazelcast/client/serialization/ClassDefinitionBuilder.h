@@ -15,9 +15,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            
+
             class ClassDefinition;
-            
+
             class ClassDefinitionBuilder {
             public:
 

@@ -19,7 +19,8 @@ namespace hazelcast {
             public:
                 virtual void onConnect(const Socket& connectedSocket) = 0;
 
-                virtual ~SocketInterceptor() {};
+                virtual ~SocketInterceptor() {
+                };
             };
         }
     }

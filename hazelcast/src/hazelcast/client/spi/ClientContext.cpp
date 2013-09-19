@@ -6,7 +6,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "DistributedObjectListenerService.h"
 
 using namespace hazelcast::client;
 

@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class CommitTxnRequest : public Portable{
+            class CommitTxnRequest : public Portable {
             public:
                 CommitTxnRequest() {
 

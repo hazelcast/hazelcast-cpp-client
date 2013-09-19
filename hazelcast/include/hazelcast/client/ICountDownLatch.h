@@ -18,6 +18,7 @@ namespace hazelcast {
 
         class ICountDownLatch {
             friend class HazelcastClient;
+
         public:
 
             /**

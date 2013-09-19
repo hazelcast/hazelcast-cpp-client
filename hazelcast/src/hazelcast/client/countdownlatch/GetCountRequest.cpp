@@ -4,8 +4,6 @@
 
 
 #include "GetCountRequest.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
 #include "CountDownLatchPortableHook.h"
 
 namespace hazelcast {

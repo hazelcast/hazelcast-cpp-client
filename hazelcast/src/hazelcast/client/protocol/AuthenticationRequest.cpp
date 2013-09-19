@@ -38,10 +38,10 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
             };
 
-            void AuthenticationRequest::writePortable(serialization::PortableWriter& writer) const{
+            void AuthenticationRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writePortable("credentials", credentials);
                 if (principal == NULL) {
-                    writer.writeNullPortable("principal",  -3, 3);
+                    writer.writeNullPortable("principal", -3, 3);
                 } else {
                     writer.writePortable("principal", *principal);
                 }

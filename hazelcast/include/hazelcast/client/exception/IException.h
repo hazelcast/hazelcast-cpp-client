@@ -15,20 +15,20 @@
 
 namespace hazelcast {
     namespace client {
-       namespace exception{
-        class IException : public std::exception {
-        public:
-            IException(const std::string& source ,const std::string& message);
+        namespace exception {
+            class IException : public std::exception {
+            public:
+                IException(const std::string& source, const std::string& message);
 
-            virtual ~IException() throw();
+                virtual ~IException() throw();
 
-            virtual char const *what() const throw();
+                virtual char const *what() const throw();
 
-        private:
-            std::string message;
-            std::string source;
-        };
-       }
+            private:
+                std::string message;
+                std::string source;
+            };
+        }
     }
 }
 

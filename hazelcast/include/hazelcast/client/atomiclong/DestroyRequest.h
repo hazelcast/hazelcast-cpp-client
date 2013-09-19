@@ -19,7 +19,7 @@ namespace hazelcast {
     namespace client {
         namespace atomiclong {
 
-            class DestroyRequest : public Portable , public RetryableRequest{
+            class DestroyRequest : public Portable, public RetryableRequest {
             public:
                 DestroyRequest(const std::string& instanceName)
                 :instanceName(instanceName) {

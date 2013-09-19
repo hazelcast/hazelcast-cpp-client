@@ -12,7 +12,7 @@ namespace hazelcast {
 
             };
 
-            int AddMembershipListenerRequest::getFactoryId() const{
+            int AddMembershipListenerRequest::getFactoryId() const {
                 return protocol::ProtocolConstants::DATA_FACTORY_ID;
             }
 
@@ -20,7 +20,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::ADD_MS_LISTENER;
             }
 
-            void AddMembershipListenerRequest::writeData(serialization::ObjectDataOutput& writer) const{
+            void AddMembershipListenerRequest::writeData(serialization::ObjectDataOutput& writer) const {
             };
 
             void AddMembershipListenerRequest::readData(serialization::ObjectDataInput& reader) {

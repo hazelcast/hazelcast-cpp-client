@@ -22,7 +22,7 @@ namespace hazelcast {
 
             }
 
-            void GetPartitionsRequest::writeData(serialization::ObjectDataOutput & writer) const{
+            void GetPartitionsRequest::writeData(serialization::ObjectDataOutput & writer) const {
 
             }
 

@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions& txnOptions, spi::ClusterService& clusterService,  serialization::SerializationService & serializationService, connection::Connection *connection)
+            TransactionProxy::TransactionProxy(TransactionOptions& txnOptions, spi::ClusterService& clusterService, serialization::SerializationService & serializationService, connection::Connection *connection)
             : options(txnOptions)
             , clusterService(clusterService)
             , serializationService(serializationService)

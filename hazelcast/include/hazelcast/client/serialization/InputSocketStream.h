@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
 
-        namespace connection{
+        namespace connection {
             class Socket;
         }
 
@@ -29,9 +29,9 @@ namespace hazelcast {
 
                 InputSocketStream(hazelcast::client::connection::Socket& socket);
 
-                void setSerializationContext(SerializationContext* context);
+                void setSerializationContext(SerializationContext *context);
 
-                SerializationContext * getSerializationContext();
+                SerializationContext *getSerializationContext();
 
                 void readFully(std::vector<byte>&);
 
@@ -57,7 +57,7 @@ namespace hazelcast {
 
             private:
                 connection::Socket& socket;
-                SerializationContext* context;
+                SerializationContext *context;
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 

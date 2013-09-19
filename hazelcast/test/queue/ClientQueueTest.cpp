@@ -6,7 +6,6 @@
 #include "ClientQueueTest.h"
 #include "HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
-#include "CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {

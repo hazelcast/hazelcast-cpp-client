@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 bool checkHeartBeat(Connection& connection);
 
-                void run(Connection* connection);
+                void run(Connection *connection);
 
             private:
 
