@@ -147,7 +147,7 @@ namespace hazelcast {
         };
 
         bool HazelcastClient::removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
-            impl->distributedObjectListenerService.removeDistributedObjectListener(distributedObjectListener);
+            return impl->distributedObjectListenerService.removeDistributedObjectListener(distributedObjectListener);
         };
 
         TransactionContext HazelcastClient::newTransactionContext() {

@@ -14,10 +14,10 @@
 # Compiled Static libraries
 *.lai
 *.la
-*.a
+# *.a
 
 #dependency files
 *.d
 
 #test resources
-*.txt
+# *.txt

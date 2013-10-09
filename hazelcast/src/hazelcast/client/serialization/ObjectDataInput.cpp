@@ -40,7 +40,7 @@ namespace hazelcast {
             };
 
             int ObjectDataInput::skipBytes(int i) {
-                dataInput.skipBytes(i);
+                return dataInput.skipBytes(i);
             };
 
             bool ObjectDataInput::readBoolean() {

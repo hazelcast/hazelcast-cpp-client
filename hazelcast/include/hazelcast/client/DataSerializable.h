@@ -28,8 +28,6 @@ namespace hazelcast {
 
             virtual void readData(serialization::ObjectDataInput& reader) = 0;
 
-//            virtual int getSerializerId() const;
-
         };
     }
 }

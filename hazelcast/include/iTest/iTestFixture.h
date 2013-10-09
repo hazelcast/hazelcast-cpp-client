@@ -26,21 +26,13 @@ namespace iTest {
 
         virtual void addTests() = 0;
 
-        void beforeClass() {
-            static_cast<T *>(this)->beforeClass();
-        };
+        virtual void beforeClass() = 0;
 
-        void afterClass() {
-            static_cast<T *>(this)->afterClass();
-        };
+        virtual void afterClass() = 0;
 
-        void beforeTest() {
-            static_cast<T *>(this)->beforeTest();
-        };
+        virtual void beforeTest() = 0;
 
-        void afterTest() {
-            static_cast<T *>(this)->afterTest();
-        };
+        virtual void afterTest() = 0;
 
         void addTest(TestFunction test, const std::string& name) {
             tests.push_back(test);

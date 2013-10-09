@@ -10,10 +10,5 @@ namespace hazelcast {
         DataSerializable::~DataSerializable() {
 
         }
-
-//        int DataSerializable::getSerializerId() const {
-//            return serialization::SerializationConstants::CONSTANT_TYPE_DATA;
-//        }
-
     }
 }

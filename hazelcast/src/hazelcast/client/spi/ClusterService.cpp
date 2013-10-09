@@ -162,7 +162,7 @@ namespace hazelcast {
                 typedef std::map<Address, connection::Member, addressComparator> MemberMap;
                 std::vector<connection::Member> v;
                 boost::lock_guard<boost::mutex> guard(membersLock);
-                typename MemberMap::const_iterator it;
+                MemberMap::const_iterator it;
                 for (it = members.begin(); it != members.end(); it++) {
                     v.push_back(it->second);
                 }

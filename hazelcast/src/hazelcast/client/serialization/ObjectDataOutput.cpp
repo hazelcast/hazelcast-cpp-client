@@ -165,7 +165,7 @@ namespace hazelcast {
 
 
             int ObjectDataOutput::position() {
-                dataOutput->position();
+                return dataOutput->position();
             };
 
             void ObjectDataOutput::position(int newPos) {

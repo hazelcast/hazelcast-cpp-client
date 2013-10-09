@@ -51,9 +51,9 @@ namespace hazelcast {
 
 
             void AuthenticationRequest::readPortable(serialization::PortableReader& reader) {
-                credentials = reader.template readPortable<Credentials>("credentials");
+                credentials = reader.readPortable<Credentials>("credentials");
                 protocol::Principal *principal = new protocol::Principal();
-                *principal = reader.template readPortable<Principal>("principal");
+                *principal = reader.readPortable<Principal>("principal");
                 this->principal = principal;
                 reAuth = reader.readBoolean("reAuth");
                 firstConnection = reader.readBoolean("firstConnection");
