@@ -26,33 +26,33 @@ namespace hazelcast {
 
             ~ClientConfig();
 
-            ClientConfig& addAddress(const Address& address);
+            ClientConfig &addAddress(const Address &address);
 
-            ClientConfig& addAddresses(const std::vector<Address>& addresses);
+            ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
-            std::vector<Address>& getAddresses();
+            std::vector<Address> &getAddresses();
 
-            ClientConfig& setGroupConfig(GroupConfig& groupConfig);
+            ClientConfig &setGroupConfig(GroupConfig &groupConfig);
 
-            GroupConfig& getGroupConfig();
+            GroupConfig &getGroupConfig();
 
             void setCredentials(protocol::Credentials *credentials);
 
-            protocol::Credentials& getCredentials();
+            protocol::Credentials &getCredentials();
 
-            ClientConfig& setConnectionAttemptLimit(int connectionAttemptLimit);
+            ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
             int getConnectionAttemptLimit() const;
 
-            ClientConfig& setConnectionTimeout(int connectionTimeoutInMillis);
+            ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
             int getConnectionTimeout() const;
 
-            ClientConfig& setAttemptPeriod(int attemptPeriodInMillis);
+            ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
 
             int getAttemptPeriod() const;
 
-            ClientConfig& setRedoOperation(bool redoOperation);
+            ClientConfig &setRedoOperation(bool redoOperation);
 
             bool isRedoOperation() const;
 
@@ -65,13 +65,13 @@ namespace hazelcast {
             std::auto_ptr<connection::SocketInterceptor> getSocketInterceptor();
 
             /**
-           * Adds a listener object to configuration to be registered when {@code HazelcastClient} starts.
-           *
-           * @param listener one of {@link com.hazelcast.core.LifecycleListener}, {@link com.hazelcast.core.DistributedObjectListener}
-           *                 or {@link com.hazelcast.core.MembershipListener}
-           * @return
-           */
-            ClientConfig& addListener(spi::EventListener *listener);
+             * Adds a listener object to configuration to be registered when {@code HazelcastClient} starts.
+             *
+             * @param listener one of {@link com.hazelcast.core.LifecycleListener}, {@link com.hazelcast.core.DistributedObjectListener}
+             *                 or {@link com.hazelcast.core.MembershipListener}
+             * @return
+            */
+            ClientConfig &addListener(spi::EventListener *listener);
 
             std::set<spi::EventListener *> getListeners() const;
 

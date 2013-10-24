@@ -1,12 +1,18 @@
 #include "hazelcast/client/connection/Socket.h"
 #include "IOException.h"
-#include <errno.h>
+
+#ifdef WIN32
+	typedef int socklen_t;
+#endif
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            Socket::Socket(const Address& address) : address(address), size(32 * 1024) {
+            Socket::Socket(const Address &address) : address(address), size(32 * 1024) {
+#ifdef WIN32
+                    if(WSAStartup(MAKEWORD(2, 0), &wsa_data);
+                #endif
                 getInfo(address);
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
                 setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, &size, sizeof(int));
@@ -14,7 +20,7 @@ namespace hazelcast {
                 setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
             };
 
-            Socket::Socket(const Socket& rhs) : address(rhs.address) {
+            Socket::Socket(const Socket &rhs) : address(rhs.address) {
                 //private
             };
 
@@ -53,15 +59,20 @@ namespace hazelcast {
             }
 
             void Socket::close() {
-                ::freeaddrinfo(server_info);
+#ifdef WIN32
+		        WSACleanup();
+		        closesocket(socketId);
+	            #else
                 ::close(socketId);
+#endif
+                ::freeaddrinfo(server_info);
             }
 
             int Socket::getSocketId() const {
                 return socketId;
             }
 
-            void Socket::getInfo(const Address& address) {
+            void Socket::getInfo(const Address &address) {
                 struct addrinfo hints;
                 std::memset(&hints, 0, sizeof (hints));
                 hints.ai_family = AF_UNSPEC;
