@@ -1,20 +1,15 @@
 #include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
 
-        IdGenerator::IdGenerator()
-        : local(new boost::atomic<int>(-1))
+        IdGenerator::IdGenerator(const std::string &instanceName, spi::ClientContext *context)
+        : DistributedObject("idGeneratorService", instanceName, context)
+        , atomicLong("hz:atomic:idGenerator:" + instanceName, context)
+        , local(new boost::atomic<int>(-1))
         , residue(new boost::atomic<int>(BLOCK_SIZE))
         , localLock(new boost::mutex) {
 
-        };
-
-        void IdGenerator::init(const std::string& instanceName, spi::ClientContext *clientContext) {
-            this->context = clientContext;
-            this->instanceName = instanceName;
-            atomicLong.init(instanceName, clientContext);
         };
 
 
@@ -48,9 +43,8 @@ namespace hazelcast {
             return int(*local) * BLOCK_SIZE + value;
         };
 
-        void IdGenerator::destroy() {
-            atomicLong.destroy();
-            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        void IdGenerator::onDestroy() {
+            atomicLong.onDestroy();
         };
 
     }

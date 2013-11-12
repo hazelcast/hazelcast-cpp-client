@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_TxnCollectionRequest
 #define HAZELCAST_TxnCollectionRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,18 +16,18 @@ namespace hazelcast {
             class Data;
         }
         namespace collection {
-            class TxnCollectionRequest : public impl::Request {
+            class TxnCollectionRequest : public impl::PortableRequest {
             public:
-                TxnCollectionRequest(const std::string& name);
+                TxnCollectionRequest(const std::string &name);
 
-                TxnCollectionRequest(const std::string& name, serialization::Data *);
+                TxnCollectionRequest(const std::string &name, serialization::Data *);
 
                 int getFactoryId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                const std::string &name;
                 serialization::Data *data;
             };
         }

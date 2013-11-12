@@ -5,14 +5,13 @@
 
 #include "hazelcast/client/map/GetRequest.h"
 #include "PortableWriter.h"
-#include "PortableReader.h"
 #include "PortableHook.h"
 #include "Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest(std::string& name, serialization::Data& key)
+            GetRequest::GetRequest(const std::string &name, serialization::Data &key)
             :name(name)
             , key(key) {
 
@@ -26,16 +25,10 @@ namespace hazelcast {
                 return PortableHook::GET;
             }
 
-            void GetRequest::writePortable(serialization::PortableWriter& writer) const {
+            void GetRequest::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
-
-            void GetRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
             };
         }
     }

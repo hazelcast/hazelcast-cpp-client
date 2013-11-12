@@ -10,6 +10,12 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
+
+
+            AuthenticationRequest::AuthenticationRequest() {
+
+            };
+
             AuthenticationRequest::AuthenticationRequest(Credentials credentials)
             :credentials(credentials)
             , reAuth(true)
@@ -38,7 +44,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
             };
 
-            void AuthenticationRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AuthenticationRequest::writePortable(serialization::PortableWriter &writer) const {
                 writer.writePortable("credentials", credentials);
                 if (principal == NULL) {
                     writer.writeNullPortable("principal", -3, 3);
@@ -50,7 +56,7 @@ namespace hazelcast {
             };
 
 
-            void AuthenticationRequest::readPortable(serialization::PortableReader& reader) {
+            void AuthenticationRequest::readPortable(serialization::PortableReader &reader) {
                 credentials = reader.readPortable<Credentials>("credentials");
                 protocol::Principal *principal = new protocol::Principal();
                 *principal = reader.readPortable<Principal>("principal");

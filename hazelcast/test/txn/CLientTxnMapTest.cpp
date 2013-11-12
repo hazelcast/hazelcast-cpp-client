@@ -6,6 +6,7 @@
 #include "ClientTxnMapTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastClient.h"
+#include "Employee.h"
 
 
 namespace hazelcast {
@@ -16,7 +17,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnMapTest::ClientTxnMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientTxnMapTest::ClientTxnMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))) {
@@ -28,8 +29,8 @@ namespace hazelcast {
 
             void ClientTxnMapTest::addTests() {
                 addTest(&ClientTxnMapTest::testPutGet, "testPutGet");
-                addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
-                addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
+//                addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
+//                addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
             };
 
             void ClientTxnMapTest::beforeClass() {
@@ -61,6 +62,43 @@ namespace hazelcast {
             }
 
 
+//            @Test
+//            public void testGetForUpdate() throws TransactionException {
+//            final IMap<String, Integer> map = hz.getMap("testTxnGetForUpdate");
+//            final CountDownLatch latch1 = new CountDownLatch(1);
+//            final CountDownLatch latch2 = new CountDownLatch(1);
+//            map.put("var", 0);
+//            final AtomicBoolean pass = new AtomicBoolean(true);
+//
+//
+//            Runnable incrementor = new Runnable() {
+//                public void run() {
+//                    try {
+//                        latch1.await(100, TimeUnit.SECONDS);
+//                        pass.set(map.tryPut("var", 1, 0, TimeUnit.SECONDS) == false);
+//                        latch2.countDown();
+//                    } catch (Exception e) {
+//                    }
+//                }
+//            };
+//            new Thread(incrementor).start();
+//            boolean b = hz.executeTransaction(new TransactionalTask<Boolean>() {
+//                public Boolean execute(TransactionalTaskContext context) throws TransactionException {
+//                    try {
+//                        final TransactionalMap<String, Integer> txMap = context.getMap("testTxnGetForUpdate");
+//                        txMap.getForUpdate("var");
+//                        latch1.countDown();
+//                        latch2.await(100, TimeUnit.SECONDS);
+//                    } catch (Exception e) {
+//                    }
+//                    return true;
+//                }
+//            });
+//            assertTrue(b);
+//            assertTrue(pass.get());
+//            assertTrue(map.tryPut("var", 1, 0, TimeUnit.SECONDS));
+//        }
+
             void ClientTxnMapTest::testKeySetValues() {
                 std::string name = "testKeySetValues";
                 IMap<std::string, std::string> map = client->getMap<std::string, std::string>(name);
@@ -83,54 +121,6 @@ namespace hazelcast {
                 assertEqual(3, map.values().size());
 
             }
-
-            class Employee : public Portable {
-            public:
-                Employee():age(-1), name("") {
-
-                }
-
-                Employee(std::string name, int age)
-                :age(age)
-                , name(name) {
-
-                };
-
-                int getFactoryId() const {
-                    return 666;
-                };
-
-                int getClassId() const {
-                    return 2;
-                };
-
-                bool operator ==(const Employee& employee) const {
-                    if (age != employee.age)
-                        return false;
-                    else if (name.compare(employee.name))
-                        return false;
-                    else
-                        return true;
-                }
-
-                bool operator !=(const Employee& employee) const {
-                    return !(*this == employee);
-                }
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeInt("a", age);
-                };
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    age = reader.readInt("a");
-                };
-
-            private:
-                int age;
-                std::string name;
-            };
 
             void ClientTxnMapTest::testKeySetAndValuesWithPredicates() {
                 std::string name = "testKeysetAndValuesWithPredicates";

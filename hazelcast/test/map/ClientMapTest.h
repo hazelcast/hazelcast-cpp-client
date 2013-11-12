@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class ClientMapTest : public iTest::iTestFixture<ClientMapTest> {
             public:
-                ClientMapTest(HazelcastInstanceFactory&);
+                ClientMapTest(HazelcastInstanceFactory &);
 
                 ~ClientMapTest();
 
@@ -57,6 +57,8 @@ namespace hazelcast {
 
                 void testIssue537();
 
+                void testPredicateListenerWithPortableKey();
+
                 void testListener();
 
                 void testTryLock();
@@ -88,7 +90,7 @@ namespace hazelcast {
                 void testPutIfAbsentTtl();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
+                HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

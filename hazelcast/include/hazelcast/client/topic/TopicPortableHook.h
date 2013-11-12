@@ -17,7 +17,6 @@ namespace hazelcast {
 
                     PUBLISH = 1,
                     ADD_LISTENER = 2,
-                    DESTROY = 3,
                     PORTABLE_MESSAGE = 4
                 };
             };

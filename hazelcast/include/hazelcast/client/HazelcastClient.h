@@ -33,7 +33,6 @@ namespace hazelcast {
 
             class ServerListenerService;
 
-            class DistributedObjectListenerService;
         }
 
         class ClientConfig;
@@ -50,8 +49,6 @@ namespace hazelcast {
 
         class IExecutorService;
 
-        class DistributedObjectListener;
-
         class TransactionContext;
 
         class TransactionOptions;
@@ -62,78 +59,72 @@ namespace hazelcast {
             friend class spi::LifecycleService;
 
         public:
-            HazelcastClient(ClientConfig&);
+            HazelcastClient(ClientConfig &);
 
             ~HazelcastClient();
 
             template <typename T>
-            T getDistributedObject(const std::string& instanceName) {
-                T t;
-                t.init(instanceName, &getClientContext());
-                triggerDistributedObjectAdded(instanceName);
+            T getDistributedObject(const std::string &instanceName) {
+                T t(instanceName, &getClientContext());
                 return t;
             };
 
             template<typename K, typename V>
-            IMap<K, V> getMap(const std::string& instanceName) {
+            IMap<K, V> getMap(const std::string &instanceName) {
                 return getDistributedObject< IMap<K, V > >(instanceName);
             };
 
             template<typename K, typename V>
-            MultiMap<K, V> getMultiMap(const std::string& instanceName) {
+            MultiMap<K, V> getMultiMap(const std::string &instanceName) {
                 return getDistributedObject< MultiMap<K, V > >(instanceName);
             };
 
             template<typename E>
-            IQueue<E> getQueue(const std::string& instanceName) {
+            IQueue<E> getQueue(const std::string &instanceName) {
                 return getDistributedObject< IQueue<E > >(instanceName);
             };
 
             template<typename E>
-            ISet<E> getSet(const std::string& instanceName) {
+            ISet<E> getSet(const std::string &instanceName) {
                 return getDistributedObject< ISet<E > >(instanceName);
             };
 
             template<typename E>
-            IList<E> getList(const std::string& instanceName) {
+            IList<E> getList(const std::string &instanceName) {
                 return getDistributedObject< IList<E > >(instanceName);
             };
 
             template<typename E>
-            ITopic<E> getTopic(const std::string& instanceName) {
+            ITopic<E> getTopic(const std::string &instanceName) {
                 return getDistributedObject< ITopic<E> >(instanceName);
             };
 
-            IdGenerator getIdGenerator(const std::string& instanceName);
+            IdGenerator getIdGenerator(const std::string &instanceName);
 
-            IAtomicLong getIAtomicLong(const std::string& instanceName);
+            IAtomicLong getIAtomicLong(const std::string &instanceName);
 
-            ICountDownLatch getICountDownLatch(const std::string& instanceName);
+            ICountDownLatch getICountDownLatch(const std::string &instanceName);
 
-            ILock getILock(const std::string& instanceName);
+            ILock getILock(const std::string &instanceName);
 
-            IExecutorService getExecutorService(const std::string& instanceName);
+            IExecutorService getExecutorService(const std::string &instanceName);
 
-            ISemaphore getISemaphore(const std::string& instanceName);
+            ISemaphore getISemaphore(const std::string &instanceName);
 
-            ClientConfig& getClientConfig();
-
-            void addDistributedObjectListener(DistributedObjectListener *distributedObjectListener);
-
-            bool removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener);
+            ClientConfig &getClientConfig();
 
             TransactionContext newTransactionContext();
 
-            TransactionContext newTransactionContext(const TransactionOptions& options);
+            TransactionContext newTransactionContext(const TransactionOptions &options);
 
             template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionalTask& task) {
+            T executeTransaction(const TransactionalTask &task) {
                 TransactionOptions defaultOptions;
                 return executeTransaction(defaultOptions, task);
             };
 
             template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionOptions& options, TransactionalTask& task) {
+            T executeTransaction(const TransactionOptions &options, TransactionalTask &task) {
                 TransactionContext context = newTransactionContext(options);
                 TransactionalTaskContext transactionalTaskContext(context);
                 context.beginTransaction();
@@ -141,7 +132,7 @@ namespace hazelcast {
                     T value = task.execute(transactionalTaskContext);
                     context.commitTransaction();
                     return value;
-                } catch (std::exception& e) {
+                } catch (std::exception &e) {
                     context.rollbackTransaction();
                     throw e;
                 }
@@ -153,31 +144,25 @@ namespace hazelcast {
 
             HazelcastClientImpl *impl;
 
-            void triggerDistributedObjectAdded(const std::string& name);
+            spi::ClientContext &getClientContext();
 
-            void triggerDistributedObjectRemoved(const std::string& name);
+            connection::ConnectionManager &getConnectionManager();
 
-            spi::ClientContext& getClientContext();
+            serialization::SerializationService &getSerializationService();
 
-            connection::ConnectionManager& getConnectionManager();
+            spi::InvocationService &getInvocationService();
 
-            serialization::SerializationService& getSerializationService();
+            spi::ClusterService &getClusterService();
 
-            spi::InvocationService& getInvocationService();
+            spi::PartitionService &getPartitionService();
 
-            spi::ClusterService& getClusterService();
+            spi::LifecycleService &getLifecycleService();
 
-            spi::PartitionService& getPartitionService();
+            spi::ServerListenerService &getServerListenerService();
 
-            spi::LifecycleService & getLifecycleService();
+            HazelcastClient(const HazelcastClient &rhs);
 
-            spi::ServerListenerService& getServerListenerService();
-
-            spi::DistributedObjectListenerService& getDistributedObjectListenerService();
-
-            HazelcastClient(const HazelcastClient& rhs);
-
-            void operator = (const HazelcastClient& rhs);
+            void operator = (const HazelcastClient &rhs);
 
         };
 

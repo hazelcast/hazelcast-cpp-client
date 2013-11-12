@@ -34,14 +34,14 @@ namespace iTest {
 
         virtual void afterTest() = 0;
 
-        void addTest(TestFunction test, const std::string& name) {
+        void addTest(TestFunction test, const std::string &name) {
             tests.push_back(test);
             testNames[id++] = name;
         };
 
         void executeTests() {
             addTests();
-
+            std::cout << "===========START============ " << std::endl;
             beforeClass();
             T *t = static_cast<T *>(this);
             for (int i = 0; i < tests.size(); i++) {
@@ -50,11 +50,11 @@ namespace iTest {
                 beforeTest();
                 bool isOk = true;
                 try{
-                    ((*t).* (test))();
-                }catch(iTestException& e){
+                    ((*t) .* (test))();
+                }catch(iTestException &e){
                     std::cout << e.message << std::endl;
                     isOk = false;
-                }catch(std::exception& e){
+                }catch(std::exception &e){
                     std::cout << "? " << e.what() << std::endl;
                 }catch(...){
                     std::cout << "unknown exception at iTest " << std::endl;

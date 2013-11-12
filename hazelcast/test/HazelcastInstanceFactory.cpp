@@ -15,11 +15,11 @@ namespace hazelcast {
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-                system("java -cp ./hazelcast-3.0.jar:.  ClientTCPIPListener & ");
+//                system("java -cp ./hazelcast-3.0.jar:.  ClientTCPIPListener & ");
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
                 try{
                     socket.connect();
-                } catch(std::exception& e ){
+                } catch(std::exception &e ){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");
@@ -32,7 +32,7 @@ namespace hazelcast {
                 try{
                     inputSocketStream.readInt();
                     system("killall -9 java");
-                } catch(std::exception& e ){
+                } catch(std::exception &e ){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");
@@ -59,7 +59,7 @@ namespace hazelcast {
                         std::cout << "void HazelcastInstanceFactory::shutdownAll():" << i << std::endl;
                         std::cout.flush();
                     }
-                }   catch(std::exception& e){
+                }   catch(std::exception &e){
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");

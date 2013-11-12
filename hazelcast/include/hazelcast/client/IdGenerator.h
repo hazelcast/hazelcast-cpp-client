@@ -16,7 +16,7 @@ namespace hazelcast {
             class IdGeneratorSupport;
         }
 
-        class IdGenerator {
+        class IdGenerator : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:
@@ -45,19 +45,16 @@ namespace hazelcast {
              * Destroys this object cluster-wide.
              * Clears and releases all resources for this object.
              */
-            void destroy();
+            void onDestroy();
 
         private:
-            std::string instanceName;
-            spi::ClientContext *context;
             IAtomicLong atomicLong;
             boost::shared_ptr< boost::mutex > localLock;
             boost::shared_ptr< boost::atomic<int> > local;
             boost::shared_ptr< boost::atomic<int> > residue;
 
-            IdGenerator();
+            IdGenerator(const std::string &instanceName, spi::ClientContext *context);
 
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
         };
     }
 }

@@ -3,6 +3,7 @@
 
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
+#include "proxy/DistributedObject.h"
 #include "serialization/Data.h"
 #include "IException.h"
 #include <string>
@@ -16,7 +17,7 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class ICountDownLatch {
+        class ICountDownLatch : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:
@@ -113,22 +114,18 @@ namespace hazelcast {
              * Destroys this object cluster-wide.
              * Clears and releases all resources for this object.
              */
-            void destroy();
+            void onDestroy();
 
 
         private:
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            Response invoke(const Request &request) {
+                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
-            ICountDownLatch();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
+            ICountDownLatch(const std::string &instanceName, spi::ClientContext *clientContext);
 
             serialization::Data key;
-            std::string instanceName;
-            spi::ClientContext *context;
         };
     }
 }

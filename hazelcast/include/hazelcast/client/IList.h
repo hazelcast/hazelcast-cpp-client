@@ -1,7 +1,6 @@
 #ifndef HAZELCAST_ILIST
 #define HAZELCAST_ILIST
 
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include "CollectionAddListenerRequest.h"
 #include "ListAddRequest.h"
 #include "ListRemoveRequest.h"
@@ -18,12 +17,12 @@
 #include "CollectionCompareAndRemoveRequest.h"
 #include "CollectionRemoveRequest.h"
 #include "CollectionClearRequest.h"
-#include "CollectionDestroyRequest.h"
 #include "serialization/Data.h"
 #include "ItemEventHandler.h"
 #include "ServerListenerService.h"
 #include "PortableCollection.h"
 #include "SerializableCollection.h"
+#include "proxy/DistributedObject.h"
 #include <stdexcept>
 
 
@@ -31,25 +30,25 @@ namespace hazelcast {
     namespace client {
 
         template<typename E>
-        class IList {
+        class IList : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:
 
             template < typename L>
-            long addItemListener(L& listener, bool includeValue) {
-                collection::CollectionAddListenerRequest request(name, includeValue);
-                request.setServiceName(serviceName);
-                impl::ItemEventHandler<E, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<collection::CollectionAddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
+            long addItemListener(L &listener, bool includeValue) {
+                collection::CollectionAddListenerRequest request(getName(), includeValue);
+                request.setServiceName(getServiceName());
+                impl::ItemEventHandler<E, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return getContext().getServerListenerService().template listen<collection::CollectionAddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
             };
 
             bool removeItemListener(long registrationId) {
-                return context->getServerListenerService().stopListening(registrationId);
+                return getContext().getServerListenerService().stopListening(registrationId);
             };
 
             int size() {
-                collection::CollectionSizeRequest request(name);
+                collection::CollectionSizeRequest request(getName());
                 return invoke<int>(request);
             };
 
@@ -57,18 +56,18 @@ namespace hazelcast {
                 return size() == 0;
             };
 
-            bool contains(const E& o) {
+            bool contains(const E &o) {
                 serialization::Data valueData = toData(o);
                 std::vector<serialization::Data> valueSet;
                 valueSet.push_back(valueData);
-                collection::CollectionContainsRequest request (name, valueSet);
+                collection::CollectionContainsRequest request (getName(), valueSet);
                 return invoke<bool>(request);
             };
 
             std::vector<E> toArray() {
-                collection::CollectionGetAllRequest request(name);
+                collection::CollectionGetAllRequest request(getName());
                 impl::SerializableCollection result = invoke<impl::SerializableCollection>(request);
-                const std::vector<serialization::Data *>& collection = result.getCollection();
+                const std::vector<serialization::Data *> &collection = result.getCollection();
                 std::vector<E> set(collection.size());
                 for (int i = 0; i < collection.size(); ++i) {
                     set[i] = toObject<E>(*((collection[i])));
@@ -76,91 +75,91 @@ namespace hazelcast {
                 return set;
             };
 
-            bool add(const E& e) {
+            bool add(const E &e) {
                 serialization::Data valueData = toData(e);
-                collection::CollectionAddRequest request(name, valueData);
+                collection::CollectionAddRequest request(getName(), valueData);
                 return invoke<bool>(request);
             };
 
-            bool remove(const E& e) {
+            bool remove(const E &e) {
                 serialization::Data valueData = toData(e);
-                collection::CollectionRemoveRequest request(name, valueData);
+                collection::CollectionRemoveRequest request(getName(), valueData);
                 return invoke<bool>(request);
             };
 
-            bool containsAll(const std::vector<E>& objects) {
+            bool containsAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
-                collection::CollectionContainsRequest request(name, dataCollection);
+                collection::CollectionContainsRequest request(getName(), dataCollection);
                 return invoke<bool>(request);
             };
 
-            bool addAll(const std::vector<E>& objects) {
+            bool addAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
-                collection::CollectionAddAllRequest request(name, dataCollection);
+                collection::CollectionAddAllRequest request(getName(), dataCollection);
                 return invoke<bool>(request);
             };
 
-            bool addAll(int index, const std::vector<E>& objects) {
+            bool addAll(int index, const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
-                list::ListAddAllRequest request(name, dataCollection, index);
+                list::ListAddAllRequest request(getName(), dataCollection, index);
                 return invoke<bool>(request);
             };
 
-            bool removeAll(const std::vector<E>& objects) {
+            bool removeAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
-                collection::CollectionCompareAndRemoveRequest request(name, dataCollection, false);
+                collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, false);
                 return invoke<bool>(request);
             };
 
-            bool retainAll(const std::vector<E>& objects) {
+            bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
-                collection::CollectionCompareAndRemoveRequest request(name, dataCollection, true);
+                collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, true);
                 return invoke<bool>(request);
             };
 
             void clear() {
-                collection::CollectionClearRequest request(name);
+                collection::CollectionClearRequest request(getName());
                 invoke<bool>(request);
             };
 
             E get(int index) {
-                list::ListGetRequest request(name, index);
+                list::ListGetRequest request(getName(), index);
                 return invoke<E>(request);
             };
 
-            E set(int index, const E& e) {
+            E set(int index, const E &e) {
                 serialization::Data valueData = toData(e);
-                list::ListSetRequest request(name, valueData, index);
+                list::ListSetRequest request(getName(), valueData, index);
                 return invoke<E>(request);
             };
 
-            void add(int index, const E& e) {
+            void add(int index, const E &e) {
                 serialization::Data valueData = toData(e);
-                list::ListAddRequest request(name, valueData, index);
+                list::ListAddRequest request(getName(), valueData, index);
                 invoke<bool>(request);
             };
 
             E remove(int index) {
-                list::ListRemoveRequest request(name, index);
+                list::ListRemoveRequest request(getName(), index);
                 return invoke<E>(request);
             };
 
-            int indexOf(const E& e) {
+            int indexOf(const E &e) {
                 serialization::Data valueData = toData(e);
-                list::ListIndexOfRequest request(name, valueData, false);
+                list::ListIndexOfRequest request(getName(), valueData, false);
                 return invoke<int>(request);
             };
 
-            int lastIndexOf(const E& e) {
+            int lastIndexOf(const E &e) {
                 serialization::Data valueData = toData(e);
-                list::ListIndexOfRequest request(name, valueData, true);
+                list::ListIndexOfRequest request(getName(), valueData, true);
                 return invoke<int>(request);
             };
 
             std::vector<E> subList(int fromIndex, int toIndex) {
-                list::ListSubRequest request(name, fromIndex, toIndex);
+                list::ListSubRequest request(getName(), fromIndex, toIndex);
                 impl::SerializableCollection result = invoke<impl::SerializableCollection>(request);
-                const std::vector<serialization::Data *>& collection = result.getCollection();
+                const std::vector<serialization::Data *> &collection = result.getCollection();
                 std::vector<E> set(toIndex - fromIndex);
                 for (int i = 0; i < collection.size(); ++i) {
                     set[i] = toObject<E>(*(collection[i]));
@@ -172,15 +171,12 @@ namespace hazelcast {
             * Destroys this object cluster-wide.
             * Clears and releases all resources for this object.
             */
-            void destroy() {
-                collection::CollectionDestroyRequest request(name);
-                invoke<bool>(request);
-                context->getDistributedObjectListenerService().removeDistributedObject(name);
+            void onDestroy() {
             };
 
         private:
             template<typename T>
-            const std::vector<serialization::Data> toDataCollection(const std::vector<T>& objects) {
+            const std::vector<serialization::Data> toDataCollection(const std::vector<T> &objects) {
                 std::vector<serialization::Data> dataCollection(objects.size());
                 for (int i = 0; i < objects.size(); ++i) {
                     dataCollection[i] = toData(objects[i]);
@@ -189,40 +185,29 @@ namespace hazelcast {
             };
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return context->getSerializationService().toData<T>(&object);
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            T toObject(const serialization::Data& data) {
-                return context->getSerializationService().template toObject<T>(data);
+            T toObject(const serialization::Data &data) {
+                return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(Request& request) {
-                request.setServiceName(serviceName);
-                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            Response invoke(Request &request) {
+                request.setServiceName(getServiceName());
+                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
-            IList() {
-
-            };
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                context = clientContext;
-                key = toData(instanceName);
-                name = instanceName;
+            IList(const std::string &instanceName, spi::ClientContext *context)
+            :DistributedObject("hz:impl:listService", instanceName, context)
+            , key(toData(instanceName)) {
             };
 
 
-            std::string name;
-            spi::ClientContext *context;
             serialization::Data key;
-            static std::string serviceName;
         };
-
-        template<typename E>
-        std::string IList<E>::serviceName = "hz:impl:listService";
     }
 }
 

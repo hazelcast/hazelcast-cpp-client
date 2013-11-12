@@ -8,11 +8,12 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            PartitionService::PartitionService(ClusterService & clusterService, serialization::SerializationService & serializationService, spi::LifecycleService& lifecycleService)
+            PartitionService::PartitionService(ClusterService &clusterService, serialization::SerializationService &serializationService, spi::LifecycleService &lifecycleService)
             :partitionCount(0)
             , clusterService(clusterService)
             , serializationService(serializationService)
@@ -46,7 +47,7 @@ namespace hazelcast {
                 return partitions.get(partitionId);
             };
 
-            int PartitionService::getPartitionId(const serialization::Data & key) {
+            int PartitionService::getPartitionId(const serialization::Data &key) {
                 const int pc = partitionCount;
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
@@ -61,7 +62,7 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
-                    }catch(boost::thread_interrupted& interrupted){
+                    }catch(boost::thread_interrupted &interrupted){
                         break;
                     }catch(...){
                         //ignored
@@ -87,12 +88,12 @@ namespace hazelcast {
                 }
             };
 
-            impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address  & address) {
+            impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address &address) {
                 impl::GetPartitionsRequest getPartitionsRequest;
                 impl::PartitionsResponse partitionResponse;
                 try{
                     partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
-                }catch(exception::IOException& e){
+                }catch(exception::IOException &e){
                     std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
                 }
                 return partitionResponse;
@@ -104,15 +105,15 @@ namespace hazelcast {
                 impl::PartitionsResponse partitionResponse;
                 try{
                     partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(getPartitionsRequest);
-                }catch(exception::IOException& e){
+                }catch(exception::IOException &e){
                     std::cerr << e.what() << std::endl;
                 }
                 return partitionResponse;
             }
 
-            void PartitionService::processPartitionResponse(impl::PartitionsResponse & response) {
-                const std::vector<Address>& members = response.getMembers();
-                const std::vector<int>& ownerIndexes = response.getOwnerIndexes();
+            void PartitionService::processPartitionResponse(impl::PartitionsResponse &response) {
+                const std::vector<Address> &members = response.getMembers();
+                const std::vector<int> &ownerIndexes = response.getOwnerIndexes();
                 if (partitionCount == 0) {
                     partitionCount = ownerIndexes.size();
                 }

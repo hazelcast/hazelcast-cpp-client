@@ -13,58 +13,50 @@
 #include "TransactionProxy.h"
 #include "TxnListRemoveRequest.h"
 #include "TxnListSizeRequest.h"
-#include "CollectionDestroyRequest.h"
+#include "TransactionalObject.h"
 
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class TransactionalList {
+        class TransactionalList : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
-            bool add(const E& e) {
+            bool add(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnListAddRequest request(name, &data);
+                collection::TxnListAddRequest request(getName(), &data);
                 return invoke<bool>(request);
             }
 
-            bool remove(const E& e) {
+            bool remove(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnListRemoveRequest request(name, &data);
+                collection::TxnListRemoveRequest request(getName(), &data);
                 return invoke<bool>(request);
             }
 
             int size() {
-                collection::TxnListSizeRequest request(name);
+                collection::TxnListSizeRequest request(getName());
                 return invoke<int>(request);
             }
 
-            std::string getName() {
-                return name;
-            }
-
-            void destroy() {
-                collection::CollectionDestroyRequest request(name);
-                invoke<bool>(request);
+            void onDestroy() {
             }
 
         private:
-            txn::TransactionProxy *transaction;
-            std::string name;
+            TransactionalList(const std::string &instanceName, txn::TransactionProxy *context)
+            :TransactionalObject("hz:impl:listService", instanceName, context) {
 
-            void init(const std::string& name, txn::TransactionProxy *transactionProxy) {
-                this->transaction = transactionProxy;
-                this->name = name;
-            };
+            }
+
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return transaction->getSerializationService().toData<T>(&object);
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return transaction->sendAndReceive<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().template sendAndReceive<Response>(request);
             };
 
         };

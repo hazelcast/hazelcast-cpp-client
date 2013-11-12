@@ -9,21 +9,15 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "hazelcast/client/lock/DestroyRequest.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
 
 
-        ILock::ILock() {
+        ILock::ILock(const std::string &instanceName, spi::ClientContext *context)
+        : DistributedObject("hz:impl:lockService", instanceName, context)
+        , key(context->getSerializationService().toData<std::string>(&instanceName)) {
 
-        };
-
-        void ILock::init(const std::string& instanceName, spi::ClientContext *clientContext) {
-            this->context = clientContext;
-            this->instanceName = instanceName;
-            key = context->getSerializationService().toData<std::string>(&instanceName);
         };
 
         void ILock::lock() {
@@ -68,7 +62,7 @@ namespace hazelcast {
         bool ILock::tryLock() {
             try {
                 return tryLock(0);
-            } catch (exception::IException& e) {
+            } catch (exception::IException &e) {
                 return false;
             }
         };
@@ -78,10 +72,7 @@ namespace hazelcast {
             return invoke<bool>(request);
         };
 
-        void ILock::destroy() {
-            lock::DestroyRequest request(key);
-            invoke<bool>(request);
-            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        void ILock::onDestroy() {
         };
 
     }

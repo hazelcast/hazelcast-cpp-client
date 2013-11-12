@@ -21,18 +21,14 @@ namespace hazelcast {
 
             class ExecutorDefaultImpl {
             public:
-                ExecutorDefaultImpl() {
+                ExecutorDefaultImpl(const std::string &instanceName, spi::ClientContext *context)
+                :instanceName(instanceName), context(context) {
 
-                }
-
-                void init(std::string *instanceName, spi::ClientContext *clientContext) {
-                    this->instanceName = instanceName;
-                    this->context = clientContext;
                 }
 
                 //----//
                 template<typename Result, typename Callable >
-                Future<Result> submit(Callable& task) {
+                Future<Result> submit(Callable &task) {
                     Future<Result> future;
                     boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvoke<Result, Callable>, this, boost::ref(task), future));
                     return future;
@@ -47,8 +43,8 @@ namespace hazelcast {
 
                 //----//
                 template<typename Result, typename Callable >
-                Future<Result> submit(Callable& task, const serialization::Data& partitionKey) {
-                    spi::PartitionService & partitionService = context->getPartitionService();
+                Future<Result> submit(Callable &task, const serialization::Data &partitionKey) {
+                    spi::PartitionService &partitionService = context->getPartitionService();
                     int partitionId = partitionService.getPartitionId(partitionKey);
                     Address *pointer = partitionService.getPartitionOwner(partitionId);
                     if (pointer != NULL)
@@ -60,14 +56,14 @@ namespace hazelcast {
 
                 //----//
                 template<typename Result, typename Callable >
-                Future<Result> submit(Callable& task, const Address& address) {
+                Future<Result> submit(Callable &task, const Address &address) {
                     Future<Result> future;
                     boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, Callable>, this, boost::ref(task), address, future));
                     return future;
                 }
 
                 template<typename Result, typename Runnable >
-                Future<Result> submit(executor::RunnableAdapter<Runnable> task, const Address& address) {
+                Future<Result> submit(executor::RunnableAdapter<Runnable> task, const Address &address) {
                     Future<Result> future;
                     boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, executor::RunnableAdapter<Runnable> >, this, task, address, future));
                     return future;
@@ -77,12 +73,12 @@ namespace hazelcast {
             private:
 
                 template<typename Result, typename Callable>
-                void asyncInvokeToAddress(Callable & callable, Address address, Future<Result> future) {
+                void asyncInvokeToAddress(Callable &callable, Address address, Future<Result> future) {
 
-                    executor::TargetCallableRequest<Callable > request(*instanceName, callable, address);
+                    executor::TargetCallableRequest<Callable > request(instanceName, callable, address);
                     try{
                         future.accessInternal().setValue(new Result(invoke<Result>(request, address)));
-                    } catch(exception::ServerException& ex){
+                    } catch(exception::ServerException &ex){
                         future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
                     } catch(...){
                         std::cerr << "Exception in IExecuterService::asyncInvoke" << std::endl;
@@ -90,11 +86,11 @@ namespace hazelcast {
                 }
 
                 template<typename Result, typename Callable>
-                void asyncInvoke(Callable & callable, Future<Result> future) {
-                    executor::LocalTargetCallableRequest< Callable > request(*instanceName, callable);
+                void asyncInvoke(Callable &callable, Future<Result> future) {
+                    executor::LocalTargetCallableRequest< Callable > request(instanceName, callable);
                     try{
                         future.accessInternal().setValue(new Result(invoke<Result>(request)));
-                    } catch(exception::ServerException& ex){
+                    } catch(exception::ServerException &ex){
                         future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
                     } catch(...){
                         std::cerr << "Exception in IExecuterService::asyncInvoke" << std::endl;
@@ -103,21 +99,21 @@ namespace hazelcast {
 
 
                 template<typename Result, typename Request>
-                Result invoke(const Request& request, const Address& target) {
+                Result invoke(const Request &request, const Address &target) {
                     return context->getInvocationService().invokeOnTarget<Result>(request, target);
                 }
 
                 template<typename Result, typename Request>
-                Result invoke(const Request& request) {
+                Result invoke(const Request &request) {
                     return context->getInvocationService().invokeOnRandomTarget<Result>(request);
                 }
 
                 template<typename T>
-                serialization::Data toData(const T& o) {
+                serialization::Data toData(const T &o) {
                     return context->getSerializationService().toData<T>(&o);
                 }
 
-                std::string *instanceName;
+                const std::string &instanceName;
                 spi::ClientContext *context;
 
             };

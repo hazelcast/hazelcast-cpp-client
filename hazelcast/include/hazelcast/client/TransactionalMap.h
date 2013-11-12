@@ -11,16 +11,16 @@
 #include "SerializationService.h"
 #include "TransactionProxy.h"
 #include "ClusterService.h"
-#include "hazelcast/client/map/DestroyRequest.h"
 #include "TxnMapRequest.h"
 #include "MapKeySet.h"
 #include "MapValueCollection.h"
+#include "TransactionalObject.h"
 
 namespace hazelcast {
     namespace client {
 
         template<typename K, typename V>
-        class TransactionalMap {
+        class TransactionalMap : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
@@ -29,9 +29,9 @@ namespace hazelcast {
              *
              * @see IMap#containsKey(Object)
             */
-            bool containsKey(const K& key) {
+            bool containsKey(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::CONTAINS_KEY, &data);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::CONTAINS_KEY, &data);
                 return invoke<bool>(request);
             }
 
@@ -40,9 +40,9 @@ namespace hazelcast {
              *
              * @see IMap#get(Object)
              */
-            V get(const K& key) {
+            V get(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::GET, &data);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::GET, &data);
                 return invoke<V>(request);
 
             }
@@ -53,7 +53,7 @@ namespace hazelcast {
              * @see com.hazelcast.core.IMap#size()
              */
             int size() {
-                map::TxnMapRequest request(name, map::TxnMapRequestType::SIZE);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::SIZE);
                 return invoke<int>(request);
             }
 
@@ -73,10 +73,10 @@ namespace hazelcast {
              *
              * @see IMap#put(Object, Object)
              */
-            V put(const K& key, const V& value) {
+            V put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::PUT, &keyData, &valueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::PUT, &keyData, &valueData);
                 return invoke<V>(request);
             };
 
@@ -87,10 +87,10 @@ namespace hazelcast {
              *
              * @see IMap#set(Object, Object)
              */
-            void set(const K& key, const V& value) {
+            void set(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::SET, &keyData, &valueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::SET, &keyData, &valueData);
                 invoke<bool>(request);
             }
 
@@ -101,10 +101,10 @@ namespace hazelcast {
              *
              * @see IMap#putIfAbsent(Object, Object)
              */
-            V putIfAbsent(const K& key, const V& value) {
+            V putIfAbsent(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::PUT_IF_ABSENT, &keyData, &valueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, &keyData, &valueData);
                 return invoke<V>(request);
             };
 
@@ -115,10 +115,10 @@ namespace hazelcast {
              *
              * @see IMap#replace(Object, Object)
              */
-            V replace(const K& key, const V& value) {
+            V replace(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::REPLACE, &keyData, &valueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::REPLACE, &keyData, &valueData);
                 return invoke<V>(request);
 
             };
@@ -130,11 +130,11 @@ namespace hazelcast {
              *
              * @see IMap#replace(Object, Object, Object)
              */
-            bool replace(const K& key, const V& oldValue, const V& newValue) {
+            bool replace(const K &key, const V &oldValue, const V &newValue) {
                 serialization::Data keyData = toData(key);
                 serialization::Data oldValueData = toData(oldValue);
                 serialization::Data newValueData = toData(newValue);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::REPLACE, &keyData, &oldValueData, &newValueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::REPLACE, &keyData, &oldValueData, &newValueData);
                 return invoke<bool>(request);
 
             };
@@ -146,9 +146,9 @@ namespace hazelcast {
              *
              * @see IMap#remove(Object)
              */
-            V remove(const K& key) {
+            V remove(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::REMOVE, &data);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::REMOVE, &data);
                 return invoke<V>(request);
             };
 
@@ -160,9 +160,9 @@ namespace hazelcast {
              * @see IMap#delete(Object)
              */
 
-            void deleteEntry(const K& key) {
+            void deleteEntry(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::DELETE, &data);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::DELETE, &data);
                 invoke<bool>(request);
             };
 
@@ -173,10 +173,10 @@ namespace hazelcast {
              *
              * @see IMap#remove(Object, Object)
              */
-            bool remove(const K& key, const V& value) {
+            bool remove(const K &key, const V &value) {
                 serialization::Data data = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest request(name, map::TxnMapRequestType::REMOVE, &data, &valueData);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::REMOVE, &data, &valueData);
                 return invoke<bool>(request);
             }
 
@@ -187,9 +187,9 @@ namespace hazelcast {
             * @see com.hazelcast.core.IMap#keySet()
             */
             std::vector<K> keySet() {
-                map::TxnMapRequest request(name, map::TxnMapRequestType::KEYSET);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::KEYSET);
                 map::MapKeySet result = invoke<map::MapKeySet>(request);
-                std::vector <serialization::Data> const & keyDataSet = result.getKeySet();
+                std::vector <serialization::Data> const &keyDataSet = result.getKeySet();
                 std::vector<K> keys(keyDataSet.size());
                 for (int i = 0; i < keyDataSet.size(); i++) {
                     keys[i] = toObject<K>(keyDataSet[i]);
@@ -203,10 +203,10 @@ namespace hazelcast {
              *
              * @see IMap#keySet(com.hazelcast.query.Predicate)
              */
-            std::vector<K> keySet(const std::string& predicate) {
-                map::TxnMapRequest request(name, map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
+            std::vector<K> keySet(const std::string &predicate) {
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
                 map::MapKeySet result = invoke<map::MapKeySet>(request);
-                std::vector <serialization::Data> const & keyDataSet = result.getKeySet();
+                std::vector <serialization::Data> const &keyDataSet = result.getKeySet();
                 std::vector<K> keys(keyDataSet.size());
                 for (int i = 0; i < keyDataSet.size(); i++) {
                     keys[i] = toObject<K>(keyDataSet[i]);
@@ -221,9 +221,9 @@ namespace hazelcast {
              * @see IMap#values()
              */
             std::vector<V> values() {
-                map::TxnMapRequest request(name, map::TxnMapRequestType::VALUES);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::VALUES);
                 map::MapValueCollection result = invoke<map::MapValueCollection>(request);
-                std::vector <serialization::Data> const & dataValues = result.getValues();
+                std::vector <serialization::Data> const &dataValues = result.getValues();
                 std::vector<V> values(dataValues.size());
                 for (int i = 0; i < dataValues.size(); i++) {
                     values[i] = toObject<V>(dataValues[i]);
@@ -237,10 +237,10 @@ namespace hazelcast {
              *
              * @see IMap#values(com.hazelcast.query.Predicate)
              */
-            std::vector<V> values(const std::string& predicate) {
-                map::TxnMapRequest request(name, map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
+            std::vector<V> values(const std::string &predicate) {
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
                 map::MapValueCollection result = invoke<map::MapValueCollection>(request);
-                std::vector <serialization::Data> const & dataValues = result.getValues();
+                std::vector <serialization::Data> const &dataValues = result.getValues();
                 std::vector<V> values(dataValues.size());
                 for (int i = 0; i < dataValues.size(); i++) {
                     values[i] = toObject<V>(dataValues[i]);
@@ -248,33 +248,28 @@ namespace hazelcast {
                 return values;
             }
 
-            void destroy() {
-                map::DestroyRequest request (name);
-                invoke<bool>(request);
+            void onDestroy() {
             }
 
         private:
-            txn::TransactionProxy *transaction;
-            std::string name;
+            TransactionalMap(const std::string &name, txn::TransactionProxy *transactionProxy)
+            :TransactionalObject("hz:impl:mapService", name, transactionProxy) {
 
-            void init(const std::string& name, txn::TransactionProxy *transactionProxy) {
-                this->transaction = transactionProxy;
-                this->name = name;
+            }
+
+            template<typename T>
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return transaction->getSerializationService().toData<T>(&object);
-            };
-
-            template<typename T>
-            T toObject(const serialization::Data& data) {
-                return transaction->getSerializationService().template toObject<T>(data);
+            T toObject(const serialization::Data &data) {
+                return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return transaction->sendAndReceive<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().template sendAndReceive<Response>(request);
             };
 
         };

@@ -36,6 +36,7 @@ namespace hazelcast {
                     ADD_INTERCEPTOR = 23,
                     REMOVE_INTERCEPTOR = 24,
                     ADD_ENTRY_LISTENER = 25,
+                    ADD_ENTRY_LISTENER_SQL = 26,
                     GET_ENTRY_VIEW = 27,
                     ADD_INDEX = 28,
                     KEY_SET = 29,
@@ -49,9 +50,9 @@ namespace hazelcast {
                     EXECUTE_ON_KEY = 38,
                     EXECUTE_ON_ALL_KEYS = 39,
                     PUT_ALL = 40,
-                    DESTROY = 41,
-                    TXN_REQUEST = 42,
-                    TXN_REQUEST_WITH_SQL_QUERY = 43
+                    TXN_REQUEST = 41,
+                    TXN_REQUEST_WITH_SQL_QUERY = 42,
+                    EXECUTE_WITH_PREDICATE = 43
                 };
             }
 

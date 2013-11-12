@@ -14,30 +14,29 @@
 #include "InterruptedException.h"
 #include "TxnPollRequest.h"
 #include "TxnSizeRequest.h"
-#include "hazelcast/client/queue/DestroyRequest.h"
 
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class TransactionalQueue {
+        class TransactionalQueue : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
-            bool offer(const E& e) {
+            bool offer(const E &e) {
                 try {
                     return offer(e, 0);
-                } catch (exception::InterruptedException& ex) {
+                } catch (exception::InterruptedException &ex) {
                     return false;
                 }
             };
 
-            bool offer(const E& e, long timeoutInMillis) {
+            bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
-                queue::TxnOfferRequest request(name, timeoutInMillis, data);
+                queue::TxnOfferRequest request(getName(), timeoutInMillis, data);
                 bool result;
                 try {
                     result = invoke<bool>(request);
-                } catch(exception::ServerException& e){
+                } catch(exception::ServerException &e){
                     throw exception::InterruptedException("TransactionalQueue::offer", "timeout");
                 }
                 return result;
@@ -46,49 +45,44 @@ namespace hazelcast {
             E poll() {
                 try {
                     return poll(0);
-                } catch (exception::InterruptedException& e) {
+                } catch (exception::InterruptedException &e) {
                     return E();
                 }
             };
 
             E poll(long timeoutInMillis) {
-                queue::TxnPollRequest request(name, timeoutInMillis);
+                queue::TxnPollRequest request(getName(), timeoutInMillis);
                 E result;
                 try {
                     result = invoke<E>(request);
-                } catch(exception::ServerException& e){
+                } catch(exception::ServerException &e){
                     throw exception::InterruptedException("TransactionalQueue::poll", "timeout");
                 }
                 return result;
             };
 
             int size() {
-                queue::TxnSizeRequest request(name);
+                queue::TxnSizeRequest request(getName());
                 return invoke<int>(request);
             }
 
-            void destroy() {
-                queue::DestroyRequest request(name);
-                invoke<bool>(request);
+            void onDestroy() {
             }
 
         private:
-            txn::TransactionProxy *transaction;
-            std::string name;
+            TransactionalQueue(const std::string &name, txn::TransactionProxy *transactionProxy)
+            :TransactionalObject("hz:impl:queueService", name, transactionProxy) {
 
-            void init(const std::string& name, txn::TransactionProxy *transactionProxy) {
-                this->transaction = transactionProxy;
-                this->name = name;
-            };
+            }
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return transaction->getSerializationService().toData<T>(&object);
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return transaction->sendAndReceive<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().template sendAndReceive<Response>(request);
             };
 
         };

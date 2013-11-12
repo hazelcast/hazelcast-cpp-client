@@ -20,7 +20,6 @@ namespace hazelcast {
                     GET_AND_ADD = 3,
                     GET_AND_SET = 4,
                     SET = 5,
-                    DESTROY = 6
                 };
             };
         }

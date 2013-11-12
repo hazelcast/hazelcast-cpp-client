@@ -4,6 +4,7 @@
 #include "spi/ClientContext.h"
 #include "spi/InvocationService.h"
 #include "serialization/Data.h"
+#include "proxy/DistributedObject.h"
 #include <string>
 
 
@@ -13,19 +14,12 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class IAtomicLong {
+        class IAtomicLong : public proxy::DistributedObject {
             friend class HazelcastClient;
 
             friend class IdGenerator;
 
         public:
-
-            /**
-             * Returns the name of this IAtomicLong instance.
-             *
-             * @return name of this instance
-             */
-            std::string getName() const;
 
             /**
              * Atomically adds the given value to the current value.
@@ -101,22 +95,17 @@ namespace hazelcast {
              * Destroys this object cluster-wide.
              * Clears and releases all resources for this object.
              */
-            void destroy();
+            void onDestroy();
 
         private:
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, key);
+            Response invoke(const Request &request) {
+                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
-            IAtomicLong();
-
-            void init(const std::string& instanceName, spi::ClientContext *clientContext);
-
+            IAtomicLong(const std::string &instanceName, spi::ClientContext *context);
 
             serialization::Data key;
-            std::string instanceName;
-            spi::ClientContext *context;
         };
     }
 }

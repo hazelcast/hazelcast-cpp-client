@@ -14,13 +14,13 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService& serializationService, ClientConfig& clientConfig)
+            ConnectionManager::ConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &serializationService, ClientConfig &clientConfig)
             : clusterService(clusterService)
             , serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
             , principal(NULL)
-            , socketInterceptor(clientConfig.getSocketInterceptor()) {
+            , socketInterceptor(this->clientConfig.getSocketInterceptor()) {
 
             };
 
@@ -31,14 +31,17 @@ namespace hazelcast {
                 }
             };
 
-            Connection *ConnectionManager::newConnection(Address const & address) {
+            Connection *ConnectionManager::newConnection(Address const &address) {
                 Connection *connection = new Connection(address, serializationService);
                 authenticate(*connection, true, true);
                 return connection;
             };
 
+            Connection *ConnectionManager::firstConnection(const Address &address) {
+                return newConnection(address);
+            }
 
-            Connection *ConnectionManager::getConnection(const Address& address) {
+            Connection *ConnectionManager::getConnection(const Address &address) {
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(address);
                 if (pool.isNull())
                     return NULL;
@@ -54,7 +57,7 @@ namespace hazelcast {
 
 
             Connection *ConnectionManager::getRandomConnection() {
-                const Address& address = clientConfig.getLoadBalancer()->next().getAddress();
+                const Address &address = clientConfig.getLoadBalancer()->next().getAddress();
                 return getConnection(address);
             }
 
@@ -68,7 +71,7 @@ namespace hazelcast {
                 }
             };
 
-            util::AtomicPointer <ConnectionPool> ConnectionManager::getConnectionPool(const Address& address) {
+            util::AtomicPointer <ConnectionPool> ConnectionManager::getConnectionPool(const Address &address) {
                 util::AtomicPointer<ConnectionPool> pool = poolMap.get(address);
                 if (!pool.isNull()) {
                     return pool;
@@ -91,7 +94,7 @@ namespace hazelcast {
                 poolMap.remove(address);
             };
 
-            void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
+            void ConnectionManager::authenticate(Connection &connection, bool reAuth, bool firstConnection) {
                 connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
                 if (socketInterceptor.get() != NULL) {

@@ -19,11 +19,11 @@ namespace hazelcast {
 
             class DummyConnectionManager : public ConnectionManager {
             public:
-                DummyConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService&, ClientConfig&);
+                DummyConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &, ClientConfig &);
 
-                virtual Connection *newConnection(Address const & address);
+                virtual Connection *firstConnection(const Address &address);
 
-                virtual Connection *getConnection(Address const & address);
+                virtual Connection *getConnection(Address const &address);
 
             private:
                 Address address;

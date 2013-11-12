@@ -13,29 +13,28 @@
 #include "TxnMultiMapValueCountRequest.h"
 #include "TxnMultiMapSizeRequest.h"
 #include "TransactionProxy.h"
-#include "MultiMapDestroyRequest.h"
 
 namespace hazelcast {
     namespace client {
 
         template<typename K, typename V>
-        class TransactionalMultiMap {
+        class TransactionalMultiMap : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
 
-            bool put(const K& key, const V& value) {
+            bool put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::TxnMultiMapPutRequest request(name, keyData, valueData);
+                multimap::TxnMultiMapPutRequest request(getName(), keyData, valueData);
                 return invoke<bool>(request);
             };
 
-            std::vector<V> get(const K& key) {
+            std::vector<V> get(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapGetRequest request(name, data);
+                multimap::TxnMultiMapGetRequest request(getName(), data);
                 impl::PortableCollection portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const & dataCollection = portableCollection.getCollection();
+                vector<serialization::Data> const &dataCollection = portableCollection.getCollection();
                 vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
@@ -45,18 +44,18 @@ namespace hazelcast {
                 return result;
             };
 
-            bool remove(const K& key, const V& value) {
+            bool remove(const K &key, const V &value) {
                 serialization::Data dataKey = toData(key);
                 serialization::Data dataValue = toData(value);
-                multimap::TxnMultiMapRemoveRequest request(name, dataKey, dataValue);
+                multimap::TxnMultiMapRemoveRequest request(getName(), dataKey, dataValue);
                 return invoke<bool>(request);
             };
 
-            std::vector<V> remove(const K& key) {
+            std::vector<V> remove(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapRemoveRequest request(name, &data);
+                multimap::TxnMultiMapRemoveRequest request(getName(), &data);
                 impl::PortableCollection portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const & dataCollection = portableCollection.getCollection();
+                vector<serialization::Data> const &dataCollection = portableCollection.getCollection();
                 vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
@@ -67,49 +66,39 @@ namespace hazelcast {
             };
 
 
-            int valueCount(const K& key) {
+            int valueCount(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapValueCountRequest request(name, data);
+                multimap::TxnMultiMapValueCountRequest request(getName(), data);
                 return invoke<int>(request);
             }
 
             int size() {
-                multimap::TxnMultiMapSizeRequest request(name);
+                multimap::TxnMultiMapSizeRequest request(getName());
                 return invoke<int>(request);
             }
 
-            std::string getName() const {
-                return name;
-            }
-
-            void destroy() {
-                multimap::MultiMapDestroyRequest request (name);
-                invoke<bool>(request);
+            void onDestroy() {
             }
 
         private :
+            TransactionalMultiMap(const std::string &name, txn::TransactionProxy *transactionProxy)
+            :TransactionalObject("hz:impl:multiMapService", name, transactionProxy) {
 
-            txn::TransactionProxy *transaction;
-            std::string name;
+            }
 
-            void init(const std::string& name, txn::TransactionProxy *transactionProxy) {
-                this->transaction = transactionProxy;
-                this->name = name;
+            template<typename T>
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return transaction->getSerializationService().toData<T>(&object);
-            };
-
-            template<typename T>
-            T toObject(const serialization::Data& data) {
-                return transaction->getSerializationService().template toObject<T>(data);
+            T toObject(const serialization::Data &data) {
+                return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return transaction->sendAndReceive<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().template sendAndReceive<Response>(request);
             };
 
         };

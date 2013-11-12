@@ -7,11 +7,12 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(ConnectionManager& connectionMgr, ClientConfig& clientConfig, spi::ClusterService& clusterService, spi::LifecycleService& lifecycleService, serialization::SerializationService& serializationService)
+            ClusterListenerThread::ClusterListenerThread(ConnectionManager &connectionMgr, ClientConfig &clientConfig, spi::ClusterService &clusterService, spi::LifecycleService &lifecycleService, serialization::SerializationService &serializationService)
             : connectionManager(connectionMgr)
             , clientConfig(clientConfig)
             , clusterService(clusterService)
@@ -33,22 +34,23 @@ namespace hazelcast {
                         if (conn == NULL) {
                             try {
                                 conn = pickConnection();
-                            } catch (std::exception & e) {
+                            } catch (std::exception &e) {
                                 std::cerr << "Error while connecting to cluster! " << *conn << e.what() << std::endl;
                                 return;
                             }
                         }
                         loadInitialMemberList();
+                        isReady = true;
                         listenMembershipEvents();
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    }catch(std::exception & e){
+                    }catch(std::exception &e){
                         if (lifecycleService.isRunning()) {
                             std::cerr << "Error while listening cluster events! -> " << *conn << e.what() << std::endl;
                         }
                         delete conn;
                         conn = NULL;
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    }catch(boost::thread_interrupted& interrupted){
+                    }catch(boost::thread_interrupted &interrupted){
                         break;
                     }catch(...){
                         std::cerr << "cluster Listener Thread unknown exception\n";
@@ -85,7 +87,7 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                const std::vector<serialization::Data *>& collection = coll.getCollection();
+                const std::vector<serialization::Data *> &collection = coll.getCollection();
                 for (std::vector<serialization::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
                     Member member = serializationService.toObject<Member>(**it);
                     members.push_back(member);
@@ -139,7 +141,6 @@ namespace hazelcast {
                 }
                 std::cerr << "}" << std::endl;
                 clusterService.setMembers(map);
-                isReady = true;
 
             };
 
@@ -153,7 +154,7 @@ namespace hazelcast {
 
             std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
-                std::vector<Address>  & configAddresses = clientConfig.getAddresses();
+                std::vector<Address> &configAddresses = clientConfig.getAddresses();
 
                 for (std::vector<Address>::iterator it = configAddresses.begin(); it != configAddresses.end(); ++it) {
                     socketAddresses.push_back((*it));

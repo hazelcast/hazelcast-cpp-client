@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_PortableEntrySetResponse
 #define HAZELCAST_PortableEntrySetResponse
 
-#include "Response.h"
+#include "PortableResponse.h"
 #include <vector>
 #include <utility>
 
@@ -18,17 +18,17 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class PortableEntrySetResponse : public impl::Response {
+            class PortableEntrySetResponse : public impl::PortableResponse {
             public:
                 PortableEntrySetResponse();
 
-                const std::vector<std::pair< serialization::Data, serialization::Data> >& getEntrySet() const;
+                const std::vector<std::pair< serialization::Data, serialization::Data> > &getEntrySet() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
             private:
                 std::vector<std::pair<serialization::Data, serialization::Data > > entrySet;

@@ -21,7 +21,6 @@ namespace hazelcast {
 
                     TARGET_CALLABLE_REQUEST = 6,
                     LOCAL_TARGET_CALLABLE_REQUEST = 7,
-                    SHUTDOWN_REQUEST = 8,
                     IS_SHUTDOWN_REQUEST = 9
                 };
             }

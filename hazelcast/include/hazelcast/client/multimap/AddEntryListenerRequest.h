@@ -8,7 +8,7 @@
 #define HAZELCAST_AddEntryListenerRequest
 
 #include "Data.h"
-#include "Request.h"
+#include "PortableRequest.h"
 #include <vector>
 
 namespace hazelcast {
@@ -17,17 +17,17 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class AddEntryListenerRequest : public impl::Request {
+            class AddEntryListenerRequest : public impl::PortableRequest {
             public:
-                AddEntryListenerRequest(const std::string& name, const serialization::Data& key, bool includeValue);
+                AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue);
+                AddEntryListenerRequest(const std::string &name, bool includeValue);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

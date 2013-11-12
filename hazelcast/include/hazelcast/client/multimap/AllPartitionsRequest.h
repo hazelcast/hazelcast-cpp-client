@@ -8,19 +8,19 @@
 #ifndef HAZELCAST_AllPartitionsRequest
 #define HAZELCAST_AllPartitionsRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class AllPartitionsRequest : public impl::Request {
+            class AllPartitionsRequest : public impl::PortableRequest {
             public:
-                AllPartitionsRequest(const std::string& name);
+                AllPartitionsRequest(const std::string &name);
 
                 int getFactoryId() const;
 
-                virtual void writePortable(serialization::PortableWriter& writer) const;
+                virtual void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

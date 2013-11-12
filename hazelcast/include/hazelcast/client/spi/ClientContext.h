@@ -1,8 +1,6 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
-#include "LifecycleService.h"
-
 #ifndef HAZELCAST_CLIENT_CONTEXT
 #define HAZELCAST_CLIENT_CONTEXT
 
@@ -29,33 +27,31 @@ namespace hazelcast {
 
             class ServerListenerService;
 
-            class DistributedObjectListenerService;
+            class LifecycleService;
 
             class ClientContext {
             public:
 
-                ClientContext(HazelcastClient& hazelcastClient);
+                ClientContext(HazelcastClient &hazelcastClient);
 
-                serialization::SerializationService& getSerializationService();
+                serialization::SerializationService &getSerializationService();
 
-                ClusterService& getClusterService();
+                ClusterService &getClusterService();
 
-                InvocationService& getInvocationService();
+                InvocationService &getInvocationService();
 
-                ClientConfig& getClientConfig();
+                ClientConfig &getClientConfig();
 
-                PartitionService& getPartitionService();
+                PartitionService &getPartitionService();
 
-                LifecycleService& getLifecycleService();
+                LifecycleService &getLifecycleService();
 
-                ServerListenerService& getServerListenerService();
+                ServerListenerService &getServerListenerService();
 
-                connection::ConnectionManager& getConnectionManager();
-
-                DistributedObjectListenerService& getDistributedObjectListenerService();
+                connection::ConnectionManager &getConnectionManager();
 
             private:
-                HazelcastClient& hazelcastClient;
+                HazelcastClient &hazelcastClient;
             };
         }
     }

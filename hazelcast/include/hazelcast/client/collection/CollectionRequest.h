@@ -5,25 +5,25 @@
 #ifndef HAZELCAST_CollectionRequest
 #define HAZELCAST_CollectionRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace collection {
 
-            class CollectionRequest : public impl::Request {
+            class CollectionRequest : public impl::PortableRequest {
             public:
-                CollectionRequest(const std::string& name);
+                CollectionRequest(const std::string &name);
 
                 virtual int getFactoryId() const;
 
-                virtual void setServiceName(const std::string& name);
+                virtual void setServiceName(const std::string &name);
 
-                virtual void writePortable(serialization::PortableWriter& writer) const;
+                virtual void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                const std::string &name;
                 const std::string *serviceName;
 
             };

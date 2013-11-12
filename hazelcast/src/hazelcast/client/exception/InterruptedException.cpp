@@ -9,16 +9,16 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            InterruptedException::InterruptedException(const std::string& source, const std::string& message)
+            InterruptedException::InterruptedException(const std::string &source, const std::string &message)
             : IException(source, message) {
 
             }
 
-            InterruptedException::~InterruptedException() {
+            InterruptedException::~InterruptedException()  throw() {
 
             }
 
-            char const *InterruptedException::what() const {
+            char const *InterruptedException::what() const throw() {
                 return IException::what();
             }
         }

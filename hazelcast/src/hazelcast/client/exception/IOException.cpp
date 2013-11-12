@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            IOException::IOException(const std::string& source, const std::string& message)
+            IOException::IOException(const std::string &source, const std::string &message)
             : IException(source, message) {
 
             }
@@ -18,7 +18,7 @@ namespace hazelcast {
 
             }
 
-            char const *IOException::what() const {
+            char const *IOException::what() const throw() {
                 return IException::what();
             }
         }

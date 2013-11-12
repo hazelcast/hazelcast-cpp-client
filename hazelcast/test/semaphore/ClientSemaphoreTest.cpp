@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientSemaphoreTest::ClientSemaphoreTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientSemaphoreTest::ClientSemaphoreTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
@@ -42,12 +42,12 @@ namespace hazelcast {
 
             void ClientSemaphoreTest::beforeTest() {
                 s->reducePermits(100);
-                s->init(10);
+                s->release(10);
             };
 
             void ClientSemaphoreTest::afterTest() {
                 s->reducePermits(100);
-                s->init(10);
+                s->release(10);
             };
 
             void testAcquireThread(ISemaphore *s, util::CountDownLatch *latch) {

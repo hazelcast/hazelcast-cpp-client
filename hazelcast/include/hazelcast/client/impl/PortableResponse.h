@@ -15,12 +15,12 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class Response : public Portable {
+            class PortableResponse : public Portable {
             public:
 
-                ~Response();
+                ~PortableResponse();
 
-                /* final */ void writePortable(serialization::PortableWriter& writer) const;
+                /* final */ void writePortable(serialization::PortableWriter &writer) const;
             };
         }
     }

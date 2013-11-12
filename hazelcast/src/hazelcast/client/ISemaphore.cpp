@@ -5,28 +5,21 @@
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
-#include "hazelcast/client/semaphore/DestroyRequest.h"
 #include "hazelcast/client/exception/InterruptedException.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 
 namespace hazelcast {
     namespace client {
 
-        ISemaphore::ISemaphore() {
+        ISemaphore::ISemaphore(const std::string &name, spi::ClientContext *context)
+        :DistributedObject("hz:impl:semaphoreService", name, context)
+        , key(context->getSerializationService().toData<std::string>(&name)) {
 
         };
-
-        void ISemaphore::init(const std::string& instanceName, spi::ClientContext *clientContext) {
-            this->context = clientContext;
-            this->instanceName = instanceName;
-            key = context->getSerializationService().toData<std::string>(&instanceName);
-        };
-
 
         bool ISemaphore::init(int permits) {
             checkNegative(permits);
-            semaphore::InitRequest request(instanceName, permits);
+            semaphore::InitRequest request(getName(), permits);
             return invoke<bool>(request);
         };
 
@@ -36,23 +29,23 @@ namespace hazelcast {
 
         void ISemaphore::acquire(int permits) {
             checkNegative(permits);
-            semaphore::AcquireRequest request(instanceName, permits, -1);
+            semaphore::AcquireRequest request(getName(), permits, -1);
             invoke<bool>(request);
         };
 
         int ISemaphore::availablePermits() {
-            semaphore::AvailableRequest request(instanceName);
+            semaphore::AvailableRequest request(getName());
             return invoke<int>(request);
         };
 
         int ISemaphore::drainPermits() {
-            semaphore::DrainRequest request(instanceName);
+            semaphore::DrainRequest request(getName());
             return invoke<int>(request);
         };
 
         void ISemaphore::reducePermits(int reduction) {
             checkNegative(reduction);
-            semaphore::ReduceRequest request(instanceName, reduction);
+            semaphore::ReduceRequest request(getName(), reduction);
             invoke<bool>(request);
         };
 
@@ -61,7 +54,7 @@ namespace hazelcast {
         };
 
         void ISemaphore::release(int permits) {
-            semaphore::ReleaseRequest request(instanceName, permits);
+            semaphore::ReleaseRequest request(getName(), permits);
             invoke<bool>(request);
         };
 
@@ -73,7 +66,7 @@ namespace hazelcast {
             checkNegative(permits);
             try {
                 return tryAcquire(permits, 0);
-            } catch (exception::InterruptedException & e) {
+            } catch (exception::InterruptedException &e) {
                 return false;
             }
         };
@@ -84,7 +77,7 @@ namespace hazelcast {
 
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             checkNegative(permits);
-            semaphore::AcquireRequest request(instanceName, permits, timeoutInMillis);
+            semaphore::AcquireRequest request(getName(), permits, timeoutInMillis);
             return invoke<bool>(request);;
         };
 
@@ -94,10 +87,7 @@ namespace hazelcast {
             }
         };
 
-        void ISemaphore::destroy() {
-            semaphore::DestroyRequest request(instanceName);
-            invoke<bool>(request);
-            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        void ISemaphore::onDestroy() {
         }
 
 

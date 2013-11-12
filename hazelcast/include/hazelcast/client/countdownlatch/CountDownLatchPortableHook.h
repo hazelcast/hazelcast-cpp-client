@@ -18,8 +18,7 @@ namespace hazelcast {
                     COUNT_DOWN = 1,
                     AWAIT = 2,
                     SET_COUNT = 3,
-                    GET_COUNT = 4,
-                    DESTROY = 5
+                    GET_COUNT = 4
                 };
             };
         }

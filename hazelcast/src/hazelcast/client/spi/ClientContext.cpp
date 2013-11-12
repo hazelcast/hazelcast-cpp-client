@@ -12,49 +12,44 @@ using namespace hazelcast::client;
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext(HazelcastClient& hazelcastClient)
+            ClientContext::ClientContext(HazelcastClient &hazelcastClient)
             : hazelcastClient(hazelcastClient) {
 
             };
 
-            serialization::SerializationService& ClientContext::getSerializationService() {
+            serialization::SerializationService &ClientContext::getSerializationService() {
                 return hazelcastClient.getSerializationService();
             };
 
 
-            ClusterService & ClientContext::getClusterService() {
+            ClusterService &ClientContext::getClusterService() {
                 return hazelcastClient.getClusterService();
             };
 
-            InvocationService & ClientContext::getInvocationService() {
+            InvocationService &ClientContext::getInvocationService() {
                 return hazelcastClient.getInvocationService();
             };
 
-            ClientConfig& ClientContext::getClientConfig() {
+            ClientConfig &ClientContext::getClientConfig() {
                 return hazelcastClient.getClientConfig();
             };
 
-            PartitionService & ClientContext::getPartitionService() {
+            PartitionService &ClientContext::getPartitionService() {
                 return hazelcastClient.getPartitionService();
             };
 
 
-            LifecycleService & ClientContext::getLifecycleService() {
+            LifecycleService &ClientContext::getLifecycleService() {
                 return hazelcastClient.getLifecycleService();
             };
 
-            ServerListenerService& ClientContext::getServerListenerService() {
+            ServerListenerService &ClientContext::getServerListenerService() {
                 return hazelcastClient.getServerListenerService();
             };
 
-            connection::ConnectionManager & ClientContext::getConnectionManager() {
+            connection::ConnectionManager &ClientContext::getConnectionManager() {
                 return hazelcastClient.getConnectionManager();
             };
-
-            DistributedObjectListenerService& ClientContext::getDistributedObjectListenerService() {
-                return hazelcastClient.getDistributedObjectListenerService();
-            }
-
 
         }
 

@@ -7,19 +7,19 @@
 #ifndef HAZELCAST_TxnMultiMapRequest
 #define HAZELCAST_TxnMultiMapRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class TxnMultiMapRequest : public impl::Request {
+            class TxnMultiMapRequest : public impl::PortableRequest {
             public:
-                TxnMultiMapRequest(const std::string& name);
+                TxnMultiMapRequest(const std::string &name);
 
                 int getFactoryId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

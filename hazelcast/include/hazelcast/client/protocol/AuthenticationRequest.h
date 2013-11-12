@@ -18,6 +18,8 @@ namespace hazelcast {
         namespace protocol {
             class AuthenticationRequest : public Portable {
             public:
+                AuthenticationRequest();
+
                 AuthenticationRequest(Credentials credential);
 
                 void setPrincipal(Principal *principal);
@@ -30,9 +32,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
             private:
                 Credentials credentials;

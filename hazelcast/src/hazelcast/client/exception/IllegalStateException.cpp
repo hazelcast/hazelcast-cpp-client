@@ -8,12 +8,12 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            IllegalStateException::IllegalStateException(const std::string& source, const std::string& message)
+            IllegalStateException::IllegalStateException(const std::string &source, const std::string &message)
             : IException(source, message) {
 
             }
 
-            IllegalStateException::~IllegalStateException() {
+            IllegalStateException::~IllegalStateException()  throw() {
 
             }
 

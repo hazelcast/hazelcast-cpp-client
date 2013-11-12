@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_KeyBasedRequest
 #define HAZELCAST_KeyBasedRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,17 +17,17 @@ namespace hazelcast {
         }
         namespace multimap {
 
-            class KeyBasedRequest : public impl::Request {
+            class KeyBasedRequest : public impl::PortableRequest {
             public:
-                KeyBasedRequest(const std::string& name, const serialization::Data& key);
+                KeyBasedRequest(const std::string &name, const serialization::Data &key);
 
                 virtual int getFactoryId() const;
 
-                virtual void writePortable(serialization::PortableWriter& writer) const;
+                virtual void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;
-                const serialization::Data& key;
+                const serialization::Data &key;
 
             };
         }

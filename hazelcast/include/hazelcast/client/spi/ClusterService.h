@@ -16,6 +16,7 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicPointer.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <set>
@@ -35,7 +36,7 @@ namespace hazelcast {
 
                 template< typename Response, typename Request >
                 Response sendAndReceive(const Request& object) {
-                    while (true) {
+                    while (active) {
                         connection::Connection *connection = NULL;
                         try {
                             connection = getRandomConnection();
@@ -62,11 +63,12 @@ namespace hazelcast {
                             throw e;
                         }
                     }
+                    throw exception::InstanceNotActiveException("ClusterService:: sendAndReceive(const Request& object) ", "Instance is not active!!");
                 };
 
                 template< typename Response, typename Request >
                 Response sendAndReceive(const Address& address, const Request& object) {
-                    while (true) {
+                    while (active) {
                         connection::Connection *connection = NULL;
                         try {
                             connection = getConnection(address);
@@ -82,7 +84,10 @@ namespace hazelcast {
                                 delete connection;
                             }
                             if (redoOperation || util::isRetryable(object)) {
-                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
+                                std::cerr << "Retrying ";
+                                if (connection != NULL)
+                                    std::cerr << ": last-connection" << *connection;
+                                std::cerr << ", last-error: " << std::string(e.what()) << std::endl;
                                 beforeRetry();
                                 continue;
                             }
@@ -92,6 +97,7 @@ namespace hazelcast {
                             throw e;
                         }
                     }
+                    throw exception::InstanceNotActiveException("ClusterService::sendAndReceive(const Address& address, const Request& object)", "Instance is not active!!");
 
                 };
 
@@ -99,6 +105,9 @@ namespace hazelcast {
                 void sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
+                        if (!active) {
+                            throw exception::InstanceNotActiveException("ClusterService:: sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
+                        }
                         connection::Connection *connection = NULL;
                         try {
                             connection = getConnection(address);
@@ -134,6 +143,9 @@ namespace hazelcast {
                 void sendAndHandle(const Request& object, ResponseHandler&  handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
+                        if (!active) {
+                            throw exception::InstanceNotActiveException("ClusterService::sendAndHandle(const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
+                        }
                         connection::Connection *connection = NULL;
                         try {
                             connection = getRandomConnection();
@@ -206,6 +218,7 @@ namespace hazelcast {
                 boost::mutex listenerLock;
                 boost::mutex membersLock;
                 const bool redoOperation;
+                boost::atomic<bool> active;
 
                 void fireMembershipEvent(connection::MembershipEvent& membershipEvent);
 

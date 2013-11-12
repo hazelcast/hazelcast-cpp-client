@@ -23,22 +23,21 @@ namespace hazelcast {
                     COLLECTION_CLEAR = 7,
                     COLLECTION_GET_ALL = 8,
                     COLLECTION_ADD_LISTENER = 9,
-                    COLLECTION_DESTROY = 10,
-                    LIST_ADD_ALL = 11,
-                    LIST_GET = 12,
-                    LIST_SET = 13,
-                    LIST_ADD = 14,
-                    LIST_REMOVE = 15,
-                    LIST_INDEX_OF = 16,
-                    LIST_SUB = 17,
+                    LIST_ADD_ALL = 10,
+                    LIST_GET = 11,
+                    LIST_SET = 12,
+                    LIST_ADD = 13,
+                    LIST_REMOVE = 14,
+                    LIST_INDEX_OF = 15,
+                    LIST_SUB = 16,
 
-                    TXN_LIST_ADD = 18,
-                    TXN_LIST_REMOVE = 19,
-                    TXN_LIST_SIZE = 20,
+                    TXN_LIST_ADD = 17,
+                    TXN_LIST_REMOVE = 18,
+                    TXN_LIST_SIZE = 19,
 
-                    TXN_SET_ADD = 21,
-                    TXN_SET_REMOVE = 22,
-                    TXN_SET_SIZE = 23
+                    TXN_SET_ADD = 20,
+                    TXN_SET_REMOVE = 21,
+                    TXN_SET_SIZE = 22
                 };
             }
 

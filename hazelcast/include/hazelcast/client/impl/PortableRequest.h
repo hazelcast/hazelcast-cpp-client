@@ -14,12 +14,12 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class Request : public Portable {
+            class PortableRequest : public Portable {
             public:
 
-                ~Request();
+                ~PortableRequest();
 
-                /* final */ void readPortable(serialization::PortableReader& reader);
+                /* final */ void readPortable(serialization::PortableReader &reader);
             };
         }
     }

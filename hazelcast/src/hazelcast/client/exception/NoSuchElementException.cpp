@@ -8,16 +8,16 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            NoSuchElementException::NoSuchElementException(const std::string& source, const std::string& message)
+            NoSuchElementException::NoSuchElementException(const std::string &source, const std::string &message)
             : IException(source, message) {
 
             }
 
-            NoSuchElementException::~NoSuchElementException() {
+            NoSuchElementException::~NoSuchElementException()  throw() {
 
             }
 
-            char const *NoSuchElementException::what() const {
+            char const *NoSuchElementException::what() const throw() {
                 return IException::what();
             }
         }

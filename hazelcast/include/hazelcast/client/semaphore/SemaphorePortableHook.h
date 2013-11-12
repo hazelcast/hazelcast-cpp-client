@@ -21,8 +21,7 @@ namespace hazelcast {
                     DRAIN = 3,
                     INIT = 4,
                     REDUCE = 5,
-                    RELEASE = 6,
-                    DESTROY = 7
+                    RELEASE = 6
                 };
             };
         }

@@ -9,17 +9,17 @@
 
 #include "Address.h"
 #include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
 #include "hazelcast/client/executor/DataSerializableHook.h"
+#include "IdentifiedDataSerializableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace executor {
             template <typename Callable>
-            class LocalTargetCallableRequest : public IdentifiedDataSerializable {
+            class LocalTargetCallableRequest : public impl::IdentifiedDataSerializableRequest {
             public:
-                LocalTargetCallableRequest(std::string& name, Callable& callable)
+                LocalTargetCallableRequest(const std::string &name, Callable &callable)
                 :name(name)
                 , callable(callable) {
 
@@ -33,19 +33,14 @@ namespace hazelcast {
                     return DataSerializableHook::LOCAL_TARGET_CALLABLE_REQUEST;
                 }
 
-                void writeData(serialization::ObjectDataOutput & writer) const {
+                void writeData(serialization::ObjectDataOutput &writer) const {
                     writer.writeUTF(name);
                     writer.writeObject<Callable>(&callable);
                 }
 
-                void readData(serialization::ObjectDataInput & reader) {
-                    name = reader.readUTF();
-                    callable = reader.readObject<Callable>();
-                }
-
             private:
-                std::string &name;
-                Callable& callable;
+                const std::string &name;
+                Callable &callable;
             };
         }
     }

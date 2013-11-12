@@ -15,14 +15,13 @@
 #include "multimap/GetAllRequest.h"
 #include "multimap/MultiMapLockRequest.h"
 #include "multimap/MultiMapUnlockRequest.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 #include "PortableCollection.h"
-#include "MultiMapDestroyRequest.h"
 #include "MultiMapIsLockedRequest.h"
 #include "PortableEntrySetResponse.h"
 #include "ClientContext.h"
 #include "EntryEventHandler.h"
 #include "ServerListenerService.h"
+#include "proxy/DistributedObject.h"
 #include <string>
 #include <map>
 #include <set>
@@ -34,7 +33,7 @@ namespace hazelcast {
 
 
         template<typename K, typename V>
-        class MultiMap {
+        class MultiMap : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:
@@ -53,10 +52,10 @@ namespace hazelcast {
              * @return true if size of the multimap is increased, false if the multimap
              *         already contains the key-value pair.
              */
-            bool put(const K& key, const V& value) {
+            bool put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::PutRequest request(name, keyData, valueData, -1, util::getThreadId());
+                multimap::PutRequest request(getName(), keyData, valueData, -1, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
@@ -77,9 +76,9 @@ namespace hazelcast {
              * @param key the key whose associated values are to be returned
              * @return the multimap of the values associated with the key.
              */
-            std::vector<V> get(const K& key) {
+            std::vector<V> get(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::GetAllRequest request(name, keyData);
+                multimap::GetAllRequest request(getName(), keyData);
                 return toObjectCollection(invoke < impl::PortableCollection >(request, keyData));
             };
 
@@ -95,10 +94,10 @@ namespace hazelcast {
              * @param value the value of the entry to remove
              * @return true if the size of the multimap changed after the remove operation, false otherwise.
              */
-            bool remove(const K& key, const V& value) {
+            bool remove(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::RemoveRequest request(name, keyData, valueData, util::getThreadId());
+                multimap::RemoveRequest request(getName(), keyData, valueData, util::getThreadId());
                 return invoke<bool>(request, keyData);
             };
 
@@ -120,9 +119,9 @@ namespace hazelcast {
              * @return the multimap of removed values associated with the given key. Returned multimap
              *         might be modifiable but it has no effect on the multimap
              */
-            std::vector<V> remove(const K& key) {
+            std::vector<V> remove(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::RemoveAllRequest request(name, keyData, util::getThreadId());
+                multimap::RemoveAllRequest request(getName(), keyData, util::getThreadId());
                 return toObjectCollection(invoke < impl::PortableCollection >(request, keyData));
             };
 
@@ -137,7 +136,7 @@ namespace hazelcast {
              *         but it has no effect on the multimap
              */
             std::vector<K> keySet() {
-                multimap::KeySetRequest request(name);
+                multimap::KeySetRequest request(getName());
                 return toObjectCollection(invoke < impl::PortableCollection >(request));
             };
 
@@ -152,7 +151,7 @@ namespace hazelcast {
              *         but it has no effect on the multimap
              */
             std::vector<V> values() {
-                multimap::ValuesRequest request(name);
+                multimap::ValuesRequest request(getName());
                 return toObjectCollection(invoke < impl::PortableCollection >(request));
             };
 
@@ -167,9 +166,9 @@ namespace hazelcast {
              *         but it has no effect on the multimap
              */
             std::vector<std::pair<K, V> > entrySet() {
-                multimap::EntrySetRequest request(name);
+                multimap::EntrySetRequest request(getName());
                 multimap::PortableEntrySetResponse result = invoke < multimap::PortableEntrySetResponse >(request);
-                std::vector < std::pair<serialization::Data, serialization::Data> > const & dataEntrySet = result.getEntrySet();
+                std::vector < std::pair<serialization::Data, serialization::Data> > const &dataEntrySet = result.getEntrySet();
                 std::vector<std::pair<K, V> > entrySet(dataEntrySet.size());
                 for (int i = 0; i < dataEntrySet.size(); i++) {
                     entrySet[i].first = toObject<K>(dataEntrySet[i].first);
@@ -191,9 +190,9 @@ namespace hazelcast {
              * @param key the key whose existence is checked.
              * @return true if the multimap contains an entry with the key, false otherwise.
              */
-            bool containsKey(const K& key) {
+            bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::ContainsEntryRequest request (keyData, name);
+                multimap::ContainsEntryRequest request (keyData, getName());
                 return invoke<bool>(request, keyData);
             };
 
@@ -204,9 +203,9 @@ namespace hazelcast {
              * @param value the value whose existence is checked.
              * @return true if the multimap contains an entry with the value, false otherwise.
              */
-            bool containsValue(const V& value) {
+            bool containsValue(const V &value) {
                 serialization::Data valueData = toData(value);
-                multimap::ContainsEntryRequest request (name, valueData);
+                multimap::ContainsEntryRequest request (getName(), valueData);
                 return invoke<bool>(request, valueData);
             };
 
@@ -221,10 +220,10 @@ namespace hazelcast {
              * @param value the value whose existence is checked.
              * @return true if the multimap contains the key-value pair, false otherwise.
              */
-            bool containsEntry(const K& key, const V& value) {
+            bool containsEntry(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::ContainsEntryRequest request (keyData, name, valueData);
+                multimap::ContainsEntryRequest request (keyData, getName(), valueData);
                 return invoke<bool>(request, keyData);
             };
 
@@ -234,7 +233,7 @@ namespace hazelcast {
              * @return the number of key-value pairs in the multimap.
              */
             int size() {
-                multimap::SizeRequest request(name);
+                multimap::SizeRequest request(getName());
                 return invoke<int>(request);
             };
 
@@ -242,7 +241,7 @@ namespace hazelcast {
              * Clears the multimap. Removes all key-value pairs.
              */
             void clear() {
-                multimap::ClearRequest request(name);
+                multimap::ClearRequest request(getName());
                 invoke<bool>(request);
             };
 
@@ -259,9 +258,9 @@ namespace hazelcast {
              * @param key the key whose values count are to be returned
              * @return number of values matching to given key in the multimap.
              */
-            int valueCount(const K& key) {
+            int valueCount(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::CountRequest request(name, keyData);
+                multimap::CountRequest request(getName(), keyData);
                 return invoke<int>(request, keyData);
             };
 
@@ -275,10 +274,10 @@ namespace hazelcast {
              * @return returns registration id.
              */
             template < typename L>
-            long addEntryListener(L& listener, bool includeValue) {
-                multimap::AddEntryListenerRequest request(name, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
+            long addEntryListener(L &listener, bool includeValue) {
+                multimap::AddEntryListenerRequest request(getName(), includeValue);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
             };
 
             /**
@@ -300,12 +299,12 @@ namespace hazelcast {
              * @return returns registration id.
              */
             template < typename L>
-            long addEntryListener(L& listener, const K& key, bool includeValue) {
+            long addEntryListener(L &listener, const K &key, bool includeValue) {
                 serialization::Data keyData = toData(key);
                 serialization::Data cloneData = keyData.clone();
-                multimap::AddEntryListenerRequest request(name, keyData, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(name, context->getClusterService(), context->getSerializationService(), listener, includeValue);
-                return context->getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
+                multimap::AddEntryListenerRequest request(getName(), keyData, includeValue);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
             };
 
             /**
@@ -317,7 +316,7 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeEntryListener(long registrationId) {
-                return context->getServerListenerService().stopListening(registrationId);
+                return getContext().getServerListenerService().stopListening(registrationId);
             };
 
             /**
@@ -341,9 +340,9 @@ namespace hazelcast {
              *
              * @param key key to lock.
              */
-            void lock(const K& key) {
+            void lock(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId());
+                multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -370,9 +369,9 @@ namespace hazelcast {
             * @param leaseTime time to wait before releasing the lock.
             * @param timeUnit unit of time to specify lease time.
             */
-            void lock(const K& key, long leaseTimeInMillis) {
+            void lock(const K &key, long leaseTimeInMillis) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId(), leaseTimeInMillis, -1);
+                multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId(), leaseTimeInMillis, -1);
                 invoke<bool>(request, keyData);
             }
 
@@ -388,9 +387,9 @@ namespace hazelcast {
              * @param key key to lock to be checked.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
              */
-            bool isLocked(const K& key) {
+            bool isLocked(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapIsLockedRequest request(name, keyData);
+                multimap::MultiMapIsLockedRequest request(getName(), keyData);
                 return invoke<bool>(request, keyData);
             }
 
@@ -409,9 +408,9 @@ namespace hazelcast {
              * @param key key to lock.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
              */
-            bool tryLock(const K& key) {
+            bool tryLock(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId(), -1, 0);
+                multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId(), -1, 0);
                 return invoke<bool>(request, keyData);
             };
 
@@ -437,9 +436,9 @@ namespace hazelcast {
              * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
              *         if the waiting time elapsed before the lock was acquired.
              */
-            bool tryLock(const K& key, long timeoutInMillis) {
+            bool tryLock(const K &key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapLockRequest request(name, keyData, util::getThreadId(), -1, timeoutInMillis);
+                multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId(), -1, timeoutInMillis);
                 return invoke<bool>(request, keyData);
             };
 
@@ -456,9 +455,9 @@ namespace hazelcast {
              *
              * @param key key to lock.
              */
-            void unlock(const K& key) {
+            void unlock(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapUnlockRequest request(name, keyData, util::getThreadId());
+                multimap::MultiMapUnlockRequest request(getName(), keyData, util::getThreadId());
                 invoke<bool>(request, keyData);
             };
 
@@ -474,9 +473,9 @@ namespace hazelcast {
             *
             * @param key key to lock.
             */
-            void forceUnlock(const K& key) {
+            void forceUnlock(const K &key) {
                 serialization::Data keyData = toData(key);
-                multimap::MultiMapUnlockRequest request(name, keyData, util::getThreadId(), true);
+                multimap::MultiMapUnlockRequest request(getName(), keyData, util::getThreadId(), true);
                 invoke<bool>(request, keyData);
             }
 
@@ -484,14 +483,11 @@ namespace hazelcast {
             * Destroys this object cluster-wide.
             * Clears and releases all resources for this object.
             */
-            void destroy() {
-                multimap::MultiMapDestroyRequest request (name);
-                invoke<bool>(request);
-                context->getDistributedObjectListenerService().removeDistributedObject(name);
+            void onDestroy() {
             };
         private:
             std::vector<V> toObjectCollection(impl::PortableCollection result) {
-                std::vector<serialization::Data> const & dataCollection = result.getCollection();
+                std::vector<serialization::Data> const &dataCollection = result.getCollection();
                 std::vector<V> multimap(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
                     multimap[i] = toObject<V>(dataCollection[i]);
@@ -501,36 +497,30 @@ namespace hazelcast {
 
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return context->getSerializationService().toData<T>(&object);
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            T toObject(const serialization::Data& data) {
-                return context->getSerializationService().template toObject<T>(data);
+            T toObject(const serialization::Data &data) {
+                return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request, serialization::Data&  keyData) {
-                return context->getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
+            Response invoke(const Request &request, serialization::Data &keyData) {
+                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return context->getInvocationService().template invokeOnRandomTarget<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 
-            MultiMap() {
+            MultiMap(const std::string &instanceName, spi::ClientContext *context)
+            :DistributedObject("hz:impl:multiMapService", instanceName, context) {
 
             };
 
-            void init(const std::string& instanceName, spi::ClientContext *clientContext) {
-                context = clientContext;
-                name = instanceName;
-            };
-
-            std::string name;
-            spi::ClientContext *context;
         };
 
 

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMapRequest
 #define HAZELCAST_TxnMapRequest
 
-#include "Request.h"
+#include "PortableRequest.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -54,25 +54,25 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class TxnMapRequest : public impl::Request {
+            class TxnMapRequest : public impl::PortableRequest {
             public:
                 TxnMapRequest();
 
-                TxnMapRequest(const std::string& name, TxnMapRequestType requestType);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 
-                TxnMapRequest(const std::string& name, TxnMapRequestType requestType, serialization::Data *key);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key);
 
-                TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value);
 
-                TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue);
 
-                TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, const std::string& predicate);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

@@ -20,6 +20,7 @@
 #include "ClientTxnQueueTest.h"
 #include "ClientTxnSetTest.h"
 #include "ClientTxnTest.h"
+#include "ClientMapIssueTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -36,6 +37,8 @@ int main(int argc, char **argv) {
     serializationTest.executeTests();
     ClientMapTest mapTest(factory);
     mapTest.executeTests();
+    ClientMapIssueTest mapIssueTest(factory);
+    mapIssueTest.executeTests();
     ClientMultiMapTest multiMapTest(factory);
     multiMapTest.executeTests();
     ClientQueueTest queueTest(factory);

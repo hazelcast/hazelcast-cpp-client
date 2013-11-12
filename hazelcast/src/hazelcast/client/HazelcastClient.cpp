@@ -8,13 +8,14 @@
 #include "hazelcast/client/IExecutorService.h"
 #include "hazelcast/client/connection/SmartConnectionManager.h"
 #include "hazelcast/client/connection/DummyConnectionManager.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
 namespace hazelcast {
     namespace client {
 
         class HazelcastClient::HazelcastClientImpl {
         public:
-            HazelcastClientImpl(ClientConfig& clientConfig, HazelcastClient& client)
+            HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &client)
             : clientConfig(clientConfig)
             , lifecycleService(client, this->clientConfig)
             , serializationService(0)
@@ -43,13 +44,12 @@ namespace hazelcast {
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
-            spi::DistributedObjectListenerService distributedObjectListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
         };
 
-        HazelcastClient::HazelcastClient(ClientConfig& config)
+        HazelcastClient::HazelcastClient(ClientConfig &config)
         :impl(new HazelcastClientImpl(config, *this)) {
             srand(time(NULL));
             impl->lifecycleService.setStarted();
@@ -58,11 +58,11 @@ namespace hazelcast {
 
         };
 
-        HazelcastClient::HazelcastClient(HazelcastClient const & rhs) {
+        HazelcastClient::HazelcastClient(HazelcastClient const &rhs) {
             //private;
         };
 
-        void HazelcastClient::operator = (const HazelcastClient& rhs) {
+        void HazelcastClient::operator = (const HazelcastClient &rhs) {
             //private
         };
 
@@ -70,92 +70,72 @@ namespace hazelcast {
             delete impl;
         };
 
-        void HazelcastClient::triggerDistributedObjectAdded(const std::string& name) {
-            impl->distributedObjectListenerService.addDistributedObject(name);
-        };
-
-        void HazelcastClient::triggerDistributedObjectRemoved(const std::string& name) {
-            impl->distributedObjectListenerService.removeDistributedObject(name);
-        };
-
-        serialization::SerializationService& HazelcastClient::getSerializationService() {
+        serialization::SerializationService &HazelcastClient::getSerializationService() {
             return impl->serializationService;
         };
 
-        ClientConfig& HazelcastClient::getClientConfig() {
+        ClientConfig &HazelcastClient::getClientConfig() {
             return impl->clientConfig;
         };
 
-        spi::ClientContext & HazelcastClient::getClientContext() {
+        spi::ClientContext &HazelcastClient::getClientContext() {
             return impl->clientContext;
         };
 
-        spi::InvocationService & HazelcastClient::getInvocationService() {
+        spi::InvocationService &HazelcastClient::getInvocationService() {
             return impl->invocationService;
         };
 
-        spi::ClusterService & HazelcastClient::getClusterService() {
+        spi::ClusterService &HazelcastClient::getClusterService() {
             return impl->clusterService;
         };
 
-        spi::PartitionService & HazelcastClient::getPartitionService() {
+        spi::PartitionService &HazelcastClient::getPartitionService() {
             return impl->partitionService;
         };
 
-        spi::LifecycleService & HazelcastClient::getLifecycleService() {
+        spi::LifecycleService &HazelcastClient::getLifecycleService() {
             return impl->lifecycleService;
         };
 
-        spi::ServerListenerService& HazelcastClient::getServerListenerService() {
+        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
             return impl->serverListenerService;
         };
 
-        spi::DistributedObjectListenerService& HazelcastClient::getDistributedObjectListenerService() {
-            return impl->distributedObjectListenerService;
-        };
-
-        connection::ConnectionManager & HazelcastClient::getConnectionManager() {
+        connection::ConnectionManager &HazelcastClient::getConnectionManager() {
             return *(impl->connectionManager);
         };
 
-        IdGenerator HazelcastClient::getIdGenerator(const std::string& instanceName) {
+        IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
             return getDistributedObject< IdGenerator >(instanceName);
         };
 
-        IAtomicLong HazelcastClient::getIAtomicLong(const std::string& instanceName) {
+        IAtomicLong HazelcastClient::getIAtomicLong(const std::string &instanceName) {
             return getDistributedObject< IAtomicLong >(instanceName);
         };
 
-        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string& instanceName) {
+        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &instanceName) {
             return getDistributedObject< ICountDownLatch >(instanceName);
         };
 
-        ISemaphore HazelcastClient::getISemaphore(const std::string& instanceName) {
+        ISemaphore HazelcastClient::getISemaphore(const std::string &instanceName) {
             return getDistributedObject< ISemaphore >(instanceName);
         };
 
-        ILock HazelcastClient::getILock(const std::string& instanceName) {
+        ILock HazelcastClient::getILock(const std::string &instanceName) {
             return getDistributedObject< ILock >(instanceName);
         };
 
-        IExecutorService HazelcastClient::getExecutorService(const std::string& instanceName) {
+        IExecutorService HazelcastClient::getExecutorService(const std::string &instanceName) {
             return getDistributedObject< IExecutorService >(instanceName);
         }
-
-        void HazelcastClient::addDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
-            impl->distributedObjectListenerService.addDistributedObjectListener(distributedObjectListener);
-        };
-
-        bool HazelcastClient::removeDistributedObjectListener(DistributedObjectListener *distributedObjectListener) {
-            return impl->distributedObjectListenerService.removeDistributedObjectListener(distributedObjectListener);
-        };
 
         TransactionContext HazelcastClient::newTransactionContext() {
             TransactionOptions defaultOptions;
             return newTransactionContext(defaultOptions);
         }
 
-        TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions& options) {
+        TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
             return TransactionContext(impl->clusterService, impl->serializationService, *(impl->connectionManager), options);
         }
 

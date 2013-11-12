@@ -3,47 +3,39 @@
 #include "hazelcast/client/countdownlatch/CountDownRequest.h"
 #include "hazelcast/client/countdownlatch/GetCountRequest.h"
 #include "hazelcast/client/countdownlatch/SetCountRequest.h"
-#include "hazelcast/client/countdownlatch/DestroyRequest.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch() {
+        ICountDownLatch::ICountDownLatch(const std::string &instanceName, spi::ClientContext *context)
+        :DistributedObject("hz:impl:atomicLongService", instanceName, context)
+        , key(context->getSerializationService().toData<std::string>(&instanceName)) {
 
-        };
-
-        void ICountDownLatch::init(const std::string& instanceName, spi::ClientContext *clientContext) {
-            this->context = clientContext;
-            this->instanceName = instanceName;
-            key = context->getSerializationService().toData<std::string>(&instanceName);
         };
 
         bool ICountDownLatch::await(long timeoutInMillis) {
-            countdownlatch::AwaitRequest request(instanceName, timeoutInMillis);
+            countdownlatch::AwaitRequest request(getName(), timeoutInMillis);
             return invoke<bool>(request);
         };
 
         void ICountDownLatch::countDown() {
-            countdownlatch::CountDownRequest request(instanceName);
+            countdownlatch::CountDownRequest request(getName());
             invoke<bool>(request);
         };
 
         int ICountDownLatch::getCount() {
-            countdownlatch::GetCountRequest request(instanceName);
+            countdownlatch::GetCountRequest request(getName());
             return invoke<int>(request);
 
         };
 
         bool ICountDownLatch::trySetCount(int count) {
-            countdownlatch::SetCountRequest request(instanceName, count);
+            countdownlatch::SetCountRequest request(getName(), count);
             return invoke<bool>(request);
         };
 
-        void ICountDownLatch::destroy() {
-            countdownlatch::DestroyRequest request(instanceName);
-            invoke<bool>(request);
-            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        void ICountDownLatch::onDestroy() {
+
         };
     }
 }

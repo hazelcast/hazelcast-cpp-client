@@ -4,34 +4,23 @@
 #include "hazelcast/client/atomiclong/GetAndAddRequest.h"
 #include "hazelcast/client/atomiclong/GetAndSetRequest.h"
 #include "hazelcast/client/atomiclong/SetRequest.h"
-#include "hazelcast/client/atomiclong/DestroyRequest.h"
-#include "hazelcast/client/spi/DistributedObjectListenerService.h"
 
 namespace hazelcast {
     namespace client {
 
 
-        IAtomicLong::IAtomicLong() {
-
-        };
-
-        void IAtomicLong::init(const std::string& instanceName, spi::ClientContext *clientContext) {
-            this->context = clientContext;
-            this->instanceName = instanceName;
-            key = context->getSerializationService().toData<std::string>(&instanceName);
-        };
-
-        std::string IAtomicLong::getName() const {
-            return instanceName;
+        IAtomicLong::IAtomicLong(const std::string &instanceName, spi::ClientContext *context)
+        :DistributedObject("hz:impl:atomicLongService", instanceName, context)
+        , key(context->getSerializationService().toData<std::string>(&instanceName)) {
         };
 
         long IAtomicLong::addAndGet(long delta) {
-            atomiclong::AddAndGetRequest request(instanceName, delta);
+            atomiclong::AddAndGetRequest request(getName(), delta);
             return invoke<long>(request);
         };
 
         bool IAtomicLong::compareAndSet(long expect, long update) {
-            atomiclong::CompareAndSetRequest request(instanceName, expect, update);
+            atomiclong::CompareAndSetRequest request(getName(), expect, update);
             return invoke<bool>(request);
         };
 
@@ -44,12 +33,12 @@ namespace hazelcast {
         };
 
         long IAtomicLong::getAndAdd(long delta) {
-            atomiclong::GetAndAddRequest request(instanceName, delta);
+            atomiclong::GetAndAddRequest request(getName(), delta);
             return invoke<long>(request);
         };
 
         long IAtomicLong::getAndSet(long newValue) {
-            atomiclong::GetAndSetRequest request(instanceName, newValue);
+            atomiclong::GetAndSetRequest request(getName(), newValue);
             return invoke<long>(request);
         };
 
@@ -62,14 +51,11 @@ namespace hazelcast {
         };
 
         void IAtomicLong::set(long newValue) {
-            atomiclong::SetRequest request(instanceName, newValue);
+            atomiclong::SetRequest request(getName(), newValue);
             invoke<bool>(request);
         };
 
-        void IAtomicLong::destroy() {
-            atomiclong::DestroyRequest request(instanceName);
-            invoke<bool>(request);
-            context->getDistributedObjectListenerService().removeDistributedObject(instanceName);
+        void IAtomicLong::onDestroy() {
         };
 
 

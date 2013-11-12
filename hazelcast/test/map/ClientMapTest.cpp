@@ -6,6 +6,7 @@
 #include "ClientMapTest.h"
 #include "HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
+#include "Employee.h"
 
 
 namespace hazelcast {
@@ -13,7 +14,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientMapTest::ClientMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientMapTest::ClientMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
@@ -47,6 +48,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
                 addTest(&ClientMapTest::testValues, "testValues");
                 addTest(&ClientMapTest::testReplace, "testReplace");
+                addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
                 addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
 
@@ -80,24 +82,24 @@ namespace hazelcast {
 
             class MyListener {
             public:
-                MyListener(util::CountDownLatch& latch, util::CountDownLatch& nullLatch)
+                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
                 :latch(latch)
                 , nullLatch(nullLatch) {
                 };
 
-                void entryAdded(impl::EntryEvent<std::string, std::string>& event) {
+                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
                     latch.countDown();
                 };
 
-                void entryRemoved(impl::EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
                 }
 
-                void entryUpdated(impl::EntryEvent<std::string, std::string>& event) {
+                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
                 }
 
-                void entryEvicted(impl::EntryEvent<std::string, std::string>& event) {
-                    const std::string & value = event.getValue();
-                    const std::string & oldValue = event.getOldValue();
+                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
+                    const std::string &value = event.getValue();
+                    const std::string &oldValue = event.getOldValue();
                     if (value.compare("")) {
                         nullLatch.countDown();
                     }
@@ -108,8 +110,8 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& nullLatch;
-                util::CountDownLatch& latch;
+                util::CountDownLatch &nullLatch;
+                util::CountDownLatch &latch;
             };
 
             void ClientMapTest::testIssue537() {
@@ -226,7 +228,7 @@ namespace hazelcast {
                 Future<string> f = imap->putAsync("key3", "value");
                 FutureStatus status = f.wait_for(0);
                 assertEqual(FutureStatus::TIMEOUT, status);
-                std::string & o = f.get();
+                std::string &o = f.get();
                 assertEqual("value3", o);
                 assertEqual("value", imap->get("key3"));
 
@@ -239,7 +241,7 @@ namespace hazelcast {
                 long id = imap->addEntryListener(listener, true);
 
                 Future<std::string> f1 = imap->putAsync("key", std::string("value1"), 3 * 1000);
-                std::string & f1Val = f1.get();
+                std::string &f1Val = f1.get();
                 assertEqual("", f1Val);
                 std::string actual = imap->get("key");
                 assertEqual("value1", actual);
@@ -257,7 +259,7 @@ namespace hazelcast {
                 Future<string> f = imap->removeAsync("key4");
                 FutureStatus status = f.wait_for(0);
                 assertEqual(FutureStatus::TIMEOUT, status);
-                std::string & o = f.get();
+                std::string &o = f.get();
                 assertEqual("value4", o);
                 assertEqual(9, imap->size());
 
@@ -378,7 +380,7 @@ namespace hazelcast {
                     if (imap->tryLock("key1", 5 * 1000)) {
                         latch->countDown();
                     }
-                } catch (exception::InterruptedException& e) {
+                } catch (exception::InterruptedException &e) {
                     std::cout << e.what() << std::endl;
                 }
             }
@@ -397,7 +399,7 @@ namespace hazelcast {
                     if (!imap->tryLock("key1", 2 * 1000)) {
                         latch->countDown();
                     }
-                } catch (exception::InterruptedException& e) {
+                } catch (exception::InterruptedException &e) {
                     std::cout << e.what() << std::endl;
                 } catch(...){
                     std::cout << "" << std::endl;
@@ -409,7 +411,7 @@ namespace hazelcast {
                     if (imap->tryLock("key1", 20 * 1000)) {
                         latch->countDown();
                     }
-                } catch (exception::InterruptedException& e) {
+                } catch (exception::InterruptedException &e) {
                     std::cout << e.what() << std::endl;
                 } catch(...){
                     std::cout << "" << std::endl;
@@ -481,30 +483,72 @@ namespace hazelcast {
                 assertEqual("value3", imap->get("key1"));
             }
 
+            class SampleEntryListenerForPortableKey {
+            public:
+                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, boost::atomic<int> &atomicInteger)
+                :latch(latch), atomicInteger(atomicInteger) {
+
+                }
+
+                void entryAdded(impl::EntryEvent<Employee, int> &event) {
+                    atomicInteger++;
+                    latch.countDown();
+                }
+
+                void entryRemoved(impl::EntryEvent<Employee, int> &event) {
+                }
+
+                void entryUpdated(impl::EntryEvent<Employee, int> &event) {
+                }
+
+                void entryEvicted(impl::EntryEvent<Employee, int> &event) {
+                }
+
+            private:
+                util::CountDownLatch &latch;
+                boost::atomic<int> &atomicInteger;
+            };
+
+
+            void ClientMapTest::testPredicateListenerWithPortableKey() {
+                IMap<Employee, int> tradeMap = client->getMap<Employee, int>("tradeMap");
+                util::CountDownLatch countDownLatch(1);
+                boost::atomic<int> atomicInteger(0);
+                SampleEntryListenerForPortableKey listener(countDownLatch, atomicInteger);
+                Employee key("a", 1);
+                long id = tradeMap.addEntryListener(listener, key, true);
+                Employee key2("a", 2);
+                tradeMap.put(key2, 1);
+                assertFalse(countDownLatch.await(5 * 1000));
+                assertEqual(0, atomicInteger);
+
+                tradeMap.removeEntryListener(id);
+            }
+
             class SampleEntryListener {
             public:
-                SampleEntryListener(util::CountDownLatch& addLatch, util::CountDownLatch& removeLatch)
+                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch)
                 :addLatch(addLatch)
                 , removeLatch(removeLatch) {
                 };
 
-                void entryAdded(impl::EntryEvent<std::string, std::string>& event) {
+                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
                 };
 
-                void entryRemoved(impl::EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
                     removeLatch.countDown();
                 }
 
-                void entryUpdated(impl::EntryEvent<std::string, std::string>& event) {
+                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
                 }
 
-                void entryEvicted(impl::EntryEvent<std::string, std::string>& event) {
+                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
                 }
 
             private:
-                util::CountDownLatch& addLatch;
-                util::CountDownLatch& removeLatch;
+                util::CountDownLatch &addLatch;
+                util::CountDownLatch &removeLatch;
             };
 
             void ClientMapTest::testListener() {

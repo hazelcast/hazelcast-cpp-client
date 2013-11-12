@@ -13,6 +13,11 @@ namespace hazelcast {
                 int const HAZELCAST_SERVER_ERROR_ID = 1;
                 int const AUTHENTICATION_REQUEST_ID = 2;
                 int const PRINCIPAL_ID = 3;
+                int const GET_DISTRIBUTED_OBJECT_INFO = 4;
+                int const DISTRIBUTED_OBJECT_INFO = 6;
+                int const CREATE_PROXY = 7;
+                int const DESTROY_PROXY = 8;
+                int const LISTENER = 9;
 
                 int const PARTITION_DS_FACTORY = -2;
                 int const GET_PARTITIONS = 1;

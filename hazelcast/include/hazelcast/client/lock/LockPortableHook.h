@@ -18,7 +18,6 @@ namespace hazelcast {
                     LOCK = 1,
                     UNLOCK = 2,
                     IS_LOCKED = 3,
-                    DESTROY = 4,
                     GET_LOCK_COUNT = 5,
                     GET_REMAINING_LEASE = 6
                 };

@@ -17,53 +17,44 @@
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class TransactionalSet {
+        class TransactionalSet : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
-            bool add(const E& e) {
+            bool add(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetAddRequest request(name, &data);
+                collection::TxnSetAddRequest request(getName(), &data);
                 return invoke<bool>(request);
             }
 
-            bool remove(const E& e) {
+            bool remove(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetRemoveRequest request(name, &data);
+                collection::TxnSetRemoveRequest request(getName(), &data);
                 return invoke<bool>(request);
             }
 
             int size() {
-                collection::TxnSetSizeRequest request(name);
+                collection::TxnSetSizeRequest request(getName());
                 return invoke<int>(request);
             }
 
-            std::string getName() {
-                return name;
-            }
-
-            void destroy() {
-                collection::CollectionDestroyRequest request(name);
-                invoke<bool>(request);
+            void onDestroy() {
             }
 
         private:
-            txn::TransactionProxy *transaction;
-            std::string name;
+            TransactionalSet(const std::string &name, txn::TransactionProxy *transactionProxy)
+            :TransactionalObject("hz:impl:setService", name, transactionProxy) {
 
-            void init(const std::string& name, txn::TransactionProxy *transactionProxy) {
-                this->transaction = transactionProxy;
-                this->name = name;
-            };
+            }
 
             template<typename T>
-            serialization::Data toData(const T& object) {
-                return transaction->getSerializationService().toData<T>(&object);
+            serialization::Data toData(const T &object) {
+                return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request& request) {
-                return transaction->sendAndReceive<Response>(request);
+            Response invoke(const Request &request) {
+                return getContext().template sendAndReceive<Response>(request);
             };
 
         };

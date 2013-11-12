@@ -14,22 +14,22 @@ namespace hazelcast {
         namespace map {
 
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue)
             :name(name), includeValue(includeValue), hasKey(false), hasPredicate(false) {
 
             }
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key, const std::string& sql)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key, const std::string &sql)
             :name(name), includeValue(includeValue), key(key), sql(sql), hasKey(true), hasPredicate(true) {
 
             };
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue, const std::string& sql)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const std::string &sql)
             :name(name), includeValue(includeValue), sql(sql), hasKey(false), hasPredicate(true) {
 
             };
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key)
             :name(name), includeValue(includeValue), key(key), hasKey(true), hasPredicate(false) {
 
             };
@@ -39,11 +39,11 @@ namespace hazelcast {
             }
 
             int AddEntryListenerRequest::getClassId() const {
-                return PortableHook::ADD_ENTRY_LISTENER;
+                return PortableHook::ADD_ENTRY_LISTENER_SQL;
             }
 
 
-            void AddEntryListenerRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AddEntryListenerRequest::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("name", name);
                 writer.writeBoolean("i", includeValue);
                 writer.writeBoolean("key", hasKey);
@@ -52,13 +52,13 @@ namespace hazelcast {
                     writer.writeUTF("p", sql);
                 }
                 if (hasKey) {
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     key.writeData(out);
                 }
             };
 
 
-            void AddEntryListenerRequest::readPortable(serialization::PortableReader& reader) {
+            void AddEntryListenerRequest::readPortable(serialization::PortableReader &reader) {
                 name = reader.readUTF("name");
                 includeValue = reader.readBoolean("i");
                 hasKey = reader.readBoolean("key");
