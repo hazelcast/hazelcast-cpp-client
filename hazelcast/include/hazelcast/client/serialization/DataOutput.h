@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <vector>
-
+#include <string>
 namespace hazelcast {
     namespace client {
         namespace serialization {

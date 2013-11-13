@@ -5,7 +5,7 @@ project (hz_cppClient)
 SET(BOOST_INC_DIR "/usr/local/include")
 
 SET(ZLIB_INC_DIR "${CMAKE_SOURCE_DIR}/external/zlib")
-#SET(ZLIB_LIB_DIR "${CMAKE_SOURCE_DIR}/build/external/zlib")
+SET(ZLIB_LIB_DIR "${CMAKE_SOURCE_DIR}/build/external/zlib")
 
 
 FUNCTION(HEADER_DIRECTORIES result curdir)
@@ -32,7 +32,7 @@ HEADER_DIRECTORIES(SUBDIRS ${CMAKE_SOURCE_DIR}/hazelcast/include)
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 
-include_directories(${SUBDIRS} ${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/external ${BOOST_INC_DIR} ${ZLIB_INC_DIR})
+include_directories(${SUBDIRS} ${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/external ${BOOST_INC_DIR} ${ZLIB_INC_DIR} ${ZLIB_LIB_DIR})
 
 message(STATUS "Preparing zlib ..... ")
 ADD_SUBDIRECTORY(external/zlib)

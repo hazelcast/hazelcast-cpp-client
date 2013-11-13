@@ -14,6 +14,7 @@
 #include "hazelcast/util/Util.h"
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace hazelcast {
     namespace client {

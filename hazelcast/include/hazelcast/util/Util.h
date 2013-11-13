@@ -13,6 +13,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cstring>
 #include "Conversion.h"
 #include "RetryableRequest.h"
 

@@ -100,7 +100,7 @@ namespace hazelcast {
                 f = reader.readFloat("f");
                 d = reader.readDouble("d");
                 str = reader.readUTF("str");
-                p = reader.template readPortable<TestInnerPortable>("p");
+                p = reader.readPortable<TestInnerPortable>("p");
             };
 
         }

@@ -32,7 +32,7 @@ namespace hazelcast {
             void TestRawDataPortable::readPortable(serialization::PortableReader& reader) {
                 l = reader.readLong("l");
                 c = reader.readCharArray("c");
-                p = reader.template readPortable<TestNamedPortable>("p");
+                p = reader.readPortable<TestNamedPortable>("p");
                 serialization::ObjectDataInput& in = reader.getRawDataInput();
                 k = in.readInt();
                 s = in.readUTF();
