@@ -14,7 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext& serializationContext)
+            ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext &serializationContext)
             : factoryId(factoryId)
             , classId(classId)
             , raw(false)
@@ -28,7 +28,7 @@ namespace hazelcast {
                 return cd;
             };
 
-            void ClassDefinitionWriter::addField(const char *fieldName, FieldType const & fieldType) {
+            void ClassDefinitionWriter::addField(const char *fieldName, FieldType const &fieldType) {
                 if (raw) {
                     throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
                 }
@@ -75,7 +75,7 @@ namespace hazelcast {
 
             };
 
-            void ClassDefinitionWriter::writeUTF(const char *fieldName, const std::string& value) {
+            void ClassDefinitionWriter::writeUTF(const char *fieldName, const std::string &value) {
                 addField(fieldName, FieldTypes::TYPE_UTF);
 
             };
@@ -83,7 +83,7 @@ namespace hazelcast {
             void ClassDefinitionWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
                 if (!raw) {
                     FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
-                    if (context.isClassDefinitionExists(factoryId, classId) == false) {
+                    if (!context.isClassDefinitionExists(factoryId, classId)) {
                         throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable withouy explicitly registering class definition!");
                     } else {
                         cd->add(fd);
@@ -93,42 +93,42 @@ namespace hazelcast {
 
             };
 
-            void ClassDefinitionWriter::writeByteArray(const char *fieldName, const std::vector<byte>& values) {
+            void ClassDefinitionWriter::writeByteArray(const char *fieldName, const std::vector<byte> &values) {
                 addField(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeCharArray(const char *fieldName, const std::vector<char>& values) {
+            void ClassDefinitionWriter::writeCharArray(const char *fieldName, const std::vector<char> &values) {
                 addField(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int>& values) {
+            void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int> &values) {
                 addField(fieldName, FieldTypes::TYPE_INT_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<long>& values) {
+            void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<long> &values) {
                 addField(fieldName, FieldTypes::TYPE_LONG_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeDoubleArray(const char *fieldName, const std::vector<double>& values) {
+            void ClassDefinitionWriter::writeDoubleArray(const char *fieldName, const std::vector<double> &values) {
                 addField(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeFloatArray(const char *fieldName, const std::vector<float>& values) {
+            void ClassDefinitionWriter::writeFloatArray(const char *fieldName, const std::vector<float> &values) {
                 addField(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
 
             };
 
-            void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<short>& values) {
+            void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<short> &values) {
                 addField(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
 
             };
 
-            ObjectDataOutput& ClassDefinitionWriter::getRawDataOutput() {
+            ObjectDataOutput &ClassDefinitionWriter::getRawDataOutput() {
                 return emptyDataOutput;
             };
 
@@ -136,7 +136,7 @@ namespace hazelcast {
 
             };
 
-            ClassDefinition *ClassDefinitionWriter::getOrBuildClassDefinition(const Portable& p) {
+            ClassDefinition *ClassDefinitionWriter::getOrBuildClassDefinition(const Portable &p) {
                 return context.getSerializerHolder().getPortableSerializer().getClassDefinition(p);
             };
 

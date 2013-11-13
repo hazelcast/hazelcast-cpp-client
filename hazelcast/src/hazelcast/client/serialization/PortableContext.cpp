@@ -56,9 +56,9 @@ namespace hazelcast {
 
                 long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
+                serializationContext->registerNestedDefinitions(cd);
                 ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
                 if (currentCD == NULL) {
-                    serializationContext->registerNestedDefinitions(cd);
                     return cd;
                 } else {
                     return currentCD;
@@ -79,16 +79,16 @@ namespace hazelcast {
                 }
 
                 long key = combineToLong(cd->getClassId(), cd->getVersion());
+                serializationContext->registerNestedDefinitions(cd);
                 ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
                 if (currentCD == NULL) {
-                    serializationContext->registerNestedDefinitions(cd);
                     return cd;
                 } else {
                     return currentCD;
                 }
             };
 
-            void PortableContext::compress(std::vector<byte>& binary) {
+            void PortableContext::compress(std::vector<byte> &binary) {
                 uLong ucompSize = binary.size();
                 uLong compSize = compressBound(ucompSize);
                 byte uncompressedTemp[binary.size()];
@@ -109,7 +109,7 @@ namespace hazelcast {
                 binary = compressed;
             };
 
-            std::vector<byte> PortableContext::decompress(std::vector<byte> const & binary) const {
+            std::vector<byte> PortableContext::decompress(std::vector<byte> const &binary) const {
                 uLong compSize = binary.size();
 
                 uLong ucompSize = 512;
