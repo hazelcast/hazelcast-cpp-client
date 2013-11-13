@@ -40,7 +40,7 @@ set_property(TARGET zlib PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/build/ex
 
 message(STATUS "Preparing hazelcast client ..... ")
 add_library(cppClient ${HZ_SOURCES})
-target_link_libraries(cppClient zlib)
+target_link_libraries(cppClient zlib pthread)
 
 ADD_SUBDIRECTORY(hazelcast/test)
 
