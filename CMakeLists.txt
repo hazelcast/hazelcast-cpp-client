@@ -1,6 +1,13 @@
 cmake_minimum_required (VERSION 2.6)
 project (hz_cppClient)
 
+#SET(BOOST_LIB_DIR "${CMAKE_SOURCE_DIR}/external/lib")
+SET(BOOST_INC_DIR "/usr/local/include")
+
+SET(ZLIB_INC_DIR "${CMAKE_SOURCE_DIR}/external/zlib")
+#SET(ZLIB_LIB_DIR "${CMAKE_SOURCE_DIR}/build/external/zlib")
+
+
 FUNCTION(HEADER_DIRECTORIES result curdir)
     FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
     SET(dirlist "")
@@ -22,11 +29,10 @@ ENDFUNCTION()
 
 HEADER_DIRECTORIES(SUBDIRS ${CMAKE_SOURCE_DIR}/hazelcast/include)
 
-SET(BOOST_LIB_DIR "${CMAKE_SOURCE_DIR}/external/lib")
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 
-include_directories(${SUBDIRS} ${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/build/external/zlib ${CMAKE_SOURCE_DIR}/external/zlib)
+include_directories(${SUBDIRS} ${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/external ${BOOST_INC_DIR} ${ZLIB_INC_DIR})
 
 message(STATUS "Preparing zlib ..... ")
 ADD_SUBDIRECTORY(external/zlib)
