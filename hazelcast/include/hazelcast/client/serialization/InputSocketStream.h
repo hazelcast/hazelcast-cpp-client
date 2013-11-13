@@ -8,7 +8,7 @@
 #define HAZELCAST_INPUT_SOCKET_STREAM
 
 #include <vector>
-
+#include <string>
 namespace hazelcast {
     namespace client {
 

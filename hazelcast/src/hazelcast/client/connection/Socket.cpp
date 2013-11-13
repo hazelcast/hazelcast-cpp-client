@@ -17,7 +17,7 @@ namespace hazelcast {
                 socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
                 setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, &size, sizeof(int));
                 setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, &size, sizeof(int));
-                setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
+                //setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
             };
 
             Socket::Socket(const Socket &rhs) : address(rhs.address) {

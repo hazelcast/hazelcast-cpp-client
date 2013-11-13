@@ -14,7 +14,7 @@ namespace hazelcast {
 
             }
 
-            IOException::~IOException() {
+            IOException::~IOException() throw(){
 
             }
 

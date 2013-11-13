@@ -17,7 +17,7 @@ namespace hazelcast {
 
             }
 
-            char const *IllegalStateException::what() const {
+            char const *IllegalStateException::what() const throw(){
                 return IException::what();
             }
         }

@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "MembershipEvent.h"
+#include "MemberShipEvent.h"
 #include "ObjectDataOutput.h"
 #include "ObjectDataInput.h"
 

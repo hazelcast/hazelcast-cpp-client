@@ -14,7 +14,9 @@
 
 namespace hazelcast {
     namespace client {
-        class serialization::SerializationService;
+        namespace serialization{
+		class SerializationService;
+	}
 
         class Address;
 

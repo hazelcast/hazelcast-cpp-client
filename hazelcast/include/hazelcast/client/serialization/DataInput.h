@@ -8,6 +8,7 @@
 #define HAZELCAST_DataInput
 
 #include <vector>
+#include <string>
 
 namespace hazelcast {
     namespace client {
