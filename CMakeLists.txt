@@ -40,8 +40,16 @@ set_property(TARGET zlib PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/build/ex
 
 message(STATUS "Preparing hazelcast client ..... ")
 add_library(cppClient ${HZ_SOURCES})
-target_link_libraries(cppClient zlib pthread)
-
+if(LINUX)
+	target_link_libraries(cppClient zlib pthread rt)
+endif(LINUX)			
+if(APPLE)
+	target_link_libraries(cppClient zlib)
+endif(APPLE)
+if(WIN32)
+	message(STATUS "UNSUPPORTED ENVIRONMENT")
+endif(WIN32)		
+	
 ADD_SUBDIRECTORY(hazelcast/test)
 
 if(0)
