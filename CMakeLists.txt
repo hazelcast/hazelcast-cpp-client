@@ -39,16 +39,25 @@ ADD_SUBDIRECTORY(external/zlib)
 set_property(TARGET zlib PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/build/external/zlib/libz.a)
 
 message(STATUS "Preparing hazelcast client ..... ")
+
 add_library(cppClient ${HZ_SOURCES})
-if(LINUX)
-	target_link_libraries(cppClient zlib pthread rt)
-endif(LINUX)			
-if(APPLE)
+
+message(STATUS "${CMAKE_SYSTEM}")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	message(STATUS "APPLE ENVIRONMENT DETECTED")
 	target_link_libraries(cppClient zlib)
-endif(APPLE)
-if(WIN32)
-	message(STATUS "UNSUPPORTED ENVIRONMENT")
-endif(WIN32)		
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	message(STATUS "LINUX ENVIRONMENT DETECTED")
+	target_link_libraries(cppClient zlib pthread rt)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    message(STATUS "UNSUPPORTED ENVIRONMENT")
+    return()
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	
 ADD_SUBDIRECTORY(hazelcast/test)
 
