@@ -185,7 +185,7 @@ public class ClientTCPIPListener {
 
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
-        final Config config = new XmlConfigBuilder("/Users/msk/IdeaProjects/testEnv/src/main/resources/hazelcast.xml").build();
+        final Config config = new Config();
         config.getSerializationConfig().addPortableFactory(666, new PortableTaskFac());
         config.getSerializationConfig().addDataSerializableFactory(666, new IdentifiedSerializableTaskFac());
         final AtomicInteger atomicInteger = new AtomicInteger(0);

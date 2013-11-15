@@ -15,7 +15,7 @@ namespace hazelcast {
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-                system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
+//                system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
                 boost::this_thread::sleep(boost::posix_time::seconds(3));
                 try {
                     socket.connect();
