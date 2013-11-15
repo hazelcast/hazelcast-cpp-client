@@ -27,7 +27,7 @@ namespace hazelcast {
             ClassDefinition::~ClassDefinition() {
             };
 
-            ClassDefinition::ClassDefinition(const ClassDefinition& rhs)
+            ClassDefinition::ClassDefinition(const ClassDefinition &rhs)
             : factoryId(rhs.factoryId)
             , classId(rhs.classId)
             , version(rhs.version)
@@ -36,7 +36,7 @@ namespace hazelcast {
             , nestedClassDefinitions(rhs.nestedClassDefinitions) {
             };
 
-            ClassDefinition& ClassDefinition::operator = (const ClassDefinition& rhs) {
+            ClassDefinition &ClassDefinition::operator = (const ClassDefinition &rhs) {
                 factoryId = rhs.factoryId;
                 classId = rhs.classId;
                 version = rhs.version;
@@ -46,9 +46,9 @@ namespace hazelcast {
                 return (*this);
             };
 
-            void ClassDefinition::add(FieldDefinition& fd) {
+            void ClassDefinition::add(FieldDefinition &fd) {
                 fieldDefinitions.push_back(fd);
-                fieldDefinitionsMap[fd.getName().c_str()] = fd;
+                fieldDefinitionsMap[fd.getName()] = fd;
             };
 
             void ClassDefinition::add(ClassDefinition *cd) {
@@ -59,15 +59,15 @@ namespace hazelcast {
                 return (fieldDefinitionsMap.count(name) > 0);
             }
 
-            const FieldDefinition& ClassDefinition::get(const char *name) {
+            const FieldDefinition &ClassDefinition::get(const char *name) {
                 return fieldDefinitionsMap[name];
             };
 
-            const FieldDefinition& ClassDefinition::get(int fieldIndex) {
+            const FieldDefinition &ClassDefinition::get(int fieldIndex) {
                 return fieldDefinitions[fieldIndex];
             };
 
-            std::vector<ClassDefinition * >& ClassDefinition::getNestedClassDefinitions() {
+            std::vector<ClassDefinition * > &ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -77,7 +77,7 @@ namespace hazelcast {
 
             std::vector<std::string>  ClassDefinition::getFieldNames() const {
                 std::vector<std::string> fieldNames;
-                for (std::map<const char *, FieldDefinition>::const_iterator it = fieldDefinitionsMap.begin(); it != fieldDefinitionsMap.end(); ++it) {
+                for (std::map<std::string, FieldDefinition>::const_iterator it = fieldDefinitionsMap.begin(); it != fieldDefinitionsMap.end(); ++it) {
                     fieldNames.push_back(it->first);
                 }
                 return fieldNames;
@@ -113,7 +113,7 @@ namespace hazelcast {
                 this->version = version;
             };
 
-            const std::vector<byte>& ClassDefinition::getBinary() const {
+            const std::vector<byte> &ClassDefinition::getBinary() const {
                 return *(binary.get());
             };
 
@@ -121,7 +121,7 @@ namespace hazelcast {
                 this->binary.reset(binary.release());
             };
 
-            void ClassDefinition::writeData(DataOutput& dataOutput) {
+            void ClassDefinition::writeData(DataOutput &dataOutput) {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
@@ -136,7 +136,7 @@ namespace hazelcast {
                 }
             };
 
-            void ClassDefinition::readData(DataInput& dataInput) {
+            void ClassDefinition::readData(DataInput &dataInput) {
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
                 version = dataInput.readInt();

@@ -15,11 +15,11 @@ namespace hazelcast {
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-//                system("java -cp ./hazelcast-3.0.jar:.  ClientTCPIPListener & ");
-                boost::this_thread::sleep(boost::posix_time::seconds(1));
-                try{
+                system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
+                boost::this_thread::sleep(boost::posix_time::seconds(3));
+                try {
                     socket.connect();
-                } catch(std::exception &e ){
+                } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");
@@ -29,10 +29,10 @@ namespace hazelcast {
 
             HazelcastInstanceFactory::~HazelcastInstanceFactory() {
                 outputSocketStream.writeInt(END);
-                try{
+                try {
                     inputSocketStream.readInt();
                     system("killall -9 java");
-                } catch(std::exception &e ){
+                } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");
@@ -53,13 +53,13 @@ namespace hazelcast {
 
             void HazelcastInstanceFactory::shutdownAll() {
                 outputSocketStream.writeInt(SHUTDOWN_ALL);
-                try{
+                try {
                     int i = inputSocketStream.readInt();
                     if (i != OK) {
                         std::cout << "void HazelcastInstanceFactory::shutdownAll():" << i << std::endl;
                         std::cout.flush();
                     }
-                }   catch(std::exception &e){
+                } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
                     system("killall -9 java");

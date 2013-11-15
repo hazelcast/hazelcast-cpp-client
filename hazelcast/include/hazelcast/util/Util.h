@@ -29,25 +29,19 @@ namespace hazelcast {
     }
     namespace util {
 
-        struct cStrCmp {
-            bool operator ()(const char *lhs, const char *rhs) const {
-                return strcmp(lhs, rhs) < 0;
-            }
-        };
-
         std::string to_string(int);
 
         int getThreadId();
 
-        void writeNullableData(client::serialization::ObjectDataOutput & out, const client::serialization::Data *data);
+        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data);
 
-        void readNullableData(client::serialization::ObjectDataInput & in, client::serialization::Data *data);
+        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data);
 
         long getCurrentTimeMillis();
 
 
         template<typename Request>
-        bool isRetryable(Request& request) {
+        bool isRetryable(Request &request) {
             return util::Conversion<Request, client::RetryableRequest>::exists;
         };
 

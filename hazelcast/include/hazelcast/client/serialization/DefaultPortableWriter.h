@@ -12,7 +12,6 @@
 #include "DataOutput.h"
 #include "ObjectDataOutput.h"
 #include "AtomicPointer.h"
-#include "Util.h"
 #include <string>
 #include <set>
 #include <vector>
@@ -35,7 +34,7 @@ namespace hazelcast {
             class DefaultPortableWriter {
             public:
 
-                DefaultPortableWriter(SerializationContext& serializationContext, ClassDefinition *cd, DataOutput& output);
+                DefaultPortableWriter(SerializationContext &serializationContext, ClassDefinition *cd, DataOutput &output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -53,35 +52,35 @@ namespace hazelcast {
 
                 void writeShort(const char *fieldName, short value);
 
-                void writeUTF(const char *fieldName, const string& str);
+                void writeUTF(const char *fieldName, const string &str);
 
                 void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
-                void writeByteArray(const char *fieldName, const std::vector<byte>& x);
+                void writeByteArray(const char *fieldName, const std::vector<byte> &x);
 
-                void writeCharArray(const char *fieldName, const std::vector<char >&  data);
+                void writeCharArray(const char *fieldName, const std::vector<char > &data);
 
-                void writeShortArray(const char *fieldName, const std::vector<short >&  data);
+                void writeShortArray(const char *fieldName, const std::vector<short > &data);
 
-                void writeIntArray(const char *fieldName, const std::vector<int>&  data);
+                void writeIntArray(const char *fieldName, const std::vector<int> &data);
 
-                void writeLongArray(const char *fieldName, const std::vector<long >&  data);
+                void writeLongArray(const char *fieldName, const std::vector<long > &data);
 
-                void writeFloatArray(const char *fieldName, const std::vector<float >&  data);
+                void writeFloatArray(const char *fieldName, const std::vector<float > &data);
 
-                void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
+                void writeDoubleArray(const char *fieldName, const std::vector<double > &data);
 
                 void end();
 
                 template <typename T>
-                void writePortable(const char *fieldName, const T& portable) {
+                void writePortable(const char *fieldName, const T &portable) {
                     setPosition(fieldName);
                     dataOutput.writeBoolean(false);
                     write(portable);
                 };
 
                 template <typename T>
-                void writePortableArray(const char *fieldName, const std::vector<T>& values) {
+                void writePortableArray(const char *fieldName, const std::vector<T> &values) {
                     setPosition(fieldName);
                     int len = values.size();
                     dataOutput.writeInt(len);
@@ -95,25 +94,25 @@ namespace hazelcast {
                     }
                 };
 
-                ObjectDataOutput& getRawDataOutput();
+                ObjectDataOutput &getRawDataOutput();
 
             private:
 
                 void setPosition(const char *fieldName);
 
-                ClassDefinition *getClassDefinition(const Portable& p);
+                ClassDefinition *getClassDefinition(const Portable &p);
 
-                void write(const Portable& p);
+                void write(const Portable &p);
 
                 int index;
                 bool raw;
-                SerializationContext& context;
-                SerializerHolder& serializerHolder;
-                DataOutput& dataOutput;
+                SerializationContext &context;
+                SerializerHolder &serializerHolder;
+                DataOutput &dataOutput;
                 ObjectDataOutput objectDataOutput;
                 int begin;
                 int offset;
-                std::set<const char *, util::cStrCmp> writtenFields;
+                std::set<std::string> writtenFields;
                 ClassDefinition *cd;
 
             };
