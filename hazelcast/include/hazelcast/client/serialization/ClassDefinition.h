@@ -11,7 +11,6 @@
 
 
 #include "FieldDefinition.h"
-#include "hazelcast/util/Util.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -35,15 +34,15 @@ namespace hazelcast {
 
                 ~ClassDefinition();
 
-                void add(FieldDefinition&);
+                void add(FieldDefinition &);
 
                 void add(ClassDefinition *);
 
                 bool isFieldDefinitionExists(const char *);
 
-                const FieldDefinition& get(const char *);
+                const FieldDefinition &get(const char *);
 
-                const FieldDefinition& get(int);
+                const FieldDefinition &get(int);
 
                 std::vector<ClassDefinition * > &getNestedClassDefinitions();
 
@@ -61,27 +60,27 @@ namespace hazelcast {
 
                 int getVersion() const;
 
-                const std::vector<byte>& getBinary() const;
+                const std::vector<byte> &getBinary() const;
 
                 void setBinary(std::auto_ptr < std::vector<byte> >);
 
                 void setVersion(int);
 
-                void writeData(DataOutput& dataOutput);
+                void writeData(DataOutput &dataOutput);
 
-                void readData(DataInput& dataInput);
+                void readData(DataInput &dataInput);
 
             private:
                 int classId;
                 int version;
                 int factoryId;
 
-                ClassDefinition(const ClassDefinition&);
+                ClassDefinition(const ClassDefinition &);
 
-                ClassDefinition& operator = (const ClassDefinition& rhs);
+                ClassDefinition &operator = (const ClassDefinition &rhs);
 
                 std::vector<FieldDefinition> fieldDefinitions;
-                std::map<const char *, FieldDefinition, util::cStrCmp> fieldDefinitionsMap;
+                std::map<std::string, FieldDefinition> fieldDefinitionsMap;
                 std::vector<ClassDefinition * > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;

@@ -197,12 +197,12 @@ namespace hazelcast {
                 serialization::Data data = serializationService.toData<TestMainPortable>(&mainPortable);
                 serialization::DataOutput out;
                 data.writeData(out);
-                std::vector<byte>& outBuffer = *(out.toByteArray().get());
-                int size = outBuffer.size();
+                auto_ptr<vector<byte> > output = out.toByteArray();
+                int size = output->size();
                 ofstream outfile;
                 outfile.open("./text.txt", std::ios_base::out);
                 for (int i = 0; i < size; i++)
-                    outfile.put(outBuffer[i]);
+                    outfile.put((*output)[i]);
 
                 outfile.close();
                 return size;

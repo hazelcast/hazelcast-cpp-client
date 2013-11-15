@@ -5,7 +5,6 @@
 *.out
 *.1
 *.gch
-*.class
 
 # Compiled Dynamic libraries
 *.so

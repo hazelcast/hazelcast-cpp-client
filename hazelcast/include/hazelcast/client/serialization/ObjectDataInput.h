@@ -13,6 +13,7 @@
 #include "Serializer.h"
 #include "SerializerHolder.h"
 #include "ClassDefinition.h"
+#include "Util.h"
 #include <vector>
 #include <string>
 
@@ -34,11 +35,11 @@ namespace hazelcast {
 
             class ObjectDataInput {
             public:
-                ObjectDataInput(DataInput&, SerializationContext&);
+                ObjectDataInput(DataInput &, SerializationContext &);
 
                 SerializationContext *getSerializationContext();
 
-                void readFully(std::vector<byte>&);
+                void readFully(std::vector<byte> &);
 
                 int skipBytes(int i);
 
@@ -135,13 +136,13 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-                DataInput& dataInput;
-                SerializationContext& serializationContext;
-                SerializerHolder& serializerHolder;
+                DataInput &dataInput;
+                SerializationContext &serializationContext;
+                SerializerHolder &serializerHolder;
 
-                ObjectDataInput(const ObjectDataInput&);
+                ObjectDataInput(const ObjectDataInput &);
 
-                void operator = (const ObjectDataInput&);
+                void operator = (const ObjectDataInput &);
             };
         }
     }
