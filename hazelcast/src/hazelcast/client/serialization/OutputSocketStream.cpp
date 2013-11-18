@@ -1,6 +1,7 @@
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "Socket.h"
 #include "IOException.h"
+#include <algorithm>
 
 namespace hazelcast {
     namespace client {
@@ -80,8 +81,9 @@ namespace hazelcast {
                 writeInt(length);
                 int chunkSize = length / STRING_CHUNK_SIZE + 1;
                 for (int i = 0; i < chunkSize; i++) {
-                    int beginIndex = std::max(0, i * STRING_CHUNK_SIZE - 1);
-                    int endIndex = std::min((i + 1) * STRING_CHUNK_SIZE - 1, length);
+					using namespace std;//for stupid visual studio compatibility
+                    int beginIndex = max(0, i * STRING_CHUNK_SIZE - 1);
+                    int endIndex = min((i + 1) * STRING_CHUNK_SIZE - 1, length);
                     writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
                 }
             };

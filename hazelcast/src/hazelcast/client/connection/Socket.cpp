@@ -43,13 +43,13 @@ namespace hazelcast {
             }
 
             void Socket::send(const void *buffer, int len) const {
-                if (::send(socketId, buffer, len, 0) == -1)
+                if (::send(socketId, (char*)buffer, len, 0) == -1)
                     throw exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             };
 
             void Socket::receive(void *buffer, int len) const {
                 #ifdef WIN32
-					int size = ::recv(socketId, buffer, len, 0 );
+					int size = ::recv(socketId, (char*)buffer, len, 0 );
 				#else
                 int size = ::recv(socketId, buffer, len, MSG_WAITALL);
                 #endif

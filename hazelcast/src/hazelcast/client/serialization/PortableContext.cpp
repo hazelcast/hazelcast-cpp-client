@@ -9,9 +9,11 @@
 #include "hazelcast/client/serialization/PortableContext.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include <zlib.h>
+#include <algorithm>
 
 namespace hazelcast {
     namespace client {
+		typedef unsigned char byte;
         namespace serialization {
 
 
@@ -91,12 +93,12 @@ namespace hazelcast {
             void PortableContext::compress(std::vector<byte> &binary) {
                 uLong ucompSize = binary.size();
                 uLong compSize = compressBound(ucompSize);
-                byte uncompressedTemp[binary.size()];
+				std::vector<byte> uncompressedTemp(binary.size());
                 for (int i = 0; i < binary.size(); i++)
                     uncompressedTemp[i] = binary[i];
 
-                byte compressedTemp[compSize];
-                int err = compress2((Bytef *) compressedTemp, &compSize, (Bytef *) uncompressedTemp, ucompSize, Z_BEST_COMPRESSION);
+				std::vector<byte> compressedTemp(compSize);
+                int err = compress2((Bytef *) &(compressedTemp[0]), &compSize, (Bytef *) &(uncompressedTemp[0]), ucompSize, Z_BEST_COMPRESSION);
                 switch (err) {
                     case Z_BUF_ERROR:
                         throw exception::IOException("PortableContext::compress", "not enough room in the output buffer at compression");
@@ -105,8 +107,9 @@ namespace hazelcast {
                     case Z_MEM_ERROR:
                         throw exception::IOException("PortableContext::compress", "there was not  enough memory at compression");
                 }
-                std::vector<byte> compressed(compressedTemp, compressedTemp + compSize);
-                binary = compressed;
+				binary.resize(compSize);
+				std::copy(compressedTemp.begin(), compressedTemp.end() , binary.begin());
+
             };
 
             std::vector<byte> PortableContext::decompress(std::vector<byte> const &binary) const {
@@ -114,7 +117,7 @@ namespace hazelcast {
 
                 uLong ucompSize = 512;
                 byte *temp = NULL;
-                byte compressedTemp[binary.size()];
+				std::vector<byte> compressedTemp(binary.size());
                 for (int i = 0; i < binary.size(); i++)
                     compressedTemp[i] = binary[i];
                 int err = Z_OK;
@@ -122,7 +125,7 @@ namespace hazelcast {
                     ucompSize *= 2;
                     delete [] temp;
                     temp = new byte[ucompSize];
-                    err = uncompress((Bytef *) temp, &ucompSize, (Bytef *) compressedTemp, compSize);
+                    err = uncompress((Bytef *) temp, &ucompSize, (Bytef *) &(compressedTemp[0]), compSize);
                     switch (err) {
                         case Z_BUF_ERROR:
                             throw exception::IOException("PortableContext::compress", "not enough room in the output buffer at decompression");

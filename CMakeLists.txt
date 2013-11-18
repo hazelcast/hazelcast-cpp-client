@@ -42,8 +42,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "UNSUPPORTED ENVIRONMENT")
-    return()
+    message(STATUS "WINDOWS ENVIRONMENT DETECTED")
+    target_link_libraries(cppClient)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ADD_SUBDIRECTORY(hazelcast/test)		

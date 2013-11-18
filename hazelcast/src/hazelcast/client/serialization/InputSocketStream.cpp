@@ -37,8 +37,8 @@ namespace hazelcast {
             };
 
             int InputSocketStream::skipBytes(int i) {
-                byte temp[i];
-                socket.receive(temp, i);
+				std::vector<byte> temp(i);
+				socket.receive((void*)&(temp[0]), i);
                 return i;
             };
 
@@ -130,7 +130,7 @@ namespace hazelcast {
             std::string InputSocketStream::readShortUTF() {
                 short utflen = readShort();
                 std::vector<byte> bytearr(utflen);
-                char chararr[utflen];
+				std::vector<char> chararr(utflen);
                 int c, char2, char3;
                 int count = 0;
                 int chararr_count = 0;
@@ -182,7 +182,7 @@ namespace hazelcast {
                     }
                 }
                 chararr[chararr_count] = '\0';
-                return std::string(chararr);
+				return std::string(chararr.begin(), chararr.end());
             };
 
         }
