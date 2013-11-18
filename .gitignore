@@ -5,6 +5,9 @@
 *.out
 *.1
 *.gch
+*.exe
+*.ilk
+*.pdb
 
 # Compiled Dynamic libraries
 *.so
