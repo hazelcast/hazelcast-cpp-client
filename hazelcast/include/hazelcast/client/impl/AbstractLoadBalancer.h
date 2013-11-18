@@ -10,7 +10,7 @@
 #include "../../util/AtomicPointer.h"
 #include "../MembershipListener.h"
 #include "../LoadBalancer.h"
-#include "boost/thread/pthread/mutex.hpp"
+#include "boost/thread/mutex.hpp"
 #include <vector>
 
 namespace hazelcast {

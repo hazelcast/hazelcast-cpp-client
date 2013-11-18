@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_LockSupport
 #define HAZELCAST_LockSupport
 
-#include <boost/thread/pthread/recursive_mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace hazelcast {
     namespace util {

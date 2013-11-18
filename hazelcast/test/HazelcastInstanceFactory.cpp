@@ -5,7 +5,7 @@
 
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastInstance.h"
-#include "boost/thread/pthread/thread_data.hpp"
+#include "boost/thread.hpp"
 
 namespace hazelcast {
     namespace client {
