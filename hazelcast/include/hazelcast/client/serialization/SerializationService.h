@@ -90,7 +90,7 @@ namespace hazelcast {
                 template<typename T>
                 inline T toObject(const Data& data) {
                     checkServerError(data);
-                    T *tag;
+                    T *tag = NULL;
                     return toObjectResolved<T>(data, tag);
                 };
 

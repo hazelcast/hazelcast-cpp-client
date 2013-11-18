@@ -50,7 +50,7 @@ namespace hazelcast {
                         delete conn;
                         conn = NULL;
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    }catch(boost::thread_interrupted &interrupted){
+                    }catch(boost::thread_interrupted &){
                         break;
                     }catch(...){
                         std::cerr << "cluster Listener Thread unknown exception\n";

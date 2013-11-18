@@ -43,7 +43,7 @@ namespace hazelcast {
             void testCDWThread(IMap<std::string, std::string> *m, util::CountDownLatch *latch) {
                 try{
                     m->get("ali");
-                } catch(exception::IException &e){
+                } catch(exception::IException &){
                     latch->countDown();
                 }
 

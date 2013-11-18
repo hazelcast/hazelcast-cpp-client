@@ -124,7 +124,7 @@ namespace hazelcast {
                 E result;
                 try {
                     result = invoke<E>(request);
-                } catch(exception::ServerException &e){
+                } catch(exception::ServerException &){
                     throw exception::InterruptedException("IQueue::poll", "timeout");
                 }
                 return result;
@@ -175,7 +175,7 @@ namespace hazelcast {
             E poll() {
                 try {
                     return poll(0);
-                } catch (exception::InterruptedException &e) {
+                } catch (exception::InterruptedException &) {
                     return E();
                 }
             };

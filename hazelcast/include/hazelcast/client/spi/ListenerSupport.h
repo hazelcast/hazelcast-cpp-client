@@ -108,10 +108,10 @@ namespace hazelcast {
                                 listenerSupport->eventHandler.handle(event);
                             } catch(exception::IOException& e){
                                 throw e;
-                            } catch (exception::IException& e) {
+                            } catch (exception::IException&) {
                                 try {
                                     stream.end();
-                                } catch (exception::IOException& ignored) {
+                                } catch (exception::IOException&) {
                                 }
                                 listenerSupport->active = false;
                             }

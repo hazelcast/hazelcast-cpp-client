@@ -215,13 +215,13 @@ namespace hazelcast {
 
                 std::ifstream is;
                 is.open("./text.txt", std::ios::binary);
-                char bytes[size];
+                char* bytes = new char[size];
                 is.read(bytes, size);
                 is.close();
 
                 byte *tempPtr = (byte *) bytes;
                 std::vector<byte> buffer(tempPtr, tempPtr + size);
-
+				delete bytes;
                 serialization::DataInput dataInput(buffer);
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
 

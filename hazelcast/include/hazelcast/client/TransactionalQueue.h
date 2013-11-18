@@ -25,7 +25,7 @@ namespace hazelcast {
             bool offer(const E &e) {
                 try {
                     return offer(e, 0);
-                } catch (exception::InterruptedException &ex) {
+                } catch (exception::InterruptedException &) {
                     return false;
                 }
             };
@@ -36,7 +36,7 @@ namespace hazelcast {
                 bool result;
                 try {
                     result = invoke<bool>(request);
-                } catch(exception::ServerException &e){
+                } catch(exception::ServerException &){
                     throw exception::InterruptedException("TransactionalQueue::offer", "timeout");
                 }
                 return result;

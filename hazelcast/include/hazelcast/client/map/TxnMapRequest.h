@@ -33,7 +33,7 @@ namespace hazelcast {
                     REPLACE_IF_SAME = 7,
                     SET = 8,
                     REMOVE = 9,
-                    DELETE = 10,
+                    DELETE_R = 10,
                     REMOVE_IF_SAME = 11,
                     KEYSET = 12,
                     KEYSET_BY_PREDICATE = 13,

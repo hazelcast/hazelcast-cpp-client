@@ -23,7 +23,7 @@ namespace hazelcast {
                     CONTAINS_VALUE = 8,
                     REMOVE = 9,
                     REMOVE_IF_SAME = 10,
-                    DELETE = 11,
+                    DELETE_R = 11,
                     FLUSH = 12,
                     GET_ALL = 13,
                     TRY_REMOVE = 14,

@@ -38,7 +38,7 @@ namespace hazelcast {
             for (int i = 0; i < CONNECTION_TRY_COUNT; i++) {
                 try {
                     conn = connectionManager.getRandomConnection();
-                } catch (exception::IOException&  e) {
+                } catch (exception::IOException&) {
                     continue;
                 }
                 if (conn != NULL) {

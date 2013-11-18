@@ -91,7 +91,7 @@ namespace hazelcast {
                     try {
                         RollbackTxnRequest request;
                         sendAndReceive<bool>(request);
-                    } catch (std::exception&  ignored) {
+                    } catch (std::exception&) {
                     }
                     state = TxnState::ROLLED_BACK;
                 }catch(std::exception& e){

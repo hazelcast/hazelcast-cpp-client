@@ -60,7 +60,7 @@ namespace hazelcast {
 
                     context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
-                } catch (std::exception& ex){
+                } catch (std::exception&){
                     context.rollbackTransaction();
                     latch.countDown();
                 }

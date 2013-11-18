@@ -22,7 +22,7 @@ namespace hazelcast {
             }
 
             int DeleteRequest::getClassId() const {
-                return PortableHook::DELETE;
+                return PortableHook::DELETE_R;
             }
 
 

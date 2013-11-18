@@ -86,7 +86,7 @@ namespace hazelcast {
                     try{
                         Result result = invoke<Result>(request, address);
                         callback->onResponse(member, result);
-                    } catch(std::exception &e){
+                    } catch(std::exception &){
                     }
                 }
 

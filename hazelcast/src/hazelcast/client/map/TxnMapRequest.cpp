@@ -25,7 +25,7 @@ namespace hazelcast {
                 types[7] = REPLACE_IF_SAME;
                 types[8] = SET;
                 types[9] = REMOVE;
-                types[10] = DELETE;
+                types[10] = DELETE_R;
                 types[11] = REMOVE_IF_SAME;
                 types[12] = KEYSET;
                 types[13] = KEYSET_BY_PREDICATE;
@@ -46,7 +46,7 @@ namespace hazelcast {
                 types[7] = REPLACE_IF_SAME;
                 types[8] = SET;
                 types[9] = REMOVE;
-                types[10] = DELETE;
+                types[10] = DELETE_R;
                 types[11] = REMOVE_IF_SAME;
                 types[12] = KEYSET;
                 types[13] = KEYSET_BY_PREDICATE;

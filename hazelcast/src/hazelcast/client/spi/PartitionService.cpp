@@ -62,7 +62,7 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
-                    }catch(boost::thread_interrupted &interrupted){
+                    }catch(boost::thread_interrupted &){
                         break;
                     }catch(...){
                         //ignored

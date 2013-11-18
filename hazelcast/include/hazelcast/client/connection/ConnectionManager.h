@@ -8,7 +8,7 @@
 #include "HeartBeatChecker.h"
 #include "Address.h"
 #include "ConcurrentSmartMap.h"
-
+#include "SocketInterceptor.h"
 namespace hazelcast {
     namespace client {
 
@@ -34,8 +34,6 @@ namespace hazelcast {
             class Connection;
 
             class ConnectionPool;
-
-            class SocketInterceptor;
 
             class ConnectionManager {
             public:

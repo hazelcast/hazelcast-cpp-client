@@ -109,7 +109,8 @@ namespace hazelcast {
                         break;
                     }
                     const double remainingTime = clientConfig.getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
-                    std::cerr << "Unable to get alive cluster connection, try in " << std::max(0.0, remainingTime)
+					using namespace std;
+                    std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
                     if (remainingTime > 0) {
