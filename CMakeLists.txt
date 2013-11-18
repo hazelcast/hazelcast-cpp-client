@@ -33,7 +33,7 @@ add_library(cppClient ${HZ_SOURCES})
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
-    target_link_libraries(cppClient ${ZLIB_LIBRARIES} )
+    target_link_libraries(cppClient )
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

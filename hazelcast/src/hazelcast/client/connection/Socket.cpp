@@ -1,23 +1,32 @@
 #include "hazelcast/client/connection/Socket.h"
 #include "IOException.h"
 
-#ifdef WIN32
-	typedef int socklen_t;
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace connection {
-
-            Socket::Socket(const Address &address) : address(address), size(32 * 1024) {
-#ifdef WIN32
-                    if(WSAStartup(MAKEWORD(2, 0), &wsa_data);
+            Socket::Socket(const Address &address): address(address), size(32 * 1024) {
+                #ifdef WIN32
+                    int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+					if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
                 #endif
-                getInfo(address);
-                socketId = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-                setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, &size, sizeof(int));
-                setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, &size, sizeof(int));
-                //setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
+                struct addrinfo hints;
+                std::memset(&hints, 0, sizeof (hints));
+                hints.ai_family = AF_UNSPEC;
+                hints.ai_socktype = SOCK_STREAM;
+                hints.ai_flags = AI_PASSIVE;
+
+                int status;
+                if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
+                    throw exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
+                }
+                socketId = ::socket(serverInfo->ai_family,serverInfo->ai_socktype, serverInfo->ai_protocol);
+
+                ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
+                ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
+                #if defined(SO_NOSIGPIPE)
+                setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
+                #endif
+
             };
 
             Socket::Socket(const Socket &rhs) : address(rhs.address) {
@@ -29,7 +38,7 @@ namespace hazelcast {
             };
 
             void Socket::connect() {
-                if (::connect(socketId, server_info->ai_addr, server_info->ai_addrlen) == -1)
+                if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1)
                     throw exception::IOException("Socket::connect", strerror(errno));
             }
 
@@ -39,7 +48,12 @@ namespace hazelcast {
             };
 
             void Socket::receive(void *buffer, int len) const {
+                #ifdef WIN32
+					int size = ::recv(socketId, buffer, len, 0 );
+				#else
                 int size = ::recv(socketId, buffer, len, MSG_WAITALL);
+                #endif
+
                 if (size == -1)
                     throw exception::IOException("Socket::receive", "Error socket read");
                 else if (size == 0) {
@@ -59,32 +73,17 @@ namespace hazelcast {
             }
 
             void Socket::close() {
-#ifdef WIN32
+                #ifdef WIN32
 		        WSACleanup();
 		        closesocket(socketId);
 	            #else
                 ::close(socketId);
-#endif
-                ::freeaddrinfo(server_info);
+                #endif
             }
 
             int Socket::getSocketId() const {
                 return socketId;
             }
-
-            void Socket::getInfo(const Address &address) {
-                struct addrinfo hints;
-                std::memset(&hints, 0, sizeof (hints));
-                hints.ai_family = AF_UNSPEC;
-                hints.ai_socktype = SOCK_STREAM;
-                hints.ai_flags = AI_PASSIVE;
-
-                int status;
-                if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &server_info)) != 0) {
-                    throw exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
-                }
-
-            };
 
         }
     }

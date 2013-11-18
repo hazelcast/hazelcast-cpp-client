@@ -2,10 +2,13 @@
 #define HAZELCAST_SOCKET
 
 
-#include "../Address.h"
+#include "hazelcast/client/Address.h"
+#include <string>
 
 #ifdef WIN32
-#include <winsock.h>
+#pragma comment(lib, "Ws2_32.lib")
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 
 #include <unistd.h>
@@ -20,13 +23,17 @@
 #endif
 
 
+#ifdef WIN32
+    typedef int socklen_t;
+#endif
+
+#if !defined(MSG_NOSIGNAL)
+#  define MSG_NOSIGNAL 0
+#endif
+
 namespace hazelcast {
-
-    typedef unsigned char byte;
-
     namespace client {
         namespace connection {
-
             class Socket {
             public:
 
@@ -52,17 +59,15 @@ namespace hazelcast {
 
                 Socket(const Socket &rhs);
 
-                void getInfo(const Address &address);
-
                 Address address;
-                struct addrinfo *server_info;
-                int socketId;
+                struct addrinfo *serverInfo;
                 int size;
+                int socketId;
 
 
-#ifdef WIN32
+                #ifdef WIN32
 			        WSADATA wsa_data;
-		        #endif
+				#endif
 
             };
 
