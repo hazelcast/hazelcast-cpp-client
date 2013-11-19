@@ -30,12 +30,11 @@ int testSpeed() {
     return 0;
 };
 
-
 int main(int argc, char **argv) {
     HazelcastInstanceFactory factory;
     ClientSerializationTest serializationTest;
     serializationTest.executeTests();
-    ClientMapTest mapTest(factory);
+    /*ClientMapTest mapTest(factory);
     mapTest.executeTests();
     ClientMapIssueTest mapIssueTest(factory);
     mapIssueTest.executeTests();
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
     ClientTxnSetTest clientTxnSetTest(factory);
     clientTxnSetTest.executeTests();
     ClientTxnTest clientTxnTest(factory);
-    clientTxnTest.executeTests();
+    clientTxnTest.executeTests();*/
 //    testSpeed();
     return 0;
 };

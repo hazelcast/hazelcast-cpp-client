@@ -22,10 +22,10 @@ ENDFUNCTION()
 HEADER_DIRECTORIES(SUBDIRS ${CMAKE_SOURCE_DIR}/../)
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
-#add_library(cppClientTests ${HZ_TEST_SOURCES})
 
 include_directories(${SUBDIRS})
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/java/)
 add_executable(clientTest ${HZ_TEST_SOURCES})
-target_link_libraries(clientTest cppClient ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+target_link_libraries(clientTest hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+target_link_libraries(clientTest hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})

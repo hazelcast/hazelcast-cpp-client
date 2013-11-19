@@ -35,12 +35,12 @@ namespace hazelcast {
             };
 
             bool PortableContext::isClassDefinitionExists(int classId, int version) const {
-                long key = combineToLong(classId, version);
+                long long key = combineToLong(classId, version);
                 return (versionedDefinitions.containsKey(key));
             };
 
             ClassDefinition *PortableContext::lookup(int classId, int version) {
-                long key = combineToLong(classId, version);
+                long long key = combineToLong(classId, version);
                 return versionedDefinitions.get(key);
 
             };
@@ -56,7 +56,7 @@ namespace hazelcast {
                 cd->readData(dataInput);
                 cd->setBinary(compressedBinary);
 
-                long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
+                long long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
 
                 serializationContext->registerNestedDefinitions(cd);
                 ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
@@ -80,7 +80,7 @@ namespace hazelcast {
                     cd->setBinary(binary);
                 }
 
-                long key = combineToLong(cd->getClassId(), cd->getVersion());
+                long long key = combineToLong(cd->getClassId(), cd->getVersion());
                 serializationContext->registerNestedDefinitions(cd);
                 ClassDefinition *currentCD = versionedDefinitions.putIfAbsent(key, cd);
                 if (currentCD == NULL) {
@@ -97,7 +97,8 @@ namespace hazelcast {
                 for (int i = 0; i < binary.size(); i++)
                     uncompressedTemp[i] = binary[i];
 
-				std::vector<byte> compressedTemp(compSize);
+				byte* compressedTemp = new byte[compSize];
+
                 int err = compress2((Bytef *) &(compressedTemp[0]), &compSize, (Bytef *) &(uncompressedTemp[0]), ucompSize, Z_BEST_COMPRESSION);
                 switch (err) {
                     case Z_BUF_ERROR:
@@ -108,7 +109,8 @@ namespace hazelcast {
                         throw exception::IOException("PortableContext::compress", "there was not  enough memory at compression");
                 }
 				binary.resize(compSize);
-				std::copy(compressedTemp.begin(), compressedTemp.end() , binary.begin());
+				std::copy(compressedTemp, compressedTemp + compSize , binary.begin());
+				delete compressedTemp;
 
             };
 
@@ -140,11 +142,11 @@ namespace hazelcast {
                 return decompressed;
             };
 
-            long PortableContext::combineToLong(int x, int y) const {
-                return ((long) x << 32) | ((long) y & 0xFFFFFFFL);
-            };
+            long long PortableContext::combineToLong(int x, int y) const {
+				return ((long long)x) << 32 |  ((long long) y) & 0xFFFFFFFL;
+			};
 
-            int PortableContext::extractInt(long value, bool lowerBits) const {
+            int PortableContext::extractInt(long long value, bool lowerBits) const {
                 return (lowerBits) ? (int) value : (int) (value >> 32);
             };
 

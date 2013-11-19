@@ -45,13 +45,13 @@ namespace hazelcast {
             private:
                 void compress(std::vector<byte>&);
 
-                long combineToLong(int x, int y) const;
+                long long combineToLong(int x, int y) const;
 
-                int extractInt(long value, bool lowerBits) const;
+                int extractInt(long long value, bool lowerBits) const;
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                hazelcast::util::ConcurrentMap<long, ClassDefinition> versionedDefinitions;
+                hazelcast::util::ConcurrentMap<long long, ClassDefinition> versionedDefinitions;
 
                 SerializationContext *serializationContext;
             };
