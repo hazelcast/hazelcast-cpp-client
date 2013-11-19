@@ -162,7 +162,7 @@ namespace hazelcast {
 
             void deleteEntry(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest request(getName(), map::TxnMapRequestType::DELETE, &data);
+                map::TxnMapRequest request(getName(), map::TxnMapRequestType::DELETE_R, &data);
                 invoke<bool>(request);
             };
 
