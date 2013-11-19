@@ -5,9 +5,9 @@
 
 #include "OfferRequest.h"
 #include "QueuePortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

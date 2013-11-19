@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_HEARTBEAT_CHECKER
 #define HAZELCAST_HEARTBEAT_CHECKER
 
-#include "../serialization/Data.h"
-#include "../protocol/PingRequest.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/protocol/PingRequest.h"
 
 namespace hazelcast {
     namespace client {

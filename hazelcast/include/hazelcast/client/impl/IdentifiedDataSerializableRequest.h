@@ -5,11 +5,13 @@
 #ifndef HAZELCAST_IdentifiedDataSerializableRequest
 #define HAZELCAST_IdentifiedDataSerializableRequest
 
-#include "IdentifiedDataSerializable.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class ObjectDataInput;
+        }
         namespace impl {
 
             class IdentifiedDataSerializableRequest : public IdentifiedDataSerializable {

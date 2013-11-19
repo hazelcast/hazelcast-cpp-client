@@ -8,12 +8,12 @@
 #ifndef HAZELCAST_TransactionalList
 #define HAZELCAST_TransactionalList
 
-#include "Data.h"
-#include "TxnListAddRequest.h"
-#include "TransactionProxy.h"
-#include "TxnListRemoveRequest.h"
-#include "TxnListSizeRequest.h"
-#include "TransactionalObject.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/collection/TxnListAddRequest.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/collection/TxnListRemoveRequest.h"
+#include "hazelcast/client/collection/TxnListSizeRequest.h"
+#include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
     namespace client {

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MultiMapUnlockRequest
 #define HAZELCAST_MultiMapUnlockRequest
 
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 
 namespace hazelcast {
     namespace client {

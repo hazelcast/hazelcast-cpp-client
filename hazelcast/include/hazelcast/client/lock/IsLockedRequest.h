@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_IsLockedRequest
 #define HAZELCAST_IsLockedRequest
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {

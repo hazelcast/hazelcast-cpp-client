@@ -7,14 +7,14 @@
 #ifndef HAZELCAST_ADD_INDEX_REQUEST
 #define HAZELCAST_ADD_INDEX_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
 
-            class AddIndexRequest : public Portable {
+            class AddIndexRequest : public impl::PortableRequest {
             public:
                 AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered);
 
@@ -23,8 +23,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 std::string name;

@@ -4,13 +4,13 @@
 
 
 
-#include "Socket.h"
-#include "../serialization/InputSocketStream.h"
-#include "../serialization/OutputSocketStream.h"
-#include "../serialization/Data.h"
-
 #ifndef HAZELCAST_CONNECTION
 #define HAZELCAST_CONNECTION
+
+#include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

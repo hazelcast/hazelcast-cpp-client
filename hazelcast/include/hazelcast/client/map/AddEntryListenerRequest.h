@@ -7,15 +7,15 @@
 #ifndef HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 #define HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 
-#include "Portable.h"
-#include "Data.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
 
-            class AddEntryListenerRequest : public Portable {
+            class AddEntryListenerRequest : public impl::PortableRequest {
             public:
                 AddEntryListenerRequest(const std::string& name, bool includeValue);
 
@@ -31,7 +31,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 std::string name;

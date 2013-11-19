@@ -7,14 +7,14 @@
 #ifndef HAZELCAST_TOPIC
 #define HAZELCAST_TOPIC
 
-#include "spi/ClientContext.h"
-#include "serialization/Data.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "topic/PublishRequest.h"
 #include "topic/AddMessageListenerRequest.h"
 #include "TopicEventHandler.h"
-#include "serialization/SerializationService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 #include <string>
 
 namespace hazelcast {

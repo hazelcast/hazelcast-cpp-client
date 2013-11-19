@@ -7,8 +7,7 @@
 #ifndef HAZELCAST_CollectionAddRequest
 #define HAZELCAST_CollectionAddRequest
 
-#include <string>
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,14 +17,14 @@ namespace hazelcast {
         namespace collection {
             class CollectionAddRequest : public CollectionRequest {
             public:
-                CollectionAddRequest(const std::string& name, const serialization::Data& data);
+                CollectionAddRequest(const std::string &name, const serialization::Data &data);
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data& data;
+                const serialization::Data &data;
 
             };
         }

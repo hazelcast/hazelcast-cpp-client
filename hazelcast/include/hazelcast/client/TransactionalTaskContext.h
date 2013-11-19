@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TransactionalTaskContext
 #define HAZELCAST_TransactionalTaskContext
 
-#include "TransactionContext.h"
+#include "hazelcast/client/TransactionContext.h"
 
 namespace hazelcast {
     namespace client {

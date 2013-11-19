@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_HazelcastIllegalStateException
 #define HAZELCAST_HazelcastIllegalStateException
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {

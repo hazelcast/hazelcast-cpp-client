@@ -6,7 +6,7 @@
 #include "hazelcast/client/serialization/DataSerializer.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {

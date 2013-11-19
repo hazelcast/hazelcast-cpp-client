@@ -7,8 +7,7 @@
 #ifndef HAZELCAST_GetAndAddRequest
 #define HAZELCAST_GetAndAddRequest
 
-#include "AtomicLongRequest.h"
-#include <string>
+#include "hazelcast/client/atomiclong/AtomicLongRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,24 +15,11 @@ namespace hazelcast {
 
             class GetAndAddRequest : public AtomicLongRequest {
             public:
-                GetAndAddRequest(const std::string& instanceName, long delta)
-                : AtomicLongRequest(instanceName, delta) {
+                GetAndAddRequest(const std::string &instanceName, long delta);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return AtomicLongPortableHook::GET_AND_ADD;
-                };
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    AtomicLongRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    AtomicLongRequest::readPortable(reader);
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
 
             };
         }

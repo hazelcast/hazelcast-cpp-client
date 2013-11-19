@@ -8,10 +8,10 @@
 #ifndef HAZELCAST_TopicEventHandler
 #define HAZELCAST_TopicEventHandler
 
-#include "../spi/ClusterService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include "PortableMessage.h"
 #include "Message.h"
-#include "../serialization/SerializationService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

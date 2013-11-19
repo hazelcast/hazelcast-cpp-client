@@ -8,10 +8,10 @@
 #ifndef HAZELCAST_TransactionalQueue
 #define HAZELCAST_TransactionalQueue
 
-#include "Data.h"
-#include "TransactionProxy.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
 #include "TxnOfferRequest.h"
-#include "InterruptedException.h"
+#include "hazelcast/client/exception/InterruptedException.h"
 #include "TxnPollRequest.h"
 #include "TxnSizeRequest.h"
 

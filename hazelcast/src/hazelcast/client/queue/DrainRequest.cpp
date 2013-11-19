@@ -6,7 +6,7 @@
 #include "hazelcast/client/queue/DrainRequest.h"
 #include "QueuePortableHook.h"
 #include "PortableReader.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {

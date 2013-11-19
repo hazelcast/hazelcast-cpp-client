@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_Lock_LockRequest
 #define HAZELCAST_Lock_LockRequest
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

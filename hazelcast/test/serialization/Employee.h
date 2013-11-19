@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_Employee
 #define HAZELCAST_Employee
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

@@ -4,10 +4,10 @@
 
 
 #include "hazelcast/client/map/AddEntryListenerRequest.h"
-#include "PortableHook.h"
+#include "hazelcast/client/map/PortableHook.h"
 #include "SerializationConstants.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -57,20 +57,6 @@ namespace hazelcast {
                 }
             };
 
-
-            void AddEntryListenerRequest::readPortable(serialization::PortableReader &reader) {
-                name = reader.readUTF("name");
-                includeValue = reader.readBoolean("i");
-                hasKey = reader.readBoolean("key");
-                hasPredicate = reader.readBoolean("pre");
-                if (hasPredicate) {
-                    sql = reader.readUTF("p");
-                }
-                if (hasKey) {
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                }
-            };
 
         }
     }

@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_REMOVE_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_MEMBERSHIP_EVENT
 #define HAZELCAST_MEMBERSHIP_EVENT
 
-#include "Member.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {

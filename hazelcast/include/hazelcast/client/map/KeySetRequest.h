@@ -6,13 +6,13 @@
 #ifndef MAP_KEY_SET_REQUEST
 #define MAP_KEY_SET_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class KeySetRequest : public Portable {
+            class KeySetRequest : public impl::PortableRequest {
             public:
                 KeySetRequest(const std::string& name);
 
@@ -22,7 +22,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 std::string name;

@@ -4,9 +4,9 @@
 
 
 #include "GetLockCountRequest.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "LockPortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 
 namespace hazelcast {

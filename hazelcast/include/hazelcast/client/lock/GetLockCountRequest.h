@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_GetLockCountRequest
 #define HAZELCAST_GetLockCountRequest
 
-#include "RetryableRequest.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

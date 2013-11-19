@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_TxnOfferRequest
 #define HAZELCAST_TxnOfferRequest
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_CollectionContainsRequest
 #define HAZELCAST_CollectionContainsRequest
 
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 #include <vector>
 
 namespace hazelcast {

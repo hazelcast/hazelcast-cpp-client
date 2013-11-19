@@ -4,9 +4,9 @@
 
 
 #include "hazelcast/client/lock/LockRequest.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "LockPortableHook.h"
 
 

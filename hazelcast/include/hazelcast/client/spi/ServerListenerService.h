@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_SERVER_LISTENER_SERVICE
 #define HAZELCAST_SERVER_LISTENER_SERVICE
 
-#include "../serialization/Data.h"
-#include "ListenerSupport.h"
-#include "ClientContext.h"
-#include "InvocationService.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/spi/ListenerSupport.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
 #include <set>
 
 namespace hazelcast {

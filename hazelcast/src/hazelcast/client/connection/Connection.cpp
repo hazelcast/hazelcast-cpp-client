@@ -5,7 +5,7 @@
 
 #include "Connection.h"
 #include "DataOutput.h"
-#include "SerializationService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

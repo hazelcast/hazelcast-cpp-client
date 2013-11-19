@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_GetAllRequest
 #define HAZELCAST_GetAllRequest
 
-#include "KeyBasedRequest.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {

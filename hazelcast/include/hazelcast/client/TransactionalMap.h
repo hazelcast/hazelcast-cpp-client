@@ -8,13 +8,13 @@
 #ifndef HAZELCAST_TransactionalMap
 #define HAZELCAST_TransactionalMap
 
-#include "SerializationService.h"
-#include "TransactionProxy.h"
-#include "ClusterService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include "TxnMapRequest.h"
 #include "MapKeySet.h"
 #include "MapValueCollection.h"
-#include "TransactionalObject.h"
+#include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
     namespace client {

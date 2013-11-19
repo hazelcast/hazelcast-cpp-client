@@ -6,13 +6,13 @@
 #ifndef HAZELCAST_MAP_FLUSH_REQUEST
 #define HAZELCAST_MAP_FLUSH_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class FlushRequest : public Portable {
+            class FlushRequest : public impl::PortableRequest {
             public:
                 FlushRequest(const std::string& name);
 
@@ -22,7 +22,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 std::string name;

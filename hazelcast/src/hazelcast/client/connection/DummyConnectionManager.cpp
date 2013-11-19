@@ -5,7 +5,7 @@
 
 #include "DummyConnectionManager.h"
 #include "Connection.h"
-#include "ClusterService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {
     namespace client {

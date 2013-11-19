@@ -5,14 +5,14 @@
 #ifndef HAZELCAST_TransactionalMultiMap
 #define HAZELCAST_TransactionalMultiMap
 
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "TxnMultiMapPutRequest.h"
 #include "TxnMultiMapGetRequest.h"
-#include "PortableCollection.h"
+#include "hazelcast/client/impl/PortableCollection.h"
 #include "TxnMultiMapRemoveRequest.h"
 #include "TxnMultiMapValueCountRequest.h"
 #include "TxnMultiMapSizeRequest.h"
-#include "TransactionProxy.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
 
 namespace hazelcast {
     namespace client {

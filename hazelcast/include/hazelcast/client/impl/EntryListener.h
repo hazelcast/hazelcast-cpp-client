@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_ENTRY_LISTENER
 #define HAZELCAST_ENTRY_LISTENER
 
-#include "../spi/EventListener.h"
-#include "EntryEvent.h"
+#include "hazelcast/client/spi/EventListener.h"
+#include "hazelcast/client/impl/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {

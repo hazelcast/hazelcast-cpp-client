@@ -7,27 +7,9 @@ include_directories( ${Boost_INCLUDE_DIRS})
 find_package( ZLIB REQUIRED )
 include_directories( ${ZLIB_INCLUDE_DIRS} )
 
-FUNCTION(HEADER_DIRECTORIES result curdir)
-    FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-    SET(dirlist "")
-    FOREACH(child ${children})
-      IF(IS_DIRECTORY ${curdir}/${child})
-          SET(dirlist ${dirlist} ${curdir}/${child})		 	
-      ENDIF()
-    ENDFOREACH()
-
-	FOREACH(dir ${dirlist})
-		HEADER_DIRECTORIES(subdirs ${dir})
-		SET(dirlist ${dirlist} ${subdirs})		 		
-	ENDFOREACH()
-    
-    SET(${result} ${dirlist} PARENT_SCOPE) 
-ENDFUNCTION()
-
 message(STATUS "Preparing hazelcast client ..... ")
-HEADER_DIRECTORIES(SUBDIRS ${CMAKE_SOURCE_DIR}/hazelcast/include)
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
-include_directories(${SUBDIRS} ${CMAKE_SOURCE_DIR}/hazelcast/include )
+include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 add_library(hazelcastClientShared SHARED ${HZ_SOURCES})
 add_library(hazelcastClientStatic ${HZ_SOURCES})
 

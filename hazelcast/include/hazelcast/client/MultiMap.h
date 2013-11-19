@@ -15,13 +15,13 @@
 #include "multimap/GetAllRequest.h"
 #include "multimap/MultiMapLockRequest.h"
 #include "multimap/MultiMapUnlockRequest.h"
-#include "PortableCollection.h"
+#include "hazelcast/client/impl/PortableCollection.h"
 #include "MultiMapIsLockedRequest.h"
 #include "PortableEntrySetResponse.h"
-#include "ClientContext.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "EntryEventHandler.h"
-#include "ServerListenerService.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 #include <string>
 #include <map>
 #include <set>

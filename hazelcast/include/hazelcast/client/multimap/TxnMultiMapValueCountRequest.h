@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMultiMapValueCountRequest
 #define HAZELCAST_TxnMultiMapValueCountRequest
 
-#include "TxnMultiMapRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapRequest.h"
 
 namespace hazelcast {
     namespace client {

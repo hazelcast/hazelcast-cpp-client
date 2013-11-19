@@ -1,10 +1,10 @@
 #ifndef HAZELCAST_ATOMIC_NUMBER
 #define HAZELCAST_ATOMIC_NUMBER
 
-#include "spi/ClientContext.h"
-#include "spi/InvocationService.h"
-#include "serialization/Data.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 #include <string>
 
 

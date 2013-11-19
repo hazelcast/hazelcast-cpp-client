@@ -5,8 +5,8 @@
 
 #include "QueryResultSet.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 
 namespace hazelcast {

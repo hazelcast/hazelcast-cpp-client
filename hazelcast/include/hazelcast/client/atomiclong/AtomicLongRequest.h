@@ -7,30 +7,28 @@
 #ifndef HAZELCAST_AtomicLongRequest
 #define HAZELCAST_AtomicLongRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "AtomicLongPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class PortableWriter;
+        }
+
         namespace atomiclong {
 
-            class AtomicLongRequest : public Portable {
+            class AtomicLongRequest : public impl::PortableRequest {
             public:
-                AtomicLongRequest(const std::string& instanceName, long delta);
+                AtomicLongRequest(const std::string &instanceName, long delta);
 
                 virtual int getFactoryId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
                 long delta;
-                std::string instanceName;
+                const std::string &instanceName;
             };
         }
     }

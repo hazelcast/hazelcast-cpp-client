@@ -7,29 +7,27 @@
 #ifndef HAZELCAST_QUERY_REQUEST
 #define HAZELCAST_QUERY_REQUEST
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class QueryRequest : public Portable, public RetryableRequest {
+            class QueryRequest : public impl::PortableRequest, public RetryableRequest {
             public:
-                QueryRequest(const std::string& name, const std::string& iterationType, const std::string& sql);
+                QueryRequest(const std::string &name, const std::string &iterationType, const std::string &sql);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                std::string name;
-                std::string iterationType;
-                std::string sql;
+                const std::string& name;
+                const std::string& iterationType;
+                const std::string& sql;
             };
         }
     }

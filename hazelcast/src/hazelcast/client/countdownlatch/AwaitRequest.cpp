@@ -3,7 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AwaitRequest.h"
+#include "hazelcast/client/countdownlatch/AwaitRequest.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/countdownlatch/CountDownLatchPortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -28,10 +30,6 @@ namespace hazelcast {
                 writer.writeLong("timeout", timeout);
             };
 
-            void AwaitRequest::readPortable(serialization::PortableReader& reader) {
-                instanceName = reader.readUTF("name");
-                timeout = reader.readLong("timeout");
-            };
         }
     }
 }

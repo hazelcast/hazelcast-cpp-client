@@ -4,14 +4,14 @@
 
 
 #include "hazelcast/client/map/GetAllRequest.h"
-#include "PortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetAllRequest::GetAllRequest(const std::string& name, std::vector<serialization::Data>& keys)
+            GetAllRequest::GetAllRequest(const std::string& name,const std::vector<serialization::Data>& keys)
             :name(name)
             , keys(keys) {
 
@@ -31,16 +31,6 @@ namespace hazelcast {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 for (int i = 0; i < keys.size(); i++) {
                     keys[i].writeData(out);
-                }
-            };
-
-            void GetAllRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                int size = reader.readInt("size");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                keys.resize(size);
-                for (int i = 0; i < keys.size(); i++) {
-                    keys[i].readData(in);
                 }
             };
         }

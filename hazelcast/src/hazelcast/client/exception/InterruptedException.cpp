@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "InterruptedException.h"
+#include "hazelcast/client/exception/InterruptedException.h"
 
 
 namespace hazelcast {

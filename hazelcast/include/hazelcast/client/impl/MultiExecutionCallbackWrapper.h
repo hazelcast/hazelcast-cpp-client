@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_MultiExecutionCallbackWrapper
 #define HAZELCAST_MultiExecutionCallbackWrapper
 
-#include "Member.h"
-#include "boost/atomic/atomic.hpp"
+#include "hazelcast/client/connection/Member.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {

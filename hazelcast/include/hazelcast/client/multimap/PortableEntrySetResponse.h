@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_PortableEntrySetResponse
 #define HAZELCAST_PortableEntrySetResponse
 
-#include "PortableResponse.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include <vector>
 #include <utility>
 

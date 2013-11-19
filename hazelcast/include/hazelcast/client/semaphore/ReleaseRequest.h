@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ReleaseRequest
 #define HAZELCAST_ReleaseRequest
 
-#include "../serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 #include "SemaphorePortableHook.h"
 #include "SemaphoreRequest.h"
 #include <string>

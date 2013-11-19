@@ -3,11 +3,11 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TransactionProxy.h"
-#include "CreateTxnRequest.h"
-#include "CommitTxnRequest.h"
-#include "RollbackTxnRequest.h"
-#include "IllegalStateException.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/txn/CreateTxnRequest.h"
+#include "hazelcast/client/txn/CommitTxnRequest.h"
+#include "hazelcast/client/txn/RollbackTxnRequest.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 
 namespace hazelcast {

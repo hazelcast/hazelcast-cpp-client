@@ -3,15 +3,15 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IsShutdownRequest.h"
+#include "hazelcast/client/executor/IsShutdownRequest.h"
 #include "hazelcast/client/executor/DataSerializableHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace executor {
             IsShutdownRequest::IsShutdownRequest(const std::string& instanceName)
             :instanceName(instanceName) {
-
 
             }
 
@@ -26,11 +26,6 @@ namespace hazelcast {
             void IsShutdownRequest::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeUTF(instanceName);
             }
-
-            void IsShutdownRequest::readData(serialization::ObjectDataInput& reader) {
-                instanceName = reader.readUTF();
-            }
-
 
         }
     }

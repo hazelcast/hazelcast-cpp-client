@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_HazelcastIOException
 #define HAZELCAST_HazelcastIOException
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {

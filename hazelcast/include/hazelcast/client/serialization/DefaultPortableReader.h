@@ -11,7 +11,7 @@
 
 #include "ClassDefinition.h"
 #include "DataInput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include <string>
 #include <memory>
 

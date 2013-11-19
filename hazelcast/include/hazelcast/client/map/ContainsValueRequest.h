@@ -5,8 +5,8 @@
 #ifndef HAZELCAST_MAP_CONTAINS_VALUE_R
 #define HAZELCAST_MAP_CONTAINS_VALUE_R
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -15,22 +15,19 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class ContainsValueRequest : public Portable, public RetryableRequest {
+            class ContainsValueRequest : public impl::PortableRequest, public RetryableRequest {
             public:
-                ContainsValueRequest(const std::string& name, serialization::Data& value);
+                ContainsValueRequest(const std::string &name, const serialization::Data &value);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
-
-
-                void readPortable(serialization::PortableReader& reader);
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data& value;
-                std::string name;
+                const serialization::Data &value;
+                const std::string name;
             };
         }
     }

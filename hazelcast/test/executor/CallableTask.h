@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_CallableTask
 #define HAZELCAST_CallableTask
 
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include <string>
 
 using namespace hazelcast::client;

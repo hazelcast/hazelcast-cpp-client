@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 #define HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 
-#include "Data.h"
-#include "PortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
 
 namespace hazelcast {

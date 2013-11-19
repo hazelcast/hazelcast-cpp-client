@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_HazelcastInstanceNotActiveException
 #define HAZELCAST_HazelcastInstanceNotActiveException
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 
 namespace hazelcast {

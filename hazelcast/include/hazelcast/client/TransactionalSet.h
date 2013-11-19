@@ -8,9 +8,9 @@
 #define HAZELCAST_TransactionalSet
 
 
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "TxnSetAddRequest.h"
-#include "TransactionProxy.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
 #include "TxnSetRemoveRequest.h"
 #include "TxnSetSizeRequest.h"
 

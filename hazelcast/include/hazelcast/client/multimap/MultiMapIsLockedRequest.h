@@ -8,8 +8,8 @@
 #define HAZELCAST_MultiMapIsLockedRequest
 
 
-#include "RetryableRequest.h"
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 #include <string>
 
 namespace hazelcast {

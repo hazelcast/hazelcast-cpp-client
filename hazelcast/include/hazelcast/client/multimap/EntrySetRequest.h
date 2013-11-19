@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_EntrySetRequest
 #define HAZELCAST_EntrySetRequest
 
-#include "AllPartitionsRequest.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/multimap/AllPartitionsRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {

@@ -5,8 +5,8 @@
 #ifndef HAZELCAST_ITEM_EVENT
 #define HAZELCAST_ITEM_EVENT
 
-#include "EventObject.h"
-#include "Member.h"
+#include "hazelcast/client/impl/EventObject.h"
+#include "hazelcast/client/connection/Member.h"
 
 namespace hazelcast {
     namespace client {

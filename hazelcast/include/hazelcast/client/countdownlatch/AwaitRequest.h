@@ -7,17 +7,17 @@
 #ifndef HAZELCAST_AwaitRequest
 #define HAZELCAST_AwaitRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "CountDownLatchPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization{
+            class PortableWriter;
+        }
+
         namespace countdownlatch {
-            class AwaitRequest : public Portable {
+            class AwaitRequest : public impl::PortableRequest {
             public:
                 AwaitRequest(const std::string& instanceName, long timeout);
 
@@ -26,8 +26,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
 

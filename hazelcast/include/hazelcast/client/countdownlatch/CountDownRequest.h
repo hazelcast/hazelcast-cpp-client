@@ -7,17 +7,18 @@
 #ifndef HAZELCAST_CountDownRequest
 #define HAZELCAST_CountDownRequest
 
-#include "../serialization/SerializationConstants.h"
-#include "CountDownLatchPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "Portable.h"
+
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization{
+            class PortableWriter;
+        }
+
         namespace countdownlatch {
-            class CountDownRequest : public Portable {
+            class CountDownRequest : public impl::PortableRequest {
             public:
                 CountDownRequest(const std::string& instanceName);
 
@@ -26,8 +27,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
 

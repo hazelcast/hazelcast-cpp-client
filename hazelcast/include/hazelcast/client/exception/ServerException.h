@@ -4,9 +4,7 @@
 #ifndef HAZELCAST_SERVER_ERROR
 #define HAZELCAST_SERVER_ERROR
 
-#include "ProtocolConstants.h"
-#include "SerializationConstants.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include <string>
 
 namespace hazelcast {
@@ -14,7 +12,7 @@ namespace hazelcast {
         namespace exception {
 
 
-            class ServerException : public Portable, public std::exception {
+            class ServerException : public impl::PortableResponse, public std::exception {
 
             public:
                 ServerException();
@@ -32,8 +30,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 int getFactoryId() const;
-
-                void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
             };

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_PutRequest
 #define HAZELCAST_PutRequest
 
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 
 namespace hazelcast {
     namespace client {

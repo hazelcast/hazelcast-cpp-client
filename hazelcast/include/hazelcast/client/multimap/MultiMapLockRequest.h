@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MultiMapLockRequest
 #define HAZELCAST_MultiMapLockRequest
 
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 #include <vector>
 
 namespace hazelcast {

@@ -10,7 +10,7 @@
 #define HAZELCAST_PORTABLE_WRITER
 
 #include "DataOutput.h"
-#include "ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "AtomicPointer.h"
 #include <string>
 #include <set>

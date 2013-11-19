@@ -8,14 +8,14 @@
 #ifndef HAZELCAST_TransactionContext
 #define HAZELCAST_TransactionContext
 
-#include "TransactionOptions.h"
-#include "TransactionProxy.h"
-#include "TransactionalMap.h"
-#include "IllegalStateException.h"
-#include "TransactionalQueue.h"
-#include "TransactionalMultiMap.h"
-#include "TransactionalList.h"
-#include "TransactionalSet.h"
+#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/TransactionalMap.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/TransactionalQueue.h"
+#include "hazelcast/client/TransactionalMultiMap.h"
+#include "hazelcast/client/TransactionalList.h"
+#include "hazelcast/client/TransactionalSet.h"
 
 namespace hazelcast {
     namespace client {

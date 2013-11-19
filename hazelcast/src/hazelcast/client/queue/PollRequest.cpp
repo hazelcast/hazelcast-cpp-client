@@ -5,7 +5,7 @@
 
 #include "PollRequest.h"
 #include "QueuePortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 
 namespace hazelcast {

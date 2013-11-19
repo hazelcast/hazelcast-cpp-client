@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_ExecutorDefaultImpl
 #define HAZELCAST_ExecutorDefaultImpl
 
-#include "ClientContext.h"
-#include "Data.h"
-#include "Address.h"
-#include "InvocationService.h"
-#include "Future.h"
-#include "LocalTargetCallableRequest.h"
-#include "TargetCallableRequest.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/Future.h"
+#include "hazelcast/client/executor/LocalTargetCallableRequest.h"
+#include "hazelcast/client/executor/TargetCallableRequest.h"
 
 namespace hazelcast {
     namespace client {

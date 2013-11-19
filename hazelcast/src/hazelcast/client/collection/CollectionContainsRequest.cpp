@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "CollectionContainsRequest.h"
-#include "Data.h"
-#include "PortableWriter.h"
-#include "CollectionPortableHook.h"
+#include "hazelcast/client/collection/CollectionContainsRequest.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {

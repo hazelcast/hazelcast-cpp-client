@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_GET_PARTITIONS_REQUEST
 #define HAZELCAST_GET_PARTITIONS_REQUEST
 
-#include "IdentifiedDataSerializable.h"
-#include "RetryableRequest.h"
-#include "../protocol/ProtocolConstants.h"
-#include "../serialization/SerializationConstants.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {

@@ -7,9 +7,9 @@
 #include "ISet.h"
 #include "IList.h"
 #include "ITopic.h"
-#include "TransactionOptions.h"
-#include "TransactionContext.h"
-#include "TransactionalTaskContext.h"
+#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/TransactionalTaskContext.h"
 
 namespace hazelcast {
     namespace client {

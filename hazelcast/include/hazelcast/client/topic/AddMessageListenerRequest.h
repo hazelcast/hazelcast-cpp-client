@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_AddMessageListenerRequest
 #define HAZELCAST_AddMessageListenerRequest
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

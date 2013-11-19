@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "CollectionSizeRequest.h"
-#include "CollectionPortableHook.h"
+#include "hazelcast/client/collection/CollectionSizeRequest.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {

@@ -5,8 +5,8 @@
 #define HAZELCAST_PRINCIPAL
 
 #include "ProtocolConstants.h"
-#include "../serialization/SerializationConstants.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

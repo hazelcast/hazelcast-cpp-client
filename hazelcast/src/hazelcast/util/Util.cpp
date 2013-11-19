@@ -7,9 +7,9 @@
 
 
 #include "Util.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <boost/thread.hpp>
 
 namespace hazelcast {

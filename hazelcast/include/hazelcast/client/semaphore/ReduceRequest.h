@@ -8,7 +8,7 @@
 #define HAZELCAST_ReduceRequest
 
 
-#include "../serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 #include "SemaphorePortableHook.h"
 #include "SemaphoreRequest.h"
 #include <string>

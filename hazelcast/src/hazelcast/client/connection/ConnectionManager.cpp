@@ -7,7 +7,7 @@
 #include "ConnectionPool.h"
 #include "ClientConfig.h"
 #include "Connection.h"
-#include "ClusterService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include "AuthenticationRequest.h"
 #include "SocketInterceptor.h"
 

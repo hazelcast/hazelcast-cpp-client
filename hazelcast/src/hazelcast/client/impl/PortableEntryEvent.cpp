@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/impl/PortableEntryEvent.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 
 namespace hazelcast {

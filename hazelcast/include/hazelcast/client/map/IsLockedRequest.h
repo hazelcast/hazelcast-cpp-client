@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_MAP_IS_LOCKED_REQUEST
 #define HAZELCAST_MAP_IS_LOCKED_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class IsLockedRequest : public Portable {
+            class IsLockedRequest : public impl::PortableRequest {
             public:
                 IsLockedRequest(const std::string& name, serialization::Data& key);
 
@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 std::string name;

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnSetSizeRequest
 #define HAZELCAST_TxnSetSizeRequest
 
-#include "TxnCollectionRequest.h"
+#include "hazelcast/client/collection/TxnCollectionRequest.h"
 
 namespace hazelcast {
     namespace client {

@@ -4,7 +4,7 @@
 // To change the template use AppCode | Preferences | File Templates.
 //
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {

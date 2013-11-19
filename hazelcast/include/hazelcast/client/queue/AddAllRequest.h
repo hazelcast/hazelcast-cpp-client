@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_QUEUE_ADD_ALL_REQUEST
 #define HAZELCAST_QUEUE_ADD_ALL_REQUEST
 
-#include "Data.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

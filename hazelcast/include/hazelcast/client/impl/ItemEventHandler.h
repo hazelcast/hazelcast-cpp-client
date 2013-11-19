@@ -8,11 +8,11 @@
 #ifndef HAZELCAST_ITEM_EVENT_HANDLER
 #define HAZELCAST_ITEM_EVENT_HANDLER
 
-#include "../spi/ClusterService.h"
-#include "PortableItemEvent.h"
-#include "EntryEvent.h"
-#include "ItemEvent.h"
-#include "../serialization/SerializationService.h"
+#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/impl/PortableItemEvent.h"
+#include "hazelcast/client/impl/EntryEvent.h"
+#include "hazelcast/client/impl/ItemEvent.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {

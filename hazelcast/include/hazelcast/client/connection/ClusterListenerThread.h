@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
-#include "Member.h"
+#include "hazelcast/client/connection/Member.h"
 #include <boost/atomic.hpp>
 
 namespace hazelcast {

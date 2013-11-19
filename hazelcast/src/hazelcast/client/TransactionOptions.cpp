@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
-#include "TransactionOptions.h"
-#include "IllegalStateException.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 namespace hazelcast {
     namespace client {

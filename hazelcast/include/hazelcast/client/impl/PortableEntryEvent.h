@@ -5,12 +5,11 @@
 #ifndef HAZELCAST_PORTABLE_ENTRY_EVENT
 #define HAZELCAST_PORTABLE_ENTRY_EVENT
 
-#include "EventObject.h"
-#include "EntryEvent.h"
-#include "Data.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/EventObject.h"
+#include "hazelcast/client/impl/EntryEvent.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
-
 
 namespace hazelcast {
     namespace client {

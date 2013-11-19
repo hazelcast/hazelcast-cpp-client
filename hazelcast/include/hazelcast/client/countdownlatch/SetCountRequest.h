@@ -7,13 +7,17 @@
 #ifndef HAZELCAST_SetCountRequest
 #define HAZELCAST_SetCountRequest
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization{
+            class PortableWriter;
+        }
+
         namespace countdownlatch {
-            class SetCountRequest : public Portable {
+            class SetCountRequest : public impl::PortableRequest {
             public:
                 SetCountRequest(const std::string& instanceName, int count);
 
@@ -22,8 +26,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 std::string instanceName;

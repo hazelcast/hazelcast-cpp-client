@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_CollectionRequest
 #define HAZELCAST_CollectionRequest
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {

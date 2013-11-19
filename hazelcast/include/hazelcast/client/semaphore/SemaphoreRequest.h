@@ -7,9 +7,9 @@
 #ifndef HAZELCAST_SemaphoreRequest
 #define HAZELCAST_SemaphoreRequest
 
-#include "../serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 #include "SemaphorePortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 #include <string>
 

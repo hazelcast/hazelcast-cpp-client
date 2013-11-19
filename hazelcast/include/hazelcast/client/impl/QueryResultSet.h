@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_QueryResultSet
 #define HAZELCAST_QueryResultSet
 
-#include "IdentifiedDataSerializable.h"
-#include "QueryResultEntry.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/QueryResultEntry.h"
 #include <string>
 #include <vector>
 

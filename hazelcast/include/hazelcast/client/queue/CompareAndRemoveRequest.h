@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 
-#include "Portable.h"
-#include "Data.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {

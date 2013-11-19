@@ -9,10 +9,10 @@
 #include "hazelcast/client/serialization/SerializationContext.h"
 #include "hazelcast/client/serialization/ClassDefinitionWriter.h"
 #include "DefaultPortableWriter.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "DefaultPortableReader.h"
 #include "PortableReader.h"
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {

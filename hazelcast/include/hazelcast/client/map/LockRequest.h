@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_LOCK_REQUEST
 #define HAZELCAST_LOCK_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class LockRequest : public Portable {
+            class LockRequest : public impl::PortableRequest {
             public:
                 LockRequest(const std::string& name, serialization::Data& key, int threadId, long ttl, long timeout);
 
@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 serialization::Data& key;

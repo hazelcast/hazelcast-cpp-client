@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_MAP_ENTRY_SET
 #define HAZELCAST_MAP_ENTRY_SET
 
-#include "Data.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include <vector>
 
 

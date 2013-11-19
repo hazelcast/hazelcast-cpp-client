@@ -4,9 +4,9 @@
 
 
 #include "AddMessageListenerRequest.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "TopicPortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 
 namespace hazelcast {

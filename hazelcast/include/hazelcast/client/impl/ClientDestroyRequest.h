@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientDestroyRequest
 #define HAZELCAST_ClientDestroyRequest
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 

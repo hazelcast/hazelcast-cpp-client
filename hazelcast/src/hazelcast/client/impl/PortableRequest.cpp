@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "IOException.h"
 
 namespace hazelcast {

@@ -8,10 +8,10 @@
 #ifndef HAZELCAST_LISTENER_SUPPORT
 #define HAZELCAST_LISTENER_SUPPORT
 
-#include "Data.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "ResponseStream.h"
-#include "InvocationService.h"
-#include "ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "CountDownLatch.h"
 #include <boost/thread.hpp>
 

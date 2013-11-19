@@ -1,8 +1,8 @@
 #ifndef HAZELCAST_ADDRESS
 #define HAZELCAST_ADDRESS
 
-#include "../util/Util.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include <string>
 #include <sstream>
 #include <iterator>

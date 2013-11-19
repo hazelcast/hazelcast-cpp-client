@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_ILock
 #define HAZELCAST_ILock
 
-#include "spi/ClientContext.h"
-#include "spi/InvocationService.h"
-#include "proxy/DistributedObject.h"
-#include "serialization/Data.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {

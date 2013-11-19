@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_AllPartitionsRequest
 #define HAZELCAST_AllPartitionsRequest
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {

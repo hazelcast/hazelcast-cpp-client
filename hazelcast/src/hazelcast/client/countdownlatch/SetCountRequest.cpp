@@ -3,10 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "SetCountRequest.h"
-#include "CountDownLatchPortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/countdownlatch/SetCountRequest.h"
+#include "hazelcast/client/countdownlatch/CountDownLatchPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -28,11 +27,6 @@ namespace hazelcast {
             void SetCountRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
                 writer.writeInt("count", count);
-            };
-
-            void SetCountRequest::readPortable(serialization::PortableReader& reader) {
-                instanceName = reader.readUTF("name");
-                count = reader.readInt("count");
             };
         }
     }

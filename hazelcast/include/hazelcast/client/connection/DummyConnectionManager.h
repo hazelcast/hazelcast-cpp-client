@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_DummyConnectionManager
 #define HAZELCAST_DummyConnectionManager
 
-#include "ConnectionManager.h"
-#include "Address.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/Address.h"
 
 
 namespace hazelcast {

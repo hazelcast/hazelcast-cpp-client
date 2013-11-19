@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_PortableMessage
 #define HAZELCAST_PortableMessage
 
-#include "Portable.h"
-#include "Data.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {

@@ -4,10 +4,10 @@
 
 
 #include "PutAllRequest.h"
-#include "PortableHook.h"
+#include "hazelcast/client/map/PortableHook.h"
 #include "MapEntrySet.h"
-#include "PortableReader.h"
-#include "PortableWriter.h"
+
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,12 +30,6 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 entrySet.writeData(out);
-            };
-
-            void PutAllRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                entrySet.readData(in);
             };
         }
     }

@@ -4,9 +4,9 @@
 #ifndef HAZELCAST_QUEUE_CONTAINS_REQUEST
 #define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
-#include "../serialization/Data.h"
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <vector>
 #include <string>
 

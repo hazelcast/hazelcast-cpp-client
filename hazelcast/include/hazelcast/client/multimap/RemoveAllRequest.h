@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_RemoveAllRequest
 #define HAZELCAST_RemoveAllRequest
 
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 
 namespace hazelcast {
     namespace client {

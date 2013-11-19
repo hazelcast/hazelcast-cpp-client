@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AllPartitionsRequest.h"
+#include "hazelcast/client/multimap/AllPartitionsRequest.h"
 #include "MultiMapPortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {

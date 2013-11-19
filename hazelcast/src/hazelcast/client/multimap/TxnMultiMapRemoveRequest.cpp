@@ -4,8 +4,8 @@
 
 
 #include "TxnMultiMapRemoveRequest.h"
-#include "Data.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "MultiMapPortableHook.h"
 
 namespace hazelcast {

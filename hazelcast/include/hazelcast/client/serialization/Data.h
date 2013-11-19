@@ -27,9 +27,9 @@ namespace hazelcast {
 
                 Data(const int type, std::auto_ptr <std::vector<byte> > bytes);
 
-                Data(const Data&);
+                Data(const Data &);
 
-                Data& operator = (const Data&);
+                Data &operator = (const Data &);
 
                 ~Data();
 
@@ -54,13 +54,13 @@ namespace hazelcast {
                 Data clone() const;
 
                 template<typename  Out>
-                void writeData(Out & dataOutput) const {
+                void writeData(Out &dataOutput) const {
                     dataOutput.writeInt(type);
                     if (cd != NULL) {
                         dataOutput.writeInt(cd->getClassId());
                         dataOutput.writeInt(cd->getFactoryId());
                         dataOutput.writeInt(cd->getVersion());
-                        const std::vector<byte>& classDefBytes = cd->getBinary();
+                        const std::vector<byte> &classDefBytes = cd->getBinary();
 
                         dataOutput.writeInt(classDefBytes.size());
                         dataOutput.write(classDefBytes);
@@ -77,7 +77,7 @@ namespace hazelcast {
                 }
 
                 template<typename  Input>
-                void readData(Input & dataInput) {
+                void readData(Input &dataInput) {
                     type = dataInput.readInt();
                     int classId = dataInput.readInt();
 

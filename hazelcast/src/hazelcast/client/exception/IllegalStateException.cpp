@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IllegalStateException.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 namespace hazelcast {
     namespace client {

@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_PARTITION_RESPONSE
 #define HAZELCAST_PARTITION_RESPONSE
 
-#include "../Address.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include <vector>
 
 namespace hazelcast {

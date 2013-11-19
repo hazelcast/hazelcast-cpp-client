@@ -8,35 +8,24 @@
 #ifndef HAZELCAST_AddAndGetRequest
 #define HAZELCAST_AddAndGetRequest
 
-#include "AtomicLongRequest.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/atomiclong/AtomicLongRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization{
+            class PortableWriter;
+        }
+
         namespace atomiclong {
 
             class AddAndGetRequest : public AtomicLongRequest {
             public:
-                AddAndGetRequest(const std::string& instanceName, long delta)
-                : AtomicLongRequest(instanceName, delta) {
+                AddAndGetRequest(const std::string& instanceName, long delta);
 
-                };
+                int getClassId() const ;
 
-                int getClassId() const {
-                    return AtomicLongPortableHook::ADD_AND_GET;
-                };
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    AtomicLongRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    AtomicLongRequest::readPortable(reader);
-                };
+                void writePortable(serialization::PortableWriter& writer) const;
 
             };
         }

@@ -1,5 +1,5 @@
 #include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "Socket.h"
+#include "hazelcast/client/connection/Socket.h"
 #include "IOException.h"
 #include <algorithm>
 

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_CollectionCompareAndRemoveRequest
 #define HAZELCAST_CollectionCompareAndRemoveRequest
 
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 #include <vector>
 
 namespace hazelcast {

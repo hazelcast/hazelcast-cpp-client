@@ -4,10 +4,9 @@
 
 
 #include "hazelcast/client/map/UnlockRequest.h"
-#include "Data.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "PortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/map/PortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,14 +39,6 @@ namespace hazelcast {
                 writer.writeBoolean("force", force);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
-
-            void UnlockRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                threadId = reader.readInt("tid");
-                force = reader.readBoolean("force");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
             };
         }
     }

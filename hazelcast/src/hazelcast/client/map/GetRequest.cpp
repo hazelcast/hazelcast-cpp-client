@@ -4,9 +4,9 @@
 
 
 #include "hazelcast/client/map/GetRequest.h"
-#include "PortableWriter.h"
-#include "PortableHook.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

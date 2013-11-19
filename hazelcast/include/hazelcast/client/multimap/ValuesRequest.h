@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_ValuesRequest
 #define HAZELCAST_ValuesRequest
 
-#include "RetryableRequest.h"
-#include "AllPartitionsRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/multimap/AllPartitionsRequest.h"
 
 namespace hazelcast {
     namespace client {

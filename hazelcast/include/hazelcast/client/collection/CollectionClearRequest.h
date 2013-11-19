@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_CollectionClearRequest
 #define HAZELCAST_CollectionClearRequest
 
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 
 namespace hazelcast {
     namespace client {

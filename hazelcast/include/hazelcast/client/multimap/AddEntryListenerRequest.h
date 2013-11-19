@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_AddEntryListenerRequest
 #define HAZELCAST_AddEntryListenerRequest
 
-#include "Data.h"
-#include "PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <vector>
 
 namespace hazelcast {

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnSetRemoveRequest
 #define HAZELCAST_TxnSetRemoveRequest
 
-#include "TxnCollectionRequest.h"
+#include "hazelcast/client/collection/TxnCollectionRequest.h"
 
 namespace hazelcast {
     namespace client {

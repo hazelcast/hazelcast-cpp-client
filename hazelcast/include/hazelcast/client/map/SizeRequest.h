@@ -6,14 +6,14 @@
 #ifndef HAZELCAST_MAP_SIZE_REQUEST
 #define HAZELCAST_MAP_SIZE_REQUEST
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class SizeRequest : public Portable, public RetryableRequest {
+            class SizeRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 SizeRequest(const std::string& name);
 
@@ -22,9 +22,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 std::string name;
             };

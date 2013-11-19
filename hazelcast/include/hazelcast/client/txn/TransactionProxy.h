@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TransactionProxy
 #define HAZELCAST_TransactionProxy
 
-#include "ClusterService.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include <vector>
 
 namespace hazelcast {

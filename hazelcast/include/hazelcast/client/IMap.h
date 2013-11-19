@@ -1,56 +1,56 @@
 #ifndef HAZELCAST_IMAP
 #define HAZELCAST_IMAP
 
-#include "IException.h"
-#include "serialization/Data.h"
-#include "spi/ClientContext.h"
-#include "spi/InvocationService.h"
-#include "spi/ServerListenerService.h"
-#include "impl/MapKeySet.h"
-#include "impl/MapEntrySet.h"
-#include "impl/MapValueCollection.h"
-#include "map/GetRequest.h"
-#include "map/PutRequest.h"
-#include "map/RemoveRequest.h"
-#include "map/ContainsKeyRequest.h"
-#include "map/ContainsValueRequest.h"
-#include "map/FlushRequest.h"
-#include "map/RemoveIfSameRequest.h"
-#include "map/DeleteRequest.h"
-#include "map/TryRemoveRequest.h"
-#include "map/TryPutRequest.h"
-#include "map/PutTransientRequest.h"
-#include "map/ReplaceIfSameRequest.h"
-#include "map/ReplaceRequest.h"
-#include "map/SetRequest.h"
-#include "map/LockRequest.h"
-#include "map/IsLockedRequest.h"
-#include "map/UnlockRequest.h"
-#include "map/GetEntryViewRequest.h"
-#include "map/EvictRequest.h"
-#include "map/KeySetRequest.h"
-#include "map/GetAllRequest.h"
-#include "map/EntrySetRequest.h"
-#include "map/ValuesRequest.h"
-#include "map/AddIndexRequest.h"
-#include "map/SizeRequest.h"
-#include "map/ClearRequest.h"
-#include "map/PutAllRequest.h"
-#include "map/QueryRequest.h"
-#include "map/EntryView.h"
-#include "map/AddEntryListenerRequest.h"
-#include "map/ExecuteOnKeyRequest.h"
-#include "map/ExecuteOnAllKeysRequest.h"
-#include "map/AddInterceptorRequest.h"
-#include "map/RemoveInterceptorRequest.h"
-#include "map/PutIfAbsentRequest.h"
-#include "impl/EntryListener.h"
-#include "impl/EntryEventHandler.h"
-#include "impl/PortableEntryEvent.h"
-#include "impl/QueryResultSet.h"
-#include "serialization/SerializationService.h"
-#include "Future.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/impl/MapKeySet.h"
+#include "hazelcast/client/impl/MapEntrySet.h"
+#include "hazelcast/client/impl/MapValueCollection.h"
+#include "hazelcast/client/map/GetRequest.h"
+#include "hazelcast/client/map/PutRequest.h"
+#include "hazelcast/client/map/RemoveRequest.h"
+#include "hazelcast/client/map/ContainsKeyRequest.h"
+#include "hazelcast/client/map/ContainsValueRequest.h"
+#include "hazelcast/client/map/FlushRequest.h"
+#include "hazelcast/client/map/RemoveIfSameRequest.h"
+#include "hazelcast/client/map/DeleteRequest.h"
+#include "hazelcast/client/map/TryRemoveRequest.h"
+#include "hazelcast/client/map/TryPutRequest.h"
+#include "hazelcast/client/map/PutTransientRequest.h"
+#include "hazelcast/client/map/ReplaceIfSameRequest.h"
+#include "hazelcast/client/map/ReplaceRequest.h"
+#include "hazelcast/client/map/SetRequest.h"
+#include "hazelcast/client/map/LockRequest.h"
+#include "hazelcast/client/map/IsLockedRequest.h"
+#include "hazelcast/client/map/UnlockRequest.h"
+#include "hazelcast/client/map/GetEntryViewRequest.h"
+#include "hazelcast/client/map/EvictRequest.h"
+#include "hazelcast/client/map/KeySetRequest.h"
+#include "hazelcast/client/map/GetAllRequest.h"
+#include "hazelcast/client/map/EntrySetRequest.h"
+#include "hazelcast/client/map/ValuesRequest.h"
+#include "hazelcast/client/map/AddIndexRequest.h"
+#include "hazelcast/client/map/SizeRequest.h"
+#include "hazelcast/client/map/ClearRequest.h"
+#include "hazelcast/client/map/PutAllRequest.h"
+#include "hazelcast/client/map/QueryRequest.h"
+#include "hazelcast/client/map/EntryView.h"
+#include "hazelcast/client/map/AddEntryListenerRequest.h"
+#include "hazelcast/client/map/ExecuteOnKeyRequest.h"
+#include "hazelcast/client/map/ExecuteOnAllKeysRequest.h"
+#include "hazelcast/client/map/AddInterceptorRequest.h"
+#include "hazelcast/client/map/RemoveInterceptorRequest.h"
+#include "hazelcast/client/map/PutIfAbsentRequest.h"
+#include "hazelcast/client/impl/EntryListener.h"
+#include "hazelcast/client/impl/EntryEventHandler.h"
+#include "hazelcast/client/impl/PortableEntryEvent.h"
+#include "hazelcast/client/impl/QueryResultSet.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/Future.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 #include <string>
 #include <map>
 #include <set>
@@ -459,36 +459,36 @@ namespace hazelcast {
 
             static void asyncPutThread(IMap &map, const K key, const V value, long ttlInMillis, Future<V> future) {
                 V *v = NULL;
-                try{
+                try {
                     v = new V(map.put(key, value, ttlInMillis));
                     future.accessInternal().setValue(v);
-                } catch(std::exception &ex){
+                } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
+                } catch(...) {
                     std::cerr << "Exception in IMap::asyncPutThread" << std::endl;
                 }
             }
 
             static void asyncRemoveThread(IMap &map, const K key, Future<V> future) {
                 V *v = NULL;
-                try{
+                try {
                     v = new V(map.remove(key));
                     future.accessInternal().setValue(v);
-                } catch(std::exception &ex){
+                } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
+                } catch(...) {
                     std::cerr << "Exception in IMap::asyncRemoveThread" << std::endl;
                 }
             }
 
             static void asyncGetThread(IMap &map, const K key, Future<V> future) {
                 V *v = NULL;
-                try{
+                try {
                     v = new V(map.get(key));
                     future.accessInternal().setValue(v);
-                } catch(std::exception &ex){
+                } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...){
+                } catch(...) {
                     std::cerr << "Exception in IMap::asyncGetThread" << std::endl;
                 }
             }

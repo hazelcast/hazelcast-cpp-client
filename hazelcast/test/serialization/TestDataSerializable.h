@@ -7,7 +7,7 @@
 #ifndef __TestMobile_H_
 #define __TestMobile_H_
 
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {

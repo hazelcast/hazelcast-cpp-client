@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_PARTITION_SERVICE
 #define HAZELCAST_PARTITION_SERVICE
 
-#include "../Address.h"
+#include "hazelcast/client/Address.h"
 #include "ConcurrentMap.h"
 #include <boost/thread.hpp>
 

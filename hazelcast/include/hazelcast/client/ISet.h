@@ -1,21 +1,21 @@
 #ifndef HAZELCAST_ISET
 #define HAZELCAST_ISET
 
-#include "CollectionAddListenerRequest.h"
-#include "CollectionSizeRequest.h"
-#include "CollectionContainsRequest.h"
-#include "CollectionRemoveRequest.h"
-#include "CollectionAddAllRequest.h"
-#include "CollectionCompareAndRemoveRequest.h"
-#include "CollectionGetAllRequest.h"
-#include "CollectionAddRequest.h"
-#include "CollectionClearRequest.h"
-#include "ClientContext.h"
-#include "serialization/Data.h"
+#include "hazelcast/client/collection/CollectionAddListenerRequest.h"
+#include "hazelcast/client/collection/CollectionSizeRequest.h"
+#include "hazelcast/client/collection/CollectionContainsRequest.h"
+#include "hazelcast/client/collection/CollectionRemoveRequest.h"
+#include "hazelcast/client/collection/CollectionAddAllRequest.h"
+#include "hazelcast/client/collection/CollectionCompareAndRemoveRequest.h"
+#include "hazelcast/client/collection/CollectionGetAllRequest.h"
+#include "hazelcast/client/collection/CollectionAddRequest.h"
+#include "hazelcast/client/collection/CollectionClearRequest.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "ItemEventHandler.h"
-#include "ServerListenerService.h"
-#include "SerializableCollection.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 #include <stdexcept>
 
 
@@ -81,25 +81,25 @@ namespace hazelcast {
             };
 
             bool containsAll(const std::vector<E> &objects) {
-                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionContainsRequest request(getName(), dataCollection);
                 return invoke<bool>(request);
             };
 
             bool addAll(const std::vector<E> &objects) {
-                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionAddAllRequest request(getName(), dataCollection);
                 return invoke<bool>(request);
             };
 
             bool removeAll(const std::vector<E> &objects) {
-                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, false);
                 return invoke<bool>(request);
             };
 
             bool retainAll(const std::vector<E> &objects) {
-                vector<serialization::Data> dataCollection = toDataCollection(objects);
+                std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, true);
                 return invoke<bool>(request);
             };

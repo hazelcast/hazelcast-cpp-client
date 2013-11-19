@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_REPLACE_IF_SAME_REQUEST
 #define HAZELCAST_MAP_REPLACE_IF_SAME_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class ReplaceIfSameRequest : public Portable {
+            class ReplaceIfSameRequest : public impl::PortableRequest {
             public:
                 ReplaceIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& testValue, serialization::Data& value, int threadId);
 
@@ -23,7 +23,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 serialization::Data& key;

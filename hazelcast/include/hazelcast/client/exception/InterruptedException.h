@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_InterruptedException
 #define HAZELCAST_InterruptedException
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {

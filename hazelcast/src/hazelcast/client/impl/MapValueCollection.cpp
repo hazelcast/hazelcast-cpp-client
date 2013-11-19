@@ -5,8 +5,7 @@
 
 #include "hazelcast/client/impl/MapValueCollection.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,13 +25,6 @@ namespace hazelcast {
             const std::vector<serialization::Data>  & MapValueCollection::getValues() const {
                 return values;
             };
-
-            void MapValueCollection::writeData(serialization::ObjectDataOutput& writer) const {
-                writer.writeInt(values.size());
-                for (int i = 0; i < values.size(); ++i) {
-                    values[i].writeData(writer);
-                }
-            }
 
             void MapValueCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();

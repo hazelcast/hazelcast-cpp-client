@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include "SerializationConstants.h"
 
 namespace hazelcast {

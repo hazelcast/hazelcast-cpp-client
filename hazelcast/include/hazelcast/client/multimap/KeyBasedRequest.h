@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_KeyBasedRequest
 #define HAZELCAST_KeyBasedRequest
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {

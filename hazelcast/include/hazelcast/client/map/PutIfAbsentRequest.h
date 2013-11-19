@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_MAP_PUT_IF_ABSENT_REQUEST
 #define HAZELCAST_MAP_PUT_IF_ABSENT_REQUEST
 
-#include "../serialization/Data.h"
-#include "PortableHook.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class PutIfAbsentRequest : public Portable {
+            class PutIfAbsentRequest : public impl::PortableRequest {
             public:
                 PutIfAbsentRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
                 :name(name)
@@ -38,16 +38,6 @@ namespace hazelcast {
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     key.writeData(out);
                     value.writeData(out);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    name = reader.readUTF("n");
-                    threadId = reader.readInt("t");
-                    ttl = reader.readLong("ttl");
-                    serialization::ObjectDataInput &in = reader.getRawDataInput();
-                    key.readData(in);
-                    value.readData(in);
                 };
 
             private:

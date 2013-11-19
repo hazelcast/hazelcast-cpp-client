@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_ListAddAllRequest
 #define HAZELCAST_ListAddAllRequest
 
-#include "CollectionAddAllRequest.h"
+#include "hazelcast/client/collection/CollectionAddAllRequest.h"
 
 namespace hazelcast {
     namespace client {

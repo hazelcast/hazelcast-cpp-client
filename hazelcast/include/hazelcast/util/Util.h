@@ -15,7 +15,7 @@
 #include <vector>
 #include <cstring>
 #include "Conversion.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {

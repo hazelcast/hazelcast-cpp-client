@@ -5,7 +5,7 @@
 
 #include "RemoveAllRequest.h"
 #include "MultiMapPortableHook.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 
 namespace hazelcast {

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_TxnSizeRequest
 #define HAZELCAST_TxnSizeRequest
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
 #include <string>

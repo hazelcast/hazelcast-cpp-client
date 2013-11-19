@@ -4,7 +4,7 @@
 
 
 #include "TxnSetSizeRequest.h"
-#include "CollectionPortableHook.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {

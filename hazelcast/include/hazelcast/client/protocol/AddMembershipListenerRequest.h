@@ -8,8 +8,8 @@
 #define HAZELCAST_ADD_MLR
 
 #include "ProtocolConstants.h"
-#include "../serialization/SerializationConstants.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {

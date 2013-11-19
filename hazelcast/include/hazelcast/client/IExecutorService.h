@@ -3,27 +3,25 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-
-
 #ifndef HAZELCAST_IExecutorService
 #define HAZELCAST_IExecutorService
 
-#include "ClientContext.h"
-#include "Future.h"
-#include "Data.h"
-#include "SerializationService.h"
-#include "PartitionService.h"
-#include "InvocationService.h"
-#include "TargetCallableRequest.h"
-#include "RunnableAdapter.h"
-#include "Member.h"
-#include "IsShutdownRequest.h"
-#include "MultiExecutionCallbackWrapper.h"
-#include "LocalTargetCallableRequest.h"
-#include "ExecutorDefaultImpl.h"
-#include "ExecutorDefaultResultImpl.h"
-#include "ExecutorWithCallbackImpl.h"
-#include "proxy/DistributedObject.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/Future.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/executor/TargetCallableRequest.h"
+#include "hazelcast/client/executor/RunnableAdapter.h"
+#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/executor/IsShutdownRequest.h"
+#include "hazelcast/client/impl/MultiExecutionCallbackWrapper.h"
+#include "hazelcast/client/executor/LocalTargetCallableRequest.h"
+#include "hazelcast/client/executor/ExecutorDefaultImpl.h"
+#include "hazelcast/client/executor/ExecutorDefaultResultImpl.h"
+#include "hazelcast/client/executor/ExecutorWithCallbackImpl.h"
+#include "hazelcast/client/proxy/DistributedObject.h"
 
 namespace hazelcast {
     namespace client {

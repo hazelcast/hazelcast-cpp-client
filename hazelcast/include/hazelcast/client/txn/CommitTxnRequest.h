@@ -8,33 +8,19 @@
 #ifndef HAZELCAST_CommitTxnRequest
 #define HAZELCAST_CommitTxnRequest
 
-#include "TxnPortableHook.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class CommitTxnRequest : public Portable {
+            class CommitTxnRequest : public impl::PortableRequest {
             public:
-                CommitTxnRequest() {
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return TxnPortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return TxnPortableHook::COMMIT;
-                }
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
             };
         }
     }

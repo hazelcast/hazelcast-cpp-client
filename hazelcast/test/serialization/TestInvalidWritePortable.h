@@ -11,7 +11,7 @@
 #ifndef __TestInvalidWritePortable_H_
 #define __TestInvalidWritePortable_H_
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

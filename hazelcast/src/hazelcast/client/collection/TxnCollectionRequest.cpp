@@ -4,9 +4,9 @@
 
 
 #include "TxnCollectionRequest.h"
-#include "CollectionPortableHook.h"
-#include "PortableWriter.h"
-#include "Data.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Data.h"
 
 
 namespace hazelcast {

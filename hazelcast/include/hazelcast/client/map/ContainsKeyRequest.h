@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_MAP_CONTAINS_KEY_R
 #define HAZELCAST_MAP_CONTAINS_KEY_R
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -14,7 +14,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class ContainsKeyRequest : public Portable, public RetryableRequest {
+            class ContainsKeyRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 ContainsKeyRequest(const std::string& name, serialization::Data& key);
 
@@ -23,8 +23,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

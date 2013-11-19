@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ListRemoveRequest
 #define HAZELCAST_ListRemoveRequest
 
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 
 namespace hazelcast {
     namespace client {

@@ -5,8 +5,8 @@
 
 #include "PortableEntrySetResponse.h"
 #include "PortableReader.h"
-#include "Data.h"
-#include "CollectionPortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
 #include "MultiMapPortableHook.h"
 
 namespace hazelcast {

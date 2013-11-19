@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_RemoveInterceptorRequest
 #define HAZELCAST_RemoveInterceptorRequest
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class RemoveInterceptorRequest : public Portable {
+            class RemoveInterceptorRequest : public impl::PortableRequest {
             public:
                 RemoveInterceptorRequest(const std::string&, const std::string&);
 
@@ -23,11 +23,9 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter & writer) const;
 
-                void readPortable(serialization::PortableReader & reader);
-
             private:
-                std::string name;
-                std::string id;
+                const std::string& name;
+                const std::string& id;
             };
         }
     }

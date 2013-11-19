@@ -3,7 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IdentifiedDataSerializableRequest.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableRequest.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {

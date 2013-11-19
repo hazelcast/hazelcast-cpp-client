@@ -8,8 +8,8 @@
 #define HAZELCAST_GetRemainingLeaseRequest
 
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {

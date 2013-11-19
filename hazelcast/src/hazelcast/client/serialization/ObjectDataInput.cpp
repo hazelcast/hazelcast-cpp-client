@@ -5,7 +5,7 @@
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "SerializationContext.h"
 #include "DataInput.h"
 

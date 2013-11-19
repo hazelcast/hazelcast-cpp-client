@@ -4,10 +4,10 @@
 
 
 #include "PutTransientRequest.h"
-#include "Data.h"
-#include "PortableHook.h"
-#include "PortableReader.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/map/PortableHook.h"
+
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,15 +36,6 @@ namespace hazelcast {
                 writer.writeLong("ttl", ttl);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
-
-
-            void PutTransientRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                threadId = reader.readInt("thread");
-                ttl = reader.readLong("ttl");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
             };
         }
     }

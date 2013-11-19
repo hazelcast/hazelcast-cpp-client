@@ -6,10 +6,10 @@
 #ifndef HAZELCAST_ABSTRACT_LOAD_BALANCER
 #define HAZELCAST_ABSTRACT_LOAD_BALANCER
 
-#include "../connection/Member.h"
-#include "../../util/AtomicPointer.h"
-#include "../MembershipListener.h"
-#include "../LoadBalancer.h"
+#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/util/AtomicPointer.h"
+#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/LoadBalancer.h"
 #include "boost/thread/mutex.hpp"
 #include <vector>
 

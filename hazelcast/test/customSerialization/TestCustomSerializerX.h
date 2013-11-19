@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_XmlSerializer
 #define HAZELCAST_XmlSerializer
 
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "Serializer.h"
 #include <assert.h>
 

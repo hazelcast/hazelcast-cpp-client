@@ -4,8 +4,8 @@
 
 
 #include "hazelcast/client/impl/PartitionsResponse.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 
 

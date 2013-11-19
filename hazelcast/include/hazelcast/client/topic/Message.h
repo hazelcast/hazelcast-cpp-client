@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_Topic_Message
 #define HAZELCAST_Topic_Message
 
-#include "../connection/Member.h"
-#include "../impl/EventObject.h"
+#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/impl/EventObject.h"
 
 namespace hazelcast {
     namespace client {

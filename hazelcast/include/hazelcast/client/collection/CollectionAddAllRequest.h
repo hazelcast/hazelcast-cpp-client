@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_CollectionAddAllRequest
 #define HAZELCAST_CollectionAddAllRequest
 
-#include "CollectionRequest.h"
+#include "hazelcast/client/collection/CollectionRequest.h"
 #include <vector>
 
 namespace hazelcast {

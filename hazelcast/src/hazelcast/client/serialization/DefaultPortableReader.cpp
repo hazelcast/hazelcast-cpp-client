@@ -7,7 +7,7 @@
 //
 #include "hazelcast/client/serialization/SerializationContext.h"
 #include "DefaultPortableReader.h"
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {

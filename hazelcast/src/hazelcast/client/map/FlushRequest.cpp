@@ -4,9 +4,9 @@
 
 
 #include "FlushRequest.h"
-#include "PortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -26,10 +26,6 @@ namespace hazelcast {
 
             void FlushRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", name);
-            };
-
-            void FlushRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("name");
             };
         }
     }

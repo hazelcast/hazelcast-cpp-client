@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_MEMBER
 #define HAZELCAST_MEMBER
 
-#include "../protocol/ProtocolConstants.h"
-#include "../Address.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
+#include "hazelcast/client/Address.h"
 
 namespace hazelcast {
     namespace client {

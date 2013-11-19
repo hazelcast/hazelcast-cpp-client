@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_NoSuchElementException
 #define HAZELCAST_NoSuchElementException
 
-#include "IException.h"
+#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {

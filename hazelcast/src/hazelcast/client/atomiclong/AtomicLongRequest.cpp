@@ -3,7 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AtomicLongRequest.h"
+#include "hazelcast/client/atomiclong/AtomicLongRequest.h"
+#include "hazelcast/client/atomiclong/AtomicLongPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,11 +23,6 @@ namespace hazelcast {
             void AtomicLongRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
                 writer.writeLong("d", delta);
-            };
-
-            void AtomicLongRequest::readPortable(serialization::PortableReader& reader) {
-                instanceName = reader.readUTF("n");
-                delta = reader.readLong("d");
             };
 
         }

@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_CountRequest
 #define HAZELCAST_CountRequest
 
-#include "RetryableRequest.h"
-#include "KeyBasedRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/multimap/KeyBasedRequest.h"
 
 namespace hazelcast {
     namespace client {

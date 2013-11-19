@@ -7,34 +7,19 @@
 #ifndef HAZELCAST_RollbackTransactionRequest
 #define HAZELCAST_RollbackTransactionRequest
 
-
-#include "TxnPortableHook.h"
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class RollbackTxnRequest : public Portable {
+            class RollbackTxnRequest : public impl::PortableRequest {
             public:
-                RollbackTxnRequest() {
+                int getFactoryId() const;
 
-                };
+                int getClassId() const;
 
-                int getFactoryId() const {
-                    return TxnPortableHook::F_ID;
-                }
+                void writePortable(serialization::PortableWriter &writer) const;
 
-                int getClassId() const {
-                    return TxnPortableHook::ROLLBACK;
-                }
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                };
             };
         }
     }

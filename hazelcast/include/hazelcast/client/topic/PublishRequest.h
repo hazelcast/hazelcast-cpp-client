@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_PublishRequest
 #define HAZELCAST_PublishRequest
 
-#include "Portable.h"
-#include "Data.h"
+#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {

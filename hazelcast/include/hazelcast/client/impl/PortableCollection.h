@@ -5,8 +5,8 @@
 #ifndef HAZELCAST_PORTABLE_COLLECTION
 #define HAZELCAST_PORTABLE_COLLECTION
 
-#include "Data.h"
-#include "Portable.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/Portable.h"
 #include <vector>
 
 namespace hazelcast {

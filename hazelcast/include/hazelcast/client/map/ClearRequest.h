@@ -7,14 +7,14 @@
 #ifndef HAZELCAST_MAP_CLEAR_REQUEST
 #define HAZELCAST_MAP_CLEAR_REQUEST
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class ClearRequest : public Portable, public RetryableRequest {
+            class ClearRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 ClearRequest(const std::string& name);
 
@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 std::string name;

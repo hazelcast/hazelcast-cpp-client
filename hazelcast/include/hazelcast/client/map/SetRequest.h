@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_SET_REQUEST
 #define HAZELCAST_MAP_SET_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class SetRequest : public Portable {
+            class SetRequest : public impl::PortableRequest {
             public:
                 SetRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 
@@ -23,7 +23,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 serialization::Data& key;

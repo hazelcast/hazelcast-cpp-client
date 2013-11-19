@@ -4,8 +4,8 @@
 
 
 #include "hazelcast/client/multimap/RemoveRequest.h"
-#include "PortableWriter.h"
-#include "Data.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Data.h"
 #include "MultiMapPortableHook.h"
 
 namespace hazelcast {

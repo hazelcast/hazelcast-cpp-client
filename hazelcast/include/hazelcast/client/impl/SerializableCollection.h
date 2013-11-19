@@ -7,9 +7,9 @@
 #ifndef HAZELCAST_SERIALIZABLE_CONNECTION
 #define HAZELCAST_SERIALIZABLE_CONNECTION
 
-#include "../serialization/Data.h"
-#include "../serialization/SerializationConstants.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {

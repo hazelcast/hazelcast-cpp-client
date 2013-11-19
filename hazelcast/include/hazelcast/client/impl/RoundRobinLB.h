@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ROUND_ROBIN_LB
 #define HAZELCAST_ROUND_ROBIN_LB
 
-#include "AbstractLoadBalancer.h"
+#include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include <boost/atomic.hpp>
 
 namespace hazelcast {

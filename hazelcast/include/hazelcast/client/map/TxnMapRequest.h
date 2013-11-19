@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMapRequest
 #define HAZELCAST_TxnMapRequest
 
-#include "PortableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <memory>
 #include <vector>
 #include <string>

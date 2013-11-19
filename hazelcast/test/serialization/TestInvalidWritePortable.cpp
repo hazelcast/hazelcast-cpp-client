@@ -1,6 +1,6 @@
 #include "TestInvalidWritePortable.h"
-#include "ObjectDataOutput.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "PortableReader.h"
 
 namespace hazelcast {

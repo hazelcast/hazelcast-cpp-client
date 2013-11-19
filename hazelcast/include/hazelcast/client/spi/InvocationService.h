@@ -5,8 +5,8 @@
 #ifndef HAZELCAST_INVOCATION_SERVICE
 #define HAZELCAST_INVOCATION_SERVICE
 
-#include "ClusterService.h"
-#include "PartitionService.h"
+#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 
 namespace hazelcast {
     namespace client {

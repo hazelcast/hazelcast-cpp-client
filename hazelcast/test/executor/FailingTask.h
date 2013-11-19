@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_FailingTask
 #define HAZELCAST_FailingTask
 
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 
 using namespace hazelcast::client;
 

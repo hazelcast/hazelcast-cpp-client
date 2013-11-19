@@ -8,9 +8,7 @@
 #ifndef HAZELCAST_CollectionGetAllRequest
 #define HAZELCAST_CollectionGetAllRequest
 
-#include "CollectionRequest.h"
-#include "PortableWriter.h"
-
+#include "hazelcast/client/collection/CollectionRequest.h"
 
 namespace hazelcast {
     namespace client {

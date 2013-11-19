@@ -3,16 +3,15 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ContainsValueRequest.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "PortableHook.h"
-#include "Data.h"
+#include "hazelcast/client/map/ContainsValueRequest.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            ContainsValueRequest::ContainsValueRequest(const std::string& name, serialization::Data& value)
+            ContainsValueRequest::ContainsValueRequest(const std::string &name, const serialization::Data &value)
             :name(name)
             , value(value) {
             };
@@ -25,19 +24,12 @@ namespace hazelcast {
                 return PortableHook::CONTAINS_VALUE;
             }
 
-
-            void ContainsValueRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ContainsValueRequest::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 value.writeData(out);
             };
 
-
-            void ContainsValueRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                value.readData(in);
-            };
         }
     }
 }

@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_SmartConnectionManager
 #define HAZELCAST_SmartConnectionManager
 
-#include "HeartBeatChecker.h"
-#include "ConnectionManager.h"
+#include "hazelcast/client/connection/HeartBeatChecker.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {

@@ -5,7 +5,7 @@
 #define HAZELCAST_CREDENTIALS
 
 #include "ProtocolConstants.h"
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 #include <vector>
 

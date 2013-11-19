@@ -8,23 +8,19 @@
 #ifndef HAZELCAST_RunnableAdapter
 #define HAZELCAST_RunnableAdapter
 
-#include "IdentifiedDataSerializable.h"
-#include "ObjectDataOutput.h"
-#include "ObjectDataInput.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableRequest.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/executor/DataSerializableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace executor {
             template<typename Runnable>
-            class RunnableAdapter : public IdentifiedDataSerializable {
+            class RunnableAdapter : public impl::IdentifiedDataSerializableRequest {
             public:
-                RunnableAdapter() {
-
-                }
-
                 RunnableAdapter(Runnable& runnable)
-                :runnable(&runnable) {
+                :runnable(runnable) {
 
                 }
 
@@ -37,15 +33,11 @@ namespace hazelcast {
                 }
 
                 void writeData(serialization::ObjectDataOutput & writer) const {
-                    writer.writeObject<Runnable>(runnable);
-                }
-
-                void readData(serialization::ObjectDataInput & reader) {
-                    *runnable = reader.readObject<Runnable>();
+                    writer.writeObject<Runnable>(&runnable);
                 }
 
             private:
-                Runnable *runnable;
+                Runnable& runnable;
 
 
             };

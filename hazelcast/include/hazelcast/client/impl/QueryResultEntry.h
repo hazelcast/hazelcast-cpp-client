@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_QueryResultEntry
 #define HAZELCAST_QueryResultEntry
 
-#include "IdentifiedDataSerializable.h"
-#include "Data.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

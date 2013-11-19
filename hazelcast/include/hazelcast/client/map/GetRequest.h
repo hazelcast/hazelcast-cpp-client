@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_MAP_GET_REQUEST
 #define HAZELCAST_MAP_GET_REQUEST
 
-#include "PortableRequest.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ILock_UnlockRequest
 #define HAZELCAST_ILock_UnlockRequest
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

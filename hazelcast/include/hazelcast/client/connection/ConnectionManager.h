@@ -5,10 +5,10 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include "HeartBeatChecker.h"
-#include "Address.h"
-#include "ConcurrentSmartMap.h"
-#include "SocketInterceptor.h"
+#include "hazelcast/client/connection/HeartBeatChecker.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/ConcurrentSmartMap.h"
+#include "hazelcast/client/connection/SocketInterceptor.h"
 namespace hazelcast {
     namespace client {
 

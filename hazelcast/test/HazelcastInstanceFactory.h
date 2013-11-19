@@ -5,8 +5,8 @@
 #ifndef HAZELCAST_HazelcastInstanceFactory
 #define HAZELCAST_HazelcastInstanceFactory
 
-#include "Address.h"
-#include "Socket.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/connection/Socket.h"
 #include "OutputSocketStream.h"
 #include "InputSocketStream.h"
 

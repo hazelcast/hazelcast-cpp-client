@@ -11,7 +11,7 @@
 #include "Principal.h"
 #include "Credentials.h"
 #include "ProtocolConstants.h"
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {

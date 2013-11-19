@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_ITERATOR_REQUEST
 #define HAZELCAST_QUEUE_ITERATOR_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include <string>
 
 namespace hazelcast {

@@ -4,9 +4,9 @@
 
 
 #include "AddIndexRequest.h"
-#include "PortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -31,13 +31,6 @@ namespace hazelcast {
                 writer.writeUTF("name", name);
                 writer.writeUTF("a", attribute);
                 writer.writeBoolean("o", ordered);
-            };
-
-
-            void AddIndexRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("name");
-                attribute = reader.readUTF("a");
-                ordered = reader.readBoolean("o");
             };
         }
     }

@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_TxnMultiMapGetRequest
 #define HAZELCAST_TxnMultiMapGetRequest
 
-#include "TxnMultiMapRequest.h"
-#include "Data.h"
+#include "hazelcast/client/multimap/TxnMultiMapRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

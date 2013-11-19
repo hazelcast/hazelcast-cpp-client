@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MAP_EVICT_REQUEST
 #define HAZELCAST_MAP_EVICT_REQUEST
 
-#include "Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class EvictRequest : public Portable {
+            class EvictRequest : public impl::PortableRequest {
             public:
                 EvictRequest(const std::string& name, serialization::Data& key, int threadId);
 
@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+
 
             private:
                 serialization::Data& key;

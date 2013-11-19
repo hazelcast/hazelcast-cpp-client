@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "NoSuchElementException.h"
+#include "hazelcast/client/exception/NoSuchElementException.h"
 
 namespace hazelcast {
     namespace client {

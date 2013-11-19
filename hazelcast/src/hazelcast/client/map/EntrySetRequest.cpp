@@ -4,10 +4,10 @@
 
 
 #include "hazelcast/client/map/EntrySetRequest.h"
-#include "Data.h"
-#include "PortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -29,9 +29,6 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
             };
 
-            void EntrySetRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-            };
         }
     }
 }

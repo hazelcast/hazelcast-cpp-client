@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_LocalTargetCallableRequest
 #define HAZELCAST_LocalTargetCallableRequest
 
-#include "Address.h"
-#include "ObjectDataOutput.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/executor/DataSerializableHook.h"
-#include "IdentifiedDataSerializableRequest.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableRequest.h"
 #include <string>
 
 namespace hazelcast {

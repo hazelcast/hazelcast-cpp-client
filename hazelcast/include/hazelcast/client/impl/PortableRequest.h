@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_Request
 #define HAZELCAST_Request
 
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 
 namespace hazelcast {
     namespace client {

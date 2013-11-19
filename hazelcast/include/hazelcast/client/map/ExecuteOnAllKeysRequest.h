@@ -7,11 +7,10 @@
 #ifndef HAZELCAST_ExecuteOnEntriesRequest
 #define HAZELCAST_ExecuteOnEntriesRequest
 
-#include "Portable.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
-#include "PortableHook.h"
-#include "Data.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -19,7 +18,7 @@ namespace hazelcast {
 
         namespace map {
             template<typename EntryProcessor>
-            class ExecuteOnAllKeysRequest : public Portable {
+            class ExecuteOnAllKeysRequest : public impl::PortableRequest {
             public:
                 ExecuteOnAllKeysRequest(const std::string name, EntryProcessor& entryProcessor)
                 :name(name)
@@ -39,12 +38,6 @@ namespace hazelcast {
                     writer.writeUTF("n", name);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     out.writeObject<EntryProcessor>(&entryProcessor);
-                }
-
-                void readPortable(serialization::PortableReader & reader) {
-                    name = reader.readUTF("n");
-                    serialization::ObjectDataInput& in = reader.getRawDataInput();
-                    entryProcessor = in.readObject<EntryProcessor>();
                 }
 
             private:

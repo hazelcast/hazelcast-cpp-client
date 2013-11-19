@@ -4,9 +4,9 @@
 
 
 #include "hazelcast/client/map/ClearRequest.h"
-#include "PortableHook.h"
-#include "PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/map/PortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -29,10 +29,6 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
             };
 
-
-            void ClearRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-            };
         }
     }
 }

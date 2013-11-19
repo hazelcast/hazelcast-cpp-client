@@ -7,8 +7,7 @@
 #ifndef HAZELCAST_CompareAndSetRequest
 #define HAZELCAST_CompareAndSetRequest
 
-#include "AtomicLongRequest.h"
-#include <string>
+#include "hazelcast/client/atomiclong/AtomicLongRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,27 +15,12 @@ namespace hazelcast {
 
             class CompareAndSetRequest : public AtomicLongRequest {
             public:
-                CompareAndSetRequest(const std::string& instanceName, long expect, long value)
-                : AtomicLongRequest(instanceName, value)
-                , expect(expect) {
+                CompareAndSetRequest(const std::string &instanceName, long expect, long value);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return AtomicLongPortableHook::COMPARE_AND_SET;
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    AtomicLongRequest::writePortable(writer);
-                    writer.writeLong("e", expect);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    AtomicLongRequest::readPortable(reader);
-                    expect = reader.readLong("e");
-                };
             private:
                 long expect;
 

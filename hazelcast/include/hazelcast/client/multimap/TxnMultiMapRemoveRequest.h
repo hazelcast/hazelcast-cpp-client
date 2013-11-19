@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMultiMapRemoveRequest
 #define HAZELCAST_TxnMultiMapRemoveRequest
 
-#include "TxnMultiMapRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapRequest.h"
 
 namespace hazelcast {
     namespace client {

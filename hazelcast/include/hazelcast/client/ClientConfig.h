@@ -1,12 +1,12 @@
 #ifndef HAZELCAST_CLIENT_CONFIG
 #define HAZELCAST_CLIENT_CONFIG
 
-#include "Address.h"
-#include "GroupConfig.h"
-#include "protocol/Credentials.h"
-#include "LoadBalancer.h"
-#include "impl/RoundRobinLB.h"
-#include "spi/EventListener.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/GroupConfig.h"
+#include "hazelcast/client/protocol/Credentials.h"
+#include "hazelcast/client/LoadBalancer.h"
+#include "hazelcast/client/impl/RoundRobinLB.h"
+#include "hazelcast/client/spi/EventListener.h"
 #include <vector>
 #include <set>
 #include <memory>

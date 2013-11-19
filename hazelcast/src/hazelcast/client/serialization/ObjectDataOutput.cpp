@@ -4,9 +4,9 @@
 
 
 #include "ClassDefinitionWriter.h"
-#include "IdentifiedDataSerializable.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include "SerializationContext.h"
-#include "Portable.h"
+#include "hazelcast/client/Portable.h"
 #include "DataOutput.h"
 
 namespace hazelcast {

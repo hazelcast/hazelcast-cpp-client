@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnListSizeRequest.h"
-#include "CollectionPortableHook.h"
+#include "hazelcast/client/collection/TxnListSizeRequest.h"
+#include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {

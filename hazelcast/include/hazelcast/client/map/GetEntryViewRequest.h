@@ -4,8 +4,8 @@
 #ifndef HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 #define HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 
-#include "Portable.h"
-#include "RetryableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -14,21 +14,19 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class GetEntryViewRequest : public Portable, public RetryableRequest {
+            class GetEntryViewRequest : public impl::PortableRequest, public RetryableRequest {
             public:
-                GetEntryViewRequest(const std::string& name, serialization::Data& key);
+                GetEntryViewRequest(const std::string &name, const serialization::Data &key);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data& key;
-                std::string name;
+                const serialization::Data &key;
+                const std::string &name;
             };
         }
     }
