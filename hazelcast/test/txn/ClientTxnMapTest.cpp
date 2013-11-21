@@ -7,7 +7,7 @@
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastClient.h"
 #include "Employee.h"
-
+#include "SimpleTnxTask.h"
 
 namespace hazelcast {
     namespace client {
@@ -28,9 +28,13 @@ namespace hazelcast {
             }
 
             void ClientTxnMapTest::addTests() {
-                addTest(&ClientTxnMapTest::testPutGet, "testPutGet");
-//                addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
-//                addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
+                //addTest(&ClientTxnMapTest::testPutGet, "testPutGet");
+                //addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
+                //addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
+
+                addTest(&ClientTxnMapTest::simple_executeTransaction_test, "simple_executeTransaction_test");
+                addTest(&ClientTxnMapTest::simple_executeTransactionException_test, "simple_executeTransactionException_test");
+
             };
 
             void ClientTxnMapTest::beforeClass() {
@@ -52,10 +56,13 @@ namespace hazelcast {
 
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
+
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
                 assertEqual("", map.put("key1", "value1"));
                 assertEqual("value1", map.get("key1"));
                 assertEqual("", client->getMap<std::string, std::string>(name).get("key1"));
+
                 context.commitTransaction();
 
                 assertEqual("value1", client->getMap<std::string, std::string>(name).get("key1"));
@@ -150,7 +157,38 @@ namespace hazelcast {
                 assertEqual(2, map.size());
                 assertEqual(2, map.values().size());
 
+
             }
+
+
+            void ClientTxnMapTest::simple_executeTransaction_test() {
+
+                SimpleTnxTask task;
+
+                bool res = client->executeTransaction<bool, SimpleTnxTask>(task);
+
+                IMap<string, string> map = client->getMap<string, string>(SimpleTnxTask::mapName);
+
+                assertTrue(res);
+
+                assertEqual(SimpleTnxTask::expected, map.get(SimpleTnxTask::key) );
+                assertEqual(SimpleTnxTask::expectedSZ, map.size());
+            }
+
+            void ClientTxnMapTest::simple_executeTransactionException_test() {
+
+                SimpleTnxTaskFail task;
+
+                try{
+                    client->executeTransaction<bool, SimpleTnxTaskFail>(task);
+                }catch(std::exception &e){}
+
+                IMap<string, string> map = client->getMap<string, string>(SimpleTnxTaskFail::mapName);
+
+                assertEqual(nullptr, map.get(SimpleTnxTask::key) );
+                assertEqual(SimpleTnxTaskFail::expectedSZ, map.size());
+            }
+
 
         }
     }

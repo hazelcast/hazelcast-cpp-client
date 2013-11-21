@@ -9,23 +9,36 @@
 #include "Employee.h"
 
 
+
+
 namespace hazelcast {
     namespace client {
         namespace test {
+
             using namespace iTest;
+            using std::string;
+            using util::CountDownLatch;
+            using impl::EntryEvent;
+
 
             ClientMapTest::ClientMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , instance(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
-            , imap(new IMap<std::string, std::string>(client->getMap< std::string, std::string >("clientMapTest"))) {
+                :hazelcastInstanceFactory(hazelcastInstanceFactory),
+                instance(hazelcastInstanceFactory),
+                client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))),
+                imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
             };
 
 
-            ClientMapTest::~ClientMapTest() {
-            };
+            ClientMapTest::~ClientMapTest() {};
 
             void ClientMapTest::addTests() {
+
+
+
+                addTest(&ClientMapTest::testEmptyKeyLock, "testEmptyKeyLock");
+
+                               /*
+                addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
@@ -51,7 +64,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
                 addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
-
+                                                                                         */
             };
 
             void ClientMapTest::beforeClass() {
@@ -72,51 +85,53 @@ namespace hazelcast {
 
             void ClientMapTest::fillMap() {
                 for (int i = 0; i < 10; i++) {
-                    std::string key = "key";
+                    string key = "key";
                     key += util::to_string(i);
-                    std::string value = "value";
+                    string value = "value";
                     value += util::to_string(i);
                     imap->put(key, value);
                 }
             }
 
             class MyListener {
-            public:
-                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
-                :latch(latch)
-                , nullLatch(nullLatch) {
-                };
 
-                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
-                    latch.countDown();
-                };
 
-                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
-                }
+                public:
+                    MyListener(CountDownLatch &latch, CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch){};
 
-                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
-                }
+                    void entryAdded(EntryEvent<string, string> &event) {
+                        latch.countDown();
+                    };
 
-                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
-                    const std::string &value = event.getValue();
-                    const std::string &oldValue = event.getOldValue();
-                    if (value.compare("")) {
-                        nullLatch.countDown();
+                    void entryRemoved(EntryEvent<string, string> &event){}
+
+                    void entryUpdated(EntryEvent<string, string> &event){}
+
+                    void entryEvicted(EntryEvent<string, string> &event){
+
+                        const string &value = event.getValue();
+                        const string &oldValue = event.getOldValue();
+
+                        if(value.compare("")) {
+                            nullLatch.countDown();
+                        }
+
+                        if(oldValue.compare("")) {
+                            nullLatch.countDown();
+                        }
+
+                        latch.countDown();
                     }
-                    if (oldValue.compare("")) {
-                        nullLatch.countDown();
-                    }
-                    latch.countDown();
-                }
 
-            private:
-                util::CountDownLatch &nullLatch;
-                util::CountDownLatch &latch;
+                private:
+                    CountDownLatch &nullLatch;
+                    CountDownLatch &latch;
             };
 
+
             void ClientMapTest::testIssue537() {
-                util::CountDownLatch latch(2);
-                util::CountDownLatch nullLatch(2);
+                CountDownLatch latch(2);
+                CountDownLatch nullLatch(2);
                 MyListener myListener(latch, nullLatch);
                 long id = imap->addEntryListener(myListener, true);
 
@@ -146,11 +161,11 @@ namespace hazelcast {
             void ClientMapTest::testGet() {
                 fillMap();
                 for (int i = 0; i < 10; i++) {
-                    std::string key = "key";
+                    string key = "key";
                     key += util::to_string(i);
-                    std::string temp = imap->get(key);
+                    string temp = imap->get(key);
 
-                    std::string value = "value";
+                    string value = "value";
                     value += util::to_string(i);
                     assertEqual(temp, value);
                 }
@@ -158,15 +173,15 @@ namespace hazelcast {
 
             void ClientMapTest::testRemoveAndDelete() {
                 fillMap();
-                std::string temp = imap->remove("key10");
+                string temp = imap->remove("key10");
                 assertEqual(temp, "");
                 imap->deleteEntry("key9");
                 assertEqual(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
-                    std::string key = "key";
+                    string key = "key";
                     key += util::to_string(i);
-                    std::string temp = imap->remove(key);
-                    std::string value = "value";
+                    string temp = imap->remove(key);
+                    string value = "value";
                     value += util::to_string(i);
                     assertEqual(temp, value);
                 }
@@ -353,6 +368,16 @@ namespace hazelcast {
                 imap->forceUnlock("key1");
 
             }
+
+            void ClientMapTest::testEmptyKeyLock() {
+
+               // assertEqual(0, imap->get("key1"));
+               // imap->put("key1", "value1");
+                imap->lock("key1");
+
+
+            }
+
 
             void testLockTTLThread(util::CountDownLatch *latch, IMap<std::string, std::string> *imap) {
                 imap->tryPut("key1", "value2", 5 * 1000);
