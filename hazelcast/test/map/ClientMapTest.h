@@ -12,6 +12,10 @@
 #include "hazelcast/client/IMap.h"
 #include "HazelcastInstance.h"
 
+using iTest::iTestFixture;
+using std::string;
+using std::auto_ptr;
+
 namespace hazelcast {
     namespace client {
 
@@ -21,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class ClientMapTest : public iTest::iTestFixture<ClientMapTest> {
+            class ClientMapTest : public iTestFixture<ClientMapTest> {
             public:
                 ClientMapTest(HazelcastInstanceFactory &);
 
@@ -71,6 +75,8 @@ namespace hazelcast {
 
                 void testLock();
 
+                void testEmptyKeyLock();
+
                 void testBasicPredicate();
 
                 void testSet();
@@ -93,8 +99,8 @@ namespace hazelcast {
                 HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IMap<std::string, std::string> > imap;
+                auto_ptr<HazelcastClient> client;
+                auto_ptr<IMap<string, string> > imap;
             };
         }
     }

@@ -117,14 +117,14 @@ namespace hazelcast {
 
             TransactionContext newTransactionContext(const TransactionOptions &options);
 
-            template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionalTask &task) {
+            template<typename T, typename TransactionalTask > T executeTransaction(const TransactionalTask &task) {
+
                 TransactionOptions defaultOptions;
-                return executeTransaction(defaultOptions, task);
+                return executeTransaction<T, TransactionalTask>(defaultOptions, task);
             };
 
             template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionOptions &options, TransactionalTask &task) {
+            T executeTransaction(const TransactionOptions &options,  const TransactionalTask &task) {
                 TransactionContext context = newTransactionContext(options);
                 TransactionalTaskContext transactionalTaskContext(context);
                 context.beginTransaction();

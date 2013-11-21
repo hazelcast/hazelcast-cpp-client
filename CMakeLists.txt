@@ -10,13 +10,14 @@ include_directories( ${ZLIB_INCLUDE_DIRS} )
 message(STATUS "Preparing hazelcast client ..... ")
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
+
 #add_library(hazelcastClientShared SHARED ${HZ_SOURCES})
 add_library(hazelcastClientStatic STATIC ${HZ_SOURCES})
 
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
-#    target_link_libraries(hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+    #target_link_libraries(hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 	target_link_libraries(hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

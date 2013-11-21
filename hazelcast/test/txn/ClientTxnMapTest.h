@@ -44,6 +44,10 @@ namespace hazelcast {
 
                 void testKeySetValues();
 
+                void simple_executeTransaction_test();
+
+                void simple_executeTransactionException_test();
+
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
                 HazelcastInstance instance;
