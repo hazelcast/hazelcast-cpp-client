@@ -8,7 +8,7 @@
 #define HAZELCAST_AddInterceptorRequest
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/PortableWriter.h""
+#include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include <string>
 

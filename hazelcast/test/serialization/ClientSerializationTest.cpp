@@ -3,21 +3,21 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TestCustomSerializerX.h"
-#include "TestCustomXSerializable.h"
-#include "TestCustomPersonSerializer.h"
-#include "TestNamedPortableV2.h"
-#include "TestRawDataPortable.h"
-#include "TestInvalidReadPortable.h"
-#include "TestInvalidWritePortable.h"
-#include "testUtil.h"
+#include "customSerialization/TestCustomSerializerX.h"
+#include "customSerialization/TestCustomXSerializable.h"
+#include "customSerialization/TestCustomPersonSerializer.h"
+#include "serialization/TestNamedPortableV2.h"
+#include "serialization/TestRawDataPortable.h"
+#include "serialization/TestInvalidReadPortable.h"
+#include "serialization/TestInvalidWritePortable.h"
+#include "serialization/testUtil.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "ClientSerializationTest.h"
+#include "serialization/ClientSerializationTest.h"
 #include <fstream>
 
 namespace hazelcast {

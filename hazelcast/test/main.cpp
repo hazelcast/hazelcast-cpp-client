@@ -1,6 +1,6 @@
 #include "SimpleMapTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "ClientSerializationTest.h"
+#include "serialization/ClientSerializationTest.h"
 #include "map/ClientMapTest.h"
 #include "queue/ClientQueueTest.h"
 #include "serialization/testUtil.h"
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     HazelcastInstanceFactory factory;
     ClientSerializationTest serializationTest;
     serializationTest.executeTests();
-    /*ClientMapTest mapTest(factory);
+    ClientMapTest mapTest(factory);
     mapTest.executeTests();
     ClientMapIssueTest mapIssueTest(factory);
     mapIssueTest.executeTests();
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     ClientTxnSetTest clientTxnSetTest(factory);
     clientTxnSetTest.executeTests();
     ClientTxnTest clientTxnTest(factory);
-    clientTxnTest.executeTests();*/
+    clientTxnTest.executeTests();
 //    testSpeed();
     return 0;
 };

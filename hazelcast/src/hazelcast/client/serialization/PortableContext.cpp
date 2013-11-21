@@ -8,8 +8,8 @@
 
 #include "hazelcast/client/serialization/PortableContext.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include <zlib.h>
 #include <algorithm>
+#include <zlib.h>
 
 namespace hazelcast {
     namespace client {
@@ -107,6 +107,7 @@ namespace hazelcast {
                         throw exception::IOException("PortableContext::compress", "data is corrupted at compression");
                     case Z_MEM_ERROR:
                         throw exception::IOException("PortableContext::compress", "there was not  enough memory at compression");
+                    default:break;
                 }
 				binary.resize(compSize);
 				std::copy(compressedTemp, compressedTemp + compSize , binary.begin());
@@ -143,7 +144,7 @@ namespace hazelcast {
             };
 
             long long PortableContext::combineToLong(int x, int y) const {
-				return ((long long)x) << 32 |  ((long long) y) & 0xFFFFFFFL;
+				return ((long long)x) << 32 |  (((long long) y) & 0xFFFFFFFL);
 			};
 
             int PortableContext::extractInt(long long value, bool lowerBits) const {

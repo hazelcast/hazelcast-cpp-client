@@ -9,8 +9,8 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ISemaphore.h"
 #include "HazelcastInstance.h"
-#include "ISemaphore.h"
 
 namespace hazelcast {
     namespace client {

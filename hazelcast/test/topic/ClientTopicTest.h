@@ -12,7 +12,7 @@
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
-#include "ITopic.h"
+#include "hazelcast/client/ITopic.h"
 
 namespace hazelcast {
     namespace client {

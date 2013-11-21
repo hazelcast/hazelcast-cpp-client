@@ -8,7 +8,7 @@
 #define HAZELCAST_GetLockCountRequest
 
 #include "hazelcast/client/impl/RetryableRequest.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,7 +17,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class GetLockCountRequest : public Portable, public RetryableRequest {
+            class GetLockCountRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetLockCountRequest(serialization::Data& key);
 
@@ -26,8 +26,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

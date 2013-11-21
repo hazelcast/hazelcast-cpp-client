@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ILock_UnlockRequest
 #define HAZELCAST_ILock_UnlockRequest
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class UnlockRequest : public Portable {
+            class UnlockRequest : public impl::PortableRequest {
             public:
                 UnlockRequest(serialization::Data& key, int threadId);
 
@@ -27,8 +27,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

@@ -6,7 +6,7 @@
 #include "ClientTxnMapTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "Employee.h"
+#include "serialization/Employee.h"
 
 
 namespace hazelcast {
@@ -29,8 +29,8 @@ namespace hazelcast {
 
             void ClientTxnMapTest::addTests() {
                 addTest(&ClientTxnMapTest::testPutGet, "testPutGet");
-//                addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
-//                addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
+                addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
+                addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
             };
 
             void ClientTxnMapTest::beforeClass() {
@@ -62,7 +62,7 @@ namespace hazelcast {
             }
 
 
-//            @Test
+//            @Test TODO
 //            public void testGetForUpdate() throws TransactionException {
 //            final IMap<String, Integer> map = hz.getMap("testTxnGetForUpdate");
 //            final CountDownLatch latch1 = new CountDownLatch(1);

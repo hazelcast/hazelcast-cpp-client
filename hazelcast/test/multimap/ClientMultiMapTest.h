@@ -11,7 +11,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "MultiMap.h"
+#include "hazelcast/client/MultiMap.h"
 #include "HazelcastInstance.h"
 
 namespace hazelcast {

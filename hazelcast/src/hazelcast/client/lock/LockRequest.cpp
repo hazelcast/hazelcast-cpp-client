@@ -5,9 +5,8 @@
 
 #include "hazelcast/client/lock/LockRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "LockPortableHook.h"
+#include "hazelcast/client/lock/LockPortableHook.h"
 
 
 namespace hazelcast {
@@ -45,14 +44,6 @@ namespace hazelcast {
                 key.writeData(out);
             };
 
-
-            void LockRequest::readPortable(serialization::PortableReader& reader) {
-                threadId = reader.readInt("tid");
-                ttl = reader.readLong("ttl");
-                timeout = reader.readLong("timeout");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
-            };
         }
     }
 }

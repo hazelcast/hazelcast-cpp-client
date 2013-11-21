@@ -9,7 +9,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "IQueue.h"
+#include "hazelcast/client/IQueue.h"
 #include "HazelcastInstance.h"
 
 namespace hazelcast {

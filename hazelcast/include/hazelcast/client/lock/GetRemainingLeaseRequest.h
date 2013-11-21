@@ -8,7 +8,7 @@
 #define HAZELCAST_GetRemainingLeaseRequest
 
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
@@ -18,7 +18,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class GetRemainingLeaseRequest : public Portable, public RetryableRequest {
+            class GetRemainingLeaseRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetRemainingLeaseRequest(serialization::Data& key);
 
@@ -27,8 +27,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data& key;

@@ -3,11 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "GetLockCountRequest.h"
+#include "hazelcast/client/lock/GetLockCountRequest.h"
+#include "hazelcast/client/lock/LockPortableHook.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "LockPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,11 +26,6 @@ namespace hazelcast {
             void GetLockCountRequest::writePortable(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
-
-            void GetLockCountRequest::readPortable(serialization::PortableReader& reader) {
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
             };
         }
     }

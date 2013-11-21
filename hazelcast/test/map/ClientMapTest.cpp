@@ -6,7 +6,7 @@
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
-#include "Employee.h"
+#include "serialization/Employee.h"
 
 
 namespace hazelcast {

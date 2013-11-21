@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_IsLockedRequest
 #define HAZELCAST_IsLockedRequest
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
@@ -17,7 +17,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class IsLockedRequest : public Portable, public RetryableRequest {
+            class IsLockedRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 IsLockedRequest(serialization::Data& key);
 
@@ -28,8 +28,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 int threadId;

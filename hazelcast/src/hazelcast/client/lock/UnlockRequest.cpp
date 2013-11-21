@@ -3,9 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "hazelcast/client/lock/UnlockRequest.h"
-#include "LockPortableHook.h"
+#include "hazelcast/client/lock/LockPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 #include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
@@ -36,14 +35,6 @@ namespace hazelcast {
                 writer.writeBoolean("force", force);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
-
-
-            void UnlockRequest::readPortable(serialization::PortableReader& reader) {
-                threadId = reader.readInt("tid");
-                force = reader.readBoolean("force");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
             };
         }
     }
