@@ -8,4 +8,4 @@ include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/ha
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/java/)
 add_executable(clientTest ${HZ_TEST_SOURCES})
 target_link_libraries(clientTest hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-target_link_libraries(clientTest hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+#target_link_libraries(clientTest hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
