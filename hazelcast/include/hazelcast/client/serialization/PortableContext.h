@@ -10,7 +10,7 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include "ConcurrentMap.h"
+#include "hazelcast/util/ConcurrentMap.h"
 #include <vector>
 #include <map>
 

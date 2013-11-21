@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "ServerException.h"
+#include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 
 using namespace std;

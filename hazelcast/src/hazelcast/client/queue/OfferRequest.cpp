@@ -3,10 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "OfferRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/OfferRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
 #include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
@@ -40,14 +39,6 @@ namespace hazelcast {
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
-
-
-            void OfferRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                timeoutInMillis = reader.readLong("t");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                data.readData(in);
             };
         }
     }

@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/map/AddEntryListenerRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 

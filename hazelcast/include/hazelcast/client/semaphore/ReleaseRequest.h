@@ -7,9 +7,7 @@
 #ifndef HAZELCAST_ReleaseRequest
 #define HAZELCAST_ReleaseRequest
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "SemaphoreRequest.h"
+#include "hazelcast/client/semaphore/SemaphoreRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,24 +15,12 @@ namespace hazelcast {
         namespace semaphore {
             class ReleaseRequest : public SemaphoreRequest {
             public:
-                ReleaseRequest(const std::string& instanceName, int permitCount)
-                : SemaphoreRequest(instanceName, permitCount) {
+                ReleaseRequest(const std::string& instanceName, int permitCount);
 
-                };
+                int getClassId() const ;
 
-                int getClassId() const {
-                    return SemaphorePortableHook::RELEASE;
-                };
+                void writePortable(serialization::PortableWriter& writer) const ;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    SemaphoreRequest::readPortable(reader);
-                };
             };
         }
     }

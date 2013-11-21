@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_REMOVE_REQUEST
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace queue {
-            class RemoveRequest : public Portable {
+            class RemoveRequest : public impl::PortableRequest {
             public:
 
                 RemoveRequest(const std::string& name, serialization::Data& data);
@@ -24,12 +24,9 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 serialization::Data& data;
-                std::string name;
+                const std::string& name;
             };
         }
     }

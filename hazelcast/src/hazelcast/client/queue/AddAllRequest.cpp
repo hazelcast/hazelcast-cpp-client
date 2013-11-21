@@ -4,9 +4,9 @@
 
 
 #include "hazelcast/client/queue/AddAllRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -35,15 +35,6 @@ namespace hazelcast {
                 }
             };
 
-            void AddAllRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                int size = reader.readInt("s");
-                dataList.resize(size);
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                for (int i = 0; i < size; ++i) {
-                    dataList[i].readData(in);
-                }
-            }
         }
     }
 }

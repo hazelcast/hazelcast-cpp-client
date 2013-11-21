@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_ClientSerializationTest
 #define HAZELCAST_ClientSerializationTest
 
-#include "iTest.h"
+#include "iTest/iTest.h"
 
 namespace hazelcast {
     namespace client {

@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableMessage.h"
-#include "TopicPortableHook.h"
+#include "hazelcast/client/topic/PortableMessage.h"
+#include "hazelcast/client/topic/TopicPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {

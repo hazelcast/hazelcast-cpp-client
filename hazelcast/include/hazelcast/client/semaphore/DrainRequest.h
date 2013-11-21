@@ -7,9 +7,7 @@
 #ifndef HAZELCAST_DrainRequest
 #define HAZELCAST_DrainRequest
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "SemaphoreRequest.h"
+#include "hazelcast/client/semaphore/SemaphoreRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,24 +15,11 @@ namespace hazelcast {
         namespace semaphore {
             class DrainRequest : public SemaphoreRequest {
             public:
-                DrainRequest(const std::string& instanceName)
-                : SemaphoreRequest(instanceName, -1) {
+                DrainRequest(const std::string &instanceName);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return SemaphorePortableHook::DRAIN;
-                };
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    SemaphoreRequest::readPortable(reader);
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
             };
         }
     }

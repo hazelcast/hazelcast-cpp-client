@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_LIFECYCLE_SERVICE
 #define HAZELCAST_LIFECYCLE_SERVICE
 
-#include "LifecycleListener.h"
-#include "LifecycleEvent.h"
+#include "hazelcast/client/spi/LifecycleListener.h"
+#include "hazelcast/client/spi/LifecycleEvent.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
 #include <set>

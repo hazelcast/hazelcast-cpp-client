@@ -4,13 +4,11 @@
 
 
 #include "hazelcast/client/protocol/PingRequest.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            PingRequest::PingRequest() {
-
-            }
 
             int PingRequest::getFactoryId() const {
                 return ProtocolConstants::DATA_FACTORY_ID;
@@ -20,11 +18,7 @@ namespace hazelcast {
                 return ProtocolConstants::PING;
             }
 
-            void PingRequest::writeData(serialization::ObjectDataOutput & writer) const {
-
-            }
-
-            void PingRequest::readData(serialization::ObjectDataInput & reader) {
+            void PingRequest::writeData(serialization::ObjectDataOutput &writer) const {
 
             }
 

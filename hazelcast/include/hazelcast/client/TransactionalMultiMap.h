@@ -6,12 +6,12 @@
 #define HAZELCAST_TransactionalMultiMap
 
 #include "hazelcast/client/serialization/Data.h"
-#include "TxnMultiMapPutRequest.h"
-#include "TxnMultiMapGetRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapPutRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapGetRequest.h"
 #include "hazelcast/client/impl/PortableCollection.h"
-#include "TxnMultiMapRemoveRequest.h"
-#include "TxnMultiMapValueCountRequest.h"
-#include "TxnMultiMapSizeRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapRemoveRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapValueCountRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapSizeRequest.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 
 namespace hazelcast {

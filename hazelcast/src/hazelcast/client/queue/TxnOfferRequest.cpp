@@ -3,13 +3,13 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnOfferRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/TxnOfferRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            TxnOfferRequest::TxnOfferRequest(const std::string& name, long timeoutInMillis, serialization::Data & data)
+            TxnOfferRequest::TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::Data &data)
             :name(name)
             , data(data)
             , timeoutInMillis(timeoutInMillis) {
@@ -23,6 +23,13 @@ namespace hazelcast {
             int TxnOfferRequest::getClassId() const {
                 return QueuePortableHook::TXN_OFFER;
             }
+
+            void TxnOfferRequest::writePortable(serialization::PortableWriter &writer) const {
+                writer.writeUTF("n", name);
+                writer.writeLong("t", timeoutInMillis);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                data.writeData(out);
+            };
 
         }
     }

@@ -3,8 +3,8 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "HeartBeatChecker.h"
-#include "Connection.h"
+#include "hazelcast/client/connection/HeartBeatChecker.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include <boost/thread.hpp>
 

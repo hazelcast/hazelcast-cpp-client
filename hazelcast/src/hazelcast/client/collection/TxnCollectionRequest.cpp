@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnCollectionRequest.h"
+#include "hazelcast/client/collection/TxnCollectionRequest.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/Data.h"

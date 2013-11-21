@@ -9,8 +9,8 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-#include "ConcurrentMap.h"
-#include "SerializerHolder.h"
+#include "hazelcast/util/ConcurrentMap.h"
+#include "hazelcast/client/serialization/SerializerHolder.h"
 #include <map>
 #include <vector>
 #include <memory>

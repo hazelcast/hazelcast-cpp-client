@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "DataOutput.h"
-#include "IOException.h"
-#include "Util.h"
+#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {

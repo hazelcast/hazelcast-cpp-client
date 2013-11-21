@@ -3,15 +3,14 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PeekRequest.h"
-#include "QueuePortableHook.h"
-#include "PortableReader.h"
+#include "hazelcast/client/queue/PeekRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            PeekRequest::PeekRequest(const std::string& name)
+            PeekRequest::PeekRequest(const std::string &name)
             :name(name) {
 
             };
@@ -24,12 +23,8 @@ namespace hazelcast {
                 return queue::QueuePortableHook::PEEK;
             };
 
-            void PeekRequest::writePortable(serialization::PortableWriter& writer) const {
+            void PeekRequest::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-            };
-
-            void PeekRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
             };
         }
     }

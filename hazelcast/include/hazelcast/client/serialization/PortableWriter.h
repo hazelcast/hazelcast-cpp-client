@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_PortableWriter
 #define HAZELCAST_PortableWriter
 
-#include "DefaultPortableWriter.h"
-#include "ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/DefaultPortableWriter.h"
+#include "hazelcast/client/serialization/ClassDefinitionWriter.h"
 
 namespace hazelcast {
     namespace client {

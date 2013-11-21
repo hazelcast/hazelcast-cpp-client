@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/RetryableRequest.h"
 #include <vector>
 #include <string>
@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class ContainsRequest : public Portable, public RetryableRequest {
+            class ContainsRequest : public impl::PortableRequest, public RetryableRequest {
             public:
 
                 ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList);
@@ -24,11 +24,9 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 std::vector<serialization::Data>& dataList;
-                std::string name;
+                const std::string& name;
             };
         }
     }

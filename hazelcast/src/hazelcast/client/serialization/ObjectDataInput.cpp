@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "SerializationContext.h"
-#include "DataInput.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/serialization/DataInput.h"
 
 namespace hazelcast {
     namespace client {

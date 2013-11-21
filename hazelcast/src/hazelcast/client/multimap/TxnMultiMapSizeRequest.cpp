@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnMultiMapSizeRequest.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/TxnMultiMapSizeRequest.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

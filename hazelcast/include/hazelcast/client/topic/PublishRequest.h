@@ -7,14 +7,14 @@
 #ifndef HAZELCAST_PublishRequest
 #define HAZELCAST_PublishRequest
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class PublishRequest : public Portable {
+            class PublishRequest : public impl::PortableRequest {
             public:
                 PublishRequest(const std::string& instanceName, const serialization::Data& message);
 
@@ -23,8 +23,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 serialization::Data message;

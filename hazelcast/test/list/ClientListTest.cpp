@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ClientListTest.h"
-#include "HazelcastClient.h"
+#include "list/ClientListTest.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
 
 

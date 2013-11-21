@@ -4,10 +4,10 @@
 
 
 #include "hazelcast/client/queue/RemoveRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -32,13 +32,6 @@ namespace hazelcast {
                 writer.writeLong("t", 0);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
-
-
-            void RemoveRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                data.readData(in);
             };
         }
     }

@@ -3,11 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AddMessageListenerRequest.h"
+#include "hazelcast/client/topic/AddMessageListenerRequest.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "TopicPortableHook.h"
+#include "hazelcast/client/topic/TopicPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,10 +26,6 @@ namespace hazelcast {
 
             void AddMessageListenerRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
-            };
-
-            void AddMessageListenerRequest::readPortable(serialization::PortableReader& reader) {
-                instanceName = reader.readUTF("n");
             };
         }
     }

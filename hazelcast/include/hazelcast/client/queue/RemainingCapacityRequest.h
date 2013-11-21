@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 #define HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class RemainingCapacityRequest : public Portable, public RetryableRequest {
+            class RemainingCapacityRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 RemainingCapacityRequest(const std::string& name);
 
@@ -21,10 +21,8 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
-
             private:
-                std::string name;
+                const std::string& name;
             };
         }
     }

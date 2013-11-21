@@ -8,19 +8,16 @@
 #ifndef HAZELCAST_AUTHENTICATION_REQUEST
 #define HAZELCAST_AUTHENTICATION_REQUEST
 
-#include "Principal.h"
-#include "Credentials.h"
-#include "ProtocolConstants.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/protocol/Principal.h"
+#include "hazelcast/client/protocol/Credentials.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class AuthenticationRequest : public Portable {
+            class AuthenticationRequest : public impl::PortableRequest {
             public:
-                AuthenticationRequest();
-
-                AuthenticationRequest(Credentials credential);
+                AuthenticationRequest(const Credentials& credential);
 
                 void setPrincipal(Principal *principal);
 
@@ -34,10 +31,8 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter &writer) const;
 
-                void readPortable(serialization::PortableReader &reader);
-
             private:
-                Credentials credentials;
+                const Credentials& credentials;
                 Principal *principal;
                 bool reAuth;
                 bool firstConnection;

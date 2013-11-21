@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "DefaultPortableWriter.h"
-#include "ClassDefinition.h"
-#include "SerializationContext.h"
+#include "hazelcast/client/serialization/DefaultPortableWriter.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
 
 namespace hazelcast {
     namespace client {

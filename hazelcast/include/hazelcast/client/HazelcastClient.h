@@ -1,12 +1,12 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include "IMap.h"
-#include "MultiMap.h"
-#include "IQueue.h"
-#include "ISet.h"
-#include "IList.h"
-#include "ITopic.h"
+#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/MultiMap.h"
+#include "hazelcast/client/IQueue.h"
+#include "hazelcast/client/ISet.h"
+#include "hazelcast/client/IList.h"
+#include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/TransactionalTaskContext.h"

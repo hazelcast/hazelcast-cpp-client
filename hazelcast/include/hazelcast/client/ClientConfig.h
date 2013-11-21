@@ -167,7 +167,6 @@ namespace hazelcast {
 
             protocol::Credentials defaultCredentials;
 
-            bool isDefaultCredentialsInitialized;
         };
 
     }

@@ -9,9 +9,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class ObjectDataInput;
-        }
         namespace impl {
 
             class IdentifiedDataSerializableRequest : public IdentifiedDataSerializable {

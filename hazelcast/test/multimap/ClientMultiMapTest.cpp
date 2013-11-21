@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ClientMultiMapTest.h"
-#include "HazelcastClient.h"
+#include "multimap/ClientMultiMapTest.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
 
 

@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnMultiMapRemoveRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapRemoveRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

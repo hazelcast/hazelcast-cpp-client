@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_CONCURRENT_SMART_MAP
 #define HAZELCAST_CONCURRENT_SMART_MAP
 
-#include "AtomicPointer.h"
+#include "hazelcast/util/AtomicPointer.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <map>

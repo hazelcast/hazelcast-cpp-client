@@ -4,8 +4,8 @@
 
 
 
-#include "boost/thread.hpp"
-#include "AtomicPointer.h"
+#include "hazelcast/util/AtomicPointer.h"
+#include <boost/thread.hpp>
 #include <memory>
 
 #ifndef HAZELCAST_Future

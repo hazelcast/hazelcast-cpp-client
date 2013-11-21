@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_ClientSetTest
 #define HAZELCAST_ClientSetTest
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
 #include "ISet.h"
 

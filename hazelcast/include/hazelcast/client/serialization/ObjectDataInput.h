@@ -9,11 +9,11 @@
 #ifndef HAZELCAST_DATA_INPUT
 #define HAZELCAST_DATA_INPUT
 
-#include "IOException.h"
-#include "Serializer.h"
-#include "SerializerHolder.h"
-#include "ClassDefinition.h"
-#include "Util.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/serialization/SerializerHolder.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/util/Util.h"
 #include <vector>
 #include <string>
 

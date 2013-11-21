@@ -8,8 +8,8 @@
 #define HAZELCAST_ClientTxnListTest
 
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
 
 namespace hazelcast {

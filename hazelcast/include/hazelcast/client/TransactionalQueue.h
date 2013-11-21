@@ -10,10 +10,10 @@
 
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
-#include "TxnOfferRequest.h"
+#include "hazelcast/client/queue/TxnOfferRequest.h"
 #include "hazelcast/client/exception/InterruptedException.h"
-#include "TxnPollRequest.h"
-#include "TxnSizeRequest.h"
+#include "hazelcast/client/queue/TxnPollRequest.h"
+#include "hazelcast/client/queue/TxnSizeRequest.h"
 
 namespace hazelcast {
     namespace client {

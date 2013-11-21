@@ -3,13 +3,13 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ConnectionManager.h"
-#include "ConnectionPool.h"
-#include "ClientConfig.h"
-#include "Connection.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ConnectionPool.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "AuthenticationRequest.h"
-#include "SocketInterceptor.h"
+#include "hazelcast/client/protocol/AuthenticationRequest.h"
+#include "hazelcast/client/connection/SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {

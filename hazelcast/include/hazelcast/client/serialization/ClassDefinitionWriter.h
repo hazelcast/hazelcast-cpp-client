@@ -10,10 +10,10 @@
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
 #include "hazelcast/client/exception/IException.h"
-#include "FieldType.h"
-#include "ClassDefinition.h"
+#include "hazelcast/client/serialization/FieldType.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "FieldDefinition.h"
+#include "hazelcast/client/serialization/FieldDefinition.h"
 #include <string>
 
 

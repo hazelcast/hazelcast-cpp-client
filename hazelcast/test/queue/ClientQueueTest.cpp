@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ClientQueueTest.h"
-#include "HazelcastClient.h"
+#include "queue/ClientQueueTest.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
 
 namespace hazelcast {

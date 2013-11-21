@@ -3,9 +3,9 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "ConnectionPool.h"
-#include "Connection.h"
-#include "ConnectionManager.h"
+#include "hazelcast/client/connection/ConnectionPool.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 
 
 namespace hazelcast {

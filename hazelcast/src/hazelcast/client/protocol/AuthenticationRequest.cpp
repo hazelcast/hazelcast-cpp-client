@@ -5,18 +5,13 @@
 
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
 
-
-            AuthenticationRequest::AuthenticationRequest() {
-
-            };
-
-            AuthenticationRequest::AuthenticationRequest(Credentials credentials)
+            AuthenticationRequest::AuthenticationRequest(const Credentials& credentials)
             :credentials(credentials)
             , reAuth(true)
             , firstConnection(true) {
@@ -54,17 +49,6 @@ namespace hazelcast {
                 writer.writeBoolean("reAuth", reAuth);
                 writer.writeBoolean("firstConnection", firstConnection);
             };
-
-
-            void AuthenticationRequest::readPortable(serialization::PortableReader &reader) {
-                credentials = reader.readPortable<Credentials>("credentials");
-                protocol::Principal *principal = new protocol::Principal();
-                *principal = reader.readPortable<Principal>("principal");
-                this->principal = principal;
-                reAuth = reader.readBoolean("reAuth");
-                firstConnection = reader.readBoolean("firstConnection");
-            };
-
         }
     }
 }

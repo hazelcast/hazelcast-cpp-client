@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/Data.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 
 namespace hazelcast {

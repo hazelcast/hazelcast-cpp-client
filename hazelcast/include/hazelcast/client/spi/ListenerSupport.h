@@ -9,10 +9,10 @@
 #define HAZELCAST_LISTENER_SUPPORT
 
 #include "hazelcast/client/serialization/Data.h"
-#include "ResponseStream.h"
+#include "hazelcast/client/spi/ResponseStream.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "CountDownLatch.h"
+#include "hazelcast/util/CountDownLatch.h"
 #include <boost/thread.hpp>
 
 namespace hazelcast {

@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ClientMapTest.h"
-#include "HazelcastClient.h"
+#include "map/ClientMapTest.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
 #include "Employee.h"
 

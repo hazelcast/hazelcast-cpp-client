@@ -5,7 +5,7 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "LockPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {

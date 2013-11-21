@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_CONCURRENT_QUEUE
 #define HAZELCAST_CONCURRENT_QUEUE
 
-#include <queue>
-#include <iostream>
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/mutex.hpp>
+#include <queue>
+#include <iostream>
 
 namespace hazelcast {
     namespace util {

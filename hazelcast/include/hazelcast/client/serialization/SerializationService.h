@@ -9,20 +9,20 @@
 #ifndef HAZELCAST_SERIALIZATION_SERVICE
 #define HAZELCAST_SERIALIZATION_SERVICE
 
-#include "SerializationContext.h"
-#include "PortableSerializer.h"
-#include "DataSerializer.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/serialization/PortableSerializer.h"
+#include "hazelcast/client/serialization/DataSerializer.h"
 #include "hazelcast/client/Portable.h"
 #include "hazelcast/client/IdentifiedDataSerializable.h"
-#include "Serializer.h"
+#include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "DataOutput.h"
-#include "DataInput.h"
-#include "SerializerHolder.h"
+#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/serialization/DataInput.h"
+#include "hazelcast/client/serialization/SerializerHolder.h"
 #include "hazelcast/util/Util.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 #include <string>
 
 namespace hazelcast {

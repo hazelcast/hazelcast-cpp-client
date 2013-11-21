@@ -18,7 +18,7 @@
 #include "hazelcast/client/collection/CollectionRemoveRequest.h"
 #include "hazelcast/client/collection/CollectionClearRequest.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "ItemEventHandler.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/SerializableCollection.h"

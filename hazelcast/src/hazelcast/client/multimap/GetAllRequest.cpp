@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/multimap/GetAllRequest.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

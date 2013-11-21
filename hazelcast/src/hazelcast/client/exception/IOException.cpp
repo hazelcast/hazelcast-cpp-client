@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IOException.h"
+#include "hazelcast/client/exception/IOException.h"
 
 
 namespace hazelcast {

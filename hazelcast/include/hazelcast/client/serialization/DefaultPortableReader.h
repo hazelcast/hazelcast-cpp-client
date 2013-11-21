@@ -9,8 +9,8 @@
 #ifndef HAZELCAST_PORTABLE_READER
 #define HAZELCAST_PORTABLE_READER
 
-#include "ClassDefinition.h"
-#include "DataInput.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include <string>
 #include <memory>

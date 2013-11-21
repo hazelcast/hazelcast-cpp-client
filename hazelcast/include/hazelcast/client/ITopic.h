@@ -9,9 +9,9 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "topic/PublishRequest.h"
-#include "topic/AddMessageListenerRequest.h"
-#include "TopicEventHandler.h"
+#include "hazelcast/client/topic/PublishRequest.h"
+#include "hazelcast/client/topic/AddMessageListenerRequest.h"
+#include "hazelcast/client/topic/TopicEventHandler.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/proxy/DistributedObject.h"

@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ICountDownLatchTest.h"
+#include "countdownlatch/ICountDownLatchTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {

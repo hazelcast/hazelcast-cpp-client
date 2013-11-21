@@ -7,9 +7,9 @@
 #ifndef HAZELCAST_ClientMapTest
 #define HAZELCAST_ClientMapTest
 
-#include "iTest.h"
-#include "ClientConfig.h"
-#include "IMap.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
 #include "HazelcastInstance.h"
 
 namespace hazelcast {

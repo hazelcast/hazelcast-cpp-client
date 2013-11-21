@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/multimap/PutRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {

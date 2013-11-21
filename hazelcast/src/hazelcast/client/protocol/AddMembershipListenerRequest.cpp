@@ -4,6 +4,7 @@
 
 
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -20,10 +21,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::ADD_MS_LISTENER;
             }
 
-            void AddMembershipListenerRequest::writeData(serialization::ObjectDataOutput& writer) const {
-            };
-
-            void AddMembershipListenerRequest::readData(serialization::ObjectDataInput& reader) {
+            void AddMembershipListenerRequest::writeData(serialization::ObjectDataOutput &writer) const {
             };
         }
     }

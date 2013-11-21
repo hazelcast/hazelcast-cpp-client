@@ -4,7 +4,7 @@
 
 
 #include "ClientSetTest.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastInstanceFactory.h"
 
 

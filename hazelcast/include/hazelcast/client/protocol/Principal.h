@@ -4,25 +4,20 @@
 #ifndef HAZELCAST_PRINCIPAL
 #define HAZELCAST_PRINCIPAL
 
-#include "ProtocolConstants.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class Principal : public Portable {
+            class Principal : public impl::PortableResponse {
             public:
                 Principal();
-
-                Principal(std::string uuid, std::string ownerUuid);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
 

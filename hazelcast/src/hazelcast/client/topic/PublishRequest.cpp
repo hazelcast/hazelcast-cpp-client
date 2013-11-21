@@ -3,10 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PublishRequest.h"
-#include "TopicPortableHook.h"
+#include "hazelcast/client/topic/PublishRequest.h"
+#include "hazelcast/client/topic/TopicPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,13 +29,6 @@ namespace hazelcast {
                 writer.writeUTF("n", instanceName);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 message.writeData(out);
-            };
-
-
-            void PublishRequest::readPortable(serialization::PortableReader& reader) {
-                instanceName = reader.readUTF("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                message.readData(in);
             };
         }
     }

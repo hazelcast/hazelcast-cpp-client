@@ -9,10 +9,10 @@
 #ifndef hazelcast_ClientLockTest_h
 #define hazelcast_ClientLockTest_h
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
-#include "ILock.h"
+#include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
     namespace client {

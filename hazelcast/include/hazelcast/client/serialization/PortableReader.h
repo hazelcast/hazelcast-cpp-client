@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_PortableReader
 #define HAZELCAST_PortableReader
 
-#include "DefaultPortableReader.h"
-#include "MorphingPortableReader.h"
+#include "hazelcast/client/serialization/DefaultPortableReader.h"
+#include "hazelcast/client/serialization/MorphingPortableReader.h"
 
 namespace hazelcast {
     namespace client {

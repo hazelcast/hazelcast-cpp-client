@@ -7,8 +7,8 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/Socket.h"
-#include "OutputSocketStream.h"
-#include "InputSocketStream.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
 
 namespace hazelcast {
     namespace client {

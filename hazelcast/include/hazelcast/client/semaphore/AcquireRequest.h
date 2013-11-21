@@ -7,9 +7,7 @@
 #ifndef HAZELCAST_AcquireRequest
 #define HAZELCAST_AcquireRequest
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "SemaphoreRequest.h"
+#include "hazelcast/client/semaphore/SemaphoreRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,27 +15,12 @@ namespace hazelcast {
         namespace semaphore {
             class AcquireRequest : public SemaphoreRequest {
             public:
-                AcquireRequest(const std::string& instanceName, int permitCount, long timeout)
-                : SemaphoreRequest(instanceName, permitCount)
-                , timeout(timeout) {
+                AcquireRequest(const std::string &instanceName, int permitCount, long timeout);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return SemaphorePortableHook::ACQUIRE;
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                    writer.writeLong("t", timeout);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    SemaphoreRequest::readPortable(reader);
-                    timeout = reader.readLong("t");
-                };
             private:
 
                 long timeout;

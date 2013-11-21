@@ -8,10 +8,10 @@
 #define HAZELCAST_ExecuterServiceTest
 
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
-#include "IExecutorService.h"
+#include "hazelcast/client/IExecutorService.h"
 
 namespace hazelcast {
     namespace client {

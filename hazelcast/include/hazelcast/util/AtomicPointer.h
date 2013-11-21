@@ -8,11 +8,11 @@
 #ifndef HAZELCAST_ATOMIC_REFERENCE
 #define HAZELCAST_ATOMIC_REFERENCE
 
+#include "hazelcast/util/LockSupport.h"
 #include <iosfwd>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/recursive_mutex.hpp>
-#include "LockSupport.h"
 
 namespace hazelcast {
     namespace util {

@@ -9,9 +9,9 @@
 #ifndef HAZELCAST_DATA
 #define HAZELCAST_DATA
 
-#include "ClassDefinition.h"
-#include "SerializationContext.h"
-#include "ProtocolConstants.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 #include <vector>
 
 namespace hazelcast {

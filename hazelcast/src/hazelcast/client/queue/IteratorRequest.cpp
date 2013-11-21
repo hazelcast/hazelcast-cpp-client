@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IteratorRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/IteratorRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -30,10 +30,6 @@ namespace hazelcast {
                 writer.writeLong("t", 0);
             };
 
-
-            void IteratorRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-            };
         }
     }
 }

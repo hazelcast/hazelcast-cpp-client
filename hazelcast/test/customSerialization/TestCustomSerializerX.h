@@ -9,7 +9,7 @@
 
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "Serializer.h"
+#include "hazelcast/client/serialization/Serializer.h"
 #include <assert.h>
 
 namespace hazelcast {

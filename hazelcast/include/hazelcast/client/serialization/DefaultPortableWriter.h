@@ -9,9 +9,9 @@
 #ifndef HAZELCAST_PORTABLE_WRITER
 #define HAZELCAST_PORTABLE_WRITER
 
-#include "DataOutput.h"
+#include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "AtomicPointer.h"
+#include "hazelcast/util/AtomicPointer.h"
 #include <string>
 #include <set>
 #include <vector>

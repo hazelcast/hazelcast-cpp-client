@@ -5,29 +5,19 @@
 #define HAZELCAST_CLIENT_PING_REQUEST
 
 
-#include "ProtocolConstants.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableRequest.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class ObjectDataOutput;
-
-            class ObjectDataInput;
-        }
         namespace protocol {
-            class PingRequest : public IdentifiedDataSerializable {
+            class PingRequest : public impl::IdentifiedDataSerializableRequest {
             public:
-                PingRequest();
-
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer) const;
-
-                void readData(serialization::ObjectDataInput& reader);
+                void writeData(serialization::ObjectDataOutput &writer) const;
 
             };
 

@@ -7,10 +7,10 @@
 #ifndef HAZELCAST_ICountDownLatch
 #define HAZELCAST_ICountDownLatch
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
-#include "ICountDownLatch.h"
+#include "hazelcast/client/ICountDownLatch.h"
 
 namespace hazelcast {
     namespace client {

@@ -1,7 +1,7 @@
 #ifndef HAZELCAST_ID_GENERATOR
 #define HAZELCAST_ID_GENERATOR
 
-#include "IAtomicLong.h"
+#include "hazelcast/client/IAtomicLong.h"
 #include <string>
 #include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>

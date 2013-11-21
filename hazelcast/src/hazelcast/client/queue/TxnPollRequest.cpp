@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnPollRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/TxnPollRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,6 +22,11 @@ namespace hazelcast {
             int TxnPollRequest::getClassId() const {
                 return QueuePortableHook::TXN_POLL;
             }
+
+            void TxnPollRequest::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("n", name);
+                writer.writeLong("t", timeout);
+            };
 
 
         }

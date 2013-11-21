@@ -10,8 +10,8 @@
 #ifndef hazelcast_cpp_client_UniquePtr_h
 #define hazelcast_cpp_client_UniquePtr_h
 
-#include <cstdlib>
 #include "hazelcast/client/exception/IException.h"
+#include <cstdlib>
 
 namespace hazelcast {
     namespace util {

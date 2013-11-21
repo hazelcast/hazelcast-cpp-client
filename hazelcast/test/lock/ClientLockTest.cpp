@@ -1,6 +1,6 @@
-#include "ClientLockTest.h"
+#include "lock/ClientLockTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {

@@ -4,8 +4,7 @@
 
 
 #include "hazelcast/client/queue/SizeRequest.h"
-#include "QueuePortableHook.h"
-#include "PortableReader.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
@@ -27,10 +26,6 @@ namespace hazelcast {
             void SizeRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
-            };
-
-            void SizeRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
             };
         }
     }

@@ -7,10 +7,7 @@
 #ifndef HAZELCAST_ReduceRequest
 #define HAZELCAST_ReduceRequest
 
-
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "SemaphoreRequest.h"
+#include "hazelcast/client/semaphore/SemaphoreRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,24 +15,12 @@ namespace hazelcast {
         namespace semaphore {
             class ReduceRequest : public SemaphoreRequest {
             public:
-                ReduceRequest(const std::string& instanceName, int permitCount)
-                : SemaphoreRequest(instanceName, permitCount) {
+                ReduceRequest(const std::string &instanceName, int permitCount);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return SemaphorePortableHook::REDUCE;
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
 
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    SemaphoreRequest::readPortable(reader);
-                };
             };
         }
     }

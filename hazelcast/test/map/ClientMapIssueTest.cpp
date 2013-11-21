@@ -3,11 +3,11 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "ClientMapIssueTest.h"
+#include "map/ClientMapIssueTest.h"
 #include "HazelcastInstanceFactory.h"
 #include "HazelcastInstance.h"
-#include "HazelcastClient.h"
-#include "ClientConfig.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ClientConfig.h"
 
 
 namespace hazelcast {

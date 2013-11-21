@@ -1,5 +1,5 @@
 #include "hazelcast/client/ClientConfig.h"
-#include "SocketInterceptor.h"
+#include "hazelcast/client/connection/SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {
@@ -14,7 +14,7 @@ namespace hazelcast {
         , credentials(NULL)
         , loadBalancer(NULL)
         , socketInterceptor(NULL)
-        , isDefaultCredentialsInitialized(false)
+        , defaultCredentials(groupConfig.getName() , groupConfig.getPassword())
         , defaultLoadBalancer(new impl::RoundRobinLB) {
         };
 
@@ -110,11 +110,6 @@ namespace hazelcast {
 
         protocol::Credentials & ClientConfig::getCredentials() {
             if (credentials == NULL) {
-                if (isDefaultCredentialsInitialized)
-                    return defaultCredentials;
-                defaultCredentials.setPrincipal(groupConfig.getName());
-                defaultCredentials.setPassword(groupConfig.getPassword());
-                isDefaultCredentialsInitialized = true;
                 return defaultCredentials;
             }
             return *credentials;

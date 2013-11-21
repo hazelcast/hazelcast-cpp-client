@@ -5,13 +5,13 @@
 #define HAZELCAST_QUEUE_ADD_ALL_REQUEST
 
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddAllRequest : public Portable {
+            class AddAllRequest : public impl::PortableRequest {
             public:
 
                 AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList);
@@ -22,11 +22,9 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 std::vector<serialization::Data>& dataList;
-                std::string name;
+                const std::string& name;
             };
         }
     }

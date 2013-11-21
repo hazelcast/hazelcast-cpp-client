@@ -5,31 +5,14 @@
 
 #include "hazelcast/client/protocol/Credentials.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            Credentials::Credentials() {
-
-            };
-
-            Credentials::Credentials(std::string& principal, std::string& password)
+            Credentials::Credentials(const std::string& principal, const std::string& password)
             : principal(principal) {
-                char const *pasw = password.c_str();
-                this->password.insert(this->password.begin(), pasw, pasw + password.size());
-            };
-
-            void Credentials::setPrincipal(std::string const & principal) {
-                this->principal = principal;
-            };
-
-            void Credentials::setEndPoint(std::string const & endPoint) {
-                this->endpoint = endPoint;
-            };
-
-            void Credentials::setPassword(std::string const & password) {
                 char const *pasw = password.c_str();
                 this->password.insert(this->password.begin(), pasw, pasw + password.size());
             };
@@ -47,13 +30,6 @@ namespace hazelcast {
                 writer.writeUTF("principal", principal);//dev
                 writer.writeUTF("endpoint", endpoint);//"
                 writer.writeByteArray("pwd", password);//dev-pass
-            };
-
-
-            void Credentials::readPortable(serialization::PortableReader& reader) {
-                principal = reader.readUTF("principal");
-                endpoint = reader.readUTF("endpoint");
-                password = reader.readByteArray("pwd");
             };
 
 

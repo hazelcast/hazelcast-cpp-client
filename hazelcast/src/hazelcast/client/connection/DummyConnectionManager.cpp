@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "DummyConnectionManager.h"
-#include "Connection.h"
+#include "hazelcast/client/connection/DummyConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClusterService.h"
 
 namespace hazelcast {

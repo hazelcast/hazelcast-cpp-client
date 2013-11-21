@@ -9,11 +9,11 @@
 #ifndef hazelcast_ClientAtomicLong_h
 #define hazelcast_ClientAtomicLong_h
 
-#include "iTest.h"
-#include "ClientConfig.h"
-#include "IMap.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
 #include "HazelcastInstance.h"
-#include "IAtomicLong.h"
+#include "hazelcast/client/IAtomicLong.h"
 
 
 namespace hazelcast {

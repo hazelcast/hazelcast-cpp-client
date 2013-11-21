@@ -3,8 +3,8 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "Connection.h"
-#include "DataOutput.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {

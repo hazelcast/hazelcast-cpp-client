@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "CountDownLatch.h"
+#include "hazelcast/util/CountDownLatch.h"
 
 
 namespace hazelcast {

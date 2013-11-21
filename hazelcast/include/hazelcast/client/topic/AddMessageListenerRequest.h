@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_AddMessageListenerRequest
 #define HAZELCAST_AddMessageListenerRequest
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class AddMessageListenerRequest : public Portable {
+            class AddMessageListenerRequest : public impl::PortableRequest {
             public:
                 AddMessageListenerRequest(const std::string& instanceName);
 
@@ -22,8 +22,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void writePortable(serialization::PortableWriter& writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
 
             private:
                 std::string instanceName;

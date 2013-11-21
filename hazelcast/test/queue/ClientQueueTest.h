@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_ClientQueueTest
 #define HAZELCAST_ClientQueueTest
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "IQueue.h"
 #include "HazelcastInstance.h"
 

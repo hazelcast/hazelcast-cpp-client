@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "QueryResultSet.h"
+#include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"

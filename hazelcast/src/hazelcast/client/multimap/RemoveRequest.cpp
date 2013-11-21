@@ -6,7 +6,7 @@
 #include "hazelcast/client/multimap/RemoveRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

@@ -4,9 +4,9 @@
 
 
 #include "hazelcast/client/queue/CompareAndRemoveRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -34,17 +34,6 @@ namespace hazelcast {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 for (int i = 0; i < dataList.size(); ++i) {
                     dataList[i].writeData(out);
-                }
-            };
-
-            void CompareAndRemoveRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                retain = reader.readBoolean("r");
-                int size = reader.readInt("s");
-                dataList.resize(size);
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                for (int i = 0; i < size; ++i) {
-                    dataList[i].readData(in);
                 }
             };
         }

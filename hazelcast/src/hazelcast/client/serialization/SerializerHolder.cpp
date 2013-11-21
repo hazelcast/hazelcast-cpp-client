@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "SerializerHolder.h"
-#include "Serializer.h"
+#include "hazelcast/client/serialization/SerializerHolder.h"
+#include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {

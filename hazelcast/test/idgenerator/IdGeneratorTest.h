@@ -10,10 +10,10 @@
 #define hazelcast_IdGeneratorTest_h
 
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
-#include "IdGenerator.h"
+#include "hazelcast/client/IdGenerator.h"
 
 namespace hazelcast {
     namespace client {

@@ -4,8 +4,7 @@
 
 
 #include "hazelcast/client/queue/DrainRequest.h"
-#include "QueuePortableHook.h"
-#include "PortableReader.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
@@ -30,11 +29,6 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
                 writer.writeInt("m", maxSize);
-            };
-
-            void DrainRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
-                maxSize = reader.readInt("m");
             };
         }
     }

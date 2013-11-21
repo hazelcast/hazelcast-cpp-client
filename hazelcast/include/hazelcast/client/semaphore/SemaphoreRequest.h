@@ -7,41 +7,22 @@
 #ifndef HAZELCAST_SemaphoreRequest
 #define HAZELCAST_SemaphoreRequest
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class SemaphoreRequest : public Portable {
+            class SemaphoreRequest : public impl::PortableRequest {
             public:
-                SemaphoreRequest(const std::string& instanceName, int permitCount)
-                :instanceName(instanceName)
-                , permitCount(permitCount) {
+                SemaphoreRequest(const std::string& instanceName, int permitCount);
 
-                };
+                virtual int getFactoryId() const;
 
-                virtual int getFactoryId() const {
-                    return SemaphorePortableHook::F_ID;
-                };
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", instanceName);
-                    writer.writeInt("p", permitCount);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    instanceName = reader.readUTF("n");
-                    permitCount = reader.readInt("p");
-                };
+                void writePortable(serialization::PortableWriter& writer) const ;
             private:
 
-                std::string instanceName;
+                const std::string& instanceName;
                 int permitCount;
             };
         }

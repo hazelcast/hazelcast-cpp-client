@@ -10,12 +10,12 @@
 #ifndef HAZELCAST_UTIL_FUNCTIONS
 #define HAZELCAST_UTIL_FUNCTIONS
 
+#include "hazelcast/util/Conversion.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 #include <map>
 #include <vector>
 #include <cstring>
-#include "Conversion.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {

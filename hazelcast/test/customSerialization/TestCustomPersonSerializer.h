@@ -6,8 +6,8 @@
 #define HAZELCAST_TestCustomSerializableWithBase
 
 
-#include "Serializer.h"
-#include "TestCustomXSerializable.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "customSerialization/TestCustomXSerializable.h"
 
 namespace hazelcast {
     namespace client {

@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "LockSupport.h"
+#include "hazelcast/util/LockSupport.h"
 
 
 namespace hazelcast {

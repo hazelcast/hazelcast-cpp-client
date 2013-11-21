@@ -8,9 +8,9 @@
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
-#include "ConcurrentMap.h"
-#include "DataSerializer.h"
-#include "PortableSerializer.h"
+#include "hazelcast/util/ConcurrentMap.h"
+#include "hazelcast/client/serialization/DataSerializer.h"
+#include "hazelcast/client/serialization/PortableSerializer.h"
 
 namespace hazelcast {
     namespace client {

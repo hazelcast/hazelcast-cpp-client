@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 9/4/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "ContainsKeyRequest.h"
+#include "hazelcast/client/map/ContainsKeyRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"

@@ -5,7 +5,7 @@
 
 #include "ClientTxnQueueTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/HazelcastClient.h"
 
 
 namespace hazelcast {

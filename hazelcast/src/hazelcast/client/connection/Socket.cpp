@@ -1,5 +1,5 @@
 #include "hazelcast/client/connection/Socket.h"
-#include "IOException.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {

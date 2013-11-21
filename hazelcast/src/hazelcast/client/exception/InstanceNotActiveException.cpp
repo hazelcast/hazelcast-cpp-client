@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "InstanceNotActiveException.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 namespace hazelcast {
     namespace client {

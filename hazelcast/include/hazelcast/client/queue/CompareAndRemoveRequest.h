@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class CompareAndRemoveRequest : public Portable {
+            class CompareAndRemoveRequest : public impl::PortableRequest {
             public:
 
                 CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain);
@@ -22,11 +22,9 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
-
             private:
                 std::vector<serialization::Data>& dataList;
-                std::string name;
+                const std::string& name;
                 bool retain;
             };
         }

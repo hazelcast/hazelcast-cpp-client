@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "MultiMapIsLockedRequest.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapIsLockedRequest.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 

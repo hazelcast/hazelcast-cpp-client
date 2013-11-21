@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TryRemoveRequest.h"
+#include "hazelcast/client/map/TryRemoveRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"

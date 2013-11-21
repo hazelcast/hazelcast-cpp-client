@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#include "IdGeneratorTest.h"
+#include "idgenerator/IdGeneratorTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "HazelcastClient.h"
+#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {

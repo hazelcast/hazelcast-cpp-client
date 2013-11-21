@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_CountDownLatch
 #define HAZELCAST_CountDownLatch
 
-#include "boost/atomic/atomic.hpp"
-#include "boost/thread.hpp"
+#include <boost/atomic/atomic.hpp>
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace util {

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_LIFECYCLE_LISTENER
 #define HAZELCAST_LIFECYCLE_LISTENER
 
-#include "EventListener.h"
+#include "hazelcast/client/spi/EventListener.h"
 
 namespace hazelcast {
     namespace client {

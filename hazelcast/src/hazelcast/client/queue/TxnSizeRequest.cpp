@@ -3,8 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnSizeRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/TxnSizeRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,6 +21,10 @@ namespace hazelcast {
             int TxnSizeRequest::getClassId() const {
                 return QueuePortableHook::TXN_SIZE;
             }
+
+            void TxnSizeRequest::writePortable(serialization::PortableWriter& writer) const {
+                writer.writeUTF("n", name);
+            };
 
 
         }

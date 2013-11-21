@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnMultiMapGetRequest.h"
+#include "hazelcast/client/multimap/TxnMultiMapGetRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

@@ -7,9 +7,8 @@
 #ifndef HAZELCAST_AvailableRequest
 #define HAZELCAST_AvailableRequest
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "SemaphorePortableHook.h"
-#include "SemaphoreRequest.h"
+#include "hazelcast/client/semaphore/SemaphoreRequest.h"
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,24 +16,11 @@ namespace hazelcast {
         namespace semaphore {
             class AvailableRequest : public SemaphoreRequest, public RetryableRequest {
             public:
-                AvailableRequest(const std::string& instanceName)
-                : SemaphoreRequest(instanceName, -1) {
+                AvailableRequest(const std::string &instanceName);
 
-                };
+                int getClassId() const;
 
-                int getClassId() const {
-                    return SemaphorePortableHook::AVAILABLE;
-                };
-
-
-                void writePortable(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
-
-
-                void readPortable(serialization::PortableReader& reader) {
-                    SemaphoreRequest::readPortable(reader);
-                };
+                void writePortable(serialization::PortableWriter &writer) const;
             };
         }
     }

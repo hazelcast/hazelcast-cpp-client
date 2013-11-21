@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "TxnSetAddRequest.h"
+#include "hazelcast/client/collection/TxnSetAddRequest.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {

@@ -9,8 +9,8 @@
 #ifndef hazelcast_ClientMultiMapTest_h
 #define hazelcast_ClientMultiMapTest_h
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "MultiMap.h"
 #include "HazelcastInstance.h"
 

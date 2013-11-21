@@ -1,4 +1,4 @@
-#include "TestCustomXSerializable.h"
+#include "customSerialization/TestCustomXSerializable.h"
 
 namespace hazelcast {
     namespace client {

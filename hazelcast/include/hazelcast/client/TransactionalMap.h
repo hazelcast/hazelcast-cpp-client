@@ -11,9 +11,9 @@
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "TxnMapRequest.h"
-#include "MapKeySet.h"
-#include "MapValueCollection.h"
+#include "hazelcast/client/map/TxnMapRequest.h"
+#include "hazelcast/client/impl/MapKeySet.h"
+#include "hazelcast/client/impl/MapValueCollection.h"
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {

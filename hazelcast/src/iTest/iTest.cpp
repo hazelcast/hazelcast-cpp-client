@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "iTest.h"
+#include "iTest/iTest.h"
 
 namespace iTest {
     void assertFalse(bool isFalse, const char *message) {

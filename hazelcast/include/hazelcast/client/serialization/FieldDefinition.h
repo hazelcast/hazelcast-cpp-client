@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_FIELD_DEFINITION
 #define HAZELCAST_FIELD_DEFINITION
 
-#include "FieldType.h"
+#include "hazelcast/client/serialization/FieldType.h"
 #include <string>
 
 namespace hazelcast {

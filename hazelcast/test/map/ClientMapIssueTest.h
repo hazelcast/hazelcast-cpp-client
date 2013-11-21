@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_ClientMapIssueTest
 #define HAZELCAST_ClientMapIssueTest
 
-#include "iTest.h"
+#include "iTest/iTest.h"
 
 namespace hazelcast {
     namespace client {

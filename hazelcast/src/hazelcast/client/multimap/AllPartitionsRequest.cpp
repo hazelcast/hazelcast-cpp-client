@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {

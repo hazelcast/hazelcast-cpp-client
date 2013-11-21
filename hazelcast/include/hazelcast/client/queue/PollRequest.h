@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_POLL_REQUEST
 #define HAZELCAST_QUEUE_POLL_REQUEST
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PollRequest : public Portable {
+            class PollRequest : public impl::PortableRequest {
             public:
                 PollRequest(const std::string& name, long timeout);
 
@@ -22,11 +22,8 @@ namespace hazelcast {
 
                 void writePortable(serialization::PortableWriter& writer) const;
 
-
-                void readPortable(serialization::PortableReader& reader);
-
             private:
-                std::string name;
+                const std::string& name;
                 long timeoutInMillis;
             };
         }

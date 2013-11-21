@@ -7,8 +7,8 @@
 #ifndef HAZELCAST_ClientTxnQueueTest
 #define HAZELCAST_ClientTxnQueueTest
 
-#include "iTest.h"
-#include "ClientConfig.h"
+#include "iTest/iTest.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "HazelcastInstance.h"
 
 namespace hazelcast {

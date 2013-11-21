@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_iTest
 #define HAZELCAST_iTest
 
-#include "iTestFixture.h"
+#include "iTest/iTestFixture.h"
 #include <string>
 #include <iostream>
 

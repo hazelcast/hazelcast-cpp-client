@@ -1,7 +1,7 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "TestCustomXSerializable.h"
-#include "TestCustomPersonSerializer.h"
+#include "customSerialization/TestCustomXSerializable.h"
+#include "customSerialization/TestCustomPersonSerializer.h"
 
 namespace hazelcast {
     namespace client {

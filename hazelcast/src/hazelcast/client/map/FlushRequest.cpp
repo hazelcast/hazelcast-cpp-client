@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "FlushRequest.h"
+#include "hazelcast/client/map/FlushRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 

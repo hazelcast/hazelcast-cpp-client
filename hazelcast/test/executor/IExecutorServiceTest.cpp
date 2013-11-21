@@ -3,12 +3,12 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "IExecutorServiceTest.h"
+#include "executor/IExecutorServiceTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "HazelcastClient.h"
-#include "RunnableTask.h"
-#include "CallableTask.h"
-#include "FailingTask.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "executor/RunnableTask.h"
+#include "executor/CallableTask.h"
+#include "executor/FailingTask.h"
 
 namespace hazelcast {
     namespace client {

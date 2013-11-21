@@ -3,11 +3,11 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "PortableEntrySetResponse.h"
-#include "PortableReader.h"
+#include "hazelcast/client/multimap/PortableEntrySetResponse.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
-#include "MultiMapPortableHook.h"
+#include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {

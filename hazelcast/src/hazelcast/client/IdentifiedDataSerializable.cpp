@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/IdentifiedDataSerializable.h"
-#include "SerializationConstants.h"
+#include "hazelcast/client/serialization/SerializationConstants.h"
 
 namespace hazelcast {
     namespace client {

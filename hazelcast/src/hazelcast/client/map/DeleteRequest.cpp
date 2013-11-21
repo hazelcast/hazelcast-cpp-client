@@ -1,9 +1,9 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
+
 #include "hazelcast/client/map/DeleteRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/Data.h"
 

@@ -9,10 +9,10 @@
 
 
 #include "hazelcast/client/serialization/Data.h"
-#include "TxnSetAddRequest.h"
+#include "hazelcast/client/collection/TxnSetAddRequest.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
-#include "TxnSetRemoveRequest.h"
-#include "TxnSetSizeRequest.h"
+#include "hazelcast/client/collection/TxnSetRemoveRequest.h"
+#include "hazelcast/client/collection/TxnSetSizeRequest.h"
 
 namespace hazelcast {
     namespace client {

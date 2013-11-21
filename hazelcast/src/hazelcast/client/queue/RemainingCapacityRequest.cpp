@@ -3,10 +3,10 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "RemainingCapacityRequest.h"
-#include "QueuePortableHook.h"
+#include "hazelcast/client/queue/RemainingCapacityRequest.h"
+#include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "PortableReader.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -27,11 +27,6 @@ namespace hazelcast {
 
             void RemainingCapacityRequest::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
-
-
-            void RemainingCapacityRequest::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("n");
             };
         }
     }

@@ -10,7 +10,7 @@
 #define HAZELCAST_CLASS_DEFINITION
 
 
-#include "FieldDefinition.h"
+#include "hazelcast/client/serialization/FieldDefinition.h"
 #include <map>
 #include <vector>
 #include <memory>

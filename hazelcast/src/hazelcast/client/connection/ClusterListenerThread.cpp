@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "MemberShipEvent.h"
+#include "hazelcast/client/connection/MemberShipEvent.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/ClientConfig.h"

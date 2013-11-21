@@ -8,10 +8,10 @@
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
-#include "IOException.h"
-#include "SerializerHolder.h"
-#include "Serializer.h"
-#include "Util.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/serialization/SerializerHolder.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {

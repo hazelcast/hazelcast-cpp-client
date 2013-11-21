@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "AddIndexRequest.h"
+#include "hazelcast/client/map/AddIndexRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
