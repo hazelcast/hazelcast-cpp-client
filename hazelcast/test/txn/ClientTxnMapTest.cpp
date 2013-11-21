@@ -185,7 +185,7 @@ namespace hazelcast {
 
                 IMap<string, string> map = client->getMap<string, string>(SimpleTnxTaskFail::mapName);
 
-                assertEqual(nullptr, map.get(SimpleTnxTask::key) );
+                assertEqual("", map.get(SimpleTnxTask::key) );
                 assertEqual(SimpleTnxTaskFail::expectedSZ, map.size());
             }
 
