@@ -7,7 +7,7 @@
 #ifndef __SimpleTnxTask_H_
 #define __SimpleTnxTask_H_
 
-#include "TransactionalTaskContext.h"
+#include "hazelcast/client/TransactionalTaskContext.h"
 
 
 using hazelcast::client::TransactionalTaskContext;

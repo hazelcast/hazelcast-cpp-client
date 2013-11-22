@@ -4,8 +4,7 @@
 
 #include <iostream>
 #include "SimpleTnxTask.h"
-
-#include "TransactionalMap.h"
+#include "hazelcast/client/TransactionalMap.h"
 
 
 using std::cout;
