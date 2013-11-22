@@ -17,16 +17,16 @@ namespace hazelcast {
             class Credentials : public impl::PortableRequest {
             public:
 
-                Credentials(const std::string& principal,const std::string& password);
+                Credentials(const std::string &principal, const std::string &password);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& principal;
+                std::string principal;
                 std::string endpoint;
                 std::vector<byte> password;
             };

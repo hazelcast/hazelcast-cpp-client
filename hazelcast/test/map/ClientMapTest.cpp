@@ -32,14 +32,7 @@ namespace hazelcast {
             ClientMapTest::~ClientMapTest() {};
 
             void ClientMapTest::addTests() {
-
-
-
                 addTest(&ClientMapTest::testEmptyKeyLock, "testEmptyKeyLock");
-
-                               /*
-                addTest(&ClientMapTest::testIssue537, "testIssue537");
-                addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -64,7 +57,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
                 addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
-                                                                                         */
+                addTest(&ClientMapTest::testIssue537, "testIssue537");
             };
 
             void ClientMapTest::beforeClass() {
