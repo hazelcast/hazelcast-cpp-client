@@ -24,18 +24,21 @@ namespace hazelcast {
             bool add(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnSetAddRequest request(getName(), &data);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             }
 
             bool remove(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnSetRemoveRequest request(getName(), &data);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             }
 
             int size() {
                 collection::TxnSetSizeRequest request(getName());
-                return invoke<int>(request);
+                boost::shared_ptr<int> s = invoke<int>(request);
+                return *s;
             }
 
             void onDestroy() {
@@ -53,7 +56,7 @@ namespace hazelcast {
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().template sendAndReceive<Response>(request);
             };
 

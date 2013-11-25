@@ -9,6 +9,7 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/ConcurrentSmartMap.h"
 #include "hazelcast/client/connection/SocketInterceptor.h"
+
 namespace hazelcast {
     namespace client {
 
@@ -62,7 +63,7 @@ namespace hazelcast {
                 spi::ClusterService &clusterService;
                 serialization::SerializationService &serializationService;
                 ClientConfig &clientConfig;
-                protocol::Principal *principal;
+                boost::shared_ptr<protocol::Principal> principal;
                 HeartBeatChecker heartBeatChecker;
                 std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
 

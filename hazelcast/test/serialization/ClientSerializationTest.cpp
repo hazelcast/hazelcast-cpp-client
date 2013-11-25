@@ -64,14 +64,14 @@ namespace hazelcast {
                 TestCustomXSerializable a;
                 a.id = 131321;
                 serialization::Data data = serializationService.toData<TestCustomXSerializable>(&a);
-                TestCustomXSerializable a2 = serializationService.toObject<TestCustomXSerializable>(data);
-                iTest::assertEqual(a.id, a2.id);
+                boost::shared_ptr<TestCustomXSerializable> a2 = serializationService.toObject<TestCustomXSerializable>(data);
+                iTest::assertEqual(a.id, a2->id);
 
                 TestCustomPerson b;
                 b.setName("TestCustomPerson");
                 serialization::Data data1 = serializationService.toData<TestCustomPerson>(&b);
-                TestCustomPerson b2 = serializationService.toObject<TestCustomPerson>(data1);
-                iTest::assertEqual(std::string("TestCustomPerson"), b2.getName());
+                boost::shared_ptr<TestCustomPerson> b2 = serializationService.toObject<TestCustomPerson>(data1);
+                iTest::assertEqual(std::string("TestCustomPerson"), b2->getName());
             };
 
 
@@ -89,8 +89,8 @@ namespace hazelcast {
                 serializationService.getSerializationContext().registerClassDefinition(builder.build());
 
                 serialization::Data data = serializationService.toData<TestRawDataPortable>(&p);
-                TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
-                iTest::assertEqual(p, x);
+                boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
+                iTest::assertEqual(p, *x);
             };
 
 
@@ -100,13 +100,13 @@ namespace hazelcast {
                 TestDataSerializable np(4, 'k');
                 data = serializationService.toData<TestDataSerializable>(&np);
 
-                TestDataSerializable tnp1;
+                boost::shared_ptr<TestDataSerializable> tnp1;
                 tnp1 = serializationService.toObject<TestDataSerializable>(data);
 
-                iTest::assertEqual(np, tnp1);
+                iTest::assertEqual(np, *tnp1);
                 int x = 4;
                 data = serializationService.toData<int>(&x);
-                int y = serializationService.toObject<int>(data);
+                int y = *(serializationService.toObject<int>(data));
                 iTest::assertEqual(x, y);
             };
 
@@ -121,8 +121,8 @@ namespace hazelcast {
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
                 serialization::Data data = serializationService.toData<TestRawDataPortable>(&p);
-                TestRawDataPortable x = serializationService.toObject<TestRawDataPortable>(data);
-                iTest::assertEqual(p, x);
+                boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
+                iTest::assertEqual(p, *x);
 
             };
 
@@ -134,7 +134,7 @@ namespace hazelcast {
                 builder.addLongField("l").addIntField("i").addUTFField("s");
                 serializationService.getSerializationContext().registerClassDefinition(builder.build());
                 serialization::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
-                TestInvalidWritePortable o = serializationService.toObject<TestInvalidWritePortable>(data);
+                boost::shared_ptr<TestInvalidWritePortable> o = serializationService.toObject<TestInvalidWritePortable>(data);
             };
 
             void ClientSerializationTest::testInvalidRead() {
@@ -158,14 +158,14 @@ namespace hazelcast {
                 TestNamedPortableV2 p2("portable-v2", 123);
                 serialization::Data data2 = serializationService2.toData<TestNamedPortableV2>(&p2);
 
-                TestNamedPortableV2 t2 = serializationService2.toObject<TestNamedPortableV2>(data);
-                iTest::assertEqual(std::string("portable-v1"), t2.name);
-                iTest::assertEqual(111, t2.k);
-                iTest::assertEqual(0, t2.v);
+                boost::shared_ptr<TestNamedPortableV2> t2 = serializationService2.toObject<TestNamedPortableV2>(data);
+                iTest::assertEqual(std::string("portable-v1"), t2->name);
+                iTest::assertEqual(111, t2->k);
+                iTest::assertEqual(0, t2->v);
 
-                TestNamedPortable t1 = serializationService.toObject<TestNamedPortable>(data2);
-                iTest::assertEqual(std::string("portable-v2"), t1.name);
-                iTest::assertEqual(123 * 10, t1.k);
+                boost::shared_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
+                iTest::assertEqual(std::string("portable-v2"), t1->name);
+                iTest::assertEqual(123 * 10, t1->k);
 
             };
 
@@ -186,8 +186,8 @@ namespace hazelcast {
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
                 serialization::Data newData;
                 newData.readData(objectDataInput);
-                TestMainPortable returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
-                iTest::assertEqual(mainPortable, returnedPortable);
+                boost::shared_ptr<TestMainPortable> returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
+                iTest::assertEqual(mainPortable, *returnedPortable);
             };
 
 
@@ -215,13 +215,13 @@ namespace hazelcast {
 
                 std::ifstream is;
                 is.open("./text.txt", std::ios::binary);
-                char* bytes = new char[size];
+                char *bytes = new char [size];
                 is.read(bytes, size);
                 is.close();
 
                 byte *tempPtr = (byte *) bytes;
                 std::vector<byte> buffer(tempPtr, tempPtr + size);
-				delete bytes;
+                delete bytes;
                 serialization::DataInput dataInput(buffer);
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
 
@@ -229,10 +229,10 @@ namespace hazelcast {
 
                 data.readData(objectDataInput);
 
-                TestMainPortable tmp1 = serializationService.toObject<TestMainPortable>(data);
+                boost::shared_ptr<TestMainPortable> tmp1 = serializationService.toObject<TestMainPortable>(data);
 
                 TestMainPortable mainPortable = getTestMainPortable();
-                iTest::assertEqual(mainPortable, tmp1);
+                iTest::assertEqual(mainPortable, *tmp1);
             };
 
             void ClientSerializationTest::testSerializationViaFile() {
@@ -248,21 +248,23 @@ namespace hazelcast {
 
                 int x = 3;
                 data = serializationService.toData<int>(&x);
-                iTest::assertEqual(x, serializationService.toObject<int>(data));
+                boost::shared_ptr<int> returnedInt = serializationService.toObject<int>(data);
+                iTest::assertEqual(x, *returnedInt);
 
                 short f = 3.2;
                 data = serializationService.toData<short>(&f);
-                iTest::assertEqual(f, serializationService.toObject<short>(data));
+                boost::shared_ptr<short> temp = serializationService.toObject<short>(data);
+                iTest::assertEqual(f, *temp);
 
                 TestNamedPortable np("name", 5);
                 data = serializationService.toData<TestNamedPortable>(&np);
 
-                TestNamedPortable tnp1, tnp2;
+                boost::shared_ptr<TestNamedPortable> tnp1, tnp2;
                 tnp1 = serializationService.toObject<TestNamedPortable >(data);
                 tnp2 = serializationService2.toObject<TestNamedPortable >(data);
 
-                iTest::assertEqual(np, tnp1);
-                iTest::assertEqual(np, tnp2);
+                iTest::assertEqual(np, *tnp1);
+                iTest::assertEqual(np, *tnp2);
 
                 byte byteArray[] = {0, 1, 2};
                 std::vector<byte> bb(byteArray, byteArray + 3);
@@ -289,22 +291,22 @@ namespace hazelcast {
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
-                TestInnerPortable tip1, tip2;
+                boost::shared_ptr<TestInnerPortable> tip1, tip2;
                 tip1 = serializationService.toObject<TestInnerPortable >(data);
                 tip2 = serializationService2.toObject<TestInnerPortable >(data);
 
-                iTest::assertEqual(inner, tip1);
-                iTest::assertEqual(inner, tip2);
+                iTest::assertEqual(inner, *tip1);
+                iTest::assertEqual(inner, *tip2);
 
                 TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
                         -897543.3678909, "this is main portable object created for testing!", inner);
                 data = serializationService.toData<TestMainPortable>(&main);
 
-                TestMainPortable tmp1, tmp2;
+                boost::shared_ptr<TestMainPortable> tmp1, tmp2;
                 tmp1 = serializationService.toObject<TestMainPortable >(data);
                 tmp2 = serializationService2.toObject<TestMainPortable >(data);
-                iTest::assertEqual(main, tmp1);
-                iTest::assertEqual(main, tmp2);
+                iTest::assertEqual(main, *tmp1);
+                iTest::assertEqual(main, *tmp2);
             };
         }
     }

@@ -9,8 +9,6 @@
 #include "serialization/Employee.h"
 
 
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -22,14 +20,15 @@ namespace hazelcast {
 
 
             ClientMapTest::ClientMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
-                :hazelcastInstanceFactory(hazelcastInstanceFactory),
-                instance(hazelcastInstanceFactory),
-                client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))),
-                imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
+            :hazelcastInstanceFactory(hazelcastInstanceFactory),
+            instance(hazelcastInstanceFactory),
+            client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))),
+            imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
             };
 
 
-            ClientMapTest::~ClientMapTest() {};
+            ClientMapTest::~ClientMapTest() {
+            };
 
             void ClientMapTest::addTests() {
                 addTest(&ClientMapTest::testEmptyKeyLock, "testEmptyKeyLock");
@@ -89,36 +88,39 @@ namespace hazelcast {
             class MyListener {
 
 
-                public:
-                    MyListener(CountDownLatch &latch, CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch){};
+            public:
+                MyListener(CountDownLatch &latch, CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch) {
+                };
 
-                    void entryAdded(EntryEvent<string, string> &event) {
-                        latch.countDown();
-                    };
+                void entryAdded(EntryEvent<string, string> &event) {
+                    latch.countDown();
+                };
 
-                    void entryRemoved(EntryEvent<string, string> &event){}
+                void entryRemoved(EntryEvent<string, string> &event) {
+                }
 
-                    void entryUpdated(EntryEvent<string, string> &event){}
+                void entryUpdated(EntryEvent<string, string> &event) {
+                }
 
-                    void entryEvicted(EntryEvent<string, string> &event){
+                void entryEvicted(EntryEvent<string, string> &event) {
 
-                        const string &value = event.getValue();
-                        const string &oldValue = event.getOldValue();
+                    const string &value = event.getValue();
+                    const string &oldValue = event.getOldValue();
 
-                        if(value.compare("")) {
-                            nullLatch.countDown();
-                        }
-
-                        if(oldValue.compare("")) {
-                            nullLatch.countDown();
-                        }
-
-                        latch.countDown();
+                    if (value.compare("")) {
+                        nullLatch.countDown();
                     }
 
-                private:
-                    CountDownLatch &nullLatch;
-                    CountDownLatch &latch;
+                    if (oldValue.compare("")) {
+                        nullLatch.countDown();
+                    }
+
+                    latch.countDown();
+                }
+
+            private:
+                CountDownLatch &nullLatch;
+                CountDownLatch &latch;
             };
 
 
@@ -156,27 +158,27 @@ namespace hazelcast {
                 for (int i = 0; i < 10; i++) {
                     string key = "key";
                     key += util::to_string(i);
-                    string temp = imap->get(key);
+                    boost::shared_ptr<string> temp = imap->get(key);
 
                     string value = "value";
                     value += util::to_string(i);
-                    assertEqual(temp, value);
+                    assertEqual(*temp, value);
                 }
             }
 
             void ClientMapTest::testRemoveAndDelete() {
                 fillMap();
-                string temp = imap->remove("key10");
-                assertEqual(temp, "");
+                boost::shared_ptr<string> temp = imap->remove("key10");
+                assertNotNull(temp.get());
                 imap->deleteEntry("key9");
                 assertEqual(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
                     string key = "key";
                     key += util::to_string(i);
-                    string temp = imap->remove(key);
+                    boost::shared_ptr<string> temp2 = imap->remove(key);
                     string value = "value";
                     value += util::to_string(i);
-                    assertEqual(temp, value);
+                    assertEqual(*temp2, value);
                 }
                 assertEqual(imap->size(), 0);
             }
@@ -204,8 +206,8 @@ namespace hazelcast {
 
                 for (int i = 0; i < 100; i++) {
                     string expected = util::to_string(i);
-                    string actual = imap->get(util::to_string(i));
-                    assertEqual(expected, actual);
+                    boost::shared_ptr<string> actual = imap->get(util::to_string(i));
+                    assertEqual(expected, *actual);
                 }
 
                 std::set<std::string> tempSet;
@@ -238,7 +240,7 @@ namespace hazelcast {
                 assertEqual(FutureStatus::TIMEOUT, status);
                 std::string &o = f.get();
                 assertEqual("value3", o);
-                assertEqual("value", imap->get("key3"));
+                assertEqual("value", *(imap->get("key3")));
 
             }
 
@@ -251,12 +253,12 @@ namespace hazelcast {
                 Future<std::string> f1 = imap->putAsync("key", std::string("value1"), 3 * 1000);
                 std::string &f1Val = f1.get();
                 assertEqual("", f1Val);
-                std::string actual = imap->get("key");
-                assertEqual("value1", actual);
+                boost::shared_ptr<std::string> actual = imap->get("key");
+                assertEqual("value1", *actual);
 
                 assertTrue(latch.await(10 * 1000));
-                std::string get = imap->get("key");
-                assertEqual("", get);
+                boost::shared_ptr<std::string> get = imap->get("key");
+                assertNull(get.get());
 
                 imap->removeEntryListener(id);
 
@@ -300,48 +302,48 @@ namespace hazelcast {
                 boost::thread t2(boost::bind(tryRemoveThread, &latch, imap.get()));
 
                 assertTrue(latch.await(20 * 1000));
-                assertEqual("value1", imap->get("key1"));
-                assertEqual("value2", imap->get("key2"));
+                assertEqual("value1", *(imap->get("key1")));
+                assertEqual("value2", *(imap->get("key2")));
                 imap->forceUnlock("key1");
                 imap->forceUnlock("key2");
             }
 
             void ClientMapTest::testPutTtl() {
                 imap->put("key1", "value1", 1000);
-                std::string temp = imap->get("key1");
-                assertEqual(temp, "value1");
+                boost::shared_ptr<std::string> temp = imap->get("key1");
+                assertEqual(*temp, "value1");
                 boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
-                std::string temp2 = imap->get("key1");
-                assertEqual(temp2, "");
+                boost::shared_ptr<std::string> temp2 = imap->get("key1");
+                assertNull(temp2.get());
             }
 
             void ClientMapTest::testPutIfAbsent() {
-                std::string o = imap->putIfAbsent("key1", "value1");
-                assertEqual("", o);
-                assertEqual("value1", imap->putIfAbsent("key1", "value3"));
+                boost::shared_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
+                assertNotNull(o.get());
+                assertEqual("value1", *(imap->putIfAbsent("key1", "value3")));
             }
 
             void ClientMapTest::testPutIfAbsentTtl() {
-                assertEqual("", imap->putIfAbsent("key1", "value1", 1000));
-                assertEqual("value1", imap->putIfAbsent("key1", "value3", 1000));
+                assertNull(imap->putIfAbsent("key1", "value1", 1000).get());
+                assertEqual("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
-                assertEqual("", imap->putIfAbsent("key1", "value3", 1000));
-                assertEqual("value3", imap->putIfAbsent("key1", "value4", 1000));
+                assertNull(imap->putIfAbsent("key1", "value3", 1000).get());
+                assertEqual("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
             }
 
             void ClientMapTest::testSet() {
                 imap->set("key1", "value1");
-                assertEqual("value1", imap->get("key1"));
+                assertEqual("value1", *(imap->get("key1")));
 
                 imap->set("key1", "value2");
-                assertEqual("value2", imap->get("key1"));
+                assertEqual("value2", *(imap->get("key1")));
 
                 imap->set("key1", "value3", 1000);
-                assertEqual("value3", imap->get("key1"));
+                assertEqual("value3", *(imap->get("key1")));
 
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
-                assertEqual(imap->get("key1"), "");
+                assertNull(imap->get("key1").get());
 
             }
 
@@ -352,20 +354,20 @@ namespace hazelcast {
 
             void ClientMapTest::testLock() {
                 imap->put("key1", "value1");
-                assertEqual("value1", imap->get("key1"));
+                assertEqual("value1", *(imap->get("key1")));
                 imap->lock("key1");
                 util::CountDownLatch latch(1);
                 boost::thread t1(boost::bind(testLockThread, &latch, imap.get()));
                 assertTrue(latch.await(5 * 1000));
-                assertEqual("value1", imap->get("key1"));
+                assertEqual("value1", *(imap->get("key1")));
                 imap->forceUnlock("key1");
 
             }
 
             void ClientMapTest::testEmptyKeyLock() {
 
-               // assertEqual(0, imap->get("key1"));
-               // imap->put("key1", "value1");
+                // assertEqual(0, imap->get("key1"));
+                // imap->put("key1", "value1");
                 imap->lock("key1");
 
 
@@ -379,13 +381,13 @@ namespace hazelcast {
 
             void ClientMapTest::testLockTtl() {
                 imap->put("key1", "value1");
-                assertEqual("value1", imap->get("key1"));
+                assertEqual("value1", *(imap->get("key1")));
                 imap->lock("key1", 2 * 1000);
                 util::CountDownLatch latch(1);
                 boost::thread t1(boost::bind(testLockTTLThread, &latch, imap.get()));
                 assertTrue(latch.await(10 * 1000));
                 assertFalse(imap->isLocked("key1"));
-                assertEqual("value2", imap->get("key1"));
+                assertEqual("value2", *(imap->get("key1")));
                 imap->forceUnlock("key1");
 
             }
@@ -419,7 +421,7 @@ namespace hazelcast {
                     }
                 } catch (exception::InterruptedException &e) {
                     std::cout << e.what() << std::endl;
-                } catch(...){
+                } catch(...) {
                     std::cout << "" << std::endl;
                 }
             }
@@ -431,7 +433,7 @@ namespace hazelcast {
                     }
                 } catch (exception::InterruptedException &e) {
                     std::cout << e.what() << std::endl;
-                } catch(...){
+                } catch(...) {
                     std::cout << "" << std::endl;
                 }
             }
@@ -484,21 +486,21 @@ namespace hazelcast {
             }
 
             void ClientMapTest::testReplace() {
-                std::string temp = imap->replace("key1", "value");
-                assertEqual(temp, "");
+                boost::shared_ptr<std::string> temp = imap->replace("key1", "value");
+                assertNotNull(temp.get());
 
                 std::string tempKey = "key1";
                 std::string tempValue = "value1";
                 imap->put(tempKey, tempValue);
 
-                assertEqual("value1", imap->replace("key1", "value2"));
-                assertEqual("value2", imap->get("key1"));
+                assertEqual("value1", *(imap->replace("key1", "value2")));
+                assertEqual("value2", *(imap->get("key1")));
 
                 assertEqual(false, imap->replace("key1", "value1", "value3"));
-                assertEqual("value2", imap->get("key1"));
+                assertEqual("value2", *(imap->get("key1")));
 
                 assertEqual(true, imap->replace("key1", "value2", "value3"));
-                assertEqual("value3", imap->get("key1"));
+                assertEqual("value3", *(imap->get("key1")));
             }
 
             class SampleEntryListenerForPortableKey {

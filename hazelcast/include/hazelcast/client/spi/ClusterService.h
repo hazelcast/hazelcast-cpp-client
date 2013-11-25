@@ -28,14 +28,14 @@ namespace hazelcast {
 
             class ClusterService {
             public:
-                ClusterService(spi::PartitionService&, spi::LifecycleService&, connection::ConnectionManager&, serialization::SerializationService&, ClientConfig &);
+                ClusterService(spi::PartitionService &, spi::LifecycleService &, connection::ConnectionManager &, serialization::SerializationService &, ClientConfig &);
 
                 void start();
 
                 void stop();
 
                 template< typename Response, typename Request >
-                Response sendAndReceive(const Request& object) {
+                boost::shared_ptr<Response> sendAndReceive(const Request &object) {
                     while (active) {
                         connection::Connection *connection = NULL;
                         try {
@@ -43,10 +43,10 @@ namespace hazelcast {
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
                             serialization::Data responseData = connection->read();
-                            Response response = serializationService.toObject<Response>(responseData);
+                            boost::shared_ptr<Response > response = serializationService.toObject<Response>(responseData);
                             connectionManager.releaseConnection(connection);
                             return response;
-                        } catch (exception::IOException& e) {
+                        } catch (exception::IOException &e) {
                             if (connection != NULL) {
                                 std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             } else {
@@ -58,7 +58,7 @@ namespace hazelcast {
                                 beforeRetry();
                                 continue;
                             }
-                        } catch (exception::IException& e) {
+                        } catch (exception::IException &e) {
                             connectionManager.releaseConnection(connection);
                             throw e;
                         }
@@ -67,7 +67,7 @@ namespace hazelcast {
                 };
 
                 template< typename Response, typename Request >
-                Response sendAndReceive(const Address& address, const Request& object) {
+                boost::shared_ptr<Response> sendAndReceive(const Address &address, const Request &object) {
                     while (active) {
                         connection::Connection *connection = NULL;
                         try {
@@ -75,10 +75,10 @@ namespace hazelcast {
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
                             serialization::Data responseData = connection->read();
-                            Response response = serializationService.toObject<Response>(responseData);
+                            boost::shared_ptr<Response > response = serializationService.toObject<Response>(responseData);
                             connectionManager.releaseConnection(connection);
                             return response;
-                        } catch (exception::IOException& e) {
+                        } catch (exception::IOException &e) {
                             if (connection != NULL) {
                                 std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                                 delete connection;
@@ -91,7 +91,7 @@ namespace hazelcast {
                                 beforeRetry();
                                 continue;
                             }
-                        } catch (exception::IException& e) {
+                        } catch (exception::IException &e) {
                             if (connection != NULL)
                                 connectionManager.releaseConnection(connection);
                             throw e;
@@ -102,7 +102,7 @@ namespace hazelcast {
                 };
 
                 template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler) {
+                void sendAndHandle(const Address &address, const Request &object, ResponseHandler &handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
                         if (!active) {
@@ -114,7 +114,7 @@ namespace hazelcast {
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
                             stream.reset(new ResponseStream(serializationService, connection));
-                        } catch (exception::IOException& e) {
+                        } catch (exception::IOException &e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             delete connection;
                             if (redoOperation || util::isRetryable(object)) {
@@ -122,7 +122,7 @@ namespace hazelcast {
                                 beforeRetry();
                                 continue;
                             }
-                        } catch (exception::IException& e) {
+                        } catch (exception::IException &e) {
                             if (connection != NULL)
                                 connectionManager.releaseConnection(connection);
                             throw e;
@@ -132,7 +132,7 @@ namespace hazelcast {
 
                     try {
                         handler.handle(*stream);
-                    } catch (exception::IException& e) {
+                    } catch (exception::IException &e) {
                         stream->end();
                         throw e;
                     }
@@ -140,7 +140,7 @@ namespace hazelcast {
                 };
 
                 template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Request& object, ResponseHandler&  handler) {
+                void sendAndHandle(const Request &object, ResponseHandler &handler) {
                     std::auto_ptr<ResponseStream> stream(NULL);
                     while (stream.get() == NULL) {
                         if (!active) {
@@ -152,7 +152,7 @@ namespace hazelcast {
                             serialization::Data request = serializationService.toData<Request>(&object);
                             connection->write(request);
                             stream.reset(new ResponseStream(serializationService, connection));
-                        } catch (exception::IOException& e) {
+                        } catch (exception::IOException &e) {
                             std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
                             if (connection != NULL)
                                 delete connection;
@@ -161,7 +161,7 @@ namespace hazelcast {
                                 beforeRetry();
                                 continue;
                             }
-                        } catch (exception::IException& e) {
+                        } catch (exception::IException &e) {
                             if (connection != NULL)
                                 connectionManager.releaseConnection(connection);
                             throw e;
@@ -169,7 +169,7 @@ namespace hazelcast {
                     }
                     try {
                         handler.handle(*stream);
-                    } catch (exception::IException& e) {
+                    } catch (exception::IException &e) {
                         stream->end();
                         throw e;
                     }
@@ -177,7 +177,7 @@ namespace hazelcast {
                 };
 
                 template< typename Response, typename Request>
-                Response sendAndReceiveFixedConnection(connection::Connection *connection, const Request& request) {
+                boost::shared_ptr<Response> sendAndReceiveFixedConnection(connection::Connection *connection, const Request &request) {
                     serialization::Data data = serializationService.toData<Request>(&request);
                     connection->write(data);
                     serialization::Data response = connection->read();
@@ -190,9 +190,9 @@ namespace hazelcast {
 
                 bool removeMembershipListener(MembershipListener *listener);
 
-                bool isMemberExists(const Address& address);
+                bool isMemberExists(const Address &address);
 
-                connection::Member getMember(const std::string& uuid);
+                connection::Member getMember(const std::string &uuid);
 
                 std::vector<connection::Member> getMemberList();
 
@@ -201,18 +201,18 @@ namespace hazelcast {
                 static const int RETRY_COUNT = 20;
                 static const int RETRY_WAIT_TIME = 500;
             private:
-                void setMembers(const std::map<Address, connection::Member, addressComparator >& map);
+                void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
 
-                connection::ConnectionManager& connectionManager;
-                serialization::SerializationService& serializationService;
-                ClientConfig & clientConfig;
-                spi::LifecycleService& lifecycleService;
-                spi::PartitionService& partitionService;
+                connection::ConnectionManager &connectionManager;
+                serialization::SerializationService &serializationService;
+                ClientConfig &clientConfig;
+                spi::LifecycleService &lifecycleService;
+                spi::PartitionService &partitionService;
 
                 connection::ClusterListenerThread clusterThread;
                 std::auto_ptr<boost::thread> clusterListenerThread;
 
-                protocol::Credentials& credentials;
+                protocol::Credentials &credentials;
                 std::map<Address, connection::Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;
                 boost::mutex listenerLock;
@@ -220,13 +220,13 @@ namespace hazelcast {
                 const bool redoOperation;
                 boost::atomic<bool> active;
 
-                void fireMembershipEvent(connection::MembershipEvent& membershipEvent);
+                void fireMembershipEvent(connection::MembershipEvent &membershipEvent);
 
-                connection::Connection *getConnection(const Address& address);
+                connection::Connection *getConnection(const Address &address);
 
                 connection::Connection *getRandomConnection();
 
-                connection::Connection *connectToOne(const std::vector<Address>& socketAddresses);
+                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
 
                 void beforeRetry();
 

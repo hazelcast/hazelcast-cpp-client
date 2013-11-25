@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions& txnOptions, spi::ClusterService& clusterService, serialization::SerializationService & serializationService, connection::Connection *connection)
+            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, connection::Connection *connection)
             : options(txnOptions)
             , clusterService(clusterService)
             , serializationService(serializationService)
@@ -50,9 +50,10 @@ namespace hazelcast {
                     startTime = util::getCurrentTimeMillis();
 
                     CreateTxnRequest request(options);
-                    txnId = sendAndReceive<std::string>(request);
+                    boost::shared_ptr<std::string> response = sendAndReceive<std::string>(request);
+                    txnId = *response;
                     state = TxnState::ACTIVE;
-                } catch (std::exception& e){
+                } catch (std::exception &e) {
                     closeConnection();
                     throw e;
                 }
@@ -69,7 +70,7 @@ namespace hazelcast {
                     CommitTxnRequest request;
                     sendAndReceive<bool>(request);
                     state = TxnState::COMMITTED;
-                } catch (std::exception& e){
+                } catch (std::exception &e) {
                     state = TxnState::ROLLING_BACK;
                     closeConnection();
                     throw e;
@@ -91,10 +92,10 @@ namespace hazelcast {
                     try {
                         RollbackTxnRequest request;
                         sendAndReceive<bool>(request);
-                    } catch (std::exception&) {
+                    } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
-                }catch(std::exception& e){
+                } catch(std::exception &e) {
                     closeConnection();
                     throw e;
                 }
@@ -102,12 +103,12 @@ namespace hazelcast {
 
             }
 
-            serialization::SerializationService& TransactionProxy::getSerializationService() {
+            serialization::SerializationService &TransactionProxy::getSerializationService() {
                 return serializationService;
             }
 
 
-            spi::ClusterService& TransactionProxy::getClusterService() {
+            spi::ClusterService &TransactionProxy::getClusterService() {
                 return clusterService;
             }
 

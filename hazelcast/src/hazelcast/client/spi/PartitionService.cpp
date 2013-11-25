@@ -56,56 +56,56 @@ namespace hazelcast {
 
             void PartitionService::runListener() {
                 while (lifecycleService.isRunning()) {
-                    try{
+                    try {
                         boost::this_thread::sleep(boost::posix_time::seconds(10));
                         if (!lifecycleService.isRunning()) {
                             break;
                         }
                         runRefresher();
-                    }catch(boost::thread_interrupted &){
+                    } catch(boost::thread_interrupted &) {
                         break;
-                    }catch(...){
+                    } catch(...) {
                         //ignored
                     }
                 }
             };
 
             void PartitionService::runRefresher() {
-                try{
+                try {
                     boost::lock_guard<boost::mutex> lg(refreshLock);
-                    impl::PartitionsResponse partitionResponse;
+                    boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                     std::auto_ptr<Address> ptr = clusterService.getMasterAddress();
                     if (ptr.get() == NULL) {
                         partitionResponse = getPartitionsFrom();
                     } else {
                         partitionResponse = getPartitionsFrom(*ptr.get());
                     }
-                    if (!partitionResponse.isEmpty()) {
-                        processPartitionResponse(partitionResponse);
+                    if (partitionResponse != NULL) {
+                        processPartitionResponse(*partitionResponse);
                     }
-                }catch(...){
+                } catch(...) {
                     //ignored
                 }
             };
 
-            impl::PartitionsResponse PartitionService::getPartitionsFrom(const Address &address) {
+            boost::shared_ptr<impl::PartitionsResponse> PartitionService::getPartitionsFrom(const Address &address) {
                 impl::GetPartitionsRequest getPartitionsRequest;
-                impl::PartitionsResponse partitionResponse;
-                try{
+                boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
+                try {
                     partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(address, getPartitionsRequest);
-                }catch(exception::IOException &e){
+                } catch(exception::IOException &e) {
                     std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
                 }
                 return partitionResponse;
             };
 
 
-            impl::PartitionsResponse PartitionService::getPartitionsFrom() {
+            boost::shared_ptr<impl::PartitionsResponse>PartitionService::getPartitionsFrom() {
                 impl::GetPartitionsRequest getPartitionsRequest;
-                impl::PartitionsResponse partitionResponse;
-                try{
+                boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
+                try {
                     partitionResponse = clusterService.sendAndReceive<impl::PartitionsResponse>(getPartitionsRequest);
-                }catch(exception::IOException &e){
+                } catch(exception::IOException &e) {
                     std::cerr << e.what() << std::endl;
                 }
                 return partitionResponse;
@@ -130,9 +130,9 @@ namespace hazelcast {
                 std::vector<connection::Member> memberList = clusterService.getMemberList();
                 for (std::vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
-                    impl::PartitionsResponse response = getPartitionsFrom(target);
-                    if (!response.isEmpty()) {
-                        processPartitionResponse(response);
+                    boost::shared_ptr<impl::PartitionsResponse> response = getPartitionsFrom(target);
+                    if (response != NULL) {
+                        processPartitionResponse(*response);
                         return;
                     }
                 }

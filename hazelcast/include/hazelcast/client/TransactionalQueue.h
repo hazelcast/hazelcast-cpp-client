@@ -36,26 +36,26 @@ namespace hazelcast {
                 bool result;
                 try {
                     result = invoke<bool>(request);
-                } catch(exception::ServerException &){
+                } catch(exception::ServerException &) {
                     throw exception::InterruptedException("TransactionalQueue::offer", "timeout");
                 }
                 return result;
             };
 
-            E poll() {
+            boost::shared_ptr<E> poll() {
                 try {
                     return poll(0);
                 } catch (exception::InterruptedException &e) {
-                    return E();
+                    return boost::shared_ptr<E>();
                 }
             };
 
-            E poll(long timeoutInMillis) {
+            boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::TxnPollRequest request(getName(), timeoutInMillis);
-                E result;
+                boost::shared_ptr<E> result;
                 try {
                     result = invoke<E>(request);
-                } catch(exception::ServerException &e){
+                } catch(exception::ServerException &e) {
                     throw exception::InterruptedException("TransactionalQueue::poll", "timeout");
                 }
                 return result;
@@ -63,7 +63,8 @@ namespace hazelcast {
 
             int size() {
                 queue::TxnSizeRequest request(getName());
-                return invoke<int>(request);
+                boost::shared_ptr<int> s = invoke<int>(request);
+                return *s;
             }
 
             void onDestroy() {
@@ -81,7 +82,7 @@ namespace hazelcast {
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().template sendAndReceive<Response>(request);
             };
 

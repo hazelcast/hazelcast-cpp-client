@@ -27,7 +27,7 @@ namespace hazelcast {
 
             class PartitionService {
             public:
-                PartitionService(ClusterService&, serialization::SerializationService&, spi::LifecycleService&);
+                PartitionService(ClusterService &, serialization::SerializationService &, spi::LifecycleService &);
 
                 ~PartitionService();
 
@@ -39,13 +39,13 @@ namespace hazelcast {
 
                 Address *getPartitionOwner(int partitionId);
 
-                int getPartitionId(const serialization::Data& key);
+                int getPartitionId(const serialization::Data &key);
 
             private:
 
-                ClusterService& clusterService;
-                serialization::SerializationService& serializationService;
-                spi::LifecycleService& lifecycleService;
+                ClusterService &clusterService;
+                serialization::SerializationService &serializationService;
+                spi::LifecycleService &lifecycleService;
 
                 boost::mutex refreshLock;
 
@@ -59,11 +59,11 @@ namespace hazelcast {
 
                 void runRefresher();
 
-                impl::PartitionsResponse getPartitionsFrom(const Address& address);
+                boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom(const Address &address);
 
-                impl::PartitionsResponse getPartitionsFrom();
+                boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom();
 
-                void processPartitionResponse(impl::PartitionsResponse& response);
+                void processPartitionResponse(impl::PartitionsResponse &response);
 
                 void getInitialPartitions();
             };

@@ -76,11 +76,11 @@ namespace hazelcast {
                 void asyncInvokeToAddress(Callable &callable, Address address, Future<Result> future) {
 
                     executor::TargetCallableRequest<Callable > request(instanceName, callable, address);
-                    try{
-                        future.accessInternal().setValue(new Result(invoke<Result>(request, address)));
-                    } catch(exception::ServerException &ex){
+                    try {
+                        future.accessInternal().setValue(new Result(*(invoke<Result>(request, address))));
+                    } catch(exception::ServerException &ex) {
                         future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                    } catch(...){
+                    } catch(...) {
                         std::cerr << "Exception in IExecuterService::asyncInvoke" << std::endl;
                     }
                 }
@@ -88,23 +88,23 @@ namespace hazelcast {
                 template<typename Result, typename Callable>
                 void asyncInvoke(Callable &callable, Future<Result> future) {
                     executor::LocalTargetCallableRequest< Callable > request(instanceName, callable);
-                    try{
-                        future.accessInternal().setValue(new Result(invoke<Result>(request)));
-                    } catch(exception::ServerException &ex){
+                    try {
+                        future.accessInternal().setValue(new Result(*(invoke<Result>(request))));
+                    } catch(exception::ServerException &ex) {
                         future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                    } catch(...){
+                    } catch(...) {
                         std::cerr << "Exception in IExecuterService::asyncInvoke" << std::endl;
                     }
                 }
 
 
                 template<typename Result, typename Request>
-                Result invoke(const Request &request, const Address &target) {
+                boost::shared_ptr<Result> invoke(const Request &request, const Address &target) {
                     return context->getInvocationService().invokeOnTarget<Result>(request, target);
                 }
 
                 template<typename Result, typename Request>
-                Result invoke(const Request &request) {
+                boost::shared_ptr<Result> invoke(const Request &request) {
                     return context->getInvocationService().invokeOnRandomTarget<Result>(request);
                 }
 

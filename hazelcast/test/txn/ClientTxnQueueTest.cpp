@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnQueueTest::ClientTxnQueueTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientTxnQueueTest::ClientTxnQueueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))) {
@@ -52,8 +52,7 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalQueue<std::string> q = context.getQueue<std::string>(name);
                 assertTrue(q.offer("ali"));
-                std::string s = q.poll();
-                assertEqual("ali", s);
+                assertEqual("ali", *(q.poll()));
                 context.commitTransaction();
                 assertEqual(0, client->getQueue<std::string>(name).size());
             }
@@ -75,19 +74,19 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
-                std::string s = "";
+                boost::shared_ptr<std::string> s;
                 latch.countDown();
                 try {
                     s = q0.poll(10 * 1000);
-                } catch (exception::InterruptedException& e) {
+                } catch (exception::InterruptedException &e) {
                     assertTrue(false, e.what());
                 }
-                assertEqual("item0", s);
-                q1.offer(s);
+                assertEqual("item0", *s);
+                q1.offer(*s);
                 context.commitTransaction();
 
                 assertEqual(0, client->getQueue<std::string>("defQueue0").size());
-                assertEqual("item0", client->getQueue<std::string>("defQueue1").poll());
+                assertEqual("item0", *(client->getQueue<std::string>("defQueue1").poll()));
             }
 
 

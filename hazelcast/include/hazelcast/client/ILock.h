@@ -70,7 +70,7 @@ namespace hazelcast {
 
         private:
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 

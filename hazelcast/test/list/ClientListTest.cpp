@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientListTest::ClientListTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientListTest::ClientListTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
@@ -61,10 +61,10 @@ namespace hazelcast {
                 assertTrue(list->addAll(1, l));
                 assertEqual(4, list->size());
 
-                assertEqual("item1", list->get(0));
-                assertEqual("item1", list->get(1));
-                assertEqual("item2", list->get(2));
-                assertEqual("item2", list->get(3));
+                assertEqual("item1", *(list->get(0)));
+                assertEqual("item1", *(list->get(1)));
+                assertEqual("item2", *(list->get(2)));
+                assertEqual("item2", *(list->get(3)));
             }
 
             void ClientListTest::testAddSetRemove() {
@@ -72,22 +72,22 @@ namespace hazelcast {
                 assertTrue(list->add("item2"));
                 list->add(0, "item3");
                 assertEqual(3, list->size());
-                std::string temp = list->set(2, "item4");
-                assertEqual("item2", temp);
+                boost::shared_ptr<std::string> temp = list->set(2, "item4");
+                assertEqual("item2", *temp);
 
                 assertEqual(3, list->size());
-                assertEqual("item3", list->get(0));
-                assertEqual("item1", list->get(1));
-                assertEqual("item4", list->get(2));
+                assertEqual("item3", *(list->get(0)));
+                assertEqual("item1", *(list->get(1)));
+                assertEqual("item4", *(list->get(2)));
 
                 assertFalse(list->remove("item2"));
                 assertTrue(list->remove("item3"));
 
                 temp = list->remove(1);
-                assertEqual("item4", temp);
+                assertEqual("item4", *temp);
 
                 assertEqual(1, list->size());
-                assertEqual("item1", list->get(0));
+                assertEqual("item1", *(list->get(0)));
             }
 
             void ClientListTest::testIndexOf() {
@@ -170,7 +170,7 @@ namespace hazelcast {
 
             class MyListItemListener {
             public:
-                MyListItemListener(util::CountDownLatch& latch)
+                MyListItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -183,19 +183,19 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& latch;
+                util::CountDownLatch &latch;
             };
 
             void listenerTestThread(IList<std::string> *list) {
-                try{
+                try {
                     for (int i = 0; i < 5; i++) {
                         list->add(std::string("item") + util::to_string(i));
                     }
                     list->add("done");
-                }catch(std::exception& e){
+                } catch(std::exception &e) {
                     std::cerr << e.what() << std::endl;
                     std::cerr.flush();
-                }catch(...){
+                } catch(...) {
                     std::cerr << "unexpected error at ClientListTest::listenerTestThread" << std::endl;
                 }
             }

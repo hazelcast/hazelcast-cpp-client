@@ -26,7 +26,7 @@ public:
     Stats() {
     };
 
-    Stats(const Stats& rhs) {
+    Stats(const Stats &rhs) {
         Stats newOne;
         getCount.exchange(rhs.getCount);
         putCount.exchange(rhs.putCount);
@@ -60,7 +60,7 @@ void printStats() {
             Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             std::cout << e.what() << std::endl;
         }
     }
@@ -82,7 +82,7 @@ public:
 //        HazelcastClient hazelcastClient(clientConfig);
 //        IMap<int, vector<byte> > map = hazelcastClient.getMap<int, vector<byte > >("default");
         IMap<int, vector<hazelcast::client::byte> > map = a->getMap<int, vector<hazelcast::client::byte > >("default");
-        
+
         std::vector<hazelcast::client::byte> value(VALUE_SIZE);
 //        for(int i = 0 ; i < ENTRY_COUNT ; i++){
 //              map.put(i, value);
@@ -90,21 +90,21 @@ public:
         while (true) {
             int key = rand() % ENTRY_COUNT;
             int operation = ((int) (rand() % 100));
-            try{
+            try {
                 if (operation < GET_PERCENTAGE) {
                     map.get(key);
                     ++stats.getCount;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                    vector<hazelcast::client::byte> vector = map.put(key, value);
+                    boost::shared_ptr<vector<hazelcast::client::byte> > vector = map.put(key, value);
                     ++stats.putCount;
                 } else {
                     map.remove(key);
                     ++stats.removeCount;
                 }
-            } catch(std::exception& e){
+            } catch(std::exception &e) {
                 std::cout << ">> " << e.what() << std::endl;
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
-            } catch(...){
+            } catch(...) {
                 std::cout << "unkown exception" << std::endl;
             }
 
@@ -133,9 +133,9 @@ public:
 
 
             monitor.join();
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             std::cout << e.what() << std::endl;
-        } catch(...){
+        } catch(...) {
             std::cout << "unkown exception simpleMapTest " << std::endl;
         }
     }

@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientQueueTest::ClientQueueTest(HazelcastInstanceFactory & hazelcastInstanceFactory)
+            ClientQueueTest::ClientQueueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
@@ -55,7 +55,7 @@ namespace hazelcast {
 
             class ItemListener {
             public:
-                ItemListener(util::CountDownLatch& latch)
+                ItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -68,7 +68,7 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& latch;
+                util::CountDownLatch &latch;
             };
 
 
@@ -112,15 +112,13 @@ namespace hazelcast {
                 assertTrue(result);
 
                 for (int i = 0; i < 10; i++) {
-                    std::string o = q->poll();
-                    assertTrue(o.compare("") != 0);
+                    assertNotNull(q->poll().get());
                 }
                 assertEqual(0, q->size());
 
                 boost::thread t2(boost::bind(testOfferPollThread2, q.get()));
 
-                std::string o = q->poll(5 * 1000);
-                assertEqual("item1", o);
+                assertEqual("item1", *(q->poll(5 * 1000)));
                 t2.try_join_for(boost::chrono::seconds(10));
             }
 
@@ -144,8 +142,8 @@ namespace hazelcast {
 
                 assertEqual(2, q->size());
 
-                assertEqual("item1", q->poll());
-                assertEqual("item3", q->poll());
+                assertEqual("item1", *(q->poll()));
+                assertEqual("item3", *(q->poll()));
             }
 
 
@@ -259,7 +257,7 @@ namespace hazelcast {
                 q->clear();
 
                 assertEqual(0, q->size());
-                assertEqual("", q->poll());
+                assertNull(q->poll().get());
 
             }
         }

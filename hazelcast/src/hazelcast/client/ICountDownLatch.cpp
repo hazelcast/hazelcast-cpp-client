@@ -25,13 +25,15 @@ namespace hazelcast {
 
         int ICountDownLatch::getCount() {
             countdownlatch::GetCountRequest request(getName());
-            return invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request);
+            return *response;
 
         };
 
         bool ICountDownLatch::trySetCount(int count) {
             countdownlatch::SetCountRequest request(getName(), count);
-            return invoke<bool>(request);
+            boost::shared_ptr<bool> response = invoke<bool>(request);
+            return *response;
         };
 
         void ICountDownLatch::onDestroy() {

@@ -109,22 +109,22 @@ namespace hazelcast {
                 bool result;
                 try {
                     result = invoke<bool>(request);
-                } catch(exception::ServerException &e){
+                } catch(exception::ServerException &e) {
                     throw exception::InterruptedException("IQueue::offer", "timeout");
                 }
                 return result;
             };
 
-            E take() {
+            boost::shared_ptr<E> take() {
                 return poll(-1);
             };
 
-            E poll(long timeoutInMillis) {
+            boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::PollRequest request(getName(), timeoutInMillis);
-                E result;
+                boost::shared_ptr<E> result;
                 try {
                     result = invoke<E>(request);
-                } catch(exception::ServerException &){
+                } catch(exception::ServerException &) {
                     throw exception::InterruptedException("IQueue::poll", "timeout");
                 }
                 return result;
@@ -132,7 +132,8 @@ namespace hazelcast {
 
             int remainingCapacity() {
                 queue::RemainingCapacityRequest request(getName());
-                return invoke<int>(request);
+                boost::shared_ptr<int> cap = invoke<int>(request);
+                return *cap;
             };
 
             bool remove(const E &o) {
@@ -155,47 +156,48 @@ namespace hazelcast {
 
             int drainTo(std::vector<E> &c, int maxElements) {
                 queue::DrainRequest request(getName(), maxElements);
-                impl::PortableCollection result = invoke<impl::PortableCollection>(request);
-                const std::vector<serialization::Data> &coll = result.getCollection();
+                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request);
+                const std::vector<serialization::Data> &coll = result->getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    E e = getContext().getSerializationService().template toObject<E>(*it);
-                    c.push_back(e);
+                    boost::shared_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
+                    c.push_back(*e);
                 }
                 return coll.size();
             };
 
-            E remove() {
-                E res = poll();
-                if (res == E()) {
+            boost::shared_ptr<E> remove() {
+                boost::shared_ptr<E> res = poll();
+                if (res == NULL) {
                     throw exception::NoSuchElementException("E IQueue::remove()", "Queue is empty!");
                 }
                 return res;
             };
 
-            E poll() {
+            boost::shared_ptr<E> poll() {
                 try {
                     return poll(0);
                 } catch (exception::InterruptedException &) {
-                    return E();
+                    return boost::shared_ptr<E>();
                 }
             };
 
-            E element() {
-                E res = peek();
-                if (res == E()) {
+            boost::shared_ptr<E> element() {
+                boost::shared_ptr<E> res = peek();
+                if (res == NULL) {
                     throw exception::NoSuchElementException("E IQueue::element()", "Queue is empty!");
                 }
                 return res;
             };
 
-            E peek() {
+            boost::shared_ptr<E> peek() {
                 queue::PeekRequest request(getName());
                 return invoke<E>(request);
             };
 
             int size() {
                 queue::SizeRequest request(getName());
-                return invoke<int>(request);;
+                boost::shared_ptr<int> size = invoke<int>(request);
+                return *size;
             }
 
             bool isEmpty() {
@@ -204,33 +206,37 @@ namespace hazelcast {
 
             std::vector<E> toArray() {
                 queue::IteratorRequest request(getName());
-                impl::PortableCollection result = invoke<impl::PortableCollection>(request);
-                std::vector<serialization::Data> const &coll = result.getCollection();
+                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request);
+                std::vector<serialization::Data> const &coll = result->getCollection();
                 return getObjectList(coll);
             };
 
             bool containsAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> list = getDataList(c);
                 queue::ContainsRequest request(getName(), list);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> contains = invoke<bool>(request);
+                return *contains;
             }
 
             bool addAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::AddAllRequest request(getName(), dataList);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             }
 
             bool removeAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest request(getName(), dataList, false);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             }
 
             bool retainAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest request(getName(), dataList, true);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             }
 
             void clear() {
@@ -260,7 +266,7 @@ namespace hazelcast {
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
@@ -275,7 +281,8 @@ namespace hazelcast {
             std::vector<E> getObjectList(const std::vector<serialization::Data> &dataList) {
                 std::vector<E> objects(dataList.size());
                 for (int i = 0; i < dataList.size(); i++) {
-                    objects[i] = getContext().getSerializationService(). template toObject<E>(dataList[i]);
+                    boost::shared_ptr<E> object = getContext().getSerializationService(). template toObject<E>(dataList[i]);
+                    objects[i] = *object;
                 }
                 return objects;
             };

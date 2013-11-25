@@ -167,12 +167,14 @@ namespace hazelcast {
              */
             std::vector<std::pair<K, V> > entrySet() {
                 multimap::EntrySetRequest request(getName());
-                multimap::PortableEntrySetResponse result = invoke < multimap::PortableEntrySetResponse >(request);
-                std::vector < std::pair<serialization::Data, serialization::Data> > const &dataEntrySet = result.getEntrySet();
+                boost::shared_ptr<multimap::PortableEntrySetResponse> result = invoke < multimap::PortableEntrySetResponse >(request);
+                std::vector < std::pair<serialization::Data, serialization::Data> > const &dataEntrySet = result->getEntrySet();
                 std::vector<std::pair<K, V> > entrySet(dataEntrySet.size());
                 for (int i = 0; i < dataEntrySet.size(); i++) {
-                    entrySet[i].first = toObject<K>(dataEntrySet[i].first);
-                    entrySet[i].second = toObject<V>(dataEntrySet[i].second);
+                    boost::shared_ptr<K> key = toObject<K>(dataEntrySet[i].first);
+                    entrySet[i].first = *key;
+                    boost::shared_ptr<V> value = toObject<V>(dataEntrySet[i].second);
+                    entrySet[i].second = *value;
                 }
                 return entrySet;
             };
@@ -234,7 +236,8 @@ namespace hazelcast {
              */
             int size() {
                 multimap::SizeRequest request(getName());
-                return invoke<int>(request);
+                boost::shared_ptr<int> s = invoke<int>(request);
+                return *s;
             };
 
             /**
@@ -261,7 +264,8 @@ namespace hazelcast {
             int valueCount(const K &key) {
                 serialization::Data keyData = toData(key);
                 multimap::CountRequest request(getName(), keyData);
-                return invoke<int>(request, keyData);
+                boost::shared_ptr<int> count = invoke<int>(request, keyData);
+                return *count;
             };
 
             /**
@@ -390,7 +394,8 @@ namespace hazelcast {
             bool isLocked(const K &key) {
                 serialization::Data keyData = toData(key);
                 multimap::MultiMapIsLockedRequest request(getName(), keyData);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> res = invoke<bool>(request, keyData);
+                return *res;
             }
 
             /**
@@ -411,7 +416,8 @@ namespace hazelcast {
             bool tryLock(const K &key) {
                 serialization::Data keyData = toData(key);
                 multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId(), -1, 0);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> res = invoke<bool>(request, keyData);
+                return *res;
             };
 
             /**
@@ -439,7 +445,8 @@ namespace hazelcast {
             bool tryLock(const K &key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
                 multimap::MultiMapLockRequest request(getName(), keyData, util::getThreadId(), -1, timeoutInMillis);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> res = invoke<bool>(request, keyData);
+                return *res;
             };
 
             /**
@@ -486,11 +493,12 @@ namespace hazelcast {
             void onDestroy() {
             };
         private:
-            std::vector<V> toObjectCollection(impl::PortableCollection result) {
-                std::vector<serialization::Data> const &dataCollection = result.getCollection();
+            std::vector<V> toObjectCollection(boost::shared_ptr<impl::PortableCollection> result) {
+                std::vector<serialization::Data> const &dataCollection = result->getCollection();
                 std::vector<V> multimap(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
-                    multimap[i] = toObject<V>(dataCollection[i]);
+                    boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
+                    multimap[i] = *v;
                 }
                 return multimap;
             };
@@ -502,17 +510,17 @@ namespace hazelcast {
             };
 
             template<typename T>
-            T toObject(const serialization::Data &data) {
+            boost::shared_ptr<T> toObject(const serialization::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request, serialization::Data &keyData) {
+            boost::shared_ptr<Response> invoke(const Request &request, serialization::Data &keyData) {
                 return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 

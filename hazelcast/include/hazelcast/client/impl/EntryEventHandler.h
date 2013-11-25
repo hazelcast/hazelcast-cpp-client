@@ -20,7 +20,7 @@ namespace hazelcast {
             template<typename K, typename V, typename L>
             class EntryEventHandler {
             public:
-                EntryEventHandler(const std::string& instanceName, spi::ClusterService& clusterService, serialization::SerializationService& serializationService, L& listener, bool includeValue)
+                EntryEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener, bool includeValue)
                 :instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
@@ -29,18 +29,18 @@ namespace hazelcast {
 
                 };
 
-                void handle(const PortableEntryEvent& event) {
+                void handle(const PortableEntryEvent &event) {
 
-                    V value;
-                    V oldValue;
+                    boost::shared_ptr<V> value;
+                    boost::shared_ptr<V> oldValue;
                     if (includeValue) {
                         value = serializationService.toObject<V>(event.getValue());
                         oldValue = serializationService.toObject<V>(event.getOldValue());
                     }
-                    K key = serializationService.toObject<K>(event.getKey());
+                    boost::shared_ptr<K> key = serializationService.toObject<K>(event.getKey());
                     connection::Member member = clusterService.getMember(event.getUuid());
                     EntryEventType type = event.getEventType();
-                    EntryEvent<K, V> entryEvent(instanceName, member, type, key, value, oldValue);
+                    EntryEvent<K, V> entryEvent(instanceName, member, type, *key, *value, *oldValue);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);
                     } else if (type == EntryEventType::REMOVED) {
@@ -53,10 +53,10 @@ namespace hazelcast {
 
                 };
             private:
-                const std::string& instanceName;
-                serialization::SerializationService& serializationService;
-                spi::ClusterService& clusterService;
-                L& listener;
+                const std::string &instanceName;
+                serialization::SerializationService &serializationService;
+                spi::ClusterService &clusterService;
+                L &listener;
                 bool includeValue;
             };
         }

@@ -25,9 +25,9 @@ namespace hazelcast {
             class OutputSocketStream {
             public:
 
-                OutputSocketStream(hazelcast::client::connection::Socket& socket);
+                OutputSocketStream(hazelcast::client::connection::Socket &socket);
 
-                void write(const std::vector<byte>& bytes);
+                void write(const std::vector<byte> &bytes);
 
                 void writeBoolean(bool b);
 
@@ -45,14 +45,14 @@ namespace hazelcast {
 
                 void writeDouble(double v);
 
-                void writeUTF(const std::string& s);
+                void writeUTF(const std::string &s);
 
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                hazelcast::client::connection::Socket& socket;
+                hazelcast::client::connection::Socket &socket;
 
-                void writeShortUTF(const std::string&);
+                void writeShortUTF(const std::string &);
             };
 
         }

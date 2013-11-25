@@ -23,10 +23,10 @@ namespace hazelcast {
 
             class ResponseStream {
             public:
-                ResponseStream(serialization::SerializationService& serializationService, connection::Connection *connection);
+                ResponseStream(serialization::SerializationService &serializationService, connection::Connection *connection);
 
                 template<typename T>
-                T read() {
+                boost::shared_ptr<T> read() {
                     serialization::Data data = connection->read();
                     return serializationService.toObject<T>(data);
                 };
@@ -40,7 +40,7 @@ namespace hazelcast {
                 };
 
             private:
-                serialization::SerializationService& serializationService;
+                serialization::SerializationService &serializationService;
                 connection::Connection *connection;
                 volatile bool isEnded;
                 boost::mutex endMutex;

@@ -46,7 +46,7 @@ namespace hazelcast {
             class TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions&, spi::ClusterService&, serialization::SerializationService &, connection::Connection *);
+                TransactionProxy(TransactionOptions &, spi::ClusterService &, serialization::SerializationService &, connection::Connection *);
 
                 std::string getTxnId() const;
 
@@ -60,20 +60,20 @@ namespace hazelcast {
 
                 void rollback();
 
-                serialization::SerializationService& getSerializationService();
+                serialization::SerializationService &getSerializationService();
 
-                spi::ClusterService& getClusterService();
+                spi::ClusterService &getClusterService();
 
                 connection::Connection *getConnection();
 
                 template <typename Response, typename Request>
-                Response sendAndReceive(const Request& request) {
+                boost::shared_ptr<Response> sendAndReceive(const Request &request) {
                     return clusterService.sendAndReceiveFixedConnection<Response>(connection, request);
                 };
             private:
-                TransactionOptions& options;
-                spi::ClusterService& clusterService;
-                serialization::SerializationService & serializationService;
+                TransactionOptions &options;
+                spi::ClusterService &clusterService;
+                serialization::SerializationService &serializationService;
                 connection::Connection *connection;
                 long threadId;
 

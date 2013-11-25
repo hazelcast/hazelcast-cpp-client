@@ -16,12 +16,14 @@ namespace hazelcast {
 
         long IAtomicLong::addAndGet(long delta) {
             atomiclong::AddAndGetRequest request(getName(), delta);
-            return invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request);
+            return *response;
         };
 
         bool IAtomicLong::compareAndSet(long expect, long update) {
             atomiclong::CompareAndSetRequest request(getName(), expect, update);
-            return invoke<bool>(request);
+            boost::shared_ptr<bool> response = invoke<bool>(request);
+            return *response;
         };
 
         long IAtomicLong::decrementAndGet() {
@@ -34,12 +36,14 @@ namespace hazelcast {
 
         long IAtomicLong::getAndAdd(long delta) {
             atomiclong::GetAndAddRequest request(getName(), delta);
-            return invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request);
+            return *response;
         };
 
         long IAtomicLong::getAndSet(long newValue) {
             atomiclong::GetAndSetRequest request(getName(), newValue);
-            return invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request);
+            return *response;
         };
 
         long IAtomicLong::incrementAndGet() {

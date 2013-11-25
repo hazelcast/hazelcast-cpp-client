@@ -27,19 +27,21 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 multimap::TxnMultiMapPutRequest request(getName(), keyData, valueData);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             };
 
             std::vector<V> get(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapGetRequest request(getName(), data);
-                impl::PortableCollection portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const &dataCollection = portableCollection.getCollection();
+                boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
+                vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
                 vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
-                    result[i] = toObject<V>(dataCollection[i]);
+                    boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
+                    result[i] = *v;
                 }
                 return result;
             };
@@ -48,19 +50,20 @@ namespace hazelcast {
                 serialization::Data dataKey = toData(key);
                 serialization::Data dataValue = toData(value);
                 multimap::TxnMultiMapRemoveRequest request(getName(), dataKey, dataValue);
-                return invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request);
+                return *success;
             };
 
             std::vector<V> remove(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapRemoveRequest request(getName(), &data);
-                impl::PortableCollection portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const &dataCollection = portableCollection.getCollection();
+                boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
+                vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
                 vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
-                    result[i] = toData(&(dataCollection[i]));
+                    result[i] = toData(dataCollection[i]);
                 }
                 return result;
             };
@@ -69,12 +72,14 @@ namespace hazelcast {
             int valueCount(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapValueCountRequest request(getName(), data);
-                return invoke<int>(request);
+                boost::shared_ptr<int> cnt = invoke<int>(request);
+                return *cnt;
             }
 
             int size() {
                 multimap::TxnMultiMapSizeRequest request(getName());
-                return invoke<int>(request);
+                boost::shared_ptr<int> s = invoke<int>(request);
+                return *s;
             }
 
             void onDestroy() {
@@ -92,12 +97,12 @@ namespace hazelcast {
             };
 
             template<typename T>
-            T toObject(const serialization::Data &data) {
+            boost::shared_ptr<T> toObject(const serialization::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
             };
 
             template<typename Response, typename Request>
-            Response invoke(const Request &request) {
+            boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().template sendAndReceive<Response>(request);
             };
 

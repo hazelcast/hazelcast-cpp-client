@@ -35,12 +35,14 @@ namespace hazelcast {
 
         int ISemaphore::availablePermits() {
             semaphore::AvailableRequest request(getName());
-            return invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request);
+            return *response;
         };
 
         int ISemaphore::drainPermits() {
             semaphore::DrainRequest request(getName());
-            return invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request);
+            return *response;
         };
 
         void ISemaphore::reducePermits(int reduction) {

@@ -39,4 +39,20 @@ namespace iTest {
             throw e;
         }
     };
+
+    void assertNull(const void *expected) {
+        if (expected != NULL) {
+            iTestException e;
+            e.message.assign(">> Assert failed");
+            throw e;
+        }
+    };
+
+    void assertNotNull(const void *expected) {
+        if (expected == NULL) {
+            iTestException e;
+            e.message.assign(">> Assert failed");
+            throw e;
+        }
+    };
 }

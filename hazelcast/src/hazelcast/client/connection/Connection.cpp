@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address & address, serialization::SerializationService & serializationService)
+            Connection::Connection(const Address &address, serialization::SerializationService &serializationService)
             : serializationService(serializationService)
             , socket(address)
             , inputSocketStream(socket)
@@ -22,11 +22,11 @@ namespace hazelcast {
                 socket.connect();
             };
 
-            void Connection::write(std::vector<byte> const& bytes) {
+            void Connection::write(std::vector<byte> const &bytes) {
                 outputSocketStream.write(bytes);
             };
 
-            void Connection::write(serialization::Data const & data) {
+            void Connection::write(serialization::Data const &data) {
                 serialization::DataOutput out;
                 data.writeData(out);
                 std::auto_ptr<std::vector<byte> > buffer = out.toByteArray();
@@ -46,11 +46,11 @@ namespace hazelcast {
                 return connectionId;
             };
 
-            Socket const & Connection::getSocket() const {
+            Socket const &Connection::getSocket() const {
                 return socket;
             };
 
-            const Address & Connection::getEndpoint() const {
+            const Address &Connection::getEndpoint() const {
                 return endpoint;
             };
 
@@ -58,7 +58,7 @@ namespace hazelcast {
                 return lastRead;
             }
 
-            void Connection::setEndpoint(Address & address) {
+            void Connection::setEndpoint(Address &address) {
                 endpoint = address;
             };
 

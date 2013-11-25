@@ -37,7 +37,7 @@ namespace hazelcast {
             template <typename Request, typename EventHandler, typename Event>
             class ListenerSupport : public ListenerSupportBase {
             public:
-                ListenerSupport(InvocationService& invocationService, const Request& request, const EventHandler& eventHandler, const serialization::Data& key)
+                ListenerSupport(InvocationService &invocationService, const Request &request, const EventHandler &eventHandler, const serialization::Data &key)
                 : invocationService(invocationService)
                 , request(request)
                 , eventHandler(eventHandler)
@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 };
 
-                ListenerSupport(InvocationService& invocationService, const Request& request, const EventHandler& eventHandler)
+                ListenerSupport(InvocationService &invocationService, const Request &request, const EventHandler &eventHandler)
                 : invocationService(invocationService)
                 , request(request)
                 , eventHandler(eventHandler)
@@ -76,13 +76,13 @@ namespace hazelcast {
                 void listenImpl() {
                     EventResponseHandler eventResponseHandler(this);
                     while (active) {
-                        try{
+                        try {
                             if (hasKey) {
                                 invocationService.invokeOnKeyOwner(request, key, eventResponseHandler);
                             } else {
                                 invocationService.invokeOnRandomTarget(request, eventResponseHandler);
                             }
-                        }catch(...){
+                        } catch(...) {
                         }
                     }
                 };
@@ -96,22 +96,22 @@ namespace hazelcast {
 
                     };
 
-                    void handle(ResponseStream & stream) {
+                    void handle(ResponseStream &stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
                         listenerSupport->lastStream = &stream;
                         listenerSupport->latch.countDown();
                         while (listenerSupport->active) {
                             try {
-                                Event event = stream.read<Event>();
+                                boost::shared_ptr<Event> event = stream.read<Event>();
                                 if (!listenerSupport->active)
                                     break;
-                                listenerSupport->eventHandler.handle(event);
-                            } catch(exception::IOException& e){
+                                listenerSupport->eventHandler.handle(*event);
+                            } catch(exception::IOException &e) {
                                 throw e;
-                            } catch (exception::IException&) {
+                            } catch (exception::IException &) {
                                 try {
                                     stream.end();
-                                } catch (exception::IOException&) {
+                                } catch (exception::IOException &) {
                                 }
                                 listenerSupport->active = false;
                             }
@@ -121,7 +121,7 @@ namespace hazelcast {
                     std::auto_ptr<ListenerSupport> listenerSupport;
                 };
 
-                InvocationService& invocationService;
+                InvocationService &invocationService;
                 ResponseStream *lastStream;
                 bool hasKey;
                 serialization::Data key;

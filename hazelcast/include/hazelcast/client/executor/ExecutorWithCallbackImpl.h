@@ -59,10 +59,10 @@ namespace hazelcast {
                 template<typename Result, typename Callable, typename ExecutionCallback>
                 void asyncInvokeToAddress(Callable &task, Address address, ExecutionCallback &callback) {
                     executor::TargetCallableRequest<Callable> request(instanceName, task, address);
-                    try{
-                        Result result = invoke<Result>(request, address);
-                        callback.onResponse(result);
-                    } catch(std::exception &e){
+                    try {
+                        boost::shared_ptr<Result> result = invoke<Result>(request, address);
+                        callback.onResponse(*result);
+                    } catch(std::exception &e) {
                         callback.onFailure(e);
                     }
                 }
@@ -70,10 +70,10 @@ namespace hazelcast {
                 template<typename Result, typename Callable, typename ExecutionCallback>
                 void asyncInvoke(Callable &task, ExecutionCallback &callback) {
                     executor::LocalTargetCallableRequest<Callable> request(instanceName, task);
-                    try{
-                        Result result = invoke<Result>(request);
-                        callback.onResponse(result);
-                    } catch(std::exception &e){
+                    try {
+                        boost::shared_ptr<Result> result = invoke<Result>(request);
+                        callback.onResponse(*result);
+                    } catch(std::exception &e) {
                         callback.onFailure(e);
                     }
                 }
@@ -83,20 +83,20 @@ namespace hazelcast {
                 void asyncInvokeWithMultiCallback(Callable &task, connection::Member member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
                     Address address = member.getAddress();
                     executor::TargetCallableRequest<Callable> request(instanceName, task, address);
-                    try{
-                        Result result = invoke<Result>(request, address);
-                        callback->onResponse(member, result);
-                    } catch(std::exception &){
+                    try {
+                        boost::shared_ptr<Result> result = invoke<Result>(request, address);
+                        callback->onResponse(member, *result);
+                    } catch(std::exception &) {
                     }
                 }
 
                 template<typename Result, typename Request>
-                Result invoke(const Request &request, const Address &target) {
+                boost::shared_ptr<Result> invoke(const Request &request, const Address &target) {
                     return context->getInvocationService().invokeOnTarget<Result>(request, target);
                 }
 
                 template<typename Result, typename Request>
-                Result invoke(const Request &request) {
+                boost::shared_ptr<Result> invoke(const Request &request) {
                     return context->getInvocationService().invokeOnRandomTarget<Result>(request);
                 }
 

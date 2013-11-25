@@ -23,6 +23,7 @@
 #include "hazelcast/client/serialization/SerializerHolder.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 namespace hazelcast {
@@ -88,15 +89,15 @@ namespace hazelcast {
                 };
 
                 template<typename T>
-                inline T toObject(const Data& data) {
+                inline boost::shared_ptr<T> toObject(const Data &data) {
                     checkServerError(data);
                     T *tag = NULL;
                     return toObjectResolved<T>(data, tag);
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, Portable *tag) {
-                    T object;
+                inline boost::shared_ptr<T> toObjectResolved(const Data &data, Portable *tag) {
+                    boost::shared_ptr<T> object(new T);
                     if (data.bufferSize() == 0) return object;
                     DataInput dataInput(*(data.buffer.get()));
 
@@ -104,45 +105,45 @@ namespace hazelcast {
                     int factoryId = data.cd->getFactoryId();
                     int classId = data.cd->getClassId();
                     int version = data.cd->getVersion();
-                    getSerializerHolder().getPortableSerializer().read(dataInput, object, factoryId, classId, version);
+                    getSerializerHolder().getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
                     return object;
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, IdentifiedDataSerializable *tag) {
-                    T object;
+                inline boost::shared_ptr<T> toObjectResolved(const Data &data, IdentifiedDataSerializable *tag) {
+                    boost::shared_ptr<T> object(new T);
                     if (data.bufferSize() == 0) return object;
                     DataInput dataInput(*(data.buffer.get()));
                     ObjectDataInput objectDataInput(dataInput, serializationContext);
-                    getSerializerHolder().getDataSerializer().read(objectDataInput, object);
+                    getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
                     return object;
                 };
 
                 template<typename T>
-                inline T toObjectResolved(const Data& data, void *tag) {
-                    T object;
+                inline boost::shared_ptr<T> toObjectResolved(const Data &data, void *tag) {
+                    boost::shared_ptr<T> object(new T);
                     DataInput dataInput(*(data.buffer.get()));
                     ObjectDataInput objectDataInput(dataInput, serializationContext);
-                    SerializerBase *serializer = serializerFor(object.getSerializerId());
+                    SerializerBase *serializer = serializerFor(object->getSerializerId());
                     if (serializer) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
-                        s->read(objectDataInput, object);
+                        s->read(objectDataInput, *object);
                         return object;
                     } else {
                         throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
                     }
                 };
 
-                SerializationContext& getSerializationContext();
+                SerializationContext &getSerializationContext();
 
-                SerializerHolder& getSerializerHolder();
+                SerializerHolder &getSerializerHolder();
 
             private:
                 SerializerBase *serializerFor(int typeId);
 
-                SerializationService(const SerializationService&);
+                SerializationService(const SerializationService &);
 
-                void checkServerError(const Data& data);
+                void checkServerError(const Data &data);
 
                 SerializationContext serializationContext;
 
@@ -341,147 +342,171 @@ namespace hazelcast {
             };
 
             template<>
-            inline byte SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<byte> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                byte object = 0;
+                boost::shared_ptr<byte> object(new byte);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readByte();
+                *object = dataInput.readByte();
+                return object;
             };
 
             template<>
-            inline bool SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<bool> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                bool object = 0;
+                boost::shared_ptr<bool> object(new bool);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readBoolean();
+                *object = dataInput.readBoolean();
+                return object;
             };
 
             template<>
-            inline char SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<char> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                char object = 0;
+                boost::shared_ptr<char> object(new char);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readChar();
+                *object = dataInput.readChar();
+                return object;
             };
 
             template<>
-            inline short SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<short> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                short object = 0;
+                boost::shared_ptr<short> object(new short);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readShort();
+                *object = dataInput.readShort();
+                return object;
             };
 
             template<>
-            inline int SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<int> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                int object = 0;
+                boost::shared_ptr<int> object(new int);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readInt();
+                *object = dataInput.readInt();
+                return object;
             };
 
             template<>
-            inline long SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<long> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                long object = 0;
+                boost::shared_ptr<long> object(new long);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readLong();
+                *object = dataInput.readLong();
+                return object;
             };
 
             template<>
-            inline float SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<float> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                float object = 0;
+                boost::shared_ptr<float> object(new float);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readFloat();
+                *object = dataInput.readFloat();
+                return object;
             };
 
             template<>
-            inline double SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<double> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                double object = 0;
+                boost::shared_ptr<double> object(new double);
+                *object = 0;
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readDouble();
+                *object = dataInput.readDouble();
+                return object;
             };
 
             template<>
-            inline std::vector<byte> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<byte> > SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<byte> object;
+                boost::shared_ptr<std::vector<byte> > object(new std::vector<byte>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readByteArray();
+                *object = dataInput.readByteArray();
+                return object;
             };
 
             template<>
-            inline std::vector<char> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<char> > SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<char> object;
+                boost::shared_ptr<std::vector<char> > object(new std::vector<char>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readCharArray();
+                *object = dataInput.readCharArray();
+                return object;
             };
 
             template<>
-            inline std::vector<short> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<short> >  SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<short > object;
+                boost::shared_ptr<std::vector<short> > object(new std::vector<short>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readShortArray();
+                *object = dataInput.readShortArray();
+                return object;
             };
 
             template<>
-            inline std::vector<int> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<int> > SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<int> object;
+                boost::shared_ptr<std::vector<int> > object(new std::vector<int>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readIntArray();
+                *object = dataInput.readIntArray();
+                return object;
             };
 
             template<>
-            inline std::vector<long> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<long> > SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<long> object;
+                boost::shared_ptr<std::vector<long> > object(new std::vector<long>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readLongArray();
+                *object = dataInput.readLongArray();
+                return object;
             };
 
             template<>
-            inline std::vector<float> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr< std::vector<float> >  SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<float> object;
+                boost::shared_ptr<std::vector<float> > object(new std::vector<float>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readFloatArray();
+                *object = dataInput.readFloatArray();
+                return object;
             };
 
             template<>
-            inline std::vector<double> SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::vector<double> > SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::vector<double > object;
+                boost::shared_ptr<std::vector<double> > object(new std::vector<double>);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readDoubleArray();
+                *object = dataInput.readDoubleArray();
+                return object;
             };
 
             template<>
-            inline std::string SerializationService::toObject(const Data& data) {
+            inline boost::shared_ptr<std::string> SerializationService::toObject(const Data &data) {
                 checkServerError(data);
-                std::string object;
+                boost::shared_ptr<std::string > object(new std::string);
                 if (data.bufferSize() == 0) return object;
                 DataInput dataInput(*(data.buffer.get()));
-                return dataInput.readUTF();
+                *object = dataInput.readUTF();
+                return object;
             };
         }
     }

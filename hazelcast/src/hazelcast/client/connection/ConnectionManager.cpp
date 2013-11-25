@@ -9,7 +9,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/connection/SocketInterceptor.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,16 +18,12 @@ namespace hazelcast {
             , serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
-            , principal(NULL)
             , socketInterceptor(this->clientConfig.getSocketInterceptor()) {
 
             };
 
 
             ConnectionManager::~ConnectionManager() {
-                if (principal != NULL) {
-                    delete principal;
-                }
             };
 
             Connection *ConnectionManager::newConnection(Address const &address) {
@@ -101,18 +96,18 @@ namespace hazelcast {
                     socketInterceptor.get()->onConnect(connection.getSocket());
                 }
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());
-                auth.setPrincipal(principal);
+                auth.setPrincipal(principal.get());
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
                 serialization::Data toData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.write(toData);
                 serialization::Data data1 = connection.read();
-                Address address = serializationService.toObject<Address>(data1);
-                connection.setEndpoint(address);
+                boost::shared_ptr<Address> address = serializationService.toObject<Address>(data1);
+                connection.setEndpoint(*address);
                 serialization::Data data2 = connection.read();
 
-                this->principal = new protocol::Principal(serializationService.toObject<protocol::Principal>(data2));
+                this->principal = serializationService.toObject<protocol::Principal>(data2);
             };
 
 

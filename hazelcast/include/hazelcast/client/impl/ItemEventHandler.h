@@ -21,7 +21,7 @@ namespace hazelcast {
             template<typename E, typename L>
             class ItemEventHandler {
             public:
-                ItemEventHandler(const std::string& instanceName, spi::ClusterService& clusterService, serialization::SerializationService& serializationService, L& listener, bool includeValue)
+                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener, bool includeValue)
                 :instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
@@ -30,14 +30,14 @@ namespace hazelcast {
 
                 };
 
-                void handle(const PortableItemEvent& event) {
-                    E item;
+                void handle(const PortableItemEvent &event) {
+                    boost::shared_ptr<E> item;
                     if (includeValue) {
                         item = serializationService.toObject<E>(event.getItem());
                     }
                     connection::Member member = clusterService.getMember(event.getUuid());
                     ItemEventType type = event.getEventType();
-                    ItemEvent<E> itemEvent(instanceName, type, item, member);
+                    ItemEvent<E> itemEvent(instanceName, type, *item, member);
                     if (type == EntryEventType::ADDED) {
                         listener.itemAdded(itemEvent);
                     } else if (type == EntryEventType::REMOVED) {
@@ -46,10 +46,10 @@ namespace hazelcast {
 
                 };
             private:
-                const std::string& instanceName;
-                serialization::SerializationService& serializationService;
-                spi::ClusterService& clusterService;
-                L& listener;
+                const std::string &instanceName;
+                serialization::SerializationService &serializationService;
+                spi::ClusterService &clusterService;
+                L &listener;
                 bool includeValue;
             };
         }

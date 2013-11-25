@@ -58,13 +58,13 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                assertEqual("", map.put("key1", "value1"));
-                assertEqual("value1", map.get("key1"));
-                assertEqual("", client->getMap<std::string, std::string>(name).get("key1"));
+                assertNull(map.put("key1", "value1").get());
+                assertEqual("value1", *(map.get("key1")));
+                assertNull(client->getMap<std::string, std::string>(name).get("key1").get());
 
                 context.commitTransaction();
 
-                assertEqual("value1", client->getMap<std::string, std::string>(name).get("key1"));
+                assertEqual("value1", *(client->getMap<std::string, std::string>(name).get("key1")));
             }
 
 
@@ -114,7 +114,7 @@ namespace hazelcast {
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 TransactionalMap<std::string, std::string> txMap = context.getMap<std::string, std::string>(name);
-                assertEqual("", txMap.put("key3", "value3"));
+                assertNull(txMap.put("key3", "value3").get());
 
 
                 assertEqual(3, txMap.size());
@@ -140,9 +140,8 @@ namespace hazelcast {
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
 
-                Employee empty;
                 TransactionalMap<Employee, Employee> txMap = context.getMap<Employee, Employee>(name);
-                assertEqual(empty, txMap.put(emp2, emp2));
+                assertNull(txMap.put(emp2, emp2).get());
 
                 assertEqual(2, txMap.size());
                 assertEqual(2, txMap.keySet().size());
@@ -170,7 +169,7 @@ namespace hazelcast {
 
                 assertTrue(res);
 
-                assertEqual(SimpleTnxTask::expected, map.get(SimpleTnxTask::key) );
+                assertEqual(SimpleTnxTask::expected, *(map.get(SimpleTnxTask::key)));
                 assertEqual(SimpleTnxTask::expectedSZ, map.size());
             }
 
@@ -178,13 +177,13 @@ namespace hazelcast {
 
                 SimpleTnxTaskFail task;
 
-                try{
+                try {
                     client->executeTransaction<bool, SimpleTnxTaskFail>(task);
-                }catch(std::exception &e){}
+                } catch(std::exception &e) {}
 
                 IMap<string, string> map = client->getMap<string, string>(SimpleTnxTaskFail::mapName);
 
-                assertEqual("", map.get(SimpleTnxTask::key) );
+                assertNull(map.get(SimpleTnxTask::key).get());
                 assertEqual(SimpleTnxTaskFail::expectedSZ, map.size());
             }
 

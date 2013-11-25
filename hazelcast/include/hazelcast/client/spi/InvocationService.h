@@ -14,16 +14,16 @@ namespace hazelcast {
 
             class InvocationService {
             public:
-                InvocationService(ClusterService& clusterService, PartitionService& partitionService);
+                InvocationService(ClusterService &clusterService, PartitionService &partitionService);
 
                 template<typename Response, typename Request >
-                Response invokeOnRandomTarget(const Request& request) {
+                boost::shared_ptr<Response> invokeOnRandomTarget(const Request &request) {
                     return clusterService.sendAndReceive<Response>(request);
                 };
 
 
                 template<typename Response, typename Request >
-                Response invokeOnKeyOwner(const Request& request, serialization::Data& key) {
+                boost::shared_ptr<Response> invokeOnKeyOwner(const Request &request, serialization::Data &key) {
                     Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         return invokeOnTarget<Response>(request, *owner);
@@ -32,17 +32,17 @@ namespace hazelcast {
                 };
 
                 template<typename Response, typename Request >
-                Response invokeOnTarget(const Request& request, const Address& target) {
+                boost::shared_ptr<Response> invokeOnTarget(const Request &request, const Address &target) {
                     return clusterService.sendAndReceive<Response>(target, request);
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnRandomTarget(const Request& request, ResponseHandler& handler) {
+                void invokeOnRandomTarget(const Request &request, ResponseHandler &handler) {
                     clusterService.sendAndHandle(request, handler);
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnKeyOwner(const Request& request, serialization::Data& key, ResponseHandler&  handler) {
+                void invokeOnKeyOwner(const Request &request, serialization::Data &key, ResponseHandler &handler) {
                     Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
                     if (owner != NULL) {
                         invokeOnTarget(request, *owner, handler);
@@ -51,14 +51,14 @@ namespace hazelcast {
                 };
 
                 template<typename Request, typename  ResponseHandler>
-                void invokeOnTarget(const Request& request, const Address& target, ResponseHandler&  handler) {
+                void invokeOnTarget(const Request &request, const Address &target, ResponseHandler &handler) {
                     clusterService.sendAndHandle(target, request, handler);
                 }
 
             private :
 
-                ClusterService& clusterService;
-                PartitionService& partitionService;
+                ClusterService &clusterService;
+                PartitionService &partitionService;
             };
 
         }

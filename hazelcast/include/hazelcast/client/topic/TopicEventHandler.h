@@ -19,7 +19,7 @@ namespace hazelcast {
             template<typename E, typename L>
             class TopicEventHandler {
             public:
-                TopicEventHandler(const std::string& instanceName, spi::ClusterService& clusterService, serialization::SerializationService& serializationService, L& listener)
+                TopicEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener)
                 :instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
@@ -27,18 +27,18 @@ namespace hazelcast {
 
                 };
 
-                void handle(const PortableMessage& event) {
+                void handle(const PortableMessage &event) {
                     connection::Member member = clusterService.getMember(event.getUuid());
-                    E object = serializationService.toObject<E>(event.getMessage());
-                    Message<E> message(instanceName, object, event.getPublishTime(), member);
+                    boost::shared_ptr<E> object = serializationService.toObject<E>(event.getMessage());
+                    Message<E> message(instanceName, *object, event.getPublishTime(), member);
                     listener.onMessage(message);
                 };
 
             private:
-                const std::string& instanceName;
-                serialization::SerializationService& serializationService;
-                spi::ClusterService& clusterService;
-                L& listener;
+                const std::string &instanceName;
+                serialization::SerializationService &serializationService;
+                spi::ClusterService &clusterService;
+                L &listener;
             };
 
         }

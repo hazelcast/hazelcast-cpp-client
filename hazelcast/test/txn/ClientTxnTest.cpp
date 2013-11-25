@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnTest::ClientTxnTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientTxnTest::ClientTxnTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , second(hazelcastInstanceFactory)
@@ -60,7 +60,7 @@ namespace hazelcast {
 
                     context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
-                } catch (std::exception&){
+                } catch (std::exception &) {
                     context.rollbackTransaction();
                     latch.countDown();
                 }
@@ -68,8 +68,7 @@ namespace hazelcast {
                 assertTrue(latch.await(10 * 1000));
 
                 IQueue<std::string> q = client->getQueue<std::string>("testTxnRollback");
-                std::string actual = q.poll();
-                assertEqual("", actual);
+                assertNull(q.poll().get());
                 assertEqual(0, q.size());
             }
 
