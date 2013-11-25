@@ -82,6 +82,10 @@ namespace hazelcast {
             return impl->clientContext;
         };
 
+        Cluster &HazelcastClient::getCluster() {
+            return impl->cluster;
+        }
+
         spi::InvocationService &HazelcastClient::getInvocationService() {
             return impl->invocationService;
         };

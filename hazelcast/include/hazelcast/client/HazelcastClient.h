@@ -146,6 +146,8 @@ namespace hazelcast {
 
             spi::ClientContext &getClientContext();
 
+            Cluster &getCluster();
+
             connection::ConnectionManager &getConnectionManager();
 
             serialization::SerializationService &getSerializationService();
