@@ -5,7 +5,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/IExecutorService.h"
 #include "hazelcast/client/connection/SmartConnectionManager.h"
 #include "hazelcast/client/connection/DummyConnectionManager.h"
 #include "hazelcast/client/spi/LifecycleService.h"
@@ -129,10 +128,6 @@ namespace hazelcast {
         ILock HazelcastClient::getILock(const std::string &instanceName) {
             return getDistributedObject< ILock >(instanceName);
         };
-
-        IExecutorService HazelcastClient::getExecutorService(const std::string &instanceName) {
-            return getDistributedObject< IExecutorService >(instanceName);
-        }
 
         TransactionContext HazelcastClient::newTransactionContext() {
             TransactionOptions defaultOptions;

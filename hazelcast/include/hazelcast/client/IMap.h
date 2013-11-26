@@ -49,7 +49,6 @@
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/Future.h"
 #include "hazelcast/client/proxy/DistributedObject.h"
 #include <string>
 #include <map>
@@ -116,30 +115,6 @@ namespace hazelcast {
             void flush() {
                 map::FlushRequest request(getName());
                 invoke<bool>(request);
-            };
-
-            Future<V> putAsync(const K &key, const V &value, long ttlInMillis) {
-                Future<V> future;
-                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), key, value, ttlInMillis, future));
-                return future;
-            };
-
-            Future<V> putAsync(const K &key, const V &value) {
-                Future<V> future;
-                boost::thread t(boost::bind(asyncPutThread, boost::ref(*this), key, value, -1, future));
-                return future;
-            };
-
-            Future<V> getAsync(const K &key) {
-                Future<V> future;
-                boost::thread t(boost::bind(asyncGetThread, boost::ref(*this), key, future));
-                return future;
-            };
-
-            Future<V> removeAsync(const K &key) {
-                Future<V> future;
-                boost::thread t(boost::bind(asyncRemoveThread, boost::ref(*this), key, future));
-                return future;
             };
 
             bool tryRemove(const K &key, long timeoutInMillis) {
@@ -479,51 +454,6 @@ namespace hazelcast {
             boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
-
-            static void asyncPutThread(IMap &map, const K key, const V value, long ttlInMillis, Future<V> future) {
-                V *v = NULL;
-                try {
-                    boost::shared_ptr<V> response = map.put(key, value, ttlInMillis);
-                    if (response != NULL) {
-                        v = new V(*response);
-                    }
-                    future.accessInternal().setValue(v);
-                } catch(std::exception &ex) {
-                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...) {
-                    std::cerr << "Exception in IMap::asyncPutThread" << std::endl;
-                }
-            }
-
-            static void asyncRemoveThread(IMap &map, const K key, Future<V> future) {
-                V *v = NULL;
-                try {
-                    boost::shared_ptr<V> response = map.remove(key);
-                    if (response != NULL) {
-                        v = new V(*response);
-                    }
-                    future.accessInternal().setValue(v);
-                } catch(std::exception &ex) {
-                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...) {
-                    std::cerr << "Exception in IMap::asyncRemoveThread" << std::endl;
-                }
-            }
-
-            static void asyncGetThread(IMap &map, const K key, Future<V> future) {
-                V *v = NULL;
-                try {
-                    boost::shared_ptr<V> response = map.get(key);
-                    if (response != NULL) {
-                        v = new V(*response);
-                    }
-                    future.accessInternal().setValue(v);
-                } catch(std::exception &ex) {
-                    future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
-                } catch(...) {
-                    std::cerr << "Exception in IMap::asyncGetThread" << std::endl;
-                }
-            }
 
         };
     }

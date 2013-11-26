@@ -10,7 +10,6 @@
 #include "lock/ClientLockTest.h"
 #include "semaphore/ClientSemaphoreTest.h"
 #include "topic/ClientTopicTest.h"
-#include "executor/IExecutorServiceTest.h"
 #include "multimap/ClientMultiMapTest.h"
 #include "list/ClientListTest.h"
 #include "set/ClientSetTest.h"
@@ -74,9 +73,6 @@ int main(int argc, char **argv) {
 
     ClientTopicTest topicTest(factory);
     topicTest.executeTests();
-
-    IExecutorServiceTest executorServiceTest(factory);
-    executorServiceTest.executeTests();
 
     ClientTxnListTest clientTxnListTest(factory);
     clientTxnListTest.executeTests();

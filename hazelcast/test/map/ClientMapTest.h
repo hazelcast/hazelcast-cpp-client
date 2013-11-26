@@ -57,8 +57,6 @@ namespace hazelcast {
 
                 void testTryPutRemove();
 
-                void testAsyncPutWithTtl();
-
                 void testIssue537();
 
                 void testPredicateListenerWithPortableKey();
@@ -78,12 +76,6 @@ namespace hazelcast {
                 void testBasicPredicate();
 
                 void testSet();
-
-                void testAsyncGet();
-
-                void testAsyncPut();
-
-                void testAsyncRemove();
 
                 void testValues();
 

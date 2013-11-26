@@ -47,8 +47,6 @@ namespace hazelcast {
 
         class ILock;
 
-        class IExecutorService;
-
         class TransactionContext;
 
         class TransactionOptions;
@@ -109,8 +107,6 @@ namespace hazelcast {
 
             ILock getILock(const std::string &instanceName);
 
-            IExecutorService getExecutorService(const std::string &instanceName);
-
             ISemaphore getISemaphore(const std::string &instanceName);
 
             ClientConfig &getClientConfig();
@@ -126,7 +122,7 @@ namespace hazelcast {
             };
 
             template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionOptions &options,  const TransactionalTask &task) {
+            T executeTransaction(const TransactionOptions &options, const TransactionalTask &task) {
                 TransactionContext context = newTransactionContext(options);
                 TransactionalTaskContext transactionalTaskContext(context);
                 context.beginTransaction();

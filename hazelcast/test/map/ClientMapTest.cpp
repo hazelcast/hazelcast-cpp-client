@@ -36,10 +36,6 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
                 addTest(&ClientMapTest::testRemoveIfSame, "testRemoveIfSame");
                 addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
-                addTest(&ClientMapTest::testAsyncGet, "testAsyncGet");
-                addTest(&ClientMapTest::testAsyncPut, "testAsyncPut");
-                addTest(&ClientMapTest::testAsyncPutWithTtl, "testAsyncPutWithTtl");
-                addTest(&ClientMapTest::testAsyncRemove, "testAsyncRemove");
                 addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
                 addTest(&ClientMapTest::testPutTtl, "testPutTtl");
                 addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
@@ -218,59 +214,6 @@ namespace hazelcast {
                 assertEqual(m2.size(), 2);
                 assertEqual(m2[util::to_string(1)], "1");
                 assertEqual(m2[util::to_string(3)], "3");
-
-            }
-
-            void ClientMapTest::testAsyncGet() {
-                fillMap();
-                Future<std::string> f = imap->getAsync("key1");
-                std::string o;
-                FutureStatus status = f.wait_for(0);
-                assertEqual(FutureStatus::TIMEOUT, status);
-
-                o = f.get();
-                assertEqual("value1", o);
-            }
-
-            void ClientMapTest::testAsyncPut() {
-                fillMap();
-                Future<string> f = imap->putAsync("key3", "value");
-                FutureStatus status = f.wait_for(0);
-                assertEqual(FutureStatus::TIMEOUT, status);
-                std::string &o = f.get();
-                assertEqual("value3", o);
-                assertEqual("value", *(imap->get("key3")));
-
-            }
-
-            void ClientMapTest::testAsyncPutWithTtl() {
-                util::CountDownLatch latch(2);
-                util::CountDownLatch dummy(0);
-                MyListener listener(latch, dummy);
-                long id = imap->addEntryListener(listener, true);
-
-                Future<std::string> f1 = imap->putAsync("key", std::string("value1"), 3 * 1000);
-                std::string &f1Val = f1.get();
-                assertEqual("", f1Val);
-                boost::shared_ptr<std::string> actual = imap->get("key");
-                assertEqual("value1", *actual);
-
-                assertTrue(latch.await(10 * 1000));
-                boost::shared_ptr<std::string> get = imap->get("key");
-                assertNull(get.get());
-
-                imap->removeEntryListener(id);
-
-            }
-
-            void ClientMapTest::testAsyncRemove() {
-                fillMap();
-                Future<string> f = imap->removeAsync("key4");
-                FutureStatus status = f.wait_for(0);
-                assertEqual(FutureStatus::TIMEOUT, status);
-                std::string &o = f.get();
-                assertEqual("value4", o);
-                assertEqual(9, imap->size());
 
             }
 
