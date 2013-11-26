@@ -69,13 +69,15 @@ namespace hazelcast {
             bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
                 map::ContainsKeyRequest request(getName(), keyData);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             bool containsValue(const V &value) {
                 serialization::Data valueData = toData(value);
                 map::ContainsValueRequest request(getName(), valueData);
-                return invoke<bool>(request, valueData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, valueData);
+                return *success;
             };
 
             boost::shared_ptr<V> get(const K &key) {
@@ -101,7 +103,8 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 map::RemoveIfSameRequest request(getName(), keyData, valueData, util::getThreadId());
-                return invoke<bool>(request, keyData);;
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;;
             };
 
             void deleteEntry(const K &key) {
@@ -142,14 +145,16 @@ namespace hazelcast {
             bool tryRemove(const K &key, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
                 map::TryRemoveRequest request(getName(), keyData, util::getThreadId(), timeoutInMillis);
-                return invoke<bool>(request, keyData);;
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;;
             };
 
             bool tryPut(const K &key, const V &value, long timeoutInMillis) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 map::TryPutRequest request(getName(), keyData, valueData, util::getThreadId(), timeoutInMillis);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
@@ -182,7 +187,8 @@ namespace hazelcast {
                 serialization::Data valueData = toData(oldValue);
                 serialization::Data newValueData = toData(newValue);
                 map::ReplaceIfSameRequest request(getName(), keyData, valueData, newValueData, util::getThreadId());
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             boost::shared_ptr<V> replace(const K &key, const V &value) {
@@ -214,7 +220,8 @@ namespace hazelcast {
             bool isLocked(const K &key) {
                 serialization::Data keyData = toData(key);
                 map::IsLockedRequest request(getName(), keyData);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             bool tryLock(const K &key) {
@@ -224,8 +231,8 @@ namespace hazelcast {
             bool tryLock(const K &key, long timeInMillis) {
                 serialization::Data keyData = toData(key);
                 map::LockRequest request(getName(), keyData, util::getThreadId(), LONG_MAX, timeInMillis);
-
-                return invoke<bool>(request, keyData);;
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;;
             };
 
             void unlock(const K &key) {
@@ -276,15 +283,18 @@ namespace hazelcast {
             map::EntryView<K, V> getEntryView(const K &key) {
                 serialization::Data keyData = toData(key);
                 map::GetEntryViewRequest request(getName(), keyData);
-                map::EntryView<serialization::Data, serialization::Data> dataEntryView = invoke<map::EntryView<serialization::Data, serialization::Data> >(request, keyData);
-                return map::EntryView<K, V>(toObject<K>(dataEntryView.key), toObject<V>(dataEntryView.value), dataEntryView);
+                boost::shared_ptr< map::EntryView<serialization::Data, serialization::Data> > dataEntryView = invoke<map::EntryView<serialization::Data, serialization::Data> >(request, keyData);
+                boost::shared_ptr<V> v = toObject<V>(dataEntryView->value);
+                map::EntryView<K, V> view(key, *v, *dataEntryView);
+                return view;
             };
 
 
             bool evict(const K &key) {
                 serialization::Data keyData = toData(key);
                 map::EvictRequest request(getName(), keyData, util::getThreadId());
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             std::vector<K> keySet() {
@@ -412,8 +422,8 @@ namespace hazelcast {
 
             int size() {
                 map::SizeRequest request(getName());
-                boost::shared_ptr<int> response = invoke<int>(request);
-                return *response;
+                int s = *(invoke<int>(request));
+                return s;
             };
 
             bool isEmpty() {
@@ -473,7 +483,10 @@ namespace hazelcast {
             static void asyncPutThread(IMap &map, const K key, const V value, long ttlInMillis, Future<V> future) {
                 V *v = NULL;
                 try {
-                    v = new V(*(map.put(key, value, ttlInMillis).get()));
+                    boost::shared_ptr<V> response = map.put(key, value, ttlInMillis);
+                    if (response != NULL) {
+                        v = new V(*response);
+                    }
                     future.accessInternal().setValue(v);
                 } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
@@ -485,7 +498,10 @@ namespace hazelcast {
             static void asyncRemoveThread(IMap &map, const K key, Future<V> future) {
                 V *v = NULL;
                 try {
-                    v = new V(*(map.remove(key).get()));
+                    boost::shared_ptr<V> response = map.remove(key);
+                    if (response != NULL) {
+                        v = new V(*response);
+                    }
                     future.accessInternal().setValue(v);
                 } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
@@ -497,7 +513,10 @@ namespace hazelcast {
             static void asyncGetThread(IMap &map, const K key, Future<V> future) {
                 V *v = NULL;
                 try {
-                    v = new V(*(map.get(key)));
+                    boost::shared_ptr<V> response = map.get(key);
+                    if (response != NULL) {
+                        v = new V(*response);
+                    }
                     future.accessInternal().setValue(v);
                 } catch(std::exception &ex) {
                     future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));

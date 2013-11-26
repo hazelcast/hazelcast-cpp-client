@@ -31,7 +31,6 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
-                addTest(&ClientMapTest::testEmptyKeyLock, "testEmptyKeyLock");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -363,16 +362,6 @@ namespace hazelcast {
                 imap->forceUnlock("key1");
 
             }
-
-            void ClientMapTest::testEmptyKeyLock() {
-
-                // assertEqual(0, imap->get("key1"));
-                // imap->put("key1", "value1");
-                imap->lock("key1");
-
-
-            }
-
 
             void testLockTTLThread(util::CountDownLatch *latch, IMap<std::string, std::string> *imap) {
                 imap->tryPut("key1", "value2", 5 * 1000);

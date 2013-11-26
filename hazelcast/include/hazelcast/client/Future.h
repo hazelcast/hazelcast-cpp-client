@@ -42,7 +42,8 @@ namespace hazelcast {
                 FutureBase()
                 :result(NULL)
                 , exception(NULL)
-                , lock(mutex) {
+                , lock(mutex)
+                , isValid(false) {
 
                 };
 
@@ -54,17 +55,17 @@ namespace hazelcast {
                 };
 
                 bool valid() const {
-                    return result != NULL;
+                    return isValid;
                 };
 
                 void wait() {
-                    if (result.get() != NULL || exception.get() != NULL)
+                    if (isValid)
                         return;
                     condition.wait(lock);
                 };
 
                 FutureStatus wait_for(long timeInMillis) {
-                    if (result.get() != NULL || exception.get() != NULL)
+                    if (isValid)
                         return FutureStatus::READY;
                     boost::cv_status status = condition.wait_for(lock, boost::chrono::milliseconds(timeInMillis));
                     if (status == boost::cv_status::timeout)
@@ -76,16 +77,18 @@ namespace hazelcast {
 
                 void setValue(R *value) {
                     result.reset(value);
+                    isValid = true;
                     condition.notify_all();
                 };
 
                 void setException(std::exception *exception) {
                     this->exception.reset(exception);
+                    isValid = true;
                     condition.notify_all();
                 }
 
             private:
-                bool isValid;
+                boost::atomic<bool> isValid;
                 std::auto_ptr< R > result;
                 std::auto_ptr< std::exception> exception;
                 boost::mutex mutex;

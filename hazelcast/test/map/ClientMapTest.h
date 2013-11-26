@@ -75,8 +75,6 @@ namespace hazelcast {
 
                 void testLock();
 
-                void testEmptyKeyLock();
-
                 void testBasicPredicate();
 
                 void testSet();
