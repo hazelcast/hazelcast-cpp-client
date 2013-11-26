@@ -53,6 +53,8 @@ namespace hazelcast {
 
         class TransactionOptions;
 
+        class Cluster;
+
         class HazelcastClient {
             friend class spi::ClientContext;
 
