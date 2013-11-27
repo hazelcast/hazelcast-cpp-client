@@ -4,6 +4,7 @@
 
 #include "hazelcast/client/Address.h"
 #include <string>
+#include <boost/atomic.hpp>
 
 #ifdef WIN32
 #pragma comment(lib, "Ws2_32.lib")
@@ -63,9 +64,9 @@ namespace hazelcast {
                 struct addrinfo *serverInfo;
                 int size;
                 int socketId;
+                boost::atomic<bool> isOpen;
 
-
-                #ifdef WIN32
+#ifdef WIN32
 			        WSADATA wsa_data;
 				#endif
 

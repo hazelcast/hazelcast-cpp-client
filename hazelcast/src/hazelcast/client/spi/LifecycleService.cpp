@@ -29,6 +29,7 @@ namespace hazelcast {
 
 
             LifecycleService::~LifecycleService() {
+                active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             }
 
@@ -61,8 +62,9 @@ namespace hazelcast {
             void LifecycleService::setShutdown() {
                 active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                hazelcastClient.getPartitionService().stop();
+                hazelcastClient.getConnectionManager().shutdown();
                 hazelcastClient.getClusterService().stop();
+                hazelcastClient.getPartitionService().stop();
             };
 
 

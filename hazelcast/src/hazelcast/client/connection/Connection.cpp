@@ -22,6 +22,11 @@ namespace hazelcast {
                 socket.connect();
             };
 
+
+            void Connection::close() {
+                socket.close();
+            }
+
             void Connection::write(std::vector<byte> const &bytes) {
                 outputSocketStream.write(bytes);
             };

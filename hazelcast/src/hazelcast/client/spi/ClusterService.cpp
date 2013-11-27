@@ -34,11 +34,11 @@ namespace hazelcast {
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
                 clusterThread.setInitialConnection(connection);
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
-                clusterListenerThread.reset(t);
+                clusterThread.setThread(t);
                 while (!clusterThread.isReady) {
                     try {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    }catch(...){
+                    } catch(...) {
                         throw  exception::IException("ClusterService::start", "ClusterService can not be started");
                     }
                 }
@@ -48,7 +48,7 @@ namespace hazelcast {
 
             void ClusterService::stop() {
                 active = false;
-                clusterListenerThread->interrupt();
+                clusterThread.stop();
             }
 
             connection::Connection *ClusterService::getConnection(Address const &address) {
@@ -109,7 +109,7 @@ namespace hazelcast {
                         break;
                     }
                     const double remainingTime = clientConfig.getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
-					using namespace std;
+                    using namespace std;
                     std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
 
@@ -179,7 +179,6 @@ namespace hazelcast {
 
             void ClusterService::beforeRetry() {
                 boost::this_thread::sleep(boost::posix_time::milliseconds(RETRY_WAIT_TIME));
-                partitionService.refreshPartitions();
             }
 
             void ClusterService::setMembers(const std::map<Address, connection::Member, addressComparator > &map) {

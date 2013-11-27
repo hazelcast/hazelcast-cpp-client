@@ -9,6 +9,7 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/ConcurrentSmartMap.h"
 #include "hazelcast/client/connection/SocketInterceptor.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -58,6 +59,10 @@ namespace hazelcast {
 
                 virtual void authenticate(Connection &connection, bool reAuth, bool firstConnection);
 
+                virtual void shutdown();
+
+                virtual void checkLive();
+
             protected:
                 util::ConcurrentSmartMap<Address, ConnectionPool, addressComparator> poolMap;
                 spi::ClusterService &clusterService;
@@ -66,7 +71,7 @@ namespace hazelcast {
                 boost::shared_ptr<protocol::Principal> principal;
                 HeartBeatChecker heartBeatChecker;
                 std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
-
+                boost::atomic<bool> live;
 
             };
         }

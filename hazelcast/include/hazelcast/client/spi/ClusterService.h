@@ -210,7 +210,6 @@ namespace hazelcast {
                 spi::PartitionService &partitionService;
 
                 connection::ClusterListenerThread clusterThread;
-                std::auto_ptr<boost::thread> clusterListenerThread;
 
                 protocol::Credentials &credentials;
                 std::map<Address, connection::Member, addressComparator > members;

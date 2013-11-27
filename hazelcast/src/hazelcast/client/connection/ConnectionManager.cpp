@@ -18,7 +18,8 @@ namespace hazelcast {
             , serializationService(serializationService)
             , clientConfig(clientConfig)
             , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
-            , socketInterceptor(this->clientConfig.getSocketInterceptor()) {
+            , socketInterceptor(this->clientConfig.getSocketInterceptor())
+            , live(true) {
 
             };
 
@@ -27,6 +28,7 @@ namespace hazelcast {
             };
 
             Connection *ConnectionManager::newConnection(Address const &address) {
+                checkLive();
                 Connection *connection = new Connection(address, serializationService);
                 authenticate(*connection, true, true);
                 return connection;
@@ -37,6 +39,7 @@ namespace hazelcast {
             }
 
             Connection *ConnectionManager::getConnection(const Address &address) {
+                checkLive();
                 util::AtomicPointer<ConnectionPool> pool = getConnectionPool(address);
                 if (pool.isNull())
                     return NULL;
@@ -52,6 +55,7 @@ namespace hazelcast {
 
 
             Connection *ConnectionManager::getRandomConnection() {
+                checkLive();
                 const Address &address = clientConfig.getLoadBalancer()->next().getAddress();
                 return getConnection(address);
             }
@@ -67,6 +71,7 @@ namespace hazelcast {
             };
 
             util::AtomicPointer <ConnectionPool> ConnectionManager::getConnectionPool(const Address &address) {
+                checkLive();
                 util::AtomicPointer<ConnectionPool> pool = poolMap.get(address);
                 if (!pool.isNull()) {
                     return pool;
@@ -90,6 +95,7 @@ namespace hazelcast {
             };
 
             void ConnectionManager::authenticate(Connection &connection, bool reAuth, bool firstConnection) {
+                checkLive();
                 connection.connect();
                 connection.write(protocol::ProtocolConstants::PROTOCOL);
                 if (socketInterceptor.get() != NULL) {
@@ -111,6 +117,15 @@ namespace hazelcast {
             };
 
 
+            void ConnectionManager::shutdown() {
+                live = false;
+            }
+
+            void ConnectionManager::checkLive() {
+                if (!live) {
+                    throw exception::InstanceNotActiveException("ConnectionManager::checkLive", "Instance is not active");
+                }
+            }
         }
     }
 }

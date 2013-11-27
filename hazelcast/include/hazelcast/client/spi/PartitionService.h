@@ -8,6 +8,7 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/ConcurrentMap.h"
 #include <boost/thread.hpp>
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -35,8 +36,6 @@ namespace hazelcast {
 
                 void stop();
 
-                void refreshPartitions();
-
                 Address *getPartitionOwner(int partitionId);
 
                 int getPartitionId(const serialization::Data &key);
@@ -47,7 +46,7 @@ namespace hazelcast {
                 serialization::SerializationService &serializationService;
                 spi::LifecycleService &lifecycleService;
 
-                boost::mutex refreshLock;
+                boost::atomic<bool> updating;
 
                 std::auto_ptr<boost::thread> partitionListenerThread;
 

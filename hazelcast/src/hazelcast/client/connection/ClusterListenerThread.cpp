@@ -19,21 +19,25 @@ namespace hazelcast {
             , lifecycleService(lifecycleService)
             , serializationService(serializationService)
             , conn(NULL)
-            , isReady(false) {
+            , isReady(false)
+            , deletingConnection(false) {
                 ;
             };
 
             void ClusterListenerThread::setInitialConnection(connection::Connection *connection) {
-                this->conn = connection;
+                conn.reset(connection);
             };
 
+            void ClusterListenerThread::setThread(boost::thread *thread) {
+                clusterListenerThread.reset(thread);
+            }
 
             void ClusterListenerThread::run() {
                 while (lifecycleService.isRunning()) {
                     try {
-                        if (conn == NULL) {
+                        if (conn.get() == NULL) {
                             try {
-                                conn = pickConnection();
+                                conn.reset(pickConnection());
                             } catch (std::exception &e) {
                                 std::cerr << "Error while connecting to cluster! " << *conn << e.what() << std::endl;
                                 return;
@@ -47,8 +51,11 @@ namespace hazelcast {
                         if (lifecycleService.isRunning()) {
                             std::cerr << "Error while listening cluster events! -> " << *conn << e.what() << std::endl;
                         }
-                        delete conn;
-                        conn = NULL;
+                        bool expected = false;
+                        if (deletingConnection.compare_exchange_strong(expected, true)) {
+                            conn.reset();
+                            deletingConnection = false;
+                        }
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(boost::thread_interrupted &) {
                         break;
@@ -59,6 +66,18 @@ namespace hazelcast {
                 }
 
             };
+
+
+            void ClusterListenerThread::stop() {
+                bool expected = false;
+                if (deletingConnection.compare_exchange_strong(expected, true)) {
+                    conn.reset();
+                    deletingConnection = false;
+                }
+
+                clusterListenerThread->interrupt();
+                clusterListenerThread->join();
+            }
 
             Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;

@@ -5,7 +5,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             Socket::Socket(const Address &address): address(address), size(32 * 1024) {
-                #ifdef WIN32
+#ifdef WIN32
                     int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
 					if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
                 #endif
@@ -19,13 +19,13 @@ namespace hazelcast {
                 if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
                     throw exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
                 }
-                socketId = ::socket(serverInfo->ai_family,serverInfo->ai_socktype, serverInfo->ai_protocol);
-
+                socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+                isOpen = true;
                 ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
                 ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
-                #if defined(SO_NOSIGPIPE)
+#if defined(SO_NOSIGPIPE)
                 setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
-                #endif
+#endif
 
             };
 
@@ -43,16 +43,16 @@ namespace hazelcast {
             }
 
             void Socket::send(const void *buffer, int len) const {
-                if (::send(socketId, (char*)buffer, len, 0) == -1)
+                if (::send(socketId, (char *) buffer, len, 0) == -1)
                     throw exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             };
 
             void Socket::receive(void *buffer, int len) const {
-                #ifdef WIN32
+#ifdef WIN32
 					int size = ::recv(socketId, (char*)buffer, len, 0 );
 				#else
                 int size = ::recv(socketId, buffer, len, MSG_WAITALL);
-                #endif
+#endif
 
                 if (size == -1)
                     throw exception::IOException("Socket::receive", "Error socket read");
@@ -73,12 +73,15 @@ namespace hazelcast {
             }
 
             void Socket::close() {
-                #ifdef WIN32
-		        WSACleanup();
-		        closesocket(socketId);
-	            #else
-                ::close(socketId);
-                #endif
+                bool expected = true;
+                if (isOpen.compare_exchange_strong(expected, false)) {
+#ifdef WIN32
+                    WSACleanup();
+                    closesocket(socketId);
+                    #else
+                    ::close(socketId);
+#endif
+                }
             }
 
             int Socket::getSocketId() const {

@@ -26,6 +26,7 @@ namespace hazelcast {
                 for (int i = 0; i < valArr.size(); i++) {
                     delete valArr[i];
                 }
+
             };
 
             void PartitionService::start() {
@@ -37,11 +38,8 @@ namespace hazelcast {
 
             void PartitionService::stop() {
                 partitionListenerThread->interrupt();
+                partitionListenerThread->join();
             }
-
-            void PartitionService::refreshPartitions() {
-                boost::thread partitionRefresher(boost::bind(&PartitionService::runRefresher, this));
-            };
 
             Address *PartitionService::getPartitionOwner(int partitionId) {
                 return partitions.get(partitionId);
@@ -71,21 +69,25 @@ namespace hazelcast {
             };
 
             void PartitionService::runRefresher() {
-                try {
-                    boost::lock_guard<boost::mutex> lg(refreshLock);
-                    boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
-                    std::auto_ptr<Address> ptr = clusterService.getMasterAddress();
-                    if (ptr.get() == NULL) {
-                        partitionResponse = getPartitionsFrom();
-                    } else {
-                        partitionResponse = getPartitionsFrom(*ptr.get());
+                bool expected = false;
+                if (updating.compare_exchange_strong(expected, true)) {
+                    try {
+                        boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
+                        std::auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                        if (ptr.get() == NULL) {
+                            partitionResponse = getPartitionsFrom();
+                        } else {
+                            partitionResponse = getPartitionsFrom(*ptr.get());
+                        }
+                        if (partitionResponse != NULL) {
+                            processPartitionResponse(*partitionResponse);
+                        }
+                    } catch(...) {
+                        //ignored
                     }
-                    if (partitionResponse != NULL) {
-                        processPartitionResponse(*partitionResponse);
-                    }
-                } catch(...) {
-                    //ignored
+                    updating = false;
                 }
+
             };
 
             boost::shared_ptr<impl::PartitionsResponse> PartitionService::getPartitionsFrom(const Address &address) {
