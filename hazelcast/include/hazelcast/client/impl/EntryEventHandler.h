@@ -40,7 +40,7 @@ namespace hazelcast {
                     boost::shared_ptr<K> key = serializationService.toObject<K>(event.getKey());
                     connection::Member member = clusterService.getMember(event.getUuid());
                     EntryEventType type = event.getEventType();
-                    EntryEvent<K, V> entryEvent(instanceName, member, type, *key, *value, *oldValue);
+                    EntryEvent<K, V> entryEvent(instanceName, member, type, key, value, oldValue);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);
                     } else if (type == EntryEventType::REMOVED) {

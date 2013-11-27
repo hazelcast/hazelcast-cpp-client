@@ -62,7 +62,7 @@ namespace hazelcast {
                 std::vector<serialization::Data> valueSet;
                 valueSet.push_back(valueData);
                 collection::CollectionContainsRequest request (getName(), valueSet);
-                return invoke<bool>(request);
+                return *(invoke<bool>(request));
             };
 
             std::vector<E> toArray() {
@@ -122,7 +122,7 @@ namespace hazelcast {
             bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, true);
-                return invoke<bool>(request);
+                return *(invoke<bool>(request));
             };
 
             void clear() {

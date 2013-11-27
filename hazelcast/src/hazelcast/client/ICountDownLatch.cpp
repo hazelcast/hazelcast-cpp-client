@@ -15,7 +15,7 @@ namespace hazelcast {
 
         bool ICountDownLatch::await(long timeoutInMillis) {
             countdownlatch::AwaitRequest request(getName(), timeoutInMillis);
-            return invoke<bool>(request);
+            return *(invoke<bool>(request));
         };
 
         void ICountDownLatch::countDown() {

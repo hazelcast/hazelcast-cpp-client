@@ -41,12 +41,12 @@ namespace hazelcast {
 
         bool ILock::isLocked() {
             lock::IsLockedRequest request(key);
-            return invoke<bool>(request);
+            return *(invoke<bool>(request));
         };
 
         bool ILock::isLockedByCurrentThread() {
             lock::IsLockedRequest request(key, util::getThreadId());
-            return invoke<bool>(request);
+            return *(invoke<bool>(request));
         };
 
         int ILock::getLockCount() {

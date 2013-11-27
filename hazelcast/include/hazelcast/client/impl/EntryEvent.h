@@ -7,6 +7,7 @@
 
 #include "hazelcast/client/impl/EventObject.h"
 #include "hazelcast/client/connection/Member.h"
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -53,7 +54,7 @@ namespace hazelcast {
             class EntryEvent : public EventObject {
             public:
 
-                EntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const K& key, const V& value)
+                EntryEvent(const std::string &name, const connection::Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
                 : EventObject(name)
                 , member(member)
                 , eventType(eventType)
@@ -62,7 +63,7 @@ namespace hazelcast {
 
                 };
 
-                EntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const K& key, const V& value, const V& oldValue)
+                EntryEvent(const std::string &name, const connection::Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
                 : EventObject(name)
                 , member(member)
                 , eventType(eventType)
@@ -77,8 +78,8 @@ namespace hazelcast {
                  *
                  * @return the key
                  */
-                const K& getKey() const {
-                    return key;
+                const K &getKey() const {
+                    return *key;
                 };
 
                 /**
@@ -86,8 +87,8 @@ namespace hazelcast {
                  *
                  * @return
                  */
-                const V&  getOldValue() const {
-                    return oldValue;
+                const V &getOldValue() const {
+                    return *oldValue;
                 };
 
                 /**
@@ -95,8 +96,8 @@ namespace hazelcast {
                  *
                  * @return
                  */
-                const V&  getValue() const {
-                    return value;
+                const V &getValue() const {
+                    return *value;
                 };
 
                 /**
@@ -127,9 +128,9 @@ namespace hazelcast {
                 };
 
             private:
-                K key;
-                V value;
-                V oldValue;
+                boost::shared_ptr<K> key;
+                boost::shared_ptr<V> value;
+                boost::shared_ptr<V> oldValue;
                 EntryEventType eventType;
                 connection::Member member;
 

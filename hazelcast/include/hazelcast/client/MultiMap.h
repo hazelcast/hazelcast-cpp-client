@@ -56,7 +56,8 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 multimap::PutRequest request(getName(), keyData, valueData, -1, util::getThreadId());
-                return invoke<bool>(request, keyData);
+                bool success = *(invoke<bool>(request, keyData));
+                return success;
             };
 
             /**
@@ -98,7 +99,8 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 multimap::RemoveRequest request(getName(), keyData, valueData, util::getThreadId());
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             /**
@@ -195,7 +197,8 @@ namespace hazelcast {
             bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
                 multimap::ContainsEntryRequest request (keyData, getName());
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             /**
@@ -208,7 +211,8 @@ namespace hazelcast {
             bool containsValue(const V &value) {
                 serialization::Data valueData = toData(value);
                 multimap::ContainsEntryRequest request (getName(), valueData);
-                return invoke<bool>(request, valueData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, valueData);
+                return *success;
             };
 
             /**
@@ -226,7 +230,8 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 multimap::ContainsEntryRequest request (keyData, getName(), valueData);
-                return invoke<bool>(request, keyData);
+                boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
+                return *success;
             };
 
             /**

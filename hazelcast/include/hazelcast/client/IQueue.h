@@ -108,7 +108,7 @@ namespace hazelcast {
                 queue::OfferRequest request(getName(), data, timeoutInMillis);
                 bool result;
                 try {
-                    result = invoke<bool>(request);
+                    result = *(invoke<bool>(request));
                 } catch(exception::ServerException &e) {
                     throw exception::InterruptedException("IQueue::offer", "timeout");
                 }
@@ -139,7 +139,7 @@ namespace hazelcast {
             bool remove(const E &o) {
                 serialization::Data data = toData(o);
                 queue::RemoveRequest request(getName(), data);
-                bool result = invoke<bool>(request);
+                bool result = *(invoke<bool>(request));
                 return result;
             };
 
@@ -147,7 +147,7 @@ namespace hazelcast {
                 std::vector<serialization::Data> list(1);
                 list[0] = toData(o);
                 queue::ContainsRequest request(getName(), list);
-                return invoke<bool>(request);
+                return *(invoke<bool>(request));
             };
 
             int drainTo(std::vector<E> &objects) {

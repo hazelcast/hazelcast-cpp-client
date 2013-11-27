@@ -12,7 +12,7 @@ namespace hazelcast {
 
         namespace spi {
 
-            LifecycleService::LifecycleService(HazelcastClient & hazelcastClient, ClientConfig& config)
+            LifecycleService::LifecycleService(HazelcastClient &hazelcastClient, ClientConfig &config)
             :hazelcastClient(hazelcastClient)
             , active(false) {
                 std::set<spi::EventListener *> listeners = config.getListeners();
@@ -60,9 +60,9 @@ namespace hazelcast {
 
             void LifecycleService::setShutdown() {
                 active = false;
+                fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 hazelcastClient.getPartitionService().stop();
                 hazelcastClient.getClusterService().stop();
-                fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
             };
 
 

@@ -80,9 +80,39 @@ namespace hazelcast {
                 }
             }
 
+            class SampleEntryListener {
+            public:
+                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch, util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
+                :addLatch(addLatch)
+                , removeLatch(removeLatch)
+                , updateLatch(updateLatch)
+                , evictLatch(evictLatch) {
+                };
+
+                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
+                    addLatch.countDown();
+                };
+
+                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
+                    removeLatch.countDown();
+                }
+
+                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
+                    updateLatch.countDown();
+                }
+
+                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
+                    evictLatch.countDown();
+                }
+
+            private:
+                util::CountDownLatch &addLatch;
+                util::CountDownLatch &removeLatch;
+                util::CountDownLatch &updateLatch;
+                util::CountDownLatch &evictLatch;
+            };
+
             class MyListener {
-
-
             public:
                 MyListener(CountDownLatch &latch, CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch) {
                 };
@@ -164,7 +194,7 @@ namespace hazelcast {
             void ClientMapTest::testRemoveAndDelete() {
                 fillMap();
                 boost::shared_ptr<string> temp = imap->remove("key10");
-                assertNotNull(temp.get());
+                assertNull(temp.get());
                 imap->deleteEntry("key9");
                 assertEqual(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
@@ -251,17 +281,24 @@ namespace hazelcast {
             }
 
             void ClientMapTest::testPutTtl() {
-                imap->put("key1", "value1", 1000);
+                util::CountDownLatch dummy(10);
+                util::CountDownLatch evict(1);
+                SampleEntryListener sampleEntryListener(dummy, dummy, dummy, evict);
+                long id = imap->addEntryListener(sampleEntryListener, false);
+
+                imap->put("key1", "value1", 2000);
                 boost::shared_ptr<std::string> temp = imap->get("key1");
                 assertEqual(*temp, "value1");
-                boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+                assertTrue(evict.await(20 * 1000));
                 boost::shared_ptr<std::string> temp2 = imap->get("key1");
                 assertNull(temp2.get());
+
+                imap->removeEntryListener(id);
             }
 
             void ClientMapTest::testPutIfAbsent() {
                 boost::shared_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
-                assertNotNull(o.get());
+                assertNull(o.get());
                 assertEqual("value1", *(imap->putIfAbsent("key1", "value3")));
             }
 
@@ -419,7 +456,7 @@ namespace hazelcast {
 
             void ClientMapTest::testReplace() {
                 boost::shared_ptr<std::string> temp = imap->replace("key1", "value");
-                assertNotNull(temp.get());
+                assertNull(temp.get());
 
                 std::string tempKey = "key1";
                 std::string tempValue = "value1";
@@ -477,41 +514,15 @@ namespace hazelcast {
                 tradeMap.removeEntryListener(id);
             }
 
-            class SampleEntryListener {
-            public:
-                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch)
-                :addLatch(addLatch)
-                , removeLatch(removeLatch) {
-                };
-
-                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
-                    addLatch.countDown();
-                };
-
-                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
-                    removeLatch.countDown();
-                }
-
-                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
-                }
-
-                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
-                }
-
-            private:
-                util::CountDownLatch &addLatch;
-                util::CountDownLatch &removeLatch;
-            };
-
             void ClientMapTest::testListener() {
                 util::CountDownLatch latch1Add(5);
                 util::CountDownLatch latch1Remove(2);
-
+                util::CountDownLatch dummy(10);
                 util::CountDownLatch latch2Add(1);
                 util::CountDownLatch latch2Remove(1);
 
-                SampleEntryListener listener1(latch1Add, latch1Remove);
-                SampleEntryListener listener2(latch2Add, latch2Remove);
+                SampleEntryListener listener1(latch1Add, latch1Remove, dummy, dummy);
+                SampleEntryListener listener2(latch2Add, latch2Remove, dummy, dummy);
 
                 long listener1ID = imap->addEntryListener(listener1, false);
                 long listener2ID = imap->addEntryListener(listener2, "key3", true);

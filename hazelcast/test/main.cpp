@@ -41,8 +41,8 @@ int main(int argc, char **argv) {
     ClientMapTest mapTest(factory);
     mapTest.executeTests();
 
-    ClientMapIssueTest mapIssueTest(factory);
-    mapIssueTest.executeTests();
+//    ClientMapIssueTest mapIssueTest(factory);
+//    mapIssueTest.executeTests();
 
     ClientMultiMapTest multiMapTest(factory);
     multiMapTest.executeTests();

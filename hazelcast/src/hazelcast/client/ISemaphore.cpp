@@ -80,7 +80,7 @@ namespace hazelcast {
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             checkNegative(permits);
             semaphore::AcquireRequest request(getName(), permits, timeoutInMillis);
-            return invoke<bool>(request);;
+            return *(invoke<bool>(request));
         };
 
         void ISemaphore::checkNegative(int permits) {
