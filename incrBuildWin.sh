@@ -1,5 +1,8 @@
-mkdir build;
 cd build;
-cmake ..;
-msbuild /property:Configuration=Debug /p:WarningLevel=0 .\hz_cppClient.sln
-../hazelcast/test/java/clientTest;
+msbuild /verbosity:quiet  /property:Configuration=Debug /property:Platform=x86 /AdditionalLibPaths=.
+cd ..;
+cd java;
+javac -cp .:hazelcast-3.2-SNAPSHOT.jar ClientTCPIPListener.java
+./clientTestStatic.exe;
+#./clientTestShared.exe;
+

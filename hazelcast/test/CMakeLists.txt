@@ -1,11 +1,28 @@
 cmake_minimum_required (VERSION 2.6)
-project (hz_cppClient_test)
+project (HazelcastClientTest)
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test)
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/java/)
-add_executable(clientTest ${HZ_TEST_SOURCES})
-target_link_libraries(clientTest hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-#target_link_libraries(clientTest hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/java/)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
+	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
+ELSE(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set_target_properties(clientTestStatic_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	set_target_properties(clientTestShared_64.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	
+	add_executable(clientTestStatic_32.exe ${HZ_TEST_SOURCES})
+	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
+
+	add_executable(clientTestShared_32.exe ${HZ_TEST_SOURCES})
+	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
+		
+	target_link_libraries(clientTestStatic_32.exe hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(clientTestStatic_64.exe hazelcastClientStatic ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(clientTestShared_32.exe hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(clientTestShared_64.exe hazelcastClientShared ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

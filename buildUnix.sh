@@ -1,7 +1,12 @@
 rm -rf build;
-rm ./hazelcast/test/java/clientTest;
+rm ./java/clientTest;
 mkdir build;
 cd build;
 cmake ..;
 make;
-../hazelcast/test/java/clientTest;
+cd ..;
+cd java;
+javac -cp .:hazelcast-3.2-SNAPSHOT.jar ClientTCPIPListener.java
+./clientTestStatic.exe;
+#./clientTestShared.exe;
+
