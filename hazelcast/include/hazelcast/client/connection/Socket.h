@@ -6,7 +6,7 @@
 #include <string>
 #include <boost/atomic.hpp>
 
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -24,7 +24,7 @@
 #endif
 
 
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     typedef int socklen_t;
 #endif
 
@@ -66,7 +66,7 @@ namespace hazelcast {
                 int socketId;
                 boost::atomic<bool> isOpen;
 
-#ifdef WIN32
+				#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			        WSADATA wsa_data;
 				#endif
 

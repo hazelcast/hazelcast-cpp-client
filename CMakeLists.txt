@@ -5,6 +5,7 @@ set(Boost_USE_STATIC_LIBS   ON)
 find_package( Boost REQUIRED COMPONENTS atomic system chrono thread date_time)
 include_directories( ${Boost_INCLUDE_DIRS})
 
+set(ZLIB_ROOT "C:\\Users\\sancar\\Downloads\\zlib128-dll")
 find_package( ZLIB REQUIRED )
 include_directories( ${ZLIB_INCLUDE_DIRS} )
 
@@ -40,17 +41,22 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "WINDOWS ENVIRONMENT DETECTED")
-	add_library(HazelcastClientShared_32 SHARED ${HZ_SOURCES})
-	add_library(HazelcastClientStatic_32 STATIC ${HZ_SOURCES})
-	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
+	add_definitions(-DWIN32 -D_WIN32 -D__WIN32__)
+#	add_library(HazelcastClientShared_32 SHARED ${HZ_SOURCES})
+#	add_library(HazelcastClientStatic_32 STATIC ${HZ_SOURCES})
+#	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
 	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
 	
-	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-    target_link_libraries(HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientShared_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	
+	set_target_properties(HazelcastClientStatic_64 PROPERTIES COMPILE_FLAGS " /EHsc " )
+#	set_target_properties(HazelcastClientShared_64 PROPERTIES COMPILE_FLAGS " /EHsc " LINK_FLAGS "  /EHsc ")
+    #set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
+	#set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
+
+#	target_link_libraries(HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+#	target_link_libraries(HazelcastClientShared_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})	
 	target_link_libraries(HazelcastClientStatic_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientStatic_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})	
+#	target_link_libraries(HazelcastClientStatic_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ADD_SUBDIRECTORY(hazelcast/test)

@@ -5,7 +5,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             Socket::Socket(const Address &address): address(address), size(32 * 1024) {
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
 					if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
                 #endif
@@ -48,7 +48,7 @@ namespace hazelcast {
             };
 
             void Socket::receive(void *buffer, int len) const {
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 					int size = ::recv(socketId, (char*)buffer, len, 0 );
 				#else
                 int size = ::recv(socketId, buffer, len, MSG_WAITALL);
@@ -75,7 +75,7 @@ namespace hazelcast {
             void Socket::close() {
                 bool expected = true;
                 if (isOpen.compare_exchange_strong(expected, false)) {
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     WSACleanup();
                     closesocket(socketId);
                     #else
