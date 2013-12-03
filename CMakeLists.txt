@@ -1,9 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (HazelcastClient)
 
-set(Boost_USE_STATIC_LIBS   ON)
-find_package( Boost REQUIRED COMPONENTS atomic system chrono thread date_time)
-include_directories( ${Boost_INCLUDE_DIRS})
+include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
 find_package( ZLIB REQUIRED )
 include_directories( ${ZLIB_INCLUDE_DIRS} )
@@ -18,8 +16,14 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
 	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
 	
-    target_link_libraries(HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientStatic_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_atomic.a)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_system.a)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_chrono.a)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_thread.a)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_date_time.a)
+
+    target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
