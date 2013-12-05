@@ -12,6 +12,7 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/SerializationContext.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 
 namespace hazelcast {
@@ -20,7 +21,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class Data {
+            class HAZELCAST_API Data {
             public:
 
                 Data();
