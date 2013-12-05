@@ -3,9 +3,7 @@ project (HazelcastClient)
 
 include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
-set(ZLIB_ROOT "C:\\Users\\sancar\\Downloads\\zlib128-dll")
-find_package( ZLIB REQUIRED )
-include_directories( ${ZLIB_INCLUDE_DIRS} )
+include(GenerateExportHeader)
 
 message(STATUS "Preparing hazelcast client ..... ")
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
@@ -44,23 +42,42 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "WINDOWS ENVIRONMENT DETECTED")
+    message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR}")
 	add_definitions(-DWIN32 -D_WIN32 -D__WIN32__)
-#	add_library(HazelcastClientShared_32 SHARED ${HZ_SOURCES})
-#	add_library(HazelcastClientStatic_32 STATIC ${HZ_SOURCES})
-#	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
-	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
 	
+	IF(${CMAKE_GENERATOR} MATCHES "Win64")
+		set(Hz_Bit "64")
+	ELSE(${CMAKE_GENERATOR} MATCHES "Win64")
+		set(Hz_Bit "32")
+	ENDIF(${CMAKE_GENERATOR} MATCHES "Win64")
 	
-	set_target_properties(HazelcastClientStatic_64 PROPERTIES COMPILE_FLAGS " /EHsc " )
-#	set_target_properties(HazelcastClientShared_64 PROPERTIES COMPILE_FLAGS " /EHsc " LINK_FLAGS "  /EHsc ")
-    #set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
-	#set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
+	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-gd-1_55.lib)
 
-#	target_link_libraries(HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-#	target_link_libraries(HazelcastClientShared_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})	
-	target_link_libraries(HazelcastClientStatic_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-#	target_link_libraries(HazelcastClientStatic_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})	
+	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/zlibstaticd.lib)
+	
+	
+	add_library(HazelcastClientStatic STATIC ${HZ_SOURCES})
+	add_library(HazelcastClientShared SHARED ${HZ_SOURCES})
+	
+	GENERATE_EXPORT_HEADER( HazelcastClientShared
+             BASE_NAME HazelcastClientShared
+             EXPORT_MACRO_NAME HazelcastClientShared_EXPORT
+             EXPORT_FILE_NAME HazelcastClientShared_Export.h
+             STATIC_DEFINE HazelcastClientShared_BUILT_AS_STATIC
+	)
+#	set_target_properties(HazelcastClientShared PROPERTIES SUFFIX "1.dll")
+#	set_target_properties(HazelcastClientShared PROPERTIES DEFINE_SYMBOL HzClientDLL)
+#
+	set_target_properties(HazelcastClientShared PROPERTIES COMPILE_FLAGS " /EHsc " )    	
+	set_target_properties(HazelcastClientStatic PROPERTIES COMPILE_FLAGS " /EHsc " )
+
+	target_link_libraries(HazelcastClientShared ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientStatic ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ADD_SUBDIRECTORY(hazelcast/test)

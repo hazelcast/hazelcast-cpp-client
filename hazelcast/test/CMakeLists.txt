@@ -35,20 +35,15 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-#	add_executable(clientTestStatic_32.exe ${HZ_TEST_SOURCES})
-#	add_executable(clientTestShared_32.exe ${HZ_TEST_SOURCES})
-	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
-#	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
 	
-	set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS " /EHsc ")
-#	set_target_properties(clientTestShared_64.exe PROPERTIES COMPILE_FLAGS " /EHsc " LINK_FLAGS "  /EHsc ")
-#	set_target_properties(clientTestStatic_32.exe PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
-#	set_target_properties(clientTestShared_32.exe PROPERTIES COMPILE_FLAGS "/p:PlatformTarget=x86" LINK_FLAGS "/p:PlatformTarget=x86")
+	add_executable(clientTestShared${Hz_Bit} ${HZ_TEST_SOURCES})
+	add_executable(clientTestStatic${Hz_Bit} ${HZ_TEST_SOURCES})
+	
+	set_target_properties(clientTestShared${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
+	set_target_properties(clientTestStatic${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
 		
-#	target_link_libraries(clientTestStatic_32.exe HazelcastClientStatic_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-#	target_link_libraries(clientTestShared_32.exe HazelcastClientShared_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-#	target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(clientTestShared${Hz_Bit} HazelcastClientShared ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(clientTestStatic${Hz_Bit} HazelcastClientStatic ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
