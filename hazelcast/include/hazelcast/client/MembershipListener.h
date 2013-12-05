@@ -16,7 +16,7 @@ namespace hazelcast {
             class MembershipEvent;
         }
 
-        class MembershipListener {
+        class HAZELCAST_API MembershipListener {
         public:
             virtual ~MembershipListener() {
 

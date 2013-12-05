@@ -60,7 +60,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename K, typename V>
-        class IMap : public proxy::DistributedObject {
+        class HAZELCAST_API IMap : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

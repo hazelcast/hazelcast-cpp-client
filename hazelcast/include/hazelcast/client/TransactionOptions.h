@@ -16,7 +16,7 @@ namespace hazelcast {
             class ObjectDataInput;
         };
 
-        class TransactionType {
+        class HAZELCAST_API TransactionType {
         public:
             enum Type {
                 TWO_PHASE = 1,
@@ -31,7 +31,7 @@ namespace hazelcast {
 
         };
 
-        class TransactionOptions : public DataSerializable {
+        class HAZELCAST_API TransactionOptions : public DataSerializable {
         public:
             TransactionOptions();
 

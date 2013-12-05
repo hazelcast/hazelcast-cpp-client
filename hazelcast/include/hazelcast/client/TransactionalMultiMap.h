@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename K, typename V>
-        class TransactionalMultiMap : public proxy::TransactionalObject {
+        class HAZELCAST_API TransactionalMultiMap : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:

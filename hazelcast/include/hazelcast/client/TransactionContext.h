@@ -28,7 +28,7 @@ namespace hazelcast {
             class ConnectionManager;
         }
 
-        class TransactionContext {
+        class HAZELCAST_API TransactionContext {
         public:
             TransactionContext(spi::ClusterService &, serialization::SerializationService &, connection::ConnectionManager &, const TransactionOptions &);
 

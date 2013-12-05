@@ -14,7 +14,7 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class IAtomicLong : public proxy::DistributedObject {
+        class HAZELCAST_API IAtomicLong : public proxy::DistributedObject {
             friend class HazelcastClient;
 
             friend class IdGenerator;

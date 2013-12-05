@@ -6,12 +6,13 @@
 #ifndef HAZELCAST_CountDownLatch
 #define HAZELCAST_CountDownLatch
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <boost/atomic/atomic.hpp>
 #include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace util {
-        class CountDownLatch {
+        class HAZELCAST_API CountDownLatch {
         public:
             CountDownLatch(int count);
 

@@ -19,7 +19,7 @@ namespace hazelcast {
             class SocketInterceptor;
 
         }
-        class ClientConfig {
+        class HAZELCAST_API ClientConfig {
         public:
 
             ClientConfig();

@@ -15,7 +15,7 @@
 
 namespace hazelcast {
     namespace client {
-        class ILock : public proxy::DistributedObject {
+        class HAZELCAST_API ILock : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

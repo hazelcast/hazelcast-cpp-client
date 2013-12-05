@@ -23,7 +23,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename E>
-        class ISet : public proxy::DistributedObject {
+        class HAZELCAST_API ISet : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

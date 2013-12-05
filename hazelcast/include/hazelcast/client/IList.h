@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename E>
-        class IList : public proxy::DistributedObject {
+        class HAZELCAST_API IList : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

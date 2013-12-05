@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
 
-        class ISemaphore : public proxy::DistributedObject {
+        class HAZELCAST_API ISemaphore : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

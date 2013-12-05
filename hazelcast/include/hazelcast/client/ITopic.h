@@ -20,7 +20,7 @@
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class ITopic : public proxy::DistributedObject {
+        class HAZELCAST_API ITopic : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

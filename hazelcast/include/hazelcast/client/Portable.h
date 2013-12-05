@@ -7,6 +7,8 @@
 #ifndef HAZELCAST_Portable
 #define HAZELCAST_Portable
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
 
@@ -18,7 +20,7 @@ namespace hazelcast {
             class PortableReader;
         }
 
-        class Portable {
+        class HAZELCAST_API Portable {
         public:
             virtual ~Portable();
 
