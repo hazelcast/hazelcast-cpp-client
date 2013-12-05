@@ -8,7 +8,7 @@
 *.exe
 *.ilk
 *.pdb
-clientTest
+*~
 
 # Compiled Dynamic libraries
 *.so

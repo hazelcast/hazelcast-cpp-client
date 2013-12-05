@@ -12,7 +12,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
 
 	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-    target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+    	target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -26,10 +26,10 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set_target_properties(clientTestStatic_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	set_target_properties(clientTestShared_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 		
-	target_link_libraries(clientTestStatic_32.exe HazelcastClientStatic_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(clientTestShared_32.exe HazelcastClientShared_32 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	target_link_libraries(clientTestStatic_32.exe HazelcastClientStatic_32 ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})
+	target_link_libraries(clientTestShared_32.exe HazelcastClientShared_32 ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})
+	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
+	target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
