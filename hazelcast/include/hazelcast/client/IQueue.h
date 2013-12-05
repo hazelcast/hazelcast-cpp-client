@@ -29,7 +29,7 @@ namespace hazelcast {
 
 
         template<typename E>
-        class IQueue : public proxy::DistributedObject {
+        class HAZELCAST_API IQueue : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

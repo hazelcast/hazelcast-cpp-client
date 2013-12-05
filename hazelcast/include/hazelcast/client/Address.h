@@ -2,6 +2,7 @@
 #define HAZELCAST_ADDRESS
 
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/IdentifiedDataSerializable.h"
 #include <string>
 #include <sstream>
@@ -15,7 +16,7 @@ namespace hazelcast {
             class ObjectDataOutput;
         }
 
-        class Address : public IdentifiedDataSerializable {
+        class HAZELCAST_API Address : public IdentifiedDataSerializable {
         public:
             Address();
 
@@ -61,7 +62,7 @@ namespace hazelcast {
         };
 
 
-        inline std::ostream& operator <<(std::ostream &strm, const Address &a) {
+        inline HAZELCAST_API std::ostream& operator <<(std::ostream &strm, const Address &a) {
             return strm << "Address[" << a.getHost() << ":" << util::to_string(a.getPort()) << "]";
         };
     }

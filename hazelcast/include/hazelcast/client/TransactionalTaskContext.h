@@ -12,7 +12,7 @@
 
 namespace hazelcast {
     namespace client {
-        class TransactionalTaskContext {
+        class HAZELCAST_API TransactionalTaskContext {
         public:
             TransactionalTaskContext(TransactionContext& context);
 

@@ -17,7 +17,7 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class ICountDownLatch : public proxy::DistributedObject {
+        class HAZELCAST_API ICountDownLatch : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

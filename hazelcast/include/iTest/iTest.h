@@ -10,20 +10,20 @@
 #include <iostream>
 
 namespace iTest {
-    void assertFalse(bool isFalse, const char *message);
+    HAZELCAST_API void assertFalse(bool isFalse, const char *message);
 
-    void assertFalse(bool isFalse);
+    HAZELCAST_API void assertFalse(bool isFalse);
 
-    void assertTrue(bool isTrue, const char *message);
+    HAZELCAST_API void assertTrue(bool isTrue, const char *message);
 
-    void assertTrue(bool isTrue);
+    HAZELCAST_API void assertTrue(bool isTrue);
 
-    void assertNull(const void *expected);
+    HAZELCAST_API void assertNull(const void *expected);
 
-    void assertNotNull(const void *expected);
+    HAZELCAST_API void assertNotNull(const void *expected);
 
     template<typename  Expected, typename Actual >
-    void assertEqual(const Expected &expected, const Actual &actual, const char *message) {
+    HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual, const char *message) {
         if (expected != actual) {
             iTestException e;
             e.message.assign(">> Assert failed. message : ");
@@ -33,7 +33,7 @@ namespace iTest {
     };
 
     template<typename  Expected, typename Actual >
-    void assertEqual(const Expected &expected, const Actual &actual) {
+    HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual) {
         if (actual != expected) {
             iTestException e;
             e.message.assign(">> Assert failed");

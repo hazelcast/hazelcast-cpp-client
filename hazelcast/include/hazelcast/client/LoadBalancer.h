@@ -13,7 +13,7 @@ namespace hazelcast {
         }
         class Cluster;
 
-        class LoadBalancer {
+        class HAZELCAST_API LoadBalancer {
         public:
 
             virtual void init(Cluster &cluster) = 0;

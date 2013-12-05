@@ -5,6 +5,8 @@
 #ifndef HAZELCAST_IdentifiedDataSerializable
 #define HAZELCAST_IdentifiedDataSerializable
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
 
@@ -16,7 +18,7 @@ namespace hazelcast {
             class ObjectDataInput;
         }
 
-        class IdentifiedDataSerializable {
+        class HAZELCAST_API IdentifiedDataSerializable {
         public:
 
             virtual ~IdentifiedDataSerializable();

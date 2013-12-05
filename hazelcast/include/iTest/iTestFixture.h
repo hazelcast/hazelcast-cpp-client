@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace iTest {
 
@@ -15,7 +16,8 @@ namespace iTest {
         std::string message;
     };
 
-    template<typename T> class iTestFixture {
+    template<typename T>
+    HAZELCAST_API class iTestFixture {
 
         typedef void (T::*TestFunction)();
 

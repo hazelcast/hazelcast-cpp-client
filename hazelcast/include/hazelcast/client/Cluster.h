@@ -17,7 +17,7 @@ namespace hazelcast {
 
         class MembershipListener;
 
-        class Cluster {
+        class HAZELCAST_API Cluster {
         public:
             Cluster(spi::ClusterService& clusterService);
 

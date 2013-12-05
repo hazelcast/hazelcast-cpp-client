@@ -17,7 +17,7 @@
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class TransactionalSet : public proxy::TransactionalObject {
+        class HAZELCAST_API TransactionalSet : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:

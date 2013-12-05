@@ -33,7 +33,7 @@ namespace hazelcast {
 
 
         template<typename K, typename V>
-        class MultiMap : public proxy::DistributedObject {
+        class HAZELCAST_API MultiMap : public proxy::DistributedObject {
             friend class HazelcastClient;
 
         public:

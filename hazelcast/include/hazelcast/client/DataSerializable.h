@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_DataSerializable
 #define HAZELCAST_DataSerializable
 
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +20,7 @@ namespace hazelcast {
             class ObjectDataInput;
         }
 
-        class DataSerializable {
+        class HAZELCAST_API DataSerializable {
         public:
 
             virtual ~DataSerializable();

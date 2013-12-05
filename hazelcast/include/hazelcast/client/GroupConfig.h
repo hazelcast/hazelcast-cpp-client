@@ -1,12 +1,13 @@
 #ifndef HAZELCAST_GROUP_CONFIG
 #define HAZELCAST_GROUP_CONFIG
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
 
-        class GroupConfig {
+        class HAZELCAST_API GroupConfig {
         public:
 
             /*
