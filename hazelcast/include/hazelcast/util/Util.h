@@ -29,19 +29,19 @@ namespace hazelcast {
     }
     namespace util {
 
-        std::string to_string(int);
+        HAZELCAST_API std::string to_string(int);
 
-        int getThreadId();
+        HAZELCAST_API int getThreadId();
 
-        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data);
+        HAZELCAST_API void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data);
 
-        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data);
+        HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data);
 
-        long getCurrentTimeMillis();
+        HAZELCAST_API long getCurrentTimeMillis();
 
 
         template<typename Request>
-        bool isRetryable(Request &request) {
+        HAZELCAST_API bool isRetryable(Request &request) {
             return util::Conversion<Request, client::RetryableRequest>::exists;
         };
 
