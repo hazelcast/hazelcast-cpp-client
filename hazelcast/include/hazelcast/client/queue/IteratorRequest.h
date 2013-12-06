@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class IteratorRequest : public impl::PortableRequest {
+            class HAZELCAST_API IteratorRequest : public impl::PortableRequest {
             public:
                 IteratorRequest(const std::string& name);
 

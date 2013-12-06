@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IllegalStateException : public IException {
+            class HAZELCAST_API IllegalStateException : public IException {
             public:
                 IllegalStateException(const std::string& source, const std::string& message);
 

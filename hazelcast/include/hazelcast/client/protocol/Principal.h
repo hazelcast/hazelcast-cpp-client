@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class Principal : public Portable {
+            class HAZELCAST_API Principal : public Portable {
             public:
                 Principal();
 

@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class TxnMultiMapGetRequest : public TxnMultiMapRequest {
+            class HAZELCAST_API TxnMultiMapGetRequest : public TxnMultiMapRequest {
             public:
                 TxnMultiMapGetRequest(const std::string& name, const serialization::Data& data);
 

@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class PortableMessage : public Portable {
+            class HAZELCAST_API PortableMessage : public Portable {
             public:
                 PortableMessage();
 

@@ -10,6 +10,7 @@
 #ifndef HAZELCAST_CLASS_DEFINITION_BUILDER
 #define HAZELCAST_CLASS_DEFINITION_BUILDER
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +19,7 @@ namespace hazelcast {
 
             class ClassDefinition;
 
-            class ClassDefinitionBuilder {
+            class HAZELCAST_API ClassDefinitionBuilder {
             public:
 
                 ClassDefinitionBuilder(int, int);

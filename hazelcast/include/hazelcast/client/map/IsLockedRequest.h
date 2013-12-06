@@ -15,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class IsLockedRequest : public impl::PortableRequest {
+            class HAZELCAST_API IsLockedRequest : public impl::PortableRequest {
             public:
                 IsLockedRequest(const std::string& name, serialization::Data& key);
 

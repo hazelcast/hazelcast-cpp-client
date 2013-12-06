@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class ClientSerializationTest : public iTest::iTestFixture<ClientSerializationTest> {
+            class HAZELCAST_API ClientSerializationTest : public iTest::iTestFixture<ClientSerializationTest> {
             public:
                 ClientSerializationTest();
 

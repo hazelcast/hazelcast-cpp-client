@@ -21,7 +21,7 @@ namespace hazelcast {
         class Cluster;
 
         namespace impl {
-            class AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
+            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
             public:
 
                 void setMembersRef();

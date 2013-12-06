@@ -31,7 +31,7 @@ namespace hazelcast {
 
             class SerializationContext;
 
-            class DefaultPortableWriter {
+            class HAZELCAST_API DefaultPortableWriter {
             public:
 
                 DefaultPortableWriter(SerializationContext &serializationContext, ClassDefinition *cd, DataOutput &output);

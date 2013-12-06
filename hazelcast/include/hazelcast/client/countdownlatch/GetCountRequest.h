@@ -17,7 +17,7 @@ namespace hazelcast {
             class PortableWriter;
         }
         namespace countdownlatch {
-            class GetCountRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetCountRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetCountRequest(const std::string& instanceName);
 

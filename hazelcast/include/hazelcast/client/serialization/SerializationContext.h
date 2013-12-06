@@ -26,7 +26,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class SerializationContext {
+            class HAZELCAST_API SerializationContext {
             public:
 
                 SerializationContext(int);

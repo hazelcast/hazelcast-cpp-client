@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class TestCustomPersonSerializer : public serialization::Serializer<TestCustomPerson> {
+            class HAZELCAST_API TestCustomPersonSerializer : public serialization::Serializer<TestCustomPerson> {
             public:
 
                 void write(hazelcast::client::serialization::ObjectDataOutput & out, const TestCustomPerson& object);

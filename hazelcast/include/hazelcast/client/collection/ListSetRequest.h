@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace list {
-            class ListSetRequest : public collection::CollectionRequest {
+            class HAZELCAST_API ListSetRequest : public collection::CollectionRequest {
             public:
 
                 ListSetRequest(const std::string& name, const serialization::Data& data, int index);

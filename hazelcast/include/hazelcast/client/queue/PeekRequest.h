@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class PeekRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API PeekRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 PeekRequest(const std::string& name);
 

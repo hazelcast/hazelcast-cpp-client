@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class AddMembershipListenerRequest : public impl::IdentifiedDataSerializableRequest {
+            class HAZELCAST_API AddMembershipListenerRequest : public impl::IdentifiedDataSerializableRequest {
             public:
                 AddMembershipListenerRequest();
 

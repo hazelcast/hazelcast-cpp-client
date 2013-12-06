@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class IdentifiedDataSerializableResponse : public IdentifiedDataSerializable {
+            class HAZELCAST_API IdentifiedDataSerializableResponse : public IdentifiedDataSerializable {
             public:
                 ~IdentifiedDataSerializableResponse();
 

@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class PortableResponse : public Portable {
+            class HAZELCAST_API PortableResponse : public Portable {
             public:
 
                 ~PortableResponse();

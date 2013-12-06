@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class ClearRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API ClearRequest : public AllPartitionsRequest, public RetryableRequest {
             public:
                 ClearRequest(const std::string& name);
 

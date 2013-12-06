@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class PutTransientRequest : public impl::PortableRequest {
+            class HAZELCAST_API PutTransientRequest : public impl::PortableRequest {
             public:
                 PutTransientRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 

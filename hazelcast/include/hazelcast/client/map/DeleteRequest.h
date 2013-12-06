@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class DeleteRequest : public impl::PortableRequest {
+            class HAZELCAST_API DeleteRequest : public impl::PortableRequest {
             public:
                 DeleteRequest(const std::string& name, serialization::Data& key, int threadId);
 

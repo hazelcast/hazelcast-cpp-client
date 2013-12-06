@@ -20,7 +20,7 @@ namespace hazelcast {
 
         namespace txn {
 
-            class TxnState {
+            class HAZELCAST_API TxnState {
             public:
                 enum states {
                     NO_TXN,
@@ -43,7 +43,7 @@ namespace hazelcast {
                 std::vector<states> values;
             };
 
-            class TransactionProxy {
+            class HAZELCAST_API TransactionProxy {
             public:
 
                 TransactionProxy(TransactionOptions &, spi::ClusterService &, serialization::SerializationService &, connection::Connection *);

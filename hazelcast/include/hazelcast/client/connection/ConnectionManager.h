@@ -37,7 +37,7 @@ namespace hazelcast {
 
             class ConnectionPool;
 
-            class ConnectionManager {
+            class HAZELCAST_API ConnectionManager {
             public:
                 ConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &serializationService, ClientConfig &clientConfig);
 

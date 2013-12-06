@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class ClientContext;
 
-            class ListenerSupportBase {
+            class HAZELCAST_API ListenerSupportBase {
             public:
                 virtual ~ListenerSupportBase() = 0;
 
@@ -35,7 +35,7 @@ namespace hazelcast {
             };
 
             template <typename Request, typename EventHandler, typename Event>
-            class ListenerSupport : public ListenerSupportBase {
+            class HAZELCAST_API ListenerSupport : public ListenerSupportBase {
             public:
                 ListenerSupport(InvocationService &invocationService, const Request &request, const EventHandler &eventHandler, const serialization::Data &key)
                 : invocationService(invocationService)
@@ -88,7 +88,7 @@ namespace hazelcast {
                 };
 
 
-                class EventResponseHandler {
+                class HAZELCAST_API EventResponseHandler {
 
                 public:
                     EventResponseHandler(ListenerSupport *listenerSupport)

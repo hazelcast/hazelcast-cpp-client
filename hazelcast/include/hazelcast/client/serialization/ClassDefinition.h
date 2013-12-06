@@ -25,7 +25,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class ClassDefinition {
+            class HAZELCAST_API ClassDefinition {
             public:
 
                 ClassDefinition();

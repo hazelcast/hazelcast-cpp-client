@@ -18,7 +18,7 @@ namespace hazelcast {
 
 
         template <typename K, typename V, typename Comparator  = std::less<K> >
-        class ConcurrentSmartMap {
+        class HAZELCAST_API ConcurrentSmartMap {
         public:
             ConcurrentSmartMap() {
 

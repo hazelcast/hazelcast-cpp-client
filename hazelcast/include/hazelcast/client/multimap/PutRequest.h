@@ -15,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class PutRequest : public KeyBasedRequest {
+            class HAZELCAST_API PutRequest : public KeyBasedRequest {
             public:
                 PutRequest(const std::string& name, const serialization::Data& key, const serialization::Data& value, int index, int threadId);
 

@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class EntryListener : public spi::EventListener {
+            class HAZELCAST_API EntryListener : public spi::EventListener {
             public:
 
                 /**

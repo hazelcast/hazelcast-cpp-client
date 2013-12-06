@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace exception {
 
 
-            class ServerException : public impl::PortableResponse, public std::exception {
+            class HAZELCAST_API ServerException : public impl::PortableResponse, public std::exception {
 
             public:
                 ServerException();

@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace queue {
-            class OfferRequest : public impl::PortableRequest {
+            class HAZELCAST_API OfferRequest : public impl::PortableRequest {
             public:
                 OfferRequest(const std::string& name, serialization::Data& data, long timeout);
 

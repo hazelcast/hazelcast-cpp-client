@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class TryRemoveRequest : public impl::PortableRequest {
+            class HAZELCAST_API TryRemoveRequest : public impl::PortableRequest {
             public:
                 TryRemoveRequest(const std::string& name, serialization::Data& key, int threadId, long timeout);
 

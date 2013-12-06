@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class CompareAndRemoveRequest : public impl::PortableRequest {
+            class HAZELCAST_API CompareAndRemoveRequest : public impl::PortableRequest {
             public:
 
                 CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain);

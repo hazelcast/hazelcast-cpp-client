@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class FlushRequest : public impl::PortableRequest {
+            class HAZELCAST_API FlushRequest : public impl::PortableRequest {
             public:
                 FlushRequest(const std::string& name);
 

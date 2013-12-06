@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class EntrySetRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API EntrySetRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 EntrySetRequest(const std::string& name);
 

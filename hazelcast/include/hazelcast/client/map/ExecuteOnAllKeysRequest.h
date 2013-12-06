@@ -18,7 +18,7 @@ namespace hazelcast {
 
         namespace map {
             template<typename EntryProcessor>
-            class ExecuteOnAllKeysRequest : public impl::PortableRequest {
+            class HAZELCAST_API ExecuteOnAllKeysRequest : public impl::PortableRequest {
             public:
                 ExecuteOnAllKeysRequest(const std::string name, EntryProcessor& entryProcessor)
                 :name(name)

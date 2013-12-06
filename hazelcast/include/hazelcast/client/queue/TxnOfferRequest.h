@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class TxnOfferRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnOfferRequest : public impl::PortableRequest {
             public:
                 TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::Data &);
 

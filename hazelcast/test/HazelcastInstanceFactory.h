@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace test {
             class HazelcastInstance;
 
-            class HazelcastInstanceFactory {
+            class HAZELCAST_API HazelcastInstanceFactory {
                 friend class HazelcastInstance;
 
                 enum {

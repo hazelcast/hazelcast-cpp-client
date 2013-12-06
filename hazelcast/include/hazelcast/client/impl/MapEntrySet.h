@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapEntrySet : public IdentifiedDataSerializable {
+            class HAZELCAST_API MapEntrySet : public IdentifiedDataSerializable {
             public:
                 MapEntrySet();
 

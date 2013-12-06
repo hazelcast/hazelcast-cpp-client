@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class TxnSetAddRequest : public TxnCollectionRequest {
+            class HAZELCAST_API TxnSetAddRequest : public TxnCollectionRequest {
             public:
                 TxnSetAddRequest(const std::string&name, serialization::Data *);
 

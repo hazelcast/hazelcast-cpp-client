@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class SmartConnectionManager : public ConnectionManager {
+            class HAZELCAST_API SmartConnectionManager : public ConnectionManager {
             public:
                 SmartConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService&, ClientConfig&);
 

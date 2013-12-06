@@ -23,7 +23,7 @@ namespace hazelcast {
         namespace connection {
             static int CONN_ID = 1;
 
-            class Connection {
+            class HAZELCAST_API Connection {
             public:
                 Connection(const Address &address, serialization::SerializationService &);
 

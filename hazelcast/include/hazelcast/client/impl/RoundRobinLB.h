@@ -20,7 +20,7 @@ namespace hazelcast {
 
         namespace impl {
 
-            class RoundRobinLB : public AbstractLoadBalancer {
+            class HAZELCAST_API RoundRobinLB : public AbstractLoadBalancer {
             public:
                 RoundRobinLB();
 

@@ -1,12 +1,14 @@
 #ifndef HAZELCAST_FIELD_TYPE
 #define HAZELCAST_FIELD_TYPE
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
             typedef unsigned char byte;
 
-            class FieldType {
+            class HAZELCAST_API FieldType {
             public:
                 FieldType() : id(0) {
 

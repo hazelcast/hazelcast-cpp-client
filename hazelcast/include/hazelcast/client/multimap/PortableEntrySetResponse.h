@@ -18,7 +18,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class PortableEntrySetResponse : public impl::PortableResponse {
+            class HAZELCAST_API PortableEntrySetResponse : public impl::PortableResponse {
             public:
                 PortableEntrySetResponse();
 

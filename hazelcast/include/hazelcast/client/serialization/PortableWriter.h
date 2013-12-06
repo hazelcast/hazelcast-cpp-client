@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class PortableWriter {
+            class HAZELCAST_API PortableWriter {
             public:
                 PortableWriter(DefaultPortableWriter *defaultPortableWriter);
 

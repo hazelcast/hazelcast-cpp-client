@@ -22,7 +22,7 @@ namespace hazelcast {
         namespace impl {
 
 
-            class GetPartitionsRequest : public IdentifiedDataSerializable, public RetryableRequest {
+            class HAZELCAST_API GetPartitionsRequest : public IdentifiedDataSerializable, public RetryableRequest {
             public:
                 GetPartitionsRequest();
 

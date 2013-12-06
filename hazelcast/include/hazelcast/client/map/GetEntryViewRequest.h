@@ -14,7 +14,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class GetEntryViewRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetEntryViewRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetEntryViewRequest(const std::string &name, const serialization::Data &key);
 

@@ -16,7 +16,7 @@ namespace hazelcast {
         }
         namespace proxy {
 
-            class DistributedObject {
+            class HAZELCAST_API DistributedObject {
             public:
                 DistributedObject(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
 

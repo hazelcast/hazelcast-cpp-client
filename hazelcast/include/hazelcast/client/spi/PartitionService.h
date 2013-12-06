@@ -26,7 +26,7 @@ namespace hazelcast {
 
             class LifecycleService;
 
-            class PartitionService {
+            class HAZELCAST_API PartitionService {
             public:
                 PartitionService(ClusterService &, serialization::SerializationService &, spi::LifecycleService &);
 

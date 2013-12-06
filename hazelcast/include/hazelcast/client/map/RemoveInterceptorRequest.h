@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class RemoveInterceptorRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemoveInterceptorRequest : public impl::PortableRequest {
             public:
                 RemoveInterceptorRequest(const std::string&, const std::string&);
 

@@ -14,7 +14,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class ContainsKeyRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsKeyRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 ContainsKeyRequest(const std::string& name, serialization::Data& key);
 

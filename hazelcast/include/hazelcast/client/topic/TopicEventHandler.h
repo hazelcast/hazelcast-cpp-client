@@ -17,7 +17,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             template<typename E, typename L>
-            class TopicEventHandler {
+            class HAZELCAST_API TopicEventHandler {
             public:
                 TopicEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener)
                 :instanceName(instanceName)

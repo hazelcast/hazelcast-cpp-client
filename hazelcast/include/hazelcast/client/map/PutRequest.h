@@ -15,7 +15,7 @@ namespace hazelcast {
         }
 
         namespace map {
-            class PutRequest : public impl::PortableRequest {
+            class HAZELCAST_API PutRequest : public impl::PortableRequest {
             public:
                 PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
 

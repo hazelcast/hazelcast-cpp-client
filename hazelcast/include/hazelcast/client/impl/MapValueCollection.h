@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class MapValueCollection : public impl::IdentifiedDataSerializableResponse {
+            class HAZELCAST_API MapValueCollection : public impl::IdentifiedDataSerializableResponse {
             public:
                 MapValueCollection();
 

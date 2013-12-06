@@ -6,10 +6,11 @@
 #ifndef HAZELCAST_RetryableRequest
 #define HAZELCAST_RetryableRequest
 
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
-        class RetryableRequest {
+        class HAZELCAST_API RetryableRequest {
         public:
             virtual ~RetryableRequest();
         };

@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class KeySetRequest : public impl::PortableRequest {
+            class HAZELCAST_API KeySetRequest : public impl::PortableRequest {
             public:
                 KeySetRequest(const std::string& name);
 

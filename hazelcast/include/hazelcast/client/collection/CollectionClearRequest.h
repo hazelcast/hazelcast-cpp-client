@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class CollectionClearRequest : public CollectionRequest {
+            class HAZELCAST_API CollectionClearRequest : public CollectionRequest {
             public:
                 CollectionClearRequest(const std::string& name);
 

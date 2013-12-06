@@ -18,7 +18,7 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class ClientDestroyRequest : public PortableRequest {
+            class HAZELCAST_API ClientDestroyRequest : public PortableRequest {
             public:
                 ClientDestroyRequest(const std::string &name, const std::string &serviceName);
 

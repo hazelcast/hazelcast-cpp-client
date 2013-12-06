@@ -10,7 +10,7 @@
 
 using namespace hazelcast::client;
 
-class FailingTask : public IdentifiedDataSerializable {
+class HAZELCAST_API FailingTask : public IdentifiedDataSerializable {
 public:
     FailingTask();
 

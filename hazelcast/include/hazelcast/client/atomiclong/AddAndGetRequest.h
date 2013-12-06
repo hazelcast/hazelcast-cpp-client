@@ -19,7 +19,7 @@ namespace hazelcast {
 
         namespace atomiclong {
 
-            class AddAndGetRequest : public AtomicLongRequest {
+            class HAZELCAST_API AddAndGetRequest : public AtomicLongRequest {
             public:
                 AddAndGetRequest(const std::string& instanceName, long delta);
 

@@ -15,7 +15,7 @@ namespace hazelcast {
 
             class Socket;
 
-            class SocketInterceptor {
+            class HAZELCAST_API SocketInterceptor {
             public:
                 virtual void onConnect(const Socket& connectedSocket) = 0;
 

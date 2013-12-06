@@ -8,16 +8,18 @@
 #define HAZELCAST_DataOutput
 
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <memory>
 #include <vector>
 #include <string>
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
             typedef unsigned char byte;
 
-            class DataOutput {
+            class HAZELCAST_API DataOutput {
             public:
 
                 DataOutput();

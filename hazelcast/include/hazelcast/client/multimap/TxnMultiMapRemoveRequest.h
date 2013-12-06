@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class TxnMultiMapRemoveRequest : public TxnMultiMapRequest {
+            class HAZELCAST_API TxnMultiMapRemoveRequest : public TxnMultiMapRequest {
             public:
                 TxnMultiMapRemoveRequest(const std::string& name, serialization::Data& key);
 

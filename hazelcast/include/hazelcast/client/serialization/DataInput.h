@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_DataInput
 #define HAZELCAST_DataInput
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <string>
 
@@ -16,7 +17,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class DataInput {
+            class HAZELCAST_API DataInput {
                 friend class ObjectDataInput;
 
             public:

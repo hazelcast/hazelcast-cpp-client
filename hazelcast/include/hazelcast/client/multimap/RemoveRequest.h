@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class RemoveRequest : public KeyBasedRequest {
+            class HAZELCAST_API RemoveRequest : public KeyBasedRequest {
             public:
                 RemoveRequest(const std::string& name, const serialization::Data& key, const serialization::Data& value, int threadId);
 

@@ -19,7 +19,7 @@ namespace hazelcast {
 
             class DataOutput;
 
-            class FieldDefinition {
+            class HAZELCAST_API FieldDefinition {
             public:
 
                 FieldDefinition();

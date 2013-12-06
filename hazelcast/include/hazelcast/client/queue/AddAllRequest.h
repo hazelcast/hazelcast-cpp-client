@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class AddAllRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddAllRequest : public impl::PortableRequest {
             public:
 
                 AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList);

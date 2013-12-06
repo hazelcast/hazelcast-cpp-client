@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            class ListRemoveRequest : public collection::CollectionRequest {
+            class HAZELCAST_API ListRemoveRequest : public collection::CollectionRequest {
             public:
                 ListRemoveRequest(const std::string& name, int index);
 

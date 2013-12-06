@@ -20,7 +20,7 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class ClientTxnMapTest : public iTest::iTestFixture<ClientTxnMapTest> {
+            class HAZELCAST_API ClientTxnMapTest : public iTest::iTestFixture<ClientTxnMapTest> {
 
             public:
 

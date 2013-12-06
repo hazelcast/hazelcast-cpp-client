@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class TxnMultiMapRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnMultiMapRequest : public impl::PortableRequest {
             public:
                 TxnMultiMapRequest(const std::string &name);
 

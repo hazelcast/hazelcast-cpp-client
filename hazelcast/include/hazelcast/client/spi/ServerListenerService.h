@@ -17,7 +17,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
 
-            class ServerListenerService {
+            class HAZELCAST_API ServerListenerService {
             public:
                 ServerListenerService(InvocationService& invocationService);
 

@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_CONCURRENT_MAP
 #define HAZELCAST_CONCURRENT_MAP
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <map>
@@ -22,7 +23,7 @@ namespace hazelcast {
         * only if it is certain that they will never be used again.
         *
         */
-        class ConcurrentMap {
+        class HAZELCAST_API ConcurrentMap {
         public:
             ConcurrentMap() {
 

@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class NoSuchElementException : public IException {
+            class HAZELCAST_API NoSuchElementException : public IException {
             public:
                 NoSuchElementException(const std::string& source, const std::string& message);
 

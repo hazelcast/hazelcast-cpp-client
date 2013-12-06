@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class InstanceNotActiveException : public IException {
+            class HAZELCAST_API InstanceNotActiveException : public IException {
             public:
                 InstanceNotActiveException(const std::string &source, const std::string &message);
 

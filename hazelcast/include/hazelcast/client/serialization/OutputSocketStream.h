@@ -10,6 +10,7 @@
 #ifndef HAZELCAST_OUTPUT_SOCKET_STREAM
 #define HAZELCAST_OUTPUT_SOCKET_STREAM
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class OutputSocketStream {
+            class HAZELCAST_API OutputSocketStream {
             public:
 
                 OutputSocketStream(hazelcast::client::connection::Socket &socket);

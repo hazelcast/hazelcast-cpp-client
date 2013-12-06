@@ -9,13 +9,15 @@
 #ifndef __hazelcast__hazelcastInstance__
 #define __hazelcast__hazelcastInstance__
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace test {
 
             class HazelcastInstanceFactory;
 
-            class HazelcastInstance {
+            class HAZELCAST_API HazelcastInstance {
             public:
                 HazelcastInstance(HazelcastInstanceFactory&);
 

@@ -17,7 +17,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class GetLockCountRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetLockCountRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetLockCountRequest(serialization::Data& key);
 

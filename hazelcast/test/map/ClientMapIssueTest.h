@@ -19,7 +19,7 @@ namespace hazelcast {
 
             using namespace iTest;
 
-            class ClientMapIssueTest : public iTest::iTestFixture<ClientMapIssueTest> {
+            class HAZELCAST_API ClientMapIssueTest : public iTest::iTestFixture<ClientMapIssueTest> {
             public:
                 ClientMapIssueTest(HazelcastInstanceFactory &hazelcastInstanceFactory);
 

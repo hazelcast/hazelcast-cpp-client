@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class Employee : public Portable {
+            class HAZELCAST_API Employee : public Portable {
             public:
                 Employee();
 

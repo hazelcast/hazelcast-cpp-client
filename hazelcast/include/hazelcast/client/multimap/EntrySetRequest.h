@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class EntrySetRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API EntrySetRequest : public AllPartitionsRequest, public RetryableRequest {
             public:
                 EntrySetRequest(const std::string& name);
 

@@ -18,7 +18,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class GetRemainingLeaseRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetRemainingLeaseRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 GetRemainingLeaseRequest(serialization::Data& key);
 

@@ -17,7 +17,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableItemEvent : public Portable {
+            class HAZELCAST_API PortableItemEvent : public Portable {
             public:
 
                 PortableItemEvent();

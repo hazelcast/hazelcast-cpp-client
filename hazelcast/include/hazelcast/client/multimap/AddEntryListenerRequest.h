@@ -17,7 +17,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class AddEntryListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue);
 

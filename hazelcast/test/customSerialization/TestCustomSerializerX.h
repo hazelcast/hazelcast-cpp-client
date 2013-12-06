@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             template<typename T>
-            class TestCustomSerializerX : public serialization::Serializer<T> {
+            class HAZELCAST_API TestCustomSerializerX : public serialization::Serializer<T> {
             public:
 
                 void write(serialization::ObjectDataOutput & out, const T& object) {

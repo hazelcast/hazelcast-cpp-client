@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class TryPutRequest : public impl::PortableRequest {
+            class HAZELCAST_API TryPutRequest : public impl::PortableRequest {
             public:
                 TryPutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long timeout);
 

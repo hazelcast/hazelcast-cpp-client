@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace atomiclong {
 
-            class CompareAndSetRequest : public AtomicLongRequest {
+            class HAZELCAST_API CompareAndSetRequest : public AtomicLongRequest {
             public:
                 CompareAndSetRequest(const std::string &instanceName, long expect, long value);
 

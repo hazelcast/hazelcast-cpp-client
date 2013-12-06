@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class Connection;
 
-            class ConnectionPool {
+            class HAZELCAST_API ConnectionPool {
             public:
                 ConnectionPool(const Address& address, hazelcast::client::serialization::SerializationService&, ConnectionManager &connectionManager);
 

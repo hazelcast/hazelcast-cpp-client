@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-class RunnableTask : public Portable {
+class HAZELCAST_API RunnableTask : public Portable {
 public:
 
     RunnableTask();

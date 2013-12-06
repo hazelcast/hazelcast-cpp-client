@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class EntryEventType {
+            class HAZELCAST_API EntryEventType {
             public:
                 enum Type {
                     ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4
@@ -51,7 +51,7 @@ namespace hazelcast {
             };
 
             template <typename K, typename V>
-            class EntryEvent : public EventObject {
+            class HAZELCAST_API EntryEvent : public EventObject {
             public:
 
                 EntryEvent(const std::string &name, const connection::Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)

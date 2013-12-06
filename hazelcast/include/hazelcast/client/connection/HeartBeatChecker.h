@@ -20,7 +20,7 @@ namespace hazelcast {
 
             class Connection;
 
-            class HeartBeatChecker {
+            class HAZELCAST_API HeartBeatChecker {
 
             public:
                 HeartBeatChecker(int timeout, serialization::SerializationService& serializationService);

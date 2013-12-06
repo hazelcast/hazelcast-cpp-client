@@ -20,7 +20,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class TxnMapRequestType {
+            class HAZELCAST_API TxnMapRequestType {
             public:
                 enum Type {
                     NONE = 0,
@@ -54,7 +54,7 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class TxnMapRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnMapRequest : public impl::PortableRequest {
             public:
                 TxnMapRequest();
 

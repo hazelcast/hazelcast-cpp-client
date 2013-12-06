@@ -7,8 +7,10 @@
 #ifndef HAZELCAST_INPUT_SOCKET_STREAM
 #define HAZELCAST_INPUT_SOCKET_STREAM
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <string>
+
 namespace hazelcast {
     namespace client {
 
@@ -24,7 +26,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class InputSocketStream {
+            class HAZELCAST_API InputSocketStream {
             public:
 
                 InputSocketStream(hazelcast::client::connection::Socket& socket);

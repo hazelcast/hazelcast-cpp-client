@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class TxnSetRemoveRequest : public TxnCollectionRequest {
+            class HAZELCAST_API TxnSetRemoveRequest : public TxnCollectionRequest {
             public:
                 TxnSetRemoveRequest(const std::string&name, serialization::Data *);
 

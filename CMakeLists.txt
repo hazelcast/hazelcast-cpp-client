@@ -19,7 +19,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_thread.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_date_time.a)
 
-    	target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+    target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

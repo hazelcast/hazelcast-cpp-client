@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename K, typename V>
-            class EntryView : public IdentifiedDataSerializable {
+            class HAZELCAST_API EntryView : public IdentifiedDataSerializable {
             public:
                 EntryView(const K& key, const V& value, const EntryView<serialization::Data, serialization::Data>& rhs)
                 : key(key)
