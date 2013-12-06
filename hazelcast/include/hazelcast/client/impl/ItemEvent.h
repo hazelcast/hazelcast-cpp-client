@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class ItemEventType {
+            class HAZELCAST_API ItemEventType {
             public:
                 enum Type {
                     ADDED = 1, REMOVED = 2
@@ -45,7 +45,7 @@ namespace hazelcast {
             };
 
             template <typename E>
-            class ItemEvent : public EventObject {
+            class HAZELCAST_API ItemEvent : public EventObject {
             public:
 
                 ItemEvent(const std::string& name, ItemEventType eventType, const E& item, const connection::Member& member)

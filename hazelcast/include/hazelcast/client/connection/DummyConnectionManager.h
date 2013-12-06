@@ -17,7 +17,7 @@ namespace hazelcast {
         class Address;
         namespace connection {
 
-            class DummyConnectionManager : public ConnectionManager {
+            class HAZELCAST_API DummyConnectionManager : public ConnectionManager {
             public:
                 DummyConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &, ClientConfig &);
 

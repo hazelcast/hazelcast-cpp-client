@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_CONCURRENT_QUEUE
 #define HAZELCAST_CONCURRENT_QUEUE
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/mutex.hpp>
 #include <queue>
@@ -15,7 +16,7 @@
 namespace hazelcast {
     namespace util {
         template <typename T>
-        class ConcurrentQueue {
+        class HAZELCAST_API ConcurrentQueue {
         public:
             ConcurrentQueue() {
 

@@ -27,7 +27,7 @@ namespace hazelcast {
 
             class MembershipEvent;
 
-            class ClusterListenerThread {
+            class HAZELCAST_API ClusterListenerThread {
             public:
                 ClusterListenerThread(ConnectionManager &, ClientConfig &clientConfig, spi::ClusterService &, spi::LifecycleService &, serialization::SerializationService &);
 

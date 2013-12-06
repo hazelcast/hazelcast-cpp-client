@@ -5,19 +5,20 @@
 #ifndef HAZELCAST_TestSimpleXML
 #define HAZELCAST_TestSimpleXML
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class TestCustomXSerializable {
+            class HAZELCAST_API TestCustomXSerializable {
             public:
                 int id;
 
                 int getSerializerId() const;
             };
 
-            class TestCustomPerson {
+            class HAZELCAST_API TestCustomPerson {
             public:
 
                 std::string getName() const;

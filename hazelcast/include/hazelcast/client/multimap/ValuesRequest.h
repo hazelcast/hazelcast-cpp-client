@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class ValuesRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API ValuesRequest : public AllPartitionsRequest, public RetryableRequest {
             public:
                 ValuesRequest(const std::string& name);
 

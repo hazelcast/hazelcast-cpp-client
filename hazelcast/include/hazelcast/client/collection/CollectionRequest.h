@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace collection {
 
-            class CollectionRequest : public impl::PortableRequest {
+            class HAZELCAST_API CollectionRequest : public impl::PortableRequest {
             public:
                 CollectionRequest(const std::string &name);
 

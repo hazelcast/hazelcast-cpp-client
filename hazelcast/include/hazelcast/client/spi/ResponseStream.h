@@ -21,7 +21,7 @@ namespace hazelcast {
         namespace spi {
 
 
-            class ResponseStream {
+            class HAZELCAST_API ResponseStream {
             public:
                 ResponseStream(serialization::SerializationService &serializationService, connection::Connection *connection);
 

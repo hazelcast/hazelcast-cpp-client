@@ -14,7 +14,7 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
-            class SerializerBase {
+            class HAZELCAST_API SerializerBase {
             public:
                 virtual ~SerializerBase() {
                 };
@@ -23,7 +23,7 @@ namespace hazelcast {
             };
 
             template <typename Serializable>
-            class Serializer : public SerializerBase {
+            class HAZELCAST_API Serializer : public SerializerBase {
             public:
                 virtual ~Serializer() {
 

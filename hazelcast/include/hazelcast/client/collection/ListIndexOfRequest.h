@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace list {
-            class ListIndexOfRequest : public collection::CollectionRequest {
+            class HAZELCAST_API ListIndexOfRequest : public collection::CollectionRequest {
             public:
 
                 ListIndexOfRequest(const std::string& name, const serialization::Data& data, bool last);

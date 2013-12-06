@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializationService {
+            class HAZELCAST_API SerializationService {
             public:
 
                 SerializationService(int version);

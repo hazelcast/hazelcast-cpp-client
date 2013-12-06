@@ -18,7 +18,7 @@ namespace hazelcast {
         }
         namespace collection {
 
-            class CollectionAddAllRequest : public CollectionRequest {
+            class HAZELCAST_API CollectionAddAllRequest : public CollectionRequest {
             public:
                 CollectionAddAllRequest(const std::string& name, const std::vector<serialization::Data>& valueList);
 

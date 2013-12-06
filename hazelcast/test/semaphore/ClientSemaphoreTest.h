@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class ClientSemaphoreTest : public iTest::iTestFixture<ClientSemaphoreTest> {
+            class HAZELCAST_API ClientSemaphoreTest : public iTest::iTestFixture<ClientSemaphoreTest> {
 
             public:
 

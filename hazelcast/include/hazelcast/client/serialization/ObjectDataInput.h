@@ -33,7 +33,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class ObjectDataInput {
+            class HAZELCAST_API ObjectDataInput {
             public:
                 ObjectDataInput(DataInput &, SerializationContext &);
 

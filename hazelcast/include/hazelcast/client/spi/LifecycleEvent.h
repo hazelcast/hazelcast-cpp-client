@@ -7,10 +7,12 @@
 #ifndef HAZELCAST_LIFECYCLE_EVENT
 #define HAZELCAST_LIFECYCLE_EVENT
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace spi {
-            class LifecycleEvent {
+            class HAZELCAST_API LifecycleEvent {
             public:
                 enum LifeCycleState {
                     STARTING,

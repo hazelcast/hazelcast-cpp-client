@@ -9,6 +9,7 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <map>
 #include <memory>
@@ -28,7 +29,7 @@ namespace hazelcast {
 
             class ClassDefinition;
 
-            class PortableSerializer {
+            class HAZELCAST_API PortableSerializer {
             public:
 
                 PortableSerializer(SerializationContext& serializationContext);

@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class RollbackTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API RollbackTxnRequest : public impl::PortableRequest {
             public:
                 int getFactoryId() const;
 

@@ -12,7 +12,7 @@
 
 using namespace hazelcast::client;
 
-class CallableTask : public IdentifiedDataSerializable {
+class HAZELCAST_API CallableTask : public IdentifiedDataSerializable {
 public:
     CallableTask();
 

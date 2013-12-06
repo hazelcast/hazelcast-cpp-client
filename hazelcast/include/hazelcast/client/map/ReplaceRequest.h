@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class ReplaceRequest : public impl::PortableRequest {
+            class HAZELCAST_API ReplaceRequest : public impl::PortableRequest {
             public:
                 ReplaceRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId);
 

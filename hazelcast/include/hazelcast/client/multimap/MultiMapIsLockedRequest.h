@@ -18,7 +18,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class MultiMapIsLockedRequest : public KeyBasedRequest, public RetryableRequest {
+            class HAZELCAST_API MultiMapIsLockedRequest : public KeyBasedRequest, public RetryableRequest {
             public:
                 MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key);
 

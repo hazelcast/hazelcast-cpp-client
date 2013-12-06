@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IOException : public IException {
+            class HAZELCAST_API IOException : public IException {
             public:
                 IOException(const std::string& source, const std::string& message);
 

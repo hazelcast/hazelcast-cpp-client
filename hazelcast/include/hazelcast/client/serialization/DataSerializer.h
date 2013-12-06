@@ -5,6 +5,7 @@
 #ifndef HAZELCAST_DATA_SERIALIZER
 #define HAZELCAST_DATA_SERIALIZER
 
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +18,7 @@ namespace hazelcast {
             class ObjectDataInput;
 
 
-            class DataSerializer {
+            class HAZELCAST_API DataSerializer {
             public:
                 DataSerializer();
 

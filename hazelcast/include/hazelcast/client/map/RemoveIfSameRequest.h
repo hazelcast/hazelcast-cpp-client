@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class RemoveIfSameRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemoveIfSameRequest : public impl::PortableRequest {
             public:
                 RemoveIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId);
 

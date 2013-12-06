@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class CollectionGetAllRequest : public CollectionRequest {
+            class HAZELCAST_API CollectionGetAllRequest : public CollectionRequest {
             public:
                 CollectionGetAllRequest(const std::string& name);
 

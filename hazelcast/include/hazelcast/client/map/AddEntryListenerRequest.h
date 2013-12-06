@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            class AddEntryListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
             public:
                 AddEntryListenerRequest(const std::string& name, bool includeValue);
 

@@ -3,8 +3,6 @@ project (HazelcastClient)
 
 include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
-include(GenerateExportHeader)
-
 message(STATUS "Preparing hazelcast client ..... ")
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
@@ -21,8 +19,10 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_thread.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_date_time.a)
 
-    	target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${ZLIB_LIBRARIES})
+	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libz.a)
+	
+    target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_sZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -50,7 +50,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 ")#-L/usr/lib32
 	set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 ")
 	
-    	target_link_libraries(HazelcastClientShared_64 pthread rt ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
+	target_link_libraries(HazelcastClientShared_64 pthread rt ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
 	target_link_libraries(HazelcastClientShared_32 pthread rt ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})	
 	target_link_libraries(HazelcastClientStatic_64 pthread rt ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
 	target_link_libraries(HazelcastClientStatic_32 pthread rt ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})	
@@ -78,12 +78,12 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(HazelcastClientStatic STATIC ${HZ_SOURCES})
 	add_library(HazelcastClientShared SHARED ${HZ_SOURCES})
 	
-	GENERATE_EXPORT_HEADER( HazelcastClientShared
-             BASE_NAME HazelcastClientShared
-             EXPORT_MACRO_NAME HazelcastClientShared_EXPORT
-             EXPORT_FILE_NAME HazelcastClientShared_Export.h
-             STATIC_DEFINE HazelcastClientShared_BUILT_AS_STATIC
-	)
+#	GENERATE_EXPORT_HEADER( HazelcastClientShared
+#             BASE_NAME HazelcastClientShared
+ #            EXPORT_MACRO_NAME HazelcastClientShared_EXPORT
+  #           EXPORT_FILE_NAME HazelcastClientShared_Export.h
+   #          STATIC_DEFINE HazelcastClientShared_BUILT_AS_STATIC
+	#)
 #	set_target_properties(HazelcastClientShared PROPERTIES SUFFIX "1.dll")
 #	set_target_properties(HazelcastClientShared PROPERTIES DEFINE_SYMBOL HzClientDLL)
 #

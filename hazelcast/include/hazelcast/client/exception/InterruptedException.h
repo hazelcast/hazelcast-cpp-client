@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class InterruptedException : public IException {
+            class HAZELCAST_API InterruptedException : public IException {
             public:
                 InterruptedException(const std::string& source, const std::string& message);
 

@@ -18,7 +18,7 @@ namespace hazelcast {
 
         namespace atomiclong {
 
-            class AtomicLongRequest : public impl::PortableRequest {
+            class HAZELCAST_API AtomicLongRequest : public impl::PortableRequest {
             public:
                 AtomicLongRequest(const std::string &instanceName, long delta);
 

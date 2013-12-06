@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class CountRequest : public KeyBasedRequest, public RetryableRequest {
+            class HAZELCAST_API CountRequest : public KeyBasedRequest, public RetryableRequest {
             public:
                 CountRequest(const std::string& name, const serialization::Data& key);
 

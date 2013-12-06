@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class Member : public IdentifiedDataSerializable {
+            class HAZELCAST_API Member : public IdentifiedDataSerializable {
 
             public:
                 Member();

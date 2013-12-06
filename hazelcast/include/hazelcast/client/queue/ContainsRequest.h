@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class ContainsRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsRequest : public impl::PortableRequest, public RetryableRequest {
             public:
 
                 ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList);

@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_TransactionalObject
 #define HAZELCAST_TransactionalObject
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +17,7 @@ namespace hazelcast {
         }
         namespace proxy {
 
-            class TransactionalObject {
+            class HAZELCAST_API TransactionalObject {
             public:
                 TransactionalObject(const std::string &serviceName, const std::string &objectName, txn::TransactionProxy *context);
 

@@ -14,7 +14,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class LockRequest : public impl::PortableRequest {
+            class HAZELCAST_API LockRequest : public impl::PortableRequest {
             public:
                 LockRequest(serialization::Data& key, int threadId);
 

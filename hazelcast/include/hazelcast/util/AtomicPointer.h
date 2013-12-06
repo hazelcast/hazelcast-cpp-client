@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace util {
 
         template <typename T>
-        class AtomicPointer {
+        class HAZELCAST_API AtomicPointer {
         public:
             AtomicPointer()
             : pointer(new boost::shared_ptr<T>())

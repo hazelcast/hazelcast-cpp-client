@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class PortableReader {
+            class HAZELCAST_API PortableReader {
             public:
                 PortableReader(DefaultPortableReader *defaultPortableReader);
 

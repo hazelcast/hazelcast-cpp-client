@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class DataOutput;
 
-            class ObjectDataOutput {
+            class HAZELCAST_API ObjectDataOutput {
             public:
                 ObjectDataOutput(DataOutput& dataOutput, SerializationContext& serializationContext);
 

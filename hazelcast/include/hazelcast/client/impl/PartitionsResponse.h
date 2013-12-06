@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PartitionsResponse : public IdentifiedDataSerializable {
+            class HAZELCAST_API PartitionsResponse : public IdentifiedDataSerializable {
             public:
                 PartitionsResponse();
 

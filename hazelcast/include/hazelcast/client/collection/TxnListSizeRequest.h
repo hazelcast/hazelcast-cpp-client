@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class TxnListSizeRequest : public TxnCollectionRequest {
+            class HAZELCAST_API TxnListSizeRequest : public TxnCollectionRequest {
             public:
                 TxnListSizeRequest(const std::string& name);
 

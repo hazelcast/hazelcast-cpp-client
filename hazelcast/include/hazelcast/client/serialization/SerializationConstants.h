@@ -9,11 +9,13 @@
 #ifndef HAZELCAST_SERIALIZATION_CONSTANTS
 #define HAZELCAST_SERIALIZATION_CONSTANTS
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializationConstants {
+            class HAZELCAST_API SerializationConstants {
             public:
                 static int ID;
                 static int const CONSTANT_TYPE_PORTABLE = -1;

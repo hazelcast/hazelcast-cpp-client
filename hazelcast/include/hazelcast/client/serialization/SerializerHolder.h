@@ -20,7 +20,7 @@ namespace hazelcast {
 
             class SerializerBase;
 
-            class SerializerHolder {
+            class HAZELCAST_API SerializerHolder {
 
             public:
                 SerializerHolder(SerializationContext& context);

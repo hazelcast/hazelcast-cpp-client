@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class EvictRequest : public impl::PortableRequest {
+            class HAZELCAST_API EvictRequest : public impl::PortableRequest {
             public:
                 EvictRequest(const std::string& name, serialization::Data& key, int threadId);
 

@@ -21,7 +21,7 @@ int GET_PERCENTAGE = 0;
 int PUT_PERCENTAGE = 100;
 
 
-class Stats {
+class HAZELCAST_API Stats {
 public:
     Stats() {
     };
@@ -66,7 +66,7 @@ void printStats() {
     }
 };
 
-class SimpleMapTest {
+class HAZELCAST_API SimpleMapTest {
 public:
     std::string server_address;
     int server_port;

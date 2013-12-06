@@ -12,7 +12,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
 
-            class InvocationService {
+            class HAZELCAST_API InvocationService {
             public:
                 InvocationService(ClusterService &clusterService, PartitionService &partitionService);
 

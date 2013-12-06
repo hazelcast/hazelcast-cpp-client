@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class TestInnerPortable : public Portable {
+            class HAZELCAST_API TestInnerPortable : public Portable {
             public:
                 TestInnerPortable();
 

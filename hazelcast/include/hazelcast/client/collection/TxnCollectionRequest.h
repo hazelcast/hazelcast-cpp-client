@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace collection {
-            class TxnCollectionRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnCollectionRequest : public impl::PortableRequest {
             public:
                 TxnCollectionRequest(const std::string &name);
 

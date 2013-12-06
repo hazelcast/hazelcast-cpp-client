@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class CommitTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API CommitTxnRequest : public impl::PortableRequest {
             public:
 
                 int getFactoryId() const;

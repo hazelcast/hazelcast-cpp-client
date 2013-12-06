@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class TxnSizeRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnSizeRequest : public impl::PortableRequest {
             public:
                 TxnSizeRequest(const std::string &name);
 

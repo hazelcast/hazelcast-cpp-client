@@ -26,7 +26,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class MorphingPortableReader {
+            class HAZELCAST_API MorphingPortableReader {
             public:
 
                 MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, ClassDefinition *cd);

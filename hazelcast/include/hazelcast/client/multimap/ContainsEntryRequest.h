@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class ContainsEntryRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest, public RetryableRequest {
             public:
                 ContainsEntryRequest(const serialization::Data& key, const std::string& name, const serialization::Data& value);
 

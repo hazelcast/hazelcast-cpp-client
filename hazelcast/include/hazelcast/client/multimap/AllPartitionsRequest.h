@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class AllPartitionsRequest : public impl::PortableRequest {
+            class HAZELCAST_API AllPartitionsRequest : public impl::PortableRequest {
             public:
                 AllPartitionsRequest(const std::string &name);
 

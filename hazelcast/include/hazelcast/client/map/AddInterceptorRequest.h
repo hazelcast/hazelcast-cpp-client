@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename Interceptor>
-            class AddInterceptorRequest : impl::PortableRequest{
+            class HAZELCAST_API AddInterceptorRequest : impl::PortableRequest{
             public:
                 AddInterceptorRequest(const std::string name, Interceptor& interceptor)
                 :name(name)

@@ -4,6 +4,8 @@
 #ifndef HAZELCAST_CLIENT_CONTEXT
 #define HAZELCAST_CLIENT_CONTEXT
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
 
@@ -29,7 +31,7 @@ namespace hazelcast {
 
             class LifecycleService;
 
-            class ClientContext {
+            class HAZELCAST_API ClientContext {
             public:
 
                 ClientContext(HazelcastClient &hazelcastClient);

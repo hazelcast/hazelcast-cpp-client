@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace util {
         template <typename T>
-        class AutoPtr {
+        class HAZELCAST_API AutoPtr {
         public:
             AutoPtr():ptr(NULL) {
 

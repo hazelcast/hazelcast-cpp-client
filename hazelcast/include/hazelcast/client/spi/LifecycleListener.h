@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace spi {
             class LifecycleEvent;
 
-            class LifecycleListener : public EventListener {
+            class HAZELCAST_API LifecycleListener : public EventListener {
             public:
                 virtual void stateChanged(const LifecycleEvent& lifecycleEvent) = 0;
 

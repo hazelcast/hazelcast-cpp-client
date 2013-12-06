@@ -26,7 +26,7 @@ namespace hazelcast {
 
             class SerializationContext;
 
-            class ClassDefinitionWriter {
+            class HAZELCAST_API ClassDefinitionWriter {
             public:
 
                 ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext& serializationContext);

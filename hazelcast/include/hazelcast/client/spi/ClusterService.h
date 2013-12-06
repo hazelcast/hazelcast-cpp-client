@@ -26,7 +26,7 @@ namespace hazelcast {
 
         namespace spi {
 
-            class ClusterService {
+            class HAZELCAST_API ClusterService {
             public:
                 ClusterService(spi::PartitionService &, spi::LifecycleService &, connection::ConnectionManager &, serialization::SerializationService &, ClientConfig &);
 

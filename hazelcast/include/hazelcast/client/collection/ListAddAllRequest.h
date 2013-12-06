@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            class ListAddAllRequest : public collection::CollectionAddAllRequest {
+            class HAZELCAST_API ListAddAllRequest : public collection::CollectionAddAllRequest {
             public:
                 ListAddAllRequest(const std::string& name, const std::vector<serialization::Data>& valueList, int index);
 

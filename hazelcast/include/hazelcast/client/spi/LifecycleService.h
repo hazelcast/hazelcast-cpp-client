@@ -19,7 +19,7 @@ namespace hazelcast {
 
         class ClientConfig;
         namespace spi {
-            class LifecycleService {
+            class HAZELCAST_API LifecycleService {
             public:
                 LifecycleService(HazelcastClient& hazelcastClient, ClientConfig& config);
 

@@ -35,7 +35,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class Socket {
+            class HAZELCAST_API Socket {
             public:
 
                 Socket(const Address &address);

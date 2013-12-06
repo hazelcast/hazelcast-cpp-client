@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableCollection : public Portable {
+            class HAZELCAST_API PortableCollection : public Portable {
             public:
                 PortableCollection();
 

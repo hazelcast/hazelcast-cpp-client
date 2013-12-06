@@ -5,6 +5,7 @@
 #ifndef HAZELCAST_EVENT_OBJECT
 #define HAZELCAST_EVENT_OBJECT
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 /**
  * <p>
@@ -14,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class EventObject {
+            class HAZELCAST_API EventObject {
             public:
 
                 EventObject() {

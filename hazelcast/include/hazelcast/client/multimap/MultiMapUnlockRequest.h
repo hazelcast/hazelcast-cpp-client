@@ -15,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class MultiMapUnlockRequest : public KeyBasedRequest {
+            class HAZELCAST_API MultiMapUnlockRequest : public KeyBasedRequest {
             public:
                 MultiMapUnlockRequest(const std::string& name, const serialization::Data& key, int threadId);
 

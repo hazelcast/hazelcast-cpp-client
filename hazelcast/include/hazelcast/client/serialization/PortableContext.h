@@ -25,7 +25,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class PortableContext {
+            class HAZELCAST_API PortableContext {
             public:
 
                 PortableContext();

@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastInstanceFactory;
 
-            class IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
+            class HAZELCAST_API IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
 
             public:
 

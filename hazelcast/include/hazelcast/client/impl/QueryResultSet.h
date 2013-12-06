@@ -17,7 +17,7 @@ namespace hazelcast {
             class QueryResultEntry;
         }
         namespace impl {
-            class QueryResultSet : public IdentifiedDataSerializable {
+            class HAZELCAST_API QueryResultSet : public IdentifiedDataSerializable {
             public:
                 QueryResultSet();
 

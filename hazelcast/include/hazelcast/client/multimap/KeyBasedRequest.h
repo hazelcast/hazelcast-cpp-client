@@ -17,7 +17,7 @@ namespace hazelcast {
         }
         namespace multimap {
 
-            class KeyBasedRequest : public impl::PortableRequest {
+            class HAZELCAST_API KeyBasedRequest : public impl::PortableRequest {
             public:
                 KeyBasedRequest(const std::string &name, const serialization::Data &key);
 

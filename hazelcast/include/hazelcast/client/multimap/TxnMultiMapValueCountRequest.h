@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class TxnMultiMapValueCountRequest : public TxnMultiMapRequest {
+            class HAZELCAST_API TxnMultiMapValueCountRequest : public TxnMultiMapRequest {
             public:
                 TxnMultiMapValueCountRequest(const std::string& name, const serialization::Data& data);
 

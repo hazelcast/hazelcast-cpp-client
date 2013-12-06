@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
             template <typename Result, typename MultiExecutionCallback>
-            class MultiExecutionCallbackWrapper {
+            class HAZELCAST_API MultiExecutionCallbackWrapper {
             public:
                 MultiExecutionCallbackWrapper(int membersSize, MultiExecutionCallback& callback)
                 :memberCount(membersSize)

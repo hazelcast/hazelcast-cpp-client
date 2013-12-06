@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class IdentifiedDataSerializableRequest : public IdentifiedDataSerializable {
+            class HAZELCAST_API IdentifiedDataSerializableRequest : public IdentifiedDataSerializable {
             public:
 
                 ~IdentifiedDataSerializableRequest();

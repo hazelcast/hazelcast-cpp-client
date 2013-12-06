@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            class MembershipEvent : public IdentifiedDataSerializable {
+            class HAZELCAST_API MembershipEvent : public IdentifiedDataSerializable {
             public:
                 enum {
                     MEMBER_ADDED = 1,

@@ -7,11 +7,13 @@
 #ifndef HAZELCAST_EVENT_LISTENER
 #define HAZELCAST_EVENT_LISTENER
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace spi {
 
-            class EventListener {
+            class HAZELCAST_API EventListener {
             public:
                 virtual ~EventListener() = 0;
             };

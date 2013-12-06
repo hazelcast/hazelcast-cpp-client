@@ -18,7 +18,7 @@ namespace hazelcast {
         namespace impl {
 
             template<typename K, typename V, typename L>
-            class EntryEventHandler {
+            class HAZELCAST_API EntryEventHandler {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener, bool includeValue)
                 :instanceName(instanceName)

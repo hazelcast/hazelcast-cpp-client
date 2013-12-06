@@ -12,12 +12,11 @@
 
 namespace iTest {
 
-    struct iTestException {
+    struct HAZELCAST_API iTestException {
         std::string message;
     };
 
-    template<typename T>
-    HAZELCAST_API class iTestFixture {
+    template<typename T> class HAZELCAST_API iTestFixture {
 
         typedef void (T::*TestFunction)();
 

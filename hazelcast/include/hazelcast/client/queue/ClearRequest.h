@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class ClearRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API ClearRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 ClearRequest(const std::string& name);
 

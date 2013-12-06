@@ -13,7 +13,7 @@ namespace hazelcast {
 
             class MapEntrySet;
 
-            class PutAllRequest : public impl::PortableRequest {
+            class HAZELCAST_API PutAllRequest : public impl::PortableRequest {
             public:
                 PutAllRequest(const std::string& name, map::MapEntrySet& entrySet);
 

@@ -7,11 +7,12 @@
 #ifndef HAZELCAST_Conversion
 #define HAZELCAST_Conversion
 
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
         template <class T, class U>
-        class Conversion {
+        class HAZELCAST_API Conversion {
             typedef char Small;
 
             class Big {

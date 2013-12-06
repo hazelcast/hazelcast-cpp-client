@@ -13,7 +13,7 @@ namespace hazelcast {
             class Data;
         }
         namespace queue {
-            class RemoveRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemoveRequest : public impl::PortableRequest {
             public:
 
                 RemoveRequest(const std::string& name, serialization::Data& data);

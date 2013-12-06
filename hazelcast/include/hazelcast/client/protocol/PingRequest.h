@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class PingRequest : public impl::IdentifiedDataSerializableRequest {
+            class HAZELCAST_API PingRequest : public impl::IdentifiedDataSerializableRequest {
             public:
                 int getFactoryId() const;
 

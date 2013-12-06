@@ -30,7 +30,7 @@ namespace hazelcast {
 
             typedef unsigned char byte;
 
-            class DefaultPortableReader {
+            class HAZELCAST_API DefaultPortableReader {
             public:
 
                 DefaultPortableReader(SerializationContext& serializationContext, DataInput& input, ClassDefinition *cd);

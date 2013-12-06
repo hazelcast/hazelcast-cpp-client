@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class KeySetRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API KeySetRequest : public AllPartitionsRequest, public RetryableRequest {
             public:
                 KeySetRequest(const std::string& name);
 
