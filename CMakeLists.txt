@@ -47,8 +47,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
 	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
 	
-	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 ")#-L/usr/lib32
-	set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 ")
+	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	
 	target_link_libraries(HazelcastClientShared_64 pthread rt ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
 	target_link_libraries(HazelcastClientShared_32 pthread rt ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})	
@@ -78,15 +78,6 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(HazelcastClientStatic STATIC ${HZ_SOURCES})
 	add_library(HazelcastClientShared SHARED ${HZ_SOURCES})
 	
-#	GENERATE_EXPORT_HEADER( HazelcastClientShared
-#             BASE_NAME HazelcastClientShared
- #            EXPORT_MACRO_NAME HazelcastClientShared_EXPORT
-  #           EXPORT_FILE_NAME HazelcastClientShared_Export.h
-   #          STATIC_DEFINE HazelcastClientShared_BUILT_AS_STATIC
-	#)
-#	set_target_properties(HazelcastClientShared PROPERTIES SUFFIX "1.dll")
-#	set_target_properties(HazelcastClientShared PROPERTIES DEFINE_SYMBOL HzClientDLL)
-#
 	set_target_properties(HazelcastClientShared PROPERTIES COMPILE_FLAGS " /EHsc " )    	
 	set_target_properties(HazelcastClientStatic PROPERTIES COMPILE_FLAGS " /EHsc " )
 

@@ -22,7 +22,7 @@ namespace hazelcast {
                 } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
-                    system("killall -9 java");
+                    //system("killall -9 java");
                 }
             }
 
@@ -31,13 +31,13 @@ namespace hazelcast {
                 outputSocketStream.writeInt(END);
                 try {
                     inputSocketStream.readInt();
-                    system("killall -9 java");
+                    //system("killall -9 java");
                 } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
-                    system("killall -9 java");
+                    //system("killall -9 java");
                 }
-                system("killall -9 java");
+                //system("killall -9 java");
             }
 
             void HazelcastInstanceFactory::shutdownInstance(int id) {
@@ -47,7 +47,7 @@ namespace hazelcast {
                 if (i != OK) {
                     std::cout << "void HazelcastInstanceFactory::shutdownInstance(int id):" << i << std::endl;
                     std::cout.flush();
-                    system("killall -9 java");
+                    //system("killall -9 java");
                 }
             };
 
@@ -62,7 +62,7 @@ namespace hazelcast {
                 } catch(std::exception &e) {
                     std::cout << e.what() << std::endl;
                     std::cout.flush();
-                    system("killall -9 java");
+                    //system("killall -9 java");
                 }
 
             };
