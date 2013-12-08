@@ -329,7 +329,8 @@ namespace hazelcast {
             };
 
             std::vector<K> keySet(const std::string &sql) {
-                map::QueryRequest request(getName(), "KEY", sql);
+				std::string iterationType = "KEY";
+                map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
                 std::vector<K> keySet(dataResult.size());
@@ -341,7 +342,8 @@ namespace hazelcast {
             };
 
             std::vector<V> values(const std::string &sql) {
-                map::QueryRequest request(getName(), "VALUE", sql);
+				std::string iterationType = "VALUE";
+                map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
                 std::vector<V> keySet(dataResult.size());
@@ -353,7 +355,8 @@ namespace hazelcast {
             };
 
             std::vector<std::pair<K, V> > entrySet(const std::string &sql) {
-                map::QueryRequest request(getName(), "ENTRY", sql);
+				std::string iterationType = "ENTRY";
+                map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
                 std::vector<std::pair<K, V> > keySet(dataResult.size());

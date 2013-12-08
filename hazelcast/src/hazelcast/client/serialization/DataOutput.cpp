@@ -67,7 +67,7 @@ namespace hazelcast {
                 writeByte(v);
             };
 
-            void DataOutput::writeLong(long l) {
+            void DataOutput::writeLong(long long l) {
                 writeByte((l >> 56));
                 writeByte((l >> 48));
                 writeByte((l >> 40));
@@ -90,7 +90,7 @@ namespace hazelcast {
             void DataOutput::writeDouble(double v) {
                 union {
                     double d;
-                    long l;
+                    long long l;
                 } u;
                 u.d = v;
                 writeLong(u.l);

@@ -11,9 +11,8 @@ namespace hazelcast {
         namespace exception {
 
             IException::IException(const std::string& source, const std::string& message)
-            : std::exception()
-            , message(message)
-            , source(source) {
+            : std::exception(){
+				report = "Source { " + source + "} , Error {" + message + "}";
             }
 
             IException::~IException() throw() {
@@ -21,7 +20,6 @@ namespace hazelcast {
             }
 
             char const *IException::what() const throw() {
-                std::string report = "Source { " + source + "} , Error {" + message + "}";
                 return report.c_str();
             }
 
