@@ -13,6 +13,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+			#define HOST "localhost"
+
             class HazelcastInstance;
 
             class HAZELCAST_API HazelcastInstanceFactory {

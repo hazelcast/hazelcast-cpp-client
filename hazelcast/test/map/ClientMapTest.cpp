@@ -22,7 +22,7 @@ namespace hazelcast {
             ClientMapTest::ClientMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory),
             instance(hazelcastInstanceFactory),
-            client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))),
+            client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))),
             imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
             };
 

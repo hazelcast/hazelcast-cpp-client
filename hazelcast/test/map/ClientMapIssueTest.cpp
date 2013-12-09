@@ -55,7 +55,7 @@ namespace hazelcast {
                 HazelcastInstance instance2(hazelcastInstanceFactory);
                 ClientConfig clientConfig;
                 clientConfig.setConnectionAttemptLimit(INT_MAX);
-                clientConfig.addAddress(Address("localhost", 5701));
+                clientConfig.addAddress(Address(HOST, 5701));
                 HazelcastClient client(clientConfig);
                 IMap<std::string, std::string> m = client.getMap<std::string, std::string>("m");
 
