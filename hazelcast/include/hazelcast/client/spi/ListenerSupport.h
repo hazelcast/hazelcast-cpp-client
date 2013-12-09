@@ -59,7 +59,7 @@ namespace hazelcast {
                 };
 
                 void listen() {
-                    boost::thread listenerThread(boost::bind(&ListenerSupport<Request, EventHandler, Event>::listenImpl, this));
+                    listenerThread.reset(new boost::thread(boost::bind(&ListenerSupport<Request, EventHandler, Event>::listenImpl, this)));
                     if (!latch.await(1000)) {
                         throw exception::IException("ListenerSupport::listen", "Could not register listener!!!");
                     }
@@ -69,6 +69,7 @@ namespace hazelcast {
                 void stop() {
                     active = false;
                     lastStream->end();
+                    listenerThread->join();
                 };
 
 
@@ -98,6 +99,7 @@ namespace hazelcast {
 
                     void handle(ResponseStream &stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
+
                         listenerSupport->lastStream = &stream;
                         listenerSupport->latch.countDown();
                         while (listenerSupport->active) {
@@ -129,6 +131,7 @@ namespace hazelcast {
                 EventHandler eventHandler;
                 boost::atomic<bool> active;
                 util::CountDownLatch latch;
+                std::auto_ptr<boost::thread> listenerThread;
 
             };
         }

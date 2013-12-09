@@ -11,22 +11,22 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataInput::DataInput(const std::vector<byte>& rhsBuffer)
+            DataInput::DataInput(const std::vector<byte> &rhsBuffer)
             :buffer(rhsBuffer)
             , pos(0) {
             };
 
-            DataInput::DataInput(DataInput const & param)
+            DataInput::DataInput(DataInput const &param)
             :buffer(param.buffer) {
                 //private
             };
 
-            DataInput& DataInput::operator = (const DataInput&) {
+            DataInput &DataInput::operator = (const DataInput &) {
                 //private
                 return *this;
             };
 
-            void DataInput::readFully(std::vector<byte>& bytes) {
+            void DataInput::readFully(std::vector<byte> &bytes) {
                 bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
                 pos += bytes.size();
             };
@@ -77,10 +77,10 @@ namespace hazelcast {
                 byte f = readByte();
                 byte g = readByte();
                 byte h = readByte();
-                return (0xff00000000000000 & (long long(a) << 56)) |
-                        (0x00ff000000000000 & (long long(b) << 48)) |
-                        (0x0000ff0000000000 & (long long(c) << 40)) |
-                        (0x000000ff00000000 & (long long(d) << 32)) |
+                return (0xff00000000000000 & ((long long) (a) << 56)) |
+                        (0x00ff000000000000 & ((long long) (b) << 48)) |
+                        (0x0000ff0000000000 & ((long long) (c) << 40)) |
+                        (0x000000ff00000000 & ((long long) (d) << 32)) |
                         (0x00000000ff000000 & (e << 24)) |
                         (0x0000000000ff0000 & (f << 16)) |
                         (0x000000000000ff00 & (g << 8)) |
