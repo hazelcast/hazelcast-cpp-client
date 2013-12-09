@@ -37,7 +37,7 @@ namespace hazelcast {
 
                 int readInt();
 
-                long readLong();
+                long long readLong();
 
                 float readFloat();
 

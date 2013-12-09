@@ -1,5 +1,6 @@
 #include "hazelcast/client/connection/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -37,10 +38,17 @@ namespace hazelcast {
                 close();
             };
 
-            void Socket::connect() {
-                if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1)
-                    throw exception::IOException("Socket::connect", strerror(errno));
-            }
+            void Socket::connect() {				
+                if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1){
+					#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    int error =   WSAGetLastError();
+					#else
+					int error = errno;
+					#endif
+                    throw exception::IOException("Socket::connect", strerror(error));
+    
+				}
+	        }
 
             void Socket::send(const void *buffer, int len) const {
                 if (::send(socketId, (char *) buffer, len, 0) == -1)
@@ -48,11 +56,7 @@ namespace hazelcast {
             };
 
             void Socket::receive(void *buffer, int len) const {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-					int size = ::recv(socketId, (char*)buffer, len, 0 );
-				#else
-                int size = ::recv(socketId, buffer, len, MSG_WAITALL);
-#endif
+				int size = ::recv(socketId, (char*)buffer, len, MSG_WAITALL );
 
                 if (size == -1)
                     throw exception::IOException("Socket::receive", "Error socket read");
