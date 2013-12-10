@@ -61,7 +61,7 @@ namespace hazelcast {
                 void listen() {
                     listenerThread.reset(new boost::thread(boost::bind(&ListenerSupport<Request, EventHandler, Event>::listenImpl, this)));
                     if (!latch.await(1000)) {
-                        throw exception::IException("ListenerSupport::listen", "Could not register listener!!!");
+						throw exception::IException("ListenerSupport::listen", "Could not register listener!!!");
                     }
                 };
 
@@ -86,7 +86,7 @@ namespace hazelcast {
                         } catch(...) {
                         }
                     }
-                };
+				};
 
 
                 class HAZELCAST_API EventResponseHandler {
@@ -99,19 +99,18 @@ namespace hazelcast {
 
                     void handle(ResponseStream &stream) {
                         stream.read<std::string>(); // initial ok response  // registrationId
-
-                        listenerSupport->lastStream = &stream;
+						listenerSupport->lastStream = &stream;
                         listenerSupport->latch.countDown();
                         while (listenerSupport->active) {
                             try {
                                 boost::shared_ptr<Event> event = stream.read<Event>();
-                                if (!listenerSupport->active)
+								if (!listenerSupport->active)
                                     break;
                                 listenerSupport->eventHandler.handle(*event);
                             } catch(exception::IOException &e) {
-                                throw e;
-                            } catch (exception::IException &) {
-                                try {
+								throw e;
+                            } catch (exception::IException & ) {
+								try {
                                     stream.end();
                                 } catch (exception::IOException &) {
                                 }
@@ -120,7 +119,7 @@ namespace hazelcast {
                         }
                     };
                 private :
-                    std::auto_ptr<ListenerSupport> listenerSupport;
+                    ListenerSupport* listenerSupport;
                 };
 
                 InvocationService &invocationService;

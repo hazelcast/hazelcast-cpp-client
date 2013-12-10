@@ -9,7 +9,8 @@
 *.ilk
 *.pdb
 *~
-
+build*/*
+java/Debug*
 # Compiled Dynamic libraries
 *.so
 *.dylib

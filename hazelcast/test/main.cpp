@@ -33,12 +33,12 @@ int main(int argc, char **argv) {
 
     HazelcastInstanceFactory factory;
 
-    ClientSerializationTest serializationTest;
-    serializationTest.executeTests();
+    //ClientSerializationTest serializationTest;
+    //serializationTest.executeTests();
 
     ClientMapTest mapTest(factory);
     mapTest.executeTests();
-
+	
     ClientMapIssueTest mapIssueTest(factory);
     mapIssueTest.executeTests();
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 
     ClientTxnTest clientTxnTest(factory);
     clientTxnTest.executeTests();
-
+	
 //    testSpeed();
 
 

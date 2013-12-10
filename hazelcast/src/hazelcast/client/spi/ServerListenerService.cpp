@@ -27,11 +27,10 @@ namespace hazelcast {
                 boost::lock_guard<boost::mutex> lockGuard(lock);
                 if (allListeners.count(registrationId) > 0) {
                     ListenerSupportBase *listenerSupportBase = allListeners[registrationId];
-                    //deletion of the listener object is responsibility of EventResponseHandler and
-                    // object will be deleted at next cycle(after seeing active is false)
                     listenerSupportBase->stop();
                     allListeners.erase(registrationId);
-                    return true;
+                    delete listenerSupportBase;
+					return true;
                 }
                 return false;
             };
