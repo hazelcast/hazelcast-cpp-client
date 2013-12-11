@@ -77,7 +77,7 @@ namespace hazelcast {
 
                 template<typename  T>
                 T readObject() {
-                    T *tag;
+                    T *tag = NULL;
                     return readObjectResolved<T>(tag);
                 };
 

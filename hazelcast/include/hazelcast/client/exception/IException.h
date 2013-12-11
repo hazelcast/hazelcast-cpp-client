@@ -26,8 +26,7 @@ namespace hazelcast {
                 virtual char const *what() const throw();
 
             private:
-                std::string message;
-                std::string source;
+                std::string report;
             };
         }
     }

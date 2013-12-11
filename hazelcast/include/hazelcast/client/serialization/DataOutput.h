@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 void writeInt(int i);
 
-                void writeLong(long l);
+                void writeLong(long long l);
 
                 void writeFloat(float v);
 

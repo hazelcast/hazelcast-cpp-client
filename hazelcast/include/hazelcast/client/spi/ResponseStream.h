@@ -33,7 +33,8 @@ namespace hazelcast {
 
                 void end() {
                     boost::lock_guard<boost::mutex> log(endMutex);
-                    if (!isEnded) {
+                    bool expected = true;
+                    if (!isEnded.compare_exchange_strong(expected, false)) {
                         delete connection;
                         isEnded = true;
                     }
@@ -42,7 +43,7 @@ namespace hazelcast {
             private:
                 serialization::SerializationService &serializationService;
                 connection::Connection *connection;
-                volatile bool isEnded;
+                boost::atomic<bool> isEnded;
                 boost::mutex endMutex;
             };
         }

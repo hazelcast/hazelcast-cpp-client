@@ -10,12 +10,13 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+			
             HazelcastInstanceFactory::HazelcastInstanceFactory()
-            : address("localhost", 6543)
+            : address(HOST, 6543)
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-                system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
+                //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
                 boost::this_thread::sleep(boost::posix_time::seconds(3));
                 try {
                     socket.connect();

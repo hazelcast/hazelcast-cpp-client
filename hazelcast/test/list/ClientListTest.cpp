@@ -16,7 +16,7 @@ namespace hazelcast {
             ClientListTest::ClientListTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
+            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , list(new IList<std::string>(client->getList< std::string >("ClientListTest"))) {
             };
 

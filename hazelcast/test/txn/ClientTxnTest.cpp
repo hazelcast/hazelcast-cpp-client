@@ -20,7 +20,7 @@ namespace hazelcast {
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , second(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701)))) {
+            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };
 
 

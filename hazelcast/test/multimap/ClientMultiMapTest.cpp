@@ -16,7 +16,7 @@ namespace hazelcast {
             ClientMultiMapTest::ClientMultiMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
+            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , mm(new MultiMap<std::string, std::string>(client->getMultiMap< std::string, std::string >("ClientMultiMapTest"))) {
             };
 

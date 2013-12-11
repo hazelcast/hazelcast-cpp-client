@@ -56,7 +56,7 @@ namespace hazelcast {
 
             Connection *ConnectionManager::getRandomConnection() {
                 checkLive();
-                const Address &address = clientConfig.getLoadBalancer()->next().getAddress();
+                Address address = clientConfig.getLoadBalancer()->next().getAddress();
                 return getConnection(address);
             }
 

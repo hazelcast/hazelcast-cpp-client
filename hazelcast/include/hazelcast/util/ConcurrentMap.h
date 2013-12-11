@@ -30,6 +30,13 @@ namespace hazelcast {
             };
 
             ~ConcurrentMap() {
+				/*boost::lock_guard<boost::mutex> lg(mapLock);
+                std::vector<V *> valueArray(internalMap.size());
+                typename std::map<K, V *, Comparator>::iterator it;
+                for (it = internalMap.begin(); it != internalMap.end(); it++) {
+                    delete = it->second;
+                }
+                return valueArray;*/
             };
 
             bool containsKey(const K& key) const {
