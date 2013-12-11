@@ -112,8 +112,8 @@ namespace hazelcast {
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(data1);
                 connection.setEndpoint(*address);
                 serialization::Data data2 = connection.read();
-
-                this->principal = serializationService.toObject<protocol::Principal>(data2);
+				if (firstConnection) //principal is accessed from only clusterListenerThread  and clusterService before starting clusterListenerThread
+					this->principal = serializationService.toObject<protocol::Principal>(data2);
             };
 
 

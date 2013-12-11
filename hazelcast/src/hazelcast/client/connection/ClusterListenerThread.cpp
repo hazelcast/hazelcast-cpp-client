@@ -39,7 +39,7 @@ namespace hazelcast {
                             try {
                                 conn.reset(pickConnection());
                             } catch (std::exception &e) {
-                                std::cerr << "Error while connecting to cluster! " << *conn << e.what() << std::endl;
+                                std::cerr << "Error while connecting to cluster! " << e.what() << std::endl;
                                 return;
                             }
                         }

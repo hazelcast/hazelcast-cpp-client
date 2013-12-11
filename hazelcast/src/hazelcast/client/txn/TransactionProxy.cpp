@@ -8,6 +8,8 @@
 #include "hazelcast/client/txn/CommitTxnRequest.h"
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/exception/ServerException.h"
+#include "hazelcast/client/exception/IOException.h"
 
 
 namespace hazelcast {
@@ -70,8 +72,12 @@ namespace hazelcast {
                     CommitTxnRequest request;
                     sendAndReceive<bool>(request);
                     state = TxnState::COMMITTED;
-                } catch (std::exception &e) {
-                    state = TxnState::ROLLING_BACK;
+				} catch (exception::IOException &e) {
+					state = TxnState::ROLLING_BACK;
+                    closeConnection();
+                    throw e;
+                } catch (exception::ServerException &e) {
+					state = TxnState::ROLLING_BACK;
                     closeConnection();
                     throw e;
                 }

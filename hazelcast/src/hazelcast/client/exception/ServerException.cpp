@@ -18,8 +18,7 @@ namespace hazelcast {
             }
 
             char const *ServerException::what() const throw() {
-                std::string error = message + ":" + details;
-                return error.c_str();
+                return message.c_str();
             }
 
             int ServerException::getFactoryId() const {
@@ -32,7 +31,7 @@ namespace hazelcast {
 
             void ServerException::readPortable(serialization::PortableReader &reader) {
                 message = reader.readUTF("m");
-                details = reader.readUTF("d");
+                message += " : " + reader.readUTF("d");
                 type = reader.readInt("t");
             };
 

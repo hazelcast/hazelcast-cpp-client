@@ -42,10 +42,9 @@ namespace hazelcast {
 
             private:
                 HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
-                HazelcastInstance second;
+                HazelcastInstance server;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+				std::auto_ptr<HazelcastClient> client;
             };
 
         }

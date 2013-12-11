@@ -38,7 +38,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
                 addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
                 addTest(&ClientMapTest::testPutTtl, "testPutTtl");
-                addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
+				addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
                 addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
                 addTest(&ClientMapTest::testSet, "testSet");
                 addTest(&ClientMapTest::testLock, "testLock");
@@ -508,8 +508,9 @@ namespace hazelcast {
                 long id = tradeMap.addEntryListener(listener, key, true);
                 Employee key2("a", 2);
                 tradeMap.put(key2, 1);
-                assertFalse(countDownLatch.await(5 * 1000));
-                assertEqual(0, atomicInteger);
+				tradeMap.put(key, 3);
+                assertTrue(countDownLatch.await(5 * 1000));
+                assertEqual(1, atomicInteger);
 
                 tradeMap.removeEntryListener(id);
             }

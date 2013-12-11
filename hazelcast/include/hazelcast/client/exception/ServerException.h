@@ -23,8 +23,6 @@ namespace hazelcast {
 
                 std::string message;
 
-                std::string details;
-
                 int type;
 
                 int getClassId() const;

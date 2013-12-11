@@ -180,7 +180,7 @@ namespace hazelcast {
                 boost::shared_ptr<Response> sendAndReceiveFixedConnection(connection::Connection *connection, const Request &request) {
                     serialization::Data data = serializationService.toData<Request>(&request);
                     connection->write(data);
-                    serialization::Data response = connection->read();
+					serialization::Data response = connection->read();
                     return serializationService.toObject<Response>(response);
                 }
 
