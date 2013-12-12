@@ -35,14 +35,14 @@ namespace hazelcast {
                     boost::lock_guard<boost::mutex> log(endMutex);
                     bool expected = true;
                     if (!isEnded.compare_exchange_strong(expected, false)) {
-                        delete connection;
+                        connection->close();
                         isEnded = true;
                     }
                 };
 
             private:
                 serialization::SerializationService &serializationService;
-                connection::Connection *connection;
+                std::auto_ptr<connection::Connection> connection;
                 boost::atomic<bool> isEnded;
                 boost::mutex endMutex;
             };

@@ -103,7 +103,7 @@ namespace hazelcast {
                 serialization::Data valueData = toData(value);
                 map::RemoveIfSameRequest request(getName(), keyData, valueData, util::getThreadId());
                 boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
-                return *success;;
+                return *success;
             };
 
             void deleteEntry(const K &key) {
@@ -121,7 +121,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 map::TryRemoveRequest request(getName(), keyData, util::getThreadId(), timeoutInMillis);
                 boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
-                return *success;;
+                return *success;
             };
 
             bool tryPut(const K &key, const V &value, long timeoutInMillis) {
@@ -207,7 +207,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 map::LockRequest request(getName(), keyData, util::getThreadId(), LONG_MAX, timeInMillis);
                 boost::shared_ptr<bool> success = invoke<bool>(request, keyData);
-                return *success;;
+                return *success;
             };
 
             void unlock(const K &key) {
@@ -425,12 +425,6 @@ namespace hazelcast {
                 invoke<bool>(request);
             };
 
-            /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void onDestroy() {
-            };
 
         private:
             IMap(const std::string &instanceName, spi::ClientContext *context)
@@ -457,6 +451,14 @@ namespace hazelcast {
             boost::shared_ptr<Response> invoke(const Request &request) {
                 return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
+
+            /**
+			 * Destroys this object cluster-wide.
+			 * Clears and releases all resources for this object.
+			 */
+			void onDestroy() {
+			};
+
 
         };
     }

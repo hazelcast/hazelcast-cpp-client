@@ -103,7 +103,7 @@ namespace hazelcast {
                         listenerSupport->latch.countDown();
                         while (listenerSupport->active) {
                             try {
-                                boost::shared_ptr<Event> event = stream.read<Event>();
+                            	boost::shared_ptr<Event> event = stream.read<Event>();
 								if (!listenerSupport->active)
                                     break;
                                 listenerSupport->eventHandler.handle(*event);

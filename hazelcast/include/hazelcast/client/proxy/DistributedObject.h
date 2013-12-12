@@ -30,6 +30,8 @@ namespace hazelcast {
 
                 virtual void onDestroy() = 0;
 
+                virtual ~DistributedObject();
+
             private:
                 const std::string serviceName;
                 const std::string name;

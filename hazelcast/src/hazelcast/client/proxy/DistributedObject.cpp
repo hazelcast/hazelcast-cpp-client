@@ -34,6 +34,10 @@ namespace hazelcast {
                 impl::ClientDestroyRequest request(name, serviceName);
                 context->getInvocationService().invokeOnRandomTarget<bool>(request);
             }
+
+            DistributedObject::~DistributedObject(){
+
+            }
         }
     }
 }
