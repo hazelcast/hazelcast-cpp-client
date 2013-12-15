@@ -24,6 +24,8 @@ namespace iTest {
 
             iTestFixture():id(0) {};
 
+            virtual ~iTestFixture(){};
+
             virtual void addTests() = 0;
 
             virtual void beforeClass() = 0;
