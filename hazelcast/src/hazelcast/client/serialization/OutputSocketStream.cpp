@@ -1,5 +1,5 @@
 #include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include <algorithm>
 
@@ -8,7 +8,7 @@ namespace hazelcast {
         namespace serialization {
 
 
-            OutputSocketStream::OutputSocketStream(hazelcast::client::connection::Socket & socket)
+            OutputSocketStream::OutputSocketStream(Socket & socket)
             :socket(socket) {
             }
 

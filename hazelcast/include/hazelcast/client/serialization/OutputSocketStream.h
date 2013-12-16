@@ -16,9 +16,8 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class Socket;
-        }
+        class Socket;
+
         namespace serialization {
 
             typedef unsigned char byte;
@@ -26,7 +25,7 @@ namespace hazelcast {
             class HAZELCAST_API OutputSocketStream {
             public:
 
-                OutputSocketStream(hazelcast::client::connection::Socket &socket);
+                OutputSocketStream(Socket &socket);
 
                 void write(const std::vector<byte> &bytes);
 
@@ -51,7 +50,7 @@ namespace hazelcast {
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
-                hazelcast::client::connection::Socket &socket;
+                Socket &socket;
 
                 void writeShortUTF(const std::string &);
             };

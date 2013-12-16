@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_CONNECTION
 #define HAZELCAST_CONNECTION
 
-#include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/Data.h"

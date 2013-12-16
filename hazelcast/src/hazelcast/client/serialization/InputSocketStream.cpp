@@ -6,13 +6,13 @@
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/SerializationContext.h"
-#include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/Socket.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            InputSocketStream::InputSocketStream(connection::Socket& socket)
+            InputSocketStream::InputSocketStream(Socket& socket)
             :socket(socket)
             , context(NULL) {
             };

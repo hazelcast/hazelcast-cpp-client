@@ -6,7 +6,7 @@
 #define HAZELCAST_HazelcastInstanceFactory
 
 #include "hazelcast/client/Address.h"
-#include "hazelcast/client/connection/Socket.h"
+#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
 
@@ -38,7 +38,7 @@ namespace hazelcast {
 
             private:
                 Address address;
-                connection::Socket socket;
+                Socket socket;
                 serialization::OutputSocketStream outputSocketStream;
                 serialization::InputSocketStream inputSocketStream;
 
