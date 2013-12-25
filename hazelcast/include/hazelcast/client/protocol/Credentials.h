@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
 
-        typedef unsigned char byte;
+
 
         namespace protocol {
             class HAZELCAST_API Credentials : public impl::PortableRequest {

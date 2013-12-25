@@ -19,8 +19,6 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            typedef unsigned char byte;
-
             class HAZELCAST_API Data {
             public:
 
@@ -109,14 +107,12 @@ namespace hazelcast {
 
                 ClassDefinition *cd;
                 int type;
-                mutable std::auto_ptr< std::vector<byte> > buffer;
+                std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
-
-
-            private:
+                bool isError;
                 mutable int partitionHash;
 
-                bool isError;
+            private:
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
 

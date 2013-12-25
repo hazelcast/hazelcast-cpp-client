@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class DataOutput;
 
-            typedef unsigned char byte;
+
 
             class HAZELCAST_API ClassDefinition {
             public:

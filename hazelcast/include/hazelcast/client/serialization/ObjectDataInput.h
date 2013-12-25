@@ -31,7 +31,7 @@ namespace hazelcast {
 
             class DataInput;
 
-            typedef unsigned char byte;
+
 
             class HAZELCAST_API ObjectDataInput {
             public:

@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
 
-        typedef unsigned char byte;
+
 
         namespace serialization {
             class ObjectDataOutput;

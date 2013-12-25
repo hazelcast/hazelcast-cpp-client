@@ -6,7 +6,6 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            typedef unsigned char byte;
 
             class HAZELCAST_API FieldType {
             public:

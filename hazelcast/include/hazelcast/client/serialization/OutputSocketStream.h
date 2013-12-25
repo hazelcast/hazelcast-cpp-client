@@ -20,7 +20,7 @@ namespace hazelcast {
 
         namespace serialization {
 
-            typedef unsigned char byte;
+
 
             class HAZELCAST_API OutputSocketStream {
             public:

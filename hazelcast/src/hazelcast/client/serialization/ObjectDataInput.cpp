@@ -112,7 +112,6 @@ namespace hazelcast {
             };
 
             std::vector<short> ObjectDataInput::readShortArray() {
-                int len = readInt();
                 return dataInput.readShortArray();
             };
 

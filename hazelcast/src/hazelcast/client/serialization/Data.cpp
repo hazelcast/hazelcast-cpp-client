@@ -42,7 +42,7 @@ namespace hazelcast {
             Data::~Data() {
             };
 
-            Data& Data::operator = (const Data& rhs) {
+            Data &Data::operator = (const Data &rhs) {
                 partitionHash = rhs.partitionHash;
                 type = rhs.type;
                 isError = rhs.isError;

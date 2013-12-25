@@ -6,6 +6,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/DataAdapter.h"
 
 namespace hazelcast {
     namespace client {
@@ -13,9 +14,8 @@ namespace hazelcast {
             Connection::Connection(const Address &address, serialization::SerializationService &serializationService)
             : serializationService(serializationService)
             , socket(address)
-            , inputSocketStream(socket)
-            , outputSocketStream(socket)
-            , connectionId(CONN_ID++) {
+            , connectionId(CONN_ID++)
+            , live(true){
             };
 
             void Connection::connect() {
@@ -27,25 +27,9 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::write(std::vector<byte> const &bytes) {
-                outputSocketStream.write(bytes);
+            void Connection::write(serialization::DataAdapter const &data) {
+                //Add to write Queue
             };
-
-            void Connection::write(serialization::Data const &data) {
-                serialization::DataOutput out;
-                data.writeData(out);
-                std::auto_ptr<std::vector<byte> > buffer = out.toByteArray();
-                outputSocketStream.write(*buffer);
-            };
-
-            serialization::Data Connection::read() {
-                serialization::Data data;
-                inputSocketStream.setSerializationContext(&(serializationService.getSerializationContext()));
-                data.readData(inputSocketStream);
-                lastRead = clock();
-                return data;
-            };
-
 
             int Connection::getConnectionId() const {
                 return connectionId;
@@ -56,15 +40,7 @@ namespace hazelcast {
             };
 
             const Address &Connection::getEndpoint() const {
-                return endpoint;
-            };
-
-            clock_t Connection::getLastReadTime() const {
-                return lastRead;
-            }
-
-            void Connection::setEndpoint(Address &address) {
-                endpoint = address;
+                return socket.getAddress();
             };
 
         }

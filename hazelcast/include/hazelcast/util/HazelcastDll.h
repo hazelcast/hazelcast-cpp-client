@@ -7,3 +7,6 @@
 #else
 	#define HAZELCAST_API
  #endif
+namespace hazelcast{
+    typedef unsigned char byte;
+}

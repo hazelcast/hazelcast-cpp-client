@@ -6,53 +6,53 @@
 #ifndef HAZELCAST_NIOListener
 #define HAZELCAST_NIOListener
 
-#include "SocketSet.h"
-#include <algorithm>
-
+#include "hazelcast/util/ConcurrentQueue.h"
+#include <map>
 
 namespace hazelcast {
+    namespace util {
+        class SocketSet;
+    }
     namespace client {
+        class Socket;
+
         namespace connection {
+            class ReadHandler;
+
+            class ListenerTask;
+
+            int KILO_BYTE = 1024;
+            int BUFFER_SIZE = 16 << 10; // 32k
+
+            int socketReceiveBufferSize = 32 * KILO_BYTE;
+
             class NIOListener {
+                friend class AddWriteSocketTask;
             public:
-                NIOListener() {
-                    t.tv_sec = 10;
-                    t.tv_usec = 0;
-                    isAlive = true;
-                };
+                NIOListener(util::SocketSet &readers, util::SocketSet &writers);
 
+                void listenReaders();
 
-                void listen(util::SocketSet &readers, util::SocketSet &writers) {
-                    while (isAlive) {
-                        int n = std::max(readers.getHighestSocketId(), writers.getHighestSocketId());
-                        fd_set read_fds = readers.get_fd_set();
-                        fd_set write_fds = writers.get_fd_set();
-                        switch (select(n, &read_fds, &write_fds, NULL, &t)) {
-                            case 0:
-                                continue;
-                            case 1:
-                                throw "exception";
-                        }
-                        std::set<Socket>::iterator it;
-                        for (it = readers.sockets.begin(); it != readers.sockets.end(); ++it) {
-                            if (FD_ISSET(it->getSocketId(), &read_fds)) {
-                                //recv
-                            }
-                        }
+                void listenWriters();
 
-                        for (it = writers.sockets.begin(); it != writers.sockets.end(); ++it) {
-                            if (FD_ISSET(it->getSocketId(), &write_fds)) {
-                                //send
-                            }
-                        }
-                    }
+                void addReadTask(ListenerTask* listenerTask);
 
+                void addWriteTask(ListenerTask* listenerTask);
 
-                }
 
             private:
+                void processListenerQueue();
+
+                void addWriteSocket(Socket &socket);
+
                 struct timeval t;
                 bool isAlive;
+                util::SocketSet &readers;
+                util::SocketSet &writers;
+                util::ConcurrentQueue<ListenerTask> readListenerTask;
+                util::ConcurrentQueue<ListenerTask> writeListenerTask;
+                std::map<int, ReadHandler > readHandlers;
+//                std::map<int , WriteHandler > writeHandlers;
             };
         }
     }

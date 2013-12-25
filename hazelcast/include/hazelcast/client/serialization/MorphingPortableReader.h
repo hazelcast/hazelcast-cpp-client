@@ -24,7 +24,7 @@ namespace hazelcast {
 
             class SerializerHolder;
 
-            typedef unsigned char byte;
+
 
             class HAZELCAST_API MorphingPortableReader {
             public:

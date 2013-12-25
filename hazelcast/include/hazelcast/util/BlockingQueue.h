@@ -12,6 +12,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
+/* multiple producer - single reader blocking queue */
 template <typename T>
 class BlockingQueue {
 public:
@@ -50,9 +51,9 @@ public:
         return std::auto_ptr<T>(item);
     }
 
-    void push(T &&item) {
+    void push(T * item) {
         boost::unique_lock<boost::mutex> lock(mutex);
-        queue.push(std::move(item));
+        queue.push(item);
         lock.unlock();
         conditionVariable.notify_one();
     }

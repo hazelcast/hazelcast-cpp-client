@@ -5,12 +5,18 @@
 
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
             void PortableRequest::readPortable(serialization::PortableReader &reader) {
                 throw exception::IOException("  void Request::readPortable(serialization::PortableReader& reader)", "read of Client requests is not implemented ");
+            }
+
+
+            void PortableRequest::writePortable(serialization::PortableWriter &writer) const {
+
             }
 
             PortableRequest::~PortableRequest() {

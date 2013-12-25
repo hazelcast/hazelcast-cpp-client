@@ -8,15 +8,15 @@
 #define HAZELCAST_CONNECTION
 
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/serialization/InputSocketStream.h"
-#include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             class SerializationService;
+
+            class DataAdapter;
         }
+
 
         class Address;
 
@@ -31,30 +31,21 @@ namespace hazelcast {
 
                 void close();
 
-                void write(const std::vector<byte> &bytes);
-
-                void write(const serialization::Data &);
-
-                serialization::Data read();
+                void write(serialization::DataAdapter const &data);
 
                 const Address &getEndpoint() const;
-
-                void setEndpoint(Address &address);
-
-                clock_t getLastReadTime() const;
 
                 int getConnectionId() const;
 
                 const Socket &getSocket() const;
 
+                clock_t lastRead;
+                clock_t lastWrite;
+                boost::atomic<bool> live;
             private:
-                Address endpoint;
                 serialization::SerializationService &serializationService;
                 Socket socket;
-                serialization::InputSocketStream inputSocketStream;
-                serialization::OutputSocketStream outputSocketStream;
                 int connectionId;
-                clock_t lastRead;
             };
 
 

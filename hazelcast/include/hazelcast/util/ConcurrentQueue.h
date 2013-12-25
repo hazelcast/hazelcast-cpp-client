@@ -16,28 +16,32 @@
 namespace hazelcast {
     namespace util {
         template <typename T>
+        /* Non blocking - synchronized queue - does not delete memory except at destructor  */
         class HAZELCAST_API ConcurrentQueue {
         public:
             ConcurrentQueue() {
 
             };
 
-            bool offer(const T& e) {
-                boost::lock_guard<boost::mutex> lg(m);
-                internalQueue.push(e);
-                return true;
+            ~ConcurrentQueue() {
+
             };
 
-            bool poll(T& e) {
+
+            void offer(const T *e) {
+                boost::lock_guard<boost::mutex> lg(m);
+                internalQueue.push(e);
+            };
+
+            T *poll() {
+                T *e = NULL;
                 boost::lock_guard<boost::mutex> lg(m);
                 bool success = true;
                 if (!internalQueue.empty()) {
                     e = internalQueue.front();
                     internalQueue.pop();
-                } else {
-                    success = false;
                 }
-                return success;
+                return e;
             };
 
             bool empty() {
@@ -47,7 +51,7 @@ namespace hazelcast {
 
         private:
             boost::mutex m;
-            std::queue<T> internalQueue;
+            std::queue<T *> internalQueue;
         };
     }
 }

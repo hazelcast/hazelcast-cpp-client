@@ -64,7 +64,9 @@ namespace hazelcast {
             friend class HazelcastClient;
 
         public:
-
+            /*
+             *  containsKey
+             */
             bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
                 map::ContainsKeyRequest request(getName(), keyData);
