@@ -19,7 +19,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::F_ID;
             }
 
-            void AllPartitionsRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AllPartitionsRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             }
 

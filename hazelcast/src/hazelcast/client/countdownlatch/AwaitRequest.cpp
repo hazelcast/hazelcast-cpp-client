@@ -25,7 +25,7 @@ namespace hazelcast {
                 return CountDownLatchPortableHook::AWAIT;
             };
 
-            void AwaitRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AwaitRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
                 writer.writeLong("timeout", timeout);
             };

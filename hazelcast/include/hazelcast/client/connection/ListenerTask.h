@@ -11,18 +11,21 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class NIOListener;
+            class IOListener;
 
             class ListenerTask {
             public:
-                void init(NIOListener *nioListener) {
+                void init(IOListener *nioListener) {
                     this->nioListener = nioListener;
                 };
 
                 virtual void process() = 0;
 
+                virtual ~ListenerTask() {
+
+                };
             protected:
-                NIOListener *nioListener;
+                IOListener *nioListener;
             };
         }
     }

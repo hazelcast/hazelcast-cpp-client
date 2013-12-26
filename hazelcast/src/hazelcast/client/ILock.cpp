@@ -26,38 +26,38 @@ namespace hazelcast {
 
         void ILock::lock(long leaseTimeInMillis) {
             lock::LockRequest request(key, util::getThreadId(), leaseTimeInMillis, -1);
-            invoke<bool>(request);
+            invoke<bool>(request,key);
         };
 
         void ILock::unlock() {
             lock::UnlockRequest request(key, util::getThreadId(), false);
-            invoke<bool>(request);
+            invoke<bool>(request,key);
         };
 
         void ILock::forceUnlock() {
             lock::UnlockRequest request(key, util::getThreadId(), true);
-            invoke<bool>(request);
+            invoke<bool>(request,key);
         };
 
         bool ILock::isLocked() {
             lock::IsLockedRequest request(key);
-            return *(invoke<bool>(request));
+            return *(invoke<bool>(request,key));
         };
 
         bool ILock::isLockedByCurrentThread() {
             lock::IsLockedRequest request(key, util::getThreadId());
-            return *(invoke<bool>(request));
+            return *(invoke<bool>(request,key));
         };
 
         int ILock::getLockCount() {
             lock::GetLockCountRequest request(key);
-            boost::shared_ptr<int> response = invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request,key);
             return *response;
         };
 
         long ILock::getRemainingLeaseTime() {
             lock::GetRemainingLeaseRequest request(key);
-            boost::shared_ptr<long> response = invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request,key);
             return *response;
         };
 
@@ -71,7 +71,7 @@ namespace hazelcast {
 
         bool ILock::tryLock(long timeInMillis) {
             lock::LockRequest request(key, util::getThreadId(), -1, timeInMillis);
-            boost::shared_ptr<bool> response = invoke<bool>(request);
+            boost::shared_ptr<bool> response = invoke<bool>(request,key);
             return *response;
         };
 

@@ -20,7 +20,7 @@ namespace hazelcast {
 
                 int getFactoryId() const;
 
-                virtual void writePortable(serialization::PortableWriter &writer) const;
+                virtual void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

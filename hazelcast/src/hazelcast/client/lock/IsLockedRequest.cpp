@@ -28,7 +28,7 @@ namespace hazelcast {
                 return LockPortableHook::FACTORY_ID;
             };
 
-            void IsLockedRequest::writePortable(serialization::PortableWriter& writer) const {
+            void IsLockedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("tid", threadId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);

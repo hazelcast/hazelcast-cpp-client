@@ -21,7 +21,7 @@ namespace hazelcast {
                 return collection::CollectionPortableHook::LIST_SUB;
             }
 
-            void ListSubRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ListSubRequest::write(serialization::PortableWriter& writer) const {
                 collection::CollectionRequest::writePortable(writer);
                 writer.writeInt("f", from);
                 writer.writeInt("t", to);

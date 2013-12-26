@@ -19,9 +19,13 @@ namespace hazelcast {
 
                 ~PortableRequest();
 
-                virtual void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
+
+                virtual void write(serialization::PortableWriter &writer) const = 0;
 
                 /* final */ void readPortable(serialization::PortableReader &reader);
+
+                mutable long callId;
             };
         }
     }

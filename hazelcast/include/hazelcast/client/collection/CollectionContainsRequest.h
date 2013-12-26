@@ -21,7 +21,7 @@ namespace hazelcast {
             public:
                 CollectionContainsRequest(const std::string& name, const std::vector<serialization::Data>& valueSet);
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 int getClassId() const;
 

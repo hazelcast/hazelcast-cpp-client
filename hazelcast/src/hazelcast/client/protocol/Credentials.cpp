@@ -26,7 +26,7 @@ namespace hazelcast {
                 return protocol::SpiConstants::USERNAME_PWD_CRED;
             }
 
-            void Credentials::writePortable(serialization::PortableWriter& writer) const {
+            void Credentials::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("principal", principal);//dev
                 writer.writeUTF("endpoint", endpoint);//"
                 writer.writeByteArray("pwd", password);//dev-pass

@@ -16,7 +16,7 @@ namespace hazelcast {
 
             }
 
-            void ListGetRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ListGetRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 writer.writeInt("i", index);
             }

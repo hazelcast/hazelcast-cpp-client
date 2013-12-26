@@ -98,10 +98,6 @@ namespace hazelcast {
             void onDestroy();
 
         private:
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
-            };
 
             IAtomicLong(const std::string &instanceName, spi::ClientContext *context);
 

@@ -47,7 +47,7 @@ namespace hazelcast {
 
             void send(const void *buffer, int len) const;
 
-            int receive(void *buffer, int len, int flag) const;
+            int receive(void *buffer, int len, int flag = 0) const;
 
             std::string getHost() const;
 
@@ -55,7 +55,7 @@ namespace hazelcast {
 
             int getSocketId() const;
 
-            client::Address& getAddress() const;
+            const client::Address &getAddress() const;
 
             void close();
 
@@ -69,9 +69,9 @@ namespace hazelcast {
             int socketId;
             boost::atomic<bool> isOpen;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-			        WSADATA wsa_data;
-				#endif
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+			WSADATA wsa_data;
+			#endif
 
         };
 

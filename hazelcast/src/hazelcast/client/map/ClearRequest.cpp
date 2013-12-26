@@ -25,7 +25,7 @@ namespace hazelcast {
             }
 
 
-            void ClearRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ClearRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
 

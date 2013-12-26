@@ -21,7 +21,7 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_REMOVE;
             }
 
-            void CollectionRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CollectionRemoveRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();
                 data.writeData(output);

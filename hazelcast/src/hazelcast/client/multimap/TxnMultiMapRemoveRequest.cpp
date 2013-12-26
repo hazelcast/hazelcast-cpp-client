@@ -29,7 +29,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_REMOVE;
             }
 
-            void TxnMultiMapRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TxnMultiMapRemoveRequest::write(serialization::PortableWriter& writer) const {
                 TxnMultiMapRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);

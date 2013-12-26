@@ -20,7 +20,7 @@ namespace hazelcast {
             };
 
 
-            void GetAndAddRequest::writePortable(serialization::PortableWriter &writer) const {
+            void GetAndAddRequest::write(serialization::PortableWriter &writer) const {
                 AtomicLongRequest::writePortable(writer);
             };
         }

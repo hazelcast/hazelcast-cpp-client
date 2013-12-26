@@ -23,7 +23,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::PEEK;
             };
 
-            void PeekRequest::writePortable(serialization::PortableWriter &writer) const {
+            void PeekRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
             };
         }

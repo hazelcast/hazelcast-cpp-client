@@ -25,7 +25,7 @@ namespace hazelcast {
                 return PortableHook::ENTRY_SET;
             }
 
-            void EntrySetRequest::writePortable(serialization::PortableWriter& writer) const {
+            void EntrySetRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
 

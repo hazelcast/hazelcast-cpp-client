@@ -12,9 +12,6 @@
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
             using namespace iTest;
 

@@ -24,7 +24,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::ADD_LISTENER;
             };
 
-            void AddListenerRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AddListenerRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeBoolean("i", includeValue);
             };

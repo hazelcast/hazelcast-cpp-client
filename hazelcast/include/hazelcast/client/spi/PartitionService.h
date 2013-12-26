@@ -6,7 +6,7 @@
 #define HAZELCAST_PARTITION_SERVICE
 
 #include "hazelcast/client/Address.h"
-#include "hazelcast/util/ConcurrentMap.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 
@@ -26,9 +26,11 @@ namespace hazelcast {
 
             class LifecycleService;
 
+            class InvocationService;
+
             class HAZELCAST_API PartitionService {
             public:
-                PartitionService(ClusterService &, serialization::SerializationService &, spi::LifecycleService &);
+                PartitionService(ClusterService &,InvocationService&, serialization::SerializationService &, spi::LifecycleService &);
 
                 ~PartitionService();
 
@@ -43,6 +45,7 @@ namespace hazelcast {
             private:
 
                 ClusterService &clusterService;
+                InvocationService& invocationService;
                 serialization::SerializationService &serializationService;
                 spi::LifecycleService &lifecycleService;
 
@@ -52,7 +55,7 @@ namespace hazelcast {
 
                 volatile int partitionCount;
 
-                util::ConcurrentMap<int, Address> partitions;
+                util::SynchronizedMap<int, Address> partitions;
 
                 void runListener();
 

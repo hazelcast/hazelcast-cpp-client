@@ -18,7 +18,7 @@ namespace hazelcast {
                 return TxnPortableHook::COMMIT;
             }
 
-            void CommitTxnRequest::writePortable(serialization::PortableWriter &writer) const {
+            void CommitTxnRequest::write(serialization::PortableWriter &writer) const {
             };
         }
     }

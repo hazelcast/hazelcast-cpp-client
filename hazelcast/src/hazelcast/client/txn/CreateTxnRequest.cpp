@@ -24,7 +24,7 @@ namespace hazelcast {
                 return TxnPortableHook::CREATE;
             }
 
-            void CreateTxnRequest::writePortable(serialization::PortableWriter &writer) const {
+            void CreateTxnRequest::write(serialization::PortableWriter &writer) const {
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 options.writeData(out);
             };

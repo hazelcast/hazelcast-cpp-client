@@ -35,7 +35,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::LOCK;
             };
 
-            void MultiMapLockRequest::writePortable(serialization::PortableWriter& writer) const {
+            void MultiMapLockRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);

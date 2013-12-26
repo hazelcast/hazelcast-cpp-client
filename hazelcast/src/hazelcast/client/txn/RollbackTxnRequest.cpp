@@ -18,7 +18,7 @@ namespace hazelcast {
                 return TxnPortableHook::ROLLBACK;
             }
 
-            void RollbackTxnRequest::writePortable(serialization::PortableWriter &writer) const {
+            void RollbackTxnRequest::write(serialization::PortableWriter &writer) const {
             };
 
         }

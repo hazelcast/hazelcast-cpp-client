@@ -20,7 +20,7 @@ namespace hazelcast {
                 return collection::CollectionPortableHook::LIST_ADD_ALL;
             }
 
-            void ListAddAllRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ListAddAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("i", index);
                 CollectionAddAllRequest::writePortable(writer);
             }

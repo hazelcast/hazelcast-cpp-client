@@ -23,7 +23,7 @@ namespace hazelcast {
                 return CountDownLatchPortableHook::GET_COUNT;
             };
 
-            void GetCountRequest::writePortable(serialization::PortableWriter& writer) const {
+            void GetCountRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
             };
         }

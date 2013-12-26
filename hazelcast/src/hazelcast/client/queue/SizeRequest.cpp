@@ -23,7 +23,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::SIZE;
             };
 
-            void SizeRequest::writePortable(serialization::PortableWriter& writer) const {
+            void SizeRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
             };

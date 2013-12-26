@@ -28,7 +28,7 @@ namespace hazelcast {
                 return PortableHook::TRY_REMOVE;
             };
 
-            void TryRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TryRemoveRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeLong("timeout", timeout);
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);

@@ -5,18 +5,19 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/serialization/DataAdapter.h"
-#include <boost/thread/future.hpp>
+#include "hazelcast/client/spi/ClusterService.h"
+//#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, int bufferSize)
+            ReadHandler::ReadHandler(Connection &connection, spi::ClusterService &clusterService, int bufferSize )
             : connection(connection)
+            , clusterService(clusterService)
             , buffer(bufferSize)
             , dataAdapter(NULL) {
 
             };
-
 
             void ReadHandler::handle() {
                 if (!connection.live) {
@@ -25,19 +26,16 @@ namespace hazelcast {
                 connection.lastRead = clock();
                 buffer.readFrom(connection.getSocket());
 
-                while (buffer.remaining()) {
+                while (buffer.remainingData()) {
                     if (dataAdapter == NULL) {
                         dataAdapter = new serialization::DataAdapter();
                     }
                     bool complete = dataAdapter->readFrom(buffer);
                     if (complete) {
-//                        dataAdapter->getData();
-//                        serialization::Data &data = dataAdapter->getData();
-//                        data.isServerError(); Set exception to future if error
-                        //TODO find related future in ????
-                        boost::future<int> a;
+                        clusterService.handlePacket(connection.getEndpoint(), dataAdapter->getData());
+                        delete dataAdapter;
                     } else {
-                        assert(buffer.remaining() == 0);
+                        assert(buffer.remainingData() == 0);
                         break;
                     }
                 }

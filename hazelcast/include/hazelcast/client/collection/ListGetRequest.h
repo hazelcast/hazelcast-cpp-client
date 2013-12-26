@@ -17,7 +17,7 @@ namespace hazelcast {
             public:
                 ListGetRequest(const std::string& name, int index);
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 int getClassId() const;
 

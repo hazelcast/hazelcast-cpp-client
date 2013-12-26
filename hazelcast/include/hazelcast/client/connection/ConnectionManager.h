@@ -8,14 +8,19 @@
 #include "hazelcast/client/connection/HeartBeatChecker.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/ConcurrentSmartMap.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/connection/SocketInterceptor.h"
+#include "hazelcast/client/connection/IListener.h"
+#include "hazelcast/client/connection/OListener.h"
 #include <boost/atomic.hpp>
+#include <boost/thread/future.hpp>
 
 namespace hazelcast {
     namespace client {
 
         namespace serialization {
             class SerializationService;
+            class Data;
         }
 
         namespace protocol {
@@ -43,19 +48,11 @@ namespace hazelcast {
 
                 ~ConnectionManager();
 
-                virtual Connection *newConnection(const Address &address);
-
                 virtual Connection *firstConnection(const Address &address);
 
-                virtual Connection *getConnection(const Address &address);
+                virtual Connection *getOrConnect(const Address &address);
 
                 virtual Connection *getRandomConnection();
-
-                virtual void releaseConnection(Connection *connection);
-
-                virtual util::AtomicPointer <ConnectionPool> getConnectionPool(const Address &address);
-
-                virtual void removeConnectionPool(const Address &address);
 
                 virtual void authenticate(Connection &connection, bool reAuth, bool firstConnection);
 
@@ -63,15 +60,23 @@ namespace hazelcast {
 
                 virtual void checkLive();
 
+
             protected:
-                util::ConcurrentSmartMap<Address, ConnectionPool, addressComparator> poolMap;
+                virtual Connection *connectTo(const Address& address);
+
+                util::ConcurrentSmartMap<Address, Connection, addressComparator> connections;
                 spi::ClusterService &clusterService;
                 serialization::SerializationService &serializationService;
                 ClientConfig &clientConfig;
-                boost::shared_ptr<protocol::Principal> principal;
-                HeartBeatChecker heartBeatChecker;
                 std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
+                IListener iListener;
+                OListener oListener;
+                std::auto_ptr<boost::thread> iListenerThread;
+                std::auto_ptr<boost::thread> oListenerThread;
                 boost::atomic<bool> live;
+                boost::mutex lockMutex;
+                boost::shared_ptr<protocol::Principal> principal;
+//                HeartBeatChecker heartBeatChecker;
 
             };
         }

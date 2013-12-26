@@ -24,7 +24,7 @@ namespace hazelcast {
                 return PortableHook::FLUSH;
             }
 
-            void FlushRequest::writePortable(serialization::PortableWriter& writer) const {
+            void FlushRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", name);
             };
         }

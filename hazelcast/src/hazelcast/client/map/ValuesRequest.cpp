@@ -23,7 +23,7 @@ namespace hazelcast {
                 return PortableHook::VALUES;
             }
 
-            void ValuesRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ValuesRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
         }

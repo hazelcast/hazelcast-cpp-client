@@ -35,21 +35,21 @@ namespace hazelcast {
 
         public:
 
-            template < typename L>
-            long addItemListener(L &listener, bool includeValue) {
-                collection::CollectionAddListenerRequest request(getName(), includeValue);
-                request.setServiceName(getServiceName());
-                impl::ItemEventHandler<E, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return getContext().getServerListenerService().template listen<collection::CollectionAddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
-            };
-
-            bool removeItemListener(long registrationId) {
-                return getContext().getServerListenerService().stopListening(registrationId);
-            };
+//            template < typename L>
+//            long addItemListener(L &listener, bool includeValue) {
+//                collection::CollectionAddListenerRequest request(getName(), includeValue);
+//                request.setServiceName(getServiceName());
+//                impl::ItemEventHandler<E, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+//                return getContext().getServerListenerService().template listen<collection::CollectionAddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
+//            };
+//
+//            bool removeItemListener(long registrationId) {
+//                return getContext().getServerListenerService().stopListening(registrationId);
+//            };
 
             int size() {
                 collection::CollectionSizeRequest request(getName());
-                boost::shared_ptr<int> s = invoke<int>(request);
+                boost::shared_ptr<int> s = invoke<int>(request, key);
                 return *s;
             };
 
@@ -62,12 +62,12 @@ namespace hazelcast {
                 std::vector<serialization::Data> valueSet;
                 valueSet.push_back(valueData);
                 collection::CollectionContainsRequest request (getName(), valueSet);
-                return *(invoke<bool>(request));
+                return *(invoke<bool>(request, key));
             };
 
             std::vector<E> toArray() {
                 collection::CollectionGetAllRequest request(getName());
-                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request);
+                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, key);
                 const std::vector<serialization::Data *> &collection = result->getCollection();
                 std::vector<E> set(collection.size());
                 for (int i = 0; i < collection.size(); ++i) {
@@ -80,95 +80,95 @@ namespace hazelcast {
             bool add(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionAddRequest request(getName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool remove(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionRemoveRequest request(getName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool containsAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionContainsRequest request(getName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool addAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionAddAllRequest request(getName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool addAll(int index, const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 list::ListAddAllRequest request(getName(), dataCollection, index);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool removeAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, false);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             };
 
             bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest request(getName(), dataCollection, true);
-                return *(invoke<bool>(request));
+                return *(invoke<bool>(request, key));
             };
 
             void clear() {
                 collection::CollectionClearRequest request(getName());
-                invoke<bool>(request);
+                invoke<bool>(request, key);
             };
 
             boost::shared_ptr<E> get(int index) {
                 list::ListGetRequest request(getName(), index);
-                return invoke<E>(request);
+                return invoke<E>(request, key);
             };
 
             boost::shared_ptr<E> set(int index, const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListSetRequest request(getName(), valueData, index);
-                return invoke<E>(request);
+                return invoke<E>(request, key);
             };
 
             void add(int index, const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListAddRequest request(getName(), valueData, index);
-                invoke<bool>(request);
+                invoke<bool>(request, key);
             };
 
             boost::shared_ptr<E> remove(int index) {
                 list::ListRemoveRequest request(getName(), index);
-                return invoke<E>(request);
+                return invoke<E>(request, key);
             };
 
             int indexOf(const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListIndexOfRequest request(getName(), valueData, false);
-                boost::shared_ptr<int> i = invoke<int>(request);
+                boost::shared_ptr<int> i = invoke<int>(request, key);
                 return *i;
             };
 
             int lastIndexOf(const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListIndexOfRequest request(getName(), valueData, true);
-                boost::shared_ptr<int> i = invoke<int>(request);
+                boost::shared_ptr<int> i = invoke<int>(request, key);
                 return *i;
             };
 
             std::vector<E> subList(int fromIndex, int toIndex) {
                 list::ListSubRequest request(getName(), fromIndex, toIndex);
-                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request);
+                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, key);
                 const std::vector<serialization::Data *> &collection = result->getCollection();
                 std::vector<E> set(toIndex - fromIndex);
                 for (int i = 0; i < collection.size(); ++i) {
@@ -203,12 +203,6 @@ namespace hazelcast {
             template<typename T>
             boost::shared_ptr<T> toObject(const serialization::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(Request &request) {
-                request.setServiceName(getServiceName());
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
             };
 
             IList(const std::string &instanceName, spi::ClientContext *context)

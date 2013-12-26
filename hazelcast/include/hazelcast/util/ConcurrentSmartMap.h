@@ -51,10 +51,10 @@ namespace hazelcast {
                 boost::lock_guard<boost::mutex> lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     AtomicPointer<V> tempValue = internalMap[key];
-                    internalMap[key] = AtomicPointer<V>(value);
+                    internalMap[key] = AtomicPointer<V>(value, key.hashCode());
                     return tempValue;
                 } else {
-                    internalMap[key] = AtomicPointer<V>(value, value->hashCode());
+                    internalMap[key] = AtomicPointer<V>(value, key.hashCode());//TODO ?? hashCode
                     return AtomicPointer<V>();
                 }
             };

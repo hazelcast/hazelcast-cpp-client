@@ -35,7 +35,7 @@ namespace hazelcast {
                     return PortableHook::EXECUTE_ON_KEY;
                 }
 
-                void writePortable(serialization::PortableWriter & writer) const {
+                void write(serialization::PortableWriter & writer) const {
                     writer.writeUTF("n", name);
                     serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                     key.writeData(out);

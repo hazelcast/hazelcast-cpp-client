@@ -25,7 +25,7 @@ namespace hazelcast {
             };
 
 
-            void RemainingCapacityRequest::writePortable(serialization::PortableWriter& writer) const {
+            void RemainingCapacityRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
         }

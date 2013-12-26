@@ -158,7 +158,7 @@ namespace hazelcast {
 
             spi::LifecycleService &getLifecycleService();
 
-            spi::ServerListenerService &getServerListenerService();
+//            spi::ServerListenerService &getServerListenerService();
 
             HazelcastClient(const HazelcastClient &rhs);
 

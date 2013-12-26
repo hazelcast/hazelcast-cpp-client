@@ -21,7 +21,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::F_ID;
             }
 
-            void KeyBasedRequest::writePortable(serialization::PortableWriter& writer) const {
+            void KeyBasedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();
                 key.writeData(output);

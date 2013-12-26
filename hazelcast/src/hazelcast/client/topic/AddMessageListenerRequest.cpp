@@ -24,7 +24,7 @@ namespace hazelcast {
                 return TopicPortableHook::ADD_LISTENER;
             };
 
-            void AddMessageListenerRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AddMessageListenerRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
             };
         }

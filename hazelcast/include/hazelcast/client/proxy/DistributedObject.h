@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_DistributedObject
 #define HAZELCAST_DistributedObject
 
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace spi {
-            class ClientContext;
-        }
         namespace proxy {
 
             class HAZELCAST_API DistributedObject {
@@ -31,6 +31,19 @@ namespace hazelcast {
                 virtual void onDestroy() = 0;
 
                 virtual ~DistributedObject();
+
+            protected:
+                template<typename Response>
+                boost::shared_ptr<Response> invoke(const impl::PortableRequest &request, serialization::Data &keyData) {
+                    boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnKeyOwner(request, keyData);
+                    return context->getSerializationService().toObject<Response>(future.get());
+                };
+
+                template<typename Response>
+                boost::shared_ptr<Response> invoke(const impl::PortableRequest &request) {
+                    boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
+                    return context->getSerializationService().toObject<Response>(future.get());
+                };
 
             private:
                 const std::string serviceName;

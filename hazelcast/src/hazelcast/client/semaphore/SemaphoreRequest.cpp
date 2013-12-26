@@ -21,7 +21,7 @@ namespace hazelcast {
                 };
 
 
-                void SemaphoreRequest::writePortable(serialization::PortableWriter& writer) const {
+                void SemaphoreRequest::write(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", instanceName);
                     writer.writeInt("p", permitCount);
                 };

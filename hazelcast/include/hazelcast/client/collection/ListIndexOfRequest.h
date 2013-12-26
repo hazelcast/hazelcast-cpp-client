@@ -21,7 +21,7 @@ namespace hazelcast {
 
                 ListIndexOfRequest(const std::string& name, const serialization::Data& data, bool last);
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 int getClassId() const;
 

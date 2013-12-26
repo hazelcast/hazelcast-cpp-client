@@ -24,7 +24,7 @@ namespace hazelcast {
                 return CountDownLatchPortableHook::COUNT_DOWN;
             };
 
-            void CountDownRequest::writePortable(serialization::PortableWriter & writer) const {
+            void CountDownRequest::write(serialization::PortableWriter & writer) const {
                 writer.writeUTF("name", instanceName);
             };
 

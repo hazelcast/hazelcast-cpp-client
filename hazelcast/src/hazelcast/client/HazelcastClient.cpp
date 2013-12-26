@@ -21,9 +21,9 @@ namespace hazelcast {
             , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clusterService, serializationService, this->clientConfig)
                     : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
             , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
-            , partitionService(clusterService, serializationService, lifecycleService)
+            , partitionService(clusterService, invocationService,serializationService, lifecycleService)
             , invocationService(clusterService, partitionService)
-            , serverListenerService(invocationService)
+//            , serverListenerService(invocationService)
             , cluster(clusterService)
             , clientContext(client) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
@@ -42,7 +42,7 @@ namespace hazelcast {
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
-            spi::ServerListenerService serverListenerService;
+//            spi::ServerListenerService serverListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
@@ -101,9 +101,9 @@ namespace hazelcast {
             return impl->lifecycleService;
         };
 
-        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
-            return impl->serverListenerService;
-        };
+//        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
+//            return impl->serverListenerService;
+//        };
 
         connection::ConnectionManager &HazelcastClient::getConnectionManager() {
             return *(impl->connectionManager);

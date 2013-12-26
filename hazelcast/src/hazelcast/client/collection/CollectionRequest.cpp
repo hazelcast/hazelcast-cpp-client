@@ -24,7 +24,7 @@ namespace hazelcast {
                 return CollectionPortableHook::F_ID;
             };
 
-            void CollectionRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CollectionRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("s", *serviceName);
                 writer.writeUTF("n", name);
             };

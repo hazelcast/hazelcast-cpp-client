@@ -20,7 +20,7 @@ namespace hazelcast {
         bool ISemaphore::init(int permits) {
             checkNegative(permits);
             semaphore::InitRequest request(getName(), permits);
-            return invoke<bool>(request);
+            return invoke<bool>(request, key);
         };
 
         void ISemaphore::acquire() {
@@ -30,25 +30,25 @@ namespace hazelcast {
         void ISemaphore::acquire(int permits) {
             checkNegative(permits);
             semaphore::AcquireRequest request(getName(), permits, -1);
-            invoke<bool>(request);
+            invoke<bool>(request, key);
         };
 
         int ISemaphore::availablePermits() {
             semaphore::AvailableRequest request(getName());
-            boost::shared_ptr<int> response = invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request, key);
             return *response;
         };
 
         int ISemaphore::drainPermits() {
             semaphore::DrainRequest request(getName());
-            boost::shared_ptr<int> response = invoke<int>(request);
+            boost::shared_ptr<int> response = invoke<int>(request, key);
             return *response;
         };
 
         void ISemaphore::reducePermits(int reduction) {
             checkNegative(reduction);
             semaphore::ReduceRequest request(getName(), reduction);
-            invoke<bool>(request);
+            invoke<bool>(request, key);
         };
 
         void ISemaphore::release() {
@@ -57,7 +57,7 @@ namespace hazelcast {
 
         void ISemaphore::release(int permits) {
             semaphore::ReleaseRequest request(getName(), permits);
-            invoke<bool>(request);
+            invoke<bool>(request, key);
         };
 
         bool ISemaphore::tryAcquire() {
@@ -80,7 +80,7 @@ namespace hazelcast {
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             checkNegative(permits);
             semaphore::AcquireRequest request(getName(), permits, timeoutInMillis);
-            return *(invoke<bool>(request));
+            return *(invoke<bool>(request, key));
         };
 
         void ISemaphore::checkNegative(int permits) {

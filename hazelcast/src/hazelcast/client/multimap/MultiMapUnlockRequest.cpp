@@ -35,7 +35,7 @@ namespace hazelcast {
             };
 
 
-            void MultiMapUnlockRequest::writePortable(serialization::PortableWriter& writer) const {
+            void MultiMapUnlockRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("tid", threadId);
                 writer.writeBoolean("force", force);
                 KeyBasedRequest::writePortable(writer);

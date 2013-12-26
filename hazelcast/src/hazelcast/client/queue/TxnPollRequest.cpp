@@ -23,7 +23,7 @@ namespace hazelcast {
                 return QueuePortableHook::TXN_POLL;
             }
 
-            void TxnPollRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TxnPollRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeout);
             };

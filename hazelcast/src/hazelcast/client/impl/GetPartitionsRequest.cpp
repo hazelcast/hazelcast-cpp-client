@@ -13,7 +13,7 @@ namespace hazelcast {
             };
 
             int GetPartitionsRequest::getFactoryId() const {
-                return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
 
             }
 
@@ -22,15 +22,9 @@ namespace hazelcast {
 
             }
 
-            void GetPartitionsRequest::writeData(serialization::ObjectDataOutput & writer) const {
+            void GetPartitionsRequest::write(serialization::PortableWriter &writer) const {
 
             }
-
-            void GetPartitionsRequest::readData(serialization::ObjectDataInput & reader) {
-
-            }
-
-
         }
     }
 }

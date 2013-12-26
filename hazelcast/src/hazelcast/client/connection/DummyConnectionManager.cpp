@@ -17,18 +17,18 @@ namespace hazelcast {
 
             }
 
-            Connection *DummyConnectionManager::firstConnection(const Address &address) {
-                Connection *connection = newConnection(address);
-                this->address = connection->getEndpoint();
-                return connection;
-            }
-
-            Connection *DummyConnectionManager::getConnection(Address const &address) {
-                if (isAddressAvailable)
-                    return ConnectionManager::getConnection(this->address);
-                else
-                    return ConnectionManager::getConnection(address);
-            }
+//            Connection *DummyConnectionManager::firstConnection(const Address &address) {
+//                Connection *connection = newConnection(address);
+//                this->address = connection->getEndpoint();
+//                return connection;
+//            }
+//
+//            Connection *DummyConnectionManager::getConnection(Address const &address) {
+//                if (isAddressAvailable)
+//                    return ConnectionManager::getConnection(this->address);
+//                else
+//                    return ConnectionManager::getConnection(address);
+//            }
 
 
         }

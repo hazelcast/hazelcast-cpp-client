@@ -16,13 +16,13 @@ namespace hazelcast {
 
         long IAtomicLong::addAndGet(long delta) {
             atomiclong::AddAndGetRequest request(getName(), delta);
-            boost::shared_ptr<long> response = invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request, key);
             return *response;
         };
 
         bool IAtomicLong::compareAndSet(long expect, long update) {
             atomiclong::CompareAndSetRequest request(getName(), expect, update);
-            boost::shared_ptr<bool> response = invoke<bool>(request);
+            boost::shared_ptr<bool> response = invoke<bool>(request, key);
             return *response;
         };
 
@@ -36,13 +36,13 @@ namespace hazelcast {
 
         long IAtomicLong::getAndAdd(long delta) {
             atomiclong::GetAndAddRequest request(getName(), delta);
-            boost::shared_ptr<long> response = invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request, key);
             return *response;
         };
 
         long IAtomicLong::getAndSet(long newValue) {
             atomiclong::GetAndSetRequest request(getName(), newValue);
-            boost::shared_ptr<long> response = invoke<long>(request);
+            boost::shared_ptr<long> response = invoke<long>(request, key);
             return *response;
         };
 
@@ -56,7 +56,7 @@ namespace hazelcast {
 
         void IAtomicLong::set(long newValue) {
             atomiclong::SetRequest request(getName(), newValue);
-            invoke<bool>(request);
+            invoke<bool>(request, key);
         };
 
         void IAtomicLong::onDestroy() {

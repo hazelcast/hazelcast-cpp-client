@@ -107,7 +107,7 @@ namespace hazelcast {
 
                 ClassDefinition *cd;
                 int type;
-                std::auto_ptr< std::vector<byte> > buffer;
+                mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
                 bool isError;
                 mutable int partitionHash;

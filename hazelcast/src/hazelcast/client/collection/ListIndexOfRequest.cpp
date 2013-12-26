@@ -18,7 +18,7 @@ namespace hazelcast {
 
             }
 
-            void ListIndexOfRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ListIndexOfRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 writer.writeBoolean("l", last);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();

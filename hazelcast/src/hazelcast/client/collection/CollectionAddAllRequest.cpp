@@ -21,7 +21,7 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_ADD_ALL;
             }
 
-            void CollectionAddAllRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CollectionAddAllRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();
                 output.writeInt(valueList.size());

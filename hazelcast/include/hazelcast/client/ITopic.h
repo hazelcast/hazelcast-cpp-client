@@ -28,30 +28,25 @@ namespace hazelcast {
             void publish(E message) {
                 serialization::Data data = getContext().getSerializationService().template toData<E>(&message);
                 topic::PublishRequest request(getName(), data);
-                invoke<bool>(request);
+                invoke<bool>(request,key);
             }
 
-            template <typename L>
-            long addMessageListener(L &listener) {
-                topic::AddMessageListenerRequest request(getName());
-                topic::TopicEventHandler<E, L> topicEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener);
-                serialization::Data cloneData = key.clone();
-                return getContext().getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, cloneData, topicEventHandler);
-            }
-
-            bool removeMessageListener(long registrationId) {
-                return getContext().getServerListenerService().stopListening(registrationId);
-            };
+//            template <typename L>
+//            long addMessageListener(L &listener) {
+//                topic::AddMessageListenerRequest request(getName());
+//                topic::TopicEventHandler<E, L> topicEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener);
+//                serialization::Data cloneData = key.clone();
+//                return getContext().getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, cloneData, topicEventHandler);
+//            }
+//
+//            bool removeMessageListener(long registrationId) {
+//                return getContext().getServerListenerService().stopListening(registrationId);
+//            };
 
             void onDestroy() {
             };
 
         private:
-            template<typename Response, typename Request>
-            Response invoke(const Request &request) {
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
-            };
-
             ITopic(const std::string &instanceName, spi::ClientContext *context)
             : DistributedObject("hz:impl:topicService", instanceName, context)
             , key(getContext().getSerializationService().template toData<std::string>(&instanceName)) {

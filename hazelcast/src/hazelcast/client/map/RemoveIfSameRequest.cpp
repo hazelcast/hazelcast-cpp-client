@@ -27,7 +27,7 @@ namespace hazelcast {
                 return PortableHook::REMOVE_IF_SAME;
             }
 
-            void RemoveIfSameRequest::writePortable(serialization::PortableWriter& writer) const {
+            void RemoveIfSameRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

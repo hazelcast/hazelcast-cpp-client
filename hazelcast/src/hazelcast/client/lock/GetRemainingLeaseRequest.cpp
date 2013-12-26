@@ -23,7 +23,7 @@ namespace hazelcast {
                 return LockPortableHook::FACTORY_ID;
             };
 
-            void GetRemainingLeaseRequest::writePortable(serialization::PortableWriter& writer) const {
+            void GetRemainingLeaseRequest::write(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             };

@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            void PutRequest::writePortable(serialization::PortableWriter& writer) const {
+            void PutRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("i", index);
                 writer.writeInt("t", threadId);
                 KeyBasedRequest::writePortable(writer);

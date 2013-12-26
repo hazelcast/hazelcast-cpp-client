@@ -26,7 +26,7 @@ namespace hazelcast {
                 return PortableHook::REMOVE_INTERCEPTOR;
             }
 
-            void RemoveInterceptorRequest::writePortable(serialization::PortableWriter & writer) const {
+            void RemoveInterceptorRequest::write(serialization::PortableWriter & writer) const {
                 writer.writeUTF("n", name);
                 writer.writeUTF("id", id);
             }

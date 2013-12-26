@@ -9,6 +9,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/MemberShipEvent.h"
+#include "hazelcast/client/connection/ClientResponse.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,10 +20,11 @@ namespace hazelcast {
             , connectionManager(connectionManager)
             , serializationService(serializationService)
             , clientConfig(clientConfig)
-            , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
+//            , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
             , credentials(clientConfig.getCredentials())
             , redoOperation(clientConfig.isRedoOperation())
-            , active(false) {
+            , active(false)
+            , callIdGenerator(0) {
 
             }
 
@@ -32,56 +34,77 @@ namespace hazelcast {
                 serializationService.getSerializationContext().registerClassDefinition(ptr);
 
                 connection::Connection *connection = connectToOne(clientConfig.getAddresses());
-                clusterThread.setInitialConnection(connection);
-                boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
-                clusterThread.setThread(t);
-                while (!clusterThread.isReady) {
-                    try {
-                        boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    } catch(...) {
-                        throw  exception::IException("ClusterService::start", "ClusterService can not be started");
-                    }
-                }
+//                clusterThread.setInitialConnection(connection);
+//                boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
+//                clusterThread.setThread(t);
+//                while (!clusterThread.isReady) {
+//                    try {
+//                        boost::this_thread::sleep(boost::posix_time::seconds(1));
+//                    } catch(...) {
+//                        throw  exception::IException("ClusterService::start", "ClusterService can not be started");
+//                    }
+//                }
                 active = true;
             }
 
 
             void ClusterService::stop() {
                 active = false;
-                clusterThread.stop();
+//                clusterThread.stop();
             }
 
-            connection::Connection *ClusterService::getConnection(Address const &address) {
-                if (!lifecycleService.isRunning()) {
-                    throw exception::InstanceNotActiveException("ClusterService:::getConnection(Address const & address) ", "Instance is not active!!");
-                }
-                connection::Connection *connection = NULL;
-                connection = connectionManager.getConnection(address);
-                if (connection != NULL) {
-                    return connection;
-                }
-                beforeRetry();
-                return getRandomConnection();
-            };
-
-            connection::Connection *ClusterService::getRandomConnection() {
-                if (!lifecycleService.isRunning()) {
-                    throw exception::InstanceNotActiveException("ClusterService:::getRandomConnection", "Instance is not active!!");
-                }
-                int retryCount = RETRY_COUNT;
-                connection::Connection *connection = NULL;
-                while (connection == NULL && retryCount > 0) {
-                    connection = connectionManager.getRandomConnection();
-                    if (connection == NULL) {
-                        retryCount--;
-                        beforeRetry();
-                    }
-                }
-                if (connection == NULL) {
-                    throw exception::IException("ClusterService", "Unable to connect!!!");
-                }
-                return connection;
+            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request) {
+                connection::Connection *connection = connectionManager.getRandomConnection();
+                return send(request, *connection);
             }
+
+            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, const Address &address) {
+                connection::Connection *connection = connectionManager.getOrConnect(address);
+                return send(request, *connection);
+            }
+
+            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &object, connection::Connection &connection) {
+                long callId = callIdGenerator++;
+                util::AtomicPointer <CallMap> pointer = addressCallMap.get(connection.getEndpoint());
+                boost::promise<serialization::Data> *promise = new boost::promise<serialization::Data>();
+                pointer->put(callId, promise);
+                object.callId = callId;
+                serialization::Data request = serializationService.toData<impl::PortableRequest>(&object);
+                connection.write(request);
+                return boost::shared_future<serialization::Data>(promise->get_future());
+            }
+//
+//            connection::Connection *ClusterService::getConnection(Address const &address) {
+//                if (!lifecycleService.isRunning()) {
+//                    throw exception::InstanceNotActiveException("ClusterService:::getConnection(Address const & address) ", "Instance is not active!!");
+//                }
+//                connection::Connection *connection = NULL;
+//                connection = connectionManager.getConnection(address);
+//                if (connection != NULL) {
+//                    return connection;
+//                }
+//                beforeRetry();
+//                return getRandomConnection();
+//            };
+//
+//            connection::Connection *ClusterService::getRandomConnection() {
+//                if (!lifecycleService.isRunning()) {
+//                    throw exception::InstanceNotActiveException("ClusterService:::getRandomConnection", "Instance is not active!!");
+//                }
+//                int retryCount = RETRY_COUNT;
+//                connection::Connection *connection = NULL;
+//                while (connection == NULL && retryCount > 0) {
+//                    connection = connectionManager.getRandomConnection();
+//                    if (connection == NULL) {
+//                        retryCount--;
+//                        beforeRetry();
+//                    }
+//                }
+//                if (connection == NULL) {
+//                    throw exception::IException("ClusterService", "Unable to connect!!!");
+//                }
+//                return connection;
+//            }
 
             connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
                 active = false;
@@ -185,6 +208,19 @@ namespace hazelcast {
                 boost::lock_guard<boost::mutex> guard(membersLock);
                 members = map;
             }
+
+            void ClusterService::handlePacket(const Address &address, serialization::Data &data) {
+                util::AtomicPointer <CallMap> pointer = addressCallMap.get(address);
+                boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
+                if (response->isEvent()) {
+                    //TODO
+                    return;
+                }
+                boost::promise<serialization::Data> *promise = pointer->remove(response->getCallId());
+                promise->set_value(response->getData());
+            }
+
+
         }
     }
 }

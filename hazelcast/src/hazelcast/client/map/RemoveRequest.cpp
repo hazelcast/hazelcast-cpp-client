@@ -27,7 +27,7 @@ namespace hazelcast {
                 return PortableHook::REMOVE;
             };
 
-            void RemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void RemoveRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

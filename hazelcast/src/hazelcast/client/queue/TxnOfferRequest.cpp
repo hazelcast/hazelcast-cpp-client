@@ -24,7 +24,7 @@ namespace hazelcast {
                 return QueuePortableHook::TXN_OFFER;
             }
 
-            void TxnOfferRequest::writePortable(serialization::PortableWriter &writer) const {
+            void TxnOfferRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();

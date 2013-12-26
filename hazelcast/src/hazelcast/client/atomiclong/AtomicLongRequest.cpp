@@ -20,7 +20,7 @@ namespace hazelcast {
                 return AtomicLongPortableHook::F_ID;
             };
 
-            void AtomicLongRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AtomicLongRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
                 writer.writeLong("d", delta);
             };

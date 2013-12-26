@@ -25,7 +25,7 @@ namespace hazelcast {
                 return PortableHook::GET_ALL;
             }
 
-            void GetAllRequest::writePortable(serialization::PortableWriter& writer) const {
+            void GetAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("size", keys.size());
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

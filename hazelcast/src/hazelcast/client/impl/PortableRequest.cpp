@@ -16,7 +16,8 @@ namespace hazelcast {
 
 
             void PortableRequest::writePortable(serialization::PortableWriter &writer) const {
-
+                writer.writeLong("cId", callId);
+                write(writer);
             }
 
             PortableRequest::~PortableRequest() {

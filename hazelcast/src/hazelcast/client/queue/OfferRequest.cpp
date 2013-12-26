@@ -34,7 +34,7 @@ namespace hazelcast {
             }
 
 
-            void OfferRequest::writePortable(serialization::PortableWriter& writer) const {
+            void OfferRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

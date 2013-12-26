@@ -11,11 +11,13 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, serialization::SerializationService &serializationService)
+            Connection::Connection(const Address &address, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, OListener &oListener)
             : serializationService(serializationService)
             , socket(address)
             , connectionId(CONN_ID++)
-            , live(true){
+            , live(true)
+            , readHandler(*this, clusterService, 16 << 10)
+            , writeHandler(*this, oListener, 16 << 10) {
             };
 
             void Connection::connect() {
@@ -27,8 +29,11 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::write(serialization::DataAdapter const &data) {
-                //Add to write Queue
+            bool Connection::write(serialization::Data const &data) {
+                if (!live)
+                    return false;
+                writeHandler.enqueueData(data);
+                return true;
             };
 
             int Connection::getConnectionId() const {
@@ -43,6 +48,13 @@ namespace hazelcast {
                 return socket.getAddress();
             };
 
+            const Address &Connection::getRemoteEndpoint() const {
+                return remoteEndpoint;
+            };
+
+            void Connection::setRemoteEndpoint(Address &remoteEndpoint) {
+                this->remoteEndpoint = remoteEndpoint;
+            };
         }
     }
 }

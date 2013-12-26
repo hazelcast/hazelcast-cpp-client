@@ -16,7 +16,7 @@ namespace hazelcast {
 
             }
 
-            void ListRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ListRemoveRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 writer.writeInt("i", index);
             }

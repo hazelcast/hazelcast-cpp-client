@@ -21,7 +21,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_VALUE_COUNT;
             }
 
-            void TxnMultiMapValueCountRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TxnMultiMapValueCountRequest::write(serialization::PortableWriter& writer) const {
                 TxnMultiMapRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);

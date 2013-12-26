@@ -21,7 +21,7 @@ namespace hazelcast {
                 };
 
 
-                void AcquireRequest::writePortable(serialization::PortableWriter& writer) const {
+                void AcquireRequest::write(serialization::PortableWriter& writer) const {
                     SemaphoreRequest::writePortable(writer);
                     writer.writeLong("t", timeout);
                 };

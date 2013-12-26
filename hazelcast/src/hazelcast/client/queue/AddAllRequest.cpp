@@ -25,7 +25,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::ADD_ALL;
             }
 
-            void AddAllRequest::writePortable(serialization::PortableWriter& writer) const {
+            void AddAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
                 writer.writeInt("s", dataList.size());

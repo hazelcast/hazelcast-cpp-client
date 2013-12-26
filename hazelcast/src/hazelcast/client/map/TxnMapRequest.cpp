@@ -123,7 +123,7 @@ namespace hazelcast {
             };
 
 
-            void TxnMapRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TxnMapRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", (int) requestType);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

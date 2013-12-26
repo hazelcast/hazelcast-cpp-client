@@ -23,7 +23,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::CLEAR;
             };
 
-            void ClearRequest::writePortable(serialization::PortableWriter &writer) const {
+            void ClearRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
             };

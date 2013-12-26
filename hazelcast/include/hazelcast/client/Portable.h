@@ -11,9 +11,6 @@
 
 namespace hazelcast {
     namespace client {
-
-
-
         namespace serialization {
             class PortableWriter;
 

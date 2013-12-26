@@ -20,7 +20,7 @@ namespace hazelcast {
 
                 virtual void setServiceName(const std::string &name);
 
-                virtual void writePortable(serialization::PortableWriter &writer) const;
+                virtual void write(serialization::PortableWriter &writer) const;
 
             private:
                 const std::string &name;

@@ -16,14 +16,18 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicPointer.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/DataAdapter.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
+#include "hazelcast/client/connection/MemberShipEvent.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <set>
 
 namespace hazelcast {
     namespace client {
-
+        namespace impl{
+            class  PortableRequest;
+        }
         namespace spi {
 
             class HAZELCAST_API ClusterService {
@@ -34,155 +38,95 @@ namespace hazelcast {
 
                 void stop();
 
-                template< typename Response, typename Request >
-                boost::shared_ptr<Response> sendAndReceive(const Request &object) {
-                    while (active) {
-                        connection::Connection *connection = NULL;
-                        try {
-                            connection = getRandomConnection();
-                            serialization::Data request = serializationService.toData<Request>(&object);
-                            connection->write(request);
-                            serialization::Data responseData = connection->read();
-                            boost::shared_ptr<Response > response = serializationService.toObject<Response>(responseData);
-                            connectionManager.releaseConnection(connection);
-                            return response;
-                        } catch (exception::IOException &e) {
-                            if (connection != NULL) {
-                                std::cerr << "Error on conection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                            } else {
-                                std::cerr << std::string(e.what()) << std::endl;
-                            }
-                            delete connection;
-                            if (redoOperation || util::isRetryable(object)) {
-                                std::cerr << "Retrying " << std::endl;
-                                beforeRetry();
-                                continue;
-                            }
-                        } catch (exception::IException &e) {
-                            connectionManager.releaseConnection(connection);
-                            throw e;
-                        }
-                    }
-                    throw exception::InstanceNotActiveException("ClusterService:: sendAndReceive(const Request& object) ", "Instance is not active!!");
-                };
+                boost::shared_future<serialization::Data> send(const impl::PortableRequest &request);
 
-                template< typename Response, typename Request >
-                boost::shared_ptr<Response> sendAndReceive(const Address &address, const Request &object) {
-                    while (active) {
-                        connection::Connection *connection = NULL;
-                        try {
-                            connection = getConnection(address);
-                            serialization::Data request = serializationService.toData<Request>(&object);
-                            connection->write(request);
-                            serialization::Data responseData = connection->read();
-                            boost::shared_ptr<Response > response = serializationService.toObject<Response>(responseData);
-                            connectionManager.releaseConnection(connection);
-                            return response;
-                        } catch (exception::IOException &e) {
-                            if (connection != NULL) {
-                                std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                                delete connection;
-                            }
-                            if (redoOperation || util::isRetryable(object)) {
-                                std::cerr << "Retrying ";
-                                if (connection != NULL)
-                                    std::cerr << ": last-connection" << *connection;
-                                std::cerr << ", last-error: " << std::string(e.what()) << std::endl;
-                                beforeRetry();
-                                continue;
-                            }
-                        } catch (exception::IException &e) {
-                            if (connection != NULL)
-                                connectionManager.releaseConnection(connection);
-                            throw e;
-                        }
-                    }
-                    throw exception::InstanceNotActiveException("ClusterService::sendAndReceive(const Address& address, const Request& object)", "Instance is not active!!");
+                boost::shared_future<serialization::Data> send(const impl::PortableRequest &request, const Address &address);
 
-                };
+                boost::shared_future<serialization::Data> send(const impl::PortableRequest &request, connection::Connection &connection);
 
-                template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Address &address, const Request &object, ResponseHandler &handler) {
-                    std::auto_ptr<ResponseStream> stream(NULL);
-                    while (stream.get() == NULL) {
-                        if (!active) {
-                            throw exception::InstanceNotActiveException("ClusterService:: sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
-                        }
-                        connection::Connection *connection = NULL;
-                        try {
-                            connection = getConnection(address);
-                            serialization::Data request = serializationService.toData<Request>(&object);
-                            connection->write(request);
-                            stream.reset(new ResponseStream(serializationService, connection));
-                        } catch (exception::IOException &e) {
-                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                            delete connection;
-                            if (redoOperation || util::isRetryable(object)) {
-                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
-                                beforeRetry();
-                                continue;
-                            }
-                        } catch (exception::IException &e) {
-                            if (connection != NULL)
-                                connectionManager.releaseConnection(connection);
-                            throw e;
-                        }
 
-                    }
-
-                    try {
-                        handler.handle(*stream);
-                    } catch (exception::IException &e) {
-                        stream->end();
-                        throw e;
-                    }
-                    stream->end();
-                };
-
-                template< typename Request, typename ResponseHandler>
-                void sendAndHandle(const Request &object, ResponseHandler &handler) {
-                    std::auto_ptr<ResponseStream> stream(NULL);
-                    while (stream.get() == NULL) {
-                        if (!active) {
-                            throw exception::InstanceNotActiveException("ClusterService::sendAndHandle(const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
-                        }
-                        connection::Connection *connection = NULL;
-                        try {
-                            connection = getRandomConnection();
-                            serialization::Data request = serializationService.toData<Request>(&object);
-                            connection->write(request);
-                            stream.reset(new ResponseStream(serializationService, connection));
-                        } catch (exception::IOException &e) {
-                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
-                            if (connection != NULL)
-                                delete connection;
-                            if (redoOperation || util::isRetryable(object)) {
-                                std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
-                                beforeRetry();
-                                continue;
-                            }
-                        } catch (exception::IException &e) {
-                            if (connection != NULL)
-                                connectionManager.releaseConnection(connection);
-                            throw e;
-                        }
-                    }
-                    try {
-                        handler.handle(*stream);
-                    } catch (exception::IException &e) {
-                        stream->end();
-                        throw e;
-                    }
-                    stream->end();
-                };
-
-                template< typename Response, typename Request>
-                boost::shared_ptr<Response> sendAndReceiveFixedConnection(connection::Connection *connection, const Request &request) {
-                    serialization::Data data = serializationService.toData<Request>(&request);
-                    connection->write(data);
-					serialization::Data response = connection->read();
-                    return serializationService.toObject<Response>(response);
-                }
+//                template< typename Request, typename ResponseHandler>
+//                void sendAndHandle(const Address &address, const Request &object, ResponseHandler &handler) {
+//                    std::auto_ptr<ResponseStream> stream(NULL);
+//                    while (stream.get() == NULL) {
+//                        if (!active) {
+//                            throw exception::InstanceNotActiveException("ClusterService:: sendAndHandle(const Address& address, const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
+//                        }
+//                        connection::Connection *connection = NULL;
+//                        try {
+//                            connection = getConnection(address);
+//                            serialization::Data request = serializationService.toData<Request>(&object);
+//                            connection->write(request);
+//                            stream.reset(new ResponseStream(serializationService, connection));
+//                        } catch (exception::IOException &e) {
+//                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+//                            delete connection;
+//                            if (redoOperation || util::isRetryable(object)) {
+//                                std::cerr << "Retrying : last-connection" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
+//                                beforeRetry();
+//                                continue;
+//                            }
+//                        } catch (exception::IException &e) {
+//                            if (connection != NULL)
+//                                connectionManager.releaseConnection(connection);
+//                            throw e;
+//                        }
+//
+//                    }
+//
+//                    try {
+//                        handler.handle(*stream);
+//                    } catch (exception::IException &e) {
+//                        stream->end();
+//                        throw e;
+//                    }
+//                    stream->end();
+//                };
+//
+//                template< typename Request, typename ResponseHandler>
+//                void sendAndHandle(const Request &object, ResponseHandler &handler) {
+//                    std::auto_ptr<ResponseStream> stream(NULL);
+//                    while (stream.get() == NULL) {
+//                        if (!active) {
+//                            throw exception::InstanceNotActiveException("ClusterService::sendAndHandle(const Request& object, ResponseHandler&  handler)", "Instance is not active!!");
+//                        }
+//                        connection::Connection *connection = NULL;
+//                        try {
+//                            connection = getRandomConnection();
+//                            serialization::Data request = serializationService.toData<Request>(&object);
+//                            connection->write(request);
+//                            stream.reset(new ResponseStream(serializationService, connection));
+//                        } catch (exception::IOException &e) {
+//                            std::cerr << "Error on connection : " << *connection << ", error: " << std::string(e.what()) << std::endl;
+//                            if (connection != NULL)
+//                                delete connection;
+//                            if (redoOperation || util::isRetryable(object)) {
+//                                std::cerr << "Retrying : last-connetcion" << *connection << ", last-error: " << std::string(e.what()) << std::endl;
+//                                beforeRetry();
+//                                continue;
+//                            }
+//                        } catch (exception::IException &e) {
+//                            if (connection != NULL)
+//                                connectionManager.releaseConnection(connection);
+//                            throw e;
+//                        }
+//                    }
+//                    try {
+//                        handler.handle(*stream);
+//                    } catch (exception::IException &e) {
+//                        stream->end();
+//                        throw e;
+//                    }
+//                    stream->end();
+//                };
+//
+//                template< typename Response, typename Request>
+//                boost::shared_ptr<Response> sendAndReceiveFixedConnection(connection::Connection *connection, const Request &request) {
+//                    serialization::Data data = serializationService.toData<Request>(&request);
+//                    connection->write(data);
+//					serialization::Data response = connection->read();
+//                    return serializationService.toObject<Response>(response);
+//                }
 
                 std::auto_ptr<Address> getMasterAddress();
 
@@ -196,20 +140,25 @@ namespace hazelcast {
 
                 std::vector<connection::Member> getMemberList();
 
-                friend class connection::ClusterListenerThread;
+//                friend class connection::ClusterListenerThread;
+
+                void handlePacket(const Address &address, serialization::Data &data);
 
                 static const int RETRY_COUNT = 20;
                 static const int RETRY_WAIT_TIME = 500;
             private:
                 void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
 
+                typedef util::SynchronizedMap<int, boost::promise<serialization::Data> > CallMap;
+                util::ConcurrentSmartMap<Address, CallMap, addressComparator> addressCallMap;
+                boost::atomic<long> callIdGenerator;
                 connection::ConnectionManager &connectionManager;
                 serialization::SerializationService &serializationService;
                 ClientConfig &clientConfig;
                 spi::LifecycleService &lifecycleService;
                 spi::PartitionService &partitionService;
 
-                connection::ClusterListenerThread clusterThread;
+//                connection::ClusterListenerThread clusterThread;
 
                 protocol::Credentials &credentials;
                 std::map<Address, connection::Member, addressComparator > members;
@@ -221,9 +170,9 @@ namespace hazelcast {
 
                 void fireMembershipEvent(connection::MembershipEvent &membershipEvent);
 
-                connection::Connection *getConnection(const Address &address);
+//                connection::Connection *getConnection(const Address &address);
 
-                connection::Connection *getRandomConnection();
+//                connection::Connection *getRandomConnection();
 
                 connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
 

@@ -266,11 +266,6 @@ namespace hazelcast {
         private:
             void checkNegative(int permits);
 
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, key);
-            };
-
             ISemaphore(const std::string &instanceName, spi::ClientContext *context);
 
             serialization::Data key;

@@ -22,7 +22,7 @@ namespace hazelcast {
         public:
             AtomicPointer()
             : pointer(new boost::shared_ptr<T>())
-            , accessLock(LockSupport::getLock(rand())) {
+            , accessLock(LockSupport::getLock(rand())) {//TODO ?? Rand()
             };
 
             AtomicPointer(T *const p, int lockId)

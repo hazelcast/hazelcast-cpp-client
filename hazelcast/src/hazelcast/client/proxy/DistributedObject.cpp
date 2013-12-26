@@ -32,7 +32,7 @@ namespace hazelcast {
             void DistributedObject::destroy() {
                 onDestroy();
                 impl::ClientDestroyRequest request(name, serviceName);
-                context->getInvocationService().invokeOnRandomTarget<bool>(request);
+                context->getInvocationService().invokeOnRandomTarget(request);
             }
 
             DistributedObject::~DistributedObject(){

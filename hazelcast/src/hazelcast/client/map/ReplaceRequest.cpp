@@ -28,7 +28,7 @@ namespace hazelcast {
                 return PortableHook::REPLACE;
             }
 
-            void ReplaceRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ReplaceRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);
                 writer.writeLong("ttl", -1);

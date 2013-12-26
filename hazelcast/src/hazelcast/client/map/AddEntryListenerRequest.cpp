@@ -43,7 +43,7 @@ namespace hazelcast {
             }
 
 
-            void AddEntryListenerRequest::writePortable(serialization::PortableWriter &writer) const {
+            void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("name", name);
                 writer.writeBoolean("i", includeValue);
                 writer.writeBoolean("key", hasKey);

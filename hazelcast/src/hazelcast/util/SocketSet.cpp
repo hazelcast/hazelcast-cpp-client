@@ -10,16 +10,16 @@ namespace hazelcast {
         fd_set SocketSet::get_fd_set() const {
             fd_set fdSet;
             FD_ZERO(&fdSet);
-            std::set<client::Socket>::iterator it;
+            std::set<client::Socket const *>::iterator it;
             for (it = sockets.begin(); it != sockets.end(); it++) {
-                FD_SET(it->getSocketId(), &fdSet);
+                FD_SET((*it)->getSocketId(), &fdSet);
             }
             return fdSet;
         }
 
         int SocketSet::getHighestSocketId() const {
             if (!sockets.empty())
-                return (*(sockets.rbegin())).getSocketId();
+                return (*(sockets.rbegin()))->getSocketId();
             else
                 return 0;
         }

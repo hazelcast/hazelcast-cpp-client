@@ -26,7 +26,7 @@ namespace hazelcast {
                 return queue::QueuePortableHook::COMPARE_AND_REMOVE;
             }
 
-            void CompareAndRemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CompareAndRemoveRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
                 writer.writeBoolean("r", retain);

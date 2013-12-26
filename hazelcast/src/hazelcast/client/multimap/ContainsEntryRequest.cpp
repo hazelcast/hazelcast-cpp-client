@@ -37,7 +37,7 @@ namespace hazelcast {
             };
 
 
-            void ContainsEntryRequest::writePortable(serialization::PortableWriter& writer) const {
+            void ContainsEntryRequest::write(serialization::PortableWriter& writer) const {
                 AllPartitionsRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 util::writeNullableData(out, key);

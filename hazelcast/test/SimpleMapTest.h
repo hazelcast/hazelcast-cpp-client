@@ -81,9 +81,9 @@ public:
 //        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
 //        HazelcastClient hazelcastClient(clientConfig);
 //        IMap<int, vector<byte> > map = hazelcastClient.getMap<int, vector<byte > >("default");
-        IMap<int, vector<hazelcast::client::byte> > map = a->getMap<int, vector<hazelcast::client::byte > >("default");
+        IMap<int, vector<hazelcast::byte> > map = a->getMap<int, vector<hazelcast::byte > >("default");
 
-        std::vector<hazelcast::client::byte> value(VALUE_SIZE);
+        std::vector<hazelcast::byte> value(VALUE_SIZE);
 //        for(int i = 0 ; i < ENTRY_COUNT ; i++){
 //              map.put(i, value);
 //        }
@@ -95,7 +95,7 @@ public:
                     map.get(key);
                     ++stats.getCount;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                    boost::shared_ptr<vector<hazelcast::client::byte> > vector = map.put(key, value);
+                    boost::shared_ptr<vector<hazelcast::byte> > vector = map.put(key, value);
                     ++stats.putCount;
                 } else {
                     map.remove(key);

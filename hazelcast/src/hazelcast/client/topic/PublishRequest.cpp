@@ -25,7 +25,7 @@ namespace hazelcast {
             };
 
 
-            void PublishRequest::writePortable(serialization::PortableWriter& writer) const {
+            void PublishRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 message.writeData(out);

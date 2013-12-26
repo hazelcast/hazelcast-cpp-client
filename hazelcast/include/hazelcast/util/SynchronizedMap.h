@@ -19,17 +19,17 @@ namespace hazelcast {
         /**
         * Put once, read multiple thread safe map
         * Deletes nothing.
-        * the ptr getted by any operation should be deleted
-        * only if it is certain that they will never be used again.
+        * the ptr get by any operation should be deleted only if
+        * it is certain that it will never be used again.
         *
         */
-        class HAZELCAST_API ConcurrentMap {
+        class HAZELCAST_API SynchronizedMap {
         public:
-            ConcurrentMap() {
+            SynchronizedMap() {
 
             };
 
-            ~ConcurrentMap() {
+            ~SynchronizedMap() {
 				/*boost::lock_guard<boost::mutex> lg(mapLock);
                 std::vector<V *> valueArray(internalMap.size());
                 typename std::map<K, V *, Comparator>::iterator it;
@@ -86,6 +86,23 @@ namespace hazelcast {
                 else
                     return NULL;
             };
+            /**
+            * Returns the value to which the specified key is mapped,
+            * and removes from map
+            * or {@code null} if this map contains no mapping for the key.
+            *
+            */
+            V *remove(const K& key) {
+                boost::lock_guard<boost::mutex> lg(mapLock);
+                if (internalMap.count(key) > 0) {
+                    V *v = internalMap[key];
+                    internalMap.erase(key);
+                    return v;
+                }
+                else
+                    return NULL;
+            };
+            
 
             std::vector<V *> values() {
                 boost::lock_guard<boost::mutex> lg(mapLock);

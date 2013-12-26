@@ -7,6 +7,7 @@
 #include "HazelcastInstanceFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/Employee.h"
+#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {

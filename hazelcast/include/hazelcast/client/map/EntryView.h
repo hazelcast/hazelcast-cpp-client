@@ -7,6 +7,8 @@
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {

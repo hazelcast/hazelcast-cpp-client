@@ -24,7 +24,7 @@ namespace hazelcast {
                 return PortableHook::KEY_SET;
             }
 
-            void KeySetRequest::writePortable(serialization::PortableWriter& writer) const {
+            void KeySetRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
         }

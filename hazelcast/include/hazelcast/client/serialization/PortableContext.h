@@ -10,7 +10,7 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include "hazelcast/util/ConcurrentMap.h"
+#include "SynchronizedMap.h"
 #include <vector>
 #include <map>
 
@@ -51,7 +51,7 @@ namespace hazelcast {
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                hazelcast::util::ConcurrentMap<long long, ClassDefinition> versionedDefinitions;
+                hazelcast::util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
 
                 SerializationContext *serializationContext;
             };

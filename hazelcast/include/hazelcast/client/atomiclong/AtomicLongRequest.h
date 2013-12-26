@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 virtual int getFactoryId() const;
 
-                void writePortable(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 long delta;

@@ -26,7 +26,7 @@ namespace hazelcast {
                 return PortableHook::IS_LOCKED;
             }
 
-            void IsLockedRequest::writePortable(serialization::PortableWriter& writer) const {
+            void IsLockedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("tid", -1);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

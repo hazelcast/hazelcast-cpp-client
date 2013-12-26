@@ -236,25 +236,25 @@ namespace hazelcast {
                 invoke<bool>(request);
             }
 
-            template < typename L>
-            long addEntryListener(L &listener, bool includeValue) {
-                map::AddEntryListenerRequest request(getName(), includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
-            };
-
-            template < typename L>
-            long addEntryListener(L &listener, const K &key, bool includeValue) {
-                serialization::Data keyData = toData(key);
-                serialization::Data cloneData = keyData.clone();
-                map::AddEntryListenerRequest request(getName(), includeValue, keyData);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
-            };
-
-            bool removeEntryListener(long registrationId) {
-                return getContext().getServerListenerService().stopListening(registrationId);
-            };
+//            template < typename L>
+//            long addEntryListener(L &listener, bool includeValue) {
+//                map::AddEntryListenerRequest request(getName(), includeValue);
+//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+//                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
+//            };
+//
+//            template < typename L>
+//            long addEntryListener(L &listener, const K &key, bool includeValue) {
+//                serialization::Data keyData = toData(key);
+//                serialization::Data cloneData = keyData.clone();
+//                map::AddEntryListenerRequest request(getName(), includeValue, keyData);
+//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+//                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
+//            };
+//
+//            bool removeEntryListener(long registrationId) {
+//                return getContext().getServerListenerService().stopListening(registrationId);
+//            };
 
 
             map::EntryView<K, V> getEntryView(const K &key) {
@@ -331,7 +331,7 @@ namespace hazelcast {
             };
 
             std::vector<K> keySet(const std::string &sql) {
-				std::string iterationType = "KEY";
+                std::string iterationType = "KEY";
                 map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
@@ -344,7 +344,7 @@ namespace hazelcast {
             };
 
             std::vector<V> values(const std::string &sql) {
-				std::string iterationType = "VALUE";
+                std::string iterationType = "VALUE";
                 map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
@@ -357,7 +357,7 @@ namespace hazelcast {
             };
 
             std::vector<std::pair<K, V> > entrySet(const std::string &sql) {
-				std::string iterationType = "ENTRY";
+                std::string iterationType = "ENTRY";
                 map::QueryRequest request(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
@@ -444,22 +444,13 @@ namespace hazelcast {
                 return getContext().getSerializationService().template toObject<T>(data);
             };
 
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request, serialization::Data &keyData) {
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
-            };
 
             /**
 			 * Destroys this object cluster-wide.
 			 * Clears and releases all resources for this object.
 			 */
-			void onDestroy() {
-			};
+            void onDestroy() {
+            };
 
 
         };

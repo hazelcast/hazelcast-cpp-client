@@ -22,7 +22,7 @@ namespace hazelcast {
 
             };
 
-            void readFrom(client::Socket &socket) {
+            void readFrom(const client::Socket &socket) {
                 int remaining = distanceToEnd(writeHead);
                 int i = socket.receive((void *) writeHead, remaining, 0);
                 if (i < remaining) {
@@ -32,6 +32,15 @@ namespace hazelcast {
                 writeHead = begin;
                 i = socket.receive((void *) writeHead, capacity - remaining, 0);
                 writeHead += i;
+            };
+
+            void writeTo(const client::Socket &socket) {
+                int i = remainingData();
+                int d = distanceToEnd(readHead);
+                socket.send(readHead, d);
+                readHead = begin;
+                socket.send(readHead, i - d);
+                readHead = begin + (i - d);
             };
 
             //range check is necessary before call to this function
@@ -45,16 +54,23 @@ namespace hazelcast {
                         (0x0000ff00 & (c << 8)) |
                         (0x000000ff & d);
             }
-            
-            int read(byte* to, int len){
-                int m = std::max(remaining(), len);
+
+            //range check is necessary before call to this function
+            void writeInt(int i) {
+                std::memcpy(writeHead, &i, sizeof(int));
+                advance(sizeof(i));
+            }
+
+            int read(byte *to, int len) {
+                int m = std::max(remainingData(), len);
                 std::memcpy(to, readHead, m);
                 advance(m);
                 return m;
             }
 
-            void write() {
-                //TODO not implemented
+            void write(std::vector<byte> const &buffer) {
+                std::memcpy(writeHead, &(buffer[0]), buffer.size());
+                advance(buffer.size());
             };
 
             ~CircularBuffer() {
@@ -62,13 +78,18 @@ namespace hazelcast {
             }
 
             //range check is necessary before call to this function
-            void readFully(std::vector<byte>&  buffer){
+            void readFully(std::vector<byte> &buffer) {
                 std::memcpy(&(buffer[0]), readHead, buffer.size());
                 readHead += buffer.size();
             }
 
-            int remaining() const {
+            int remainingData() const {
                 int r = writeHead - readHead;
+                return r >= 0 ? r : capacity - r;
+            }
+
+            int remainingSpace() const {
+                int r = readHead - writeHead;
                 return r >= 0 ? r : capacity - r;
             }
 

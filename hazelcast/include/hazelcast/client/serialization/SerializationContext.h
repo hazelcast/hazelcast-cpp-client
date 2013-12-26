@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-#include "hazelcast/util/ConcurrentMap.h"
+#include "SynchronizedMap.h"
 #include "hazelcast/client/serialization/SerializerHolder.h"
 #include <map>
 #include <vector>
@@ -60,7 +60,7 @@ namespace hazelcast {
                 void operator = (const SerializationContext&);
 
                 int contextVersion;
-                util::ConcurrentMap<int, PortableContext> portableContextMap;
+                util::SynchronizedMap<int, PortableContext> portableContextMap;
                 SerializerHolder serializerHolder;
 
             };

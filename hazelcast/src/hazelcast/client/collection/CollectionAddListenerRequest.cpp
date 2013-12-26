@@ -20,7 +20,7 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_ADD_LISTENER;
             };
 
-            void CollectionAddListenerRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CollectionAddListenerRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 writer.writeBoolean("i", includeValue);
             };

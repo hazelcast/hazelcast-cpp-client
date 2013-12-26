@@ -17,7 +17,7 @@ namespace hazelcast {
 
             }
 
-            void CollectionContainsRequest::writePortable(serialization::PortableWriter& writer) const {
+            void CollectionContainsRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::writePortable(writer);
                 serialization::ObjectDataOutput & output = writer.getRawDataOutput();
                 output.writeInt(valueSet.size());

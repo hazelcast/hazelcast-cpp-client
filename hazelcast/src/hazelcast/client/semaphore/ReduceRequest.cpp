@@ -20,7 +20,7 @@ namespace hazelcast {
                 };
 
 
-                void ReduceRequest::writePortable(serialization::PortableWriter& writer) const {
+                void ReduceRequest::write(serialization::PortableWriter& writer) const {
                     SemaphoreRequest::writePortable(writer);
                 };
 

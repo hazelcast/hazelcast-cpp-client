@@ -24,7 +24,7 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::DESTROY_PROXY;
             }
 
-            void ClientDestroyRequest::writePortable(serialization::PortableWriter &writer) const {
+            void ClientDestroyRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeUTF("s", serviceName);
             }

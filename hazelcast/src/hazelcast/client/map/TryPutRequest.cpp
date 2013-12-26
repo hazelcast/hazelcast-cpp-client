@@ -30,7 +30,7 @@ namespace hazelcast {
                 return PortableHook::TRY_PUT;
             }
 
-            void TryPutRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TryPutRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeLong("timeout", timeout);
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);

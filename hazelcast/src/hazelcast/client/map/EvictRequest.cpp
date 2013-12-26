@@ -27,7 +27,7 @@ namespace hazelcast {
                 return PortableHook::EVICT;
             };
 
-            void EvictRequest::writePortable(serialization::PortableWriter& writer) const {
+            void EvictRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", name);
                 writer.writeInt("t", threadId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

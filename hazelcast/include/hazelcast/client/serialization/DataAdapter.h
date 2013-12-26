@@ -6,13 +6,13 @@
 #define HAZELCAST_DataAdapter
 
 #include "hazelcast/util/CircularBuffer.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <memory>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             class SerializationContext;
-            class Data;
 
             class DataAdapter {
                 enum StatusBit {
@@ -30,24 +30,28 @@ namespace hazelcast {
             public:
                 DataAdapter();
 
+                DataAdapter(const Data& data);
+
                 Data &getData();
 
                 bool readFrom(util::CircularBuffer &buffer);
 
+                bool writeTo(util::CircularBuffer& destination);
+
             private:
-                StatusBit status;
+                int status;
                 int factoryId;
                 int classId;
                 int version;
                 int classDefSize;
                 bool skipClassDef;
                 int bytesRead;
-                std::auto_ptr<Data> data;
+                Data data;
                 SerializationContext* context;
 
                 void setStatus(StatusBit bit);
 
-                bool isStatusSet(StatusBit bit);
+                bool isStatusSet(StatusBit bit) const;
             };
         }
     }

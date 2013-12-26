@@ -20,7 +20,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_GET;
             }
 
-            void TxnMultiMapGetRequest::writePortable(serialization::PortableWriter& writer) const {
+            void TxnMultiMapGetRequest::write(serialization::PortableWriter& writer) const {
                 TxnMultiMapRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);

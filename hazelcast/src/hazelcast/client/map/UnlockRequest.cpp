@@ -33,7 +33,7 @@ namespace hazelcast {
                 return PortableHook::UNLOCK;
             };
 
-            void UnlockRequest::writePortable(serialization::PortableWriter& writer) const {
+            void UnlockRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("tid", threadId);
                 writer.writeBoolean("force", force);

@@ -21,7 +21,7 @@ namespace hazelcast {
                     return AtomicLongPortableHook::COMPARE_AND_SET;
                 };
 
-                void CompareAndSetRequest::writePortable(serialization::PortableWriter& writer) const {
+                void CompareAndSetRequest::write(serialization::PortableWriter& writer) const {
                     AtomicLongRequest::writePortable(writer);
                     writer.writeLong("e", expect);
                 };

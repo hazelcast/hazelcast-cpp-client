@@ -12,12 +12,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            InputSocketStream::InputSocketStream(Socket& socket)
+            InputSocketStream::InputSocketStream(Socket &socket)
             :socket(socket)
             , context(NULL) {
             };
 
-            InputSocketStream& InputSocketStream::operator = (const InputSocketStream&) {
+            InputSocketStream &InputSocketStream::operator = (const InputSocketStream &) {
                 return *this;
             };
 
@@ -32,13 +32,13 @@ namespace hazelcast {
                 return context;
             };
 
-            void InputSocketStream::readFully(std::vector<byte>& bytes) {
-                socket.receive(bytes.data(), bytes.size());
+            void InputSocketStream::readFully(std::vector<byte> &bytes) {
+                socket.receive(bytes.data(), bytes.size(), MSG_WAITALL);
             };
 
             int InputSocketStream::skipBytes(int i) {
-				std::vector<byte> temp(i);
-				socket.receive((void*)&(temp[0]), i);
+                std::vector<byte> temp(i);
+                socket.receive((void *) &(temp[0]), i, MSG_WAITALL);
                 return i;
             };
 
@@ -48,7 +48,7 @@ namespace hazelcast {
 
             byte InputSocketStream::readByte() {
                 byte b;
-                socket.receive(&b, sizeof(byte));
+                socket.receive(&b, sizeof(byte), MSG_WAITALL);
                 return b;
             };
 
@@ -67,7 +67,7 @@ namespace hazelcast {
 
             int InputSocketStream::readInt() {
                 byte s[4];
-                socket.receive(s, sizeof(byte) * 4);
+                socket.receive(s, sizeof(byte) * 4, MSG_WAITALL);
                 return (0xff000000 & (s[0] << 24)) |
                         (0x00ff0000 & (s[1] << 16)) |
                         (0x0000ff00 & (s[2] << 8)) |
@@ -130,7 +130,7 @@ namespace hazelcast {
             std::string InputSocketStream::readShortUTF() {
                 short utflen = readShort();
                 std::vector<byte> bytearr(utflen);
-				std::vector<char> chararr(utflen);
+                std::vector<char> chararr(utflen);
                 int c, char2, char3;
                 int count = 0;
                 int chararr_count = 0;
@@ -182,7 +182,7 @@ namespace hazelcast {
                     }
                 }
                 chararr[chararr_count] = '\0';
-				return std::string(chararr.begin(), chararr.end());
+                return std::string(chararr.begin(), chararr.end());
             };
 
         }

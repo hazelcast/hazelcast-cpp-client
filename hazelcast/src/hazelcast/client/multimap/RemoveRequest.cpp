@@ -23,7 +23,7 @@ namespace hazelcast {
             };
 
 
-            void RemoveRequest::writePortable(serialization::PortableWriter& writer) const {
+            void RemoveRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("t", threadId);
                 KeyBasedRequest::writePortable(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

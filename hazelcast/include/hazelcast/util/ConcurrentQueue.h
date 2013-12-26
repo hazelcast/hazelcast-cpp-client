@@ -28,7 +28,7 @@ namespace hazelcast {
             };
 
 
-            void offer(const T *e) {
+            void offer(T *e) {
                 boost::lock_guard<boost::mutex> lg(m);
                 internalQueue.push(e);
             };

@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
-#include "hazelcast/util/ConcurrentMap.h"
+#include "SynchronizedMap.h"
 #include "hazelcast/client/serialization/DataSerializer.h"
 #include "hazelcast/client/serialization/PortableSerializer.h"
 
@@ -34,7 +34,7 @@ namespace hazelcast {
                 DataSerializer& getDataSerializer();
 
             private:
-                util::ConcurrentMap<int, SerializerBase> serializers;
+                util::SynchronizedMap<int, SerializerBase> serializers;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
 

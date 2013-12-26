@@ -21,7 +21,7 @@ namespace hazelcast {
                 return MultiMapPortableHook::REMOVE_ALL;
             };
 
-            void RemoveAllRequest::writePortable(serialization::PortableWriter& writer) const {
+            void RemoveAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("t", threadId);
                 KeyBasedRequest::writePortable(writer);
             };

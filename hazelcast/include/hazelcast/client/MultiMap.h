@@ -282,12 +282,12 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-            template < typename L>
-            long addEntryListener(L &listener, bool includeValue) {
-                multimap::AddEntryListenerRequest request(getName(), includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
-            };
+//            template < typename L>
+//            long addEntryListener(L &listener, bool includeValue) {
+//                multimap::AddEntryListenerRequest request(getName(), includeValue);
+//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+//                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
+//            };
 
             /**
              * Adds the specified entry listener for the specified key.
@@ -307,14 +307,14 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-            template < typename L>
-            long addEntryListener(L &listener, const K &key, bool includeValue) {
-                serialization::Data keyData = toData(key);
-                serialization::Data cloneData = keyData.clone();
-                multimap::AddEntryListenerRequest request(getName(), keyData, includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
-            };
+//            template < typename L>
+//            long addEntryListener(L &listener, const K &key, bool includeValue) {
+//                serialization::Data keyData = toData(key);
+//                serialization::Data cloneData = keyData.clone();
+//                multimap::AddEntryListenerRequest request(getName(), keyData, includeValue);
+//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+//                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
+//            };
 
             /**
             * Removes the specified entry listener
@@ -324,9 +324,9 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-            bool removeEntryListener(long registrationId) {
-                return getContext().getServerListenerService().stopListening(registrationId);
-            };
+//            bool removeEntryListener(long registrationId) {
+//                return getContext().getServerListenerService().stopListening(registrationId);
+//            };
 
             /**
              * Acquires the lock for the specified key.
@@ -517,16 +517,6 @@ namespace hazelcast {
             template<typename T>
             boost::shared_ptr<T> toObject(const serialization::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request, serialization::Data &keyData) {
-                return getContext().getInvocationService().template invokeOnKeyOwner<Response>(request, keyData);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().getInvocationService().template invokeOnRandomTarget<Response>(request);
             };
 
             MultiMap(const std::string &instanceName, spi::ClientContext *context)

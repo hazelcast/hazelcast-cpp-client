@@ -25,7 +25,7 @@ namespace hazelcast {
                 return PortableHook::SQL_QUERY;
             }
 
-            void QueryRequest::writePortable(serialization::PortableWriter &writer) const {
+            void QueryRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeUTF("t", iterationType);
                 writer.writeUTF("sql", sql);

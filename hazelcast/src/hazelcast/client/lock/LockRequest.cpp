@@ -36,7 +36,7 @@ namespace hazelcast {
             };
 
 
-            void LockRequest::writePortable(serialization::PortableWriter& writer) const {
+            void LockRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeInt("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);

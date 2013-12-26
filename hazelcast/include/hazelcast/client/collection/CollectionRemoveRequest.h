@@ -22,7 +22,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 const serialization::Data& data;

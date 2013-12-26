@@ -24,7 +24,7 @@ namespace hazelcast {
                 return PortableHook::CONTAINS_VALUE;
             }
 
-            void ContainsValueRequest::writePortable(serialization::PortableWriter &writer) const {
+            void ContainsValueRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 value.writeData(out);

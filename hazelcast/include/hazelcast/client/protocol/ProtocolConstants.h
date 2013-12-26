@@ -1,6 +1,7 @@
 #ifndef HAZELCAST_PROTOCOL_CONSTANTS
 #define HAZELCAST_PROTOCOL_CONSTANTS
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 
 namespace hazelcast {
@@ -8,6 +9,8 @@ namespace hazelcast {
 
         namespace protocol {
             namespace ProtocolConstants {
+                int const CLIENT_DS_FACTORY = -3;
+                int const CLIENT_RESPONSE = 1;
 
                 int const CLIENT_PORTABLE_FACTORY = -3;
                 int const HAZELCAST_SERVER_ERROR_ID = 1;
@@ -18,9 +21,12 @@ namespace hazelcast {
                 int const CREATE_PROXY = 7;
                 int const DESTROY_PROXY = 8;
                 int const LISTENER = 9;
+                int const MEMBERSHIP_LISTENER = 10;
+                int const CLIENT_PING = 11;
+                int const GET_PARTITIONS = 12;
+                int const REMOVE_LISTENER = 13;
 
                 int const PARTITION_DS_FACTORY = -2;
-                int const GET_PARTITIONS = 1;
                 int const PARTITIONS = 2;
                 int const ADD_LISTENER = 3;
 
