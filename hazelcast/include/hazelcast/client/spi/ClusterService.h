@@ -134,7 +134,7 @@ namespace hazelcast {
 
                 bool removeMembershipListener(MembershipListener *listener);
 
-                bool isMemberExists(const Address &address);
+//                bool isMemberExists(const Address &address);
 
                 connection::Member getMember(const std::string &uuid);
 
@@ -147,10 +147,11 @@ namespace hazelcast {
                 static const int RETRY_COUNT = 20;
                 static const int RETRY_WAIT_TIME = 500;
             private:
-                void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
+//                void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
 
                 typedef util::SynchronizedMap<int, boost::promise<serialization::Data> > CallMap;
                 util::ConcurrentSmartMap<Address, CallMap, addressComparator> addressCallMap;
+                boost::mutex connectionLock;
                 boost::atomic<long> callIdGenerator;
                 connection::ConnectionManager &connectionManager;
                 serialization::SerializationService &serializationService;
@@ -168,15 +169,15 @@ namespace hazelcast {
                 const bool redoOperation;
                 boost::atomic<bool> active;
 
-                void fireMembershipEvent(connection::MembershipEvent &membershipEvent);
+//                void fireMembershipEvent(connection::MembershipEvent &membershipEvent);
 
 //                connection::Connection *getConnection(const Address &address);
 
 //                connection::Connection *getRandomConnection();
 
-                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
+//                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
 
-                void beforeRetry();
+//                void beforeRetry();
 
             };
 

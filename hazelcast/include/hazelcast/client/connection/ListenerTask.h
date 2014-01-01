@@ -8,24 +8,26 @@
 #ifndef HAZELCAST_ListenerTask
 #define HAZELCAST_ListenerTask
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace connection {
             class IOListener;
 
-            class ListenerTask {
+            class HAZELCAST_API ListenerTask {
             public:
-                void init(IOListener *nioListener) {
-                    this->nioListener = nioListener;
-                };
+//                void init(IOListener *nioListener) {
+//                    this->nioListener = nioListener;
+//                };
 
-                virtual void process() = 0;
+                virtual void run() = 0;
 
                 virtual ~ListenerTask() {
 
                 };
             protected:
-                IOListener *nioListener;
+//                IOListener *nioListener;
             };
         }
     }

@@ -14,18 +14,30 @@
 #include <map>
 
 namespace hazelcast {
+    namespace util{
+        class ServerSocket;
+    }
     namespace client {
+        class Soclet;
         namespace connection {
-            class WriteHandler;
+            class OutputHandler;
 
             class HAZELCAST_API OListener : public IOListener{
             public:
                 OListener();
 
+                ~OListener();
+
+                void wakeUp();
+
+                void init();
+
                 void listen();
 
             private:
-                std::map<int, WriteHandler*> writeHandlers; //TODO who fills this map ?
+                void acceptThread(util::ServerSocket * serverSocket);
+                util::SocketSet wakeUpSocketSet;
+                Socket* wakeUpSocket;
             };
         }
     }

@@ -16,6 +16,8 @@ namespace hazelcast {
         namespace connection {
             class ListenerTask;
 
+            class IOHandler;
+
             class HAZELCAST_API IOListener {
             public:
                 IOListener();
@@ -29,6 +31,10 @@ namespace hazelcast {
                 void shutdown();
 
                 void addSocket(const Socket &socket);
+
+                void removeSocket(const Socket &socket);
+
+                void addHandler(int , IOHandler* );
             protected:
 
                 void processListenerQueue();
@@ -37,6 +43,8 @@ namespace hazelcast {
                 boost::atomic<bool> isAlive;
                 util::SocketSet socketSet;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
+                std::map<int, IOHandler *> ioHandlers;
+
             };
         }
     }

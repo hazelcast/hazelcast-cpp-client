@@ -6,9 +6,10 @@
 #ifndef HAZELCAST_WriteHandler
 #define HAZELCAST_WriteHandler
 
-#include "hazelcast/util/CircularBuffer.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-
+#include "hazelcast/client/connection/IOHandler.h"
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -24,21 +25,25 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API WriteHandler {
+            class HAZELCAST_API OutputHandler : public IOHandler {
             public:
-                WriteHandler(Connection &connection, OListener &oListener, int bufferSize);
+                OutputHandler(Connection &connection, OListener &oListener, int bufferSize);
 
                 void handle();
 
                 void enqueueData(const serialization::Data &data);
 
+                void run();
+
             private:
-                util::CircularBuffer buffer;
+                util::ByteBuffer buffer;
                 util::ConcurrentQueue<serialization::DataAdapter> writeQueue;
-                Connection &connection;
-                OListener &oListener;
                 serialization::DataAdapter *lastData;
                 bool initialized;
+                bool ready;
+                boost::atomic<bool> informSelector;
+
+
             };
         }
     }

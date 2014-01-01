@@ -149,12 +149,6 @@ namespace hazelcast {
              */
             int attemptPeriod;
 
-
-//            SocketOptions socketOptions;
-
-
-//             ProxyFactoryConfig proxyFactoryConfig ;
-
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.
              */
@@ -164,8 +158,6 @@ namespace hazelcast {
              * Can be used instead of {@link GroupConfig} in Hazelcast EE.
              */
             protocol::Credentials *credentials;
-
-            protocol::Credentials defaultCredentials;
 
         };
 

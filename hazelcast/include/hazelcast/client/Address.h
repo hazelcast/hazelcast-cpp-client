@@ -63,7 +63,7 @@ namespace hazelcast {
 
 
         inline HAZELCAST_API std::ostream& operator <<(std::ostream &strm, const Address &a) {
-            return strm << "Address[" << a.getHost() << ":" << util::to_string(a.getPort()) << "]";
+            return strm << "Address[" << a.getHost() << ":" << a.getPort() << "]";
         };
     }
 };

@@ -11,17 +11,21 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, OListener &oListener)
+            Connection::Connection(const Address &address, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener& iListener, OListener &oListener)
             : serializationService(serializationService)
             , socket(address)
             , connectionId(CONN_ID++)
             , live(true)
-            , readHandler(*this, clusterService, 16 << 10)
+            , readHandler(*this, iListener, clusterService, 16 << 10)
             , writeHandler(*this, oListener, 16 << 10) {
+
             };
 
             void Connection::connect() {
-                socket.connect();
+                int error = socket.connect();
+                if(error){
+                    throw client::exception::IOException("Socket::connect", strerror(error));
+                }
             };
 
 
@@ -42,10 +46,6 @@ namespace hazelcast {
 
             Socket const &Connection::getSocket() const {
                 return socket;
-            };
-
-            const Address &Connection::getEndpoint() const {
-                return socket.getAddress();
             };
 
             const Address &Connection::getRemoteEndpoint() const {

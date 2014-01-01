@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/connection/ConnectionPool.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -69,16 +68,12 @@ namespace hazelcast {
 
             Connection *ConnectionManager::getRandomConnection() {
                 checkLive();
-                Address address = clientConfig.getLoadBalancer()->next().getAddress();
+//        TODO        Address address = clientConfig.getLoadBalancer()->next().getAddress();
+                Address address = clientConfig.getAddresses()[0];
                 return getOrConnect(address);
             }
 
             void ConnectionManager::authenticate(Connection &connection, bool reAuth, bool firstConnection) {
-                checkLive();
-                connection.connect();
-                if (socketInterceptor.get() != NULL) {
-                    socketInterceptor.get()->onConnect(connection.getSocket());
-                }
                 protocol::AuthenticationRequest auth(clientConfig.getCredentials());
                 auth.setPrincipal(principal.get());
                 auth.setReAuth(reAuth);
@@ -86,15 +81,13 @@ namespace hazelcast {
                 boost::shared_future<serialization::Data> future = clusterService.send(auth, connection);
 
                 serialization::Data result;
-                if (future.timed_wait(boost::posix_time::seconds(120))) {
+                if (future.timed_wait(boost::posix_time::seconds(10))) {
                     result = future.get();
                 } else {
-                    //TODO a
-//                        throw new AuthenticationException(e.getMessage());
+                    throw exception::IOException("void ConnectionManager::authenticate", "Not authenticated");
                 }
-//TODO                final SerializableCollection coll = ErrorHandler.returnResultOrThrowException(result);
-                impl::SerializableCollection collection;
-                std::vector<serialization::Data *> const &getCollection = collection.getCollection();
+                boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(result);
+                std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
                 if (firstConnection)
@@ -109,7 +102,7 @@ namespace hazelcast {
 
 
             Connection *ConnectionManager::connectTo(const Address &address) {
-                Connection *conn = new Connection(address, serializationService, clusterService, oListener);
+                Connection *conn = new Connection(address, serializationService, clusterService, iListener, oListener);
                 checkLive();
                 conn->connect();
                 //TODO socket options

@@ -8,7 +8,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            DataAdapter::DataAdapter(const Data& data)
+            DataAdapter::DataAdapter(const Data &data)
             :status(stType)
             , factoryId(0)
             , classId(0)
@@ -16,7 +16,8 @@ namespace hazelcast {
             , classDefSize(0)
             , skipClassDef(false)
             , bytesRead(0)
-            , data(data){
+            , bytesWritten(0)
+            , data(data) {
 
             }
 
@@ -27,7 +28,8 @@ namespace hazelcast {
             , version(0)
             , classDefSize(0)
             , skipClassDef(false)
-            , bytesRead(0) {
+            , bytesRead(0)
+            , bytesWritten(0) {
 
             }
 
@@ -37,16 +39,16 @@ namespace hazelcast {
             }
 
 
-            bool DataAdapter::writeTo(util::CircularBuffer &destination) {
+            bool DataAdapter::writeTo(util::ByteBuffer &destination) {
                 if (!isStatusSet(stType)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     destination.writeInt(data.type);
                     setStatus(stType);
                 }
                 if (!isStatusSet(stClassId)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     classId = data.cd == NULL ? Data::NO_CLASS_ID : data.cd->getClassId();
@@ -60,14 +62,14 @@ namespace hazelcast {
                     setStatus(stClassId);
                 }
                 if (!isStatusSet(stFactoryId)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     destination.writeInt(data.cd->getFactoryId());
                     setStatus(stFactoryId);
                 }
                 if (!isStatusSet(stVersion)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     int version = data.cd->getVersion();
@@ -75,29 +77,25 @@ namespace hazelcast {
                     setStatus(stVersion);
                 }
                 if (!isStatusSet(stClassDefSize)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
-//                        final BinaryClassDefinition cd = (BinaryClassDefinition) data.classDefinition;
-//                        final byte[] binary = cd.getBinary();
-//                        classDefSize = binary == null ? 0 : binary.length;
+                    classDefSize = data.cd->getBinary().size();
                     destination.writeInt(classDefSize);
                     setStatus(stClassDefSize);
                     if (classDefSize == 0) {
                         setStatus(stClassDef);
-                    } else {
-//                            buffer = ByteBuffer.wrap(binary);
                     }
                 }
                 if (!isStatusSet(stClassDef)) {
-//                        IOUtil.copyToHeapBuffer(buffer, destination);
-//                        if (buffer.hasRemaining()) {
-//                            return false;
-//                        }
+                    if (destination.remaining() < data.cd->getBinary().size()) {
+                        return false;
+                    }
+                    destination.readFrom(data.cd->getBinary());
                     setStatus(stClassDef);
                 }
                 if (!isStatusSet(stSize)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     int size = data.bufferSize();
@@ -106,18 +104,18 @@ namespace hazelcast {
                     if (size <= 0) {
                         setStatus(stValue);
                     } else {
-//                            buffer = ByteBuffer.wrap(data.buffer);
+                        bytesWritten = 0;
                     }
                 }
                 if (!isStatusSet(stValue)) {
-//                        IOUtil.copyToHeapBuffer(buffer, destination);
-//                        if (buffer.hasRemaining()) {
-//                            return false;
-//                        }
+                    bytesWritten += destination.readFrom(*(data.buffer), bytesWritten);
+                    if (bytesWritten != data.buffer->size()) {
+                        return false;
+                    }
                     setStatus(stValue);
                 }
                 if (!isStatusSet(stHash)) {
-                    if (destination.remainingSpace() < 4) {
+                    if (destination.remaining() < 4) {
                         return false;
                     }
                     destination.writeInt(data.getPartitionHash());
@@ -127,16 +125,16 @@ namespace hazelcast {
                 return true;
             }
 
-            bool DataAdapter::readFrom(util::CircularBuffer &source) {
+            bool DataAdapter::readFrom(util::ByteBuffer &source) {
                 if (!isStatusSet(stType)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     data.type = source.readInt();
                     setStatus(stType);
                 }
                 if (!isStatusSet(stClassId)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     classId = source.readInt();
@@ -149,7 +147,7 @@ namespace hazelcast {
                     }
                 }
                 if (!isStatusSet(stFactoryId)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     factoryId = source.readInt();
@@ -158,7 +156,7 @@ namespace hazelcast {
                     setStatus(stFactoryId);
                 }
                 if (!isStatusSet(stVersion)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     version = source.readInt();
@@ -172,28 +170,28 @@ namespace hazelcast {
                         }
                     }
                     if (!isStatusSet(stClassDefSize)) {
-                        if (source.remainingData() < 4) {
+                        if (source.remaining() < 4) {
                             return false;
                         }
                         classDefSize = source.readInt();
                         setStatus(stClassDefSize);
                     }
                     if (!isStatusSet(stClassDef)) {
-                        if (source.remainingData() < classDefSize) {
+                        if (source.remaining() < classDefSize) {
                             return false;
                         }
                         if (skipClassDef) {
-                            source.advance(classDefSize);
+                            source.skip(classDefSize);
                         } else {
                             std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                            source.readFully(*(classDefBytes.get()));
+                            source.writeTo(*(classDefBytes.get()));
                             data.cd = context->createClassDefinition(factoryId, classDefBytes);
                         }
                         setStatus(stClassDef);
                     }
                 }
                 if (!isStatusSet(stSize)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     int valueSize = source.readInt();
@@ -201,7 +199,7 @@ namespace hazelcast {
                     setStatus(stSize);
                 }
                 if (!isStatusSet(stValue)) {
-                    bytesRead += source.read(&((*(data.buffer))[0]), data.buffer->size() - bytesRead);
+                    bytesRead += source.writeTo((*(data.buffer)), bytesRead);
                     if (bytesRead != data.buffer->size()) {
                         return false;
                     }
@@ -209,7 +207,7 @@ namespace hazelcast {
                 }
 
                 if (!isStatusSet(stHash)) {
-                    if (source.remainingData() < 4) {
+                    if (source.remaining() < 4) {
                         return false;
                     }
                     data.partitionHash = source.readInt();

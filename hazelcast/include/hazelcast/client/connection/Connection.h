@@ -8,8 +8,8 @@
 #define HAZELCAST_CONNECTION
 
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/WriteHandler.h"
+#include "hazelcast/client/connection/InputHandler.h"
+#include "hazelcast/client/connection/OutputHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,19 +25,19 @@ namespace hazelcast {
         namespace connection {
             class OListener;
 
+            class IListener;
+
             static int CONN_ID = 1;
 
             class HAZELCAST_API Connection {
             public:
-                Connection(const Address &address, serialization::SerializationService &,spi::ClusterService& clusterService, OListener& listener);
+                Connection(const Address &address, serialization::SerializationService &,spi::ClusterService& clusterService, IListener& iListener, OListener& listener);
 
                 void connect();
 
                 void close();
 
                 bool write(serialization::Data const &data);
-
-                const Address &getEndpoint() const;
 
                 const Address &getRemoteEndpoint() const;
 
@@ -55,15 +55,14 @@ namespace hazelcast {
                 Socket socket;
                 int connectionId;
                 Address remoteEndpoint;
-                ReadHandler readHandler;
-                WriteHandler writeHandler;
+                InputHandler readHandler;
+                OutputHandler writeHandler;
             };
 
 
             inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {
-                return strm << "Connection [id " << util::to_string(a.getConnectionId()) << "][" << a.getEndpoint()
-                        << " -> " << a.getSocket().getHost() << ":"
-                        << util::to_string(a.getSocket().getPort()) << "]";
+                return strm << "Connection [id " << a.getConnectionId() << "][" << a.getRemoteEndpoint()
+                        << " -> " << a.getSocket().getAddress() << "]";
             };
         }
     }

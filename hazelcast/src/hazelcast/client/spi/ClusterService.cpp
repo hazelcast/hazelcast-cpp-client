@@ -33,7 +33,7 @@ namespace hazelcast {
                 serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
                 serializationService.getSerializationContext().registerClassDefinition(ptr);
 
-                connection::Connection *connection = connectToOne(clientConfig.getAddresses());
+//                connection::Connection *connection = connectToOne(clientConfig.getAddresses());
 //                clusterThread.setInitialConnection(connection);
 //                boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
 //                clusterThread.setThread(t);
@@ -65,9 +65,17 @@ namespace hazelcast {
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &object, connection::Connection &connection) {
                 long callId = callIdGenerator++;
-                util::AtomicPointer <CallMap> pointer = addressCallMap.get(connection.getEndpoint());
-                boost::promise<serialization::Data> *promise = new boost::promise<serialization::Data>();
-                pointer->put(callId, promise);
+                boost::promise<serialization::Data> *promise;
+                {
+                    boost::lock_guard<boost::mutex> l(connectionLock);
+                    if(!addressCallMap.containsKey(connection.getRemoteEndpoint())){
+                        addressCallMap.put(connection.getRemoteEndpoint(), new CallMap());
+                    }
+                    util::AtomicPointer <CallMap> pointer = addressCallMap.get(connection.getRemoteEndpoint());
+                    promise = new boost::promise<serialization::Data>();
+                    pointer->put(callId, promise);
+                }
+
                 object.callId = callId;
                 serialization::Data request = serializationService.toData<impl::PortableRequest>(&object);
                 connection.write(request);
@@ -106,42 +114,42 @@ namespace hazelcast {
 //                return connection;
 //            }
 
-            connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
-                active = false;
-                const int connectionAttemptLimit = clientConfig.getConnectionAttemptLimit();
-                int attempt = 0;
-                std::exception lastError;
-                while (true) {
-                    time_t tryStartTime = std::time(NULL);
-                    std::vector<Address>::const_iterator it;
-                    for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
-                        try {
-                            connection::Connection *pConnection = connectionManager.firstConnection(*it);
-                            active = true;
-                            return pConnection;
-                        } catch (exception::IOException &e) {
-                            lastError = e;
-                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
-                        } catch (exception::ServerException &e) {
-                            lastError = e;
-                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
-
-                        }
-                    }
-                    if (attempt++ >= connectionAttemptLimit) {
-                        break;
-                    }
-                    const double remainingTime = clientConfig.getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
-                    using namespace std;
-                    std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
-                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
-
-                    if (remainingTime > 0) {
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
-                    }
-                }
-                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
-            };
+//            connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
+//                active = false;
+//                const int connectionAttemptLimit = clientConfig.getConnectionAttemptLimit();
+//                int attempt = 0;
+//                std::exception lastError;
+//                while (true) {
+//                    time_t tryStartTime = std::time(NULL);
+//                    std::vector<Address>::const_iterator it;
+//                    for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
+//                        try {
+//                            connection::Connection *pConnection = connectionManager.firstConnection(*it);
+//                            active = true;
+//                            return pConnection;
+//                        } catch (exception::IOException &e) {
+//                            lastError = e;
+//                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
+//                        } catch (exception::ServerException &e) {
+//                            lastError = e;
+//                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
+//
+//                        }
+//                    }
+//                    if (attempt++ >= connectionAttemptLimit) {
+//                        break;
+//                    }
+//                    const double remainingTime = clientConfig.getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
+//                    using namespace std;
+//                    std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
+//                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
+//
+//                    if (remainingTime > 0) {
+//                        boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
+//                    }
+//                }
+//                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
+//            };
 
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
@@ -163,21 +171,21 @@ namespace hazelcast {
                 return b;
             };
 
-            void ClusterService::fireMembershipEvent(connection::MembershipEvent &event) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
-                for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    if (event.getEventType() == connection::MembershipEvent::MEMBER_ADDED) {
-                        (*it)->memberAdded(event);
-                    } else {
-                        (*it)->memberRemoved(event);
-                    }
-                }
-            };
-
-            bool ClusterService::isMemberExists(Address const &address) {
-                boost::lock_guard<boost::mutex> guard(membersLock);
-                return members.count(address) > 0;;
-            };
+//            void ClusterService::fireMembershipEvent(connection::MembershipEvent &event) {
+//                boost::lock_guard<boost::mutex> guard(listenerLock);
+//                for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+//                    if (event.getEventType() == connection::MembershipEvent::MEMBER_ADDED) {
+//                        (*it)->memberAdded(event);
+//                    } else {
+//                        (*it)->memberRemoved(event);
+//                    }
+//                }
+//            };
+//
+//            bool ClusterService::isMemberExists(Address const &address) {
+//                boost::lock_guard<boost::mutex> guard(membersLock);
+//                return members.count(address) > 0;;
+//            };
 
             connection::Member ClusterService::getMember(const std::string &uuid) {
                 vector<connection::Member> list = getMemberList();
@@ -200,24 +208,30 @@ namespace hazelcast {
                 return v;
             };
 
-            void ClusterService::beforeRetry() {
-                boost::this_thread::sleep(boost::posix_time::milliseconds(RETRY_WAIT_TIME));
-            }
-
-            void ClusterService::setMembers(const std::map<Address, connection::Member, addressComparator > &map) {
-                boost::lock_guard<boost::mutex> guard(membersLock);
-                members = map;
-            }
+//            void ClusterService::beforeRetry() {
+//                boost::this_thread::sleep(boost::posix_time::milliseconds(RETRY_WAIT_TIME));
+//            }
+//
+//            void ClusterService::setMembers(const std::map<Address, connection::Member, addressComparator > &map) {
+//                boost::lock_guard<boost::mutex> guard(membersLock);
+//                members = map;
+//            }
 
             void ClusterService::handlePacket(const Address &address, serialization::Data &data) {
-                util::AtomicPointer <CallMap> pointer = addressCallMap.get(address);
+
                 boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
                 if (response->isEvent()) {
                     //TODO
                     return;
                 }
-                boost::promise<serialization::Data> *promise = pointer->remove(response->getCallId());
-                promise->set_value(response->getData());
+                {
+                    boost::lock_guard<boost::mutex> l(connectionLock);
+                    util::AtomicPointer <CallMap> pointer = addressCallMap.get(address);
+                    assert(pointer.isNull() == false && "Could addressCallMap emoty in hanldePacket???");
+                    boost::promise<serialization::Data> *promise = pointer->remove(response->getCallId());
+                    promise->set_value(response->getData());
+                }
+
             }
 
 

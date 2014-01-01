@@ -6,8 +6,8 @@
 #ifndef HAZELCAST_ReadHandler
 #define HAZELCAST_ReadHandler
 
-#include "hazelcast/util/CircularBuffer.h"
-
+#include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/connection/IOHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -15,24 +15,29 @@ namespace hazelcast {
             class DataAdapter;
         }
         namespace spi {
-                      class ClusterService;
+            class ClusterService;
         }
         namespace connection {
             class Connection;
 
             class ConnectionManager;
 
-            class HAZELCAST_API ReadHandler {
+            class IListener;
+
+            class HAZELCAST_API InputHandler : public IOHandler{
             public:
-                ReadHandler(Connection &connection, spi::ClusterService &clusterService, int bufferSize);
+                InputHandler(Connection &connection, IListener& ioListener, spi::ClusterService &clusterService, int bufferSize);
 
                 void handle();
 
+                void run();
+
             private:
-                util::CircularBuffer buffer;
-                Connection &connection;
+                util::ByteBuffer buffer;
                 spi::ClusterService &clusterService;
-                serialization::DataAdapter *dataAdapter;
+                serialization::DataAdapter *lastData;
+
+
             };
         }
     }

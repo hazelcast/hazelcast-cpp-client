@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-			
+
             HazelcastInstanceFactory::HazelcastInstanceFactory()
             : address(HOST, 6543)
             , socket(address)
@@ -18,13 +18,9 @@ namespace hazelcast {
             , inputSocketStream(socket) {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
                 boost::this_thread::sleep(boost::posix_time::seconds(3));
-                try {
-                    socket.connect();
-                } catch(std::exception &e) {
-                    std::cout << e.what() << std::endl;
-                    std::cout.flush();
-                    //system("killall -9 java");
-                }
+                int error = socket.connect();
+                std::cout << strerror(error) << std::endl;
+
             }
 
 

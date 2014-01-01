@@ -12,16 +12,12 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class ReadHandler;
 
             class HAZELCAST_API IListener : public IOListener {
             public:
                 IListener();
 
                 void listen();
-
-            private:
-                std::map<int, ReadHandler* > readHandlers; //TODO who fills this map ?
             };
         }
     }

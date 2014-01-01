@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_DataAdapter
 #define HAZELCAST_DataAdapter
 
-#include "hazelcast/util/CircularBuffer.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <memory>
 
@@ -34,9 +34,9 @@ namespace hazelcast {
 
                 Data &getData();
 
-                bool readFrom(util::CircularBuffer &buffer);
+                bool readFrom(util::ByteBuffer &buffer);
 
-                bool writeTo(util::CircularBuffer& destination);
+                bool writeTo(util::ByteBuffer& destination);
 
             private:
                 int status;
@@ -46,6 +46,7 @@ namespace hazelcast {
                 int classDefSize;
                 bool skipClassDef;
                 int bytesRead;
+                int bytesWritten;
                 Data data;
                 SerializationContext* context;
 

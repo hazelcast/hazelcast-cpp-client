@@ -14,12 +14,13 @@ namespace hazelcast {
         , credentials(NULL)
         , loadBalancer(NULL)
         , socketInterceptor(NULL)
-        , defaultCredentials(groupConfig.getName() , groupConfig.getPassword())
         , defaultLoadBalancer(new impl::RoundRobinLB) {
         };
 
 
         ClientConfig::~ClientConfig() {
+            if(credentials != NULL)
+                delete credentials;
         };
 
         ClientConfig & ClientConfig::addAddress(const Address  & address) {
@@ -110,7 +111,7 @@ namespace hazelcast {
 
         protocol::Credentials & ClientConfig::getCredentials() {
             if (credentials == NULL) {
-                return defaultCredentials;
+                credentials = new protocol::Credentials(groupConfig.getName() , groupConfig.getPassword());
             }
             return *credentials;
         };

@@ -3,7 +3,7 @@
 
 namespace hazelcast {
     namespace client {
-        Socket::Socket(const client::Address &address): address(address), size(32 * 1024) {
+        Socket::Socket(const client::Address &address){
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
                 if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
@@ -20,15 +20,25 @@ namespace hazelcast {
             }
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
+            int size = 32 * 1024;//TODO
             ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
             ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
             #if defined(SO_NOSIGPIPE)
-            setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &size, sizeof(int));
+            int on = 1;
+            setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
             #endif
 
         };
 
-        Socket::Socket(const Socket &rhs) : address(rhs.address) {
+
+        Socket::Socket(struct addrinfo *serverInfo, int socketId)
+        : serverInfo(serverInfo)
+        ,socketId(socketId)
+        ,isOpen(true){
+
+        }
+
+        Socket::Socket(const Socket &rhs) {
             //private
         };
 
@@ -36,25 +46,27 @@ namespace hazelcast {
             close();
         };
 
-        void Socket::connect() {
+        int Socket::connect() {
             if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();
                 #else
                 int error = errno;
                 #endif
-                throw client::exception::IOException("Socket::connect", strerror(error));
-
+                return error;
             }
+            return 0;
         }
 
-        void Socket::send(const void *buffer, int len) const {
-            if (::send(socketId, (char *) buffer, len, 0) == -1)
+        int Socket::send(const void *buffer, int len) const {
+            int bytesSend = 0;
+            if ((bytesSend = ::send(socketId, (char *) buffer, (size_t)len, 0)) == -1)
                 throw client::exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
+            return bytesSend;
         };
 
         int Socket::receive(void *buffer, int len, int flag) const {
-            int size = ::recv(socketId, (char *) buffer, len, flag);
+            int size = ::recv(socketId, (char *) buffer, (size_t)len, flag);
 
             if (size == -1)
                 throw client::exception::IOException("Socket::receive", "Error socket read");
@@ -64,21 +76,15 @@ namespace hazelcast {
             return size;
         };
 
-
-        std::string Socket::getHost() const {
-            return address.getHost();
-        }
-
-        int Socket::getPort() const {
-            return address.getPort();
-        }
-
         int Socket::getSocketId() const {
             return socketId;
         }
 
-
-        const client::Address& Socket::getAddress() const {
+        client::Address Socket::getAddress() const {
+            char host[1024];
+            char service[20];
+            getnameinfo(serverInfo->ai_addr, serverInfo->ai_addrlen, host, sizeof host, service, sizeof service, 0);
+            Address address(host,atoi(service));
             return address;
         }
 
@@ -87,7 +93,7 @@ namespace hazelcast {
             if (isOpen.compare_exchange_strong(expected, false)) {
                 ::shutdown(socketId, SHUT_RD);
                 char buffer[1];
-                ::recv(socketId, (char *) buffer, 1, MSG_WAITALL);
+                ::recv(socketId, buffer, 1, MSG_WAITALL);
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 WSACleanup();
                 closesocket(socketId);

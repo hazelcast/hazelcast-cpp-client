@@ -39,23 +39,21 @@ namespace hazelcast {
         class HAZELCAST_API Socket {
         public:
 
+            Socket(struct addrinfo *serverInfo, int socketId);
+
             Socket(const client::Address &address);
 
             ~Socket();
 
-            void connect();
+            int connect();
 
-            void send(const void *buffer, int len) const;
+            int send(const void *buffer, int len) const;
 
             int receive(void *buffer, int len, int flag = 0) const;
 
-            std::string getHost() const;
-
-            int getPort() const;
-
             int getSocketId() const;
 
-            const client::Address &getAddress() const;
+            client::Address getAddress() const;
 
             void close();
 
@@ -63,9 +61,7 @@ namespace hazelcast {
 
             Socket(const Socket &rhs);
 
-            client::Address address;
             struct addrinfo *serverInfo;
-            int size;
             int socketId;
             boost::atomic<bool> isOpen;
 

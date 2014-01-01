@@ -19,7 +19,7 @@ namespace hazelcast {
                 :socket(socket){
 
                 }
-                void process() {
+                void run() {
                     nioListener->addSocket(socket);
                 }
 
