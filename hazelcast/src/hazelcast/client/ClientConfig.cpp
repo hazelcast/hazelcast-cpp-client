@@ -96,14 +96,10 @@ namespace hazelcast {
         };
 
 
-        ClientConfig& ClientConfig::addListener(spi::EventListener *listener) {
-            listeners.insert(listener);
-            return *this;
-        };
-
-        std::set<spi::EventListener *>  ClientConfig::getListeners() const {
-            return listeners;
-        };
+//        ClientConfig& ClientConfig::addListener(spi::EventListener *listener) {
+//            listeners.insert(listener);
+//            return *this;
+//        };
 
         void ClientConfig::setCredentials(protocol::Credentials *credentials) {
             this->credentials = credentials;

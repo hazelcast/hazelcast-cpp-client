@@ -15,15 +15,15 @@ namespace hazelcast {
             LifecycleService::LifecycleService(HazelcastClient &hazelcastClient, ClientConfig &config)
             :hazelcastClient(hazelcastClient)
             , active(false) {
-                std::set<spi::EventListener *> listeners = config.getListeners();
-                if (!listeners.empty()) {
-                    for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                        LifecycleListener *listener = static_cast<LifecycleListener *>(*it);
-                        if (listener) {
-                            addLifecycleListener(listener);
-                        }
-                    }
-                }
+//                std::set<spi::EventListener *> listeners = config.getListeners(); TODO
+//                if (!listeners.empty()) {
+//                    for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+//                        LifecycleListener *listener = static_cast<LifecycleListener *>(*it);
+//                        if (listener) {
+//                            addLifecycleListener(listener);
+//                        }
+//                    }
+//                }
                 fireLifecycleEvent(LifecycleEvent::STARTING);
             };
 

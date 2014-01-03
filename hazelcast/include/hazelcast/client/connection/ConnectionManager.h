@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 ~ConnectionManager();
 
-                virtual Connection *firstConnection(const Address &address);
+                virtual Connection *ownerConnection(const Address &address);
 
                 virtual Connection *getOrConnect(const Address &address);
 
@@ -60,7 +60,7 @@ namespace hazelcast {
 
                 virtual void checkLive();
 
-
+                void destroyConnection(Connection& );
             protected:
                 virtual Connection *connectTo(const Address& address);
 

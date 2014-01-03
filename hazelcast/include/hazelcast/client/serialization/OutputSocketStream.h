@@ -20,8 +20,6 @@ namespace hazelcast {
 
         namespace serialization {
 
-
-
             class HAZELCAST_API OutputSocketStream {
             public:
 

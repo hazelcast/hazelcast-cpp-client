@@ -9,7 +9,6 @@
 
 #include "hazelcast/client/exception/IException.h"
 
-
 namespace hazelcast {
     namespace client {
         namespace exception {

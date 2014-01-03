@@ -6,14 +6,15 @@
 #include "hazelcast/client/protocol/Credentials.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/spi/EventListener.h"
 #include <vector>
 #include <set>
 #include <memory>
 
 namespace hazelcast {
     namespace client {
-
+        namespace spi{
+            class LifecycleListener;
+        }
         namespace connection {
 
             class SocketInterceptor;
@@ -71,9 +72,10 @@ namespace hazelcast {
              *                 or {@link com.hazelcast.core.MembershipListener}
              * @return
             */
-            ClientConfig &addListener(spi::EventListener *listener);
+            ClientConfig &addListener(spi::LifecycleListener *listener);
 
-            std::set<spi::EventListener *> getListeners() const;
+            ClientConfig &addListener(MembershipListener *listener);
+
 
             LoadBalancer *const getLoadBalancer();
 
@@ -107,7 +109,7 @@ namespace hazelcast {
              * List of listeners that Hazelcast will automatically add as a part of initialization process.
              * Currently only supports {@link com.hazelcast.core.LifecycleListener}.
              */
-            std::set<spi::EventListener *> listeners;
+//            std::set<spi::EventListener *> listeners;
             /**
              * If true, client will route the key based operations to owner of the key at the best effort.
              * Note that it uses a cached version of {@link com.hazelcast.core.PartitionService#getPartitions()} and doesn't

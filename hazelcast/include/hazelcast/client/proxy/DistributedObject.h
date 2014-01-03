@@ -8,8 +8,10 @@
 #define HAZELCAST_DistributedObject
 
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ClusterService.h"
 #include <string>
 
 namespace hazelcast {
@@ -44,6 +46,27 @@ namespace hazelcast {
                     boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
                     return context->getSerializationService().toObject<Response>(future.get());
                 };
+
+                std::string listen(const impl::PortableRequest &registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler) {
+                    boost::shared_future<serialization::Data> future;
+                    if (partitionKey == NULL) {
+                        future = context->getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
+                    } else {
+                        future = context->getInvocationService().invokeOnKeyOwner(registrationRequest, handler, *partitionKey);
+                    }
+                    boost::shared_ptr<std::string> registrationId = context->getSerializationService().toObject<std::string>(future.get());
+                    context->getClusterService().registerListener(*registrationId, registrationRequest.callId);
+                    return *registrationId;
+                }
+
+                std::string listen(const impl::PortableRequest &registrationRequest, impl::EventHandlerWrapper *handler) {
+                    return listen(registrationRequest, NULL, handler);
+                }
+
+                bool stopListening(const impl::PortableRequest &request, const std::string &registrationId) {
+//                    return ListenerUtil.stopListening(context, request, registrationId); TODO
+                    return true;
+                }
 
             private:
                 const std::string serviceName;

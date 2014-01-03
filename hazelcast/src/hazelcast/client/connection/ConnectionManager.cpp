@@ -46,7 +46,7 @@ namespace hazelcast {
 //                return connection;
 //            };
 
-            Connection *ConnectionManager::firstConnection(const Address &address) {
+            Connection *ConnectionManager::ownerConnection(const Address &address) {
                 return getOrConnect(address);
             }
 
@@ -100,9 +100,16 @@ namespace hazelcast {
                 }
             }
 
+            void ConnectionManager::destroyConnection(Connection & connection) {
+                Address const &endpoint = connection.getRemoteEndpoint();
+//                if (endpoint != null) {
+//                    connections.remove(clientConnection.getRemoteEndpoint());
+//                }
+                clusterService.removeConnectionCalls(connection);
+            }
 
             Connection *ConnectionManager::connectTo(const Address &address) {
-                Connection *conn = new Connection(address, serializationService, clusterService, iListener, oListener);
+                Connection *conn = new Connection(address, *this, serializationService, clusterService, iListener, oListener);
                 checkLive();
                 conn->connect();
                 //TODO socket options

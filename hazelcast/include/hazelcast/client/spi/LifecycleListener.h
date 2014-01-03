@@ -8,14 +8,14 @@
 #ifndef HAZELCAST_LIFECYCLE_LISTENER
 #define HAZELCAST_LIFECYCLE_LISTENER
 
-#include "hazelcast/client/spi/EventListener.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
             class LifecycleEvent;
 
-            class HAZELCAST_API LifecycleListener : public EventListener {
+            class HAZELCAST_API LifecycleListener{
             public:
                 virtual void stateChanged(const LifecycleEvent& lifecycleEvent) = 0;
 

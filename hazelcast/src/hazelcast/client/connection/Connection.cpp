@@ -4,15 +4,19 @@
 
 
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/serialization/DataAdapter.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener& iListener, OListener &oListener)
+            Connection::Connection(const Address &address, connection::ConnectionManager& connectionManager,serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener &iListener, OListener &oListener)
             : serializationService(serializationService)
+            , connectionManager(connectionManager)
             , socket(address)
             , connectionId(CONN_ID++)
             , live(true)
@@ -23,7 +27,7 @@ namespace hazelcast {
 
             void Connection::connect() {
                 int error = socket.connect();
-                if(error){
+                if (error) {
                     throw client::exception::IOException("Socket::connect", strerror(error));
                 }
             };
@@ -55,6 +59,19 @@ namespace hazelcast {
             void Connection::setRemoteEndpoint(Address &remoteEndpoint) {
                 this->remoteEndpoint = remoteEndpoint;
             };
+
+            void Connection::writeBlocking(serialization::Data const &data) {
+                serialization::OutputSocketStream outputSocketStream(socket);
+                data.writeData(outputSocketStream);
+            }
+
+            serialization::Data Connection::readBlocking() {
+                serialization::InputSocketStream inputSocketStream(socket);
+                inputSocketStream.setSerializationContext(&(serializationService.getSerializationContext()));
+                serialization::Data data;
+                data.readData(inputSocketStream);
+                return data;
+            }
         }
     }
 }

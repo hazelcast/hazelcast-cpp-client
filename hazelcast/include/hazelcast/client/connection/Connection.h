@@ -19,7 +19,6 @@ namespace hazelcast {
             class Data;
         }
 
-
         class Address;
 
         namespace connection {
@@ -31,7 +30,7 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection {
             public:
-                Connection(const Address &address, serialization::SerializationService &,spi::ClusterService& clusterService, IListener& iListener, OListener& listener);
+                Connection(const Address &address, connection::ConnectionManager &connectionManager, serialization::SerializationService &, spi::ClusterService &clusterService, IListener &iListener, OListener &listener);
 
                 void connect();
 
@@ -41,17 +40,22 @@ namespace hazelcast {
 
                 const Address &getRemoteEndpoint() const;
 
-                void setRemoteEndpoint(Address& remoteEndpoint);
+                void setRemoteEndpoint(Address &remoteEndpoint);
 
                 int getConnectionId() const;
 
                 const Socket &getSocket() const;
+
+                void writeBlocking(serialization::Data const &data);
+
+                serialization::Data readBlocking();
 
                 boost::atomic<clock_t> lastRead;
                 boost::atomic<clock_t> lastWrite;
                 boost::atomic<bool> live;
             private:
                 serialization::SerializationService &serializationService;
+                connection::ConnectionManager &connectionManager;
                 Socket socket;
                 int connectionId;
                 Address remoteEndpoint;

@@ -43,7 +43,7 @@ namespace hazelcast {
                 */
                 bool registerSerializer(SerializerBase *serializer);
 
-                template<typename T>
+                template<typename T>//TODO we probably do not need template
                 Data toData(const Portable *portable) {
                     const T *object = static_cast<const T *>(portable);
                     DataOutput output;
@@ -57,7 +57,7 @@ namespace hazelcast {
                     return data;
                 };
 
-                template<typename T>
+                template<typename T> //TODO we probably do not need template
                 Data toData(const IdentifiedDataSerializable *dataSerializable) {
                     const T *object = static_cast<const T *>(dataSerializable);
                     Data data;

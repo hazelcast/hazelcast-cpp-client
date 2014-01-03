@@ -16,6 +16,8 @@ namespace hazelcast {
         }
         namespace impl {
             class PortableRequest;
+
+            class EventHandlerWrapper;
         }
         namespace spi {
 
@@ -33,24 +35,12 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest &request, const Address &target);
 
-//                template<typename Request, typename  ResponseHandler>
-//                boost::shared_future<serialization::Data> invokeOnRandomTarget(const Request &request, ResponseHandler &handler) {
-//                    clusterService.sendAndHandle(request, handler);
-//                };
-//
-//                template<typename Request, typename  ResponseHandler>
-//                boost::shared_future<serialization::Data> invokeOnKeyOwner(const Request &request, serialization::Data &key, ResponseHandler &handler) {
-//                    Address *owner = partitionService.getPartitionOwner(partitionService.getPartitionId(key));
-//                    if (owner != NULL) {
-//                        invokeOnTarget(request, *owner, handler);
-//                    }
-//                    invokeOnRandomTarget(request, handler);
-//                };
-//
-//                template<typename Request, typename  ResponseHandler>
-//                boost::shared_future<serialization::Data> invokeOnTarget(const Request &request, const Address &target, ResponseHandler &handler) {
-//                    clusterService.sendAndHandle(target, request, handler);
-//                }
+                boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler);
+
+                boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler, const Address &target);
+
+                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler, const serialization::Data &key);
+
             private :
                 ClusterService &clusterService;
                 PartitionService &partitionService;

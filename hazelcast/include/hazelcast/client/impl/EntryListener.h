@@ -8,13 +8,12 @@
 #ifndef HAZELCAST_ENTRY_LISTENER
 #define HAZELCAST_ENTRY_LISTENER
 
-#include "hazelcast/client/spi/EventListener.h"
 #include "hazelcast/client/impl/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API EntryListener : public spi::EventListener {
+            class HAZELCAST_API EntryListener{
             public:
 
                 /**

@@ -32,15 +32,15 @@ namespace hazelcast {
             };
 
             void PartitionService::start() {
-//                getInitialPartitions();
-//                boost::thread *partitionListener = new boost::thread(boost::bind(&PartitionService::runListener, this));
-//                partitionListenerThread.reset(partitionListener);
+                getInitialPartitions();
+                boost::thread *partitionListener = new boost::thread(boost::bind(&PartitionService::runListener, this));
+                partitionListenerThread.reset(partitionListener);
             };
 
 
             void PartitionService::stop() {
-//                partitionListenerThread->interrupt();
-//                partitionListenerThread->join();
+                partitionListenerThread->interrupt();
+                partitionListenerThread->join();
             }
 
             Address *PartitionService::getPartitionOwner(int partitionId) {
