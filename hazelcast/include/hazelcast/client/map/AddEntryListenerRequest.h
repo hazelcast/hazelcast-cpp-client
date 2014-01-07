@@ -31,8 +31,6 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter& writer) const;
 
-
-
             private:
                 std::string name;
                 std::string sql;

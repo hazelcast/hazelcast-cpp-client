@@ -10,19 +10,19 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             AddMembershipListenerRequest::AddMembershipListenerRequest() {
-
             };
 
             int AddMembershipListenerRequest::getFactoryId() const {
-                return protocol::ProtocolConstants::DATA_FACTORY_ID;
+                return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
 
             int AddMembershipListenerRequest::getClassId() const {
-                return protocol::ProtocolConstants::ADD_MS_LISTENER;
+                return protocol::ProtocolConstants::MEMBERSHIP_LISTENER;
             }
 
-            void AddMembershipListenerRequest::writeData(serialization::ObjectDataOutput &writer) const {
-            };
+            void AddMembershipListenerRequest::write(serialization::PortableWriter &writer) const {
+
+            }
         }
     }
 }

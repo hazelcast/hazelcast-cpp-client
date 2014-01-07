@@ -2,10 +2,12 @@
 // Created by sancar koyunlu on 24/12/13.
 //
 
-#include "InputHandler.h"
+#include "hazelcast/client/connection/InputHandler.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/serialization/DataAdapter.h"
+#include "hazelcast/client/connection/IListener.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/serialization/DataAdapter.h"
+#include "hazelcast/client/exception/IOException.h"
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
@@ -46,7 +48,7 @@ namespace hazelcast {
                     }
                     bool complete = lastData->readFrom(buffer);
                     if (complete) {
-                        clusterService.handlePacket(connection.getRemoteEndpoint(), lastData->getData());
+                        clusterService.handlePacket(connection, lastData->getData());
                         delete lastData;
                         lastData = NULL;
                     } else {

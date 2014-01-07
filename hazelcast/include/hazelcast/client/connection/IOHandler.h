@@ -16,8 +16,6 @@ namespace hazelcast {
 
             class Connection;
 
-            class ListenerTask;
-
             class HAZELCAST_API IOHandler : public ListenerTask {
             public:
 

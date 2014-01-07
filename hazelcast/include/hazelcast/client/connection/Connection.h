@@ -10,8 +10,12 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/InputHandler.h"
 #include "hazelcast/client/connection/OutputHandler.h"
+#include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
+    namespace util {
+        class CallPromise;
+    }
     namespace client {
         namespace serialization {
             class SerializationService;
@@ -34,6 +38,8 @@ namespace hazelcast {
 
                 void connect();
 
+                void init();
+
                 void close();
 
                 bool write(serialization::Data const &data);
@@ -50,6 +56,21 @@ namespace hazelcast {
 
                 serialization::Data readBlocking();
 
+                // USED BY CLUSTER SERVICE
+                util::CallPromise *registerCall(util::CallPromise *promise);
+
+                void reRegisterCall(util::CallPromise *promise);
+
+                util::CallPromise *deRegisterCall(int callId);
+
+                void registerEventHandler(util::CallPromise *promise);
+
+                util::CallPromise *getEventHandler(int callId);
+
+                util::CallPromise* deRegisterEventHandler(int callId);
+
+                void removeConnectionCalls();
+
                 boost::atomic<clock_t> lastRead;
                 boost::atomic<clock_t> lastWrite;
                 boost::atomic<bool> live;
@@ -59,10 +80,11 @@ namespace hazelcast {
                 Socket socket;
                 int connectionId;
                 Address remoteEndpoint;
+                util::SynchronizedMap<int, util::CallPromise > callPromises;
+                util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
                 InputHandler readHandler;
                 OutputHandler writeHandler;
             };
-
 
             inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {
                 return strm << "Connection [id " << a.getConnectionId() << "][" << a.getRemoteEndpoint()

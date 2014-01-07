@@ -7,6 +7,7 @@
 
 #include "hazelcast/client/connection/Member.h"
 #include <boost/atomic.hpp>
+#include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -17,6 +18,10 @@ namespace hazelcast {
             class ClusterService;
 
             class LifecycleService;
+        }
+
+        namespace serialization{
+            class SerializationService;
         }
 
         namespace connection {
@@ -30,8 +35,6 @@ namespace hazelcast {
             class HAZELCAST_API ClusterListenerThread {
             public:
                 ClusterListenerThread(ConnectionManager &, ClientConfig &clientConfig, spi::ClusterService &, spi::LifecycleService &, serialization::SerializationService &);
-
-//                void setInitialConnection(connection::Connection *);
 
                 void setThread(boost::thread *);
 

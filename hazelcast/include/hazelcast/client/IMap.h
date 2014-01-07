@@ -46,10 +46,12 @@
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/impl/EntryListener.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
+#include "hazelcast/client/impl/EventHandlerWrapper.h"
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/map/RemoveEntryListenerRequest.h"
 #include <string>
 #include <map>
 #include <set>
@@ -83,21 +85,21 @@ namespace hazelcast {
 
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data keyData = toData(key);
-                map::GetRequest request(getName(), keyData);
-                return invoke<V>(request, keyData);
+                map::GetRequest *request = new map::GetRequest(getName(), keyData);
+                return invoke<V>(*request, keyData);
             };
 
             boost::shared_ptr<V> put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::PutRequest request(getName(), keyData, valueData, util::getThreadId(), 0);
-                return invoke<V>(request, keyData);
+                map::PutRequest *request = new map::PutRequest(getName(), keyData, valueData, util::getThreadId(), 0);
+                return invoke<V>(*request, keyData);
             };
 
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data keyData = toData(key);
-                map::RemoveRequest request(getName(), keyData, util::getThreadId());
-                return invoke<V>(request, keyData);
+                map::RemoveRequest *request = new map::RemoveRequest(getName(), keyData, util::getThreadId());
+                return invoke<V>(*request, keyData);
             };
 
             bool remove(const K &key, const V &value) {
@@ -236,25 +238,27 @@ namespace hazelcast {
                 invoke<bool>(request);
             }
 
-//            template < typename L>
-//            long addEntryListener(L &listener, bool includeValue) {
-//                map::AddEntryListenerRequest request(getName(), includeValue);
-//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-//                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
-//            };
-//
-//            template < typename L>
-//            long addEntryListener(L &listener, const K &key, bool includeValue) {
-//                serialization::Data keyData = toData(key);
-//                serialization::Data cloneData = keyData.clone();
-//                map::AddEntryListenerRequest request(getName(), includeValue, keyData);
-//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-//                return getContext().getServerListenerService().template listen<map::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
-//            };
-//
-//            bool removeEntryListener(long registrationId) {
-//                return getContext().getServerListenerService().stopListening(registrationId);
-//            };
+            template < typename L>
+            std::string addEntryListener(L &listener, bool includeValue) {
+                map::AddEntryListenerRequest request(getName(), includeValue);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                impl::EventHandlerWrapper *wrapper = new impl::EventHandlerWrapper(entryEventHandler);
+                return listen(request, wrapper);
+            };
+
+            template < typename L>
+            std::string addEntryListener(L &listener, const K &key, bool includeValue) {
+                serialization::Data keyData = toData(key);
+                map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue, keyData);
+                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                impl::EventHandlerWrapper *wrapper = new impl::EventHandlerWrapper(entryEventHandler);
+                return listen(*request, &keyData, wrapper);
+            };
+
+            bool removeEntryListener(const std::string &registrationId) {
+                map::RemoveEntryListenerRequest *request = new map::RemoveEntryListenerRequest(getName(), registrationId);
+                return stopListening(*request, registrationId);
+            };
 
 
             map::EntryView<K, V> getEntryView(const K &key) {

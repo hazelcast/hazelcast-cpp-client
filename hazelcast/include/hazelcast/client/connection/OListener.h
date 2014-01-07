@@ -35,7 +35,6 @@ namespace hazelcast {
                 void listen();
 
             private:
-                void acceptThread(util::ServerSocket * serverSocket);
                 util::SocketSet wakeUpSocketSet;
                 Socket* wakeUpSocket;
             };

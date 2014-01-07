@@ -52,7 +52,9 @@ namespace hazelcast {
                     PUT_ALL = 40,
                     TXN_REQUEST = 41,
                     TXN_REQUEST_WITH_SQL_QUERY = 42,
-                    EXECUTE_WITH_PREDICATE = 43
+                    EXECUTE_WITH_PREDICATE = 43,
+                    REMOVE_ENTRY_LISTENER = 44,
+                    EXECUTE_ON_KEYS = 45
                 };
             }
 

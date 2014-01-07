@@ -5,14 +5,12 @@
 
 #include "hazelcast/client/map/PutRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            PutRequest::PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl)
+            PutRequest::PutRequest(const std::string &name, serialization::Data &key, serialization::Data &value, int threadId, long ttl)
             :name(name)
             , key(key)
             , value(value)
@@ -30,11 +28,11 @@ namespace hazelcast {
             }
 
 
-            void PutRequest::write(serialization::PortableWriter& writer) const {
+            void PutRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", threadId);
                 writer.writeLong("ttl", ttl);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
             };

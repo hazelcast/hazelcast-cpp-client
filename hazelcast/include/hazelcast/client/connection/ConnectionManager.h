@@ -60,7 +60,11 @@ namespace hazelcast {
 
                 virtual void checkLive();
 
+                int getNextCallId();
+
                 void destroyConnection(Connection& );
+
+                void removeEventHandler(int callId);
             protected:
                 virtual Connection *connectTo(const Address& address);
 
@@ -76,6 +80,7 @@ namespace hazelcast {
                 boost::atomic<bool> live;
                 boost::mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
+                boost::atomic<long> callIdGenerator;
 //                HeartBeatChecker heartBeatChecker;
 
             };

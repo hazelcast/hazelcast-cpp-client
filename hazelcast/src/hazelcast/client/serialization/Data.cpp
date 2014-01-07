@@ -16,7 +16,6 @@ namespace hazelcast {
             Data::Data()
             : partitionHash(0)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
-            , isError(false)
             , buffer(new std::vector<byte>)
             , cd(NULL) {
 
@@ -25,7 +24,6 @@ namespace hazelcast {
             Data::Data(const Data& rhs)
             : partitionHash(rhs.partitionHash)
             , type(rhs.type)
-            , isError(rhs.isError)
             , cd(rhs.cd)
             , buffer(rhs.buffer.release()) {
 
@@ -33,7 +31,6 @@ namespace hazelcast {
 
             Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer)
             : partitionHash(0)
-            , isError(false)
             , buffer(buffer)
             , cd(NULL) {
                 this->type = type;
@@ -45,14 +42,9 @@ namespace hazelcast {
             Data &Data::operator = (const Data &rhs) {
                 partitionHash = rhs.partitionHash;
                 type = rhs.type;
-                isError = rhs.isError;
                 cd = rhs.cd;
                 buffer = rhs.buffer;
                 return (*this);
-            };
-
-            bool Data::isServerError() const {
-                return isError;
             };
 
             int Data::bufferSize() const {
@@ -102,7 +94,6 @@ namespace hazelcast {
                 buff->insert(buff->begin(), buffer->begin(), buffer->end());
                 newData.type = type;
                 newData.cd = cd;
-                newData.isError = isError;
                 newData.partitionHash = partitionHash;
                 return newData;
             };

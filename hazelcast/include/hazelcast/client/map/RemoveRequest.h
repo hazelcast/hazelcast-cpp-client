@@ -5,6 +5,7 @@
 #define HAZELCAST_MAP_REMOVE_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -23,10 +24,8 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter& writer) const;
 
-
-
             private:
-                serialization::Data& key;
+                serialization::Data key;
                 std::string name;
                 int threadId;
             };

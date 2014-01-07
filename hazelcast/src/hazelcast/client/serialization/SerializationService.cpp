@@ -44,13 +44,6 @@ namespace hazelcast {
                 return getSerializerHolder().serializerFor(typeId);
             };
 
-            void SerializationService::checkServerError(const Data & data) {
-                if (data.isServerError()) {
-                    exception::ServerException error;
-                    throw *(toObjectResolved<exception::ServerException>(data, &error));
-                }
-            };
-
         }
     }
 }

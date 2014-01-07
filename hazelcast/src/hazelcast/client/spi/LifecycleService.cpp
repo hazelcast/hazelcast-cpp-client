@@ -4,8 +4,10 @@
 
 
 #include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {

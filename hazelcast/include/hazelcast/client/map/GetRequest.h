@@ -6,6 +6,7 @@
 
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -27,7 +28,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data &key;
+                serialization::Data key;
                 const std::string &name;
             };
         }

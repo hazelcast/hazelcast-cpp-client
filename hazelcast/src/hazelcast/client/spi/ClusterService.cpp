@@ -9,6 +9,9 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/ClientResponse.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/MemberShipEvent.h"
 #include "hazelcast/client/exception/TargetDisconnectedException.h"
 #include "hazelcast/client/impl/EventHandlerWrapper.h"
 #include "hazelcast/util/CallPromise.h"
@@ -25,8 +28,7 @@ namespace hazelcast {
             , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
             , credentials(clientConfig.getCredentials())
             , redoOperation(clientConfig.isRedoOperation())
-            , active(false)
-            , callIdGenerator(0) {
+            , active(false) {
 
             }
 
@@ -56,69 +58,72 @@ namespace hazelcast {
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request) {
                 connection::Connection *connection = getOrConnect(NULL);
-                return send(request, *connection);
+                return doSend(request, NULL, *connection);
             }
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, const Address &address) {
                 connection::Connection *connection = getOrConnect(&address);
-                return send(request, *connection);
+                return doSend(request, NULL, *connection);
             }
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, connection::Connection &connection) {
-                util::CallPromise *promise = registerCall(request, NULL, connection);
-                serialization::Data data = serializationService.toData<impl::PortableRequest>(&request);
-                connection.write(data);
-                return promise->getFuture();
+                return doSend(request, NULL, connection);
             }
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler) {
                 connection::Connection *connection = getOrConnect(NULL);
-                return send(request, eventHandler, *connection);
+                return doSend(request, eventHandler, *connection);
             }
 
             boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, const Address &address) {
                 connection::Connection *connection = getOrConnect(&address);
-                return send(request, eventHandler, *connection);
+                return doSend(request, eventHandler, *connection);
             }
 
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
-                util::CallPromise *promise = registerCall(request, eventHandler, connection);
-                serialization::Data data = serializationService.toData<impl::PortableRequest>(&request);
-                connection.write(data);
+            boost::shared_future<serialization::Data> ClusterService::doSend(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
+                util::CallPromise *promise = new util::CallPromise(*this);
+                promise->setRequest(&request);
+                promise->setEventHandler(eventHandler);
+                _send(promise, connection);
                 return promise->getFuture();
             }
 
-            void ClusterService::registerListener(const std::string& uuid, int callId) {
-//                registrationAliasMap.put(uuid, &uuid);
-//                registrationIdMap.put(uuid, &callId); TODO
+
+            void ClusterService::_send(util::CallPromise *promise, connection::Connection &connection) {
+                connection.registerCall(promise);
+                serialization::Data data = serializationService.toData<impl::PortableRequest>(&(promise->getRequest()));
+                if (!connection.write(data)) {
+                    promise->targetIsNotAlive(connection.getRemoteEndpoint());
+                    connection.removeConnectionCalls();//TODO connectionCallMap.remove(connection);
+                }
             }
 
-            void ClusterService::reRegisterListener(const std::string& uuid, const std::string& alias, int callId){
-//                final String oldAlias = registrationAliasMap.put(uuid, &alias);
-//                if (oldAlias != null) {
-//                    registrationIdMap.remove(oldAlias);
-//                    registrationIdMap.put(alias, callId);  TODO
-//                }
+            void ClusterService::registerListener(const std::string &uuid, int callId) {
+                registrationAliasMap.put(uuid, &uuid);
+                registrationIdMap.put(uuid, &callId);
             }
 
-            bool ClusterService::deRegisterListener(const std::string& uuid) {
-                std::string *alias = registrationAliasMap.remove(uuid);
-            if (alias != NULL) {
-                int* callId = registrationIdMap.remove(*alias);
-//                std::vector<util::AtomicPointer<V> > v = addressEventHandlerMap.values();
-//                for (ConcurrentMap<Integer, ClientCallFuture> eventHandlerMap : v) {
-//                    if(eventHandlerMap.remove(callId) != null){
-//                        return true;                   TODO
-//                    }
-//                }
+            void ClusterService::reRegisterListener(const std::string &uuid, const std::string &alias, int callId) {
+                const string *oldAlias = registrationAliasMap.put(uuid, &alias);
+                if (oldAlias != NULL) {
+                    registrationIdMap.remove(*oldAlias);
+                    registrationIdMap.put(alias, &callId);
+                }
             }
-            return false;
-        }
 
-            void ClusterService::resend(util::CallPromise *promise){
+            bool ClusterService::deRegisterListener(const std::string &uuid) {
+                const std::string *alias = registrationAliasMap.remove(uuid);
+                if (alias != NULL) {
+                    int *callId = registrationIdMap.remove(*alias);
+                    connectionManager.removeEventHandler(*callId);
+                    return true;
+                }
+                return false;
+            }
+
+            void ClusterService::resend(util::CallPromise *promise) {
                 connection::Connection *connection = getOrConnect(NULL);
-                reRegisterCall(promise, *connection);
+                connection->reRegisterCall(promise);
                 serialization::Data data = serializationService.toData<impl::PortableRequest>(&(promise->getRequest()));
                 connection->write(data);
             }
@@ -164,6 +169,11 @@ namespace hazelcast {
                 return connection::Member();
             };
 
+
+            bool ClusterService::isRedoOperation() const {
+                return redoOperation;
+            }
+
             std::vector<connection::Member>  ClusterService::getMemberList() {
                 typedef std::map<Address, connection::Member, addressComparator> MemberMap;
                 std::vector<connection::Member> v;
@@ -175,54 +185,39 @@ namespace hazelcast {
                 return v;
             };
 
-            void ClusterService::handlePacket(const Address &address, serialization::Data &data) {
+            void ClusterService::handlePacket(connection::Connection &connection, serialization::Data &data) {
 
                 boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
                 if (response->isEvent()) {
-                    util::AtomicPointer <CallMap> eventHandlerMap = addressEventHandlerMap.get(address);
-                    if (!eventHandlerMap.isNull()) {
-                        util::CallPromise *promise = eventHandlerMap->get(response->getCallId());
-                        if (promise != NULL) {
-                            promise->getEventHandler()->handle(response->getData());
-                            return;
-                        }
+                    util::CallPromise *promise = connection.getEventHandler(response->getCallId());
+                    if (promise != NULL) {
+                        promise->getEventHandler()->handle(response->getData());
+                        return;
                     }
                     return;
                 }
                 {
 //                    boost::lock_guard<boost::mutex> l(connectionLock);TODO
-                    util::AtomicPointer <CallMap> pointer = addressCallMap.get(address);
-                    assert(!pointer.isNull() && "Could addressCallMap emoty in hanldePacket???");
-                    util::CallPromise *promise = pointer->remove(response->getCallId());
-                    promise->setResponse(response->getData());
-                }
+                    util::CallPromise *promise = connection.deRegisterCall(response->getCallId());
+                    if (response->isException()) {
+                        promise->setException(response->getException());
+                    } else {
 
-            }
-
-            util::CallPromise *ClusterService::registerCall(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler, connection::Connection &connection) {
-                util::CallPromise *promise = new util::CallPromise();
-                promise->setRequest(&request);
-                if (handler != NULL) {
-                    promise->setEventHandler(handler);
-                }
-
-                int callId = callIdGenerator++;
-                request.callId = callId;
-                hazelcast::client::Address const &address = connection.getRemoteEndpoint();
-                util::AtomicPointer <CallMap> callIdMap = addressCallMap.get(address);
-                if (callIdMap.isNull()) {
-                    callIdMap = util::AtomicPointer <CallMap>();
-                    util::AtomicPointer <CallMap> current = addressCallMap.putIfAbsent(address, callIdMap);
-                    if (!current.isNull()) {
-                        callIdMap = current;
+                        if (promise->getEventHandler() != NULL) {
+                            //TODO may require lock here
+                            boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
+                            boost::shared_ptr<std::string> uuid = serializationService.toObject<std::string>(promise->getFuture().get());
+                            int callId = promise->getRequest().callId;
+                            reRegisterListener(*uuid, *alias, callId);
+                            return;
+                        }
+                        promise->setResponse(response->getData());
                     }
+
                 }
-                callIdMap->put(callId, promise);
-                if (handler != NULL) {
-                    registerEventHandler(promise, connection);
-                }
-                return promise;
+
             }
+
 
             connection::Connection *ClusterService::getOrConnect(const Address *target) {
                 int count = 0;
@@ -241,81 +236,6 @@ namespace hazelcast {
                     count++;
                 }
                 throw lastError;
-            }
-
-            void ClusterService::reRegisterCall(util::CallPromise *promise, connection::Connection &connection) {
-                int callId = callIdGenerator++;
-                promise->getRequest().callId = callId;
-                hazelcast::client::Address const &address = connection.getRemoteEndpoint();
-                util::AtomicPointer <CallMap> callIdMap = addressCallMap.get(address);
-                if (callIdMap.isNull()) {
-                    callIdMap = util::AtomicPointer <CallMap>();
-                    util::AtomicPointer <CallMap> current = addressCallMap.putIfAbsent(address, callIdMap);
-                    if (!current.isNull()) {
-                        callIdMap = current;
-                    }
-                }
-                callIdMap->put(callId, promise);
-                if (promise->getEventHandler() != NULL) {
-                    reRegisterEventHandler(promise, connection);
-                }
-            }
-
-            void ClusterService::reRegisterEventHandler(util::CallPromise *promise, connection::Connection &connection) {
-                hazelcast::client::Address const &address = connection.getRemoteEndpoint();
-                util::AtomicPointer <CallMap> eventHandlerMap = addressEventHandlerMap.get(address);
-                if (eventHandlerMap.isNull()) {
-                    eventHandlerMap = util::AtomicPointer <CallMap>();
-                    util::AtomicPointer <CallMap> current = addressEventHandlerMap.putIfAbsent(address, eventHandlerMap);
-                    if (!current.isNull()) {
-                        eventHandlerMap = current;
-                    }
-                }
-                eventHandlerMap->put(promise->getRequest().callId, promise);
-            }
-
-
-            void ClusterService::registerEventHandler(util::CallPromise *promise, connection::Connection &connection) {
-                hazelcast::client::Address const &address = connection.getRemoteEndpoint();
-                util::AtomicPointer <CallMap> eventHandlerMap = addressEventHandlerMap.get(address);
-                if (eventHandlerMap.isNull()) {
-                    eventHandlerMap = util::AtomicPointer <CallMap>();
-                    util::AtomicPointer <CallMap> current = addressEventHandlerMap.putIfAbsent(address, eventHandlerMap);
-                    if (!current.isNull()) {
-                        eventHandlerMap = current;
-                    }
-                }
-                eventHandlerMap->put(promise->getRequest().callId, promise);
-            }
-
-            util::CallPromise *ClusterService::deRegisterCall(connection::Connection &connection, int callId) {
-                util::AtomicPointer <CallMap> callIdMap = addressCallMap.get(connection.getRemoteEndpoint());
-                if (!callIdMap.isNull()) {
-                    return NULL;
-                }
-                return callIdMap->remove(callId);
-            }
-
-            void ClusterService::removeConnectionCalls(connection::Connection &connection) {
-//            partitionService.runRefresher(); TODO
-                util::AtomicPointer <CallMap> callIdMap = addressCallMap.remove(connection.getRemoteEndpoint());
-                util::AtomicPointer <CallMap> eventHandlerMap = addressEventHandlerMap.remove(connection.getRemoteEndpoint());
-                if (!callIdMap.isNull()) {
-                    std::vector<util::CallPromise *> v = callIdMap->values();
-                    std::vector<util::CallPromise *>::iterator it;
-                    for (it = v.begin(); it != v.end(); ++it) {
-                        (*it)->targetDisconnected(connection.getRemoteEndpoint());
-                    }
-                    v.clear();
-                }
-                if (!eventHandlerMap.isNull()) {
-                    std::vector<util::CallPromise *> v = callIdMap->values();
-                    std::vector<util::CallPromise *>::iterator it;
-                    for (it = v.begin(); it != v.end(); ++it) {
-                        (*it)->targetDisconnected(connection.getRemoteEndpoint());
-                    }
-                    v.clear();
-                }
             }
 
             //--------- Used by CLUSTER LISTENER THREAD ------------
@@ -338,7 +258,7 @@ namespace hazelcast {
                             std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
                         } catch (exception::ServerException &e) {
                             lastError = e;
-                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
+                            std::cerr << "IO error from server during initial connection..\n" << e.what() << std::endl;
 
                         }
                     }

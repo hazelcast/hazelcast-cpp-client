@@ -151,8 +151,6 @@ namespace hazelcast {
                         return false;
                     }
                     factoryId = source.readInt();
-                    data.isError = (factoryId == protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                            && (classId == protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
                     setStatus(stFactoryId);
                 }
                 if (!isStatusSet(stVersion)) {

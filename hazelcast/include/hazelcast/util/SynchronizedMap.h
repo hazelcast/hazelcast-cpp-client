@@ -4,8 +4,8 @@
 
 
 
-#ifndef HAZELCAST_CONCURRENT_MAP
-#define HAZELCAST_CONCURRENT_MAP
+#ifndef HAZELCAST_SYNCHRONIZED_MAP
+#define HAZELCAST_SYNCHRONIZED_MAP
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <boost/thread/mutex.hpp>
@@ -122,4 +122,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CONCURRENT_MAP
+#endif //HAZELCAST_SYNCHRONIZED_MAP

@@ -8,6 +8,7 @@
 #include "hazelcast/client/connection/SmartConnectionManager.h"
 #include "hazelcast/client/connection/DummyConnectionManager.h"
 #include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,7 +24,6 @@ namespace hazelcast {
             , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
             , partitionService(clusterService, invocationService,serializationService, lifecycleService)
             , invocationService(clusterService, partitionService)
-//            , serverListenerService(invocationService)
             , cluster(clusterService)
             , clientContext(client) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
@@ -42,7 +42,6 @@ namespace hazelcast {
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
-//            spi::ServerListenerService serverListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
@@ -100,10 +99,6 @@ namespace hazelcast {
         spi::LifecycleService &HazelcastClient::getLifecycleService() {
             return impl->lifecycleService;
         };
-
-//        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
-//            return impl->serverListenerService;
-//        };
 
         connection::ConnectionManager &HazelcastClient::getConnectionManager() {
             return *(impl->connectionManager);

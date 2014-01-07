@@ -5,11 +5,14 @@
 
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
+#include "CallPromise.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,7 +25,8 @@ namespace hazelcast {
             , socketInterceptor(this->clientConfig.getSocketInterceptor())
             , iListenerThread(new boost::thread(&IListener::listen, &iListener))
             , oListenerThread(new boost::thread(&OListener::listen, &oListener))
-            , live(true) {
+            , live(true)
+            , callIdGenerator(0) {
 
 
             };
@@ -39,13 +43,6 @@ namespace hazelcast {
                 oListenerThread->join();
             }
 
-//            Connection *ConnectionManager::newConnection(Address const &address) {
-//                checkLive();
-//                Connection *connection = new Connection(address, serializationService);
-//                authenticate(*connection, true, true);
-//                return connection;
-//            };
-
             Connection *ConnectionManager::ownerConnection(const Address &address) {
                 return getOrConnect(address);
             }
@@ -58,7 +55,7 @@ namespace hazelcast {
                     if (conn.isNull()) {
                         Connection *newConnection = connectTo(address);
                         authenticate(*newConnection, true, true);
-                        connections.put(conn->getRemoteEndpoint(), newConnection);
+                        connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         return newConnection;
                     }
                 }
@@ -78,18 +75,19 @@ namespace hazelcast {
                 auth.setPrincipal(principal.get());
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
-                boost::shared_future<serialization::Data> future = clusterService.send(auth, connection);
 
-                serialization::Data result;
-                if (future.timed_wait(boost::posix_time::seconds(10))) {
-                    result = future.get();
-                } else {
-                    throw exception::IOException("void ConnectionManager::authenticate", "Not authenticated");
-                }
-                boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(result);
+                connection.init();
+                serialization::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
+                connection.writeBlocking(authData);
+
+                serialization::Data result = connection.readBlocking();
+
+                boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
+                boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
+                std::cout << " --- authenticated ----- " << std::endl;
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };
@@ -100,12 +98,31 @@ namespace hazelcast {
                 }
             }
 
-            void ConnectionManager::destroyConnection(Connection & connection) {
+            void ConnectionManager::destroyConnection(Connection &connection) {
                 Address const &endpoint = connection.getRemoteEndpoint();
-//                if (endpoint != null) {
+//                if (endpoint != null) { TODO
 //                    connections.remove(clientConnection.getRemoteEndpoint());
 //                }
-                clusterService.removeConnectionCalls(connection);
+                connection.removeConnectionCalls();
+            }
+
+
+            int ConnectionManager::getNextCallId() {
+                return callIdGenerator++;
+            }
+
+
+            void ConnectionManager::removeEventHandler(int callId) {
+                std::vector<util::AtomicPointer<Connection> > v = connections.values();
+                std::vector<util::AtomicPointer<Connection> >::iterator it;
+                for (it = v.begin(); it != v.end(); ++it) {
+                    util::CallPromise *promise = (*it)->deRegisterEventHandler(callId);
+                    if (promise != NULL) {
+                        //TODO delete promise;
+                        return;
+                    }
+                }
+
             }
 
             Connection *ConnectionManager::connectTo(const Address &address) {

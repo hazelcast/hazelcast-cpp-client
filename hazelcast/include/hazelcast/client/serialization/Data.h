@@ -46,8 +46,6 @@ namespace hazelcast {
 
                 void setBuffer(std::auto_ptr< std::vector<byte> > buffer);
 
-                bool isServerError() const;
-
                 int hashCode() const;
 
                 Data clone() const;
@@ -82,8 +80,6 @@ namespace hazelcast {
 
                     if (classId != NO_CLASS_ID) {
                         int factoryId = dataInput.readInt();
-                        isError = (factoryId == protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY)
-                                && (classId == protocol::ProtocolConstants::HAZELCAST_SERVER_ERROR_ID);
                         int version = dataInput.readInt();
 
                         int classDefSize = dataInput.readInt();
@@ -109,7 +105,6 @@ namespace hazelcast {
                 int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
-                bool isError;
                 mutable int partitionHash;
 
             private:

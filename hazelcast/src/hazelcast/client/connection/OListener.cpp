@@ -25,36 +25,27 @@ namespace hazelcast {
             };
 
             void OListener::init() {
-                bool connected = false;
-                while (!connected) {
-                    util::ServerSocket serverSocket(0);
-                    std::cout << "port " << serverSocket.getPort() << std::endl;
-                    wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
-                    boost::thread t(&OListener::acceptThread, this, &serverSocket);
-                    boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
-                    if( wakeUpSocket->connect() == 0 ){
-                        connected = true;
-                    }else
-                        delete wakeUpSocket;
-                    serverSocket.close();
-                    t.join();
-                    std::cout << "retrying" << std::endl;
-                }
-            }
-
-            void OListener::acceptThread(util::ServerSocket *serverSocket) {
-                try {
-                    Socket *socket = serverSocket->accept();
-                    std::cout << "wakeup socket insert " << socket->getSocketId() << std::endl;
+                hazelcast::util::ServerSocket serverSocket(0);
+                std::cout << "port " << serverSocket.getPort() << std::endl;
+                wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
+                if( wakeUpSocket->connect() == 0 ){
+                    std::cout << "wakeup socket connection establised" << std::endl;
+                    Socket *socket = serverSocket.accept();
                     wakeUpSocketSet.sockets.insert(socket);
-                } catch(client::exception::IOException &e) {
-                    std::cerr << e.what() << std::endl;
+                    std::cout << "wakeup socket insert " << socket->getSocketId() << std::endl;
+                }else{
+                    throw exception::IOException("OListener::init","no local socket left");
                 }
             };
 
             void OListener::wakeUp() {
                 int wakeUpSignal = 9;
-                wakeUpSocket->send(&wakeUpSignal, sizeof(int));
+                try{
+                    wakeUpSocket->send(&wakeUpSignal, sizeof(int));
+                }catch(std::exception& e){
+                    std::cerr << e.what() << std::endl;
+                    throw e;
+                }
             };
 
             void OListener::listen() {

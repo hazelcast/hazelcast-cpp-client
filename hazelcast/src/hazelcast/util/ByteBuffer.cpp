@@ -9,7 +9,7 @@ namespace hazelcast {
     namespace util {
         ByteBuffer::ByteBuffer(int capacity)
         :pos(0),
-        limit(0),
+        limit(capacity),
         capacity(capacity),
         buffer(new char [capacity]) {
 

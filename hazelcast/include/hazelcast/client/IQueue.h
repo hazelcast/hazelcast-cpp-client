@@ -20,6 +20,7 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/client/exception/NoSuchElementException.h"
+#include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/proxy/DistributedObject.h"
 #include <stdexcept>

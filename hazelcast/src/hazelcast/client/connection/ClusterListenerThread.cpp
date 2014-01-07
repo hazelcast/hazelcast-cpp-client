@@ -2,12 +2,15 @@
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "hazelcast/client/connection/MemberShipEvent.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/MemberShipEvent.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
+#include "hazelcast/client/connection/ClientResponse.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,6 +36,7 @@ namespace hazelcast {
                     try {
                         if (conn.get() == NULL) {
                             try {
+                                std::cout << "connection is null, picking new connection " << std::endl;
                                 conn.reset(pickConnection());
                             } catch (std::exception &e) {
                                 std::cerr << "Error while connecting to cluster! " << e.what() << std::endl;
@@ -90,8 +94,9 @@ namespace hazelcast {
                 protocol::AddMembershipListenerRequest requestObject;
                 serialization::Data request = serializationService.toData<protocol::AddMembershipListenerRequest>(&requestObject);
                 conn->writeBlocking(request);
-                serialization::Data response = conn->readBlocking();
-                boost::shared_ptr<impl::SerializableCollection> coll = serializationService.toObject<impl::SerializableCollection >(response);
+                serialization::Data data = conn->readBlocking();
+                boost::shared_ptr<ClientResponse> response = serializationService.toObject<ClientResponse >(data);
+                boost::shared_ptr<impl::SerializableCollection> coll = serializationService.toObject<impl::SerializableCollection >(response->getData());
 
 
                 std::map<std::string, Member> prevMembers;
@@ -133,14 +138,18 @@ namespace hazelcast {
                     serialization::Data data = conn->readBlocking();
                     if (!lifecycleService.isRunning())
                         break;
-                    boost::shared_ptr<MembershipEvent> event = serializationService.toObject<MembershipEvent>(data);
+                    boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
+                    boost::shared_ptr<MembershipEvent> event = serializationService.toObject<MembershipEvent>(response->getData());
                     Member member = event->getMember();
                     if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
-                    } else {
+                    } else if(event->getEventType() == MembershipEvent::MEMBER_REMOVED){
                         members.erase(std::find(members.begin(), members.end(), member));
                         (std::cerr << "Removing connection pool of Member[" << member << " ]:  reason => Member closed event\n");
 //                        connectionManager.removeConnectionPool(member.getAddress()); TODO
+                    } else {
+                        std::cerr << "error in ClusterListenerThread::listenMembershipEvents() " << std::endl;
+                        return;
                     }
                     updateMembersRef();
                     clusterService.fireMembershipEvent(*event);

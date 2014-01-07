@@ -90,7 +90,6 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::shared_ptr<T> toObject(const Data &data) {
-                    checkServerError(data);
                     T *tag = NULL;
                     return toObjectResolved<T>(data, tag);
                 };
@@ -146,8 +145,6 @@ namespace hazelcast {
                 SerializerBase *serializerFor(int typeId);
 
                 SerializationService(const SerializationService &);
-
-                void checkServerError(const Data &data);
 
                 SerializationContext serializationContext;
 
@@ -347,7 +344,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<byte> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<byte>();
                 boost::shared_ptr<byte> object(new byte);
                 DataInput dataInput(*(data.buffer.get()));
@@ -357,7 +354,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<bool> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<bool>();
                 boost::shared_ptr<bool> object(new bool);
                 DataInput dataInput(*(data.buffer.get()));
@@ -367,7 +364,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<char> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<char>();
                 boost::shared_ptr<char> object(new char);
                 DataInput dataInput(*(data.buffer.get()));
@@ -377,7 +374,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<short> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<short>();
                 boost::shared_ptr<short> object(new short);
                 DataInput dataInput(*(data.buffer.get()));
@@ -387,7 +384,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<int> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<int>();
                 boost::shared_ptr<int> object(new int);
                 DataInput dataInput(*(data.buffer.get()));
@@ -397,7 +394,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<long> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<long>();
                 boost::shared_ptr<long> object(new long);
                 DataInput dataInput(*(data.buffer.get()));
@@ -407,7 +404,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<float> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<float>();
                 boost::shared_ptr<float> object(new float);
                 DataInput dataInput(*(data.buffer.get()));
@@ -417,7 +414,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<double> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<double>();
                 boost::shared_ptr<double> object(new double);
                 DataInput dataInput(*(data.buffer.get()));
@@ -427,7 +424,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<byte> > SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<byte> >();
                 boost::shared_ptr<std::vector<byte> > object(new std::vector<byte>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -437,7 +434,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<char> > SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<char> >();
                 boost::shared_ptr<std::vector<char> > object(new std::vector<char>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -447,7 +444,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<short> >  SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<short> >();
                 boost::shared_ptr<std::vector<short> > object(new std::vector<short>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -457,7 +454,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<int> > SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<int> >();
                 boost::shared_ptr<std::vector<int> > object(new std::vector<int>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -467,7 +464,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<long> > SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<long> >();
                 boost::shared_ptr<std::vector<long> > object(new std::vector<long>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -477,7 +474,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr< std::vector<float> >  SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<float> >();
                 boost::shared_ptr<std::vector<float> > object(new std::vector<float>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -487,7 +484,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<double> > SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<double> >();
                 boost::shared_ptr<std::vector<double> > object(new std::vector<double>);
                 DataInput dataInput(*(data.buffer.get()));
@@ -497,7 +494,7 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::string> SerializationService::toObject(const Data &data) {
-                checkServerError(data);
+                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::string >();
                 boost::shared_ptr<std::string > object(new std::string);
                 DataInput dataInput(*(data.buffer.get()));

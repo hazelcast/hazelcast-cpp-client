@@ -13,7 +13,7 @@ namespace hazelcast {
 
 
             IOListener::IOListener() {
-                t.tv_sec = 1;
+                t.tv_sec = 5;
                 t.tv_usec = 0;
                 isAlive = true;
             };

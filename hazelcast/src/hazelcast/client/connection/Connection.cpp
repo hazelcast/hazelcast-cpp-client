@@ -10,11 +10,13 @@
 #include "hazelcast/client/serialization/DataAdapter.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/util/CallPromise.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, connection::ConnectionManager& connectionManager,serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener &iListener, OListener &oListener)
+            Connection::Connection(const Address &address, connection::ConnectionManager &connectionManager, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener &iListener, OListener &oListener)
             : serializationService(serializationService)
             , connectionManager(connectionManager)
             , socket(address)
@@ -32,6 +34,11 @@ namespace hazelcast {
                 }
             };
 
+
+            void Connection::init() {
+                serialization::OutputSocketStream outputSocketStream(socket);
+                outputSocketStream.write(protocol::ProtocolConstants::PROTOCOL);
+            }
 
             void Connection::close() {
                 socket.close();
@@ -72,6 +79,66 @@ namespace hazelcast {
                 data.readData(inputSocketStream);
                 return data;
             }
+
+            // USED BY CLUSTER SERVICE
+            util::CallPromise *Connection::registerCall(util::CallPromise *promise) {
+                int callId = connectionManager.getNextCallId();
+                promise->getRequest().callId = callId;
+                callPromises.put(callId, promise);
+                if (promise->getEventHandler() != NULL) {
+                    registerEventHandler(promise);
+                }
+                return promise;
+            }
+
+            void Connection::reRegisterCall(util::CallPromise *promise) {
+                int callId = connectionManager.getNextCallId();
+                promise->getRequest().callId = callId;
+                callPromises.put(callId, promise);
+                if (promise->getEventHandler() != NULL) {
+                    registerEventHandler(promise);
+                }
+            }
+
+            util::CallPromise *Connection::deRegisterCall(int callId) {
+                return callPromises.remove(callId);
+            }
+
+
+            void Connection::registerEventHandler(util::CallPromise *promise) {
+                eventHandlerPromises.put(promise->getRequest().callId, promise);
+            }
+
+
+            util::CallPromise *Connection::getEventHandler(int callId) {
+                return eventHandlerPromises.get(callId);
+            }
+
+            util::CallPromise *Connection::deRegisterEventHandler(int callId) {
+                return eventHandlerPromises.remove(callId);
+            }
+
+            void Connection::removeConnectionCalls() {
+//            partitionService.runRefresher(); TODO
+                hazelcast::client::Address const &address = getRemoteEndpoint();
+                {
+                    std::vector<util::CallPromise *> v = callPromises.values();
+                    std::vector<util::CallPromise *>::iterator it;
+                    for (it = v.begin(); it != v.end(); ++it) {
+                        (*it)->targetDisconnected(address);
+                    }
+                    v.clear();
+                }
+                {
+                    std::vector<util::CallPromise *> v = eventHandlerPromises.values();
+                    std::vector<util::CallPromise *>::iterator it;
+                    for (it = v.begin(); it != v.end(); ++it) {
+                        (*it)->targetDisconnected(address);
+                    }
+                    v.clear();
+                }
+            }
+
         }
     }
 }

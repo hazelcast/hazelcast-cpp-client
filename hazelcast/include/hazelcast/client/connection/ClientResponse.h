@@ -9,6 +9,7 @@
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/exception/ServerException.h"
 #include <memory>
 
 namespace hazelcast {
@@ -21,7 +22,11 @@ namespace hazelcast {
             public:
                 const serialization::Data& getData() const;
 
+                const exception::ServerException& getException() const;
+
                 bool isEvent() const;
+
+                bool isException() const;
 
                 int getCallId() const;
 
@@ -34,7 +39,9 @@ namespace hazelcast {
             private:
                 int callId;
                 serialization::Data data;
+                exception::ServerException error;
                 bool event;
+                bool exception;
             };
 
         }

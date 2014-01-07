@@ -3,18 +3,18 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/impl/GetPartitionsRequest.h"
-#include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/impl/GetPartitionsRequest.h"
+#include "hazelcast/client/impl/PartitionsResponse.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            PartitionService::PartitionService(ClusterService &clusterService, InvocationService& invocationService, serialization::SerializationService &serializationService, spi::LifecycleService &lifecycleService)
+            PartitionService::PartitionService(ClusterService &clusterService, InvocationService &invocationService, serialization::SerializationService &serializationService, spi::LifecycleService &lifecycleService)
             :partitionCount(271)
             , invocationService(invocationService)
             , clusterService(clusterService)

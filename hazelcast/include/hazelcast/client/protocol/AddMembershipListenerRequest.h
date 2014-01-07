@@ -7,13 +7,12 @@
 #ifndef HAZELCAST_ADD_MLR
 #define HAZELCAST_ADD_MLR
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "hazelcast/client/impl/IdentifiedDataSerializableRequest.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API AddMembershipListenerRequest : public impl::IdentifiedDataSerializableRequest {
+            class HAZELCAST_API AddMembershipListenerRequest  : public impl::PortableRequest {
             public:
                 AddMembershipListenerRequest();
 
@@ -21,7 +20,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer) const;
+                void write(serialization::PortableWriter &writer) const;
             };
         }
     }

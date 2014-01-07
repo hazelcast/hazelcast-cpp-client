@@ -23,7 +23,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                virtual void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter &writer) const;
             };
         }
     }

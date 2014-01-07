@@ -5,15 +5,11 @@
 #define HAZELCAST_MAP_PUT_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-
-        namespace serialization {
-            class Data;
-        }
-
         namespace map {
             class HAZELCAST_API PutRequest : public impl::PortableRequest {
             public:
@@ -28,8 +24,8 @@ namespace hazelcast {
 
 
             private:
-                serialization::Data& key;
-                serialization::Data& value;
+                serialization::Data key;
+                serialization::Data value;
                 std::string name;
                 int threadId;
                 long ttl;

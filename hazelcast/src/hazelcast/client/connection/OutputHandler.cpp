@@ -49,11 +49,6 @@ namespace hazelcast {
                     return;
                 }
                 connection.lastWrite = clock();
-                if (!initialized) {
-                    initialized = true;
-                    buffer.readFrom(protocol::ProtocolConstants::PROTOCOL);
-                    registerHandler();
-                }
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();

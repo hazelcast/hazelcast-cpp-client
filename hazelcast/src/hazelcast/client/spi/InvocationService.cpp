@@ -5,6 +5,7 @@
 
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
