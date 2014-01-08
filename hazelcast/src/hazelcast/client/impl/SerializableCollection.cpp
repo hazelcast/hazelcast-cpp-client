@@ -22,11 +22,11 @@ namespace hazelcast {
             };
 
             int SerializableCollection::getFactoryId() const {
-                return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
+                return protocol::SpiConstants::SPI_DS_FACTORY;
             }
 
             int SerializableCollection::getClassId() const {
-                return protocol::SpiConstants::COLLECTION;
+                return protocol::SpiConstants::DS_COLLECTION;
             }
 
             const std::vector<hazelcast::client::serialization::Data *>&  SerializableCollection::getCollection() const {

@@ -30,12 +30,12 @@ namespace hazelcast {
             };
 
             int MembershipEvent::getFactoryId() const {
-                return hazelcast::client::protocol::ProtocolConstants::DATA_FACTORY_ID;
+                return protocol::ProtocolConstants::DATA_FACTORY_ID;
 
             }
 
             int MembershipEvent::getClassId() const {
-                return hazelcast::client::protocol::ProtocolConstants::MEMBERSHIP_EVENT;
+                return protocol::ProtocolConstants::MEMBERSHIP_EVENT;
 
             }
 

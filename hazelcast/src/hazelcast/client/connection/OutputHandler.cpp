@@ -18,7 +18,9 @@ namespace hazelcast {
             , buffer(bufferSize)
             , initialized(false)
             , informSelector(true)
-            , ready(false) {
+            , ready(false)
+            , lastData(NULL) {
+                std::cerr << "adding first task " << std::endl;
                 oListener.addTask(this);
                 oListener.wakeUp();
             };
@@ -39,6 +41,7 @@ namespace hazelcast {
                 writeQueue.offer(socketWritable);
                 bool expected = true;
                 if (informSelector.compare_exchange_strong(expected, false)) {
+                    std::cerr << "adding task " << std::endl;
                     ioListener.addTask(this);
                     ((OListener &) ioListener).wakeUp();
                 }
@@ -61,6 +64,7 @@ namespace hazelcast {
                     bool complete = lastData->writeTo(buffer);
                     if (complete) {
                         delete lastData;
+                        lastData = NULL;
                         lastData = writeQueue.poll();
                     } else {
                         break;

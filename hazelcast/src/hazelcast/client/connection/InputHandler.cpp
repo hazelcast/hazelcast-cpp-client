@@ -13,12 +13,12 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InputHandler::InputHandler(Connection &connection, IListener &ioListener, spi::ClusterService &clusterService, int bufferSize)
-            : IOHandler(connection, ioListener)
+            InputHandler::InputHandler(Connection &connection, IListener &iListener, spi::ClusterService &clusterService, int bufferSize)
+            : IOHandler(connection, iListener)
             , clusterService(clusterService)
             , buffer(bufferSize)
             , lastData(NULL) {
-                ioListener.addTask(this);
+                iListener.addTask(this);
             };
 
 

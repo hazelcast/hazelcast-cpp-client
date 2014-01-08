@@ -20,7 +20,7 @@ namespace hazelcast {
                     fd_set read_fds = socketSet.get_fd_set();
                     int err = select(n, &read_fds, NULL, NULL, &t);
                     if (err == 0) {
-                        std::cout << "wait for read one more second" << std::endl;
+                        std::cout << "timeout in IListener" << std::endl;
                         continue;
                     }
                     if (err == -1) {

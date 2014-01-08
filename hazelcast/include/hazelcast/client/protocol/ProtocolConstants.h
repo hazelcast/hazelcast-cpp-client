@@ -47,6 +47,16 @@ namespace hazelcast {
                 int const COLLECTION = 2;
                 int const ITEM_EVENT = 3;
                 int const ENTRY_EVENT = 4;
+
+                int const SPI_DS_FACTORY = -1;
+                int const RESPONSE = 0;
+                int const BACKUP = 1;
+                int const BACKUP_RESPONSE = 2;
+                int const PARTITION_ITERATOR = 3;
+                int const PARTITION_RESPONSE = 4;
+                int const PARALLEL_OPERATION_FACTORY = 5;
+                int const EVENT_PACKET = 6;
+                int const DS_COLLECTION = 7;
             }
         }
     }

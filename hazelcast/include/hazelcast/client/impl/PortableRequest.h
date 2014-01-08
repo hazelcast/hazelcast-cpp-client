@@ -16,6 +16,7 @@ namespace hazelcast {
 
             class HAZELCAST_API PortableRequest : public Portable {
             public:
+                PortableRequest();
 
                 ~PortableRequest();
 
@@ -25,7 +26,7 @@ namespace hazelcast {
 
                 /* final */ void readPortable(serialization::PortableReader &reader);
 
-                mutable long callId;
+                mutable int callId;
             };
         }
     }

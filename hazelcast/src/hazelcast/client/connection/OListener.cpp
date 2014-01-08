@@ -41,6 +41,7 @@ namespace hazelcast {
             void OListener::wakeUp() {
                 int wakeUpSignal = 9;
                 try{
+                    std::cerr << "send wakeup signal " << std::endl;
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
                 }catch(std::exception& e){
                     std::cerr << e.what() << std::endl;
@@ -56,6 +57,7 @@ namespace hazelcast {
                     fd_set wakeUp_fd = wakeUpSocketSet.get_fd_set();
                     int err = select(n, &wakeUp_fd, &write_fds, NULL, &t);
                     if (err == 0) {
+                        std::cout << "timeout in OListener" << std::endl;
                         continue;
                     }
                     if (err == -1) {
@@ -67,6 +69,7 @@ namespace hazelcast {
                         if (FD_ISSET((*it)->getSocketId(), &wakeUp_fd)) {
                             int wakeUpSignal;
                             (*it)->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
+                            std::cerr << "writer wokeup " << wakeUpSignal << std::endl;
                         }
                     }
 

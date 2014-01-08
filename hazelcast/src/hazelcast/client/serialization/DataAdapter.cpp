@@ -21,6 +21,11 @@ namespace hazelcast {
 
             }
 
+
+            DataAdapter::~DataAdapter() {
+                std::cout << "???????????" << std::endl;
+            }
+
             DataAdapter::DataAdapter()
             :status(stType)
             , factoryId(0)
@@ -34,7 +39,7 @@ namespace hazelcast {
             }
 
             Data &DataAdapter::getData() {
-                assert(!isStatusSet(stAll));
+                assert(isStatusSet(stAll));
                 return data;
             }
 

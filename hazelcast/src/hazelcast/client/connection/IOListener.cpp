@@ -29,7 +29,6 @@ namespace hazelcast {
             }
 
             void IOListener::addTask(ListenerTask *listenerTask) {
-//                listenerTask->init(this);
                 listenerTasks.offer(listenerTask);
             }
 
@@ -48,6 +47,7 @@ namespace hazelcast {
 
             void IOListener::processListenerQueue() {
                 while (ListenerTask *task = listenerTasks.poll()) {
+                    std::cout << "processing task " << std::endl;
                     task->run();
                 }
             }

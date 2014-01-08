@@ -26,7 +26,7 @@ namespace hazelcast {
             , iListenerThread(new boost::thread(&IListener::listen, &iListener))
             , oListenerThread(new boost::thread(&OListener::listen, &oListener))
             , live(true)
-            , callIdGenerator(0) {
+            , callIdGenerator(10) {
 
 
             };
@@ -44,7 +44,7 @@ namespace hazelcast {
             }
 
             Connection *ConnectionManager::ownerConnection(const Address &address) {
-                return getOrConnect(address);
+                return connectTo(address);
             }
 
             Connection *ConnectionManager::getOrConnect(const Address &address) {
@@ -54,7 +54,6 @@ namespace hazelcast {
                     conn = connections.get(address);
                     if (conn.isNull()) {
                         Connection *newConnection = connectTo(address);
-                        authenticate(*newConnection, true, true);
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         return newConnection;
                     }
@@ -133,6 +132,7 @@ namespace hazelcast {
                 if (socketInterceptor.get() != NULL) {
                     socketInterceptor.get()->onConnect(conn->getSocket());
                 }
+                authenticate(*conn, true, true);
                 return conn;
             }
         }

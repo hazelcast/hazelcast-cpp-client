@@ -18,6 +18,7 @@
 #include "txn/ClientTxnSetTest.h"
 #include "txn/ClientTxnTest.h"
 #include "map/ClientMapIssueTest.h"
+#include "ByteBufferTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -35,11 +36,12 @@ int main(int argc, char **argv) {
     clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
     HazelcastClient hazelcastClient(clientConfig);
     IMap<int, std::string> iMap = hazelcastClient.getMap<int,std::string>("deneme");
-    iMap.put(1, "sss");
-    boost::shared_ptr<string> ptr = iMap.get(1);
-    if(ptr != NULL){
-        (std::cout << *ptr  << std::endl);
-    }
+    (std::cout << iMap.getName() << std::endl);
+//    iMap.put(1, "sss");
+//    boost::shared_ptr<string> ptr = iMap.get(1);
+//    if(ptr != NULL){
+//        (std::cout << *ptr  << std::endl);
+//    }
 
 //    HazelcastInstanceFactory factory;
 

@@ -26,7 +26,7 @@ namespace hazelcast {
 
             class HAZELCAST_API InputHandler : public IOHandler{
             public:
-                InputHandler(Connection &connection, IListener& ioListener, spi::ClusterService &clusterService, int bufferSize);
+                InputHandler(Connection &connection, IListener&iListener, spi::ClusterService &clusterService, int bufferSize);
 
                 void handle();
 

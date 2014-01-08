@@ -10,13 +10,19 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
+
+
+            PortableRequest::PortableRequest():callId(-1) {
+
+            }
+
             void PortableRequest::readPortable(serialization::PortableReader &reader) {
                 throw exception::IOException("  void Request::readPortable(serialization::PortableReader& reader)", "read of Client requests is not implemented ");
             }
 
 
             void PortableRequest::writePortable(serialization::PortableWriter &writer) const {
-                writer.writeLong("cId", callId);
+                writer.writeInt("cId", callId);
                 write(writer);
             }
 
