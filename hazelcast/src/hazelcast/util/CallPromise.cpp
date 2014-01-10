@@ -7,15 +7,15 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/EventHandlerWrapper.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/exception/TargetDisconnectedException.h"
 
 namespace hazelcast {
     namespace util {
 
 
-        CallPromise::CallPromise(client::spi::ClusterService &clusterService)
-        : clusterService(clusterService)
+        CallPromise::CallPromise(client::spi::InvocationService &invocationService)
+        : invocationService(invocationService)
         , resendCount(0) {
 
         }
@@ -31,7 +31,7 @@ namespace hazelcast {
 
 
         void CallPromise::targetDisconnected(const client::Address &address) {
-            if (isRetryable(*request) || clusterService.isRedoOperation()) {
+            if (isRetryable(*request) || invocationService.isRedoOperation()) {
                 if (resend())
                     return;
             }
@@ -70,11 +70,11 @@ namespace hazelcast {
 
         bool CallPromise::resend() {
             resendCount++;
-            if (resendCount > client::spi::ClusterService::RETRY_COUNT) {
+            if (resendCount > client::spi::InvocationService::RETRY_COUNT) {
                 return false;
             }
             try {
-                clusterService.resend(this);
+                invocationService.resend(this);
             } catch(std::exception &e) {
                 promise.set_exception(e);
             }

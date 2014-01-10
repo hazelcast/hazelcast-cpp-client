@@ -12,16 +12,8 @@
 namespace hazelcast {
     namespace client {
 
-        class ClientConfig;
-
         namespace spi {
-            class ClusterService;
-
-            class LifecycleService;
-        }
-
-        namespace serialization{
-            class SerializationService;
+            class ClientContext;
         }
 
         namespace connection {
@@ -34,7 +26,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ClusterListenerThread {
             public:
-                ClusterListenerThread(ConnectionManager &, ClientConfig &clientConfig, spi::ClusterService &, spi::LifecycleService &, serialization::SerializationService &);
+                ClusterListenerThread(spi::ClientContext &clientContext);
 
                 void setThread(boost::thread *);
 
@@ -44,17 +36,13 @@ namespace hazelcast {
 
                 boost::atomic<bool> isReady;
             private:
-                ConnectionManager &connectionManager;
-                spi::ClusterService &clusterService;
-                spi::LifecycleService &lifecycleService;
-                serialization::SerializationService &serializationService;
+                spi::ClientContext &clientContext;
 
                 std::auto_ptr<boost::thread> clusterListenerThread;
 
                 std::auto_ptr<Connection> conn;
                 boost::atomic<bool> deletingConnection;
                 std::vector<Member> members;
-                ClientConfig &clientConfig;
 
                 Connection *pickConnection();
 

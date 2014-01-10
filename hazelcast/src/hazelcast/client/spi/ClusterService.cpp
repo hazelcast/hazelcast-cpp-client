@@ -13,21 +13,14 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/MemberShipEvent.h"
 #include "hazelcast/client/exception/TargetDisconnectedException.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
 #include "hazelcast/util/CallPromise.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClusterService::ClusterService(spi::PartitionService &partitionService, spi::LifecycleService &lifecycleService, connection::ConnectionManager &connectionManager, serialization::SerializationService &serializationService, ClientConfig &clientConfig)
-            : partitionService(partitionService)
-            , lifecycleService(lifecycleService)
-            , connectionManager(connectionManager)
-            , serializationService(serializationService)
-            , clientConfig(clientConfig)
-            , clusterThread(connectionManager, clientConfig, *this, lifecycleService, serializationService)
-            , credentials(clientConfig.getCredentials())
-            , redoOperation(clientConfig.isRedoOperation())
+            ClusterService::ClusterService(ClientContext &clientContext)
+            : clientContext(clientContext)
+            , clusterThread(clientContext)
             , active(false) {
 
             }
@@ -35,7 +28,7 @@ namespace hazelcast {
             void ClusterService::start() {
                 serialization::ClassDefinitionBuilder cd(-3, 3);
                 serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
-                serializationService.getSerializationContext().registerClassDefinition(ptr);
+                clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
                 clusterThread.setThread(t);
@@ -54,78 +47,6 @@ namespace hazelcast {
             void ClusterService::stop() {
                 active = false;
                 clusterThread.stop();
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request) {
-                connection::Connection *connection = getOrConnect(NULL);
-                return doSend(request, NULL, *connection);
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, const Address &address) {
-                connection::Connection *connection = getOrConnect(&address);
-                return doSend(request, NULL, *connection);
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, connection::Connection &connection) {
-                return doSend(request, NULL, connection);
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler) {
-                connection::Connection *connection = getOrConnect(NULL);
-                return doSend(request, eventHandler, *connection);
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::send(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, const Address &address) {
-                connection::Connection *connection = getOrConnect(&address);
-                return doSend(request, eventHandler, *connection);
-            }
-
-            boost::shared_future<serialization::Data> ClusterService::doSend(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
-                util::CallPromise *promise = new util::CallPromise(*this);
-                promise->setRequest(&request);
-                promise->setEventHandler(eventHandler);
-                _send(promise, connection);
-                return promise->getFuture();
-            }
-
-
-            void ClusterService::_send(util::CallPromise *promise, connection::Connection &connection) {
-                connection.registerCall(promise);
-                serialization::Data data = serializationService.toData<impl::PortableRequest>(&(promise->getRequest()));
-                if (!connection.write(data)) {
-                    promise->targetIsNotAlive(connection.getRemoteEndpoint());
-                    connection.removeConnectionCalls();//TODO connectionCallMap.remove(connection);
-                }
-            }
-
-            void ClusterService::registerListener(const std::string &uuid, int callId) {
-                registrationAliasMap.put(uuid, &uuid);
-                registrationIdMap.put(uuid, &callId);
-            }
-
-            void ClusterService::reRegisterListener(const std::string &uuid, const std::string &alias, int callId) {
-                const string *oldAlias = registrationAliasMap.put(uuid, &alias);
-                if (oldAlias != NULL) {
-                    registrationIdMap.remove(*oldAlias);
-                    registrationIdMap.put(alias, &callId);
-                }
-            }
-
-            bool ClusterService::deRegisterListener(const std::string &uuid) {
-                const std::string *alias = registrationAliasMap.remove(uuid);
-                if (alias != NULL) {
-                    int *callId = registrationIdMap.remove(*alias);
-                    connectionManager.removeEventHandler(*callId);
-                    return true;
-                }
-                return false;
-            }
-
-            void ClusterService::resend(util::CallPromise *promise) {
-                connection::Connection *connection = getOrConnect(NULL);
-                connection->reRegisterCall(promise);
-                serialization::Data data = serializationService.toData<impl::PortableRequest>(&(promise->getRequest()));
-                connection->write(data);
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
@@ -169,11 +90,6 @@ namespace hazelcast {
                 return connection::Member();
             };
 
-
-            bool ClusterService::isRedoOperation() const {
-                return redoOperation;
-            }
-
             std::vector<connection::Member>  ClusterService::getMemberList() {
                 typedef std::map<Address, connection::Member, addressComparator> MemberMap;
                 std::vector<connection::Member> v;
@@ -185,64 +101,12 @@ namespace hazelcast {
                 return v;
             };
 
-            void ClusterService::handlePacket(connection::Connection &connection, serialization::Data &data) {
-
-                boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
-                if (response->isEvent()) {
-                    util::CallPromise *promise = connection.getEventHandler(response->getCallId());
-                    if (promise != NULL) {
-                        promise->getEventHandler()->handle(response->getData());
-                        return;
-                    }
-                    return;
-                }
-                {
-//                    boost::lock_guard<boost::mutex> l(connectionLock);TODO
-                    util::CallPromise *promise = connection.deRegisterCall(response->getCallId());
-                    if (response->isException()) {
-                        promise->setException(response->getException());
-                    } else {
-
-                        if (promise->getEventHandler() != NULL) {
-                            //TODO may require lock here
-                            boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
-                            boost::shared_ptr<std::string> uuid = serializationService.toObject<std::string>(promise->getFuture().get());
-                            int callId = promise->getRequest().callId;
-                            reRegisterListener(*uuid, *alias, callId);
-                            return;
-                        }
-                        promise->setResponse(response->getData());
-                    }
-
-                }
-
-            }
-
-
-            connection::Connection *ClusterService::getOrConnect(const Address *target) {
-                int count = 0;
-                exception::IOException lastError("", "");
-                while (count < RETRY_COUNT) {
-                    try {
-                        if (target == NULL || !isMemberExists(*target)) {
-                            return connectionManager.getRandomConnection();
-                        } else {
-                            return connectionManager.getOrConnect(*target);
-                        }
-                    } catch (exception::IOException &e) {
-                        lastError = e;
-                    }
-                    target = NULL;
-                    count++;
-                }
-                throw lastError;
-            }
 
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
             connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
                 active = false;
-                const int connectionAttemptLimit = clientConfig.getConnectionAttemptLimit();
+                const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
                 std::exception lastError;
                 while (true) {
@@ -250,7 +114,7 @@ namespace hazelcast {
                     std::vector<Address>::const_iterator it;
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            connection::Connection *pConnection = connectionManager.ownerConnection(*it);
+                            connection::Connection *pConnection = clientContext.getConnectionManager().ownerConnection(*it);
                             active = true;
                             return pConnection;
                         } catch (exception::IOException &e) {
@@ -265,7 +129,7 @@ namespace hazelcast {
                     if (attempt++ >= connectionAttemptLimit) {
                         break;
                     }
-                    const double remainingTime = clientConfig.getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
+                    const double remainingTime = clientContext.getClientConfig().getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
                     using namespace std;
                     std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;

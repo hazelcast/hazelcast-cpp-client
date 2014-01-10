@@ -13,9 +13,8 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InputHandler::InputHandler(Connection &connection, IListener &iListener, spi::ClusterService &clusterService, int bufferSize)
+            InputHandler::InputHandler(Connection &connection, IListener &iListener, int bufferSize)
             : IOHandler(connection, iListener)
-            , clusterService(clusterService)
             , buffer(bufferSize)
             , lastData(NULL) {
                 iListener.addTask(this);
@@ -48,7 +47,7 @@ namespace hazelcast {
                     }
                     bool complete = lastData->readFrom(buffer);
                     if (complete) {
-                        clusterService.handlePacket(connection, lastData->getData());
+                        connection.handlePacket(lastData->getData());
                         delete lastData;
                         lastData = NULL;
                     } else {

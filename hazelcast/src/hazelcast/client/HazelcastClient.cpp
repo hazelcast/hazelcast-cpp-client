@@ -17,13 +17,14 @@ namespace hazelcast {
         public:
             HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &client)
             : clientConfig(clientConfig)
-            , lifecycleService(client, this->clientConfig)
+            , lifecycleService(clientContext)
             , serializationService(0)
-            , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clusterService, serializationService, this->clientConfig)
-                    : (connection::ConnectionManager *) new connection::DummyConnectionManager(clusterService, serializationService, this->clientConfig))
-            , clusterService(partitionService, lifecycleService, *connectionManager, serializationService, this->clientConfig)
-            , partitionService(clusterService, invocationService,serializationService, lifecycleService)
-            , invocationService(clusterService, partitionService)
+            , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clientContext)
+                    : (connection::ConnectionManager *) new connection::DummyConnectionManager(clientContext))
+            , clusterService(clientContext)
+            , partitionService(clientContext)
+            , invocationService(clientContext)
+            , serverListenerService(clientContext)
             , cluster(clusterService)
             , clientContext(client) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
@@ -42,6 +43,7 @@ namespace hazelcast {
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
+            spi::ServerListenerService serverListenerService;
             Cluster cluster;
             spi::ClientContext clientContext;
 
@@ -88,6 +90,10 @@ namespace hazelcast {
             return impl->invocationService;
         };
 
+        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
+            return impl->serverListenerService;
+        };
+
         spi::ClusterService &HazelcastClient::getClusterService() {
             return impl->clusterService;
         };
@@ -130,7 +136,7 @@ namespace hazelcast {
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
-            return TransactionContext(impl->clusterService, impl->serializationService, *(impl->connectionManager), options);
+            return TransactionContext(impl->clientContext, options);
         }
 
     }

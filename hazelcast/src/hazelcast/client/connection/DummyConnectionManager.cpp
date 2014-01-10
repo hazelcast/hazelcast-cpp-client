@@ -4,15 +4,14 @@
 
 
 #include "hazelcast/client/connection/DummyConnectionManager.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            DummyConnectionManager::DummyConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &service, ClientConfig &config)
-            : ConnectionManager(clusterService, service, config)
+            DummyConnectionManager::DummyConnectionManager(spi::ClientContext& clientContext)
+            : ConnectionManager(clientContext)
             , isAddressAvailable(false) {
 
             }

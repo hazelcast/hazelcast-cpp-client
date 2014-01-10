@@ -26,13 +26,13 @@ namespace hazelcast {
         }
 
         namespace spi {
-            class ClusterService;
+            class InvocationService;
         }
     }
     namespace util {
         class HAZELCAST_API CallPromise {
         public:
-            CallPromise(client::spi::ClusterService &clusterService);
+            CallPromise(client::spi::InvocationService &invocationService);
 
             void setResponse(const client::serialization::Data &data);
 
@@ -53,7 +53,7 @@ namespace hazelcast {
             client::impl::EventHandlerWrapper *getEventHandler() const;
 
         private:
-            client::spi::ClusterService &clusterService;
+            client::spi::InvocationService &invocationService;
             boost::promise<client::serialization::Data> promise;
             std::auto_ptr<const client::impl::PortableRequest> request;
             std::auto_ptr<client::impl::EventHandlerWrapper> eventHandler;

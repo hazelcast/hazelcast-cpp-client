@@ -10,15 +10,16 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/util/Util.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, connection::Connection *connection)
+            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext& clientContext, connection::Connection* connection)
             : options(txnOptions)
-            , clusterService(clusterService)
-            , serializationService(serializationService)
+            , clientContext(clientContext)
             , connection(connection)
             , threadId(util::getThreadId())
             , state(TxnState::NO_TXN)
@@ -110,12 +111,12 @@ namespace hazelcast {
             }
 
             serialization::SerializationService &TransactionProxy::getSerializationService() {
-                return serializationService;
+                return clientContext.getSerializationService();
             }
 
 
             spi::ClusterService &TransactionProxy::getClusterService() {
-                return clusterService;
+                return clientContext.getClusterService();
             }
 
             connection::Connection *TransactionProxy::getConnection() {

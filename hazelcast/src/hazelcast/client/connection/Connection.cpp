@@ -3,6 +3,7 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
+#include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/serialization/DataOutput.h"
@@ -12,17 +13,19 @@
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/util/CallPromise.h"
+#include "hazelcast/client/connection/ClientResponse.h"
+#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, connection::ConnectionManager &connectionManager, serialization::SerializationService &serializationService, spi::ClusterService &clusterService, IListener &iListener, OListener &oListener)
-            : serializationService(serializationService)
-            , connectionManager(connectionManager)
+            Connection::Connection(const Address &address, spi::ClientContext& clientContext, IListener &iListener, OListener &oListener)
+            : clientContext(clientContext)
             , socket(address)
             , connectionId(CONN_ID++)
             , live(true)
-            , readHandler(*this, iListener, clusterService, 16 << 10)
+            , readHandler(*this, iListener, 16 << 10)
             , writeHandler(*this, oListener, 16 << 10) {
 
             };
@@ -44,12 +47,57 @@ namespace hazelcast {
                 socket.close();
             }
 
-            bool Connection::write(serialization::Data const &data) {
-                if (!live)
-                    return false;
-                writeHandler.enqueueData(data);
-                return true;
+            void Connection::send(util::CallPromise *promise) {
+                registerCall(promise);
+                write(promise);
             };
+
+            void Connection::resend(util::CallPromise *promise) {
+                reRegisterCall(promise);
+                write(promise);
+            };
+
+            void Connection::write(util::CallPromise *promise) {
+                serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
+                if (!live) {
+                    promise->targetIsNotAlive(remoteEndpoint);
+                    removeConnectionCalls();
+                }
+                writeHandler.enqueueData(data);
+            }
+
+
+            void Connection::handlePacket(const serialization::Data &data) {
+                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+                boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
+                if (response->isEvent()) {
+                    util::CallPromise *promise = getEventHandler(response->getCallId());
+                    if (promise != NULL) {
+                        promise->getEventHandler()->handle(response->getData());
+                        return;
+                    }
+                    return;
+                }
+                {
+//                    boost::lock_guard<boost::mutex> l(connectionLock);TODO
+                    util::CallPromise *promise = deRegisterCall(response->getCallId());
+                    if (response->isException()) {
+                        promise->setException(response->getException());
+                    } else {
+
+                        if (promise->getEventHandler() != NULL) {
+                            //TODO may require lock here
+                            boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
+                            boost::shared_ptr<std::string> uuid = serializationService.toObject<std::string>(promise->getFuture().get());
+                            int callId = promise->getRequest().callId;
+                            clientContext.getServerListenerService().reRegisterListener(*uuid, *alias, callId);
+                            return;
+                        }
+                        promise->setResponse(response->getData());
+                    }
+
+                }
+            }
 
             int Connection::getConnectionId() const {
                 return connectionId;
@@ -74,15 +122,15 @@ namespace hazelcast {
 
             serialization::Data Connection::readBlocking() {
                 serialization::InputSocketStream inputSocketStream(socket);
-                inputSocketStream.setSerializationContext(&(serializationService.getSerializationContext()));
+                inputSocketStream.setSerializationContext(&(clientContext.getSerializationService().getSerializationContext()));
                 serialization::Data data;
                 data.readData(inputSocketStream);
                 return data;
             }
 
-            // USED BY CLUSTER SERVICE
+
             util::CallPromise *Connection::registerCall(util::CallPromise *promise) {
-                int callId = connectionManager.getNextCallId();
+                int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
                 if (promise->getEventHandler() != NULL) {
@@ -91,8 +139,9 @@ namespace hazelcast {
                 return promise;
             }
 
+            // USED BY CLUSTER SERVICE
             void Connection::reRegisterCall(util::CallPromise *promise) {
-                int callId = connectionManager.getNextCallId();
+                int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
                 if (promise->getEventHandler() != NULL) {

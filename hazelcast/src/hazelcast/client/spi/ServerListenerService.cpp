@@ -1,39 +1,70 @@
-////
-//// Created by sancar koyunlu on 6/24/13.
-//// Copyright (c) 2013 hazelcast. All rights reserved.
 //
-//
-//#include "hazelcast/client/spi/ServerListenerService.h"
-//
-//
-//namespace hazelcast {
-//    namespace client {
-//        namespace spi {
-//
-//            ServerListenerService::ServerListenerService(InvocationService& invocationService)
-//            :invocationService(invocationService) {
-//
-//            };
-//
-//            ServerListenerService::~ServerListenerService() {
-//                boost::lock_guard<boost::mutex> lockGuard(lock);
-//                std::map<long, ListenerSupportBase *>::iterator it;
-//                for (it = allListeners.begin(); it != allListeners.end(); it++) {
-//                    delete it->second;
-//                }
-//            };
-//
-//            bool ServerListenerService::stopListening(long registrationId) {
-//                boost::lock_guard<boost::mutex> lockGuard(lock);
-//                if (allListeners.count(registrationId) > 0) {
-//                    ListenerSupportBase *listenerSupportBase = allListeners[registrationId];
-//                    listenerSupportBase->stop();
-//                    allListeners.erase(registrationId);
-//                    delete listenerSupportBase;
-//					return true;
-//                }
-//                return false;
-//            };
-//        }
-//    }
-//}
+// Created by sancar koyunlu on 6/24/13.
+// Copyright (c) 2013 hazelcast. All rights reserved.
+
+
+#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/spi/ClientContext.h"
+
+namespace hazelcast {
+    namespace client {
+        namespace spi {
+
+            ServerListenerService::ServerListenerService(spi::ClientContext& clientContext)
+            :clientContext(clientContext) {
+
+            };
+
+            std::string ServerListenerService::listen(const impl::PortableRequest &registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler) {
+                boost::shared_future<serialization::Data> future;
+                if (partitionKey == NULL) {
+                    future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
+                } else {
+                    future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, *partitionKey);
+                }
+                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
+                registerListener(*registrationId, registrationRequest.callId);
+                return *registrationId;
+            }
+
+            std::string ServerListenerService::listen(const impl::PortableRequest &registrationRequest, impl::EventHandlerWrapper *handler) {
+                return listen(registrationRequest, NULL, handler);
+            }
+
+            bool ServerListenerService::stopListening(const impl::PortableRequest &request, const std::string &registrationId) {
+                boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
+                bool result = clientContext.getSerializationService().toObject<bool>(future.get());
+                deRegisterListener(registrationId);
+                return result;
+            }
+
+            void ServerListenerService::registerListener(const std::string &uuid, int callId) {
+                registrationAliasMap.put(uuid, &uuid);
+                registrationIdMap.put(uuid, &callId);
+            }
+
+            void ServerListenerService::reRegisterListener(const std::string &uuid, const std::string &alias, int callId) {
+                const std::string *oldAlias = registrationAliasMap.put(uuid, &alias);
+                if (oldAlias != NULL) {
+                    registrationIdMap.remove(*oldAlias);
+                    registrationIdMap.put(alias, &callId);
+                }
+            }
+
+            bool ServerListenerService::deRegisterListener(const std::string &uuid) {
+                const std::string *alias = registrationAliasMap.remove(uuid);
+                if (alias != NULL) {
+                    int *callId = registrationIdMap.remove(*alias);
+                    clientContext.getConnectionManager().removeEventHandler(*callId);
+                    return true;
+                }
+                return false;
+            }
+        }
+    }
+}

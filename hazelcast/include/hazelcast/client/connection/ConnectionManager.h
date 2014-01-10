@@ -19,7 +19,6 @@ namespace hazelcast {
     namespace client {
 
         namespace serialization {
-            class SerializationService;
             class Data;
         }
 
@@ -30,12 +29,10 @@ namespace hazelcast {
         }
 
         namespace spi {
-            class ClusterService;
+            class ClientContext;
         }
 
         class MembershipListener;
-
-        class ClientConfig;
 
         namespace connection {
             class Connection;
@@ -44,7 +41,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ConnectionManager {
             public:
-                ConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &serializationService, ClientConfig &clientConfig);
+                ConnectionManager(spi::ClientContext& clientContext);
 
                 ~ConnectionManager();
 
@@ -69,9 +66,7 @@ namespace hazelcast {
                 virtual Connection *connectTo(const Address& address);
 
                 util::ConcurrentSmartMap<Address, Connection, addressComparator> connections;
-                spi::ClusterService &clusterService;
-                serialization::SerializationService &serializationService;
-                ClientConfig &clientConfig;
+                spi::ClientContext& clientContext;
                 std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
                 IListener iListener;
                 OListener oListener;

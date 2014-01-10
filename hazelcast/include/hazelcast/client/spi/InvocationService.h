@@ -9,8 +9,14 @@
 #include <boost/thread/future.hpp>
 
 namespace hazelcast {
+    namespace util {
+        class CallPromise;
+    }
     namespace client {
         class Address;
+
+        class ClientConfig;
+
         namespace serialization {
             class Data;
         }
@@ -19,15 +25,17 @@ namespace hazelcast {
 
             class EventHandlerWrapper;
         }
+
+        namespace connection {
+            class Connection;
+        }
         namespace spi {
 
-            class ClusterService;
-
-            class PartitionService;
+            class ClientContext;
 
             class HAZELCAST_API InvocationService {
             public:
-                InvocationService(ClusterService &clusterService, PartitionService &partitionService);
+                InvocationService(spi::ClientContext &clientContext);
 
                 boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest &request);
 
@@ -41,11 +49,21 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler, const serialization::Data &key);
 
-            private :
-                ClusterService &clusterService;
-                PartitionService &partitionService;
-            };
+                void resend(util::CallPromise *promise);
 
+                bool isRedoOperation() const;
+
+                static const int RETRY_COUNT = 20;
+                static const int RETRY_WAIT_TIME = 500;
+            private :
+                const bool redoOperation;
+                spi::ClientContext &clientContext;
+
+                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection);
+
+                connection::Connection *getOrConnect(const Address *target);
+
+            };
         }
     }
 }

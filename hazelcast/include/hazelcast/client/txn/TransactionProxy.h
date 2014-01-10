@@ -8,7 +8,8 @@
 #ifndef HAZELCAST_TransactionProxy
 #define HAZELCAST_TransactionProxy
 
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/util/HazelcastDll.h"
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
 namespace hazelcast {
@@ -17,6 +18,16 @@ namespace hazelcast {
             class Connection;
         }
         class TransactionOptions;
+
+        namespace spi{
+            class ClientContext;
+
+            class ClusterService;
+        }
+
+        namespace serialization{
+            class SerializationService;
+        }
 
         namespace txn {
 
@@ -46,7 +57,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions &, spi::ClusterService &, serialization::SerializationService &, connection::Connection *);
+                TransactionProxy(TransactionOptions &, spi::ClientContext& clientContext, connection::Connection* connection);
 
                 std::string getTxnId() const;
 
@@ -72,9 +83,9 @@ namespace hazelcast {
                     return boost::shared_ptr<Response>();
                 };
             private:
+                spi::ClientContext& clientContext;
                 TransactionOptions &options;
-                spi::ClusterService &clusterService;
-                serialization::SerializationService &serializationService;
+
                 connection::Connection *connection;
                 long threadId;
 

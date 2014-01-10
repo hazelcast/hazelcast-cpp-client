@@ -5,15 +5,16 @@
 
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
-        TransactionContext::TransactionContext(spi::ClusterService & clusterService, serialization::SerializationService & serializationService, connection::ConnectionManager & connectionManager, const TransactionOptions & options)
+        TransactionContext::TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &options)
         : CONNECTION_TRY_COUNT(5)
-        , connectionManager(connectionManager)
+        , clientContext(clientContext)
         , options(options)
         , txnConnection(connect())
-        , transaction(this->options, clusterService, serializationService, txnConnection) {
+        , transaction(this->options, clientContext, txnConnection) {
 
         }
 
@@ -38,8 +39,8 @@ namespace hazelcast {
             connection::Connection *conn = NULL;
             for (int i = 0; i < CONNECTION_TRY_COUNT; i++) {
                 try {
-                    conn = connectionManager.getRandomConnection();
-                } catch (exception::IOException&) {
+                    conn = clientContext.getConnectionManager().getRandomConnection();
+                } catch (exception::IOException &) {
                     continue;
                 }
                 if (conn != NULL) {

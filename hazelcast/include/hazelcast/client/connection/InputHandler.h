@@ -26,7 +26,7 @@ namespace hazelcast {
 
             class HAZELCAST_API InputHandler : public IOHandler{
             public:
-                InputHandler(Connection &connection, IListener&iListener, spi::ClusterService &clusterService, int bufferSize);
+                InputHandler(Connection &connection, IListener&iListener, int bufferSize);
 
                 void handle();
 
@@ -34,7 +34,6 @@ namespace hazelcast {
 
             private:
                 util::ByteBuffer buffer;
-                spi::ClusterService &clusterService;
                 serialization::DataAdapter *lastData;
 
 

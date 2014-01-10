@@ -21,7 +21,7 @@ namespace hazelcast {
     namespace client {
 
         namespace spi {
-            class PartitionService;
+            class ClientContext;
         }
 
         namespace connection {
@@ -30,7 +30,7 @@ namespace hazelcast {
 
         class HAZELCAST_API TransactionContext {
         public:
-            TransactionContext(spi::ClusterService &, serialization::SerializationService &, connection::ConnectionManager &, const TransactionOptions &);
+            TransactionContext(spi::ClientContext& clientContext, const TransactionOptions &);
 
             std::string getTxnId() const;
 
@@ -78,7 +78,7 @@ namespace hazelcast {
 
         private :
             const int CONNECTION_TRY_COUNT;
-            connection::ConnectionManager &connectionManager;
+            spi::ClientContext& clientContext;
             TransactionOptions options;
             connection::Connection *txnConnection;
             txn::TransactionProxy transaction;

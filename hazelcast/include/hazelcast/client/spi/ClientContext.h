@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 LifecycleService &getLifecycleService();
 
-//                ServerListenerService &getServerListenerService();TODO
+                ServerListenerService &getServerListenerService();
 
                 connection::ConnectionManager &getConnectionManager();
 

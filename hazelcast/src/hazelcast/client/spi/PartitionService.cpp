@@ -10,16 +10,14 @@
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            PartitionService::PartitionService(ClusterService &clusterService, InvocationService &invocationService, serialization::SerializationService &serializationService, spi::LifecycleService &lifecycleService)
+            PartitionService::PartitionService(spi::ClientContext& clientContext)
             :partitionCount(271)
-            , invocationService(invocationService)
-            , clusterService(clusterService)
-            , serializationService(serializationService)
-            , lifecycleService(lifecycleService) {
+            ,clientContext(clientContext){
 
             };
 
@@ -43,9 +41,9 @@ namespace hazelcast {
                 partitionListenerThread->join();
             }
 
-            Address *PartitionService::getPartitionOwner(int partitionId) {
-                return partitions.get(partitionId);
-            };
+            Address *PartitionService::getPartitionOwner(const serialization::Data &key) {
+                return partitions.get(getPartitionId(key));
+            }
 
             int PartitionService::getPartitionId(const serialization::Data &key) {
                 const int pc = partitionCount;
@@ -55,10 +53,10 @@ namespace hazelcast {
 
 
             void PartitionService::runListener() {
-                while (lifecycleService.isRunning()) {
+                while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         boost::this_thread::sleep(boost::posix_time::seconds(10));
-                        if (!lifecycleService.isRunning()) {
+                        if (!clientContext.getLifecycleService().isRunning()) {
                             break;
                         }
                         runRefresher();
@@ -75,7 +73,7 @@ namespace hazelcast {
                 if (updating.compare_exchange_strong(expected, true)) {
                     try {
                         boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
-                        std::auto_ptr<Address> ptr = clusterService.getMasterAddress();
+                        std::auto_ptr<Address> ptr = clientContext.getClusterService().getMasterAddress();
                         if (ptr.get() == NULL) {
                             partitionResponse = getPartitionsFrom();
                         } else {
@@ -96,8 +94,8 @@ namespace hazelcast {
                 impl::GetPartitionsRequest getPartitionsRequest;
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_future<serialization::Data> future = invocationService.invokeOnTarget(getPartitionsRequest, address);
-                    partitionResponse = serializationService.toObject<impl::PartitionsResponse>(future.get());
+                    boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnTarget(getPartitionsRequest, address);
+                    partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
                     std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
                 }
@@ -109,8 +107,8 @@ namespace hazelcast {
                 impl::GetPartitionsRequest getPartitionsRequest;
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_future<serialization::Data> future = invocationService.invokeOnRandomTarget(getPartitionsRequest);
-                    partitionResponse = serializationService.toObject<impl::PartitionsResponse>(future.get());
+                    boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(getPartitionsRequest);
+                    partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
                     std::cerr << e.what() << std::endl;
                 }
@@ -133,7 +131,7 @@ namespace hazelcast {
             };
 
             void PartitionService::getInitialPartitions() {
-                std::vector<connection::Member> memberList = clusterService.getMemberList();
+                std::vector<connection::Member> memberList = clientContext.getClusterService().getMemberList();
                 for (std::vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
                     boost::shared_ptr<impl::PartitionsResponse> response = getPartitionsFrom(target);

@@ -17,6 +17,9 @@ namespace hazelcast {
         class CallPromise;
     }
     namespace client {
+        namespace spi {
+            class ClientContext;
+        }
         namespace serialization {
             class SerializationService;
 
@@ -34,7 +37,7 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection {
             public:
-                Connection(const Address &address, connection::ConnectionManager &connectionManager, serialization::SerializationService &, spi::ClusterService &clusterService, IListener &iListener, OListener &listener);
+                Connection(const Address &address, spi::ClientContext& clientContext, IListener &iListener, OListener &listener);
 
                 void connect();
 
@@ -42,7 +45,11 @@ namespace hazelcast {
 
                 void close();
 
-                bool write(serialization::Data const &data);
+                void send(util::CallPromise *promise);
+
+                void resend(util::CallPromise *promise);
+
+                void handlePacket(const serialization::Data &data);
 
                 const Address &getRemoteEndpoint() const;
 
@@ -57,9 +64,6 @@ namespace hazelcast {
                 serialization::Data readBlocking();
 
                 // USED BY CLUSTER SERVICE
-                util::CallPromise *registerCall(util::CallPromise *promise);
-
-                void reRegisterCall(util::CallPromise *promise);
 
                 util::CallPromise *deRegisterCall(int callId);
 
@@ -67,7 +71,7 @@ namespace hazelcast {
 
                 util::CallPromise *getEventHandler(int callId);
 
-                util::CallPromise* deRegisterEventHandler(int callId);
+                util::CallPromise *deRegisterEventHandler(int callId);
 
                 void removeConnectionCalls();
 
@@ -75,8 +79,7 @@ namespace hazelcast {
                 boost::atomic<clock_t> lastWrite;
                 boost::atomic<bool> live;
             private:
-                serialization::SerializationService &serializationService;
-                connection::ConnectionManager &connectionManager;
+                spi::ClientContext& clientContext;
                 Socket socket;
                 int connectionId;
                 Address remoteEndpoint;
@@ -84,6 +87,12 @@ namespace hazelcast {
                 util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
                 InputHandler readHandler;
                 OutputHandler writeHandler;
+
+                void write(util::CallPromise *promise);
+
+                util::CallPromise *registerCall(util::CallPromise *promise);
+
+                void reRegisterCall(util::CallPromise *promise);
             };
 
             inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {

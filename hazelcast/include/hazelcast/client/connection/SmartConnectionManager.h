@@ -13,10 +13,14 @@
 
 namespace hazelcast {
     namespace client {
+        namespace spi {
+            class ClientContext;
+        }
+
         namespace connection {
             class HAZELCAST_API SmartConnectionManager : public ConnectionManager {
             public:
-                SmartConnectionManager(spi::ClusterService& clusterService, serialization::SerializationService&, ClientConfig&);
+                SmartConnectionManager(spi::ClientContext& clientContext);
 
             };
         }

@@ -22,15 +22,11 @@ namespace hazelcast {
         }
 
         namespace spi {
-            class ClusterService;
-
-            class LifecycleService;
-
-            class InvocationService;
+            class ClientContext;
 
             class HAZELCAST_API PartitionService {
             public:
-                PartitionService(ClusterService &,InvocationService&, serialization::SerializationService &, spi::LifecycleService &);
+                PartitionService(spi::ClientContext& clientContext);
 
                 ~PartitionService();
 
@@ -38,16 +34,11 @@ namespace hazelcast {
 
                 void stop();
 
-                Address *getPartitionOwner(int partitionId);
-
-                int getPartitionId(const serialization::Data &key);
+                Address *getPartitionOwner(const serialization::Data& key);
 
             private:
 
-                ClusterService &clusterService;
-                InvocationService& invocationService;
-                serialization::SerializationService &serializationService;
-                spi::LifecycleService &lifecycleService;
+                spi::ClientContext& clientContext;
 
                 boost::atomic<bool> updating;
 
@@ -66,6 +57,8 @@ namespace hazelcast {
                 boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom();
 
                 void processPartitionResponse(impl::PartitionsResponse &response);
+
+                int getPartitionId(const serialization::Data &key);
 
                 void getInitialPartitions();
             };

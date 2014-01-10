@@ -12,17 +12,16 @@
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "CallPromise.h"
+#include "hazelcast/util/CallPromise.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(spi::ClusterService &clusterService, serialization::SerializationService &serializationService, ClientConfig &clientConfig)
-            : clusterService(clusterService)
-            , serializationService(serializationService)
-            , clientConfig(clientConfig)
+            ConnectionManager::ConnectionManager(spi::ClientContext& clientContext)
+            :clientContext(clientContext)
 //            , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
-            , socketInterceptor(this->clientConfig.getSocketInterceptor())
+            , socketInterceptor(clientContext.getClientConfig().getSocketInterceptor())
             , iListenerThread(new boost::thread(&IListener::listen, &iListener))
             , oListenerThread(new boost::thread(&OListener::listen, &oListener))
             , live(true)
@@ -65,17 +64,18 @@ namespace hazelcast {
             Connection *ConnectionManager::getRandomConnection() {
                 checkLive();
 //        TODO        Address address = clientConfig.getLoadBalancer()->next().getAddress();
-                Address address = clientConfig.getAddresses()[0];
+                Address address = clientContext.getClientConfig().getAddresses()[0];
                 return getOrConnect(address);
             }
 
             void ConnectionManager::authenticate(Connection &connection, bool reAuth, bool firstConnection) {
-                protocol::AuthenticationRequest auth(clientConfig.getCredentials());
+                protocol::AuthenticationRequest auth(clientContext.getClientConfig().getCredentials());
                 auth.setPrincipal(principal.get());
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
                 connection.init();
+                serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 serialization::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.writeBlocking(authData);
 
@@ -125,7 +125,7 @@ namespace hazelcast {
             }
 
             Connection *ConnectionManager::connectTo(const Address &address) {
-                Connection *conn = new Connection(address, *this, serializationService, clusterService, iListener, oListener);
+                Connection *conn = new Connection(address, clientContext, iListener, oListener);
                 checkLive();
                 conn->connect();
                 //TODO socket options
