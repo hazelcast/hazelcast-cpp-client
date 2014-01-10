@@ -83,7 +83,7 @@ namespace hazelcast {
                             processPartitionResponse(*partitionResponse);
                         }
                     } catch(...) {
-                        //ignored
+                        std::cerr << "sksdlskdl" << std::endl;
                     }
                     updating = false;
                 }

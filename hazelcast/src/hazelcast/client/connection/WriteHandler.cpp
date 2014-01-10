@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include "hazelcast/client/connection/OutputHandler.h"
+#include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/client/connection/OListener.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -13,41 +13,40 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            OutputHandler::OutputHandler(Connection &connection, OListener &oListener, int bufferSize)
+            WriteHandler::WriteHandler(Connection &connection, OListener &oListener, int bufferSize)
             : IOHandler(connection, oListener)
             , buffer(bufferSize)
             , initialized(false)
             , informSelector(true)
             , ready(false)
             , lastData(NULL) {
-                std::cerr << "adding first task " << std::endl;
-                oListener.addTask(this);
-                oListener.wakeUp();
+
             };
 
 
-            void OutputHandler::run() {
+            void WriteHandler::run() {
                 informSelector = true;
                 if (ready) {
                     handle();
                 } else {
+                    std::cout << "W" << connection.getSocket().getSocketId() << std::endl;
                     registerHandler();
                 }
                 ready = false;
             }
 
-            void OutputHandler::enqueueData(const serialization::Data &data) {
+            void WriteHandler::enqueueData(const serialization::Data &data) {
                 serialization::DataAdapter *socketWritable = new serialization::DataAdapter(data);
                 writeQueue.offer(socketWritable);
                 bool expected = true;
                 if (informSelector.compare_exchange_strong(expected, false)) {
                     std::cerr << "adding task " << std::endl;
                     ioListener.addTask(this);
-                    ((OListener &) ioListener).wakeUp();
+                    ioListener.wakeUp();
                 }
             }
 
-            void OutputHandler::handle() {
+            void WriteHandler::handle() {
                 if (!connection.live) {
                     return;
                 }

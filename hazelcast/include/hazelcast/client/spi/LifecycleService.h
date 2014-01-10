@@ -25,11 +25,11 @@ namespace hazelcast {
 
                 ~LifecycleService();
 
+                void start();
+
                 void addLifecycleListener(LifecycleListener *lifecycleListener);
 
                 bool removeLifecycleListener(LifecycleListener *lifecycleListener);
-
-                void setStarted();
 
                 bool isRunning();
 

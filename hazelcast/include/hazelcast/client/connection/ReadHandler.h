@@ -24,9 +24,9 @@ namespace hazelcast {
 
             class IListener;
 
-            class HAZELCAST_API InputHandler : public IOHandler{
+            class HAZELCAST_API ReadHandler : public IOHandler{
             public:
-                InputHandler(Connection &connection, IListener&iListener, int bufferSize);
+                ReadHandler(Connection &connection, IListener&iListener, int bufferSize);
 
                 void handle();
 

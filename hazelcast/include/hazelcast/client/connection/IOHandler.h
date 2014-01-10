@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 void handleSocketException(const std::string& message);
 
+                void registerSocket();
+
             protected:
                 IOListener &ioListener;
 

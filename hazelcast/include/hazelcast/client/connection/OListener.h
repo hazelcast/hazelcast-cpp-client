@@ -20,7 +20,7 @@ namespace hazelcast {
     namespace client {
         class Soclet;
         namespace connection {
-            class OutputHandler;
+            class WriteHandler;
 
             class HAZELCAST_API OListener : public IOListener{
             public:
@@ -28,15 +28,11 @@ namespace hazelcast {
 
                 ~OListener();
 
-                void wakeUp();
-
-                void init();
-
                 void listen();
 
             private:
                 util::SocketSet wakeUpSocketSet;
-                Socket* wakeUpSocket;
+
             };
         }
     }

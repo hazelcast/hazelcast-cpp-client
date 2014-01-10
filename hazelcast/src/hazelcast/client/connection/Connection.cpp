@@ -139,6 +139,11 @@ namespace hazelcast {
                 return promise;
             }
 
+
+            ReadHandler &Connection::getReadHandler() {
+                return readHandler;
+            }
+
             // USED BY CLUSTER SERVICE
             void Connection::reRegisterCall(util::CallPromise *promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();

@@ -45,6 +45,8 @@ namespace hazelcast {
 
                 ~ConnectionManager();
 
+                void start();
+
                 virtual Connection *ownerConnection(const Address &address);
 
                 virtual Connection *getOrConnect(const Address &address);

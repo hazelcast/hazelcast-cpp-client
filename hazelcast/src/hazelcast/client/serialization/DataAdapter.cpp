@@ -23,7 +23,6 @@ namespace hazelcast {
 
 
             DataAdapter::~DataAdapter() {
-                std::cout << "???????????" << std::endl;
             }
 
             DataAdapter::DataAdapter()

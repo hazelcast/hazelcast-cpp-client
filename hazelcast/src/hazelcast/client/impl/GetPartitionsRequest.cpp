@@ -4,6 +4,7 @@
 
 
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -23,7 +24,7 @@ namespace hazelcast {
             }
 
             void GetPartitionsRequest::write(serialization::PortableWriter &writer) const {
-
+                std::cerr << "Partition Request:::::" << std::endl;
             }
         }
     }

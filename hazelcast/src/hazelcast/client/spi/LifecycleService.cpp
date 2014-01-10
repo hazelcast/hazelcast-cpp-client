@@ -35,6 +35,11 @@ namespace hazelcast {
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             }
 
+            void LifecycleService::start() {
+                active = true;
+                fireLifecycleEvent(LifecycleEvent::STARTED);
+            };
+
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
                 boost::lock_guard<boost::mutex> lg(listenerLock);
                 listeners.insert(lifecycleListener);
@@ -50,11 +55,6 @@ namespace hazelcast {
                 for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     (*it)->stateChanged(lifecycleEvent);
                 };
-            };
-
-            void LifecycleService::setStarted() {
-                active = true;
-                fireLifecycleEvent(LifecycleEvent::STARTED);
             };
 
             bool LifecycleService::isRunning() {

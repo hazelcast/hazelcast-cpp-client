@@ -18,12 +18,9 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(spi::ClientContext& clientContext)
+            ConnectionManager::ConnectionManager(spi::ClientContext &clientContext)
             :clientContext(clientContext)
 //            , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
-            , socketInterceptor(clientContext.getClientConfig().getSocketInterceptor())
-            , iListenerThread(new boost::thread(&IListener::listen, &iListener))
-            , oListenerThread(new boost::thread(&OListener::listen, &oListener))
             , live(true)
             , callIdGenerator(10) {
 
@@ -34,11 +31,20 @@ namespace hazelcast {
                 shutdown();
             };
 
+
+            void ConnectionManager::start() {
+                socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
+                iListenerThread.reset(new boost::thread(&IListener::listen, &iListener));
+                oListenerThread.reset(new boost::thread(&OListener::listen, &oListener));
+            }
+
             void ConnectionManager::shutdown() {
                 live = false;
                 iListener.shutdown();
                 oListener.shutdown();
+                iListenerThread->interrupt();
                 iListenerThread->join();
+                oListenerThread->interrupt();
                 oListenerThread->join();
             }
 
@@ -53,6 +59,7 @@ namespace hazelcast {
                     conn = connections.get(address);
                     if (conn.isNull()) {
                         Connection *newConnection = connectTo(address);
+                        newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         return newConnection;
                     }

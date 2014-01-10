@@ -16,6 +16,11 @@ namespace hazelcast {
 
             }
 
+            void IOHandler::registerSocket() {
+                ioListener.addTask(this);
+                ioListener.wakeUp();
+            }
+
             void IOHandler::registerHandler() {
                 if (!connection.live)
                     return;

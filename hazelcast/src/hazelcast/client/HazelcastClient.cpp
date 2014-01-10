@@ -15,18 +15,18 @@ namespace hazelcast {
 
         class HazelcastClient::HazelcastClientImpl {
         public:
-            HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &client)
+            HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &hazelcastClient)
             : clientConfig(clientConfig)
+            , clientContext(hazelcastClient)
             , lifecycleService(clientContext)
             , serializationService(0)
-            , connectionManager(clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clientContext)
+            , connectionManager(this->clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clientContext)
                     : (connection::ConnectionManager *) new connection::DummyConnectionManager(clientContext))
             , clusterService(clientContext)
             , partitionService(clientContext)
             , invocationService(clientContext)
             , serverListenerService(clientContext)
-            , cluster(clusterService)
-            , clientContext(client) {
+            , cluster(clusterService){
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
@@ -37,6 +37,7 @@ namespace hazelcast {
             }
 
             ClientConfig clientConfig;
+            spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
             std::auto_ptr< connection::ConnectionManager> connectionManager;
@@ -45,14 +46,15 @@ namespace hazelcast {
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
             Cluster cluster;
-            spi::ClientContext clientContext;
 
         };
 
         HazelcastClient::HazelcastClient(ClientConfig &config)
         :impl(new HazelcastClientImpl(config, *this)) {
             srand(time(NULL));
-            impl->lifecycleService.setStarted();
+            impl->lifecycleService.start();
+            impl->connectionManager->start();
+            impl->invocationService.start();
             impl->clusterService.start();
             impl->partitionService.start();
 

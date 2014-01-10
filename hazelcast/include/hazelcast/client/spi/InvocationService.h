@@ -37,6 +37,8 @@ namespace hazelcast {
             public:
                 InvocationService(spi::ClientContext &clientContext);
 
+                void start();
+
                 boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest &request);
 
                 boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest &request, serialization::Data &key);
@@ -56,7 +58,7 @@ namespace hazelcast {
                 static const int RETRY_COUNT = 20;
                 static const int RETRY_WAIT_TIME = 500;
             private :
-                const bool redoOperation;
+                bool redoOperation;
                 spi::ClientContext &clientContext;
 
                 boost::shared_future<serialization::Data> doSend(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection);

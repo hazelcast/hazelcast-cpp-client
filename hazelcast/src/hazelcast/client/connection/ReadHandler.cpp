@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 24/12/13.
 //
 
-#include "hazelcast/client/connection/InputHandler.h"
+#include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/IListener.h"
 #include "hazelcast/client/spi/ClusterService.h"
@@ -13,19 +13,20 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InputHandler::InputHandler(Connection &connection, IListener &iListener, int bufferSize)
+            ReadHandler::ReadHandler(Connection &connection, IListener &iListener, int bufferSize)
             : IOHandler(connection, iListener)
             , buffer(bufferSize)
             , lastData(NULL) {
-                iListener.addTask(this);
+
             };
 
 
-            void InputHandler::run() {
+            void ReadHandler::run() {
+                std::cout << "R" << connection.getSocket().getSocketId() << std::endl;
                 registerHandler();
             }
 
-            void InputHandler::handle() {
+            void ReadHandler::handle() {
                 if (!connection.live) {
                     return;
                 }

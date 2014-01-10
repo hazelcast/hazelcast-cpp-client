@@ -8,8 +8,8 @@
 #define HAZELCAST_CONNECTION
 
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/connection/InputHandler.h"
-#include "hazelcast/client/connection/OutputHandler.h"
+#include "ReadHandler.h"
+#include "WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
@@ -63,6 +63,8 @@ namespace hazelcast {
 
                 serialization::Data readBlocking();
 
+                ReadHandler & getReadHandler();
+
                 // USED BY CLUSTER SERVICE
 
                 util::CallPromise *deRegisterCall(int callId);
@@ -85,8 +87,8 @@ namespace hazelcast {
                 Address remoteEndpoint;
                 util::SynchronizedMap<int, util::CallPromise > callPromises;
                 util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
-                InputHandler readHandler;
-                OutputHandler writeHandler;
+                ReadHandler readHandler;
+                WriteHandler writeHandler;
 
                 void write(util::CallPromise *promise);
 

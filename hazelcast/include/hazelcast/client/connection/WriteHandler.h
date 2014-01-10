@@ -25,9 +25,9 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API OutputHandler : public IOHandler {
+            class HAZELCAST_API WriteHandler : public IOHandler {
             public:
-                OutputHandler(Connection &connection, OListener &oListener, int bufferSize);
+                WriteHandler(Connection &connection, OListener &oListener, int bufferSize);
 
                 void handle();
 

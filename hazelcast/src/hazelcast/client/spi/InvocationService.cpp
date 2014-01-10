@@ -18,9 +18,12 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             InvocationService::InvocationService(spi::ClientContext &clientContext)
-            : clientContext(clientContext)
-            , redoOperation(clientContext.getClientConfig().isRedoOperation()) {
+            : clientContext(clientContext) {
 
+            }
+
+            void InvocationService::start() {
+                redoOperation = clientContext.getClientConfig().isRedoOperation();
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest &request) {
