@@ -24,40 +24,36 @@ namespace hazelcast {
 
             class PortableContext;
 
-
-
             class HAZELCAST_API SerializationContext {
             public:
 
                 SerializationContext(int);
 
-                ~SerializationContext();
-
                 bool isClassDefinitionExists(int, int);
 
-                ClassDefinition *lookup(int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int);
 
                 bool isClassDefinitionExists(int, int, int);
 
-                ClassDefinition *lookup(int, int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int, int);
 
-                ClassDefinition *createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+                boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
-                void registerNestedDefinitions(ClassDefinition *);
+                void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
 
-                ClassDefinition *registerClassDefinition(ClassDefinition *);
+                boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                 int getVersion();
 
-                SerializerHolder& getSerializerHolder();
+                SerializerHolder &getSerializerHolder();
 
             private:
 
-                SerializationContext(const SerializationContext&);
+                SerializationContext(const SerializationContext &);
 
-                PortableContext& getPortableContext(int factoryId);
+                PortableContext &getPortableContext(int factoryId);
 
-                void operator = (const SerializationContext&);
+                void operator = (const SerializationContext &);
 
                 int contextVersion;
                 util::SynchronizedMap<int, PortableContext> portableContextMap;

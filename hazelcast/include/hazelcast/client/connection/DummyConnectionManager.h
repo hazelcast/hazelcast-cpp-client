@@ -21,9 +21,9 @@ namespace hazelcast {
             public:
                 DummyConnectionManager(spi::ClientContext& clientContext);
 
-//                virtual Connection *firstConnection(const Address &address);
+//                virtual boost::shared_ptr<Connection>firstConnection(const Address &address);
 
-//                virtual Connection *getConnection(Address const &address);
+//                virtual boost::shared_ptr<Connection>getConnection(Address const &address);
 
             private:
                 Address address;

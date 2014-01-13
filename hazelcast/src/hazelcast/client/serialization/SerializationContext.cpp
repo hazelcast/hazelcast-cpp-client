@@ -21,19 +21,12 @@ namespace hazelcast {
 //                portableContextMap[0] = new PortableContext(this);
             };
 
-            SerializationContext::~SerializationContext() {
-                std::vector<PortableContext *> valueArr = portableContextMap.values();
-                for (int i = 0; i < valueArr.size(); i++) {
-                    delete valueArr[i];
-                }
-            };
-
-            SerializationContext::SerializationContext(const SerializationContext& rhs)
+            SerializationContext::SerializationContext(const SerializationContext &rhs)
             :serializerHolder(*this) {
                 //private
             };
 
-            void SerializationContext::operator = (const SerializationContext& rhs) {
+            void SerializationContext::operator = (const SerializationContext &rhs) {
                 //private
             };
 
@@ -41,7 +34,7 @@ namespace hazelcast {
                 return isClassDefinitionExists(factoryId, classId, contextVersion);
             };
 
-            ClassDefinition *SerializationContext::lookup(int factoryId, int classId) {
+            boost::shared_ptr<ClassDefinition> SerializationContext::lookup(int factoryId, int classId) {
                 return getPortableContext(factoryId).lookup(classId, contextVersion);
             };
 
@@ -49,23 +42,23 @@ namespace hazelcast {
                 return getPortableContext(factoryId).isClassDefinitionExists(classId, version);
             };
 
-            ClassDefinition *SerializationContext::lookup(int factoryId, int classId, int version) {
+            boost::shared_ptr<ClassDefinition> SerializationContext::lookup(int factoryId, int classId, int version) {
                 return getPortableContext(factoryId).lookup(classId, version);
             };
 
-            ClassDefinition *SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte> > binary) {
+            boost::shared_ptr<ClassDefinition> SerializationContext::createClassDefinition(int factoryId, std::auto_ptr< std::vector<byte> > binary) {
                 return getPortableContext(factoryId).createClassDefinition(binary);
             };
 
-            void SerializationContext::registerNestedDefinitions(ClassDefinition *cd) {
-                std::vector<ClassDefinition * > nestedDefinitions = cd->getNestedClassDefinitions();
-                for (std::vector<ClassDefinition * >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
+            void SerializationContext::registerNestedDefinitions(boost::shared_ptr<ClassDefinition> cd) {
+                std::vector<boost::shared_ptr<ClassDefinition>  > nestedDefinitions = cd->getNestedClassDefinitions();
+                for (std::vector<boost::shared_ptr<ClassDefinition>  >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
                     registerClassDefinition(*it);
                     registerNestedDefinitions(*it);
                 }
             };
 
-            ClassDefinition *SerializationContext::registerClassDefinition(ClassDefinition *cd) {
+            boost::shared_ptr<ClassDefinition> SerializationContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                 return getPortableContext(cd->getFactoryId()).registerClassDefinition(cd);
             };
 
@@ -73,11 +66,11 @@ namespace hazelcast {
                 return contextVersion;
             };
 
-            SerializerHolder& SerializationContext::getSerializerHolder() {
+            SerializerHolder &SerializationContext::getSerializerHolder() {
                 return serializerHolder;
             };
 
-            PortableContext& SerializationContext::getPortableContext(int factoryId) {
+            PortableContext &SerializationContext::getPortableContext(int factoryId) {
 //                int count = portableContextMap.count(factoryId);//TODO look at the constructor
 //                if (count == 0) {
 //                    char message[70];
@@ -85,12 +78,11 @@ namespace hazelcast {
 //                    throw hazelcast::client::IException(message);
 //                }
 //                return portableContextMap.at(factoryId);
-                PortableContext *value = portableContextMap.get(factoryId);
+                boost::shared_ptr<PortableContext> value = portableContextMap.get(factoryId);
                 if (value == NULL) {
-                    value = new PortableContext(this);
-                    PortableContext *current = portableContextMap.putIfAbsent(factoryId, value);
+                    value = boost::shared_ptr<PortableContext>(new PortableContext(this));
+                    boost::shared_ptr<PortableContext> current = portableContextMap.putIfAbsent(factoryId, value);
                     if (current != NULL) {
-                        delete value;
                         value = current;
                     }
                 }

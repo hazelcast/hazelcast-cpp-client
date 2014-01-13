@@ -32,15 +32,12 @@ namespace hazelcast {
                 return serializationContext.getSerializerHolder();
             };
 
-            SerializationService::~SerializationService() {
-            };
 
-
-            bool SerializationService::registerSerializer(SerializerBase *serializer) {
+            bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
                 return getSerializerHolder().registerSerializer(serializer);
             };
 
-            SerializerBase *SerializationService::serializerFor(int typeId) {
+            boost::shared_ptr<SerializerBase> SerializationService::serializerFor(int typeId) {
                 return getSerializerHolder().serializerFor(typeId);
             };
 

@@ -11,7 +11,6 @@
 
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/util/AtomicPointer.h"
 #include <string>
 #include <set>
 #include <vector>
@@ -34,7 +33,7 @@ namespace hazelcast {
             class HAZELCAST_API DefaultPortableWriter {
             public:
 
-                DefaultPortableWriter(SerializationContext &serializationContext, ClassDefinition *cd, DataOutput &output);
+                DefaultPortableWriter(SerializationContext &serializationContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &output);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -100,7 +99,7 @@ namespace hazelcast {
 
                 void setPosition(const char *fieldName);
 
-                ClassDefinition *getClassDefinition(const Portable &p);
+                boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable &p);
 
                 void write(const Portable &p);
 
@@ -113,7 +112,7 @@ namespace hazelcast {
                 int begin;
                 int offset;
                 std::set<std::string> writtenFields;
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
 
             };
 

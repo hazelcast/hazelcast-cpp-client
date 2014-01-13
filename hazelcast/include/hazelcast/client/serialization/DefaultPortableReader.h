@@ -33,7 +33,7 @@ namespace hazelcast {
             class HAZELCAST_API DefaultPortableReader {
             public:
 
-                DefaultPortableReader(SerializationContext& serializationContext, DataInput& input, ClassDefinition *cd);
+                DefaultPortableReader(SerializationContext& serializationContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -116,7 +116,7 @@ namespace hazelcast {
                 int const finalPosition;
                 int offset;
                 bool raw;
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 int currentFactoryId;
                 int currentClassId;
             };

@@ -7,7 +7,6 @@
 
 #include "hazelcast/client/connection/HeartBeatChecker.h"
 #include "hazelcast/client/Address.h"
-#include "hazelcast/util/ConcurrentSmartMap.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/connection/SocketInterceptor.h"
 #include "hazelcast/client/connection/IListener.h"
@@ -41,17 +40,17 @@ namespace hazelcast {
 
             class HAZELCAST_API ConnectionManager {
             public:
-                ConnectionManager(spi::ClientContext& clientContext);
+                ConnectionManager(spi::ClientContext &clientContext);
 
                 ~ConnectionManager();
 
                 void start();
 
-                virtual Connection *ownerConnection(const Address &address);
+                virtual connection::Connection *ownerConnection(const Address &address);
 
-                virtual Connection *getOrConnect(const Address &address);
+                virtual boost::shared_ptr<Connection> getOrConnect(const Address &address);
 
-                virtual Connection *getRandomConnection();
+                virtual boost::shared_ptr<Connection> getRandomConnection();
 
                 virtual void authenticate(Connection &connection, bool reAuth, bool firstConnection);
 
@@ -61,14 +60,15 @@ namespace hazelcast {
 
                 int getNextCallId();
 
-                void destroyConnection(Connection& );
+                void destroyConnection(Connection &);
 
                 void removeEventHandler(int callId);
-            protected:
-                virtual Connection *connectTo(const Address& address);
 
-                util::ConcurrentSmartMap<Address, Connection, addressComparator> connections;
-                spi::ClientContext& clientContext;
+            protected:
+                virtual connection::Connection *connectTo(const Address &address);
+
+                util::SynchronizedMap<Address, Connection, addressComparator> connections;
+                spi::ClientContext &clientContext;
                 std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
                 IListener iListener;
                 OListener oListener;
@@ -78,7 +78,7 @@ namespace hazelcast {
                 boost::mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 boost::atomic<long> callIdGenerator;
-//                HeartBeatChecker heartBeatChecker;
+//                HeartBeatChecker heartBeatChecker;TODO
 
             };
         }

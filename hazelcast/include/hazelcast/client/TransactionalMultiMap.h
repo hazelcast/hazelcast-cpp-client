@@ -26,14 +26,14 @@ namespace hazelcast {
             bool put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                multimap::TxnMultiMapPutRequest request(getName(), keyData, valueData);
+                multimap::TxnMultiMapPutRequest *request = new multimap::TxnMultiMapPutRequest(getName(), keyData, valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             };
 
             std::vector<V> get(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapGetRequest request(getName(), data);
+                multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
                 vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
                 vector<serialization::Data>::iterator it;
@@ -49,14 +49,14 @@ namespace hazelcast {
             bool remove(const K &key, const V &value) {
                 serialization::Data dataKey = toData(key);
                 serialization::Data dataValue = toData(value);
-                multimap::TxnMultiMapRemoveRequest request(getName(), dataKey, dataValue);
+                multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), dataKey, dataValue);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             };
 
             std::vector<V> remove(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapRemoveRequest request(getName(), &data);
+                multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), &data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
                 vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
                 vector<serialization::Data>::iterator it;
@@ -71,13 +71,13 @@ namespace hazelcast {
 
             int valueCount(const K &key) {
                 serialization::Data data = toData(key);
-                multimap::TxnMultiMapValueCountRequest request(getName(), data);
+                multimap::TxnMultiMapValueCountRequest *request = new multimap::TxnMultiMapValueCountRequest(getName(), data);
                 boost::shared_ptr<int> cnt = invoke<int>(request);
                 return *cnt;
             }
 
             int size() {
-                multimap::TxnMultiMapSizeRequest request(getName());
+                multimap::TxnMultiMapSizeRequest *request = new multimap::TxnMultiMapSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);
                 return *s;
             }

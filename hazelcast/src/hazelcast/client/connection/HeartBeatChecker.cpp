@@ -19,7 +19,7 @@
 //            , ping(serializationService.toData<protocol::PingRequest>(&pingRequest)) {
 //            }
 //
-//            void HeartBeatChecker::run(Connection *connection) {
+//            void HeartBeatChecker::run(boost::shared_ptr<Connection>connection) {
 //                try{
 //                    connection->write(ping);
 //                    connection->read();

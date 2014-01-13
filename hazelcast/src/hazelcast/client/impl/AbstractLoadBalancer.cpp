@@ -4,6 +4,7 @@
 
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include "hazelcast/client/Cluster.h"
+#include <boost/thread/lock_guard.hpp>
 
 namespace hazelcast {
     namespace client {

@@ -30,8 +30,6 @@ namespace hazelcast {
 
                 Data &operator = (const Data &);
 
-                ~Data();
-
                 int bufferSize() const;
 
                 int totalSize() const;
@@ -101,7 +99,7 @@ namespace hazelcast {
                     partitionHash = dataInput.readInt();
                 }
 
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
                 int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;

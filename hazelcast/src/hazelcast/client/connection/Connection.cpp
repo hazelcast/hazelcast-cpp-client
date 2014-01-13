@@ -16,11 +16,13 @@
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/impl/EventHandlerWrapper.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "TargetDisconnectedException.h"
+#include "InvocationService.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, spi::ClientContext& clientContext, IListener &iListener, OListener &oListener)
+            Connection::Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &oListener)
             : clientContext(clientContext)
             , socket(address)
             , connectionId(CONN_ID++)
@@ -47,20 +49,23 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::send(util::CallPromise *promise) {
+            void Connection::send(boost::shared_ptr<util::CallPromise> promise) {
                 registerCall(promise);
                 write(promise);
             };
 
-            void Connection::resend(util::CallPromise *promise) {
+            void Connection::resend(boost::shared_ptr<util::CallPromise> promise) {
                 reRegisterCall(promise);
                 write(promise);
             };
 
-            void Connection::write(util::CallPromise *promise) {
+            void Connection::write(boost::shared_ptr<util::CallPromise> promise) {
                 serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
                 if (!live) {
-                    promise->targetIsNotAlive(remoteEndpoint);
+                    if (clientContext.getInvocationService().resend(promise))
+                        return;
+                    client::exception::TargetDisconnectedException targetDisconnectedException(remoteEndpoint);
+                    promise->setException(targetDisconnectedException);  // TargetNotMemberException
                     removeConnectionCalls();
                 }
                 writeHandler.enqueueData(data);
@@ -71,8 +76,8 @@ namespace hazelcast {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
                 if (response->isEvent()) {
-                    util::CallPromise *promise = getEventHandler(response->getCallId());
-                    if (promise != NULL) {
+                    boost::shared_ptr<util::CallPromise> promise = getEventHandler(response->getCallId());
+                    if (promise.get() != NULL) {
                         promise->getEventHandler()->handle(response->getData());
                         return;
                     }
@@ -80,7 +85,7 @@ namespace hazelcast {
                 }
                 {
 //                    boost::lock_guard<boost::mutex> l(connectionLock);TODO
-                    util::CallPromise *promise = deRegisterCall(response->getCallId());
+                    boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
                     if (response->isException()) {
                         promise->setException(response->getException());
                     } else {
@@ -90,7 +95,7 @@ namespace hazelcast {
                             boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
                             boost::shared_ptr<std::string> uuid = serializationService.toObject<std::string>(promise->getFuture().get());
                             int callId = promise->getRequest().callId;
-                            clientContext.getServerListenerService().reRegisterListener(*uuid, *alias, callId);
+                            clientContext.getServerListenerService().reRegisterListener(*uuid, alias, callId);
                             return;
                         }
                         promise->setResponse(response->getData());
@@ -129,7 +134,7 @@ namespace hazelcast {
             }
 
 
-            util::CallPromise *Connection::registerCall(util::CallPromise *promise) {
+            boost::shared_ptr<util::CallPromise> Connection::registerCall(boost::shared_ptr<util::CallPromise> promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
@@ -145,7 +150,7 @@ namespace hazelcast {
             }
 
             // USED BY CLUSTER SERVICE
-            void Connection::reRegisterCall(util::CallPromise *promise) {
+            void Connection::reRegisterCall(boost::shared_ptr<util::CallPromise> promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
@@ -154,45 +159,56 @@ namespace hazelcast {
                 }
             }
 
-            util::CallPromise *Connection::deRegisterCall(int callId) {
+            boost::shared_ptr<util::CallPromise> Connection::deRegisterCall(int callId) {
                 return callPromises.remove(callId);
             }
 
 
-            void Connection::registerEventHandler(util::CallPromise *promise) {
+            void Connection::registerEventHandler(boost::shared_ptr<util::CallPromise> promise) {
                 eventHandlerPromises.put(promise->getRequest().callId, promise);
             }
 
 
-            util::CallPromise *Connection::getEventHandler(int callId) {
+            boost::shared_ptr<util::CallPromise > Connection::getEventHandler(int callId) {
                 return eventHandlerPromises.get(callId);
             }
 
-            util::CallPromise *Connection::deRegisterEventHandler(int callId) {
+            boost::shared_ptr<util::CallPromise > Connection::deRegisterEventHandler(int callId) {
                 return eventHandlerPromises.remove(callId);
             }
 
             void Connection::removeConnectionCalls() {
 //            partitionService.runRefresher(); TODO
+                typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
                 hazelcast::client::Address const &address = getRemoteEndpoint();
                 {
-                    std::vector<util::CallPromise *> v = callPromises.values();
-                    std::vector<util::CallPromise *>::iterator it;
-                    for (it = v.begin(); it != v.end(); ++it) {
-                        (*it)->targetDisconnected(address);
+
+                    Entry_Set entrySet = callPromises.clear();
+                    Entry_Set::iterator it;
+                    for (it = entrySet.begin(); it != entrySet.end(); ++it) {
+                        targetDisconnected(it->second);
                     }
-                    v.clear();
                 }
                 {
-                    std::vector<util::CallPromise *> v = eventHandlerPromises.values();
-                    std::vector<util::CallPromise *>::iterator it;
-                    for (it = v.begin(); it != v.end(); ++it) {
-                        (*it)->targetDisconnected(address);
+                    Entry_Set entrySet = eventHandlerPromises.clear();
+                    Entry_Set::iterator it;
+                    for (it = entrySet.begin(); it != entrySet.end(); ++it) {
+                        targetDisconnected(it->second);
                     }
-                    v.clear();
                 }
             }
 
+
+            void Connection::targetDisconnected(boost::shared_ptr<util::CallPromise> promise) {
+                hazelcast::client::Address const &address = getRemoteEndpoint();
+                spi::InvocationService &invocationService = clientContext.getInvocationService();
+                if (util::isRetryable(promise->getRequest()) || invocationService.isRedoOperation()) {
+                    if (invocationService.resend(promise))
+                        return;
+                }
+                client::exception::TargetDisconnectedException targetDisconnectedException(address);
+                promise->setException(targetDisconnectedException);
+            }
         }
     }
 }

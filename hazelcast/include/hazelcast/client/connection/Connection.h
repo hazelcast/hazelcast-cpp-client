@@ -8,8 +8,8 @@
 #define HAZELCAST_CONNECTION
 
 #include "hazelcast/client/Socket.h"
-#include "ReadHandler.h"
-#include "WriteHandler.h"
+#include "hazelcast/client/connection/ReadHandler.h"
+#include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
@@ -37,7 +37,7 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection {
             public:
-                Connection(const Address &address, spi::ClientContext& clientContext, IListener &iListener, OListener &listener);
+                Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &listener);
 
                 void connect();
 
@@ -45,9 +45,9 @@ namespace hazelcast {
 
                 void close();
 
-                void send(util::CallPromise *promise);
+                void send(boost::shared_ptr<util::CallPromise> promise);
 
-                void resend(util::CallPromise *promise);
+                void resend(boost::shared_ptr<util::CallPromise> promise);
 
                 void handlePacket(const serialization::Data &data);
 
@@ -63,17 +63,17 @@ namespace hazelcast {
 
                 serialization::Data readBlocking();
 
-                ReadHandler & getReadHandler();
+                ReadHandler &getReadHandler();
 
                 // USED BY CLUSTER SERVICE
 
-                util::CallPromise *deRegisterCall(int callId);
+                boost::shared_ptr<util::CallPromise> deRegisterCall(int callId);
 
-                void registerEventHandler(util::CallPromise *promise);
+                void registerEventHandler(boost::shared_ptr<util::CallPromise> promise);
 
-                util::CallPromise *getEventHandler(int callId);
+                boost::shared_ptr<util::CallPromise> getEventHandler(int callId);
 
-                util::CallPromise *deRegisterEventHandler(int callId);
+                boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
 
                 void removeConnectionCalls();
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                 boost::atomic<clock_t> lastWrite;
                 boost::atomic<bool> live;
             private:
-                spi::ClientContext& clientContext;
+                spi::ClientContext &clientContext;
                 Socket socket;
                 int connectionId;
                 Address remoteEndpoint;
@@ -90,11 +90,13 @@ namespace hazelcast {
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
 
-                void write(util::CallPromise *promise);
+                void write(boost::shared_ptr<util::CallPromise> promise);
 
-                util::CallPromise *registerCall(util::CallPromise *promise);
+                boost::shared_ptr<util::CallPromise> registerCall(boost::shared_ptr<util::CallPromise> promise);
 
-                void reRegisterCall(util::CallPromise *promise);
+                void reRegisterCall(boost::shared_ptr<util::CallPromise> promise);
+
+                void targetDisconnected(boost::shared_ptr<util::CallPromise> promise);
             };
 
             inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {

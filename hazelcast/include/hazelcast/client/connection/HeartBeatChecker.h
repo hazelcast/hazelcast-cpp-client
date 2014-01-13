@@ -27,7 +27,7 @@
 //
 //                bool checkHeartBeat(Connection& connection);
 //
-//                void run(Connection *connection);
+//                void run(boost::shared_ptr<Connection>connection);
 //
 //            private:
 //

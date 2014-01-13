@@ -16,13 +16,13 @@ namespace hazelcast {
 
             }
 
-//            Connection *DummyConnectionManager::firstConnection(const Address &address) {
-//                Connection *connection = newConnection(address);
+//            boost::shared_ptr<Connection>DummyConnectionManager::firstConnection(const Address &address) {
+//                boost::shared_ptr<Connection>connection = newConnection(address);
 //                this->address = connection->getEndpoint();
 //                return connection;
 //            }
 //
-//            Connection *DummyConnectionManager::getConnection(Address const &address) {
+//            boost::shared_ptr<Connection>DummyConnectionManager::getConnection(Address const &address) {
 //                if (isAddressAvailable)
 //                    return ConnectionManager::getConnection(this->address);
 //                else

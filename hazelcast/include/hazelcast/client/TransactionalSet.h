@@ -23,20 +23,20 @@ namespace hazelcast {
         public:
             bool add(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetAddRequest request(getName(), &data);
+                collection::TxnSetAddRequest *request = new collection::TxnSetAddRequest(getName(), &data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             }
 
             bool remove(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnSetRemoveRequest request(getName(), &data);
+                collection::TxnSetRemoveRequest *request = new collection::TxnSetRemoveRequest(getName(), &data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             }
 
             int size() {
-                collection::TxnSetSizeRequest request(getName());
+                collection::TxnSetSizeRequest *request = new collection::TxnSetSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);
                 return *s;
             }

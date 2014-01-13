@@ -56,10 +56,11 @@ namespace hazelcast {
             void ClientSerializationTest::testCustomSerialization() {
                 serialization::SerializationService serializationService(1);
 
-                TestCustomSerializerX<TestCustomXSerializable> serializer1;
-                TestCustomPersonSerializer serializer2;
-                serializationService.registerSerializer(&serializer1);
-                serializationService.registerSerializer(&serializer2);
+                boost::shared_ptr<serialization::SerializerBase> serializer1(new TestCustomSerializerX<TestCustomXSerializable>());
+                boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
+
+                serializationService.registerSerializer(serializer1);
+                serializationService.registerSerializer(serializer2);
 
                 TestCustomXSerializable a;
                 a.id = 131321;
@@ -86,7 +87,8 @@ namespace hazelcast {
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
                 serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
-                serializationService.getSerializationContext().registerClassDefinition(builder.build());
+                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                serializationService.getSerializationContext().registerClassDefinition(cd);
 
                 serialization::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
@@ -132,7 +134,8 @@ namespace hazelcast {
                 TestInvalidWritePortable p(2131, 123, "q4edfd");
                 serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addIntField("i").addUTFField("s");
-                serializationService.getSerializationContext().registerClassDefinition(builder.build());
+                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                serializationService.getSerializationContext().registerClassDefinition(cd);
                 serialization::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
                 boost::shared_ptr<TestInvalidWritePortable> o = serializationService.toObject<TestInvalidWritePortable>(data);
             };
@@ -142,7 +145,8 @@ namespace hazelcast {
                 TestInvalidReadPortable p(2131, 123, "q4edfd");
                 serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addIntField("i").addUTFField("s");
-                serializationService.getSerializationContext().registerClassDefinition(builder.build());
+                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                serializationService.getSerializationContext().registerClassDefinition(cd);
                 serialization::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
                 serializationService.toObject<TestInvalidReadPortable>(data);
             }

@@ -35,8 +35,8 @@ namespace hazelcast {
         }
 
 
-        connection::Connection *TransactionContext::connect() {
-            connection::Connection *conn = NULL;
+        boost::shared_ptr<connection::Connection> TransactionContext::connect() {
+            boost::shared_ptr<connection::Connection> conn;
             for (int i = 0; i < CONNECTION_TRY_COUNT; i++) {
                 try {
                     conn = clientContext.getConnectionManager().getRandomConnection();

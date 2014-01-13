@@ -12,7 +12,7 @@
 
 namespace hazelcast {
     namespace client {
-        namespace spi{
+        namespace spi {
             class LifecycleListener;
         }
         namespace connection {

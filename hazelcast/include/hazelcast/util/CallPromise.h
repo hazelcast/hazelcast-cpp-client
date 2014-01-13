@@ -36,10 +36,6 @@ namespace hazelcast {
 
             void setResponse(const client::serialization::Data &data);
 
-            void targetDisconnected(const client::Address &address);
-
-            void targetIsNotAlive(const client::Address &address);
-
             void setException(std::exception const &);
 
             void setRequest(const client::impl::PortableRequest *request);
@@ -52,14 +48,14 @@ namespace hazelcast {
 
             client::impl::EventHandlerWrapper *getEventHandler() const;
 
+            int incrementAndGetResendCount();
+
         private:
             client::spi::InvocationService &invocationService;
             boost::promise<client::serialization::Data> promise;
             std::auto_ptr<const client::impl::PortableRequest> request;
             std::auto_ptr<client::impl::EventHandlerWrapper> eventHandler;
             int resendCount;
-
-            bool resend();
         };
     }
 }

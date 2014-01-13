@@ -19,7 +19,7 @@ namespace hazelcast {
 
         bool ISemaphore::init(int permits) {
             checkNegative(permits);
-            semaphore::InitRequest request(getName(), permits);
+            semaphore::InitRequest *request = new semaphore::InitRequest(getName(), permits);
             return invoke<bool>(request, key);
         };
 
@@ -29,25 +29,25 @@ namespace hazelcast {
 
         void ISemaphore::acquire(int permits) {
             checkNegative(permits);
-            semaphore::AcquireRequest request(getName(), permits, -1);
+            semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, -1);
             invoke<bool>(request, key);
         };
 
         int ISemaphore::availablePermits() {
-            semaphore::AvailableRequest request(getName());
+            semaphore::AvailableRequest *request = new semaphore::AvailableRequest(getName());
             boost::shared_ptr<int> response = invoke<int>(request, key);
             return *response;
         };
 
         int ISemaphore::drainPermits() {
-            semaphore::DrainRequest request(getName());
+            semaphore::DrainRequest *request = new semaphore::DrainRequest(getName());
             boost::shared_ptr<int> response = invoke<int>(request, key);
             return *response;
         };
 
         void ISemaphore::reducePermits(int reduction) {
             checkNegative(reduction);
-            semaphore::ReduceRequest request(getName(), reduction);
+            semaphore::ReduceRequest *request = new semaphore::ReduceRequest(getName(), reduction);
             invoke<bool>(request, key);
         };
 
@@ -56,7 +56,7 @@ namespace hazelcast {
         };
 
         void ISemaphore::release(int permits) {
-            semaphore::ReleaseRequest request(getName(), permits);
+            semaphore::ReleaseRequest *request = new semaphore::ReleaseRequest(getName(), permits);
             invoke<bool>(request, key);
         };
 
@@ -79,7 +79,7 @@ namespace hazelcast {
 
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             checkNegative(permits);
-            semaphore::AcquireRequest request(getName(), permits, timeoutInMillis);
+            semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, timeoutInMillis);
             return *(invoke<bool>(request, key));
         };
 

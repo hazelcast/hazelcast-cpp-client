@@ -22,7 +22,6 @@ namespace hazelcast {
 
 
             void ReadHandler::run() {
-                std::cout << "R" << connection.getSocket().getSocketId() << std::endl;
                 registerHandler();
             }
 

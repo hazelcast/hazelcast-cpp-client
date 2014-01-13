@@ -24,9 +24,6 @@ namespace hazelcast {
             , binary(new std::vector<byte>) {
             };
 
-            ClassDefinition::~ClassDefinition() {
-            };
-
             ClassDefinition::ClassDefinition(const ClassDefinition &rhs)
             : factoryId(rhs.factoryId)
             , classId(rhs.classId)
@@ -51,7 +48,7 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName()] = fd;
             };
 
-            void ClassDefinition::add(ClassDefinition *cd) {
+            void ClassDefinition::add(boost::shared_ptr<ClassDefinition> cd) {
                 nestedClassDefinitions.push_back(cd);
             };
 
@@ -67,7 +64,7 @@ namespace hazelcast {
                 return fieldDefinitions[fieldIndex];
             };
 
-            std::vector<ClassDefinition * > &ClassDefinition::getNestedClassDefinitions() {
+            std::vector<boost::shared_ptr<ClassDefinition> > &ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
 
@@ -148,7 +145,7 @@ namespace hazelcast {
                 }
                 size = dataInput.readInt();
                 for (int i = 0; i < size; i++) {
-                    ClassDefinition *classDefinition = new ClassDefinition();
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
                     classDefinition->readData(dataInput);
                     add(classDefinition);
                 }

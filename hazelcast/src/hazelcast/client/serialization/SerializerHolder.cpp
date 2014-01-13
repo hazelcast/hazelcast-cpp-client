@@ -15,12 +15,12 @@ namespace hazelcast {
 
             }
 
-            bool SerializerHolder::registerSerializer(SerializerBase *serializer) {
-                SerializerBase *available = serializers.putIfAbsent(serializer->getTypeId(), serializer);
-                return available == NULL;
+            bool SerializerHolder::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
+                boost::shared_ptr<SerializerBase> available = serializers.putIfAbsent(serializer->getTypeId(), serializer);
+                return available.get() == NULL;
             };
 
-            SerializerBase *SerializerHolder::serializerFor(int typeId) {
+            boost::shared_ptr<SerializerBase> SerializerHolder::serializerFor(int typeId) {
                 return serializers.get(typeId);
             }
 

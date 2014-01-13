@@ -27,7 +27,7 @@ namespace hazelcast {
 
             void ClusterService::start() {
                 serialization::ClassDefinitionBuilder cd(-3, 3);
-                serialization::ClassDefinition *ptr = cd.addUTFField("uuid").addUTFField("ownerUuid").build();
+                boost::shared_ptr<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
@@ -104,7 +104,7 @@ namespace hazelcast {
 
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
-            connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
+            connection::Connection* ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
                 active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;

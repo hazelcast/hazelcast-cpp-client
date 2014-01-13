@@ -26,45 +26,53 @@ namespace hazelcast {
                 redoOperation = clientContext.getClientConfig().isRedoOperation();
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest &request) {
-                connection::Connection *connection = getOrConnect(NULL);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request) {
+                boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
                 return doSend(request, NULL, *connection);
             };
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest &request, serialization::Data &key) {
-                Address *owner = clientContext.getPartitionService().getPartitionOwner(key);
-                if (owner != NULL) {
+            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, serialization::Data &key) {
+                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(key);
+                if (owner.get() != NULL) {
                     return invokeOnTarget(request, *owner);
                 }
                 return invokeOnRandomTarget(request);
             };
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest &request, const Address &address) {
-                connection::Connection *connection = getOrConnect(&address);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, const Address &address) {
+                boost::shared_ptr<connection::Connection>connection = getOrConnect(&address);
                 return doSend(request, NULL, *connection);
             };
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler) {
-                connection::Connection *connection = getOrConnect(NULL);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler) {
+                boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
                 return doSend(request, eventHandler, *connection);
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, const Address &address) {
-                connection::Connection *connection = getOrConnect(&address);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler, const Address &address) {
+                boost::shared_ptr<connection::Connection>connection = getOrConnect(&address);
                 return doSend(request, eventHandler, *connection);
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest &request, impl::EventHandlerWrapper *handler, const serialization::Data &key) {
-                Address *owner = clientContext.getPartitionService().getPartitionOwner(key);
-                if (owner != NULL) {
+            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::EventHandlerWrapper *handler, const serialization::Data &key) {
+                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(key);
+                if (owner.get() != NULL) {
                     return invokeOnTarget(request, handler, *owner);
                 }
                 return invokeOnRandomTarget(request, handler);
             }
 
-            void InvocationService::resend(util::CallPromise *promise) {
-                connection::Connection *connection = getOrConnect(NULL);
-                connection->resend(promise);
+            bool InvocationService::resend(boost::shared_ptr<util::CallPromise> promise) {
+                if (promise->incrementAndGetResendCount() > client::spi::InvocationService::RETRY_COUNT) {
+                    return false;
+                }
+                try {
+                    boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
+                    connection->resend(promise);
+                } catch(std::exception &e) {
+                    promise->setException(e);
+                }
+                return true;
             }
 
 
@@ -72,15 +80,15 @@ namespace hazelcast {
                 return redoOperation;
             }
 
-            boost::shared_future<serialization::Data> InvocationService::doSend(const impl::PortableRequest &request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
-                util::CallPromise *promise = new util::CallPromise(*this);
-                promise->setRequest(&request);
+            boost::shared_future<serialization::Data> InvocationService::doSend(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
+                boost::shared_ptr<util::CallPromise> promise(new util::CallPromise(*this));
+                promise->setRequest(request);
                 promise->setEventHandler(eventHandler);
                 connection.send(promise);
                 return promise->getFuture();
             }
 
-            connection::Connection *InvocationService::getOrConnect(const Address *target) {
+            boost::shared_ptr<connection::Connection>InvocationService::getOrConnect(const Address *target) {
                 int count = 0;
                 exception::IOException lastError("", "");
                 connection::ConnectionManager &connectionManager = clientContext.getConnectionManager();

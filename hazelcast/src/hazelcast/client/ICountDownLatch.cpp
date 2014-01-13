@@ -14,24 +14,24 @@ namespace hazelcast {
         };
 
         bool ICountDownLatch::await(long timeoutInMillis) {
-            countdownlatch::AwaitRequest request(getName(), timeoutInMillis);
+            countdownlatch::AwaitRequest* request = new countdownlatch::AwaitRequest(getName(), timeoutInMillis);
             return *(invoke<bool>(request, key));
         };
 
         void ICountDownLatch::countDown() {
-            countdownlatch::CountDownRequest request(getName());
+            countdownlatch::CountDownRequest* request = new countdownlatch::CountDownRequest(getName());
             invoke<bool>(request, key);
         };
 
         int ICountDownLatch::getCount() {
-            countdownlatch::GetCountRequest request(getName());
+            countdownlatch::GetCountRequest* request = new countdownlatch::GetCountRequest(getName());
             boost::shared_ptr<int> response = invoke<int>(request, key);
             return *response;
 
         };
 
         bool ICountDownLatch::trySetCount(int count) {
-            countdownlatch::SetCountRequest request(getName(), count);
+            countdownlatch::SetCountRequest* request = new countdownlatch::SetCountRequest(getName(), count);
             boost::shared_ptr<bool> response = invoke<bool>(request, key);
             return *response;
         };

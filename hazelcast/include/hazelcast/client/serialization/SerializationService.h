@@ -35,13 +35,11 @@ namespace hazelcast {
 
                 SerializationService(int version);
 
-                ~SerializationService();
-
                 /**
                 *
                 *  return false if a serializer is already given corresponding to serializerId
                 */
-                bool registerSerializer(SerializerBase *serializer);
+                bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
                 template<typename T>//TODO we probably do not need template
                 Data toData(const Portable *portable) {
@@ -76,9 +74,9 @@ namespace hazelcast {
                     DataOutput dataOutput;
                     ObjectDataOutput output(dataOutput, serializationContext);
                     int type = object->getSerializerId();
-                    SerializerBase *serializer = serializerFor(type);
-                    if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                    boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
+                    if (serializer.get() != NULL) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->write(output, *object);
                     } else {
                         throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
@@ -127,9 +125,9 @@ namespace hazelcast {
                     boost::shared_ptr<T> object(new T);
                     DataInput dataInput(*(data.buffer.get()));
                     ObjectDataInput objectDataInput(dataInput, serializationContext);
-                    SerializerBase *serializer = serializerFor(object->getSerializerId());
-                    if (serializer) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                    boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getSerializerId());
+                    if (serializer.get() != NULL) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->read(objectDataInput, *object);
                         return object;
                     } else {
@@ -142,7 +140,7 @@ namespace hazelcast {
                 SerializerHolder &getSerializerHolder();
 
             private:
-                SerializerBase *serializerFor(int typeId);
+                boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
                 SerializationService(const SerializationService &);
 

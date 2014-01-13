@@ -28,7 +28,6 @@ namespace hazelcast {
             void IOListener::wakeUp() {
                 int wakeUpSignal = 9;
                 try {
-                    std::cerr << "send wakeup signal " << std::endl;
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
                 } catch(std::exception &e) {
                     std::cerr << e.what() << std::endl;
@@ -41,11 +40,9 @@ namespace hazelcast {
                 std::cout << "port " << serverSocket.getPort() << std::endl;
                 wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
                 if (wakeUpSocket->connect() == 0) {
-                    std::cout << "wakeup socket connection establised" << std::endl;
                     Socket *socket = serverSocket.accept();
                     wakeUpSocketSet.sockets.insert(socket);
                     wakeUpListenerSocketId = socket->getSocketId();
-                    std::cout << "wakeup socket insert " << socket->getSocketId() << std::endl;
                 } else {
                     throw exception::IOException("OListener::init", "no local socket left");
                 }
@@ -73,7 +70,6 @@ namespace hazelcast {
 
             void IOListener::processListenerQueue() {
                 while (ListenerTask *task = listenerTasks.poll()) {
-                    std::cout << "pppp " << std::endl;
                     task->run();
                 }
             }

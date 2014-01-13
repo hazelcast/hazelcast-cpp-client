@@ -40,19 +40,15 @@ namespace hazelcast {
                         if (FD_ISSET((*it)->getSocketId(), &wakeUp_fd)) {
                             int wakeUpSignal;
                             (*it)->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
-                            std::cerr << "writer wokeup " << wakeUpSignal << std::endl;
                         }
                     }
 
                     std::set<Socket const *>::iterator temp;
                     it = socketSet.sockets.begin();
-                    std::cout << "--" << std::endl;
                     while (it != socketSet.sockets.end()) {
                         temp = it++;
-                        std::cout << "checking write sockets " << (*temp)->getSocketId() << std::endl;
                         if (FD_ISSET((*temp)->getSocketId(), &write_fds)) {
                             socketSet.sockets.erase(temp);
-                            std::cout << "handle write of " << (*temp)->getSocketId() << std::endl;
                             ioHandlers[(*temp)->getSocketId()]->handle();
                         }
                     }

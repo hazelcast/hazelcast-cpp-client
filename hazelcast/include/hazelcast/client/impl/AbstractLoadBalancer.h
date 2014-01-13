@@ -7,7 +7,6 @@
 #define HAZELCAST_ABSTRACT_LOAD_BALANCER
 
 #include "hazelcast/client/connection/Member.h"
-#include "hazelcast/util/AtomicPointer.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include <boost/thread/mutex.hpp>
@@ -28,11 +27,11 @@ namespace hazelcast {
 
                 std::vector<connection::Member> getMembers();
 
-                virtual void init(Cluster& cluster);
+                virtual void init(Cluster &cluster);
 
-                void memberAdded(const connection::MembershipEvent& membershipEvent);
+                void memberAdded(const connection::MembershipEvent &membershipEvent);
 
-                void memberRemoved(const connection::MembershipEvent& membershipEvent);
+                void memberRemoved(const connection::MembershipEvent &membershipEvent);
 
                 virtual ~AbstractLoadBalancer();
 

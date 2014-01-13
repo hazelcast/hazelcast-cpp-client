@@ -2,49 +2,26 @@
 // Created by sancar koyunlu on 03/01/14.
 //
 
-#include "hazelcast/util/CallPromise.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/Address.h"
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/exception/TargetDisconnectedException.h"
+#include "hazelcast/util/CallPromise.h"
 
 namespace hazelcast {
     namespace util {
-
-
         CallPromise::CallPromise(client::spi::InvocationService &invocationService)
         : invocationService(invocationService)
         , resendCount(0) {
-
         }
 
         void CallPromise::setResponse(const client::serialization::Data &data) {
             this->promise.set_value(data);
         }
 
-
         void CallPromise::setException(std::exception const &exception) {
             promise.set_exception(exception);
-        }
-
-
-        void CallPromise::targetDisconnected(const client::Address &address) {
-            if (isRetryable(*request) || invocationService.isRedoOperation()) {
-                if (resend())
-                    return;
-            }
-            client::exception::TargetDisconnectedException targetDisconnectedException(address);
-            promise.set_exception(targetDisconnectedException);
-        }
-
-        void CallPromise::targetIsNotAlive(const client::Address &address) {
-            if (resend())
-                return;
-            client::exception::TargetDisconnectedException targetDisconnectedException(address);
-            promise.set_exception(targetDisconnectedException);  // TargetNotMemberException
-
         }
 
         void CallPromise::setRequest(const client::impl::PortableRequest *request) {
@@ -68,17 +45,8 @@ namespace hazelcast {
         }
 
 
-        bool CallPromise::resend() {
-            resendCount++;
-            if (resendCount > client::spi::InvocationService::RETRY_COUNT) {
-                return false;
-            }
-            try {
-                invocationService.resend(this);
-            } catch(std::exception &e) {
-                promise.set_exception(e);
-            }
-            return true;
+        int CallPromise::incrementAndGetResendCount() {
+            return ++resendCount;
         }
     }
 }

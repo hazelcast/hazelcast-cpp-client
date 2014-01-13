@@ -29,7 +29,7 @@ namespace hazelcast {
             class HAZELCAST_API MorphingPortableReader {
             public:
 
-                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, ClassDefinition *cd);
+                MorphingPortableReader(SerializationContext& serializationContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd);
 
                 int readInt(const char *fieldName);
 
@@ -113,7 +113,7 @@ namespace hazelcast {
                 int const finalPosition;
                 int offset;
                 bool raw;
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
 
                 FieldType currentFieldType;
                 int currentFactoryId;

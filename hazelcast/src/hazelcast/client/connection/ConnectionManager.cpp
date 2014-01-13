@@ -48,27 +48,26 @@ namespace hazelcast {
                 oListenerThread->join();
             }
 
-            Connection *ConnectionManager::ownerConnection(const Address &address) {
+            connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
                 return connectTo(address);
             }
 
-            Connection *ConnectionManager::getOrConnect(const Address &address) {
-                util::AtomicPointer<Connection> conn = connections.get(address);
-                if (conn.isNull()) {
+            boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
+                boost::shared_ptr<Connection> conn = connections.get(address);
+                if (conn.get() != NULL) {
                     boost::lock_guard<boost::mutex> l(lockMutex);
                     conn = connections.get(address);
-                    if (conn.isNull()) {
-                        Connection *newConnection = connectTo(address);
+                    if (conn.get() != NULL) {
+                        boost::shared_ptr<Connection> newConnection(connectTo(address));
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         return newConnection;
                     }
                 }
-                return conn.get();
+                return conn;
             };
 
-
-            Connection *ConnectionManager::getRandomConnection() {
+            boost::shared_ptr<Connection> ConnectionManager::getRandomConnection() {
                 checkLive();
 //        TODO        Address address = clientConfig.getLoadBalancer()->next().getAddress();
                 Address address = clientContext.getClientConfig().getAddresses()[0];
@@ -119,20 +118,19 @@ namespace hazelcast {
 
 
             void ConnectionManager::removeEventHandler(int callId) {
-                std::vector<util::AtomicPointer<Connection> > v = connections.values();
-                std::vector<util::AtomicPointer<Connection> >::iterator it;
+                std::vector<boost::shared_ptr<Connection> > v = connections.values();
+                std::vector<boost::shared_ptr<Connection> >::iterator it;
                 for (it = v.begin(); it != v.end(); ++it) {
-                    util::CallPromise *promise = (*it)->deRegisterEventHandler(callId);
+                    boost::shared_ptr<util::CallPromise> promise = (*it)->deRegisterEventHandler(callId);
                     if (promise != NULL) {
-                        //TODO delete promise;
                         return;
                     }
                 }
 
             }
 
-            Connection *ConnectionManager::connectTo(const Address &address) {
-                Connection *conn = new Connection(address, clientContext, iListener, oListener);
+            connection::Connection *ConnectionManager::connectTo(const Address &address) {
+                connection::Connection *conn = new Connection(address, clientContext, iListener, oListener);
                 checkLive();
                 conn->connect();
                 //TODO socket options

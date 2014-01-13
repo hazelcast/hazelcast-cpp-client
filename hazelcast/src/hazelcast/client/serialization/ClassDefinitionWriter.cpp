@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
 
-            ClassDefinition *ClassDefinitionWriter::getClassDefinition() {
+            boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::getClassDefinition() {
                 return cd;
             };
 
@@ -136,7 +136,7 @@ namespace hazelcast {
 
             };
 
-            ClassDefinition *ClassDefinitionWriter::getOrBuildClassDefinition(const Portable &p) {
+            boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::getOrBuildClassDefinition(const Portable &p) {
                 return context.getSerializerHolder().getPortableSerializer().getClassDefinition(p);
             };
 

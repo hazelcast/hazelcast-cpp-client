@@ -17,8 +17,8 @@ int THREAD_COUNT = 1;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
-int GET_PERCENTAGE = 0;
-int PUT_PERCENTAGE = 100;
+int GET_PERCENTAGE = 50;
+int PUT_PERCENTAGE = 50;
 
 
 class HAZELCAST_API Stats {
@@ -121,6 +121,7 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
+        clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
 //        clientConfig.setSmart(false);
 

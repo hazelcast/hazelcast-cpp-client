@@ -3,7 +3,7 @@
 
 #include "TestMainPortable.h"
 
-#define SERVER_ADDRESS "localhost"
+#define SERVER_ADDRESS "192.168.2.201"
 #define SERVER_PORT 5701
 
 

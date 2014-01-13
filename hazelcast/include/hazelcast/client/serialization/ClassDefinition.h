@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -24,7 +25,6 @@ namespace hazelcast {
             class DataOutput;
 
 
-
             class HAZELCAST_API ClassDefinition {
             public:
 
@@ -32,11 +32,9 @@ namespace hazelcast {
 
                 ClassDefinition(int factoryId, int classId, int version);
 
-                ~ClassDefinition();
-
                 void add(FieldDefinition &);
 
-                void add(ClassDefinition *);
+                void add(boost::shared_ptr<ClassDefinition>);
 
                 bool isFieldDefinitionExists(const char *);
 
@@ -44,7 +42,7 @@ namespace hazelcast {
 
                 const FieldDefinition &get(int);
 
-                std::vector<ClassDefinition * > &getNestedClassDefinitions();
+                std::vector<boost::shared_ptr<ClassDefinition>  > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
 
@@ -81,7 +79,7 @@ namespace hazelcast {
 
                 std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
-                std::vector<ClassDefinition * > nestedClassDefinitions;
+                std::vector<boost::shared_ptr<ClassDefinition>  > nestedClassDefinitions;
 
                 std::auto_ptr< std::vector<byte> > binary;
 

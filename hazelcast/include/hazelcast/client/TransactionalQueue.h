@@ -33,7 +33,7 @@ namespace hazelcast {
 
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
-                queue::TxnOfferRequest request(getName(), timeoutInMillis, data);
+                queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, data);
                 bool result;
                 try {
                     result = invoke<bool>(request);
@@ -52,7 +52,7 @@ namespace hazelcast {
             };
 
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                queue::TxnPollRequest request(getName(), timeoutInMillis);
+                queue::TxnPollRequest *request = new queue::TxnPollRequest(getName(), timeoutInMillis);
                 boost::shared_ptr<E> result;
                 try {
                     result = invoke<E>(request);
@@ -63,7 +63,7 @@ namespace hazelcast {
             };
 
             int size() {
-                queue::TxnSizeRequest request(getName());
+                queue::TxnSizeRequest *request = new queue::TxnSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);
                 return *s;
             }

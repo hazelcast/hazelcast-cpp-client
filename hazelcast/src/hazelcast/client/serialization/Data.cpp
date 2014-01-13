@@ -16,12 +16,11 @@ namespace hazelcast {
             Data::Data()
             : partitionHash(0)
             , type(SerializationConstants::CONSTANT_TYPE_DATA)
-            , buffer(new std::vector<byte>)
-            , cd(NULL) {
+            , buffer(new std::vector<byte>) {
 
             };
 
-            Data::Data(const Data& rhs)
+            Data::Data(const Data &rhs)
             : partitionHash(rhs.partitionHash)
             , type(rhs.type)
             , cd(rhs.cd)
@@ -31,12 +30,8 @@ namespace hazelcast {
 
             Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer)
             : partitionHash(0)
-            , buffer(buffer)
-            , cd(NULL) {
+            , buffer(buffer) {
                 this->type = type;
-            };
-
-            Data::~Data() {
             };
 
             Data &Data::operator = (const Data &rhs) {

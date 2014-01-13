@@ -30,17 +30,15 @@ namespace hazelcast {
 
                 PortableContext();
 
-                ~PortableContext();
-
                 PortableContext(SerializationContext *serializationContext);
 
                 bool isClassDefinitionExists(int, int) const;
 
-                ClassDefinition *lookup(int, int);
+                boost::shared_ptr<ClassDefinition> lookup(int, int);
 
-                ClassDefinition *createClassDefinition(std::auto_ptr< std::vector<byte> >);
+                boost::shared_ptr<ClassDefinition> createClassDefinition(std::auto_ptr< std::vector<byte> >);
 
-                ClassDefinition *registerClassDefinition(ClassDefinition *);
+                boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition> );
 
             private:
                 void compress(std::vector<byte>&);
@@ -51,7 +49,7 @@ namespace hazelcast {
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 
-                hazelcast::util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
+                util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
 
                 SerializationContext *serializationContext;
             };

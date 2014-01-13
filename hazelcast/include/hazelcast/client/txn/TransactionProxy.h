@@ -57,7 +57,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions &, spi::ClientContext& clientContext, connection::Connection* connection);
+                TransactionProxy(TransactionOptions &, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
 
                 std::string getTxnId() const;
 
@@ -75,7 +75,7 @@ namespace hazelcast {
 
                 spi::ClusterService &getClusterService();
 
-                connection::Connection *getConnection();
+                boost::shared_ptr<connection::Connection>getConnection();
 
                 template <typename Response, typename Request>
                 boost::shared_ptr<Response> sendAndReceive(const Request &request) {
@@ -86,7 +86,7 @@ namespace hazelcast {
                 spi::ClientContext& clientContext;
                 TransactionOptions &options;
 
-                connection::Connection *connection;
+                boost::shared_ptr<connection::Connection>connection;
                 long threadId;
 
                 std::string txnId;

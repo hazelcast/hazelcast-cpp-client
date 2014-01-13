@@ -24,7 +24,6 @@ namespace hazelcast {
             }
 
             void GetPartitionsRequest::write(serialization::PortableWriter &writer) const {
-                std::cerr << "Partition Request:::::" << std::endl;
             }
         }
     }

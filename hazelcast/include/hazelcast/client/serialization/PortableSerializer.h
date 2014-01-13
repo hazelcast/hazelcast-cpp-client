@@ -13,6 +13,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <boost/shared_ptr.hpp>
+
 
 namespace hazelcast {
     namespace client {
@@ -34,7 +36,7 @@ namespace hazelcast {
 
                 PortableSerializer(SerializationContext& serializationContext);
 
-                ClassDefinition *getClassDefinition(const Portable& p);
+                boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable& p);
 
                 void write(DataOutput &dataOutput, const Portable& p);
 

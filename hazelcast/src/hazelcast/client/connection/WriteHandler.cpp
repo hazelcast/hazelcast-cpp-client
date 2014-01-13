@@ -29,7 +29,6 @@ namespace hazelcast {
                 if (ready) {
                     handle();
                 } else {
-                    std::cout << "W" << connection.getSocket().getSocketId() << std::endl;
                     registerHandler();
                 }
                 ready = false;
@@ -40,7 +39,6 @@ namespace hazelcast {
                 writeQueue.offer(socketWritable);
                 bool expected = true;
                 if (informSelector.compare_exchange_strong(expected, false)) {
-                    std::cerr << "adding task " << std::endl;
                     ioListener.addTask(this);
                     ioListener.wakeUp();
                 }

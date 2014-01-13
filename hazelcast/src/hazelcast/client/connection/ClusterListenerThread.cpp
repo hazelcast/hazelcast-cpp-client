@@ -33,7 +33,6 @@ namespace hazelcast {
                     try {
                         if (conn.get() == NULL) {
                             try {
-                                std::cout << "connection is null, picking new connection " << std::endl;
                                 conn.reset(pickConnection());
                             } catch (std::exception &e) {
                                 std::cerr << "Error while connecting to cluster! " << e.what() << std::endl;
@@ -76,7 +75,7 @@ namespace hazelcast {
                 clusterListenerThread->join();
             }
 
-            Connection *ClusterListenerThread::pickConnection() {
+            Connection* ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;
                 if (!members.empty()) {
                     std::vector<Address> clusterAddresses = getClusterAddresses();

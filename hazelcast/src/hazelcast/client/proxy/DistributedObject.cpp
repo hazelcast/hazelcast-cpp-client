@@ -36,19 +36,19 @@ namespace hazelcast {
 
             void DistributedObject::destroy() {
                 onDestroy();
-                impl::ClientDestroyRequest request(name, serviceName);
+                impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
                 context->getInvocationService().invokeOnRandomTarget(request);
             }
 
-            std::string DistributedObject::listen(const impl::PortableRequest &registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler) {
+            std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler) {
                 return context->getServerListenerService().listen(registrationRequest, partitionKey, handler);
             }
 
-            std::string DistributedObject::listen(const impl::PortableRequest &registrationRequest, impl::EventHandlerWrapper *handler) {
+            std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, impl::EventHandlerWrapper *handler) {
                 return listen(registrationRequest, NULL, handler);
             }
 
-            bool DistributedObject::stopListening(const impl::PortableRequest &request, const std::string &registrationId) {
+            bool DistributedObject::stopListening(const impl::PortableRequest *request, const std::string &registrationId) {
                 return context->getServerListenerService().stopListening(request, registrationId);
             }
         }

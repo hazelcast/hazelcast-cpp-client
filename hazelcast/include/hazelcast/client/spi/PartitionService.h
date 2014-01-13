@@ -26,19 +26,17 @@ namespace hazelcast {
 
             class HAZELCAST_API PartitionService {
             public:
-                PartitionService(spi::ClientContext& clientContext);
-
-                ~PartitionService();
+                PartitionService(spi::ClientContext &clientContext);
 
                 void start();
 
                 void stop();
 
-                Address *getPartitionOwner(const serialization::Data& key);
+                boost::shared_ptr<Address> getPartitionOwner(const serialization::Data &key);
 
             private:
 
-                spi::ClientContext& clientContext;
+                spi::ClientContext &clientContext;
 
                 boost::atomic<bool> updating;
 

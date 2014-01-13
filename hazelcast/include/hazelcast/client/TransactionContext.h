@@ -30,7 +30,7 @@ namespace hazelcast {
 
         class HAZELCAST_API TransactionContext {
         public:
-            TransactionContext(spi::ClientContext& clientContext, const TransactionOptions &);
+            TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &);
 
             std::string getTxnId() const;
 
@@ -78,12 +78,12 @@ namespace hazelcast {
 
         private :
             const int CONNECTION_TRY_COUNT;
-            spi::ClientContext& clientContext;
+            spi::ClientContext &clientContext;
             TransactionOptions options;
-            connection::Connection *txnConnection;
+            boost::shared_ptr<connection::Connection> txnConnection;
             txn::TransactionProxy transaction;
 
-            connection::Connection *connect();
+            boost::shared_ptr<connection::Connection> connect();
 
         };
 

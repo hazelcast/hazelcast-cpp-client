@@ -147,7 +147,7 @@ namespace hazelcast {
             void ObjectDataOutput::writePortable(const Portable *portable) {
                 writeBoolean(false);
                 writeInt(portable->getSerializerId());
-                ClassDefinition *cd = context->lookup(portable->getFactoryId(), portable->getClassId());
+                boost::shared_ptr<ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
                 if (cd == NULL) {
                     ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context->getVersion(), *context);
                     cd = classDefinitionWriter.getOrBuildClassDefinition(*portable);

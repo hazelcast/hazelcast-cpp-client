@@ -90,8 +90,8 @@ namespace hazelcast {
                     int type = object->getSerializerId();
                     writeBoolean(true);
                     writeInt(type);
-                    SerializerBase *serializer = serializerHolder->serializerFor(type);
-                    if (serializer) {
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
+                    if (serializer.get() != NULL) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->write(*this, *object);
                     } else {

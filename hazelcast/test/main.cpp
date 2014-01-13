@@ -23,20 +23,20 @@
 using namespace hazelcast::client::test;
 
 int testSpeed() {
-    SimpleMapTest s(SERVER_ADDRESS, SERVER_PORT);
+    SimpleMapTest s("192.168.2.201", 5701);
     s.run();
     return 0;
 };
 
 int main(int argc, char **argv) {
 
-    Address address("192.168.2.201", 5701);
-    ClientConfig clientConfig;
-    clientConfig.addAddress(address);
-    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
-    HazelcastClient hazelcastClient(clientConfig);
-    IMap<int, std::string> iMap = hazelcastClient.getMap<int,std::string>("deneme");
-    (std::cout << iMap.getName() << std::endl);
+//    Address address("192.168.2.201", 5701);
+//    ClientConfig clientConfig;
+//    clientConfig.addAddress(address);
+//    clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+//    HazelcastClient hazelcastClient(clientConfig);
+//    IMap<int, std::string> iMap = hazelcastClient.getMap<int,std::string>("deneme");
+//    (std::cout << iMap.getName() << std::endl);
 //    iMap.put(1, "sss");
 //    boost::shared_ptr<string> ptr = iMap.get(1);
 //    if(ptr != NULL){
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 //    ClientTxnTest clientTxnTest(factory);
 //    clientTxnTest.executeTests();
 
-//    testSpeed();
+    testSpeed();
 
 
     return 0;

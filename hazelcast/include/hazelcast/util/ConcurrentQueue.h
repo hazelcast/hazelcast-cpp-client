@@ -24,7 +24,11 @@ namespace hazelcast {
             };
 
             ~ConcurrentQueue() {
-
+                boost::lock_guard<boost::mutex> lg(m);
+                T *ptr;
+                while ((ptr = poll()) != NULL) {
+                    delete ptr;
+                }
             };
 
 
@@ -41,11 +45,6 @@ namespace hazelcast {
                     internalQueue.pop();
                 }
                 return e;
-            };
-
-            bool empty() {
-                boost::lock_guard<boost::mutex> lg(m);
-                return internalQueue.empty();
             };
 
         private:

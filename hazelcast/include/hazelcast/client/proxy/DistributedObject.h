@@ -34,22 +34,22 @@ namespace hazelcast {
 
             protected:
                 template<typename Response>
-                boost::shared_ptr<Response> invoke(const impl::PortableRequest &request, serialization::Data &keyData) {
+                boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, serialization::Data &keyData) {
                     boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnKeyOwner(request, keyData);
                     return context->getSerializationService().toObject<Response>(future.get());
                 };
 
                 template<typename Response>
-                boost::shared_ptr<Response> invoke(const impl::PortableRequest &request) {
+                boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
                     boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
                     return context->getSerializationService().toObject<Response>(future.get());
                 };
 
-                std::string listen(const impl::PortableRequest &registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler);
 
-                std::string listen(const impl::PortableRequest &registrationRequest, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, impl::EventHandlerWrapper *handler);
 
-                bool stopListening(const impl::PortableRequest &request, const std::string &registrationId);
+                bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
 
             private:
                 const std::string serviceName;

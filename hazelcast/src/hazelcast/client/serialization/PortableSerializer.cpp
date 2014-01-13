@@ -23,8 +23,8 @@ namespace hazelcast {
 
             };
 
-            ClassDefinition *PortableSerializer::getClassDefinition(const Portable &p) {
-                ClassDefinition *cd;
+            boost::shared_ptr<ClassDefinition> PortableSerializer::getClassDefinition(const Portable &p) {
+                boost::shared_ptr<ClassDefinition> cd;
                 int factoryId = p.getFactoryId();
                 int classId = p.getClassId();
                 if (context.isClassDefinitionExists(factoryId, classId)) {
@@ -41,7 +41,7 @@ namespace hazelcast {
             };
 
             void PortableSerializer::write(DataOutput &dataOutput, const Portable &p) {
-                ClassDefinition *cd = getClassDefinition(p);
+                boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
                 DefaultPortableWriter dpw(context, cd, dataOutput);
                 PortableWriter portableWriter(&dpw);
                 p.writePortable(portableWriter);
@@ -49,7 +49,7 @@ namespace hazelcast {
             };
 
             void PortableSerializer::read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion) {
-                ClassDefinition *cd;
+                boost::shared_ptr<ClassDefinition> cd;
 
                 if (context.getVersion() == dataVersion) {
                     cd = context.lookup(factoryId, classId); // using serializationContext.version

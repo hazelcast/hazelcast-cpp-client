@@ -45,7 +45,7 @@ namespace hazelcast {
              */
 //            template < typename L>
 //            long addItemListener(L &listener, bool includeValue) {
-//                queue::AddListenerRequest request(getName(), includeValue);
+//                queue::AddListenerRequest *request = new queue::AddListenerRequest(getName(), includeValue);
 //                impl::ItemEventHandler<E, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
 //                return getContext().getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
 //            };
@@ -106,7 +106,7 @@ namespace hazelcast {
             */
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
-                queue::OfferRequest request(getName(), data, timeoutInMillis);
+                queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
                 bool result;
                 try {
                     result = *(invoke<bool>(request,key));
@@ -121,7 +121,7 @@ namespace hazelcast {
             };
 
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                queue::PollRequest request(getName(), timeoutInMillis);
+                queue::PollRequest *request = new queue::PollRequest(getName(), timeoutInMillis);
                 boost::shared_ptr<E> result;
                 try {
                     result = invoke<E>(request,key);
@@ -132,14 +132,14 @@ namespace hazelcast {
             };
 
             int remainingCapacity() {
-                queue::RemainingCapacityRequest request(getName());
+                queue::RemainingCapacityRequest *request = new queue::RemainingCapacityRequest(getName());
                 boost::shared_ptr<int> cap = invoke<int>(request,key);
                 return *cap;
             };
 
             bool remove(const E &o) {
                 serialization::Data data = toData(o);
-                queue::RemoveRequest request(getName(), data);
+                queue::RemoveRequest *request = new queue::RemoveRequest(getName(), data);
                 bool result = *(invoke<bool>(request,key));
                 return result;
             };
@@ -147,7 +147,7 @@ namespace hazelcast {
             bool contains(const E &o) {
                 std::vector<serialization::Data> list(1);
                 list[0] = toData(o);
-                queue::ContainsRequest request(getName(), list);
+                queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
                 return *(invoke<bool>(request,key));
             };
 
@@ -156,7 +156,7 @@ namespace hazelcast {
             };
 
             int drainTo(std::vector<E> &c, int maxElements) {
-                queue::DrainRequest request(getName(), maxElements);
+                queue::DrainRequest *request = new queue::DrainRequest(getName(), maxElements);
                 boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request,key);
                 const std::vector<serialization::Data> &coll = result->getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
@@ -191,12 +191,12 @@ namespace hazelcast {
             };
 
             boost::shared_ptr<E> peek() {
-                queue::PeekRequest request(getName());
+                queue::PeekRequest *request = new queue::PeekRequest(getName());
                 return invoke<E>(request,key);
             };
 
             int size() {
-                queue::SizeRequest request(getName());
+                queue::SizeRequest *request = new queue::SizeRequest(getName());
                 boost::shared_ptr<int> size = invoke<int>(request,key);
                 return *size;
             }
@@ -206,7 +206,7 @@ namespace hazelcast {
             };
 
             std::vector<E> toArray() {
-                queue::IteratorRequest request(getName());
+                queue::IteratorRequest *request = new queue::IteratorRequest(getName());
                 boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request,key);
                 std::vector<serialization::Data> const &coll = result->getCollection();
                 return getObjectList(coll);
@@ -214,34 +214,34 @@ namespace hazelcast {
 
             bool containsAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> list = getDataList(c);
-                queue::ContainsRequest request(getName(), list);
+                queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
                 boost::shared_ptr<bool> contains = invoke<bool>(request,key);
                 return *contains;
             }
 
             bool addAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
-                queue::AddAllRequest request(getName(), dataList);
+                queue::AddAllRequest *request = new queue::AddAllRequest(getName(), dataList);
                 boost::shared_ptr<bool> success = invoke<bool>(request,key);
                 return *success;
             }
 
             bool removeAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
-                queue::CompareAndRemoveRequest request(getName(), dataList, false);
+                queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, false);
                 boost::shared_ptr<bool> success = invoke<bool>(request,key);
                 return *success;
             }
 
             bool retainAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
-                queue::CompareAndRemoveRequest request(getName(), dataList, true);
+                queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, true);
                 boost::shared_ptr<bool> success = invoke<bool>(request,key);
                 return *success;
             }
 
             void clear() {
-                queue::ClearRequest request(getName());
+                queue::ClearRequest *request = new queue::ClearRequest(getName());
                 invoke<bool>(request,key);
             };
 

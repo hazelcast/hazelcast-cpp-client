@@ -7,6 +7,7 @@
 #include "hazelcast/client/txn/CreateTxnRequest.h"
 #include "hazelcast/client/txn/CommitTxnRequest.h"
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -17,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext& clientContext, connection::Connection* connection)
+            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection)
             : options(txnOptions)
             , clientContext(clientContext)
             , connection(connection)
@@ -119,13 +120,13 @@ namespace hazelcast {
                 return clientContext.getClusterService();
             }
 
-            connection::Connection *TransactionProxy::getConnection() {
+            boost::shared_ptr<connection::Connection>TransactionProxy::getConnection() {
                 return connection;
             }
 
             void TransactionProxy::closeConnection() {
 //                threadFlag.set(null);
-                delete connection;
+                connection->close();
             }
 
             void TransactionProxy::checkThread() {

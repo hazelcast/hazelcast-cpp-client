@@ -7,7 +7,6 @@
 #define HAZELCAST_CLUSTER_SERVICE
 
 #include "hazelcast/client/connection/ClusterListenerThread.h"
-#include "hazelcast/util/ConcurrentSmartMap.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <set>
@@ -36,7 +35,7 @@ namespace hazelcast {
             public:
                 friend class connection::ClusterListenerThread;
 
-                ClusterService(ClientContext& clientContext);
+                ClusterService(ClientContext &clientContext);
 
                 void start();
 
@@ -57,7 +56,7 @@ namespace hazelcast {
                 std::vector<connection::Member> getMemberList();
 
             private:
-                ClientContext& clientContext;
+                ClientContext &clientContext;
 
                 connection::ClusterListenerThread clusterThread;
 
@@ -73,7 +72,7 @@ namespace hazelcast {
 
                 void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
 
-                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
+                connection::Connection* connectToOne(const std::vector<Address> &socketAddresses);
                 // ------------------------------------------------------
 
             };
