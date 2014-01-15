@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapValueCountRequest::TxnMultiMapValueCountRequest(const std::string& name, const serialization::Data& data)
+            TxnMultiMapValueCountRequest::TxnMultiMapValueCountRequest(const std::string &name, const serialization::Data &data)
             : TxnMultiMapRequest(name)
             , data(data) {
 
@@ -21,9 +21,9 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_VALUE_COUNT;
             }
 
-            void TxnMultiMapValueCountRequest::write(serialization::PortableWriter& writer) const {
-                TxnMultiMapRequest::writePortable(writer);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+            void TxnMultiMapValueCountRequest::write(serialization::PortableWriter &writer) const {
+                TxnMultiMapRequest::write(writer);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 data.writeData(out);
             };
 

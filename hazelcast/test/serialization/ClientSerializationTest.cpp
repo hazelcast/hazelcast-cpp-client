@@ -24,7 +24,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            ClientSerializationTest::ClientSerializationTest() {
+            ClientSerializationTest::ClientSerializationTest()
+            : iTestFixture("ClientSerializationTest") {
 
             };
 

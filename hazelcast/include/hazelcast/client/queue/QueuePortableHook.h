@@ -28,7 +28,8 @@ namespace hazelcast {
                     TXN_OFFER = 14,
                     TXN_POLL = 15,
                     TXN_SIZE = 16,
-                    TXN_PEEK = 17
+                    TXN_PEEK = 17,
+                    REMOVE_LISTENER = 18
                 };
             }
 

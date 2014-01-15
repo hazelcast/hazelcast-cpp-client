@@ -15,6 +15,7 @@ namespace hazelcast {
 
             ClientListTest::ClientListTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientListTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , list(new IList<std::string>(client->getList< std::string >("ClientListTest"))) {
@@ -201,14 +202,14 @@ namespace hazelcast {
             }
 
             void ClientListTest::testListener() {
-//                util::CountDownLatch latch(6);
-//
-//                MyListItemListener listener(latch);
-//                long registrationId = list->addItemListener(listener, true);
-//                boost::thread t(listenerTestThread, list.get());
-//                assertTrue(latch.await(20 * 1000));
-//
-//                list->removeItemListener(registrationId);
+                util::CountDownLatch latch(6);
+
+                MyListItemListener listener(latch);
+                std::string registrationId = list->addItemListener(listener, true);
+                boost::thread t(listenerTestThread, list.get());
+                assertTrue(latch.await(20 * 1000));
+
+                list->removeItemListener(registrationId);
             }
 
         }

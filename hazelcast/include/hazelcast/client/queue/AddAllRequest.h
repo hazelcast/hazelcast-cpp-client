@@ -14,17 +14,17 @@ namespace hazelcast {
             class HAZELCAST_API AddAllRequest : public impl::PortableRequest {
             public:
 
-                AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList);
+                AddAllRequest(const std::string &name, std::vector<serialization::Data> &dataList);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                std::vector<serialization::Data>& dataList;
-                const std::string& name;
+                std::vector<serialization::Data> &dataList;
+                const std::string &name;
             };
         }
     }

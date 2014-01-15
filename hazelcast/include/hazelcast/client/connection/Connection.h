@@ -17,6 +17,10 @@ namespace hazelcast {
         class CallPromise;
     }
     namespace client {
+        namespace connection {
+            class ClientResponse;
+        }
+
         namespace spi {
             class ClientContext;
         }
@@ -71,7 +75,7 @@ namespace hazelcast {
 
                 void registerEventHandler(boost::shared_ptr<util::CallPromise> promise);
 
-                boost::shared_ptr<util::CallPromise> getEventHandler(int callId);
+                boost::shared_ptr<util::CallPromise> getEventHandlerPromise(int callId);
 
                 boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
 
@@ -96,7 +100,10 @@ namespace hazelcast {
 
                 void reRegisterCall(boost::shared_ptr<util::CallPromise> promise);
 
-                void targetDisconnected(boost::shared_ptr<util::CallPromise> promise);
+                void targetNotActive(boost::shared_ptr<util::CallPromise> promise);
+
+                bool handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise);
+
             };
 
             inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {

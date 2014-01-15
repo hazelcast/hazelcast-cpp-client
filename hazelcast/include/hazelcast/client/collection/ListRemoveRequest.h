@@ -14,9 +14,9 @@ namespace hazelcast {
         namespace list {
             class HAZELCAST_API ListRemoveRequest : public collection::CollectionRequest {
             public:
-                ListRemoveRequest(const std::string& name, int index);
+                ListRemoveRequest(const std::string &name, const std::string &serviceName, int index);
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 int getClassId() const;
 

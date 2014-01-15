@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace exception {
             class HAZELCAST_API InstanceNotActiveException : public IException {
             public:
-                InstanceNotActiveException(const std::string &source, const std::string &message);
+                InstanceNotActiveException(const std::string &source);
 
                 virtual ~InstanceNotActiveException() throw();
 

@@ -10,8 +10,8 @@ namespace hazelcast {
     namespace client {
         namespace collection {
 
-            CollectionSizeRequest::CollectionSizeRequest(const std::string& name)
-            : CollectionRequest(name) {
+            CollectionSizeRequest::CollectionSizeRequest(const std::string &name, const std::string &serviceName)
+            : CollectionRequest(name, serviceName) {
 
             }
 

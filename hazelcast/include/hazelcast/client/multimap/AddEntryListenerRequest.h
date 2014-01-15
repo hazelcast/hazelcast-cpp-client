@@ -7,6 +7,7 @@
 #ifndef HAZELCAST_AddEntryListenerRequest
 #define HAZELCAST_AddEntryListenerRequest
 
+#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include <vector>
@@ -17,7 +18,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest, public RetryableRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue);
 
@@ -28,6 +29,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter &writer) const;
+
+                const serialization::Data *getKey() const;
 
             private:
                 std::string name;

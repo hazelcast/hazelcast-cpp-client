@@ -18,8 +18,9 @@ namespace hazelcast {
 
             ClientTxnTest::ClientTxnTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , server(hazelcastInstanceFactory)            
-            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))){
+            , iTestFixture("ClientTxnTest")
+            , server(hazelcastInstanceFactory)
+            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };
 
 
@@ -45,18 +46,18 @@ namespace hazelcast {
             };
 
             void ClientTxnTest::testTxnRollback() {
-				std::auto_ptr<HazelcastInstance> second;
+                std::auto_ptr<HazelcastInstance> second;
                 TransactionContext context = client->newTransactionContext();
                 util::CountDownLatch latch(1);
                 try {
                     context.beginTransaction();
-					second.reset(new HazelcastInstance(hazelcastInstanceFactory));
+                    second.reset(new HazelcastInstance(hazelcastInstanceFactory));
                     std::string txnId = context.getTxnId();
                     assertTrue(txnId.compare("") != 0);
                     TransactionalQueue<std::string> queue = context.getQueue<std::string>("testTxnRollback");
                     queue.offer("item");
                     server.shutdown();
-					context.commitTransaction();
+                    context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
                 } catch (std::exception &) {
                     context.rollbackTransaction();

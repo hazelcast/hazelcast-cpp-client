@@ -4,6 +4,8 @@
 
 
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/serialization/DataOutput.h"
@@ -11,13 +13,11 @@
 #include "hazelcast/client/serialization/DataAdapter.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "TargetDisconnectedException.h"
-#include "InvocationService.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/util/CallPromise.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 namespace hazelcast {
     namespace client {
@@ -64,9 +64,10 @@ namespace hazelcast {
                 if (!live) {
                     if (clientContext.getInvocationService().resend(promise))
                         return;
-                    client::exception::TargetDisconnectedException targetDisconnectedException(remoteEndpoint);
-                    promise->setException(targetDisconnectedException);  // TargetNotMemberException
+                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
+                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     removeConnectionCalls();
+                    return;
                 }
                 writeHandler.enqueueData(data);
             }
@@ -76,32 +77,44 @@ namespace hazelcast {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
                 if (response->isEvent()) {
-                    boost::shared_ptr<util::CallPromise> promise = getEventHandler(response->getCallId());
+                    boost::shared_ptr<util::CallPromise> promise = getEventHandlerPromise(response->getCallId());
                     if (promise.get() != NULL) {
                         promise->getEventHandler()->handle(response->getData());
-                        return;
                     }
                     return;
                 }
-                {
-//                    boost::lock_guard<boost::mutex> l(connectionLock);TODO
-                    boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
-                    if (response->isException()) {
-                        promise->setException(response->getException());
-                    } else {
-
-                        if (promise->getEventHandler() != NULL) {
-                            //TODO may require lock here
-                            boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
-                            boost::shared_ptr<std::string> uuid = serializationService.toObject<std::string>(promise->getFuture().get());
-                            int callId = promise->getRequest().callId;
-                            clientContext.getServerListenerService().reRegisterListener(*uuid, alias, callId);
-                            return;
-                        }
-                        promise->setResponse(response->getData());
+                boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
+                if (response->isException()) {
+                    exception::ServerException const &ex = response->getException();
+                    if (ex.isInstanceNotActiveException()) {
+                        targetNotActive(promise);
+                        return;
                     }
-
+                    promise->setException(ex);
+                    return;
                 }
+
+                if (!handleEventUuid(response, promise))
+                    return;
+
+                promise->setResponse(response->getData());
+
+            }
+
+            /* returns shouldSetResponse */
+            bool Connection::handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise) {
+                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+                impl::BaseEventHandler *eventHandler = promise->getEventHandler();
+                if (eventHandler != NULL) {
+                    if (eventHandler->uuid.size() == 0) //if uuid is not set, it means it is first time that we are getting uuid.
+                        return true;                    // then no need to handle it, just set as normal response
+                    boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
+                    int callId = promise->getRequest().callId;
+                    clientContext.getServerListenerService().reRegisterListener(eventHandler->uuid, alias, callId);
+                    return false;
+                }
+                //if it does not have event handler associated with it, then it is a normal response.
+                return true;
             }
 
             int Connection::getConnectionId() const {
@@ -169,7 +182,7 @@ namespace hazelcast {
             }
 
 
-            boost::shared_ptr<util::CallPromise > Connection::getEventHandler(int callId) {
+            boost::shared_ptr<util::CallPromise > Connection::getEventHandlerPromise(int callId) {
                 return eventHandlerPromises.get(callId);
             }
 
@@ -182,32 +195,30 @@ namespace hazelcast {
                 typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
                 hazelcast::client::Address const &address = getRemoteEndpoint();
                 {
-
                     Entry_Set entrySet = callPromises.clear();
                     Entry_Set::iterator it;
                     for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                        targetDisconnected(it->second);
+                        targetNotActive(it->second);
                     }
                 }
                 {
                     Entry_Set entrySet = eventHandlerPromises.clear();
                     Entry_Set::iterator it;
                     for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                        targetDisconnected(it->second);
+                        targetNotActive(it->second);
                     }
                 }
             }
 
-
-            void Connection::targetDisconnected(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::targetNotActive(boost::shared_ptr<util::CallPromise> promise) {
                 hazelcast::client::Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (util::isRetryable(promise->getRequest()) || invocationService.isRedoOperation()) {
                     if (invocationService.resend(promise))
                         return;
                 }
-                client::exception::TargetDisconnectedException targetDisconnectedException(address);
-                promise->setException(targetDisconnectedException);
+                exception::InstanceNotActiveException instanceNotActiveException(address.getHost());
+                promise->setException(instanceNotActiveException);
             }
         }
     }

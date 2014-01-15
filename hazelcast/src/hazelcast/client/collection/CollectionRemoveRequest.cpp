@@ -11,8 +11,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionRemoveRequest::CollectionRemoveRequest(const std::string& name, const serialization::Data& data)
-            : CollectionRequest(name)
+            CollectionRemoveRequest::CollectionRemoveRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data)
+            : CollectionRequest(name, serviceName)
             , data(data) {
 
             }
@@ -21,9 +21,9 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_REMOVE;
             }
 
-            void CollectionRemoveRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
-                serialization::ObjectDataOutput & output = writer.getRawDataOutput();
+            void CollectionRemoveRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
+                serialization::ObjectDataOutput &output = writer.getRawDataOutput();
                 data.writeData(output);
             }
         }

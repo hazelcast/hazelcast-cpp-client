@@ -10,8 +10,8 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListAddRequest::ListAddRequest(const std::string& name, const serialization::Data& valueList, int index)
-            : collection::CollectionAddRequest(name, valueList)
+            ListAddRequest::ListAddRequest(const std::string &name, const std::string &serviceName, const serialization::Data &valueList, int index)
+            : collection::CollectionAddRequest(name, serviceName, valueList)
             , index(index) {
 
             }
@@ -20,9 +20,9 @@ namespace hazelcast {
                 return collection::CollectionPortableHook::LIST_ADD;
             }
 
-            void ListAddRequest::write(serialization::PortableWriter& writer) const {
+            void ListAddRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeInt("i", index);
-                collection::CollectionAddRequest::writePortable(writer);
+                collection::CollectionAddRequest::write(writer);
             }
         }
     }

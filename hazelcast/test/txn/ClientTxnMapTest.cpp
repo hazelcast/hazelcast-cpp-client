@@ -7,7 +7,6 @@
 #include "HazelcastInstanceFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/Employee.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,6 +18,7 @@ namespace hazelcast {
 
             ClientTxnMapTest::ClientTxnMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientTxnMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };

@@ -5,24 +5,18 @@
 
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/SemaphorePortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            DrainRequest::DrainRequest(const std::string& instanceName)
-                : SemaphoreRequest(instanceName, -1) {
+            DrainRequest::DrainRequest(const std::string &instanceName)
+            : SemaphoreRequest(instanceName, -1) {
 
-                };
+            };
 
-                int DrainRequest::getClassId() const {
-                    return SemaphorePortableHook::DRAIN;
-                };
-
-
-                void DrainRequest::write(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
+            int DrainRequest::getClassId() const {
+                return SemaphorePortableHook::DRAIN;
+            };
         }
     }
 }

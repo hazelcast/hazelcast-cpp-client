@@ -24,7 +24,7 @@ namespace hazelcast {
 
             public:
 
-                ClientTxnMapTest(HazelcastInstanceFactory&);
+                ClientTxnMapTest(HazelcastInstanceFactory &);
 
                 ~ClientTxnMapTest();
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                 void testExecuteTxnWithException();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
+                HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

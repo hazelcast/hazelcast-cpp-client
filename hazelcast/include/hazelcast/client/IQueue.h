@@ -14,6 +14,7 @@
 #include "hazelcast/client/queue/ClearRequest.h"
 #include "hazelcast/client/queue/IteratorRequest.h"
 #include "hazelcast/client/queue/AddListenerRequest.h"
+#include "hazelcast/client/queue/RemoveListenerRequest.h"
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/impl/ItemEvent.h"
@@ -43,12 +44,12 @@ namespace hazelcast {
              *                     to the item listener, <tt>false</tt> otherwise.
              * @return returns registration id.
              */
-//            template < typename L>
-//            long addItemListener(L &listener, bool includeValue) {
-//                queue::AddListenerRequest *request = new queue::AddListenerRequest(getName(), includeValue);
-//                impl::ItemEventHandler<E, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-//                return getContext().getServerListenerService().template listen<queue::AddListenerRequest, impl::ItemEventHandler<E, L>, impl::PortableItemEvent >(request, entryEventHandler);
-//            };
+            template < typename L>
+            std::string addItemListener(L &listener, bool includeValue) {
+                queue::AddListenerRequest *request = new queue::AddListenerRequest(getName(), includeValue);
+                impl::ItemEventHandler<E, L> *entryEventHandler = new impl::ItemEventHandler<E, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, entryEventHandler);
+            };
 
             /**
             * Removes the specified item listener.
@@ -58,9 +59,10 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-//            bool removeItemListener(long registrationId) {
-//                return getContext().getServerListenerService().stopListening(registrationId);
-//            };
+            bool removeItemListener(const std::string &registrationId) {
+                queue::RemoveListenerRequest *request = new queue::RemoveListenerRequest(getName(), registrationId);
+                return stopListening(request, registrationId);
+            };
 
             bool add(const E &e) {
                 if (offer(e)) {
@@ -109,7 +111,7 @@ namespace hazelcast {
                 queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
                 bool result;
                 try {
-                    result = *(invoke<bool>(request,key));
+                    result = *(invoke<bool>(request, key));
                 } catch(exception::ServerException &e) {
                     throw exception::InterruptedException("IQueue::offer", "timeout");
                 }
@@ -124,7 +126,7 @@ namespace hazelcast {
                 queue::PollRequest *request = new queue::PollRequest(getName(), timeoutInMillis);
                 boost::shared_ptr<E> result;
                 try {
-                    result = invoke<E>(request,key);
+                    result = invoke<E>(request, key);
                 } catch(exception::ServerException &) {
                     throw exception::InterruptedException("IQueue::poll", "timeout");
                 }
@@ -133,14 +135,14 @@ namespace hazelcast {
 
             int remainingCapacity() {
                 queue::RemainingCapacityRequest *request = new queue::RemainingCapacityRequest(getName());
-                boost::shared_ptr<int> cap = invoke<int>(request,key);
+                boost::shared_ptr<int> cap = invoke<int>(request, key);
                 return *cap;
             };
 
             bool remove(const E &o) {
                 serialization::Data data = toData(o);
                 queue::RemoveRequest *request = new queue::RemoveRequest(getName(), data);
-                bool result = *(invoke<bool>(request,key));
+                bool result = *(invoke<bool>(request, key));
                 return result;
             };
 
@@ -148,7 +150,7 @@ namespace hazelcast {
                 std::vector<serialization::Data> list(1);
                 list[0] = toData(o);
                 queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
-                return *(invoke<bool>(request,key));
+                return *(invoke<bool>(request, key));
             };
 
             int drainTo(std::vector<E> &objects) {
@@ -157,7 +159,7 @@ namespace hazelcast {
 
             int drainTo(std::vector<E> &c, int maxElements) {
                 queue::DrainRequest *request = new queue::DrainRequest(getName(), maxElements);
-                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request,key);
+                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, key);
                 const std::vector<serialization::Data> &coll = result->getCollection();
                 for (std::vector<serialization::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
                     boost::shared_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
@@ -192,12 +194,12 @@ namespace hazelcast {
 
             boost::shared_ptr<E> peek() {
                 queue::PeekRequest *request = new queue::PeekRequest(getName());
-                return invoke<E>(request,key);
+                return invoke<E>(request, key);
             };
 
             int size() {
                 queue::SizeRequest *request = new queue::SizeRequest(getName());
-                boost::shared_ptr<int> size = invoke<int>(request,key);
+                boost::shared_ptr<int> size = invoke<int>(request, key);
                 return *size;
             }
 
@@ -207,7 +209,7 @@ namespace hazelcast {
 
             std::vector<E> toArray() {
                 queue::IteratorRequest *request = new queue::IteratorRequest(getName());
-                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request,key);
+                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, key);
                 std::vector<serialization::Data> const &coll = result->getCollection();
                 return getObjectList(coll);
             };
@@ -215,34 +217,34 @@ namespace hazelcast {
             bool containsAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> list = getDataList(c);
                 queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
-                boost::shared_ptr<bool> contains = invoke<bool>(request,key);
+                boost::shared_ptr<bool> contains = invoke<bool>(request, key);
                 return *contains;
             }
 
             bool addAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::AddAllRequest *request = new queue::AddAllRequest(getName(), dataList);
-                boost::shared_ptr<bool> success = invoke<bool>(request,key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             }
 
             bool removeAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, false);
-                boost::shared_ptr<bool> success = invoke<bool>(request,key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             }
 
             bool retainAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, true);
-                boost::shared_ptr<bool> success = invoke<bool>(request,key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, key);
                 return *success;
             }
 
             void clear() {
                 queue::ClearRequest *request = new queue::ClearRequest(getName());
-                invoke<bool>(request,key);
+                invoke<bool>(request, key);
             };
 
             /**

@@ -17,19 +17,21 @@ namespace hazelcast {
 
             class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
             public:
-                AddEntryListenerRequest(const std::string& name, bool includeValue);
+                AddEntryListenerRequest(const std::string &name, bool includeValue);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key, const std::string& sql);
+                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key, const std::string &sql);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const std::string& sql);
+                AddEntryListenerRequest(const std::string &name, bool includeValue, const std::string &sql);
 
-                AddEntryListenerRequest(const std::string& name, bool includeValue, const serialization::Data& key);
+                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                const serialization::Data *getKey() const;
+
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace collection {
             class HAZELCAST_API CollectionClearRequest : public CollectionRequest {
             public:
-                CollectionClearRequest(const std::string& name);
+                CollectionClearRequest(const std::string &name, const std::string &serviceName);
 
                 int getClassId() const;
 

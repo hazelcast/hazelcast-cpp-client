@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            MultiMapIsLockedRequest::MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key)
+            MultiMapIsLockedRequest::MultiMapIsLockedRequest(const std::string &name, const serialization::Data &key)
             :KeyBasedRequest(name, key) {
 
             };
@@ -25,9 +25,9 @@ namespace hazelcast {
             };
 
 
-            void MultiMapIsLockedRequest::write(serialization::PortableWriter& writer) const {
+            void MultiMapIsLockedRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeInt("tid", -1);
-                KeyBasedRequest::writePortable(writer);
+                KeyBasedRequest::write(writer);
             };
         };
 

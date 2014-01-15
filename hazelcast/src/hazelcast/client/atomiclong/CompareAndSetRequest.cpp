@@ -11,20 +11,20 @@ namespace hazelcast {
     namespace client {
         namespace atomiclong {
 
-            CompareAndSetRequest::CompareAndSetRequest(const std::string& instanceName, long expect, long value)
-                : AtomicLongRequest(instanceName, value)
-                , expect(expect) {
+            CompareAndSetRequest::CompareAndSetRequest(const std::string &instanceName, long expect, long value)
+            : AtomicLongRequest(instanceName, value)
+            , expect(expect) {
 
-                };
+            };
 
-                int CompareAndSetRequest::getClassId() const {
-                    return AtomicLongPortableHook::COMPARE_AND_SET;
-                };
+            int CompareAndSetRequest::getClassId() const {
+                return AtomicLongPortableHook::COMPARE_AND_SET;
+            };
 
-                void CompareAndSetRequest::write(serialization::PortableWriter& writer) const {
-                    AtomicLongRequest::writePortable(writer);
-                    writer.writeLong("e", expect);
-                };
+            void CompareAndSetRequest::write(serialization::PortableWriter &writer) const {
+                AtomicLongRequest::write(writer);
+                writer.writeLong("e", expect);
+            };
         }
     }
 }

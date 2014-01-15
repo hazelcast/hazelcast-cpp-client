@@ -5,24 +5,19 @@
 
 #include "hazelcast/client/semaphore/InitRequest.h"
 #include "hazelcast/client/semaphore/SemaphorePortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            InitRequest::InitRequest(const std::string& instanceName, int permitCount)
-                : SemaphoreRequest(instanceName, permitCount) {
+            InitRequest::InitRequest(const std::string &instanceName, int permitCount)
+            : SemaphoreRequest(instanceName, permitCount) {
 
-                };
+            };
 
-                int InitRequest::getClassId() const {
-                    return SemaphorePortableHook::INIT;
-                };
+            int InitRequest::getClassId() const {
+                return SemaphorePortableHook::INIT;
+            };
 
-
-                void InitRequest::write(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                };
 
         }
     }

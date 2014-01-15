@@ -10,14 +10,14 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListGetRequest::ListGetRequest(const std::string& name, int index)
-            : CollectionRequest(name)
+            ListGetRequest::ListGetRequest(const std::string &name, const std::string &serviceName, int index)
+            : CollectionRequest(name, serviceName)
             , index(index) {
 
             }
 
-            void ListGetRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
+            void ListGetRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
                 writer.writeInt("i", index);
             }
 

@@ -3,7 +3,7 @@
 //
 
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/Address.h"
@@ -36,11 +36,11 @@ namespace hazelcast {
             return (boost::shared_future<client::serialization::Data>) promise.get_future();
         }
 
-        void CallPromise::setEventHandler(client::impl::EventHandlerWrapper *eventHandler) {
+        void CallPromise::setEventHandler(client::impl::BaseEventHandler *eventHandler) {
             this->eventHandler.reset(eventHandler);
         }
 
-        client::impl::EventHandlerWrapper *CallPromise::getEventHandler() const {
+        client::impl::BaseEventHandler *CallPromise::getEventHandler() const {
             return eventHandler.get();
         }
 

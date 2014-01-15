@@ -17,17 +17,12 @@ namespace hazelcast {
 
             class HAZELCAST_API ListenerTask {
             public:
-//                void init(IOListener *nioListener) {
-//                    this->nioListener = nioListener;
-//                };
-
                 virtual void run() = 0;
 
                 virtual ~ListenerTask() {
 
                 };
             protected:
-//                IOListener *nioListener;
             };
         }
     }

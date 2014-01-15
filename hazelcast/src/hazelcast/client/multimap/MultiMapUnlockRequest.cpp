@@ -12,14 +12,14 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string& name, const serialization::Data& key, int threadId)
+            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, int threadId)
             :KeyBasedRequest(name, key)
             , threadId(threadId)
             , force(false) {
 
             };
 
-            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string& name, const serialization::Data& key, int threadId, bool force)
+            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, int threadId, bool force)
             : KeyBasedRequest(name, key)
             , threadId(threadId)
             , force(force) {
@@ -35,10 +35,10 @@ namespace hazelcast {
             };
 
 
-            void MultiMapUnlockRequest::write(serialization::PortableWriter& writer) const {
+            void MultiMapUnlockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeInt("tid", threadId);
                 writer.writeBoolean("force", force);
-                KeyBasedRequest::writePortable(writer);
+                KeyBasedRequest::write(writer);
             };
 
 

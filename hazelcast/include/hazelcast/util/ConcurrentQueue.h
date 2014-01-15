@@ -24,7 +24,6 @@ namespace hazelcast {
             };
 
             ~ConcurrentQueue() {
-                boost::lock_guard<boost::mutex> lg(m);
                 T *ptr;
                 while ((ptr = poll()) != NULL) {
                     delete ptr;

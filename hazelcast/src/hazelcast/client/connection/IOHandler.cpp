@@ -35,6 +35,7 @@ namespace hazelcast {
 
             void IOHandler::handleSocketException(const std::string &message) {
                 ioListener.removeSocket(connection.getSocket());
+                connection.removeConnectionCalls();
                 connection.close();
                 (std::cerr << message << std::endl);
             }

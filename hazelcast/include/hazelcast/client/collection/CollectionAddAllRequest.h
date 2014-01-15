@@ -20,14 +20,14 @@ namespace hazelcast {
 
             class HAZELCAST_API CollectionAddAllRequest : public CollectionRequest {
             public:
-                CollectionAddAllRequest(const std::string& name, const std::vector<serialization::Data>& valueList);
+                CollectionAddAllRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueList);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::vector<serialization::Data>& valueList;
+                const std::vector<serialization::Data> &valueList;
             };
         }
     }

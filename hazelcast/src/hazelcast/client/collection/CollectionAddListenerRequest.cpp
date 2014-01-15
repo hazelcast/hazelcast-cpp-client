@@ -10,8 +10,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionAddListenerRequest::CollectionAddListenerRequest(const std::string& name, bool includeValue)
-            :CollectionRequest(name)
+            CollectionAddListenerRequest::CollectionAddListenerRequest(const std::string &name, const std::string &serviceName, bool includeValue)
+            :CollectionRequest(name, serviceName)
             , includeValue(includeValue) {
 
             };
@@ -20,8 +20,8 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_ADD_LISTENER;
             };
 
-            void CollectionAddListenerRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
+            void CollectionAddListenerRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
                 writer.writeBoolean("i", includeValue);
             };
         }

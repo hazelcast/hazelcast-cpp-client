@@ -15,9 +15,9 @@ namespace hazelcast {
         namespace list {
             class HAZELCAST_API ListGetRequest : public collection::CollectionRequest {
             public:
-                ListGetRequest(const std::string& name, int index);
+                ListGetRequest(const std::string &name, const std::string &serviceName, int index);
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 int getClassId() const;
 

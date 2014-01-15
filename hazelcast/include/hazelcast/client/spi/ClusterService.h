@@ -26,7 +26,7 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
-            class EventHandlerWrapper;
+            class BaseEventHandler;
         }
         namespace spi {
             class ClientContext;
@@ -72,7 +72,7 @@ namespace hazelcast {
 
                 void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
 
-                connection::Connection* connectToOne(const std::vector<Address> &socketAddresses);
+                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
                 // ------------------------------------------------------
 
             };

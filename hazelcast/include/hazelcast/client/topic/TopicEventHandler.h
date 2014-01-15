@@ -12,12 +12,13 @@
 #include "hazelcast/client/topic/PortableMessage.h"
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
             template<typename E, typename L>
-            class HAZELCAST_API TopicEventHandler {
+            class HAZELCAST_API TopicEventHandler : public impl::BaseEventHandler {
             public:
                 TopicEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener)
                 :instanceName(instanceName)
@@ -26,6 +27,11 @@ namespace hazelcast {
                 , listener(listener) {
 
                 };
+
+                void handle(const client::serialization::Data &data) {
+                    boost::shared_ptr<PortableMessage> event = serializationService.toObject<PortableMessage>(data);
+                    handle(*event);
+                }
 
                 void handle(const PortableMessage &event) {
                     connection::Member member = clusterService.getMember(event.getUuid());

@@ -19,7 +19,7 @@ namespace hazelcast {
 
         int SocketSet::getHighestSocketId() const {
             if (!sockets.empty())
-                return (*(sockets.rbegin()))->getSocketId();
+                return (*(sockets.begin()))->getSocketId();
             else
                 return 0;
         }

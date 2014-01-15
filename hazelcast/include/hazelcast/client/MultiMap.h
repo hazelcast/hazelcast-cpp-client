@@ -12,6 +12,7 @@
 #include "hazelcast/client/multimap/ClearRequest.h"
 #include "hazelcast/client/multimap/CountRequest.h"
 #include "hazelcast/client/multimap/AddEntryListenerRequest.h"
+#include "hazelcast/client/multimap/RemoveEntryListenerRequest.h"
 #include "hazelcast/client/multimap/GetAllRequest.h"
 #include "hazelcast/client/multimap/MultiMapLockRequest.h"
 #include "hazelcast/client/multimap/MultiMapUnlockRequest.h"
@@ -282,12 +283,12 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-//            template < typename L>
-//            long addEntryListener(L &listener, bool includeValue) {
-//                multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), includeValue);
-//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-//                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, entryEventHandler);
-//            };
+            template < typename L>
+            std::string addEntryListener(L &listener, bool includeValue) {
+                multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), includeValue);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, entryEventHandler);
+            };
 
             /**
              * Adds the specified entry listener for the specified key.
@@ -307,14 +308,13 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-//            template < typename L>
-//            long addEntryListener(L &listener, const K &key, bool includeValue) {
-//                serialization::Data keyData = toData(key);
-//                serialization::Data cloneData = keyData.clone();
-//                multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), keyData, includeValue);
-//                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-//                return getContext().getServerListenerService().template listen<multimap::AddEntryListenerRequest, impl::EntryEventHandler<K, V, L>, impl::PortableEntryEvent >(request, cloneData, entryEventHandler);
-//            };
+            template < typename L>
+            std::string addEntryListener(L &listener, const K &key, bool includeValue) {
+                serialization::Data keyData = toData(key);
+                multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), keyData, includeValue);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, request->getKey(), entryEventHandler);
+            };
 
             /**
             * Removes the specified entry listener
@@ -324,9 +324,10 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-//            bool removeEntryListener(long registrationId) {
-//                return getContext().getServerListenerService().stopListening(registrationId);
-//            };
+            bool removeEntryListener(const std::string &registrationId) {
+                multimap::RemoveEntryListenerRequest *request = new multimap::RemoveEntryListenerRequest(getName(), registrationId);
+                return stopListening(request, registrationId);
+            };
 
             /**
              * Acquires the lock for the specified key.

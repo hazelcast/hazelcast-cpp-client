@@ -46,7 +46,7 @@
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/impl/EntryListener.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/serialization/SerializationService.h"
@@ -241,18 +241,16 @@ namespace hazelcast {
             template < typename L>
             std::string addEntryListener(L &listener, bool includeValue) {
                 map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                impl::EventHandlerWrapper *wrapper = new impl::EventHandlerWrapper(entryEventHandler);
-                return listen(request, wrapper);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, entryEventHandler);
             };
 
             template < typename L>
             std::string addEntryListener(L &listener, const K &key, bool includeValue) {
                 serialization::Data keyData = toData(key);
                 map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue, keyData);
-                impl::EntryEventHandler<K, V, L> entryEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                impl::EventHandlerWrapper *wrapper = new impl::EventHandlerWrapper(entryEventHandler);
-                return listen(request, &keyData, wrapper);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, request->getKey(), entryEventHandler);
             };
 
             bool removeEntryListener(const std::string &registrationId) {

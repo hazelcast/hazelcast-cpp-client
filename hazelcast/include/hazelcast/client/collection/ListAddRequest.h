@@ -16,11 +16,11 @@ namespace hazelcast {
             class HAZELCAST_API ListAddRequest : public collection::CollectionAddRequest {
             public:
 
-                ListAddRequest(const std::string& name, const serialization::Data& data, int index);
+                ListAddRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data, int index);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 int index;

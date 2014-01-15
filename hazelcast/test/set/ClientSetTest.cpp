@@ -13,8 +13,9 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientSetTest::ClientSetTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientSetTest::ClientSetTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientSetTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , set(new ISet<std::string >(client->getSet< std::string >("ClientSetTest"))) {
@@ -124,7 +125,7 @@ namespace hazelcast {
 
             class MySetItemListener {
             public:
-                MySetItemListener(util::CountDownLatch& latch)
+                MySetItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -137,7 +138,7 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& latch;
+                util::CountDownLatch &latch;
             };
 
             void listenerTestThread(ISet<std::string> *set) {
@@ -148,14 +149,14 @@ namespace hazelcast {
             }
 
             void ClientSetTest::testListener() {
-//                util::CountDownLatch latch(6);
-//
-//                MySetItemListener listener(latch);
-//                long registrationId = set->addItemListener(listener, true);
-//                boost::thread t(listenerTestThread, set.get());
-//                assertTrue(latch.await(20 * 1000));
-//
-//                set->removeItemListener(registrationId);
+                util::CountDownLatch latch(6);
+
+                MySetItemListener listener(latch);
+                std::string registrationId = set->addItemListener(listener, true);
+                boost::thread t(listenerTestThread, set.get());
+                assertTrue(latch.await(20 * 1000));
+
+                set->removeItemListener(registrationId);
             }
 
         }

@@ -9,17 +9,16 @@
 #ifndef HAZELCAST_EXCEPTION
 #define HAZELCAST_EXCEPTION
 
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <stdexcept>
-
-#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
         namespace exception {
             class HAZELCAST_API IException : public std::exception {
             public:
-                IException(const std::string& source, const std::string& message);
+                IException(const std::string &source, const std::string &message);
 
                 virtual ~IException() throw();
 

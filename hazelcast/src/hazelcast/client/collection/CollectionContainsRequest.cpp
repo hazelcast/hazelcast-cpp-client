@@ -11,15 +11,15 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionContainsRequest::CollectionContainsRequest(const std::string& name, const std::vector<serialization::Data>& valueSet)
-            : CollectionRequest(name)
+            CollectionContainsRequest::CollectionContainsRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueSet)
+            : CollectionRequest(name, serviceName)
             , valueSet(valueSet) {
 
             }
 
-            void CollectionContainsRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
-                serialization::ObjectDataOutput & output = writer.getRawDataOutput();
+            void CollectionContainsRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
+                serialization::ObjectDataOutput &output = writer.getRawDataOutput();
                 output.writeInt(valueSet.size());
                 for (int i = 0; i < valueSet.size(); i++) {
                     valueSet[i].writeData(output);

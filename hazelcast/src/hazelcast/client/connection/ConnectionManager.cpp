@@ -20,7 +20,6 @@ namespace hazelcast {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext &clientContext)
             :clientContext(clientContext)
-//            , heartBeatChecker(clientConfig.getConnectionTimeout(), serializationService)
             , live(true)
             , callIdGenerator(10) {
 
@@ -54,10 +53,10 @@ namespace hazelcast {
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
                 boost::shared_ptr<Connection> conn = connections.get(address);
-                if (conn.get() != NULL) {
+                if (conn.get() == NULL) {
                     boost::lock_guard<boost::mutex> l(lockMutex);
                     conn = connections.get(address);
-                    if (conn.get() != NULL) {
+                    if (conn.get() == NULL) {
                         boost::shared_ptr<Connection> newConnection(connectTo(address));
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
@@ -69,8 +68,7 @@ namespace hazelcast {
 
             boost::shared_ptr<Connection> ConnectionManager::getRandomConnection() {
                 checkLive();
-//        TODO        Address address = clientConfig.getLoadBalancer()->next().getAddress();
-                Address address = clientContext.getClientConfig().getAddresses()[0];
+                Address address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
                 return getOrConnect(address);
             }
 
@@ -92,25 +90,16 @@ namespace hazelcast {
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
-                std::cout << " --- authenticated ----- " << std::endl;
+                (std::cout << " --- authenticated by " << *address << " --- " << std::endl);
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw exception::InstanceNotActiveException("ConnectionManager::checkLive", "Instance is not active");
+                    throw exception::InstanceNotActiveException("client");
                 }
             }
-
-            void ConnectionManager::destroyConnection(Connection &connection) {
-                Address const &endpoint = connection.getRemoteEndpoint();
-//                if (endpoint != null) { TODO
-//                    connections.remove(clientConnection.getRemoteEndpoint());
-//                }
-                connection.removeConnectionCalls();
-            }
-
 
             int ConnectionManager::getNextCallId() {
                 return callIdGenerator++;
@@ -126,7 +115,6 @@ namespace hazelcast {
                         return;
                     }
                 }
-
             }
 
             connection::Connection *ConnectionManager::connectTo(const Address &address) {

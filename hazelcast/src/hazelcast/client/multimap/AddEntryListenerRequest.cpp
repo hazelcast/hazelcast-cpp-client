@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, const serialization::Data& key, bool includeValue)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue)
             :name(name)
             , key(key)
             , hasKey(true)
@@ -18,7 +18,7 @@ namespace hazelcast {
 
             };
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string& name, bool includeValue)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue)
             :name(name)
             , hasKey(false)
             , includeValue(includeValue) {
@@ -34,16 +34,20 @@ namespace hazelcast {
             };
 
 
-            void AddEntryListenerRequest::write(serialization::PortableWriter& writer) const {
+            void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeBoolean("i", includeValue);
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 if (hasKey) {
                     util::writeNullableData(out, &key);
                 } else {
                     util::writeNullableData(out, NULL);
                 }
             };
+
+            const serialization::Data *AddEntryListenerRequest::getKey() const {
+                return &key;
+            }
 
         }
     }

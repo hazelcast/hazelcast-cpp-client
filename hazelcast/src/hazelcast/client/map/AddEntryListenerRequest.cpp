@@ -42,6 +42,9 @@ namespace hazelcast {
                 return PortableHook::ADD_ENTRY_LISTENER_SQL;
             }
 
+            const serialization::Data *AddEntryListenerRequest::getKey() const {
+                return &key;
+            }
 
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("name", name);

@@ -14,6 +14,11 @@
 
 namespace hazelcast {
     namespace client {
+
+        namespace impl {
+            class BaseEventHandler;
+        }
+
         namespace proxy {
 
             class HAZELCAST_API DistributedObject {
@@ -45,9 +50,9 @@ namespace hazelcast {
                     return context->getSerializationService().toObject<Response>(future.get());
                 };
 
-                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 
                 bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
 

@@ -11,21 +11,21 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data& key, const std::string& name, const serialization::Data& value)
+            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data &key, const std::string &name, const serialization::Data &value)
             : AllPartitionsRequest(name)
             , key(&key)
             , value(&value) {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data& key, const std::string& name)
+            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data &key, const std::string &name)
             : AllPartitionsRequest(name)
             , key(&key)
             , value(NULL) {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(const std::string& name, const serialization::Data& value)
+            ContainsEntryRequest::ContainsEntryRequest(const std::string &name, const serialization::Data &value)
             : AllPartitionsRequest(name)
             , key(NULL)
             , value(&value) {
@@ -37,9 +37,9 @@ namespace hazelcast {
             };
 
 
-            void ContainsEntryRequest::write(serialization::PortableWriter& writer) const {
-                AllPartitionsRequest::writePortable(writer);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+            void ContainsEntryRequest::write(serialization::PortableWriter &writer) const {
+                AllPartitionsRequest::write(writer);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 util::writeNullableData(out, key);
                 util::writeNullableData(out, value);
             };

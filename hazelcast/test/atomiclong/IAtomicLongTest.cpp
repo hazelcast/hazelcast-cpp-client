@@ -18,8 +18,9 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            IAtomicLongTest::IAtomicLongTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            IAtomicLongTest::IAtomicLongTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("IAtomicLongTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {

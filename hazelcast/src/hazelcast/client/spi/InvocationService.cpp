@@ -27,7 +27,7 @@ namespace hazelcast {
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request) {
-                boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
+                boost::shared_ptr<connection::Connection> connection = getOrConnect(NULL);
                 return doSend(request, NULL, *connection);
             };
 
@@ -40,21 +40,21 @@ namespace hazelcast {
             };
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, const Address &address) {
-                boost::shared_ptr<connection::Connection>connection = getOrConnect(&address);
+                boost::shared_ptr<connection::Connection> connection = getOrConnect(&address);
                 return doSend(request, NULL, *connection);
             };
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler) {
-                boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler) {
+                boost::shared_ptr<connection::Connection> connection = getOrConnect(NULL);
                 return doSend(request, eventHandler, *connection);
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler, const Address &address) {
-                boost::shared_ptr<connection::Connection>connection = getOrConnect(&address);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, const Address &address) {
+                boost::shared_ptr<connection::Connection> connection = getOrConnect(&address);
                 return doSend(request, eventHandler, *connection);
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::EventHandlerWrapper *handler, const serialization::Data &key) {
+            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key) {
                 boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(key);
                 if (owner.get() != NULL) {
                     return invokeOnTarget(request, handler, *owner);
@@ -67,7 +67,7 @@ namespace hazelcast {
                     return false;
                 }
                 try {
-                    boost::shared_ptr<connection::Connection>connection = getOrConnect(NULL);
+                    boost::shared_ptr<connection::Connection> connection = getOrConnect(NULL);
                     connection->resend(promise);
                 } catch(std::exception &e) {
                     promise->setException(e);
@@ -80,7 +80,7 @@ namespace hazelcast {
                 return redoOperation;
             }
 
-            boost::shared_future<serialization::Data> InvocationService::doSend(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection) {
+            boost::shared_future<serialization::Data> InvocationService::doSend(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, connection::Connection &connection) {
                 boost::shared_ptr<util::CallPromise> promise(new util::CallPromise(*this));
                 promise->setRequest(request);
                 promise->setEventHandler(eventHandler);

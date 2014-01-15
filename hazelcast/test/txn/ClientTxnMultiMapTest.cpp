@@ -16,8 +16,9 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnMultiMapTest::ClientTxnMultiMapTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+            ClientTxnMultiMapTest::ClientTxnMultiMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientTxnMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };
@@ -60,7 +61,7 @@ namespace hazelcast {
                     assertEqual(3, mm->get(key).size());
 
                     latch->countDown();
-                } catch (std::exception& e) {
+                } catch (std::exception &e) {
                     error->fetch_add(1);
                     latch->countDown();
                 }

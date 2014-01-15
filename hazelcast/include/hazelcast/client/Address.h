@@ -22,9 +22,9 @@ namespace hazelcast {
 
             Address(std::string url, int port);
 
-            bool operator == (const Address&) const;
+            bool operator == (const Address &) const;
 
-            bool operator <(const Address&) const;
+            bool operator <(const Address &) const;
 
             int getPort() const;
 
@@ -34,9 +34,9 @@ namespace hazelcast {
 
             int getClassId() const;
 
-            void writeData(serialization::ObjectDataOutput& writer) const;
+            void writeData(serialization::ObjectDataOutput &writer) const;
 
-            void readData(serialization::ObjectDataInput& reader);
+            void readData(serialization::ObjectDataInput &reader);
 
             int hashCode() const;
 
@@ -50,8 +50,8 @@ namespace hazelcast {
             mutable int hash;
         };
 
-        struct addressComparator {
-            bool operator ()(const Address& lhs, const Address& rhs) const {
+        struct HAZELCAST_API addressComparator {
+            bool operator ()(const Address &lhs, const Address &rhs) const {
                 int i = lhs.getHost().compare(rhs.getHost());
                 if (i == 0) {
                     return lhs.getPort() > rhs.getPort();
@@ -62,7 +62,7 @@ namespace hazelcast {
         };
 
 
-        inline HAZELCAST_API std::ostream& operator <<(std::ostream &strm, const Address &a) {
+        inline HAZELCAST_API std::ostream &operator <<(std::ostream &strm, const Address &a) {
             return strm << "Address[" << a.getHost() << ":" << a.getPort() << "]";
         };
     }

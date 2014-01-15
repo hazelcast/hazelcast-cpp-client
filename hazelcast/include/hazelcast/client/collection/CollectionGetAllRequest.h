@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace collection {
             class HAZELCAST_API CollectionGetAllRequest : public CollectionRequest {
             public:
-                CollectionGetAllRequest(const std::string& name);
+                CollectionGetAllRequest(const std::string &name, const std::string &serviceName);
 
                 int getClassId() const;
 

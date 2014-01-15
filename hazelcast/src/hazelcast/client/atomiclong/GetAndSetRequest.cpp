@@ -18,12 +18,6 @@ namespace hazelcast {
             int GetAndSetRequest::getClassId() const {
                 return AtomicLongPortableHook::GET_AND_SET;
             };
-
-
-            void GetAndSetRequest::write(serialization::PortableWriter &writer) const {
-                AtomicLongRequest::writePortable(writer);
-            };
-
         }
     }
 }

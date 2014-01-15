@@ -18,14 +18,14 @@ namespace hazelcast {
         namespace collection {
             class HAZELCAST_API CollectionRemoveRequest : public CollectionRequest {
             public:
-                CollectionRemoveRequest(const std::string& name, const serialization::Data& data);
+                CollectionRemoveRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data& data;
+                const serialization::Data &data;
             };
         }
     }

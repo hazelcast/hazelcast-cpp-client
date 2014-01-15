@@ -35,6 +35,10 @@ namespace hazelcast {
                 type = reader.readInt("t");
             };
 
+
+            bool ServerException::isInstanceNotActiveException() const {
+                return message.find(INSTANCE_NOT_ACTIVE_STR, 0) != std::string::npos;
+            }
         }
     }
 }

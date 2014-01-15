@@ -10,14 +10,14 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListRemoveRequest::ListRemoveRequest(const std::string& name, int index)
-            : CollectionRequest(name)
+            ListRemoveRequest::ListRemoveRequest(const std::string &name, const std::string &serviceName, int index)
+            : CollectionRequest(name, serviceName)
             , index(index) {
 
             }
 
-            void ListRemoveRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
+            void ListRemoveRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
                 writer.writeInt("i", index);
             }
 

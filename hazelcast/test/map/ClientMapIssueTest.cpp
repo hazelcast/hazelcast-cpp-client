@@ -16,7 +16,8 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMapIssueTest::ClientMapIssueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory) {
+            :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientMapIssueTest") {
             };
 
 
@@ -41,9 +42,9 @@ namespace hazelcast {
             }
 
             void testCDWThread(IMap<std::string, std::string> *m, util::CountDownLatch *latch) {
-                try{
+                try {
                     m->get("ali");
-                } catch(exception::IException &){
+                } catch(exception::IException &) {
                     latch->countDown();
                 }
 

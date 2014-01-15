@@ -19,7 +19,7 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
-            class EventHandlerWrapper;
+            class BaseEventHandler;
         }
         namespace serialization {
             class Data;
@@ -44,9 +44,9 @@ namespace hazelcast {
 
             boost::shared_future<client::serialization::Data> getFuture();
 
-            void setEventHandler(client::impl::EventHandlerWrapper *eventHandler);
+            void setEventHandler(client::impl::BaseEventHandler *eventHandler);
 
-            client::impl::EventHandlerWrapper *getEventHandler() const;
+            client::impl::BaseEventHandler *getEventHandler() const;
 
             int incrementAndGetResendCount();
 
@@ -54,7 +54,7 @@ namespace hazelcast {
             client::spi::InvocationService &invocationService;
             boost::promise<client::serialization::Data> promise;
             std::auto_ptr<const client::impl::PortableRequest> request;
-            std::auto_ptr<client::impl::EventHandlerWrapper> eventHandler;
+            std::auto_ptr<client::impl::BaseEventHandler> eventHandler;
             int resendCount;
         };
     }

@@ -71,6 +71,12 @@ namespace hazelcast {
 
         };
 
+        struct HAZELCAST_API socketPtrComp {
+            bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
+                return lhs->getSocketId() > rhs->getSocketId();
+            }
+        };
+
     }
 }
 

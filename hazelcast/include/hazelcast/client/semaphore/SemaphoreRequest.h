@@ -15,14 +15,15 @@ namespace hazelcast {
         namespace semaphore {
             class HAZELCAST_API SemaphoreRequest : public impl::PortableRequest {
             public:
-                SemaphoreRequest(const std::string& instanceName, int permitCount);
+                SemaphoreRequest(const std::string &instanceName, int permitCount);
 
                 virtual int getFactoryId() const;
 
-                void write(serialization::PortableWriter& writer) const ;
+                virtual void write(serialization::PortableWriter &writer) const;
+
             private:
 
-                const std::string& instanceName;
+                const std::string &instanceName;
                 int permitCount;
             };
         }

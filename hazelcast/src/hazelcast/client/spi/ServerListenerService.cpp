@@ -7,7 +7,7 @@
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/EventHandlerWrapper.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
@@ -20,7 +20,7 @@ namespace hazelcast {
 
             };
 
-            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler) {
+            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler) {
                 boost::shared_future<serialization::Data> future;
                 if (partitionKey == NULL) {
                     future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
@@ -28,11 +28,13 @@ namespace hazelcast {
                     future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, *partitionKey);
                 }
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
+                handler->uuid = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
+
                 return *registrationId;
             }
 
-            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::EventHandlerWrapper *handler) {
+            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
                 return listen(registrationRequest, NULL, handler);
             }
 

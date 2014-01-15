@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
 #include "hazelcast/client/semaphore/SemaphorePortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,11 +16,6 @@ namespace hazelcast {
 
             int ReleaseRequest::getClassId() const {
                 return SemaphorePortableHook::RELEASE;
-            };
-
-
-            void ReleaseRequest::write(serialization::PortableWriter &writer) const {
-                SemaphoreRequest::writePortable(writer);
             };
         }
     }

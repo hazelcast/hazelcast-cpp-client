@@ -11,8 +11,8 @@ namespace hazelcast {
     namespace client {
         namespace collection {
 
-            CollectionClearRequest::CollectionClearRequest(const std::string& name)
-            : CollectionRequest(name) {
+            CollectionClearRequest::CollectionClearRequest(const std::string &name, const std::string &serviceName)
+            : CollectionRequest(name, serviceName) {
 
             }
 

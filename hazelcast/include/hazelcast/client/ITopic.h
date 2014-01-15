@@ -11,6 +11,7 @@
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/topic/PublishRequest.h"
 #include "hazelcast/client/topic/AddMessageListenerRequest.h"
+#include "hazelcast/client/topic/RemoveMessageListenerRequest.h"
 #include "hazelcast/client/topic/TopicEventHandler.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
@@ -27,21 +28,21 @@ namespace hazelcast {
 
             void publish(E message) {
                 serialization::Data data = getContext().getSerializationService().template toData<E>(&message);
-                topic::PublishRequest request(getName(), data);
-                invoke<bool>(request,key);
+                topic::PublishRequest *request = new topic::PublishRequest(getName(), data);
+                invoke<bool>(request, key);
             }
 
-//            template <typename L>
-//            long addMessageListener(L &listener) {
-//                topic::AddMessageListenerRequest request(getName());
-//                topic::TopicEventHandler<E, L> topicEventHandler(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener);
-//                serialization::Data cloneData = key.clone();
-//                return getContext().getServerListenerService().template listen<topic::AddMessageListenerRequest, topic::TopicEventHandler<E, L>, topic::PortableMessage >(request, cloneData, topicEventHandler);
-//            }
-//
-//            bool removeMessageListener(long registrationId) {
-//                return getContext().getServerListenerService().stopListening(registrationId);
-//            };
+            template <typename L>
+            std::string addMessageListener(L &listener) {
+                topic::AddMessageListenerRequest *request = new topic::AddMessageListenerRequest(getName());
+                topic::TopicEventHandler<E, L> *topicEventHandler = new topic::TopicEventHandler<E, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener);
+                return listen(request, &key, topicEventHandler);
+            }
+
+            bool removeMessageListener(const std::string &registrationId) {
+                topic::RemoveMessageListenerRequest *request = new topic::RemoveMessageListenerRequest(getName(), registrationId);
+                return stopListening(request, registrationId);
+            };
 
             void onDestroy() {
             };

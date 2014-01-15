@@ -11,8 +11,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string& name, const std::vector<serialization::Data>& valueSet, bool retain)
-            :CollectionRequest(name)
+            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueSet, bool retain)
+            :CollectionRequest(name, serviceName)
             , valueSet(valueSet)
             , retain(retain) {
 
@@ -22,10 +22,10 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_COMPARE_AND_REMOVE;
             }
 
-            void CollectionCompareAndRemoveRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
+            void CollectionCompareAndRemoveRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
                 writer.writeBoolean("r", retain);
-                serialization::ObjectDataOutput & output = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &output = writer.getRawDataOutput();
                 output.writeInt(valueSet.size());
                 for (int i = 0; i < valueSet.size(); i++) {
                     valueSet[i].writeData(output);

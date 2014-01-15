@@ -15,6 +15,7 @@ namespace hazelcast {
 
             ClientQueueTest::ClientQueueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientQueueTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , q(new IQueue< std::string>(client->getQueue< std::string >("clientQueueTest"))) {
@@ -82,19 +83,19 @@ namespace hazelcast {
             }
 
             void ClientQueueTest::testListener() {
-//                assertEqual(0, q->size());
-//
-//                util::CountDownLatch latch(5);
-//
-//                ItemListener listener(latch);
-//                long id = q->addItemListener(listener, true);
-//
-//                boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-//
-//                boost::thread t(boost::bind(testListenerThread, q.get()));
-//
-//                assertTrue(latch.await(5 * 1000));
-//                q->removeItemListener(id);
+                assertEqual(0, q->size());
+
+                util::CountDownLatch latch(5);
+
+                ItemListener listener(latch);
+                std::string id = q->addItemListener(listener, true);
+
+                boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+                boost::thread t(boost::bind(testListenerThread, q.get()));
+
+                assertTrue(latch.await(5 * 1000));
+                q->removeItemListener(id);
             }
 
             void testOfferPollThread2(IQueue<std::string> *q) {

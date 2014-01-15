@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
-            class EventHandlerWrapper;
+            class BaseEventHandler;
         }
 
         namespace serialization {
@@ -28,17 +28,18 @@ namespace hazelcast {
             public:
                 ServerListenerService(spi::ClientContext &clientContext);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, impl::EventHandlerWrapper *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 
                 bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
 
-                void reRegisterListener(const std::string &uuid,boost::shared_ptr<std::string> alias, int callId);
+                void reRegisterListener(const std::string &uuid, boost::shared_ptr<std::string> alias, int callId);
+
             private:
                 util::SynchronizedMap<std::string, int > registrationIdMap;
                 util::SynchronizedMap<std::string, const std::string > registrationAliasMap;
-                spi::ClientContext& clientContext;
+                spi::ClientContext &clientContext;
 
                 void registerListener(boost::shared_ptr<std::string> uuid, int callId);
 

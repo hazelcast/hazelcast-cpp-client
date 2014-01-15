@@ -13,7 +13,7 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization{
+        namespace serialization {
             class PortableWriter;
         }
 
@@ -21,11 +21,9 @@ namespace hazelcast {
 
             class HAZELCAST_API AddAndGetRequest : public AtomicLongRequest {
             public:
-                AddAndGetRequest(const std::string& instanceName, long delta);
+                AddAndGetRequest(const std::string &instanceName, long delta);
 
-                int getClassId() const ;
-
-                void write(serialization::PortableWriter& writer) const;
+                int getClassId() const;
 
             };
         }

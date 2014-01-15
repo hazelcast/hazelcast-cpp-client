@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapGetRequest::TxnMultiMapGetRequest(const std::string& name, const serialization::Data& data)
+            TxnMultiMapGetRequest::TxnMultiMapGetRequest(const std::string &name, const serialization::Data &data)
             : TxnMultiMapRequest(name)
             , data(data) {
 
@@ -20,9 +20,9 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_GET;
             }
 
-            void TxnMultiMapGetRequest::write(serialization::PortableWriter& writer) const {
-                TxnMultiMapRequest::writePortable(writer);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+            void TxnMultiMapGetRequest::write(serialization::PortableWriter &writer) const {
+                TxnMultiMapRequest::write(writer);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 data.writeData(out);
             };
         }

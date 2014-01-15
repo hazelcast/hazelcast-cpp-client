@@ -14,11 +14,11 @@ namespace hazelcast {
         namespace collection {
             class HAZELCAST_API CollectionAddListenerRequest : public CollectionRequest {
             public:
-                CollectionAddListenerRequest(const std::string& name, bool includeValue);
+                CollectionAddListenerRequest(const std::string &name, const std::string &serviceName, bool includeValue);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 bool includeValue;

@@ -11,8 +11,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionAddAllRequest::CollectionAddAllRequest(const std::string& name, const std::vector<serialization::Data>& valueList)
-            : CollectionRequest(name)
+            CollectionAddAllRequest::CollectionAddAllRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueList)
+            : CollectionRequest(name, serviceName)
             , valueList(valueList) {
 
             }
@@ -21,9 +21,9 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_ADD_ALL;
             }
 
-            void CollectionAddAllRequest::write(serialization::PortableWriter& writer) const {
-                CollectionRequest::writePortable(writer);
-                serialization::ObjectDataOutput & output = writer.getRawDataOutput();
+            void CollectionAddAllRequest::write(serialization::PortableWriter &writer) const {
+                CollectionRequest::write(writer);
+                serialization::ObjectDataOutput &output = writer.getRawDataOutput();
                 output.writeInt(valueList.size());
                 for (int i = 0; i < valueList.size(); i++) {
                     valueList[i].writeData(output);

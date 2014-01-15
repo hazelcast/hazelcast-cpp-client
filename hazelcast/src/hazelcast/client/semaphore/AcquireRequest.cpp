@@ -10,21 +10,21 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            AcquireRequest::AcquireRequest(const std::string& instanceName, int permitCount, long timeout)
-                : SemaphoreRequest(instanceName, permitCount)
-                , timeout(timeout) {
+            AcquireRequest::AcquireRequest(const std::string &instanceName, int permitCount, long timeout)
+            : SemaphoreRequest(instanceName, permitCount)
+            , timeout(timeout) {
 
-                };
+            };
 
-                int AcquireRequest::getClassId() const {
-                    return SemaphorePortableHook::ACQUIRE;
-                };
+            int AcquireRequest::getClassId() const {
+                return SemaphorePortableHook::ACQUIRE;
+            };
 
 
-                void AcquireRequest::write(serialization::PortableWriter& writer) const {
-                    SemaphoreRequest::writePortable(writer);
-                    writer.writeLong("t", timeout);
-                };
+            void AcquireRequest::write(serialization::PortableWriter &writer) const {
+                SemaphoreRequest::write(writer);
+                writer.writeLong("t", timeout);
+            };
 
         }
     }

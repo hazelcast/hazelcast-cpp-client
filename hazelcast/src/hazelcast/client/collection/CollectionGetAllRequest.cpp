@@ -10,8 +10,8 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionGetAllRequest::CollectionGetAllRequest(const std::string& name)
-            : CollectionRequest(name) {
+            CollectionGetAllRequest::CollectionGetAllRequest(const std::string &name, const std::string &serviceName)
+            : CollectionRequest(name, serviceName) {
 
             }
 

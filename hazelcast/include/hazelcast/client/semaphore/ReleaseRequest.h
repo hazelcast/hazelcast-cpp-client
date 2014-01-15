@@ -15,11 +15,9 @@ namespace hazelcast {
         namespace semaphore {
             class HAZELCAST_API ReleaseRequest : public SemaphoreRequest {
             public:
-                ReleaseRequest(const std::string& instanceName, int permitCount);
+                ReleaseRequest(const std::string &instanceName, int permitCount);
 
-                int getClassId() const ;
-
-                void write(serialization::PortableWriter& writer) const ;
+                int getClassId() const;
 
             };
         }

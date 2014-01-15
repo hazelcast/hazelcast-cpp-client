@@ -37,7 +37,8 @@ namespace hazelcast {
 
                     TXN_SET_ADD = 20,
                     TXN_SET_REMOVE = 21,
-                    TXN_SET_SIZE = 22
+                    TXN_SET_SIZE = 22,
+                    COLLECTION_REMOVE_LISTENER = 23
                 };
             }
 

@@ -18,8 +18,6 @@ namespace hazelcast {
                 DrainRequest(const std::string &instanceName);
 
                 int getClassId() const;
-
-                void write(serialization::PortableWriter &writer) const;
             };
         }
     }

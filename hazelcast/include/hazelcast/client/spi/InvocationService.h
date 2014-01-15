@@ -23,7 +23,7 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
-            class EventHandlerWrapper;
+            class BaseEventHandler;
         }
 
         namespace connection {
@@ -45,11 +45,11 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest *request, const Address &target);
 
-                boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *handler);
+                boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest *request, impl::BaseEventHandler *handler);
 
-                boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest *request, impl::EventHandlerWrapper *handler, const Address &target);
+                boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const Address &target);
 
-                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::EventHandlerWrapper *handler, const serialization::Data &key);
+                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key);
 
                 bool resend(boost::shared_ptr<util::CallPromise> promise);
 
@@ -61,9 +61,9 @@ namespace hazelcast {
                 bool redoOperation;
                 spi::ClientContext &clientContext;
 
-                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest *request, impl::EventHandlerWrapper *eventHandler, connection::Connection &connection);
+                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, connection::Connection &connection);
 
-                boost::shared_ptr<connection::Connection>getOrConnect(const Address *target);
+                boost::shared_ptr<connection::Connection> getOrConnect(const Address *target);
 
             };
         }

@@ -19,14 +19,14 @@ namespace hazelcast {
             class HAZELCAST_API ListSetRequest : public collection::CollectionRequest {
             public:
 
-                ListSetRequest(const std::string& name, const serialization::Data& data, int index);
+                ListSetRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data, int index);
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 int getClassId() const;
 
             private:
-                const serialization::Data& data;
+                const serialization::Data &data;
                 int index;
             };
         }

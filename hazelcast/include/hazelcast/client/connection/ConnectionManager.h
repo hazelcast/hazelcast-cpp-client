@@ -60,8 +60,6 @@ namespace hazelcast {
 
                 int getNextCallId();
 
-                void destroyConnection(Connection &);
-
                 void removeEventHandler(int callId);
 
             protected:
@@ -78,7 +76,6 @@ namespace hazelcast {
                 boost::mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 boost::atomic<long> callIdGenerator;
-//                HeartBeatChecker heartBeatChecker;TODO
 
             };
         }

@@ -18,6 +18,7 @@ namespace hazelcast {
 
             ClientTxnQueueTest::ClientTxnQueueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
+            , iTestFixture("ClientTxnQueueTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };
@@ -28,7 +29,7 @@ namespace hazelcast {
 
             void ClientTxnQueueTest::addTests() {
                 addTest(&ClientTxnQueueTest::testTransactionalOfferPoll1, "testTransactionalOfferPoll1");
-				addTest(&ClientTxnQueueTest::testTransactionalOfferPoll2, "testTransactionalOfferPoll2");
+                addTest(&ClientTxnQueueTest::testTransactionalOfferPoll2, "testTransactionalOfferPoll2");
             };
 
             void ClientTxnQueueTest::beforeClass() {
@@ -84,12 +85,12 @@ namespace hazelcast {
                 assertEqual("item0", *s);
                 q1.offer(*s);
 
-				try {
-					context.commitTransaction();
-				} catch (exception::IException &e) {
+                try {
+                    context.commitTransaction();
+                } catch (exception::IException &e) {
                     assertTrue(false, e.what());
                 }
-                
+
                 assertEqual(0, client->getQueue<std::string>("defQueue0").size());
                 assertEqual("item0", *(client->getQueue<std::string>("defQueue1").poll()));
             }

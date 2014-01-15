@@ -11,21 +11,18 @@ namespace hazelcast {
     namespace client {
         namespace collection {
 
-            CollectionRequest::CollectionRequest(const std::string& name)
-            :name(name) {
+            CollectionRequest::CollectionRequest(const std::string &name, const std::string &serviceName)
+            :name(name)
+            , serviceName(serviceName) {
 
             };
-
-            void CollectionRequest::setServiceName(const std::string& serviceName) {
-                this->serviceName = &serviceName;
-            }
 
             int CollectionRequest::getFactoryId() const {
                 return CollectionPortableHook::F_ID;
             };
 
-            void CollectionRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("s", *serviceName);
+            void CollectionRequest::write(serialization::PortableWriter &writer) const {
+                writer.writeUTF("s", serviceName);
                 writer.writeUTF("n", name);
             };
 

@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            MultiMapLockRequest::MultiMapLockRequest(const std::string& name, const serialization::Data& key, int threadId)
+            MultiMapLockRequest::MultiMapLockRequest(const std::string &name, const serialization::Data &key, int threadId)
             :KeyBasedRequest(name, key)
             , threadId(threadId)
             , ttl(-1)
@@ -19,7 +19,7 @@ namespace hazelcast {
 
             };
 
-            MultiMapLockRequest::MultiMapLockRequest(const std::string& name, const serialization::Data& key, int threadId, long ttl, long timeout)
+            MultiMapLockRequest::MultiMapLockRequest(const std::string &name, const serialization::Data &key, int threadId, long ttl, long timeout)
             :KeyBasedRequest(name, key)
             , threadId(threadId)
             , ttl(ttl)
@@ -35,11 +35,11 @@ namespace hazelcast {
                 return MultiMapPortableHook::LOCK;
             };
 
-            void MultiMapLockRequest::write(serialization::PortableWriter& writer) const {
+            void MultiMapLockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeInt("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);
-                KeyBasedRequest::writePortable(writer);
+                KeyBasedRequest::write(writer);
             };
 
         }

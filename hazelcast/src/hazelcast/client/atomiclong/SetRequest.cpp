@@ -19,10 +19,6 @@ namespace hazelcast {
                 return AtomicLongPortableHook::SET;
             };
 
-            void SetRequest::write(serialization::PortableWriter &writer) const {
-                AtomicLongRequest::writePortable(writer);
-            };
-
         }
     }
 }

@@ -14,17 +14,15 @@ namespace hazelcast {
 
             class HAZELCAST_API CollectionRequest : public impl::PortableRequest {
             public:
-                CollectionRequest(const std::string &name);
+                CollectionRequest(const std::string &name, const std::string &serviceName);
 
                 virtual int getFactoryId() const;
-
-                virtual void setServiceName(const std::string &name);
 
                 virtual void write(serialization::PortableWriter &writer) const;
 
             private:
                 const std::string &name;
-                const std::string *serviceName;
+                const std::string &serviceName;
 
             };
         }

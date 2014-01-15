@@ -16,7 +16,7 @@ namespace hazelcast {
             class HAZELCAST_API CollectionSizeRequest : public CollectionRequest {
             public:
 
-                CollectionSizeRequest(const std::string& name);
+                CollectionSizeRequest(const std::string &name, const std::string &serviceName);
 
                 int getClassId() const;
             };

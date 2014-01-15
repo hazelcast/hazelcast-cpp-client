@@ -18,7 +18,7 @@ namespace hazelcast {
 
             int getHighestSocketId() const;
 
-            std::set<client::Socket const *> sockets;
+            std::set<client::Socket const *, client::socketPtrComp> sockets;
         };
 
     }
