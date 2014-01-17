@@ -10,8 +10,7 @@
 #ifndef HAZELCAST_UTIL_FUNCTIONS
 #define HAZELCAST_UTIL_FUNCTIONS
 
-#include "hazelcast/util/Conversion.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -38,12 +37,6 @@ namespace hazelcast {
         HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data);
 
         HAZELCAST_API long getCurrentTimeMillis();
-
-
-        template<typename Request>
-        HAZELCAST_API bool isRetryable(Request &request) {
-            return util::Conversion<Request, client::RetryableRequest>::exists;
-        };
 
     }
 }

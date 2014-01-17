@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -20,7 +19,11 @@ namespace hazelcast {
 
             int GetPartitionsRequest::getClassId() const {
                 return protocol::ProtocolConstants::GET_PARTITIONS;
+            }
 
+
+            bool GetPartitionsRequest::isRetryable() const {
+                return true;
             }
 
             void GetPartitionsRequest::write(serialization::PortableWriter &writer) const {

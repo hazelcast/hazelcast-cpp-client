@@ -9,16 +9,17 @@
 #define HAZELCAST_EntrySetRequest
 
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API EntrySetRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API EntrySetRequest : public AllPartitionsRequest{
             public:
                 EntrySetRequest(const std::string& name);
 
                 int getClassId() const;
+
+                bool isRetryable() const;
             };
         }
     }

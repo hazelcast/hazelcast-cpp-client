@@ -212,7 +212,7 @@ namespace hazelcast {
             void Connection::targetNotActive(boost::shared_ptr<util::CallPromise> promise) {
                 hazelcast::client::Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
-                if (util::isRetryable(promise->getRequest()) || invocationService.isRedoOperation()) {
+                if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     if (invocationService.resend(promise))
                         return;
                 }

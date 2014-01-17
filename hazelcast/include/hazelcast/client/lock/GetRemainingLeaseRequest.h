@@ -9,8 +9,6 @@
 
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
-#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class HAZELCAST_API GetRemainingLeaseRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetRemainingLeaseRequest : public impl::PortableRequest{
             public:
                 GetRemainingLeaseRequest(serialization::Data& key);
 
@@ -28,6 +26,7 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter& writer) const;
 
+                bool isRetryable() const;
             private:
                 serialization::Data& key;
             };

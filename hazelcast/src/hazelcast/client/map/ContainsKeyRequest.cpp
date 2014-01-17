@@ -25,6 +25,10 @@ namespace hazelcast {
             }
 
 
+            bool ContainsKeyRequest::isRetryable() const {
+                return true;
+            }
+
             void ContainsKeyRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();

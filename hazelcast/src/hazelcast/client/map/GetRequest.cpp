@@ -6,7 +6,6 @@
 #include "hazelcast/client/map/GetRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,6 +22,10 @@ namespace hazelcast {
 
             int GetRequest::getClassId() const {
                 return PortableHook::GET;
+            }
+
+            bool GetRequest::isRetryable() const {
+                return true;
             }
 
             void GetRequest::write(serialization::PortableWriter &writer) const {

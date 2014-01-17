@@ -7,7 +7,6 @@
 #ifndef HAZELCAST_GetLockCountRequest
 #define HAZELCAST_GetLockCountRequest
 
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include <string>
 
@@ -17,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace lock {
-            class HAZELCAST_API GetLockCountRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetLockCountRequest : public impl::PortableRequest{
             public:
                 GetLockCountRequest(serialization::Data& key);
 
@@ -27,7 +26,9 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter& writer) const;
 
+                bool isRetryable() const;
             private:
+
                 serialization::Data& key;
             };
         }

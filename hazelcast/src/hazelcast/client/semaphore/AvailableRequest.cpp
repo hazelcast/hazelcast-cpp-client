@@ -18,6 +18,9 @@ namespace hazelcast {
                 return SemaphorePortableHook::AVAILABLE;
             };
 
+            bool AvailableRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

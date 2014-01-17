@@ -29,6 +29,10 @@ namespace hazelcast {
             PortableRequest::~PortableRequest() {
 
             }
+
+            bool PortableRequest::isRetryable() const {
+                return false;
+            }
         }
     }
 }

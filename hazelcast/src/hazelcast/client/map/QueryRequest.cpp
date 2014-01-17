@@ -31,6 +31,10 @@ namespace hazelcast {
                 writer.writeUTF("sql", sql);
             };
 
+
+            bool QueryRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

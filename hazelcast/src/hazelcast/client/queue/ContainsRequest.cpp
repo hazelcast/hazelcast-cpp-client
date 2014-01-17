@@ -26,6 +26,10 @@ namespace hazelcast {
             };
 
 
+            bool ContainsRequest::isRetryable() const {
+                return true;
+            }
+
             void ContainsRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);

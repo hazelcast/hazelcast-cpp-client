@@ -29,6 +29,11 @@ namespace hazelcast {
                 writer.writeInt("tid", -1);
                 KeyBasedRequest::write(writer);
             };
+
+
+            bool MultiMapIsLockedRequest::isRetryable() const {
+                return true;
+            }
         };
 
     }

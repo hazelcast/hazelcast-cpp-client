@@ -23,6 +23,11 @@ namespace hazelcast {
                 return LockPortableHook::FACTORY_ID;
             };
 
+
+            bool GetLockCountRequest::isRetryable() const {
+                return true;
+            }
+
             void GetLockCountRequest::write(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);

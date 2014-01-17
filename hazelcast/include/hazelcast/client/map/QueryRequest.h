@@ -8,13 +8,12 @@
 #define HAZELCAST_QUERY_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API QueryRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API QueryRequest : public impl::PortableRequest{
             public:
                 QueryRequest(const std::string &name, const std::string &iterationType, const std::string &sql);
 
@@ -23,6 +22,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter &writer) const;
+
+                bool isRetryable() const;
 
             private:
                 const std::string& name;

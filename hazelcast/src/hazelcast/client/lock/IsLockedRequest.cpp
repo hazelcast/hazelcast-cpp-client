@@ -10,12 +10,12 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            IsLockedRequest::IsLockedRequest(serialization::Data& key)
+            IsLockedRequest::IsLockedRequest(serialization::Data &key)
             :key(key)
             , threadId(-1) {
             };
 
-            IsLockedRequest::IsLockedRequest(serialization::Data& key, int threadId)
+            IsLockedRequest::IsLockedRequest(serialization::Data &key, int threadId)
             :key(key)
             , threadId(threadId) {
             };
@@ -28,11 +28,16 @@ namespace hazelcast {
                 return LockPortableHook::FACTORY_ID;
             };
 
-            void IsLockedRequest::write(serialization::PortableWriter& writer) const {
+            void IsLockedRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeInt("tid", threadId);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
+
+
+            bool IsLockedRequest::isRetryable() const {
+                return true;
+            }
 
         }
     }

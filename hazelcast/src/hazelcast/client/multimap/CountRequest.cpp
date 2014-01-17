@@ -18,6 +18,10 @@ namespace hazelcast {
                 return MultiMapPortableHook::COUNT;
             };
 
+
+            bool CountRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

@@ -6,14 +6,13 @@
 
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include <vector>
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API ContainsRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsRequest : public impl::PortableRequest{
             public:
 
                 ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList);
@@ -23,6 +22,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             private:
                 std::vector<serialization::Data>& dataList;

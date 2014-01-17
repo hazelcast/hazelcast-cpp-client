@@ -7,7 +7,6 @@
 #ifndef HAZELCAST_GET_PARTITIONS_REQUEST
 #define HAZELCAST_GET_PARTITIONS_REQUEST
 
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
 #include "hazelcast/client/impl/PortableRequest.h"
@@ -15,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API GetPartitionsRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetPartitionsRequest : public impl::PortableRequest{
             public:
                 GetPartitionsRequest();
 
@@ -24,6 +23,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter &writer) const;
+
+                bool isRetryable() const;
             };
         }
     }

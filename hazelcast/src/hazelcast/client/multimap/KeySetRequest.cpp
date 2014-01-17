@@ -17,6 +17,10 @@ namespace hazelcast {
             int KeySetRequest::getClassId() const {
                 return MultiMapPortableHook::KEY_SET;
             };
+
+            bool KeySetRequest::isRetryable() const{
+                return true;
+            }
         }
     }
 }

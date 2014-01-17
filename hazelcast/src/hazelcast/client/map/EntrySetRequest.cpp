@@ -29,6 +29,10 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
             };
 
+
+            bool EntrySetRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

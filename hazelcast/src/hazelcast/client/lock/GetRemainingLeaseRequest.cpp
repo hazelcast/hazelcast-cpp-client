@@ -27,6 +27,11 @@ namespace hazelcast {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             };
+
+
+            bool GetRemainingLeaseRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

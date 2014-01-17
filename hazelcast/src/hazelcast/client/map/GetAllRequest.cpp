@@ -33,6 +33,10 @@ namespace hazelcast {
                     keys[i].writeData(out);
                 }
             };
+
+            bool GetAllRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

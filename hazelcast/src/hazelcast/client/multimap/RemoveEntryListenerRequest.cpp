@@ -23,6 +23,10 @@ namespace hazelcast {
                 writer.writeUTF("r", registrationId);
                 AllPartitionsRequest::write(writer);
             };
+
+            bool RemoveEntryListenerRequest::isRetryable() const{
+                return true;
+            }
         }
     }
 }

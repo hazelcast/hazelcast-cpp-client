@@ -18,6 +18,10 @@ namespace hazelcast {
             int SizeRequest::getClassId() const {
                 return MultiMapPortableHook::SIZE;
             };
+
+            bool SizeRequest::isRetryable() const{
+                return true;
+            }
         }
     }
 }

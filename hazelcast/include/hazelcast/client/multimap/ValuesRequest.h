@@ -7,17 +7,18 @@
 #ifndef HAZELCAST_ValuesRequest
 #define HAZELCAST_ValuesRequest
 
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API ValuesRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API ValuesRequest : public AllPartitionsRequest{
             public:
                 ValuesRequest(const std::string& name);
 
                 int getClassId() const;
+
+                bool isRetryable() const;
             };
         }
     }

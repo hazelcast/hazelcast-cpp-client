@@ -26,6 +26,8 @@ namespace hazelcast {
 
                 /* final */ void readPortable(serialization::PortableReader &reader);
 
+                virtual bool isRetryable() const;
+
                 mutable int callId;
             };
         }

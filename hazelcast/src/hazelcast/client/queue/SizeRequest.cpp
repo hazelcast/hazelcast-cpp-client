@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            SizeRequest::SizeRequest(const std::string& name)
+            SizeRequest::SizeRequest(const std::string &name)
             :name(name) {
 
             };
@@ -23,10 +23,15 @@ namespace hazelcast {
                 return queue::QueuePortableHook::SIZE;
             };
 
-            void SizeRequest::write(serialization::PortableWriter& writer) const {
+            void SizeRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
             };
+
+
+            bool SizeRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

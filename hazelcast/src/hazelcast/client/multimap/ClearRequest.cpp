@@ -9,13 +9,17 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ClearRequest::ClearRequest(const std::string& name)
+            ClearRequest::ClearRequest(const std::string &name)
             : AllPartitionsRequest(name) {
 
             }
 
             int ClearRequest::getClassId() const {
                 return MultiMapPortableHook::CLEAR;
+            }
+
+            bool ClearRequest::isRetryable() const {
+                return true;
             }
 
         }

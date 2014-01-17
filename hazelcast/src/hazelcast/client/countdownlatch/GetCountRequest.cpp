@@ -23,6 +23,11 @@ namespace hazelcast {
                 return CountDownLatchPortableHook::GET_COUNT;
             };
 
+
+            bool GetCountRequest::isRetryable() const {
+                return true;
+            }
+
             void GetCountRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
             };

@@ -5,7 +5,6 @@
 #define HAZELCAST_MAP_GET_ALL_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <string>
 #include <vector>
@@ -13,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetAllRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetAllRequest : public impl::PortableRequest{
             public:
                 GetAllRequest(const std::string& name,const std::vector<serialization::Data>& keys);
 
@@ -22,6 +21,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             private:
                 const std::vector<serialization::Data> &keys;

@@ -7,7 +7,6 @@
 #ifndef HAZELCAST_ContainsEntryRequest
 #define HAZELCAST_ContainsEntryRequest
 
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
 
 namespace hazelcast {
@@ -16,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest{
             public:
                 ContainsEntryRequest(const serialization::Data& key, const std::string& name, const serialization::Data& value);
 
@@ -27,6 +26,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             private:
                 const serialization::Data *key;

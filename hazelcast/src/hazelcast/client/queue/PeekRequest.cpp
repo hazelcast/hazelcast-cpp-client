@@ -26,6 +26,11 @@ namespace hazelcast {
             void PeekRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
             };
+
+
+            bool PeekRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

@@ -5,13 +5,12 @@
 #define HAZELCAST_QUEUE_PEEK_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API PeekRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API PeekRequest : public impl::PortableRequest{
             public:
                 PeekRequest(const std::string& name);
 
@@ -20,6 +19,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             private:
                 const std::string& name;

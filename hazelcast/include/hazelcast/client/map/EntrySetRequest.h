@@ -5,13 +5,12 @@
 #define HAZELCAST_MAP_ENTRY_SET_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API EntrySetRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API EntrySetRequest : public impl::PortableRequest{
             public:
                 EntrySetRequest(const std::string& name);
 
@@ -20,6 +19,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             private:
                 std::string name;

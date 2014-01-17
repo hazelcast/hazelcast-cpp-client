@@ -28,6 +28,11 @@ namespace hazelcast {
             void RemainingCapacityRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
             };
+
+
+            bool RemainingCapacityRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

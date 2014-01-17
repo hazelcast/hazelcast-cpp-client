@@ -6,7 +6,7 @@
 #define HAZELCAST_MAP_CONTAINS_VALUE_R
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
+
 #include <string>
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
             class Data;
         }
         namespace map {
-            class HAZELCAST_API ContainsValueRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API ContainsValueRequest : public impl::PortableRequest{
             public:
                 ContainsValueRequest(const std::string &name, const serialization::Data &value);
 

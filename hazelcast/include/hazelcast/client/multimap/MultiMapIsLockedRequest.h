@@ -7,8 +7,6 @@
 #ifndef HAZELCAST_MultiMapIsLockedRequest
 #define HAZELCAST_MultiMapIsLockedRequest
 
-
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
 #include <string>
 
@@ -18,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace multimap {
-            class HAZELCAST_API MultiMapIsLockedRequest : public KeyBasedRequest, public RetryableRequest {
+            class HAZELCAST_API MultiMapIsLockedRequest : public KeyBasedRequest{
             public:
                 MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key);
 
@@ -27,6 +25,8 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
+
+                bool isRetryable() const;
 
             };
 

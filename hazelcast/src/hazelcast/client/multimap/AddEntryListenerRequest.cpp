@@ -45,6 +45,10 @@ namespace hazelcast {
                 }
             };
 
+            bool AddEntryListenerRequest::isRetryable() const {
+                return true;
+            }
+
             const serialization::Data *AddEntryListenerRequest::getKey() const {
                 return &key;
             }

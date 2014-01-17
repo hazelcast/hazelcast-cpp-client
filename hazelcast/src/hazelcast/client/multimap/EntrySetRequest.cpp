@@ -18,6 +18,10 @@ namespace hazelcast {
                 return MultiMapPortableHook::ENTRY_SET;
             };
 
+            bool EntrySetRequest::isRetryable() const{
+                return true;
+            }
+
         }
     }
 }

@@ -8,16 +8,17 @@
 #define HAZELCAST_GetAllRequest
 
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API GetAllRequest : public KeyBasedRequest, public RetryableRequest {
+            class HAZELCAST_API GetAllRequest : public KeyBasedRequest{
             public:
                 GetAllRequest(const std::string& name, const serialization::Data& key);
 
                 int getClassId() const;
+
+                bool isRetryable() const;
             };
         }
     }

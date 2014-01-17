@@ -45,6 +45,9 @@ namespace hazelcast {
             };
 
 
+            bool ContainsEntryRequest::isRetryable() const {
+                return true;
+            }
         }
     }
 }

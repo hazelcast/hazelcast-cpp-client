@@ -7,17 +7,18 @@
 #ifndef HAZELCAST_SizeRequest
 #define HAZELCAST_SizeRequest
 
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API SizeRequest : public AllPartitionsRequest, public RetryableRequest {
+            class HAZELCAST_API SizeRequest : public AllPartitionsRequest{
             public:
                 SizeRequest(const std::string& name);
 
                 int getClassId() const;
+
+                bool isRetryable() const;
             };
         }
     }

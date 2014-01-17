@@ -8,28 +8,28 @@
 #define HAZELCAST_GetCountRequest
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/RetryableRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization{
+        namespace serialization {
             class PortableWriter;
         }
         namespace countdownlatch {
-            class HAZELCAST_API GetCountRequest : public impl::PortableRequest, public RetryableRequest {
+            class HAZELCAST_API GetCountRequest : public impl::PortableRequest {
             public:
-                GetCountRequest(const std::string& instanceName);
+                GetCountRequest(const std::string &instanceName);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
+
+                bool isRetryable() const;
 
             private:
-
                 std::string instanceName;
             };
         }

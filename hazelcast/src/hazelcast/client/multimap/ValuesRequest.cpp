@@ -17,6 +17,10 @@ namespace hazelcast {
             int ValuesRequest::getClassId() const {
                 return MultiMapPortableHook::VALUES;
             };
+
+            bool ValuesRequest::isRetryable() const{
+                return true;
+            }
         }
     }
 }
