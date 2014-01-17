@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
-#include "SynchronizedMap.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/DataSerializer.h"
 #include "hazelcast/client/serialization/PortableSerializer.h"
 

@@ -6,6 +6,7 @@
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
 #include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/connection/Connection.h"
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 
@@ -17,8 +18,6 @@ namespace hazelcast {
         }
 
         namespace connection {
-
-            class Connection;
 
             class ConnectionManager;
 

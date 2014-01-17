@@ -23,6 +23,7 @@ namespace hazelcast {
             int getPort() const;
 
             void close();
+
         private:
             int socketId;
             boost::atomic<bool> isOpen;

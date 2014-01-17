@@ -56,6 +56,7 @@ namespace hazelcast {
                         break;
                     } catch(...) {
                         //ignored
+                        std::cerr << "PartitionService::runListener ignored exception " << std::endl;
                     }
                 }
             };

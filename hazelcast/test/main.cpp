@@ -8,6 +8,7 @@
 #include "semaphore/ClientSemaphoreTest.h"
 #include "topic/ClientTopicTest.h"
 #include "multimap/ClientMultiMapTest.h"
+#include "serialization/ClientSerializationTest.h"
 #include "list/ClientListTest.h"
 #include "set/ClientSetTest.h"
 #include "txn/ClientTxnListTest.h"
@@ -16,23 +17,23 @@
 #include "txn/ClientTxnQueueTest.h"
 #include "txn/ClientTxnSetTest.h"
 #include "txn/ClientTxnTest.h"
-#include "map/ClientMapIssueTest.h"
 #include "HazelcastInstanceFactory.h"
 
 using namespace hazelcast::client::test;
 
 int testSpeed() {
-    SimpleMapTest s("192.168.2.202", 5701);
+    SimpleMapTest s(HOST, 5701);
     s.run();
     return 0;
 };
 
 int main(int argc, char **argv) {
 
-    HazelcastInstanceFactory factory;
 
-    //ClientSerializationTest serializationTest;
-    //serializationTest.executeTests();
+    ClientSerializationTest serializationTest;
+    serializationTest.executeTests();
+
+    HazelcastInstanceFactory factory;
 
     ClientMapTest mapTest(factory);
     mapTest.executeTests();
@@ -66,9 +67,6 @@ int main(int argc, char **argv) {
 
     ClientTopicTest topicTest(factory);
     topicTest.executeTests();
-
-    ClientMapIssueTest mapIssueTest(factory);
-    mapIssueTest.executeTests();
 
 //
 //    ClientTxnListTest clientTxnListTest(factory);

@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
-#include "SynchronizedMap.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/SerializerHolder.h"
 #include <map>
 #include <vector>

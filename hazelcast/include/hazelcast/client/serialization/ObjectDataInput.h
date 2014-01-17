@@ -13,8 +13,10 @@
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/SerializationContext.h"
 #include "hazelcast/util/Util.h"
 #include <vector>
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 namespace hazelcast {
@@ -90,12 +92,12 @@ namespace hazelcast {
                     }
                     const int typeId = readInt();
 
-                    ClassDefinition classDefinition;
-                    classDefinition.readData(dataInput);
-                    int factoryId = classDefinition.getFactoryId();
-                    int classId = classDefinition.getClassId();
-                    int version = classDefinition.getVersion();
-
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
+                    classDefinition->readData(dataInput);
+                    int factoryId = classDefinition->getFactoryId();
+                    int classId = classDefinition->getClassId();
+                    int version = classDefinition->getVersion();
+                    serializationContext.registerClassDefinition(classDefinition);
                     serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
                     return object;
                 };

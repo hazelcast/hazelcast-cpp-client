@@ -1,6 +1,7 @@
-#include <iostream>
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
+#include <iostream>
+#include <cassert>
 
 namespace hazelcast {
     namespace client {
@@ -21,9 +22,9 @@ namespace hazelcast {
             }
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
-            int size = 32 * 1024;//TODO
-//            ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
-//            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
+            int size = 32 * 1024;
+            ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
+            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
             #if defined(SO_NOSIGPIPE)
             int on = 1;
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
@@ -32,8 +33,8 @@ namespace hazelcast {
         };
 
 
-        Socket::Socket(struct addrinfo *serverInfo, int socketId)
-        : serverInfo(serverInfo)
+        Socket::Socket(int socketId)
+        : serverInfo(NULL)
         ,socketId(socketId)
         ,isOpen(true){
 
@@ -45,9 +46,12 @@ namespace hazelcast {
 
         Socket::~Socket() {
             close();
+            if (serverInfo != NULL)
+                ::freeaddrinfo(serverInfo);
         };
 
         int Socket::connect() {
+            assert(serverInfo != NULL && "Socket is already connected");
             if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();

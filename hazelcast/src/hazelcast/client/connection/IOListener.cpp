@@ -37,14 +37,14 @@ namespace hazelcast {
 
             void IOListener::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
-                std::cout << "port " << serverSocket.getPort() << std::endl;
                 wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
-                if (wakeUpSocket->connect() == 0) {
+                int error = wakeUpSocket->connect();
+                if (error == 0) {
                     Socket *socket = serverSocket.accept();
                     wakeUpSocketSet.sockets.insert(socket);
                     wakeUpListenerSocketId = socket->getSocketId();
                 } else {
-                    throw exception::IOException("OListener::init", "no local socket left");
+                    throw exception::IOException("OListener::init", std::string(strerror(errno)));
                 }
             }
 

@@ -256,7 +256,7 @@ namespace hazelcast {
                 boost::shared_ptr<int> returnedInt = serializationService.toObject<int>(data);
                 iTest::assertEqual(x, *returnedInt);
 
-                short f = 3.2;
+                short f = 2;
                 data = serializationService.toData<short>(&f);
                 boost::shared_ptr<short> temp = serializationService.toObject<short>(data);
                 iTest::assertEqual(f, *temp);

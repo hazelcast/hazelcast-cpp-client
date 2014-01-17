@@ -10,7 +10,7 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include "SynchronizedMap.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include <vector>
 #include <map>
 

@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-#include "SocketSet.h"
+#include "hazelcast/util/SocketSet.h"
 
 namespace hazelcast {
     namespace util {

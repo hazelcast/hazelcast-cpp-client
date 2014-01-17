@@ -39,7 +39,7 @@ namespace hazelcast {
         class HAZELCAST_API Socket {
         public:
 
-            Socket(struct addrinfo *serverInfo, int socketId);
+            Socket(int socketId);
 
             Socket(const client::Address &address);
 

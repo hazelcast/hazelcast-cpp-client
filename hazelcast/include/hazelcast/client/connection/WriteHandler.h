@@ -9,13 +9,12 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
+#include "hazelcast/client/serialization/DataAdapter.h"
 #include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class DataAdapter;
-
             class Data;
         }
         namespace connection {

@@ -106,10 +106,6 @@ namespace hazelcast {
 
             };
 
-            inline std::ostream &operator <<(std::ostream &strm, const Connection &a) {
-                return strm << "Connection [id " << a.getConnectionId() << "][" << a.getRemoteEndpoint()
-                        << " -> " << a.getSocket().getAddress() << "]";
-            };
         }
     }
 }

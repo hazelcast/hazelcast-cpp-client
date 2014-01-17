@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "PortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {

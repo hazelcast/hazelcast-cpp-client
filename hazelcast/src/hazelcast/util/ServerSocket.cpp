@@ -9,7 +9,7 @@ namespace hazelcast {
     namespace util {
 
         ServerSocket::ServerSocket(int port) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
                 if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
             #endif
@@ -20,7 +20,7 @@ namespace hazelcast {
             hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-            getaddrinfo(NULL, hazelcast::util::to_string(port).c_str(), &hints, &serverInfo);
+            ::getaddrinfo(NULL, hazelcast::util::to_string(port).c_str(), &hints, &serverInfo);
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
             ::bind(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
@@ -51,29 +51,27 @@ namespace hazelcast {
         }
 
         int ServerSocket::getPort() const {
-            char host[1024];
-            char service[20];
-            struct sockaddr_storage hints;
-            socklen_t address_size;
-            ::getsockname(socketId, (struct sockaddr *) &hints, &address_size);
-            ::getnameinfo((struct sockaddr *) &hints, address_size, host, sizeof host, service, sizeof service, 0);
-            return atoi(service);
+            struct sockaddr_in sin;
+            socklen_t len = sizeof(sin);
+            if (getsockname(socketId, (struct sockaddr *)&sin, &len) == -1)
+                throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
+            return ntohs(sin.sin_port);
         }
 
         client::Socket *ServerSocket::accept() {
-            struct addrinfo *nServerInfo = new struct addrinfo;
-            socklen_t s = nServerInfo->ai_addrlen;
-            int sId = ::accept(socketId, nServerInfo->ai_addr, &s);
+            struct sockaddr_storage their_address;
+            socklen_t address_size = sizeof their_address;
+            int sId = ::accept(socketId, (struct sockaddr *) &their_address, &address_size);
+
             if (sId == -1) {
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();
                 #else
                 int error = errno;
                 #endif
-                delete nServerInfo;
                 throw client::exception::IOException("Socket::accept", strerror(error));
             }
-            return new client::Socket(nServerInfo, sId);
+            return new client::Socket(sId);
         }
     }
 }

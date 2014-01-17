@@ -100,6 +100,7 @@ namespace hazelcast {
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
                 }
+                return entries;
             }
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > clear() {
@@ -111,6 +112,7 @@ namespace hazelcast {
                     entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
                 }
                 internalMap.clear();
+                return entries;
             }
 
             std::vector<boost::shared_ptr<V> > values() {

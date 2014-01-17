@@ -14,7 +14,7 @@
 #include <map>
 
 namespace hazelcast {
-    namespace util{
+    namespace util {
         class ServerSocket;
     }
     namespace client {
@@ -22,7 +22,7 @@ namespace hazelcast {
         namespace connection {
             class WriteHandler;
 
-            class HAZELCAST_API OListener : public IOListener{
+            class HAZELCAST_API OListener : public IOListener {
             public:
                 OListener();
 

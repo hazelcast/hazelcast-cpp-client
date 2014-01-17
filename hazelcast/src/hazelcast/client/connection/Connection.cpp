@@ -10,7 +10,6 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/serialization/DataAdapter.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/connection/ClientResponse.h"
@@ -66,7 +65,7 @@ namespace hazelcast {
                         return;
                     exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
-                    removeConnectionCalls();
+                    deRegisterCall(promise->getRequest().callId);
                     return;
                 }
                 writeHandler.enqueueData(data);

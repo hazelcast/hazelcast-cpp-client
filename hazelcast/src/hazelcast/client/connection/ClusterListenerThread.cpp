@@ -5,7 +5,6 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/MemberShipEvent.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
@@ -45,7 +44,7 @@ namespace hazelcast {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
-                            (std::cerr << "Error while listening cluster events! -> " << *conn << e.what() << std::endl);
+                            (std::cerr << "Error while listening cluster events! -> " << e.what() << std::endl);
                         }
                         bool expected = false;
                         if (deletingConnection.compare_exchange_strong(expected, true)) {
@@ -75,7 +74,7 @@ namespace hazelcast {
                 clusterListenerThread->join();
             }
 
-            Connection* ClusterListenerThread::pickConnection() {
+            Connection *ClusterListenerThread::pickConnection() {
                 std::vector<Address> addresses;
                 if (!members.empty()) {
                     std::vector<Address> clusterAddresses = getClusterAddresses();
