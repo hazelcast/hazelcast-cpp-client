@@ -23,7 +23,7 @@ namespace hazelcast {
                         continue;
                     }
                     if (err == -1) {
-                        perror("select");
+                        std::cerr << "unexpected error in Ilistener thread select" << std::endl;
                         continue;
                     }
                     std::set<Socket const *>::iterator it;
