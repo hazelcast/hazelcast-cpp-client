@@ -21,7 +21,7 @@ namespace hazelcast {
         };
 
         int getThreadId() {
-            return hash_value(boost::this_thread::get_id());
+        	return hash_value(boost::this_thread::get_id()) % INT_MAX;
         };
 
         void writeNullableData(client::serialization::ObjectDataOutput& out, const client::serialization::Data *data) {

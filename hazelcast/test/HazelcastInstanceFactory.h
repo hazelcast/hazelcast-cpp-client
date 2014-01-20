@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-			#define HOST "localhost"
+			#define HOST "192.168.2.201"
 
             class HazelcastInstance;
 

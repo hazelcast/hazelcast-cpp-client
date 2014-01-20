@@ -122,11 +122,15 @@ namespace hazelcast {
 
 
             void testStatsThread(ILock *l, util::CountDownLatch *latch) {
-                assertTrue(l->isLocked());
-                assertFalse(l->isLockedByCurrentThread());
-                assertEqual(1, l->getLockCount());
-                assertTrue(l->getRemainingLeaseTime() > 1000 * 30);
-                latch->countDown();
+                try {
+                    assertTrue(l->isLocked(),"l->isLocked()");
+                    assertFalse(l->isLockedByCurrentThread(),"isLockedByCurrentThread");
+                    assertEqual(1, l->getLockCount(),"getLockCount");
+                    assertTrue(l->getRemainingLeaseTime() > 1000 * 30,"getRemainingLeaseTime");
+                    latch->countDown();
+                } catch(iTest::iTestException &e) {
+                    (std::cout << e.message << std::endl);
+                }
             }
 
             void ClientLockTest::testStats() {
