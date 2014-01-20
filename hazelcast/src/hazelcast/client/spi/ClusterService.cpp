@@ -39,7 +39,7 @@ namespace hazelcast {
                         throw  exception::IException("ClusterService::start", "ClusterService can not be started");
                     }
                 }
-                //TODO init membershipEvent
+                //MTODO init membershipEvent
                 active = true;
             }
 

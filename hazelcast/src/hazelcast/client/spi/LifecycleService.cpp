@@ -17,7 +17,7 @@ namespace hazelcast {
             LifecycleService::LifecycleService(ClientContext& clientContext)
             :clientContext(clientContext)
             , active(false) {
-//                std::set<spi::EventListener *> listeners = config.getListeners(); TODO
+//                std::set<spi::EventListener *> listeners = config.getListeners(); MTODO
 //                if (!listeners.empty()) {
 //                    for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
 //                        LifecycleListener *listener = static_cast<LifecycleListener *>(*it);

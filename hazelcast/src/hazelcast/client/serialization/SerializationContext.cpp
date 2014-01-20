@@ -15,7 +15,7 @@ namespace hazelcast {
             SerializationContext::SerializationContext(int version)
             : contextVersion(version)
             , serializerHolder(*this) {
-//                portableContextMap[-1] = new PortableContext(this); //TODO right now hardcoded : will changed as configurable (may be)
+//                portableContextMap[-1] = new PortableContext(this); //MTODO right now hardcoded : will changed as configurable (may be)
 //                portableContextMap[1] = new PortableContext(this);
 //                portableContextMap[-3] = new PortableContext(this);
 //                portableContextMap[0] = new PortableContext(this);
@@ -71,7 +71,7 @@ namespace hazelcast {
             };
 
             PortableContext &SerializationContext::getPortableContext(int factoryId) {
-//                int count = portableContextMap.count(factoryId);//TODO look at the constructor
+//                int count = portableContextMap.count(factoryId);//MTODO look at the constructor
 //                if (count == 0) {
 //                    char message[70];
 //                    sprintf(message, "Could not find Portable factory for factoryId: %d", factoryId);

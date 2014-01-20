@@ -41,7 +41,7 @@ namespace hazelcast {
                 */
                 bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
-                template<typename T>//TODO we probably do not need template
+                template<typename T>//MTODO we probably do not need template
                 Data toData(const Portable *portable) {
                     const T *object = static_cast<const T *>(portable);
                     DataOutput output;
@@ -55,7 +55,7 @@ namespace hazelcast {
                     return data;
                 };
 
-                template<typename T> //TODO we probably do not need template
+                template<typename T> //MTODO we probably do not need template
                 Data toData(const IdentifiedDataSerializable *dataSerializable) {
                     const T *object = static_cast<const T *>(dataSerializable);
                     Data data;

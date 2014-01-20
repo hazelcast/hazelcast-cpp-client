@@ -68,7 +68,7 @@ namespace hazelcast {
             }
 
 
-//            @Test TODO
+//            @Test MTODO
 //            public void testGetForUpdate() throws TransactionException {
 //            final IMap<String, Integer> map = hz.getMap("testTxnGetForUpdate");
 //            final CountDownLatch latch1 = new CountDownLatch(1);

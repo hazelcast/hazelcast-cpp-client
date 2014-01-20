@@ -79,7 +79,7 @@ namespace hazelcast {
 
                 template <typename Response, typename Request>
                 boost::shared_ptr<Response> sendAndReceive(const Request &request) {
-//TODO					return clusterService.sendAndReceiveFixedConnection<Response>(connection, request);
+//MTODO					return clusterService.sendAndReceiveFixedConnection<Response>(connection, request);
                     return boost::shared_ptr<Response>();
                 };
             private:
