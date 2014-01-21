@@ -9,7 +9,7 @@ namespace hazelcast {
             :null(true) {
             };
 
-            TestMainPortable::TestMainPortable(const TestMainPortable& rhs) {
+            TestMainPortable::TestMainPortable(const TestMainPortable &rhs) {
                 *this = rhs;
             }
 
@@ -30,7 +30,7 @@ namespace hazelcast {
                 this->p = p;
             };
 
-            const TestMainPortable& TestMainPortable::operator = (const TestMainPortable& rhs) {
+            const TestMainPortable &TestMainPortable::operator = (const TestMainPortable &rhs) {
                 null = rhs.null;
                 b = rhs.b;
                 boolean = rhs.boolean;
@@ -46,7 +46,7 @@ namespace hazelcast {
             };
 
 
-            bool TestMainPortable::operator ==(const TestMainPortable& m) const {
+            bool TestMainPortable::operator ==(const TestMainPortable &m) const {
                 if (this == &m) return true;
                 if (null == true && m.null == true)
                     return true;
@@ -63,7 +63,7 @@ namespace hazelcast {
                 return true;
             };
 
-            bool TestMainPortable::operator !=(const TestMainPortable& m) const {
+            bool TestMainPortable::operator !=(const TestMainPortable &m) const {
                 return !(*this == m);
             };
 
@@ -75,7 +75,7 @@ namespace hazelcast {
                 return 1;
             }
 
-            void TestMainPortable::writePortable(serialization::PortableWriter& writer) const {
+            void TestMainPortable::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeByte("b", b);
                 writer.writeBoolean("bool", boolean);
                 writer.writeChar("c", c);
@@ -89,7 +89,7 @@ namespace hazelcast {
             };
 
 
-            void TestMainPortable::readPortable(serialization::PortableReader& reader) {
+            void TestMainPortable::readPortable(serialization::PortableReader &reader) {
                 null = false;
                 b = reader.readByte("b");
                 boolean = reader.readBoolean("bool");
@@ -100,7 +100,9 @@ namespace hazelcast {
                 f = reader.readFloat("f");
                 d = reader.readDouble("d");
                 str = reader.readUTF("str");
-                p = reader.readPortable<TestInnerPortable>("p");
+                boost::shared_ptr<TestInnerPortable> ptr = reader.readPortable<TestInnerPortable>("p");
+                if (ptr != NULL)
+                    p = *ptr;
             };
 
         }

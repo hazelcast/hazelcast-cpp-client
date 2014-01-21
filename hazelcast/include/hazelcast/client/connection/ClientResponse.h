@@ -20,9 +20,9 @@ namespace hazelcast {
         namespace connection {
             class HAZELCAST_API ClientResponse : public impl::IdentifiedDataSerializableResponse {
             public:
-                const serialization::Data& getData() const;
+                const serialization::Data &getData() const;
 
-                const exception::ServerException& getException() const;
+                const exception::ServerException &getException() const;
 
                 bool isEvent() const;
 

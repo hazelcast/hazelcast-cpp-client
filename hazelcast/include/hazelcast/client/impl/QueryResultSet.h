@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                const std::vector<QueryResultEntry>& getResultData() const;
+                const std::vector< boost::shared_ptr<QueryResultEntry> > & getResultData() const;
 
                 void writeData(serialization::ObjectDataOutput& out) const;
 
@@ -35,7 +35,7 @@ namespace hazelcast {
 
             private:
                 std::string iterationType;
-                std::vector<QueryResultEntry> q;
+                std::vector< boost::shared_ptr<QueryResultEntry> > q;
                 bool data;
             };
         }

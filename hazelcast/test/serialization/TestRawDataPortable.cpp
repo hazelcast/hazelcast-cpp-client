@@ -18,22 +18,24 @@ namespace hazelcast {
             }
 
 
-            void TestRawDataPortable::writePortable(serialization::PortableWriter& writer) const {
+            void TestRawDataPortable::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeLong("l", l);
                 writer.writeCharArray("c", c);
                 writer.writePortable("p", p);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 out.writeInt(k);
                 out.writeUTF(s);
                 ds.writeData(out);
             };
 
 
-            void TestRawDataPortable::readPortable(serialization::PortableReader& reader) {
+            void TestRawDataPortable::readPortable(serialization::PortableReader &reader) {
                 l = reader.readLong("l");
                 c = reader.readCharArray("c");
-                p = reader.readPortable<TestNamedPortable>("p");
-                serialization::ObjectDataInput& in = reader.getRawDataInput();
+                boost::shared_ptr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
+                if (ptr != NULL)
+                    p = *ptr;
+                serialization::ObjectDataInput &in = reader.getRawDataInput();
                 k = in.readInt();
                 s = in.readUTF();
                 ds.readData(in);
@@ -48,7 +50,7 @@ namespace hazelcast {
                 this->ds = ds;
             };
 
-            bool TestRawDataPortable::operator ==(const TestRawDataPortable& m) const {
+            bool TestRawDataPortable::operator ==(const TestRawDataPortable &m) const {
                 if (this == &m)
                     return true;
                 if (l != m.l) return false;
@@ -60,7 +62,7 @@ namespace hazelcast {
                 return true;
             };
 
-            bool TestRawDataPortable::operator !=(const TestRawDataPortable& m) const {
+            bool TestRawDataPortable::operator !=(const TestRawDataPortable &m) const {
                 return !(*this == m);
             };
         }

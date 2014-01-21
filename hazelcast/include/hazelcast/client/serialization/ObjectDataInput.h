@@ -78,18 +78,20 @@ namespace hazelcast {
                 std::vector<short> readShortArray();
 
                 template<typename  T>
-                T readObject() {
+                boost::shared_ptr<T> readObject() {
                     T *tag = NULL;
                     return readObjectResolved<T>(tag);
                 };
 
                 template<typename  T>
-                T readObjectResolved(Portable *tag) {
+                boost::shared_ptr<T> readObjectResolved(Portable *tag) {
                     bool isNull = readBoolean();
-                    T object;
+                    boost::shared_ptr<T> object;
                     if (isNull) {
                         return object;
                     }
+                    object.reset(new T);
+
                     const int typeId = readInt();
 
                     boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
@@ -98,34 +100,36 @@ namespace hazelcast {
                     int classId = classDefinition->getClassId();
                     int version = classDefinition->getVersion();
                     serializationContext.registerClassDefinition(classDefinition);
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, version);
+                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
                     return object;
                 };
 
                 template<typename  T>
-                T readObjectResolved(IdentifiedDataSerializable *tag) {
+                boost::shared_ptr<T> readObjectResolved(IdentifiedDataSerializable *tag) {
                     bool isNull = readBoolean();
-                    T object;
+                    boost::shared_ptr<T> object;
                     if (isNull) {
                         return object;
                     }
+                    object.reset(new T);
                     const int typeId = readInt();
-                    serializerHolder.getDataSerializer().read(*this, object);
+                    serializerHolder.getDataSerializer().read(*this, *object);
                     return object;
                 };
 
                 template<typename  T>
-                T readObjectResolved(void *tag) {
+                boost::shared_ptr<T> readObjectResolved(void *tag) {
                     bool isNull = readBoolean();
-                    T object;
+                    boost::shared_ptr<T> object;
                     if (isNull) {
                         return object;
                     }
+                    object.reset(new T);
                     const int typeId = readInt();
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object.getSerializerId());
                     if (serializer.get() != NULL) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
-                        s->read(*this, object);
+                        s->read(*this, *object);
                         return object;
                     } else {
                         throw exception::IOException("ObjectDataInput::readObjectResolved(ObjectDataInput& input, void *tag)", "No serializer found for serializerId :" + util::to_string(typeId) + ", typename :" + typeid(T).name());

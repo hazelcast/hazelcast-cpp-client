@@ -16,7 +16,7 @@ namespace hazelcast {
 
             };
 
-            QueryResultSet::QueryResultSet(const std::string& name, const std::string& iterationType, const std::string& sql)
+            QueryResultSet::QueryResultSet(const std::string &name, const std::string &iterationType, const std::string &sql)
             :iterationType(iterationType)
             , data(true) {
 
@@ -30,26 +30,25 @@ namespace hazelcast {
                 return map::DataSerializableHook::QUERY_RESULT_SET;
             };
 
-            const std::vector<QueryResultEntry>& QueryResultSet::getResultData() const {
+            const std::vector< boost::shared_ptr<QueryResultEntry> > &QueryResultSet::getResultData() const {
                 return q;
             };
 
-            void QueryResultSet::writeData(serialization::ObjectDataOutput& out) const {
+            void QueryResultSet::writeData(serialization::ObjectDataOutput &out) const {
                 out.writeBoolean(data);
                 out.writeUTF(iterationType);
                 out.writeInt(q.size());
                 for (int i = 0; i < q.size(); i++) {
-                    out.writeObject<QueryResultEntry>(&(q[i]));
+                    out.writeObject<QueryResultEntry>(q[i].get());
                 }
             };
 
-            void QueryResultSet::readData(serialization::ObjectDataInput& in) {
+            void QueryResultSet::readData(serialization::ObjectDataInput &in) {
                 data = in.readBoolean();
                 iterationType = in.readUTF();
                 int size = in.readInt();
                 for (int i = 0; i < size; i++) {
-                    QueryResultEntry queryResultEntry = in.readObject<QueryResultEntry>();
-                    q.push_back(queryResultEntry);
+                    q.push_back(in.readObject<QueryResultEntry>());
                 }
 
             };

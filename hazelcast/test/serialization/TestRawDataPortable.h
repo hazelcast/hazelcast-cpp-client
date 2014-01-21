@@ -26,15 +26,15 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
                 TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
 
-                bool operator ==(const TestRawDataPortable& m) const;
+                bool operator ==(const TestRawDataPortable &m) const;
 
-                bool operator !=(const TestRawDataPortable& m) const;
+                bool operator !=(const TestRawDataPortable &m) const;
 
                 long l;
                 std::vector<char> c;

@@ -43,7 +43,7 @@ namespace hazelcast {
                 event = reader.readBoolean();
                 exception = !(reader.readBoolean());
                 if(exception){
-                    error = reader.readObject<exception::ServerException>();
+                    error = *(reader.readObject<exception::ServerException>());
                 } else {
                     data.readData(reader);
                 }

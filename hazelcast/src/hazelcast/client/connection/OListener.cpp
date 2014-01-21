@@ -43,13 +43,14 @@ namespace hazelcast {
                         }
                     }
 
-                    std::set<Socket const *>::iterator temp;
                     it = socketSet.sockets.begin();
                     while (it != socketSet.sockets.end()) {
-                        temp = it++;
-                        if (FD_ISSET((*temp)->getSocketId(), &write_fds)) {
-                            socketSet.sockets.erase(temp);
-                            ioHandlers[(*temp)->getSocketId()]->handle();
+                        Socket const * currentSocket = *it;
+                        ++it;
+                        int id = currentSocket->getSocketId();
+                        if (FD_ISSET(id, &write_fds)) {
+                            socketSet.sockets.erase(currentSocket);
+                            ioHandlers[id]->handle();
                         }
                     }
 

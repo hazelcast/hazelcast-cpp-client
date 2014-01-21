@@ -18,18 +18,17 @@ namespace hazelcast {
         namespace serialization {
 
 
-
             class DataOutput;
 
             class HAZELCAST_API ObjectDataOutput {
             public:
-                ObjectDataOutput(DataOutput& dataOutput, SerializationContext& serializationContext);
+                ObjectDataOutput(DataOutput &dataOutput, SerializationContext &serializationContext);
 
                 ObjectDataOutput();
 
                 std::auto_ptr< std::vector<byte> > toByteArray();
 
-                void write(const std::vector<byte>& bytes);
+                void write(const std::vector<byte> &bytes);
 
                 void writeBoolean(bool b);
 
@@ -47,21 +46,21 @@ namespace hazelcast {
 
                 void writeDouble(double v);
 
-                void writeUTF(const std::string& s);
+                void writeUTF(const std::string &s);
 
-                void writeByteArray(const std::vector<byte>&  data);
+                void writeByteArray(const std::vector<byte> &data);
 
-                void writeCharArray(const std::vector<char>& bytes);
+                void writeCharArray(const std::vector<char> &bytes);
 
-                void writeShortArray(const std::vector<short >&  data);
+                void writeShortArray(const std::vector<short > &data);
 
-                void writeIntArray(const std::vector<int>&  data);
+                void writeIntArray(const std::vector<int> &data);
 
-                void writeLongArray(const std::vector<long >&  data);
+                void writeLongArray(const std::vector<long > &data);
 
-                void writeFloatArray(const std::vector<float >&  data);
+                void writeFloatArray(const std::vector<float > &data);
 
-                void writeDoubleArray(const std::vector<double >&  data);
+                void writeDoubleArray(const std::vector<double > &data);
 
                 void writeByte(int index, int i);
 
@@ -115,9 +114,9 @@ namespace hazelcast {
 
                 void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
 
-                ObjectDataOutput(const ObjectDataOutput&);
+                ObjectDataOutput(const ObjectDataOutput &);
 
-                void operator = (const ObjectDataOutput&);
+                void operator = (const ObjectDataOutput &);
             };
 
         }

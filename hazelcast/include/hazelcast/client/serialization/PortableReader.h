@@ -53,7 +53,7 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                T readPortable(const char *fieldName) {
+                boost::shared_ptr<T> readPortable(const char *fieldName) {
                     if (isDefaultReader)
                         return defaultPortableReader->readPortable<T>(fieldName);
                     return morphingPortableReader->readPortable<T>(fieldName);

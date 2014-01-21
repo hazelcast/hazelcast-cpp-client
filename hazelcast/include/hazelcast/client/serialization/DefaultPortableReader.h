@@ -68,14 +68,15 @@ namespace hazelcast {
                 std::vector<short> readShortArray(const char *fieldName);
 
                 template<typename T>
-                T readPortable(const char *fieldName) {
-                    T portable;
+                boost::shared_ptr<T> readPortable(const char *fieldName) {
+                    boost::shared_ptr<T> portable;
                     setPosition(fieldName);
                     bool isNull = dataInput.readBoolean();
                     if (isNull) {
                         return portable;
                     }
-                    read(dataInput, portable, currentFactoryId, currentClassId);
+                    portable.reset(new T);
+                    read(dataInput, *portable, currentFactoryId, currentClassId);
                     return portable;
                 };
 

@@ -20,25 +20,25 @@ namespace hazelcast {
 
                 TestMainPortable();
 
-                TestMainPortable(const TestMainPortable& rhs);
+                TestMainPortable(const TestMainPortable &rhs);
 
                 ~TestMainPortable();
 
                 TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p);
 
-                const TestMainPortable& operator = (const TestMainPortable& rhs);
+                const TestMainPortable &operator = (const TestMainPortable &rhs);
 
-                bool operator ==(const TestMainPortable& m) const;
+                bool operator ==(const TestMainPortable &m) const;
 
-                bool operator !=(const TestMainPortable& m) const;
+                bool operator !=(const TestMainPortable &m) const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
                 TestInnerPortable p;
                 int i;

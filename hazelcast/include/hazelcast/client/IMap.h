@@ -336,10 +336,10 @@ namespace hazelcast {
                 std::string iterationType = "KEY";
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
-                const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
+                const vector< boost::shared_ptr<impl::QueryResultEntry> > &dataResult = queryDataResultStream->getResultData();
                 std::vector<K> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
+                    boost::shared_ptr<K> key = toObject<K>(dataResult[i]->key);
                     keySet[i] = *key;
                 }
                 return keySet;
@@ -349,10 +349,10 @@ namespace hazelcast {
                 std::string iterationType = "VALUE";
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
-                const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
+                const vector< boost::shared_ptr<impl::QueryResultEntry> > &dataResult = queryDataResultStream->getResultData();
                 std::vector<V> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
-                    boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
+                    boost::shared_ptr<V> value = toObject<V>(dataResult[i]->value);
                     keySet[i] = *value;
                 }
                 return keySet;
@@ -362,11 +362,11 @@ namespace hazelcast {
                 std::string iterationType = "ENTRY";
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
-                const vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
+                const vector< boost::shared_ptr<impl::QueryResultEntry> > &dataResult = queryDataResultStream->getResultData();
                 std::vector<std::pair<K, V> > keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
-                    boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
+                    boost::shared_ptr<K> key = toObject<K>(dataResult[i]->key);
+                    boost::shared_ptr<V> value = toObject<V>(dataResult[i]->value);
                     keySet[i] = std::make_pair<K, V>(*key, *value);
                 }
                 return keySet;
