@@ -19,7 +19,7 @@ namespace hazelcast {
             public:
                 virtual void handle(const client::serialization::Data &data) = 0;
 
-                std::string uuid;
+                std::string registrationId;
             };
         }
     }

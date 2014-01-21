@@ -37,8 +37,6 @@ namespace hazelcast {
 
             class IListener;
 
-            static int CONN_ID = 1;
-
             class HAZELCAST_API Connection {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &listener);
@@ -58,8 +56,6 @@ namespace hazelcast {
                 const Address &getRemoteEndpoint() const;
 
                 void setRemoteEndpoint(Address &remoteEndpoint);
-
-                int getConnectionId() const;
 
                 const Socket &getSocket() const;
 
@@ -87,7 +83,6 @@ namespace hazelcast {
             private:
                 spi::ClientContext &clientContext;
                 Socket socket;
-                int connectionId;
                 Address remoteEndpoint;
                 util::SynchronizedMap<int, util::CallPromise > callPromises;
                 util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;

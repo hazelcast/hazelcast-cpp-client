@@ -24,7 +24,6 @@ namespace hazelcast {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &oListener)
             : clientContext(clientContext)
             , socket(address)
-            , connectionId(CONN_ID++)
             , live(true)
             , readHandler(*this, iListener, 16 << 10)
             , writeHandler(*this, oListener, 16 << 10) {
@@ -105,20 +104,16 @@ namespace hazelcast {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
-                    if (eventHandler->uuid.size() == 0) //if uuid is not set, it means it is first time that we are getting uuid.
+                    if (eventHandler->registrationId.size() == 0) //if uuid is not set, it means it is first time that we are getting uuid.
                         return true;                    // then no need to handle it, just set as normal response
                     boost::shared_ptr<std::string> alias = serializationService.toObject<std::string>(response->getData());
                     int callId = promise->getRequest().callId;
-                    clientContext.getServerListenerService().reRegisterListener(eventHandler->uuid, alias, callId);
+                    clientContext.getServerListenerService().reRegisterListener(eventHandler->registrationId, alias, callId);
                     return false;
                 }
                 //if it does not have event handler associated with it, then it is a normal response.
                 return true;
             }
-
-            int Connection::getConnectionId() const {
-                return connectionId;
-            };
 
             Socket const &Connection::getSocket() const {
                 return socket;

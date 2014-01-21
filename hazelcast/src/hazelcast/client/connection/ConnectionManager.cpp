@@ -18,12 +18,13 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(spi::ClientContext &clientContext)
+            ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
             :clientContext(clientContext)
             , live(true)
             , callIdGenerator(10)
             , iListenerThread(NULL)
-            , oListenerThread(NULL){
+            , oListenerThread(NULL)
+            , smartRouting(smartRouting) {
 
 
             };
@@ -50,10 +51,20 @@ namespace hazelcast {
             }
 
             connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
-                return connectTo(address);
+                Connection *clientConnection = connectTo(address);
+                ownerConnectionAddress = clientConnection->getRemoteEndpoint();
+                return clientConnection;
             }
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
+                if (smartRouting)
+                    return getOrConnectResolved(address);
+                else
+                    return getOrConnectResolved(ownerConnectionAddress);
+            };
+
+
+            boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
                     boost::lock_guard<boost::mutex> l(lockMutex);
@@ -66,7 +77,7 @@ namespace hazelcast {
                     }
                 }
                 return conn;
-            };
+            }
 
             boost::shared_ptr<Connection> ConnectionManager::getRandomConnection() {
                 checkLive();
@@ -88,8 +99,8 @@ namespace hazelcast {
                 serialization::Data result = connection.readBlocking();
 
                 boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
-                if(clientResponse->isException())
-                    throw exception::IOException("ConnectionManager::authenticate",clientResponse->getException().what());
+                if (clientResponse->isException())
+                    throw exception::IOException("ConnectionManager::authenticate", clientResponse->getException().what());
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));

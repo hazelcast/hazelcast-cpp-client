@@ -5,10 +5,9 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/connection/SmartConnectionManager.h"
-#include "hazelcast/client/connection/DummyConnectionManager.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {
@@ -20,13 +19,12 @@ namespace hazelcast {
             , clientContext(hazelcastClient)
             , lifecycleService(clientContext)
             , serializationService(0)
-            , connectionManager(this->clientConfig.isSmart() ? (connection::ConnectionManager *) new connection::SmartConnectionManager(clientContext)
-                    : (connection::ConnectionManager *) new connection::DummyConnectionManager(clientContext))
+            , connectionManager(clientContext, this->clientConfig.isSmart())
             , clusterService(clientContext)
             , partitionService(clientContext)
             , invocationService(clientContext)
             , serverListenerService(clientContext)
-            , cluster(clusterService){
+            , cluster(clusterService) {
                 LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
                 loadBalancer->init(cluster);
             };
@@ -40,7 +38,7 @@ namespace hazelcast {
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::SerializationService serializationService;
-            std::auto_ptr< connection::ConnectionManager> connectionManager;
+            connection::ConnectionManager connectionManager;
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
@@ -53,7 +51,7 @@ namespace hazelcast {
         :impl(new HazelcastClientImpl(config, *this)) {
             srand(time(NULL));
             impl->lifecycleService.start();
-            impl->connectionManager->start();
+            impl->connectionManager.start();
             impl->invocationService.start();
             impl->clusterService.start();
             impl->partitionService.start();
@@ -109,7 +107,7 @@ namespace hazelcast {
         };
 
         connection::ConnectionManager &HazelcastClient::getConnectionManager() {
-            return *(impl->connectionManager);
+            return impl->connectionManager;
         };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {

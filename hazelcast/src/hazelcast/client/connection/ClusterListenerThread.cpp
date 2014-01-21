@@ -91,6 +91,10 @@ namespace hazelcast {
                 conn->writeBlocking(request);
                 serialization::Data data = conn->readBlocking();
                 boost::shared_ptr<ClientResponse> response = clientContext.getSerializationService().toObject<ClientResponse >(data);
+                if (response->isException()) {
+                    std::cerr << "ClusterListenerThread::loadInitialMemberList" << std::endl;
+                    throw exception::IOException("ClusterListenerThread::loadInitialMemberList", "error while waiting initial list");
+                }
                 boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection >(response->getData());
 
 
@@ -143,8 +147,7 @@ namespace hazelcast {
                         (std::cerr << "Removing connection pool of Member[" << member << " ]:  reason => Member closed event\n");
 //                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
                     } else {
-                        std::cerr << "error in ClusterListenerThread::listenMembershipEvents() " << std::endl;
-                        return;
+                        std::cerr << "error in ClusterListenerThread::listenMembershipEvents() " << event->getEventType() << std::endl;
                     }
                     updateMembersRef();
                     clientContext.getClusterService().fireMembershipEvent(*event);

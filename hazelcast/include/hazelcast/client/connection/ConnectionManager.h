@@ -40,30 +40,32 @@ namespace hazelcast {
 
             class HAZELCAST_API ConnectionManager {
             public:
-                ConnectionManager(spi::ClientContext &clientContext);
+                ConnectionManager(spi::ClientContext &clientContext, bool smartRouting);
 
                 ~ConnectionManager();
 
                 void start();
 
-                virtual connection::Connection *ownerConnection(const Address &address);
+                connection::Connection *ownerConnection(const Address &address);
 
-                virtual boost::shared_ptr<Connection> getOrConnect(const Address &address);
+                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress);
 
-                virtual boost::shared_ptr<Connection> getRandomConnection();
+                boost::shared_ptr<Connection> getRandomConnection();
 
-                virtual void authenticate(Connection &connection, bool reAuth, bool firstConnection);
+                void authenticate(Connection &connection, bool reAuth, bool firstConnection);
 
-                virtual void shutdown();
+                void shutdown();
 
-                virtual void checkLive();
+                void checkLive();
 
                 int getNextCallId();
 
                 void removeEventHandler(int callId);
 
             protected:
-                virtual connection::Connection *connectTo(const Address &address);
+                connection::Connection *connectTo(const Address &address);
+
+                boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
 
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;
@@ -76,6 +78,8 @@ namespace hazelcast {
                 boost::mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 boost::atomic<long> callIdGenerator;
+                bool smartRouting;
+                Address ownerConnectionAddress;
 
             };
         }

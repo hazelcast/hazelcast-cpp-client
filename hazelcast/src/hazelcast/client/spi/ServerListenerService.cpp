@@ -28,7 +28,7 @@ namespace hazelcast {
                     future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, *partitionKey);
                 }
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
-                handler->uuid = *registrationId;
+                handler->registrationId = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
 
                 return *registrationId;
@@ -45,21 +45,21 @@ namespace hazelcast {
                 return result;
             }
 
-            void ServerListenerService::registerListener(boost::shared_ptr<std::string> uuid, int callId) {
-                registrationAliasMap.put(*uuid, uuid);
-                registrationIdMap.put(*uuid, boost::shared_ptr<int>(new int(callId)));
+            void ServerListenerService::registerListener(boost::shared_ptr<std::string> registrationId, int callId) {
+                registrationAliasMap.put(*registrationId, registrationId);
+                registrationIdMap.put(*registrationId, boost::shared_ptr<int>(new int(callId)));
             }
 
-            void ServerListenerService::reRegisterListener(const std::string &uuid, boost::shared_ptr<std::string> alias, int callId) {
-                boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(uuid, alias);
+            void ServerListenerService::reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId) {
+                boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
                 if (oldAlias.get() != NULL) {
                     registrationIdMap.remove(*oldAlias);
                     registrationIdMap.put(*alias, boost::shared_ptr<int>(new int(callId)));
                 }
             }
 
-            bool ServerListenerService::deRegisterListener(const std::string &uuid) {
-                boost::shared_ptr<const std::string> alias = registrationAliasMap.remove(uuid);
+            bool ServerListenerService::deRegisterListener(const std::string &registrationId) {
+                boost::shared_ptr<const std::string> alias = registrationAliasMap.remove(registrationId);
                 if (alias != NULL) {
                     boost::shared_ptr<int> callId = registrationIdMap.remove(*alias);
                     clientContext.getConnectionManager().removeEventHandler(*callId);

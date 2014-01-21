@@ -43,7 +43,7 @@ namespace hazelcast {
                 boost::atomic<bool> deletingConnection;
                 std::vector<Member> members;
 
-                connection::Connection* pickConnection();
+                connection::Connection *pickConnection();
 
                 void loadInitialMemberList();
 

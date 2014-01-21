@@ -34,16 +34,16 @@ namespace hazelcast {
 
                 bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
 
-                void reRegisterListener(const std::string &uuid, boost::shared_ptr<std::string> alias, int callId);
+                void reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId);
 
             private:
                 util::SynchronizedMap<std::string, int > registrationIdMap;
                 util::SynchronizedMap<std::string, const std::string > registrationAliasMap;
                 spi::ClientContext &clientContext;
 
-                void registerListener(boost::shared_ptr<std::string> uuid, int callId);
+                void registerListener(boost::shared_ptr<std::string> registrationId, int callId);
 
-                bool deRegisterListener(const std::string &uuid);
+                bool deRegisterListener(const std::string &registrationId);
             };
         }
     }
