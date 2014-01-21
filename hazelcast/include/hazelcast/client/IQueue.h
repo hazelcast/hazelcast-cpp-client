@@ -17,7 +17,7 @@
 #include "hazelcast/client/queue/RemoveListenerRequest.h"
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/impl/ItemEvent.h"
+#include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/client/exception/NoSuchElementException.h"

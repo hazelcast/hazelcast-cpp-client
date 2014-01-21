@@ -130,11 +130,11 @@ namespace hazelcast {
 
                 }
 
-                void itemAdded(impl::ItemEvent<std::string> itemEvent) {
+                void itemAdded(ItemEvent<std::string> itemEvent) {
                     latch.countDown();
                 }
 
-                void itemRemoved(impl::ItemEvent<std::string> item) {
+                void itemRemoved(ItemEvent<std::string> item) {
                 }
 
             private:

@@ -125,8 +125,7 @@ namespace hazelcast {
             }
 
             void TransactionProxy::closeConnection() {
-//                threadFlag.set(null);
-                connection->close();
+//                connection->close();
             }
 
             void TransactionProxy::checkThread() {

@@ -127,18 +127,18 @@ namespace hazelcast {
                 , removedLatch(removedLatch) {
                 };
 
-                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
+                void entryAdded(EntryEvent<std::string, std::string> &event) {
                     addedLatch.countDown();
                 };
 
-                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
+                void entryRemoved(EntryEvent<std::string, std::string> &event) {
                     removedLatch.countDown();
                 }
 
-                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
+                void entryUpdated(EntryEvent<std::string, std::string> &event) {
                 }
 
-                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
+                void entryEvicted(EntryEvent<std::string, std::string> &event) {
                 }
 
             private:

@@ -9,7 +9,7 @@
 #define HAZELCAST_ENTRY_EVENT_HANDLER
 
 #include "hazelcast/client/impl/PortableEntryEvent.h"
-#include "hazelcast/client/impl/EntryEvent.h"
+#include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/serialization/SerializationService.h"

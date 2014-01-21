@@ -8,10 +8,10 @@
 #define HAZELCAST_PORTABLE_ITEM_EVENT
 
 #include "hazelcast/client/impl/EventObject.h"
-#include "hazelcast/client/impl/EntryEvent.h"
+#include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/Portable.h"
-#include "hazelcast/client/impl/ItemEvent.h"
+#include "hazelcast/client/ItemEvent.h"
 #include <string>
 
 namespace hazelcast {

@@ -86,19 +86,19 @@ namespace hazelcast {
                 , evictLatch(evictLatch) {
                 };
 
-                void entryAdded(impl::EntryEvent<std::string, std::string> &event) {
+                void entryAdded(EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
                 };
 
-                void entryRemoved(impl::EntryEvent<std::string, std::string> &event) {
+                void entryRemoved(EntryEvent<std::string, std::string> &event) {
                     removeLatch.countDown();
                 }
 
-                void entryUpdated(impl::EntryEvent<std::string, std::string> &event) {
+                void entryUpdated(EntryEvent<std::string, std::string> &event) {
                     updateLatch.countDown();
                 }
 
-                void entryEvicted(impl::EntryEvent<std::string, std::string> &event) {
+                void entryEvicted(EntryEvent<std::string, std::string> &event) {
                     evictLatch.countDown();
                 }
 
@@ -114,17 +114,17 @@ namespace hazelcast {
                 MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch) {
                 };
 
-                void entryAdded(impl::EntryEvent<string, string> &event) {
+                void entryAdded(EntryEvent<string, string> &event) {
                     latch.countDown();
                 };
 
-                void entryRemoved(impl::EntryEvent<string, string> &event) {
+                void entryRemoved(EntryEvent<string, string> &event) {
                 }
 
-                void entryUpdated(impl::EntryEvent<string, string> &event) {
+                void entryUpdated(EntryEvent<string, string> &event) {
                 }
 
-                void entryEvicted(impl::EntryEvent<string, string> &event) {
+                void entryEvicted(EntryEvent<string, string> &event) {
 
                     const string &value = event.getValue();
                     const string &oldValue = event.getOldValue();
@@ -474,18 +474,18 @@ namespace hazelcast {
 
                 }
 
-                void entryAdded(impl::EntryEvent<Employee, int> &event) {
+                void entryAdded(EntryEvent<Employee, int> &event) {
                     atomicInteger++;
                     latch.countDown();
                 }
 
-                void entryRemoved(impl::EntryEvent<Employee, int> &event) {
+                void entryRemoved(EntryEvent<Employee, int> &event) {
                 }
 
-                void entryUpdated(impl::EntryEvent<Employee, int> &event) {
+                void entryUpdated(EntryEvent<Employee, int> &event) {
                 }
 
-                void entryEvicted(impl::EntryEvent<Employee, int> &event) {
+                void entryEvicted(EntryEvent<Employee, int> &event) {
                 }
 
             private:

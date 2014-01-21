@@ -10,8 +10,8 @@
 
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/impl/PortableItemEvent.h"
-#include "hazelcast/client/impl/EntryEvent.h"
-#include "hazelcast/client/impl/ItemEvent.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
