@@ -9,10 +9,8 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/MemberShipEvent.h"
-#include "hazelcast/client/exception/TargetDisconnectedException.h"
 #include "hazelcast/util/CallPromise.h"
 
 namespace hazelcast {
@@ -104,7 +102,7 @@ namespace hazelcast {
 
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
-            connection::Connection* ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
+            connection::Connection *ClusterService::connectToOne(const std::vector<Address> &socketAddresses) {
                 active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
