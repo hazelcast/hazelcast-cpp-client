@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['readhandler',['ReadHandler',['../classhazelcast_1_1client_1_1connection_1_1_read_handler.html',1,'hazelcast::client::connection']]],
+  ['reducerequest',['ReduceRequest',['../classhazelcast_1_1client_1_1semaphore_1_1_reduce_request.html',1,'hazelcast::client::semaphore']]],
+  ['releaserequest',['ReleaseRequest',['../classhazelcast_1_1client_1_1semaphore_1_1_release_request.html',1,'hazelcast::client::semaphore']]],
+  ['remainingcapacityrequest',['RemainingCapacityRequest',['../classhazelcast_1_1client_1_1queue_1_1_remaining_capacity_request.html',1,'hazelcast::client::queue']]],
+  ['removeallrequest',['RemoveAllRequest',['../classhazelcast_1_1client_1_1multimap_1_1_remove_all_request.html',1,'hazelcast::client::multimap']]],
+  ['removeentrylistenerrequest',['RemoveEntryListenerRequest',['../classhazelcast_1_1client_1_1multimap_1_1_remove_entry_listener_request.html',1,'hazelcast::client::multimap']]],
+  ['removeentrylistenerrequest',['RemoveEntryListenerRequest',['../classhazelcast_1_1client_1_1map_1_1_remove_entry_listener_request.html',1,'hazelcast::client::map']]],
+  ['removeifsamerequest',['RemoveIfSameRequest',['../classhazelcast_1_1client_1_1map_1_1_remove_if_same_request.html',1,'hazelcast::client::map']]],
+  ['removeinterceptorrequest',['RemoveInterceptorRequest',['../classhazelcast_1_1client_1_1map_1_1_remove_interceptor_request.html',1,'hazelcast::client::map']]],
+  ['removelistenerrequest',['RemoveListenerRequest',['../classhazelcast_1_1client_1_1queue_1_1_remove_listener_request.html',1,'hazelcast::client::queue']]],
+  ['removemessagelistenerrequest',['RemoveMessageListenerRequest',['../classhazelcast_1_1client_1_1topic_1_1_remove_message_listener_request.html',1,'hazelcast::client::topic']]],
+  ['removerequest',['RemoveRequest',['../classhazelcast_1_1client_1_1map_1_1_remove_request.html',1,'hazelcast::client::map']]],
+  ['removerequest',['RemoveRequest',['../classhazelcast_1_1client_1_1multimap_1_1_remove_request.html',1,'hazelcast::client::multimap']]],
+  ['removerequest',['RemoveRequest',['../classhazelcast_1_1client_1_1queue_1_1_remove_request.html',1,'hazelcast::client::queue']]],
+  ['replaceifsamerequest',['ReplaceIfSameRequest',['../classhazelcast_1_1client_1_1map_1_1_replace_if_same_request.html',1,'hazelcast::client::map']]],
+  ['replacerequest',['ReplaceRequest',['../classhazelcast_1_1client_1_1map_1_1_replace_request.html',1,'hazelcast::client::map']]],
+  ['rollbacktxnrequest',['RollbackTxnRequest',['../classhazelcast_1_1client_1_1txn_1_1_rollback_txn_request.html',1,'hazelcast::client::txn']]],
+  ['roundrobinlb',['RoundRobinLB',['../classhazelcast_1_1client_1_1impl_1_1_round_robin_l_b.html',1,'hazelcast::client::impl']]],
+  ['runnabletask',['RunnableTask',['../class_runnable_task.html',1,'']]]
+];
