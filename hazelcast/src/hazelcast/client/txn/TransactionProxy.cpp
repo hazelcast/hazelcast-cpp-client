@@ -12,13 +12,12 @@
 #include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/util/Util.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection)
+            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext, boost::shared_ptr<connection::Connection> connection)
             : options(txnOptions)
             , clientContext(clientContext)
             , connection(connection)
@@ -47,18 +46,18 @@ namespace hazelcast {
                         throw exception::IllegalStateException("TransactionProxy::begin()", "Transaction is already active");
                     }
                     checkThread();
-//                    if (threadFlag.get() != null) {  MTODO ask ali abi
+//                    if (threadFlag.get() != null) {  MTODO
 //                        throw new IllegalStateException("Nested transactions are not allowed!");
 //                    }
 //                    threadFlag.set(Boolean.TRUE);
                     startTime = util::getCurrentTimeMillis();
 
-                    CreateTxnRequest request(options);
-                    boost::shared_ptr<std::string> response = sendAndReceive<std::string>(request);
+                    CreateTxnRequest * request = new CreateTxnRequest(options);
+                    boost::shared_ptr<std::string> response = invoke<std::string>(request);
                     txnId = *response;
                     state = TxnState::ACTIVE;
                 } catch (std::exception &e) {
-                    closeConnection();
+                    onTxnEnd();
                     throw e;
                 }
 
@@ -71,19 +70,19 @@ namespace hazelcast {
                     }
                     checkThread();
                     checkTimeout();
-                    CommitTxnRequest request;
-                    sendAndReceive<bool>(request);
+                    CommitTxnRequest* request = new CommitTxnRequest();
+                    invoke<bool>(request);
                     state = TxnState::COMMITTED;
-				} catch (exception::IOException &e) {
-					state = TxnState::ROLLING_BACK;
-                    closeConnection();
+                } catch (exception::IOException &e) {
+                    state = TxnState::ROLLING_BACK;
+                    onTxnEnd();
                     throw e;
                 } catch (exception::ServerException &e) {
-					state = TxnState::ROLLING_BACK;
-                    closeConnection();
+                    state = TxnState::ROLLING_BACK;
+                    onTxnEnd();
                     throw e;
                 }
-                closeConnection();
+                onTxnEnd();
 
             }
 
@@ -98,16 +97,16 @@ namespace hazelcast {
                     }
                     checkThread();
                     try {
-                        RollbackTxnRequest request;
-                        sendAndReceive<bool>(request);
+                        RollbackTxnRequest* request = new RollbackTxnRequest();
+                        invoke<bool>(request);
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
                 } catch(std::exception &e) {
-                    closeConnection();
+                    onTxnEnd();
                     throw e;
                 }
-                closeConnection();
+                onTxnEnd();
 
             }
 
@@ -116,16 +115,16 @@ namespace hazelcast {
             }
 
 
-            spi::ClusterService &TransactionProxy::getClusterService() {
-                return clientContext.getClusterService();
+            spi::InvocationService &TransactionProxy::getInvocationService() {
+                return clientContext.getInvocationService();
             }
 
             boost::shared_ptr<connection::Connection>TransactionProxy::getConnection() {
                 return connection;
             }
 
-            void TransactionProxy::closeConnection() {
-//                connection->close();
+            void TransactionProxy::onTxnEnd() {
+                //threadFlag.set(null);
             }
 
             void TransactionProxy::checkThread() {

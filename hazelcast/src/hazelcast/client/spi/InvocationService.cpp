@@ -8,7 +8,6 @@
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -60,6 +59,10 @@ namespace hazelcast {
                     return invokeOnTarget(request, handler, *owner);
                 }
                 return invokeOnRandomTarget(request, handler);
+            }
+
+            boost::shared_future<serialization::Data> InvocationService::invokeOnConnection(const impl::PortableRequest *request, connection::Connection &connection) {
+                return doSend(request, NULL, connection);
             }
 
             bool InvocationService::resend(boost::shared_ptr<util::CallPromise> promise) {

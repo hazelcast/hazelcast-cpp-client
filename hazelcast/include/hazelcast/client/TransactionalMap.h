@@ -31,7 +31,7 @@ namespace hazelcast {
             */
             bool containsKey(const K &key) {
                 serialization::Data data = toData(key);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::CONTAINS_KEY, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::CONTAINS_KEY, &data);
                 return invoke<bool>(request);
             }
 
@@ -42,7 +42,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data data = toData(key);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::GET, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::GET, &data);
                 return invoke<V>(request);
 
             }
@@ -53,7 +53,7 @@ namespace hazelcast {
              * @see com.hazelcast.core.IMap#size()
              */
             int size() {
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SIZE);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SIZE);
                 boost::shared_ptr<int> s = invoke<int>(request);
                 return *s;
             }
@@ -77,7 +77,7 @@ namespace hazelcast {
             boost::shared_ptr<V> put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT, &keyData, &valueData);
                 return invoke<V>(request);
             };
 
@@ -91,7 +91,7 @@ namespace hazelcast {
             void set(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, &keyData, &valueData);
                 invoke<bool>(request);
             }
 
@@ -105,7 +105,7 @@ namespace hazelcast {
             boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, &keyData, &valueData);
                 return invoke<V>(request);
             };
 
@@ -119,7 +119,7 @@ namespace hazelcast {
             boost::shared_ptr<V> replace(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &valueData);
                 return invoke<V>(request);
 
             };
@@ -135,7 +135,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data oldValueData = toData(oldValue);
                 serialization::Data newValueData = toData(newValue);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &oldValueData, &newValueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &oldValueData, &newValueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
 
@@ -150,7 +150,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data data = toData(key);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data);
                 return invoke<V>(request);
             };
 
@@ -164,7 +164,7 @@ namespace hazelcast {
 
             void deleteEntry(const K &key) {
                 serialization::Data data = toData(key);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, &data);
                 invoke<bool>(request);
             };
 
@@ -178,7 +178,7 @@ namespace hazelcast {
             bool remove(const K &key, const V &value) {
                 serialization::Data data = toData(key);
                 serialization::Data valueData = toData(value);
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data, &valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             }
@@ -190,7 +190,7 @@ namespace hazelcast {
             * @see com.hazelcast.core.IMap#keySet()
             */
             std::vector<K> keySet() {
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET);
                 boost::shared_ptr<map::MapKeySet> result = invoke<map::MapKeySet>(request);
                 std::vector <serialization::Data> const &keyDataSet = result->getKeySet();
                 std::vector<K> keys(keyDataSet.size());
@@ -208,7 +208,7 @@ namespace hazelcast {
              * @see IMap#keySet(com.hazelcast.query.Predicate)
              */
             std::vector<K> keySet(const std::string &predicate) {
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
                 boost::shared_ptr<map::MapKeySet> result = invoke<map::MapKeySet>(request);
                 std::vector <serialization::Data> const &keyDataSet = result->getKeySet();
                 std::vector<K> keys(keyDataSet.size());
@@ -226,7 +226,7 @@ namespace hazelcast {
              * @see IMap#values()
              */
             std::vector<V> values() {
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES);
                 boost::shared_ptr<map::MapValueCollection> result = invoke<map::MapValueCollection>(request);
                 std::vector <serialization::Data> const &dataValues = result->getValues();
                 std::vector<V> values(dataValues.size());
@@ -244,7 +244,7 @@ namespace hazelcast {
              * @see IMap#values(com.hazelcast.query.Predicate)
              */
             std::vector<V> values(const std::string &predicate) {
-               map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
                 boost::shared_ptr<map::MapValueCollection> result = invoke<map::MapValueCollection>(request);
                 std::vector <serialization::Data> const &dataValues = result->getValues();
                 std::vector<V> values(dataValues.size());
@@ -263,21 +263,6 @@ namespace hazelcast {
             :TransactionalObject("hz:impl:mapService", name, transactionProxy) {
 
             }
-
-            template<typename T>
-            serialization::Data toData(const T &object) {
-                return getContext().getSerializationService().template toData<T>(&object);
-            };
-
-            template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::Data &data) {
-                return getContext().getSerializationService().template toObject<T>(data);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().template sendAndReceive<Response>(request);
-            };
 
         };
     }

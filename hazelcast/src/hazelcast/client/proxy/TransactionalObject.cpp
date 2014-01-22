@@ -30,8 +30,8 @@ namespace hazelcast {
 
             void TransactionalObject::destroy() {
                 onDestroy();
-                impl::ClientDestroyRequest request(name, serviceName);
-                context->sendAndReceive<bool>(request);
+                impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
+                invoke<bool>(request);
             }
         }
     }

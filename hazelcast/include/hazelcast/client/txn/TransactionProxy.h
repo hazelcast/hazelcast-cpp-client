@@ -9,6 +9,10 @@
 #define HAZELCAST_TransactionProxy
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -19,13 +23,13 @@ namespace hazelcast {
         }
         class TransactionOptions;
 
-        namespace spi{
+        namespace spi {
             class ClientContext;
 
             class ClusterService;
         }
 
-        namespace serialization{
+        namespace serialization {
             class SerializationService;
         }
 
@@ -57,7 +61,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions &, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
+                TransactionProxy(TransactionOptions &, spi::ClientContext &clientContext, boost::shared_ptr<connection::Connection> connection);
 
                 std::string getTxnId() const;
 
@@ -73,27 +77,31 @@ namespace hazelcast {
 
                 serialization::SerializationService &getSerializationService();
 
-                spi::ClusterService &getClusterService();
+                spi::InvocationService &getInvocationService();
 
-                boost::shared_ptr<connection::Connection>getConnection();
+                boost::shared_ptr<connection::Connection> getConnection();
 
-                template <typename Response, typename Request>
-                boost::shared_ptr<Response> sendAndReceive(const Request &request) {
-//MTODO					return clusterService.sendAndReceiveFixedConnection<Response>(connection, request);
-                    return boost::shared_ptr<Response>();
-                };
             private:
-                spi::ClientContext& clientContext;
+
+                spi::ClientContext &clientContext;
                 TransactionOptions &options;
+                boost::shared_ptr<connection::Connection> connection;
 
-                boost::shared_ptr<connection::Connection>connection;
                 long threadId;
-
                 std::string txnId;
+
                 TxnState state;
                 long startTime;
 
-                void closeConnection();
+                void onTxnEnd();
+
+                template<typename Response>
+                boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
+                    spi::InvocationService &invocationService = clientContext.getInvocationService();
+                    serialization::SerializationService &ss = clientContext.getSerializationService();
+                    boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, *connection);
+                    return ss.toObject<Response>(future.get());
+                }
 
                 void checkThread();
 

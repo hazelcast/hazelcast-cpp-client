@@ -34,20 +34,23 @@ namespace hazelcast {
             transaction.rollback();
         }
 
-
         boost::shared_ptr<connection::Connection> TransactionContext::connect() {
             boost::shared_ptr<connection::Connection> conn;
+            exception::IOException lastError("", "");
             for (int i = 0; i < CONNECTION_TRY_COUNT; i++) {
                 try {
                     conn = clientContext.getConnectionManager().getRandomConnection();
-                } catch (exception::IOException &) {
+                } catch (exception::IOException &e) {
+                    lastError = e;
                     continue;
                 }
                 if (conn != NULL) {
-                    break;
+                    return conn;
                 }
             }
-            return conn;
+            std::string errorStr = "Could not obtain Connection";
+            errorStr += lastError.what();
+            throw exception::IException("TransactionContext::connect()", errorStr);
         }
 
     }

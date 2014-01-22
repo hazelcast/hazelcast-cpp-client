@@ -91,21 +91,6 @@ namespace hazelcast {
 
             }
 
-            template<typename T>
-            serialization::Data toData(const T &object) {
-                return getContext().getSerializationService().template toData<T>(&object);
-            };
-
-            template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::Data &data) {
-                return getContext().getSerializationService().template toObject<T>(data);
-            };
-
-            template<typename Response, typename Request>
-            boost::shared_ptr<Response> invoke(const Request &request) {
-                return getContext().template sendAndReceive<Response>(request);
-            };
-
         };
     }
 }

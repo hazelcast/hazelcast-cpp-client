@@ -51,6 +51,8 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key);
 
+                boost::shared_future<serialization::Data> invokeOnConnection(const impl::PortableRequest *request, connection::Connection &connection);
+
                 bool resend(boost::shared_ptr<util::CallPromise> promise);
 
                 bool isRedoOperation() const;
