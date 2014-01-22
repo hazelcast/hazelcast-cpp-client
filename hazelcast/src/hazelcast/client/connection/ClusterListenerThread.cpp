@@ -144,7 +144,6 @@ namespace hazelcast {
                         members.push_back(member);
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         members.erase(std::find(members.begin(), members.end(), member));
-                        (std::cerr << "Removing connection pool of Member[" << member << " ]:  reason => Member closed event\n");
 //                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
                     } else {
                         std::cerr << "error in ClusterListenerThread::listenMembershipEvents() " << event->getEventType() << std::endl;

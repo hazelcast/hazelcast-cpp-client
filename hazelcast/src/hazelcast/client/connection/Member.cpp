@@ -15,14 +15,14 @@ namespace hazelcast {
 
             };
 
-            Member::Member(Member const & rhs)
+            Member::Member(Member const &rhs)
             :address(rhs.address)
             , uuid(rhs.uuid) {
 
             };
 
 
-            Member::Member(Address const & rhs)
+            Member::Member(Address const &rhs)
             : address(rhs) {
 
             };
@@ -31,21 +31,21 @@ namespace hazelcast {
 
             };
 
-            Member & Member::operator = (Member const & rhs) {
+            Member &Member::operator = (Member const &rhs) {
                 address = rhs.address;
                 uuid = rhs.uuid;
                 return (*this);
             };
 
-            bool Member::operator ==(const Member & rhs) const {
+            bool Member::operator ==(const Member &rhs) const {
                 return address == rhs.address;
             };
 
-            int Member::operator <(const Member& rhs) const {
+            int Member::operator <(const Member &rhs) const {
                 return address < rhs.address;
             };
 
-            const Address& Member::getAddress() const {
+            const Address &Member::getAddress() const {
                 return address;
             };
 
@@ -61,14 +61,28 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::MEMBER_ID;
             };
 
-            void Member::writeData(serialization::ObjectDataOutput & writer) const {
+            const std::string &Member::getAttribute(const std::string &key) const {
+                return attributes.at(key);
+            }
+
+            void Member::writeData(serialization::ObjectDataOutput &writer) const {
                 address.writeData(writer);
                 writer.writeUTF(uuid);
+                writer.writeInt(attributes.size());
+                std::map<std::string, std::string>::const_iterator it;
+                for (it = attributes.begin(); it != attributes.end(); ++it) {
+                    writer.writeUTF(it->first);
+                    writer.writeUTF(it->second);
+                }
             };
 
-            void Member::readData(serialization::ObjectDataInput & reader) {
+            void Member::readData(serialization::ObjectDataInput &reader) {
                 address.readData(reader);
                 uuid = reader.readUTF();
+                int size = reader.readInt();
+                for (int i = 0; i < size; i++) {
+                    attributes[reader.readUTF()] = reader.readUTF();
+                }
             };
 
 
