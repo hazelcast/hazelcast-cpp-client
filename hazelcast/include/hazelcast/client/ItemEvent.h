@@ -5,11 +5,13 @@
 #ifndef HAZELCAST_ITEM_EVENT
 #define HAZELCAST_ITEM_EVENT
 
-#include "hazelcast/client/impl/EventObject.h"
-#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
+        /**
+        * Type of item event.
+        */
         class HAZELCAST_API ItemEventType {
         public:
             enum Type {
@@ -43,11 +45,11 @@ namespace hazelcast {
         };
 
         template <typename E>
-        class HAZELCAST_API ItemEvent : public impl::EventObject {
+        class HAZELCAST_API ItemEvent {
         public:
 
-            ItemEvent(const std::string &name, ItemEventType eventType, const E &item, const connection::Member &member)
-            : impl::EventObject(name)
+            ItemEvent(const std::string &name, ItemEventType eventType, const E &item, const Member &member)
+            : name(name)
             , member(member)
             , eventType(eventType)
             , item(item) {
@@ -64,7 +66,7 @@ namespace hazelcast {
              *
              * @return the member fired this event.
              */
-            connection::Member getMember() const {
+            Member getMember() const {
                 return member;
             };
 
@@ -83,13 +85,14 @@ namespace hazelcast {
              * @return name of the map.
              */
             std::string getName() const {
-                return getSource();
+                return name;
             };
 
         private:
             E item;
             ItemEventType eventType;
-            connection::Member member;
+            Member member;
+            std::string name;
 
         };
     }

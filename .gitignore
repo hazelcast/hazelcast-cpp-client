@@ -10,6 +10,7 @@
 *.pdb
 *~
 build*/*
+docs/*
 java/Debug*
 # Compiled Dynamic libraries
 *.so

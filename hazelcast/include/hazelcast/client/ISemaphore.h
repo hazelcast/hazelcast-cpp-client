@@ -3,7 +3,7 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/exception/IException.h"
 #include <string>
@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
 
-        class HAZELCAST_API ISemaphore : public proxy::DistributedObject {
+        class HAZELCAST_API ISemaphore : public DistributedObject {
             friend class HazelcastClient;
 
         public:

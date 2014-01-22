@@ -36,8 +36,6 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class ConnectionPool;
-
             class HAZELCAST_API ConnectionManager {
             public:
                 ConnectionManager(spi::ClientContext &clientContext, bool smartRouting);

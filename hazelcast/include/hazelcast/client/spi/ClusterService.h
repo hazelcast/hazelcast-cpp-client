@@ -20,6 +20,8 @@ namespace hazelcast {
     namespace client {
         class MembershipListener;
 
+        class InitialMembershipListener;
+
         namespace protocol {
             class Credentials;
         }
@@ -45,32 +47,39 @@ namespace hazelcast {
 
                 void addMembershipListener(MembershipListener *listener);
 
+                void addMembershipListener(InitialMembershipListener *listener);
+
                 bool removeMembershipListener(MembershipListener *listener);
+
+                bool removeMembershipListener(InitialMembershipListener *listener);
 
                 bool isMemberExists(const Address &address);
 
-                connection::Member getMember(const std::string &uuid);
+                Member getMember(const std::string &uuid);
 
-                connection::Member getMember(Address &address);
+                Member getMember(Address &address);
 
-                std::vector<connection::Member> getMemberList();
+                std::vector<Member> getMemberList();
 
             private:
                 ClientContext &clientContext;
 
                 connection::ClusterListenerThread clusterThread;
 
-                std::map<Address, connection::Member, addressComparator > members;
+                std::map<Address, Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;
+                std::set< InitialMembershipListener *> initialListeners;
                 boost::mutex listenerLock;
                 boost::mutex membersLock;
 
                 boost::atomic<bool> active;
 
-                //--------- Used by CLUSTER LISTENER THREAD ------------
-                void fireMembershipEvent(connection::MembershipEvent &membershipEvent);
+                void initMembershipListeners();
 
-                void setMembers(const std::map<Address, connection::Member, addressComparator > &map);
+                //--------- Used by CLUSTER LISTENER THREAD ------------
+                void fireMembershipEvent(MembershipEvent &membershipEvent);
+
+                void setMembers(const std::map<Address, Member, addressComparator > &map);
 
                 connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
                 // ------------------------------------------------------

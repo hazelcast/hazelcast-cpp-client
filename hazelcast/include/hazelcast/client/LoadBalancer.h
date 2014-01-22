@@ -8,9 +8,8 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class Member;
-        }
+        class Member;
+
         class Cluster;
 
         class HAZELCAST_API LoadBalancer {
@@ -18,7 +17,7 @@ namespace hazelcast {
 
             virtual void init(Cluster &cluster) = 0;
 
-            virtual const connection::Member next() = 0;
+            virtual const Member next() = 0;
 
             virtual ~LoadBalancer() {
 

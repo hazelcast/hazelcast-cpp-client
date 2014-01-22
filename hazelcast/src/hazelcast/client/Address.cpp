@@ -76,15 +76,6 @@ namespace hazelcast {
             }
         };
 
-        int Address::hashCode() const {
-            if (hash == 0) {
-                for (int i = 0; i < host.size(); i++) {
-                    hash = (hash * 29) + (int) host[i];
-                }
-                return hash * 29 + port;
-            } else
-                return hash;
-        };
 
     }
 }

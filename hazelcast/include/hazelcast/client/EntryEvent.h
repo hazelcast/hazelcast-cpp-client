@@ -5,12 +5,14 @@
 #ifndef HAZELCAST_ENTRY_EVENT
 #define HAZELCAST_ENTRY_EVENT
 
-#include "hazelcast/client/impl/EventObject.h"
-#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/Member.h"
 #include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Type of entry event.
+         */
         class HAZELCAST_API EntryEventType {
         public:
             enum Type {
@@ -50,11 +52,11 @@ namespace hazelcast {
         };
 
         template <typename K, typename V>
-        class HAZELCAST_API EntryEvent : public impl::EventObject {
+        class HAZELCAST_API EntryEvent {
         public:
 
-            EntryEvent(const std::string &name, const connection::Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
-            : impl::EventObject(name)
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
+            : name(name)
             , member(member)
             , eventType(eventType)
             , key(key)
@@ -62,8 +64,8 @@ namespace hazelcast {
 
             };
 
-            EntryEvent(const std::string &name, const connection::Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
-            : impl::EventObject(name)
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
+            : name(name)
             , member(member)
             , eventType(eventType)
             , key(key)
@@ -104,7 +106,7 @@ namespace hazelcast {
              *
              * @return the member fired this event.
              */
-            connection::Member getMember() const {
+            Member getMember() const {
                 return member;
             };
 
@@ -123,7 +125,7 @@ namespace hazelcast {
              * @return name of the map.
              */
             std::string getName() const {
-                return getSource();
+                return name;
             };
 
         private:
@@ -131,7 +133,8 @@ namespace hazelcast {
             boost::shared_ptr<V> value;
             boost::shared_ptr<V> oldValue;
             EntryEventType eventType;
-            connection::Member member;
+            Member member;
+            std::string name;
 
         };
     }

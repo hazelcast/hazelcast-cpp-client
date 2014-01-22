@@ -16,7 +16,7 @@ namespace hazelcast {
             class IdGeneratorSupport;
         }
 
-        class HAZELCAST_API IdGenerator : public proxy::DistributedObject {
+        class HAZELCAST_API IdGenerator : public DistributedObject {
             friend class HazelcastClient;
 
         public:

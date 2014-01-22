@@ -4,7 +4,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include <string>
 
 
@@ -14,7 +14,7 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class HAZELCAST_API IAtomicLong : public proxy::DistributedObject {
+        class HAZELCAST_API IAtomicLong : public DistributedObject {
             friend class HazelcastClient;
 
             friend class IdGenerator;

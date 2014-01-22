@@ -30,43 +30,43 @@ int testSpeed() {
 int main(int argc, char **argv) {
 
 
-//    ClientSerializationTest serializationTest;
-//    serializationTest.executeTests();
-//
-//    HazelcastInstanceFactory factory;
-//
-//    ClientMapTest mapTest(factory);
-//    mapTest.executeTests();
-//
-//    ClientMultiMapTest multiMapTest(factory);
-//    multiMapTest.executeTests();
-//
-//    ClientQueueTest queueTest(factory);
-//    queueTest.executeTests();
-//
-//    ClientListTest listTest(factory);
-//    listTest.executeTests();
-//
-//    ClientSetTest setTest(factory);
-//    setTest.executeTests();
-//
-//    IAtomicLongTest atomTest(factory);
-//    atomTest.executeTests();
-//
-//    IdGeneratorTest generatorTest(factory);
-//    generatorTest.executeTests();
-//
-//    ICountDownLatchTest latchTest(factory);
-//    latchTest.executeTests();
-//
-//    ClientLockTest lockTest(factory);
-//    lockTest.executeTests();
-//
-//    ClientSemaphoreTest semaphoreTest(factory);
-//    semaphoreTest.executeTests();
-//
-//    ClientTopicTest topicTest(factory);
-//    topicTest.executeTests();
+    ClientSerializationTest serializationTest;
+    serializationTest.executeTests();
+
+    HazelcastInstanceFactory factory;
+
+    ClientMapTest mapTest(factory);
+    mapTest.executeTests();
+
+    ClientMultiMapTest multiMapTest(factory);
+    multiMapTest.executeTests();
+
+    ClientQueueTest queueTest(factory);
+    queueTest.executeTests();
+
+    ClientListTest listTest(factory);
+    listTest.executeTests();
+
+    ClientSetTest setTest(factory);
+    setTest.executeTests();
+
+    IAtomicLongTest atomTest(factory);
+    atomTest.executeTests();
+
+    IdGeneratorTest generatorTest(factory);
+    generatorTest.executeTests();
+
+    ICountDownLatchTest latchTest(factory);
+    latchTest.executeTests();
+
+    ClientLockTest lockTest(factory);
+    lockTest.executeTests();
+
+    ClientSemaphoreTest semaphoreTest(factory);
+    semaphoreTest.executeTests();
+
+    ClientTopicTest topicTest(factory);
+    topicTest.executeTests();
 
 //
 //    ClientTxnListTest clientTxnListTest(factory);

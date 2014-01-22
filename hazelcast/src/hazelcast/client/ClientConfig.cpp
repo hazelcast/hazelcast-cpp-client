@@ -1,5 +1,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/SocketInterceptor.h"
+#import "LifecycleListener.h"
+#include "InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,37 +21,37 @@ namespace hazelcast {
 
 
         ClientConfig::~ClientConfig() {
-            if(credentials != NULL)
+            if (credentials != NULL)
                 delete credentials;
         };
 
-        ClientConfig & ClientConfig::addAddress(const Address  & address) {
+        ClientConfig &ClientConfig::addAddress(const Address &address) {
             addressList.push_back(address);
             return (*this);
         };
 
-        ClientConfig & ClientConfig::addAddresses(const std::vector<Address>  & addresses) {
+        ClientConfig &ClientConfig::addAddresses(const std::vector<Address> &addresses) {
             addressList.insert(addressList.end(), addresses.begin(), addresses.end());
             return (*this);
         };
 
 
-        std::vector<Address>  & ClientConfig::getAddresses() {
+        std::vector<Address> &ClientConfig::getAddresses() {
             return addressList;
         };
 
-        ClientConfig& ClientConfig::setGroupConfig(GroupConfig& groupConfig) {
+        ClientConfig &ClientConfig::setGroupConfig(GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
             return *this;
         };
 
 
-        GroupConfig& ClientConfig::getGroupConfig() {
+        GroupConfig &ClientConfig::getGroupConfig() {
             return groupConfig;
         };
 
 
-        ClientConfig& ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
+        ClientConfig &ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
             this->connectionAttemptLimit = connectionAttemptLimit;
             return *this;
         };
@@ -58,7 +60,7 @@ namespace hazelcast {
             return connectionAttemptLimit;
         };
 
-        ClientConfig& ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
+        ClientConfig &ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
             this->connectionTimeout = connectionTimeoutInMillis;
             return *this;
         };
@@ -67,7 +69,7 @@ namespace hazelcast {
             return connectionTimeout;
         };
 
-        ClientConfig& ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
+        ClientConfig &ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
             this->attemptPeriod = attemptPeriodInMillis;
             return *this;
         };
@@ -76,7 +78,7 @@ namespace hazelcast {
             return attemptPeriod;
         };
 
-        ClientConfig& ClientConfig::setRedoOperation(bool redoOperation) {
+        ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
             this->redoOperation = redoOperation;
             return *this;
         };
@@ -96,18 +98,41 @@ namespace hazelcast {
         };
 
 
-//        ClientConfig& ClientConfig::addListener(spi::EventListener *listener) {
-//            listeners.insert(listener);
-//            return *this;
-//        };
+        ClientConfig &ClientConfig::addListener(LifecycleListener *listener) {
+            lifecycleListeners.insert(listener);
+            return *this;
+        }
+
+        ClientConfig &ClientConfig::addListener(MembershipListener *listener) {
+            membershipListeners.insert(listener);
+            return *this;
+        }
+
+        ClientConfig &ClientConfig::addListener(InitialMembershipListener *listener) {
+            initialMembershipListeners.insert(listener);
+            return *this;
+        }
+
+
+        const std::set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
+            return lifecycleListeners;
+        }
+
+        const std::set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
+            return membershipListeners;
+        }
+
+        const std::set<InitialMembershipListener *> &ClientConfig::getInitialMembershipListeners() const {
+            return initialMembershipListeners;
+        }
 
         void ClientConfig::setCredentials(protocol::Credentials *credentials) {
             this->credentials = credentials;
         };
 
-        protocol::Credentials & ClientConfig::getCredentials() {
+        protocol::Credentials &ClientConfig::getCredentials() {
             if (credentials == NULL) {
-                credentials = new protocol::Credentials(groupConfig.getName() , groupConfig.getPassword());
+                credentials = new protocol::Credentials(groupConfig.getName(), groupConfig.getPassword());
             }
             return *credentials;
         };

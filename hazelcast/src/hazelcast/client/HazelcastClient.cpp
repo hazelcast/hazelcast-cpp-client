@@ -31,7 +31,7 @@ namespace hazelcast {
 
 
             ~HazelcastClientImpl() {
-                lifecycleService.setShutdown();
+                lifecycleService.shutdown();
             }
 
             ClientConfig clientConfig;

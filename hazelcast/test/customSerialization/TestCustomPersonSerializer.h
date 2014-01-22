@@ -16,9 +16,9 @@ namespace hazelcast {
             class HAZELCAST_API TestCustomPersonSerializer : public serialization::Serializer<TestCustomPerson> {
             public:
 
-                void write(hazelcast::client::serialization::ObjectDataOutput & out, const TestCustomPerson& object);
+                void write(serialization::ObjectDataOutput & out, const TestCustomPerson& object);
 
-                void read(hazelcast::client::serialization::ObjectDataInput & in, TestCustomPerson& object);
+                void read(serialization::ObjectDataInput & in, TestCustomPerson& object);
 
                 int getTypeId() const;
             };

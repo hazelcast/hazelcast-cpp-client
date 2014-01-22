@@ -7,17 +7,16 @@
 #ifndef HAZELCAST_Topic_Message
 #define HAZELCAST_Topic_Message
 
-#include "hazelcast/client/connection/Member.h"
-#include "hazelcast/client/impl/EventObject.h"
+#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
             template <typename E>
-            class HAZELCAST_API Message : public impl::EventObject {
+            class HAZELCAST_API Message {
             public:
-                Message(std::string topicName, const E& messageObject, long publishTime, const connection::Member& publishingMember)
-                : impl::EventObject(topicName)
+                Message(std::string topicName, const E& messageObject, long publishTime, const Member& publishingMember)
+                : name(topicName)
                 , messageObject(messageObject)
                 , publishTime(publishTime)
                 , publishingMember(publishingMember) {
@@ -31,14 +30,19 @@ namespace hazelcast {
                     return publishTime;
                 };
 
-                connection::Member& getPublishingMember() {
+                Member& getPublishingMember() {
                     return publishingMember;
                 };
+
+                std::string getName(){
+                    return name;
+                }
 
             private:
                 E messageObject;
                 long publishTime;
-                connection::Member publishingMember;
+                Member publishingMember;
+                std::string name;
             };
 
         }

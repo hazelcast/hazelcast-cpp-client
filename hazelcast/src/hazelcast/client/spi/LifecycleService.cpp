@@ -8,32 +8,20 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/LifecycleEvent.h"
 
 namespace hazelcast {
     namespace client {
-
         namespace spi {
 
-            LifecycleService::LifecycleService(ClientContext& clientContext)
+            LifecycleService::LifecycleService(ClientContext &clientContext)
             :clientContext(clientContext)
             , active(false) {
-//                std::set<spi::EventListener *> listeners = config.getListeners(); MTODO
-//                if (!listeners.empty()) {
-//                    for (std::set<spi::EventListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-//                        LifecycleListener *listener = static_cast<LifecycleListener *>(*it);
-//                        if (listener) {
-//                            addLifecycleListener(listener);
-//                        }
-//                    }
-//                }
+                std::set<LifecycleListener *> const &lifecycleListeners = clientContext.getClientConfig().getLifecycleListeners();
+                listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
                 fireLifecycleEvent(LifecycleEvent::STARTING);
             };
-
-
-            LifecycleService::~LifecycleService() {
-                active = false;
-                fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
-            }
 
             void LifecycleService::start() {
                 active = true;
@@ -50,7 +38,7 @@ namespace hazelcast {
                 return listeners.erase(lifecycleListener) == 1;
             };
 
-            void LifecycleService::fireLifecycleEvent(LifecycleEvent lifecycleEvent) {
+            void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 boost::lock_guard<boost::mutex> lg(listenerLock);
                 for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     (*it)->stateChanged(lifecycleEvent);
@@ -61,15 +49,15 @@ namespace hazelcast {
                 return active;
             };
 
-            void LifecycleService::setShutdown() {
+            void LifecycleService::shutdown() {
                 active = false;
+                boost::lock_guard<boost::mutex> lg(listenerLock);
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().shutdown();
                 clientContext.getClusterService().stop();
                 clientContext.getPartitionService().stop();
+                fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             };
-
-
         }
     }
 }

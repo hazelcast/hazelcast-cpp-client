@@ -9,12 +9,22 @@
 #ifndef HAZELCAST_MEMBERSHIP_LISTENER
 #define HAZELCAST_MEMBERSHIP_LISTENER
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
 
-        namespace connection {
-            class MembershipEvent;
-        }
+        class MembershipEvent;
+
+        /**
+         * Cluster membership listener.
+         *
+         * The MembershipListener will never be called concurrently and all MembershipListeners will receive the events
+         * in the same order.
+         *
+         * @see InitialMembershipListener
+         * @see Cluster#addMembershipListener(MembershipListener*)
+         */
 
         class HAZELCAST_API MembershipListener {
         public:
@@ -22,9 +32,27 @@ namespace hazelcast {
 
             };
 
-            virtual void memberAdded(const connection::MembershipEvent& event) = 0;
+            /**
+             * Invoked when a new member is added to the cluster.
+             *
+             * @param membershipEvent membership event
+             */
+            virtual void memberAdded(const MembershipEvent &event) = 0;
 
-            virtual void memberRemoved(const connection::MembershipEvent& event) = 0;
+            /**
+             * Invoked when an existing member leaves the cluster.
+             *
+             * @param membershipEvent membership event
+             */
+            virtual void memberRemoved(const MembershipEvent &event) = 0;
+
+            /**
+             * Invoked when an attribute of a member was changed.
+             *
+             * @param memberAttributeEvent member attribute event
+             */
+//            void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) = 0; MTODO
+
         };
     }
 }

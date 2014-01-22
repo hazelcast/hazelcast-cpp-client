@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_MultiExecutionCallbackWrapper
 #define HAZELCAST_MultiExecutionCallbackWrapper
 
-#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/Member.h"
 #include <boost/atomic.hpp>
 
 namespace hazelcast {
@@ -23,7 +23,7 @@ namespace hazelcast {
 
                 };
 
-                void onResponse(const connection::Member& member, const Result& result) {
+                void onResponse(const Member& member, const Result& result) {
                     multiExecutionCallback.onResponse(member, result);
                     values[member] = result;
                     int waitingResponse = memberCount--;
@@ -33,7 +33,7 @@ namespace hazelcast {
                 }
 
             private:
-                std::map <connection::Member, Result> values;
+                std::map <Member, Result> values;
                 boost::atomic<int> memberCount;
                 MultiExecutionCallback& multiExecutionCallback;
 

@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 virtual ~IOListener();
 
-                void initListenSocket(util::SocketSet&wakeUpSocketSet);
+                void initListenSocket(util::SocketSet &wakeUpSocketSet);
 
                 virtual void listen() = 0;
 
@@ -38,7 +38,8 @@ namespace hazelcast {
 
                 void removeSocket(const Socket &socket);
 
-                void addHandler(int , IOHandler* );
+                void addHandler(int, IOHandler *);
+
             protected:
 
                 void processListenerQueue();
@@ -48,7 +49,7 @@ namespace hazelcast {
                 util::SocketSet socketSet;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
                 std::map<int, IOHandler *> ioHandlers;
-                Socket* wakeUpSocket;
+                Socket *wakeUpSocket;
                 int wakeUpListenerSocketId;
 
             };

@@ -12,9 +12,8 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class Member;
-        }
+
+        class Member;
 
         class Cluster;
 
@@ -26,7 +25,7 @@ namespace hazelcast {
 
                 void init(Cluster &cluster);
 
-                const hazelcast::client::connection::Member next();
+                const Member next();
 
             private:
                 boost::atomic<int> index;

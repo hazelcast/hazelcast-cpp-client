@@ -17,9 +17,6 @@ namespace hazelcast {
         class CallPromise;
     }
     namespace client {
-        namespace connection {
-            class ClientResponse;
-        }
 
         namespace spi {
             class ClientContext;
@@ -33,6 +30,8 @@ namespace hazelcast {
         class Address;
 
         namespace connection {
+            class ClientResponse;
+
             class OListener;
 
             class IListener;

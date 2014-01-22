@@ -23,7 +23,7 @@
 #include "hazelcast/client/exception/NoSuchElementException.h"
 #include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -31,7 +31,7 @@ namespace hazelcast {
 
 
         template<typename E>
-        class HAZELCAST_API IQueue : public proxy::DistributedObject {
+        class HAZELCAST_API IQueue : public DistributedObject {
             friend class HazelcastClient;
 
         public:

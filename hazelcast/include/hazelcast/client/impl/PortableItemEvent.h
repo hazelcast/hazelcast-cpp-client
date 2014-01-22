@@ -7,7 +7,6 @@
 #ifndef HAZELCAST_PORTABLE_ITEM_EVENT
 #define HAZELCAST_PORTABLE_ITEM_EVENT
 
-#include "hazelcast/client/impl/EventObject.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/Portable.h"

@@ -123,8 +123,8 @@ namespace hazelcast {
             };
 
             void PartitionService::getInitialPartitions() {
-                std::vector<connection::Member> memberList = clientContext.getClusterService().getMemberList();
-                for (std::vector<connection::Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
+                std::vector<Member> memberList = clientContext.getClusterService().getMemberList();
+                for (std::vector<Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
                     boost::shared_ptr<impl::PartitionsResponse> response = getPartitionsFrom(target);
                     if (response != NULL) {

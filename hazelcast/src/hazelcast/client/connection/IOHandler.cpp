@@ -24,7 +24,7 @@ namespace hazelcast {
             void IOHandler::registerHandler() {
                 if (!connection.live)
                     return;
-                hazelcast::client::Socket const &socket = connection.getSocket();
+                Socket const &socket = connection.getSocket();
                 ioListener.addSocket(socket);
                 ioListener.addHandler(socket.getSocketId(), this);
             }

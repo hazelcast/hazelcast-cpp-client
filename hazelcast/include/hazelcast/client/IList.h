@@ -22,7 +22,7 @@
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <stdexcept>
 
@@ -31,7 +31,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename E>
-        class HAZELCAST_API IList : public proxy::DistributedObject {
+        class HAZELCAST_API IList : public DistributedObject {
             friend class HazelcastClient;
 
         public:

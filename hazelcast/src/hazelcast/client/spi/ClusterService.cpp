@@ -10,8 +10,12 @@
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/connection/MemberShipEvent.h"
+#include "hazelcast/client/MemberShipEvent.h"
 #include "hazelcast/util/CallPromise.h"
+#include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/LifecycleEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -28,6 +32,12 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
+                ClientConfig &config = clientContext.getClientConfig();
+                std::set<MembershipListener *> const &membershipListeners = config.getMembershipListeners();
+                listeners.insert(membershipListeners.begin(), membershipListeners.end());
+                std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
+                initialListeners.insert(initialMembershipListeners.begin(), initialMembershipListeners.end());
+
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
                 clusterThread.setThread(t);
                 while (!clusterThread.isReady) {
@@ -37,10 +47,19 @@ namespace hazelcast {
                         throw  exception::IException("ClusterService::start", "ClusterService can not be started");
                     }
                 }
-                //MTODO init membershipEvent
+                initMembershipListeners();
                 active = true;
             }
 
+            void ClusterService::initMembershipListeners() {
+                boost::lock_guard<boost::mutex> guard(listenerLock);
+                std::set< InitialMembershipListener *>::iterator it;
+                Cluster &cluster = clientContext.getCluster();
+                InitialMembershipEvent event(cluster, cluster.getMembers());
+                for (it = initialListeners.begin(); it != initialListeners.end(); ++it) {
+                    (*it)->init(event);
+                }
+            }
 
             void ClusterService::stop() {
                 active = false;
@@ -48,7 +67,7 @@ namespace hazelcast {
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
-                vector<connection::Member> list = getMemberList();
+                vector<Member> list = getMemberList();
                 if (list.empty()) {
                     return std::auto_ptr<Address>(NULL);
                 }
@@ -60,37 +79,52 @@ namespace hazelcast {
                 listeners.insert(listener);
             };
 
+
+            void ClusterService::addMembershipListener(InitialMembershipListener *listener) {
+                boost::lock_guard<boost::mutex> guard(listenerLock);
+                Cluster &cluster = clientContext.getCluster();
+                InitialMembershipEvent event(cluster, cluster.getMembers());
+                listener->init(event);
+                initialListeners.insert(listener);
+            }
+
             bool ClusterService::removeMembershipListener(MembershipListener *listener) {
                 boost::lock_guard<boost::mutex> guard(listenerLock);
                 bool b = listeners.erase(listener) == 1;
                 return b;
             };
 
+            bool ClusterService::removeMembershipListener(InitialMembershipListener *listener) {
+                boost::lock_guard<boost::mutex> guard(listenerLock);
+                bool b = initialListeners.erase(listener) == 1;
+                return b;
+            }
+
 
             bool ClusterService::isMemberExists(Address const &address) {
                 boost::lock_guard<boost::mutex> guard(membersLock);
-                return members.count(address) > 0;;
+                return members.count(address) > 0;
             };
 
-            connection::Member ClusterService::getMember(Address &address) {
+            Member ClusterService::getMember(Address &address) {
                 boost::lock_guard<boost::mutex> guard(membersLock);
                 return members[address];
 
             }
 
-            connection::Member ClusterService::getMember(const std::string &uuid) {
-                vector<connection::Member> list = getMemberList();
-                for (vector<connection::Member>::iterator it = list.begin(); it != list.end(); ++it) {
+            Member ClusterService::getMember(const std::string &uuid) {
+                vector<Member> list = getMemberList();
+                for (vector<Member>::iterator it = list.begin(); it != list.end(); ++it) {
                     if (uuid.compare(it->getUuid())) {
                         return *it;
                     }
                 }
-                return connection::Member();
+                return Member();
             };
 
-            std::vector<connection::Member>  ClusterService::getMemberList() {
-                typedef std::map<Address, connection::Member, addressComparator> MemberMap;
-                std::vector<connection::Member> v;
+            std::vector<Member>  ClusterService::getMemberList() {
+                typedef std::map<Address, Member, addressComparator> MemberMap;
+                std::vector<Member> v;
                 boost::lock_guard<boost::mutex> guard(membersLock);
                 MemberMap::const_iterator it;
                 for (it = members.begin(); it != members.end(); it++) {
@@ -114,6 +148,7 @@ namespace hazelcast {
                         try {
                             connection::Connection *pConnection = clientContext.getConnectionManager().ownerConnection(*it);
                             active = true;
+                            clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;
                         } catch (exception::IOException &e) {
                             lastError = e;
@@ -140,10 +175,18 @@ namespace hazelcast {
             };
 
 
-            void ClusterService::fireMembershipEvent(connection::MembershipEvent &event) {
+            void ClusterService::fireMembershipEvent(MembershipEvent &event) {
                 boost::lock_guard<boost::mutex> guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    if (event.getEventType() == connection::MembershipEvent::MEMBER_ADDED) {
+                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+                        (*it)->memberAdded(event);
+                    } else {
+                        (*it)->memberRemoved(event);
+                    }
+                }
+
+                for (std::set<InitialMembershipListener *>::iterator it = initialListeners.begin(); it != initialListeners.end(); ++it) {
+                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         (*it)->memberAdded(event);
                     } else {
                         (*it)->memberRemoved(event);
@@ -151,7 +194,7 @@ namespace hazelcast {
                 }
             };
 
-            void ClusterService::setMembers(const std::map<Address, connection::Member, addressComparator > &map) {
+            void ClusterService::setMembers(const std::map<Address, Member, addressComparator > &map) {
                 boost::lock_guard<boost::mutex> guard(membersLock);
                 members = map;
             }

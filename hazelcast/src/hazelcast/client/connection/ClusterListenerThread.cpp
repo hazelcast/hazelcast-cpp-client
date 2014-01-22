@@ -5,12 +5,13 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/connection/MemberShipEvent.h"
+#include "hazelcast/client/MemberShipEvent.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/LifecycleEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,6 +51,7 @@ namespace hazelcast {
                         if (deletingConnection.compare_exchange_strong(expected, true)) {
                             conn.reset();
                             deletingConnection = false;
+                            clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(boost::thread_interrupted &) {

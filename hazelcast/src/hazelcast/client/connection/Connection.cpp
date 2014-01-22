@@ -187,7 +187,7 @@ namespace hazelcast {
             void Connection::removeConnectionCalls() {
 //            partitionService.runRefresher(); MTODO
                 typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
-                hazelcast::client::Address const &address = getRemoteEndpoint();
+                Address const &address = getRemoteEndpoint();
                 {
                     Entry_Set entrySet = callPromises.clear();
                     Entry_Set::iterator it;
@@ -205,7 +205,7 @@ namespace hazelcast {
             }
 
             void Connection::targetNotActive(boost::shared_ptr<util::CallPromise> promise) {
-                hazelcast::client::Address const &address = getRemoteEndpoint();
+                Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     if (invocationService.resend(promise))

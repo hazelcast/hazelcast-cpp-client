@@ -50,7 +50,7 @@
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryView.h"
 #include <string>
 #include <map>
@@ -75,7 +75,7 @@ namespace hazelcast {
          * @param <V> value
          */
         template<typename K, typename V>
-        class HAZELCAST_API IMap : public proxy::DistributedObject {
+        class HAZELCAST_API IMap : public DistributedObject {
             friend class HazelcastClient;
 
         public:
@@ -1091,10 +1091,6 @@ namespace hazelcast {
             };
 
 
-            /**
-			 * Destroys this object cluster-wide.
-			 * Clears and releases all resources for this object.
-			 */
             void onDestroy() {
             };
 

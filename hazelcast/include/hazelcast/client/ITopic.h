@@ -15,13 +15,13 @@
 #include "hazelcast/client/topic/TopicEventHandler.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         template <typename E>
-        class HAZELCAST_API ITopic : public proxy::DistributedObject {
+        class HAZELCAST_API ITopic : public DistributedObject {
             friend class HazelcastClient;
 
         public:

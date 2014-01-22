@@ -7,14 +7,17 @@
 #ifndef HAZELCAST_LIFECYCLE_SERVICE
 #define HAZELCAST_LIFECYCLE_SERVICE
 
-#include "hazelcast/client/spi/LifecycleListener.h"
-#include "hazelcast/client/spi/LifecycleEvent.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
 #include <set>
 
 namespace hazelcast {
     namespace client {
+        class LifecycleListener;
+
+        class LifecycleEvent;
+
         namespace spi {
 
             class ClientContext;
@@ -22,8 +25,6 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
                 LifecycleService(ClientContext& clientContext);
-
-                ~LifecycleService();
 
                 void start();
 
@@ -33,15 +34,15 @@ namespace hazelcast {
 
                 bool isRunning();
 
-                void setShutdown();
+                void shutdown();
 
+                void fireLifecycleEvent(const LifecycleEvent& lifecycleEvent);
             private:
                 ClientContext& clientContext;
                 std::set<LifecycleListener *> listeners;
                 boost::mutex listenerLock;
-                boost::atomic<bool> active;
 
-                void fireLifecycleEvent(LifecycleEvent lifecycleEvent);
+                boost::atomic<bool> active;
 
             };
 

@@ -9,6 +9,8 @@
 namespace hazelcast {
     namespace client {
 
+        class Cluster;
+
         namespace serialization {
             class SerializationService;
         }
@@ -51,6 +53,8 @@ namespace hazelcast {
                 ServerListenerService &getServerListenerService();
 
                 connection::ConnectionManager &getConnectionManager();
+
+                Cluster &getCluster();
 
             private:
                 HazelcastClient &hazelcastClient;

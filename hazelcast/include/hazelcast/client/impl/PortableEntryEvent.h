@@ -5,7 +5,6 @@
 #ifndef HAZELCAST_PORTABLE_ENTRY_EVENT
 #define HAZELCAST_PORTABLE_ENTRY_EVENT
 
-#include "hazelcast/client/impl/EventObject.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/Portable.h"
@@ -14,21 +13,19 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PortableEntryEvent : public EventObject, public Portable {
+            class HAZELCAST_API PortableEntryEvent : public Portable {
             public:
-
-
                 PortableEntryEvent();
 
-                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value);
+                PortableEntryEvent(const std::string &name, const Member &member, EntryEventType eventType, const serialization::Data &key, const serialization::Data &value);
 
-                PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue);
+                PortableEntryEvent(const std::string &name, const Member &member, EntryEventType eventType, const serialization::Data &key, const serialization::Data &value, const serialization::Data &oldValue);
 
-                const serialization::Data&  getKey() const;
+                const serialization::Data &getKey() const;
 
-                const serialization::Data&  getOldValue() const;
+                const serialization::Data &getOldValue() const;
 
-                const serialization::Data&  getValue() const;
+                const serialization::Data &getValue() const;
 
                 std::string getUuid() const;
 
@@ -41,9 +38,9 @@ namespace hazelcast {
                 int getClassId() const;
 
 
-                void writePortable(serialization::PortableWriter& writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
             private:
                 serialization::Data key;
@@ -51,6 +48,7 @@ namespace hazelcast {
                 serialization::Data oldValue;
                 EntryEventType eventType;
                 std::string uuid;
+                std::string name;
 
             };
         }

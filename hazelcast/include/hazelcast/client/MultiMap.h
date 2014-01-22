@@ -22,7 +22,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include <string>
 #include <map>
 #include <set>
@@ -32,21 +32,18 @@
 namespace hazelcast {
     namespace client {
 
-
+        /**
+         * A specialized distributed map client whose keys can be associated with multiple values.
+         * 
+         * @see IMap 
+         */
         template<typename K, typename V>
-        class HAZELCAST_API MultiMap : public proxy::DistributedObject {
+        class HAZELCAST_API MultiMap : public DistributedObject {
             friend class HazelcastClient;
-
         public:
             /**
              * Stores a key-value pair in the multimap.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key   the key to be stored
              * @param value the value to be stored
@@ -63,17 +60,6 @@ namespace hazelcast {
 
             /**
              * Returns the multimap of values associated with the key.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
-             * <p/>
-             * <p><b>Warning-2:</b></p>
-             * The multimap is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
              * @param key the key whose associated values are to be returned
              * @return the multimap of the values associated with the key.
@@ -86,11 +72,6 @@ namespace hazelcast {
 
             /**
              * Removes the given key value pair from the multimap.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
              *
              * @param key   the key of the entry to remove
              * @param value the value of the entry to remove
@@ -106,17 +87,6 @@ namespace hazelcast {
 
             /**
              * Removes all the entries with the given key.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
-             * <p/>
-             * <p><b>Warning-2:</b></p>
-             * The multimap is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
              * @param key the key of the entries to remove
              * @return the multimap of removed values associated with the given key. Returned multimap
@@ -130,10 +100,6 @@ namespace hazelcast {
 
             /**
              * Returns the set of keys in the multimap.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * The set is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the set, and vice-versa.
              *
              * @return the set of keys in the multimap. Returned set might be modifiable
              *         but it has no effect on the multimap
@@ -145,10 +111,6 @@ namespace hazelcast {
 
             /**
              * Returns the multimap of values in the multimap.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * The multimap is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the multimap, and vice-versa.
              *
              * @return the multimap of values in the multimap. Returned multimap might be modifiable
              *         but it has no effect on the multimap
@@ -160,10 +122,6 @@ namespace hazelcast {
 
             /**
              * Returns the set of key-value pairs in the multimap.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * The set is <b>NOT</b> backed by the map,
-             * so changes to the map are <b>NOT</b> reflected in the set, and vice-versa.
              *
              * @return the set of key-value pairs in the multimap. Returned set might be modifiable
              *         but it has no effect on the multimap
@@ -184,13 +142,6 @@ namespace hazelcast {
 
             /**
              * Returns whether the multimap contains an entry with the key.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key the key whose existence is checked.
              * @return true if the multimap contains an entry with the key, false otherwise.
@@ -204,7 +155,6 @@ namespace hazelcast {
 
             /**
              * Returns whether the multimap contains an entry with the value.
-             * <p/>
              *
              * @param value the value whose existence is checked.
              * @return true if the multimap contains an entry with the value, false otherwise.
@@ -218,10 +168,6 @@ namespace hazelcast {
 
             /**
              * Returns whether the multimap contains the given key-value pair.
-             * <p/>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
              *
              * @param key   the key whose existence is checked.
              * @param value the value whose existence is checked.
@@ -257,12 +203,6 @@ namespace hazelcast {
             /**
              * Returns number of values matching to given key in the multimap.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key the key whose values count are to be returned
              * @return number of values matching to given key in the multimap.
@@ -295,12 +235,6 @@ namespace hazelcast {
              * The listener will get notified for all
              * add/remove/update/evict events of the specified key only.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param listener     entry listener
              * @param key          the key to listen
@@ -341,12 +275,6 @@ namespace hazelcast {
              * Locks are re-entrant so if the key is locked N times then
              * it should be unlocked N times before another thread can acquire it.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key key to lock.
              */
@@ -369,15 +297,8 @@ namespace hazelcast {
             * <p/>
             * Locks are re-entrant so if the key is locked N times then
             * it should be unlocked N times before another thread can acquire it.
-            * <p/>
-            * <p><b>Warning:</b></p>
-            * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-            * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-            * defined in <tt>key</tt>'s class.
-            *
             * @param key key to lock.
-            * @param leaseTime time to wait before releasing the lock.
-            * @param timeUnit unit of time to specify lease time.
+            * @param leaseTime time in milliseconds to wait before releasing the lock.
             */
             void lock(const K &key, long leaseTimeInMillis) {
                 serialization::Data keyData = toData(key);
@@ -388,11 +309,6 @@ namespace hazelcast {
             /**
              * Checks the lock for the specified key.
              * <p>If the lock is acquired then returns true, else false.
-             * <p/>
-             * <p><b>Warning:</b></p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
              *
              * @param key key to lock to be checked.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
@@ -409,12 +325,6 @@ namespace hazelcast {
              * <p>If the lock is not available then the current thread
              * doesn't wait and returns false immediately.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key key to lock.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
@@ -436,12 +346,6 @@ namespace hazelcast {
              * <li>The specified waiting time elapses
              * </ul>
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param time     the maximum time to wait for the lock
              * @param timeunit the time unit of the <tt>time</tt> argument.
@@ -459,12 +363,6 @@ namespace hazelcast {
              * Releases the lock for the specified key. It never blocks and
              * returns immediately.
              * <p/>
-             * <p><b>Warning:</b></p>
-             * <p>
-             * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-             * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-             * defined in <tt>key</tt>'s class.
-             * </p>
              *
              * @param key key to lock.
              */
@@ -478,12 +376,6 @@ namespace hazelcast {
             * Releases the lock for the specified key regardless of the lock owner.
             * It always successfully unlocks the key, never blocks
             * and returns immediately.
-            * <p/>
-            * <p><b>Warning:</b></p>
-            * This method uses <tt>hashCode</tt> and <tt>equals</tt> of binary form of
-            * the <tt>key</tt>, not the actual implementations of <tt>hashCode</tt> and <tt>equals</tt>
-            * defined in <tt>key</tt>'s class.
-            *
             * @param key key to lock.
             */
             void forceUnlock(const K &key) {
@@ -492,13 +384,11 @@ namespace hazelcast {
                 invoke<bool>(request, keyData);
             }
 
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
+
+        private:
             void onDestroy() {
             };
-        private:
+
             std::vector<V> toObjectCollection(boost::shared_ptr<impl::PortableCollection> result) {
                 std::vector<serialization::Data> const &dataCollection = result->getCollection();
                 std::vector<V> multimap(dataCollection.size());

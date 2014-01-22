@@ -75,7 +75,7 @@ namespace hazelcast {
 //                if (count == 0) {
 //                    char message[70];
 //                    sprintf(message, "Could not find Portable factory for factoryId: %d", factoryId);
-//                    throw hazelcast::client::IException(message);
+//                    throw IException(message);
 //                }
 //                return portableContextMap.at(factoryId);
                 boost::shared_ptr<PortableContext> value = portableContextMap.get(factoryId);

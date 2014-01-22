@@ -34,7 +34,7 @@ namespace hazelcast {
                 }
 
                 void handle(const PortableMessage &event) {
-                    connection::Member member = clusterService.getMember(event.getUuid());
+                    Member member = clusterService.getMember(event.getUuid());
                     boost::shared_ptr<E> object = serializationService.toObject<E>(event.getMessage());
                     Message<E> message(instanceName, *object, event.getPublishTime(), member);
                     listener.onMessage(message);

@@ -41,7 +41,7 @@ namespace hazelcast {
                     if (includeValue) {
                         item = serializationService.toObject<E>(event.getItem());
                     }
-                    connection::Member member = clusterService.getMember(event.getUuid());
+                    Member member = clusterService.getMember(event.getUuid());
                     ItemEventType type = event.getEventType();
                     ItemEvent<E> itemEvent(instanceName, type, *item, member);
                     if (type == EntryEventType::ADDED) {

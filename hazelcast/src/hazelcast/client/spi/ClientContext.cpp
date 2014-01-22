@@ -6,6 +6,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/Cluster.h"
 
 using namespace hazelcast::client;
 
@@ -38,7 +39,6 @@ namespace hazelcast {
                 return hazelcastClient.getPartitionService();
             };
 
-
             LifecycleService &ClientContext::getLifecycleService() {
                 return hazelcastClient.getLifecycleService();
             };
@@ -51,6 +51,9 @@ namespace hazelcast {
                 return hazelcastClient.getConnectionManager();
             };
 
+            Cluster &ClientContext::getCluster() {
+                return hazelcastClient.getCluster();
+            }
         }
 
     }

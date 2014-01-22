@@ -16,7 +16,7 @@
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/proxy/DistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 #include <stdexcept>
 
 
@@ -24,7 +24,7 @@ namespace hazelcast {
     namespace client {
 
         template<typename E>
-        class HAZELCAST_API ISet : public proxy::DistributedObject {
+        class HAZELCAST_API ISet : public DistributedObject {
             friend class HazelcastClient;
 
         public:

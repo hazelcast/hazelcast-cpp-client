@@ -8,12 +8,10 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class MembershipEvent;
-        }
+        class MembershipEvent;
         namespace impl {
 
-            void AbstractLoadBalancer::init(hazelcast::client::Cluster &cluster) {
+            void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster = &cluster;
                 setMembersRef();
             };
@@ -23,15 +21,15 @@ namespace hazelcast {
                 membersRef = cluster->getMembers();
             };
 
-            void AbstractLoadBalancer::memberAdded(const hazelcast::client::connection::MembershipEvent& membershipEvent) {
+            void AbstractLoadBalancer::memberAdded(const MembershipEvent &membershipEvent) {
                 setMembersRef();
             };
 
-            void AbstractLoadBalancer::memberRemoved(const hazelcast::client::connection::MembershipEvent& membershipEvent) {
+            void AbstractLoadBalancer::memberRemoved(const MembershipEvent &membershipEvent) {
                 setMembersRef();
             };
 
-            std::vector<connection::Member>  AbstractLoadBalancer::getMembers() {
+            std::vector<Member>  AbstractLoadBalancer::getMembers() {
                 boost::lock_guard<boost::mutex> lg(membersLock);
                 return membersRef;
             };

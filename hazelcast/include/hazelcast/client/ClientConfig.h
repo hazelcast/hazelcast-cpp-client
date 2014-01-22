@@ -12,29 +12,80 @@
 
 namespace hazelcast {
     namespace client {
-        namespace spi {
-            class LifecycleListener;
-        }
+        class MembershipListener;
+
+        class InitialMembershipListener;
+
+        class LifecycleListener;
+
         namespace connection {
-
             class SocketInterceptor;
-
         }
+
+        /**
+         * HazelcastClient configuration class.
+         */
         class HAZELCAST_API ClientConfig {
         public:
 
+            /**
+             * Constructor with default values.
+             * smart(true)
+             * redoOperation(false)
+             * poolSize(100)
+             * connectionTimeout(60000)
+             * connectionAttemptLimit(2)
+             * attemptPeriod(3000)
+             * defaultLoadBalancer(impl::RoundRobinLB)
+             */
             ClientConfig();
 
+            /**
+             * Destructor
+             */
             ~ClientConfig();
 
+            /**
+             * Adds an address to list of the initial addresses.
+             * Client will use this list to find a running Member, connect to it.
+             *
+             * @param address
+             * @return itself ClientConfig
+             */
             ClientConfig &addAddress(const Address &address);
 
+            /**
+             * Adds all address in given vector to list of the initial addresses.
+             * Client will use this list to find a running Member, connect to it.
+             *
+             * @param addresses vector of addresses
+             * @return itself ClientConfig
+            */
             ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
+            /**
+             * Returns vector of the initial addresses.
+             * Client will use this vector to find a running Member, connect to it.
+             *
+             * @param address
+             * @return vector of addresses
+             */
             std::vector<Address> &getAddresses();
 
+            /**
+             * The Group Configuration properties like:
+             * Name and Password that is used to connect to the cluster.
+             *
+             * @param groupConfig
+             * @return itself ClientConfig
+             */
             ClientConfig &setGroupConfig(GroupConfig &groupConfig);
 
+            /**
+             * Returns GroupConfig
+             *
+             * @return groupConfig
+             */
             GroupConfig &getGroupConfig();
 
             void setCredentials(protocol::Credentials *credentials);
@@ -59,62 +110,101 @@ namespace hazelcast {
 
             void setSocketInterceptor(connection::SocketInterceptor *socketInterceptor);
 
+            /**
+             * @return true if client configured as smart
+             * see setSmart()
+             */
             bool isSmart() const;
 
+            /**
+             * If true, client will route the key based operations to owner of the key at the best effort.
+             * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
+             * guarantee that the operation will always be executed on the owner.
+             * The cached table is updated every 10 seconds.
+             *
+             * @param smart
+             */
             void setSmart(bool smart);
 
             std::auto_ptr<connection::SocketInterceptor> getSocketInterceptor();
 
             /**
-             * Adds a listener object to configuration to be registered when {@code HazelcastClient} starts.
+             * Adds a listener to configuration to be registered when HazelcastClient starts.
              *
-             * @param listener one of {@link com.hazelcast.core.LifecycleListener}, {@link com.hazelcast.core.DistributedObjectListener}
-             *                 or {@link com.hazelcast.core.MembershipListener}
-             * @return
-            */
-            ClientConfig &addListener(spi::LifecycleListener *listener);
+             * @param listener LifecycleListener *listener
+             * @return itself ClientConfig
+             */
+            ClientConfig &addListener(LifecycleListener *listener);
 
+            /*
+             * Returns registered lifecycleListeners
+             *
+             * @return registered lifecycleListeners
+             */
+            const std::set<LifecycleListener *> &getLifecycleListeners() const;
+
+            /**
+             * Adds a listener to configuration to be registered when HazelcastClient starts.
+             *
+             * @param listener MembershipListener *listener
+             * @return itself ClientConfig
+             */
             ClientConfig &addListener(MembershipListener *listener);
 
+            /*
+             * Returns registered membershipListeners
+             *
+             * @return registered membershipListeners
+             */
+            const std::set<MembershipListener *> &getMembershipListeners() const;
 
+            /**
+             * Adds a listener to configuration to be registered when HazelcastClient starts.
+             *
+             * @param listener InitialMembershipListener *listener
+             * @return itself ClientConfig
+             */
+            ClientConfig &addListener(InitialMembershipListener *listener);
+
+            /*
+             * Returns registered initialMembershipListeners
+             *
+             * @return registered initialMembershipListeners
+             */
+            const std::set<InitialMembershipListener *> &getInitialMembershipListeners() const;
+
+            /**
+             * Used to distribute the operations to multiple Endpoints.
+             *
+             * @return loadBalancer
+             */
             LoadBalancer *const getLoadBalancer();
 
+            /**
+             * Used to distribute the operations to multiple Endpoints.
+             * If not set, RoundRobin based load balancer is used
+             *
+             * @param LoadBalancer
+             */
             void setLoadBalancer(LoadBalancer *loadBalancer);
 
 
         private:
 
-            /**
-             * The Group Configuration properties like:
-             * Name and Password that is used to connect to the cluster.
-             */
-
             GroupConfig groupConfig;
 
-
-            /**
-             * List of the initial set of addresses.
-             * Client will use this list to find a running Member, connect to it.
-             */
             std::vector<Address> addressList;
 
-            /**
-             * Used to distribute the operations to multiple Endpoints.
-             */
             LoadBalancer *loadBalancer;
 
             std::auto_ptr<impl::RoundRobinLB> defaultLoadBalancer;
 
-            /**
-             * List of listeners that Hazelcast will automatically add as a part of initialization process.
-             * Currently only supports {@link com.hazelcast.core.LifecycleListener}.
-             */
-//            std::set<spi::EventListener *> listeners;
-            /**
-             * If true, client will route the key based operations to owner of the key at the best effort.
-             * Note that it uses a cached version of {@link com.hazelcast.core.PartitionService#getPartitions()} and doesn't
-             * guarantee that the operation will always be executed on the owner. The cached table is updated every second.
-             */
+            std::set<MembershipListener *> membershipListeners;
+
+            std::set<InitialMembershipListener *> initialMembershipListeners;
+
+            std::set<LifecycleListener *> lifecycleListeners;
+
             bool smart;
 
             /**

@@ -15,16 +15,16 @@ namespace hazelcast {
 
             };
 
-            PortableEntryEvent::PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value)
-            : EventObject(name)
+            PortableEntryEvent::PortableEntryEvent(const std::string& name, const Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value)
+            : name(name)
             , eventType(eventType)
             , key(key)
             , value(value) {
 
             };
 
-            PortableEntryEvent::PortableEntryEvent(const std::string& name, const connection::Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue)
-            : EventObject(name)
+            PortableEntryEvent::PortableEntryEvent(const std::string& name, const Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue)
+            : name(name)
             , eventType(eventType)
             , key(key)
             , value(value)
@@ -53,7 +53,7 @@ namespace hazelcast {
             }
 
             std::string PortableEntryEvent::getName() const {
-                return getSource();
+                return name;
             }
 
             int PortableEntryEvent::getFactoryId() const {

@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_ABSTRACT_LOAD_BALANCER
 #define HAZELCAST_ABSTRACT_LOAD_BALANCER
 
-#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include <boost/thread/mutex.hpp>
@@ -14,9 +14,9 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class Member;
-        }
+
+        class Member;
+
         class Cluster;
 
         namespace impl {
@@ -25,19 +25,19 @@ namespace hazelcast {
 
                 void setMembersRef();
 
-                std::vector<connection::Member> getMembers();
+                std::vector<Member> getMembers();
 
                 virtual void init(Cluster &cluster);
 
-                void memberAdded(const connection::MembershipEvent &membershipEvent);
+                void memberAdded(const MembershipEvent &membershipEvent);
 
-                void memberRemoved(const connection::MembershipEvent &membershipEvent);
+                void memberRemoved(const MembershipEvent &membershipEvent);
 
                 virtual ~AbstractLoadBalancer();
 
             private:
                 boost::mutex membersLock;
-                std::vector<connection::Member> membersRef;
+                std::vector<Member> membersRef;
                 Cluster *cluster;
             };
         }

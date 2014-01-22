@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
-#include "hazelcast/client/connection/Member.h"
+#include "hazelcast/client/Member.h"
 #include "hazelcast/client/connection/Connection.h"
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
@@ -17,11 +17,11 @@ namespace hazelcast {
             class ClientContext;
         }
 
+        class MembershipEvent;
+
         namespace connection {
 
             class ConnectionManager;
-
-            class MembershipEvent;
 
             class HAZELCAST_API ClusterListenerThread {
             public:
