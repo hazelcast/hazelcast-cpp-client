@@ -35,8 +35,8 @@ namespace hazelcast {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
-                vector<serialization::Data>::iterator it;
+                std::vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
+                std::vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
@@ -58,8 +58,8 @@ namespace hazelcast {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), &data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
-                vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
-                vector<serialization::Data>::iterator it;
+                std::vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
+                std::vector<serialization::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {

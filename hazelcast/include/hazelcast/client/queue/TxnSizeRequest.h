@@ -7,14 +7,13 @@
 #ifndef HAZELCAST_TxnSizeRequest
 #define HAZELCAST_TxnSizeRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API TxnSizeRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnSizeRequest : public txn::BaseTxnRequest {
             public:
                 TxnSizeRequest(const std::string &name);
 
@@ -25,7 +24,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                const std::string &name;
             };
         }
     }

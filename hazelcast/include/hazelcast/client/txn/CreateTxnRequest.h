@@ -8,12 +8,12 @@
 #define HAZELCAST_CreateTxnRequest
 
 #include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API CreateTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API CreateTxnRequest : public BaseTxnRequest {
             public:
                 CreateTxnRequest(TransactionOptions options);
 

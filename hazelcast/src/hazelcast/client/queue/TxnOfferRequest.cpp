@@ -5,6 +5,8 @@
 
 #include "hazelcast/client/queue/TxnOfferRequest.h"
 #include "hazelcast/client/queue/QueuePortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,6 +27,7 @@ namespace hazelcast {
             }
 
             void TxnOfferRequest::write(serialization::PortableWriter &writer) const {
+                BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();

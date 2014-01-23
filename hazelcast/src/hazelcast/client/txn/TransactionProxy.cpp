@@ -10,8 +10,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/ServerException.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 
 namespace hazelcast {
@@ -52,7 +50,7 @@ namespace hazelcast {
 //                    threadFlag.set(Boolean.TRUE);
                     startTime = util::getCurrentTimeMillis();
 
-                    CreateTxnRequest * request = new CreateTxnRequest(options);
+                    CreateTxnRequest *request = new CreateTxnRequest(options);
                     boost::shared_ptr<std::string> response = invoke<std::string>(request);
                     txnId = *response;
                     state = TxnState::ACTIVE;
@@ -70,7 +68,7 @@ namespace hazelcast {
                     }
                     checkThread();
                     checkTimeout();
-                    CommitTxnRequest* request = new CommitTxnRequest();
+                    CommitTxnRequest *request = new CommitTxnRequest();
                     invoke<bool>(request);
                     state = TxnState::COMMITTED;
                 } catch (exception::IOException &e) {
@@ -97,7 +95,7 @@ namespace hazelcast {
                     }
                     checkThread();
                     try {
-                        RollbackTxnRequest* request = new RollbackTxnRequest();
+                        RollbackTxnRequest *request = new RollbackTxnRequest();
                         invoke<bool>(request);
                     } catch (std::exception &) {
                     }
@@ -113,7 +111,6 @@ namespace hazelcast {
             serialization::SerializationService &TransactionProxy::getSerializationService() {
                 return clientContext.getSerializationService();
             }
-
 
             spi::InvocationService &TransactionProxy::getInvocationService() {
                 return clientContext.getInvocationService();
@@ -159,8 +156,6 @@ namespace hazelcast {
             void TxnState::operator = (int i) {
                 value = values[i];
             };
-
-
         }
     }
 }

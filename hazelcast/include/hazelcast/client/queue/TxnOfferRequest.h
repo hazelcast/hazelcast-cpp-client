@@ -7,15 +7,16 @@
 #ifndef HAZELCAST_TxnOfferRequest
 #define HAZELCAST_TxnOfferRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            class Data;
+        }
         namespace queue {
-            class HAZELCAST_API TxnOfferRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnOfferRequest : public txn::BaseTxnRequest {
             public:
                 TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::Data &);
 
@@ -26,7 +27,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                const std::string &name;
                 long timeoutInMillis;
                 serialization::Data &data;
             };

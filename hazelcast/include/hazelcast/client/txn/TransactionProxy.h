@@ -12,6 +12,7 @@
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
@@ -96,7 +97,9 @@ namespace hazelcast {
                 void onTxnEnd();
 
                 template<typename Response>
-                boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
+                boost::shared_ptr<Response> invoke(BaseTxnRequest *request) {
+                    request->setTxnId(txnId);
+                    request->setThreadId(threadId);
                     spi::InvocationService &invocationService = clientContext.getInvocationService();
                     serialization::SerializationService &ss = clientContext.getSerializationService();
                     boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, *connection);

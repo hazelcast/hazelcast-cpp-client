@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_TxnMultiMapRequest
 #define HAZELCAST_TxnMultiMapRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API TxnMultiMapRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnMultiMapRequest : public txn::BaseTxnRequest {
             public:
                 TxnMultiMapRequest(const std::string &name);
 

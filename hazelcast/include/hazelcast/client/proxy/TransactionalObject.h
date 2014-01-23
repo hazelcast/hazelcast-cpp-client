@@ -10,6 +10,7 @@
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
@@ -17,6 +18,7 @@ namespace hazelcast {
     namespace client {
         namespace txn {
             class TransactionProxy;
+
         }
         namespace proxy {
 
@@ -46,7 +48,9 @@ namespace hazelcast {
                 };
 
                 template<typename Response >
-                boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
+                boost::shared_ptr<Response> invoke(txn::BaseTxnRequest *request) {
+                    request->setTxnId(context->getTxnId());
+                    request->setThreadId(util::getThreadId());
                     spi::InvocationService &invocationService = context->getInvocationService();
                     serialization::SerializationService &ss = context->getSerializationService();
                     boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, *(context->getConnection()));

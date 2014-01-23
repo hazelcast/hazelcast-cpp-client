@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TxnMapRequest
 #define HAZELCAST_TxnMapRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -54,7 +54,7 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class HAZELCAST_API TxnMapRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnMapRequest : public txn::BaseTxnRequest {
             public:
                 TxnMapRequest();
 

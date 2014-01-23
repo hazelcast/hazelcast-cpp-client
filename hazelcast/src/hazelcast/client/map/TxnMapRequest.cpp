@@ -69,7 +69,7 @@ namespace hazelcast {
             , predicate(NULL) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType)
             : name(name)
             , requestType(requestType)
             , key(NULL)
@@ -78,7 +78,7 @@ namespace hazelcast {
             , predicate(NULL) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, serialization::Data *key)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -87,7 +87,7 @@ namespace hazelcast {
             , predicate(NULL) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -96,7 +96,7 @@ namespace hazelcast {
             , predicate(NULL) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -105,7 +105,7 @@ namespace hazelcast {
             , predicate(NULL) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string&  name, TxnMapRequestType requestType, const std::string& predicate)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate)
             : name(name)
             , requestType(requestType)
             , key(NULL)
@@ -123,10 +123,11 @@ namespace hazelcast {
             };
 
 
-            void TxnMapRequest::write(serialization::PortableWriter& writer) const {
+            void TxnMapRequest::write(serialization::PortableWriter &writer) const {
+                BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 writer.writeInt("t", (int) requestType);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 util::writeNullableData(out, key);
                 util::writeNullableData(out, value);
                 util::writeNullableData(out, newValue);

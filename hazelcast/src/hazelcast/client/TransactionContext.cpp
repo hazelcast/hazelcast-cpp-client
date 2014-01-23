@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {

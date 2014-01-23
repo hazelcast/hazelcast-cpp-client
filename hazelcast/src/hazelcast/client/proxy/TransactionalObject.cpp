@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/proxy/TransactionalObject.h"
 #include "hazelcast/client/impl/ClientDestroyRequest.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,7 +30,9 @@ namespace hazelcast {
             void TransactionalObject::destroy() {
                 onDestroy();
                 impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
-                invoke<bool>(request);
+                spi::InvocationService &invocationService = context->getInvocationService();
+                serialization::SerializationService &ss = context->getSerializationService();
+                invocationService.invokeOnConnection(request, *(context->getConnection()));
             }
         }
     }

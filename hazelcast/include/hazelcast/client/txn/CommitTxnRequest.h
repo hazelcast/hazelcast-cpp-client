@@ -8,12 +8,12 @@
 #ifndef HAZELCAST_CommitTxnRequest
 #define HAZELCAST_CommitTxnRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API CommitTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API CommitTxnRequest : public BaseTxnRequest {
             public:
 
                 int getFactoryId() const;

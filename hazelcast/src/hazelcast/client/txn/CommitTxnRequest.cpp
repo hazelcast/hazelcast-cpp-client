@@ -19,6 +19,7 @@ namespace hazelcast {
             }
 
             void CommitTxnRequest::write(serialization::PortableWriter &writer) const {
+                BaseTxnRequest::write(writer);
             };
         }
     }

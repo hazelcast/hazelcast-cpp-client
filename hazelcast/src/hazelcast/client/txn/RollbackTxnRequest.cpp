@@ -19,6 +19,7 @@ namespace hazelcast {
             }
 
             void RollbackTxnRequest::write(serialization::PortableWriter &writer) const {
+                BaseTxnRequest::write(writer);
             };
 
         }

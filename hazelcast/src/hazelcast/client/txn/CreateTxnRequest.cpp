@@ -6,7 +6,6 @@
 #include "hazelcast/client/txn/CreateTxnRequest.h"
 #include "hazelcast/client/txn/TxnPortableHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
@@ -25,6 +24,7 @@ namespace hazelcast {
             }
 
             void CreateTxnRequest::write(serialization::PortableWriter &writer) const {
+                BaseTxnRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 options.writeData(out);
             };

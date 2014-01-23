@@ -68,24 +68,24 @@ int main(int argc, char **argv) {
     ClientTopicTest topicTest(factory);
     topicTest.executeTests();
 
-//
-//    ClientTxnListTest clientTxnListTest(factory);
-//    clientTxnListTest.executeTests();
-//
-//    ClientTxnMapTest clientTxnMapTest(factory);
-//    clientTxnMapTest.executeTests();
-//
-//    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
-//    clientTxnMultiMapTest.executeTests();
-//
-//    ClientTxnQueueTest clientTxnQueueTest(factory);
-//    clientTxnQueueTest.executeTests();
-//
-//    ClientTxnSetTest clientTxnSetTest(factory);
-//    clientTxnSetTest.executeTests();
-//
-//    ClientTxnTest clientTxnTest(factory);
-//    clientTxnTest.executeTests();
+
+    ClientTxnListTest clientTxnListTest(factory);
+    clientTxnListTest.executeTests();
+
+    ClientTxnMapTest clientTxnMapTest(factory);
+    clientTxnMapTest.executeTests();
+
+    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
+    clientTxnMultiMapTest.executeTests();
+
+    ClientTxnQueueTest clientTxnQueueTest(factory);
+    clientTxnQueueTest.executeTests();
+
+    ClientTxnSetTest clientTxnSetTest(factory);
+    clientTxnSetTest.executeTests();
+
+    ClientTxnTest clientTxnTest(factory);
+    clientTxnTest.executeTests();
 
 //    testSpeed();
 

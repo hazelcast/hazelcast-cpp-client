@@ -7,12 +7,12 @@
 #ifndef HAZELCAST_RollbackTransactionRequest
 #define HAZELCAST_RollbackTransactionRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API RollbackTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API RollbackTxnRequest : public BaseTxnRequest {
             public:
                 int getFactoryId() const;
 

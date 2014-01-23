@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_TxnCollectionRequest
 #define HAZELCAST_TxnCollectionRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
             class Data;
         }
         namespace collection {
-            class HAZELCAST_API TxnCollectionRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnCollectionRequest : public txn::BaseTxnRequest {
             public:
                 TxnCollectionRequest(const std::string &name);
 

@@ -7,14 +7,13 @@
 #ifndef HAZELCAST_TxnPollRequest
 #define HAZELCAST_TxnPollRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API TxnPollRequest : public impl::PortableRequest {
+            class HAZELCAST_API TxnPollRequest : public txn::BaseTxnRequest {
             public:
                 TxnPollRequest(const std::string &name, long timeout);
 
@@ -25,7 +24,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                const std::string &name;
                 long timeout;
             };
         }
