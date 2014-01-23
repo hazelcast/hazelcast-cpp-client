@@ -8,8 +8,8 @@
 
 namespace hazelcast {
     namespace client {
-        class MembershipEvent;
         namespace impl {
+            class ClientMembershipEvent;
 
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster = &cluster;

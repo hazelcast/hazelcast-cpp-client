@@ -11,9 +11,6 @@
 
 namespace hazelcast {
     namespace client {
-
-
-
         namespace serialization {
             class ObjectDataOutput;
 
@@ -25,9 +22,9 @@ namespace hazelcast {
 
             virtual ~DataSerializable();
 
-            virtual void writeData(serialization::ObjectDataOutput& writer) const = 0;
+            virtual void writeData(serialization::ObjectDataOutput &writer) const = 0;
 
-            virtual void readData(serialization::ObjectDataInput& reader) = 0;
+            virtual void readData(serialization::ObjectDataInput &reader) = 0;
 
         };
     }

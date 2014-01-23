@@ -17,7 +17,9 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        class MembershipEvent;
+        namespace impl {
+            class ClientMembershipEvent;
+        }
 
         namespace connection {
 

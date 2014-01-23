@@ -20,6 +20,8 @@ namespace hazelcast {
     namespace client {
         class MembershipListener;
 
+        class MembershipEvent;
+
         class InitialMembershipListener;
 
         namespace protocol {

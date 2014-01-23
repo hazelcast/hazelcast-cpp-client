@@ -6,9 +6,13 @@
 #ifndef HAZELCAST_InitialMembershipListener
 #define HAZELCAST_InitialMembershipListener
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         class InitialMembershipEvent;
+
+        class MembershipEvent;
 
         /**
          * The InitializingMembershipListener is a {@link MembershipListener} that will first receives a
@@ -21,7 +25,7 @@ namespace hazelcast {
          * @see Cluster#addMembershipListener(InitialMembershipListener *listener)
          * @see MembershipEvent#getMembers()
          */
-        class HAZELCAST_API InitialMembershipListener{
+        class HAZELCAST_API InitialMembershipListener {
         public:
             virtual ~InitialMembershipListener() {
 

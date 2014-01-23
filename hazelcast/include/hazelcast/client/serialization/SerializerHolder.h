@@ -23,18 +23,18 @@ namespace hazelcast {
             class HAZELCAST_API SerializerHolder {
 
             public:
-                SerializerHolder(SerializationContext& context);
+                SerializerHolder(SerializationContext &context);
 
                 bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
                 boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
-                PortableSerializer& getPortableSerializer();
+                PortableSerializer &getPortableSerializer();
 
-                DataSerializer& getDataSerializer();
+                DataSerializer &getDataSerializer();
 
             private:
-                util::SynchronizedMap<int, SerializerBase> serializers;
+                hazelcast::util::SynchronizedMap<int, SerializerBase> serializers;
                 PortableSerializer portableSerializer;
                 DataSerializer dataSerializer;
 

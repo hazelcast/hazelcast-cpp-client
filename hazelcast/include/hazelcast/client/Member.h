@@ -11,6 +11,12 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Cluster member class. The default implementation
+         *
+         * @see Cluster
+         * @see MembershipListener
+         */
         class HAZELCAST_API Member : public IdentifiedDataSerializable {
         public:
             Member();
@@ -19,17 +25,11 @@ namespace hazelcast {
 
             Member(const Address &);
 
-            ~Member();
-
             Member &operator = (const Member &);
 
             bool operator ==(const Member &) const;
 
             int operator <(const Member &) const;
-
-            const Address &getAddress() const;
-
-            std::string getUuid() const;
 
             int getFactoryId() const;
 
@@ -39,9 +39,148 @@ namespace hazelcast {
 
             void readData(serialization::ObjectDataInput &reader);
 
+            /**
+             * Returns the socket address of this member.
+             *
+             * @return socket address of this member
+             */
+            const Address &getAddress() const;
+
+            /**
+             * Returns UUID of this member.
+             *
+             * @return UUID of this member.
+             */
+            const std::string &getUuid() const;
+
+
+            /**
+             * Returns the value of the specified key for this member or
+             * default constructed value if value is undefined.
+             *
+             * @param AttributeType type template for attribute type
+             * @param key The key to lookup.
+             * @return The value for this members key.
+             */
+            template <typename AttributeType>
+            AttributeType getAttribute(const std::string &key) {
+                AttributeType *tag;
+                return getAttributeResolved(key, tag);
+            }
+
+            /**
+             * Defines a key-value pair string attribute for this member available
+             * to other cluster members.
+             *
+             * @param key The key for this property.
+             * @param value The value corresponds to this attribute and this member.
+             */
+            template <typename AttributeType>
+            void setAttribute(const std::string &key, AttributeType value) {
+                setAttributeResolved(key, value);
+            }
+
+            /**
+             * Removes a key-value pair attribute for this member if given key was
+             * previously assigned as an attribute.<br/>
+             *
+             * @param key The key to be deleted from the member attributes
+             * @return true if remove successful.
+             */
+            template <typename AttributeType>
+            bool removeAttribute(const std::string &key) {
+                AttributeType *tag;
+                return removeAttributeResolved(key, tag);
+            };
+
+
+            /**
+             * check if an attribute is defined for given key.
+             *
+             * @return true if attribute is defined.
+             */
+            template <typename AttributeType>
+            bool lookupAttribute(const std::string &key) const {
+                AttributeType *tag;
+                return lookupAttributeResolved(key, tag);
+            };
+
         private:
+
+            std::string getAttributeResolved(const std::string &key, std::string *tag);
+
+            bool getAttributeResolved(const std::string &key, bool *tag);
+
+            byte getAttributeResolved(const std::string &key, byte *tag);
+
+            short getAttributeResolved(const std::string &key, short *tag);
+
+            int getAttributeResolved(const std::string &key, int *tag);
+
+            long getAttributeResolved(const std::string &key, long *tag);
+
+            float getAttributeResolved(const std::string &key, float *tag);
+
+            double getAttributeResolved(const std::string &key, double *tag);
+
+            void setAttributeResolved(const std::string &key, std::string value);
+
+            void setAttributeResolved(const std::string &key, bool value);
+
+            void setAttributeResolved(const std::string &key, byte value);
+
+            void setAttributeResolved(const std::string &key, short value);
+
+            void setAttributeResolved(const std::string &key, int value);
+
+            void setAttributeResolved(const std::string &key, long value);
+
+            void setAttributeResolved(const std::string &key, float value);
+
+            void setAttributeResolved(const std::string &key, double value);
+
+            bool removeAttributeResolved(const std::string &key, std::string *tag);
+
+            bool removeAttributeResolved(const std::string &key, bool *tag);
+
+            bool removeAttributeResolved(const std::string &key, byte *tag);
+
+            bool removeAttributeResolved(const std::string &key, short *tag);
+
+            bool removeAttributeResolved(const std::string &key, int *tag);
+
+            bool removeAttributeResolved(const std::string &key, long *tag);
+
+            bool removeAttributeResolved(const std::string &key, float *tag);
+
+            bool removeAttributeResolved(const std::string &key, double *tag);
+
+            bool lookupAttributeResolved(const std::string &key, std::string *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, bool *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, byte *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, short *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, int *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, long *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, float *tag) const;
+
+            bool lookupAttributeResolved(const std::string &key, double *tag) const;
+
             Address address;
             std::string uuid;
+            std::map< std::string, std::string > stringAttributes;
+            std::map< std::string, bool > boolAttributes;
+            std::map< std::string, byte > byteAttributes;
+            std::map< std::string, int > intAttributes;
+            std::map< std::string, float > floatAttributes;
+            std::map< std::string, short > shortAttributes;
+            std::map< std::string, long > longAttributes;
+            std::map< std::string, double > doubleAttributes;
         };
 
         inline std::ostream &operator <<(std::ostream &strm, const Member &a) {

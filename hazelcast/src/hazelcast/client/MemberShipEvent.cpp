@@ -1,52 +1,33 @@
 //
-// Created by sancar koyunlu on 5/29/13.
-// Copyright (c) 2013 hazelcast. All rights reserved.
+// Created by sancar koyunlu on 23/01/14.
+//
 
-
-#include "hazelcast/client/MemberShipEvent.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
     namespace client {
+        MembershipEvent::MembershipEvent(Cluster &cluster, MembershipEventType eventType, const Member &member)
+        :cluster(cluster)
+        , member(member)
+        , eventType(eventType) {
 
-            MembershipEvent::MembershipEvent() {
+        }
 
-            };
+        const std::vector<Member> &MembershipEvent::getMembers() const {
+            return cluster.getMembers();
+        }
 
-            MembershipEvent::MembershipEvent(Member const & member, int eventType)
-            : member(member)
-            , eventType(eventType) {
+        const Cluster &MembershipEvent::getCluster() const {
+            return cluster;
+        }
 
-            };
+        MembershipEvent::MembershipEventType MembershipEvent::getEventType() const {
+            return eventType;
+        }
 
-            const Member& MembershipEvent::getMember() const {
-                return member;
-            };
-
-            int MembershipEvent::getEventType() const {
-                return eventType;
-            };
-
-            int MembershipEvent::getFactoryId() const {
-                return protocol::ProtocolConstants::DATA_FACTORY_ID;
-
-            }
-
-            int MembershipEvent::getClassId() const {
-                return protocol::ProtocolConstants::MEMBERSHIP_EVENT;
-
-            }
-
-            void MembershipEvent::writeData(serialization::ObjectDataOutput& writer) const {
-                member.writeData(writer);
-                writer.writeInt(eventType);
-            }
-
-            void MembershipEvent::readData(serialization::ObjectDataInput& reader) {
-                member.readData(reader);
-                eventType = reader.readInt();
-            }
-
+        const Member &MembershipEvent::getMember() const {
+            return member;
+        }
     }
 }

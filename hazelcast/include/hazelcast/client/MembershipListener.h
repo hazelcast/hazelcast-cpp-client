@@ -46,13 +46,6 @@ namespace hazelcast {
              */
             virtual void memberRemoved(const MembershipEvent &event) = 0;
 
-            /**
-             * Invoked when an attribute of a member was changed.
-             *
-             * @param memberAttributeEvent member attribute event
-             */
-//            void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) = 0; MTODO
-
         };
     }
 }

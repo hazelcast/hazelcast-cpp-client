@@ -5,7 +5,7 @@
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/MemberShipEvent.h"
+#include "hazelcast/client/impl/ClientMemberShipEvent.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/connection/ClientResponse.h"
@@ -120,12 +120,12 @@ namespace hazelcast {
                     if (prevMembers.count((*it).getUuid()) > 0) {
                         prevMembers.erase((*it).getUuid());
                     } else {
-                        events.push_back(MembershipEvent((*it), MembershipEvent::MEMBER_ADDED));
+                        events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_ADDED, (*it)));
                     }
                 }
 
                 for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
-                    events.push_back(MembershipEvent(it->second, MembershipEvent::MEMBER_REMOVED));
+                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_ADDED, it->second));
                 }
 
 
@@ -140,18 +140,34 @@ namespace hazelcast {
                     if (!clientContext.getLifecycleService().isRunning())
                         break;
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
-                    boost::shared_ptr<MembershipEvent> event = clientContext.getSerializationService().toObject<MembershipEvent>(response->getData());
+                    boost::shared_ptr<impl::ClientMembershipEvent> event = clientContext.getSerializationService().toObject<impl::ClientMembershipEvent>(response->getData());
                     Member member = event->getMember();
                     if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         members.erase(std::find(members.begin(), members.end(), member));
 //                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
-                    } else {
-                        std::cerr << "error in ClusterListenerThread::listenMembershipEvents() " << event->getEventType() << std::endl;
+                    } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
+//                        MemberAttributeChange memberAttributeChange = event.getMemberAttributeChange(); //MTODO
+//                        Map<Address, MemberImpl> memberMap = membersRef.get();
+//                        if (memberMap != null) {
+//                            for (MemberImpl target : memberMap.values()) {
+//                                if (target.getUuid().equals(memberAttributeChange.getUuid())) {
+//                                    final MapOperationType operationType = memberAttributeChange.getOperationType();
+//                                    final String key = memberAttributeChange.getKey();
+//                                    final Object value = memberAttributeChange.getValue();
+//                                    target.updateAttribute(operationType, key, value);
+//                                    MemberAttributeEvent memberAttributeEvent = new MemberAttributeEvent(
+//                                            client.getCluster(), target, operationType, key, value);
+//                                    fireMemberAttributeEvent(memberAttributeEvent);
+//                                    break;
+//                                }
+//                            }
+//                        }
                     }
                     updateMembersRef();
-                    clientContext.getClusterService().fireMembershipEvent(*event);
+                    MembershipEvent membershipEvent(clientContext.getCluster(), event->getEventType(), member);
+                    clientContext.getClusterService().fireMembershipEvent(membershipEvent);
                 }
             };
 

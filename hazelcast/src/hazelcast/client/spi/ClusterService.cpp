@@ -10,7 +10,7 @@
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/MemberShipEvent.h"
+#include "hazelcast/client/impl/ClientMemberShipEvent.h"
 #include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
