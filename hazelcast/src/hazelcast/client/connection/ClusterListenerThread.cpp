@@ -142,10 +142,13 @@ namespace hazelcast {
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
                     boost::shared_ptr<impl::ClientMembershipEvent> event = clientContext.getSerializationService().toObject<impl::ClientMembershipEvent>(response->getData());
                     Member member = event->getMember();
+                    bool membersUpdated = false;
                     if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
+                        membersUpdated = true;
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         members.erase(std::find(members.begin(), members.end(), member));
+                        membersUpdated = true;
 //                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
                     } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
 //                        MemberAttributeChange memberAttributeChange = event.getMemberAttributeChange(); //MTODO
@@ -165,9 +168,11 @@ namespace hazelcast {
 //                            }
 //                        }
                     }
-                    updateMembersRef();
-                    MembershipEvent membershipEvent(clientContext.getCluster(), event->getEventType(), member);
-                    clientContext.getClusterService().fireMembershipEvent(membershipEvent);
+                    if (membersUpdated) {
+                        updateMembersRef();
+                        MembershipEvent membershipEvent(clientContext.getCluster(), event->getEventType(), member);
+                        clientContext.getClusterService().fireMembershipEvent(membershipEvent);
+                    }
                 }
             };
 
