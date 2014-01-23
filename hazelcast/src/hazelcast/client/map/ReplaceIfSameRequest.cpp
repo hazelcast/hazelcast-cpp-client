@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            ReplaceIfSameRequest::ReplaceIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& testValue, serialization::Data& value, int threadId)
+            ReplaceIfSameRequest::ReplaceIfSameRequest(const std::string &name, serialization::Data &key, serialization::Data &testValue, serialization::Data &value, long threadId)
             :name(name)
             , key(key)
             , value(value)
@@ -29,11 +29,11 @@ namespace hazelcast {
                 return PortableHook::REPLACE_IF_SAME;
             }
 
-            void ReplaceIfSameRequest::write(serialization::PortableWriter& writer) const {
+            void ReplaceIfSameRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
+                writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
                 testValue.writeData(out);

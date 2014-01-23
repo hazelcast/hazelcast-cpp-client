@@ -15,10 +15,10 @@ namespace hazelcast {
     namespace client {
         namespace spi {
 
-            LifecycleService::LifecycleService(ClientContext &clientContext)
+            LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
             :clientContext(clientContext)
             , active(false) {
-                std::set<LifecycleListener *> const &lifecycleListeners = clientContext.getClientConfig().getLifecycleListeners();
+                std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
                 fireLifecycleEvent(LifecycleEvent::STARTING);
             };
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             void LifecycleService::shutdown() {
                 active = false;
-                boost::lock_guard<boost::mutex> lg(listenerLock);
+                boost::lock_guard<boost::mutex> lg(lifecycleLock);
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().shutdown();
                 clientContext.getClusterService().stop();

@@ -17,18 +17,18 @@ namespace hazelcast {
         namespace multimap {
             class HAZELCAST_API MultiMapUnlockRequest : public KeyBasedRequest {
             public:
-                MultiMapUnlockRequest(const std::string& name, const serialization::Data& key, int threadId);
+                MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId);
 
-                MultiMapUnlockRequest(const std::string& name, const serialization::Data& key, int threadId, bool force);
+                MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId, bool force);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                int threadId;
+                long threadId;
                 bool force;
             };
 

@@ -15,22 +15,21 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
-                UnlockRequest(const std::string& name, serialization::Data& key, int threadId);
+                UnlockRequest(const std::string &name, serialization::Data &key, long threadId);
 
-                UnlockRequest(const std::string& name, serialization::Data& key, int threadId, bool force);
+                UnlockRequest(const std::string &name, serialization::Data &key, long threadId, bool force);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
+                void write(serialization::PortableWriter &writer) const;
 
 
             private:
-                serialization::Data& key;
+                serialization::Data &key;
                 std::string name;
-                int threadId;
+                long threadId;
                 bool force;
             };
         }

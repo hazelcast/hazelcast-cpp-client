@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 //    ClientTxnTest clientTxnTest(factory);
 //    clientTxnTest.executeTests();
 
-    testSpeed();
+//    testSpeed();
 
 
     return 0;

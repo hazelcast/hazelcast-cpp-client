@@ -18,19 +18,19 @@ namespace hazelcast {
         namespace lock {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
-                UnlockRequest(serialization::Data& key, int threadId);
+                UnlockRequest(serialization::Data &key, long threadId);
 
-                UnlockRequest(serialization::Data& key, int threadId, bool force);
+                UnlockRequest(serialization::Data &key, long threadId, bool force);
 
                 int getClassId() const;
 
                 int getFactoryId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data& key;
-                int threadId;
+                serialization::Data &key;
+                long threadId;
                 bool force;
             };
         }

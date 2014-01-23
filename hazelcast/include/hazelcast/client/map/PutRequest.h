@@ -13,21 +13,20 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API PutRequest : public impl::PortableRequest {
             public:
-                PutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long ttl);
+                PutRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long ttl);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
+                void write(serialization::PortableWriter &writer) const;
 
 
             private:
                 serialization::Data key;
                 serialization::Data value;
                 std::string name;
-                int threadId;
+                long threadId;
                 long ttl;
             };
         }

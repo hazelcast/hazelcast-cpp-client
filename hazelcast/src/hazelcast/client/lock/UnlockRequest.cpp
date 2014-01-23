@@ -10,13 +10,13 @@
 namespace hazelcast {
     namespace client {
         namespace lock {
-            UnlockRequest::UnlockRequest(serialization::Data& key, int threadId)
+            UnlockRequest::UnlockRequest(serialization::Data &key, long threadId)
             :key(key)
             , threadId(threadId)
             , force(false) {
             };
 
-            UnlockRequest::UnlockRequest(serialization::Data& key, int threadId, bool force)
+            UnlockRequest::UnlockRequest(serialization::Data &key, long threadId, bool force)
             :key(key)
             , threadId(threadId)
             , force(force) {
@@ -30,10 +30,10 @@ namespace hazelcast {
                 return LockPortableHook::FACTORY_ID;
             };
 
-            void UnlockRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeInt("tid", threadId);
+            void UnlockRequest::write(serialization::PortableWriter &writer) const {
+                writer.writeLong("tid", threadId);
                 writer.writeBoolean("force", force);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
         }

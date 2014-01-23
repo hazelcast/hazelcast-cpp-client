@@ -68,8 +68,6 @@ namespace hazelcast {
         class HAZELCAST_API HazelcastClient {
             friend class spi::ClientContext;
 
-            friend class spi::LifecycleService;
-
         public:
             HazelcastClient(ClientConfig &);
 

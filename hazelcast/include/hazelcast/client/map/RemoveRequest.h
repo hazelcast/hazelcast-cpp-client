@@ -16,18 +16,18 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API RemoveRequest : public impl::PortableRequest {
             public:
-                RemoveRequest(const std::string& name, serialization::Data& key, int threadId);
+                RemoveRequest(const std::string &name, serialization::Data &key, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 serialization::Data key;
                 std::string name;
-                int threadId;
+                long threadId;
             };
         }
     }

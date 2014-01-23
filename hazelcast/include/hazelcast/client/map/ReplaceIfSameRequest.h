@@ -15,22 +15,21 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API ReplaceIfSameRequest : public impl::PortableRequest {
             public:
-                ReplaceIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& testValue, serialization::Data& value, int threadId);
+                ReplaceIfSameRequest(const std::string &name, serialization::Data &key, serialization::Data &testValue, serialization::Data &value, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
+                void write(serialization::PortableWriter &writer) const;
 
 
             private:
-                serialization::Data& key;
-                serialization::Data& value;
-                serialization::Data& testValue;
+                serialization::Data &key;
+                serialization::Data &value;
+                serialization::Data &testValue;
                 std::string name;
-                int threadId;
+                long threadId;
             };
         }
     }

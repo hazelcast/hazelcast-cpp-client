@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            TryPutRequest::TryPutRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId, long timeout)
+            TryPutRequest::TryPutRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long timeout)
             :name(name)
             , key(key)
             , value(value)
@@ -30,12 +30,12 @@ namespace hazelcast {
                 return PortableHook::TRY_PUT;
             }
 
-            void TryPutRequest::write(serialization::PortableWriter& writer) const {
+            void TryPutRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("timeout", timeout);
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
+                writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
             };

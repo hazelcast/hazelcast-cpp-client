@@ -18,20 +18,19 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API EvictRequest : public impl::PortableRequest {
             public:
-                EvictRequest(const std::string& name, serialization::Data& key, int threadId);
+                EvictRequest(const std::string &name, serialization::Data &key, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
+                void write(serialization::PortableWriter &writer) const;
 
 
             private:
-                serialization::Data& key;
+                serialization::Data &key;
                 std::string name;
-                int threadId;
+                long threadId;
             };
         }
     }

@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            RemoveIfSameRequest::RemoveIfSameRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId)
+            RemoveIfSameRequest::RemoveIfSameRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId)
             :name(name)
             , key(key)
             , value(value)
@@ -27,10 +27,10 @@ namespace hazelcast {
                 return PortableHook::REMOVE_IF_SAME;
             }
 
-            void RemoveIfSameRequest::write(serialization::PortableWriter& writer) const {
+            void RemoveIfSameRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                writer.writeLong("t", threadId);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
             };

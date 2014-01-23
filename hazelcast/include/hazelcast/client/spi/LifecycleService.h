@@ -18,13 +18,15 @@ namespace hazelcast {
 
         class LifecycleEvent;
 
+        class ClientConfig;
+
         namespace spi {
 
             class ClientContext;
 
             class HAZELCAST_API LifecycleService {
             public:
-                LifecycleService(ClientContext& clientContext);
+                LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig);
 
                 void start();
 
@@ -36,11 +38,13 @@ namespace hazelcast {
 
                 void shutdown();
 
-                void fireLifecycleEvent(const LifecycleEvent& lifecycleEvent);
+                void fireLifecycleEvent(const LifecycleEvent &lifecycleEvent);
+
             private:
-                ClientContext& clientContext;
+                ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
                 boost::mutex listenerLock;
+                boost::mutex lifecycleLock;
 
                 boost::atomic<bool> active;
 

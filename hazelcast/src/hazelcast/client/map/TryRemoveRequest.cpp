@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            TryRemoveRequest::TryRemoveRequest(const std::string& name, serialization::Data& key, int threadId, long timeout)
+            TryRemoveRequest::TryRemoveRequest(const std::string &name, serialization::Data &key, long threadId, long timeout)
             :name(name)
             , key(key)
             , threadId(threadId)
@@ -28,11 +28,11 @@ namespace hazelcast {
                 return PortableHook::TRY_REMOVE;
             };
 
-            void TryRemoveRequest::write(serialization::PortableWriter& writer) const {
+            void TryRemoveRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("timeout", timeout);
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                writer.writeLong("t", threadId);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
         }

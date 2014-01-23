@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            RemoveRequest::RemoveRequest(const std::string &name, serialization::Data &key, int threadId)
+            RemoveRequest::RemoveRequest(const std::string &name, serialization::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {
@@ -28,7 +28,7 @@ namespace hazelcast {
 
             void RemoveRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
+                writer.writeLong("t", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };

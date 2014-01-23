@@ -17,7 +17,7 @@ namespace hazelcast {
             HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &hazelcastClient)
             : clientConfig(clientConfig)
             , clientContext(hazelcastClient)
-            , lifecycleService(clientContext)
+            , lifecycleService(clientContext, clientConfig)
             , serializationService(0)
             , connectionManager(clientContext, this->clientConfig.isSmart())
             , clusterService(clientContext)

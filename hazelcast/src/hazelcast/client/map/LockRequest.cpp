@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            LockRequest::LockRequest(const std::string& name, serialization::Data& key, int threadId, long ttl, long timeout)
+            LockRequest::LockRequest(const std::string &name, serialization::Data &key, long threadId, long ttl, long timeout)
             :name(name)
             , key(key)
             , threadId(threadId)
@@ -20,7 +20,7 @@ namespace hazelcast {
             , timeout(timeout) {
             };
 
-            LockRequest::LockRequest(const std::string& name, serialization::Data& key, int threadId)
+            LockRequest::LockRequest(const std::string &name, serialization::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId)
@@ -36,12 +36,12 @@ namespace hazelcast {
                 return PortableHook::LOCK;
             };
 
-            void LockRequest::write(serialization::PortableWriter& writer) const {
+            void LockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("tid", threadId);
+                writer.writeLong("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
         }

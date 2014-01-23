@@ -20,11 +20,11 @@ namespace hazelcast {
             return s.str();
         };
 
-        int getThreadId() {
-        	return hash_value(boost::this_thread::get_id()) % INT_MAX;
+        long getThreadId() {
+            return hash_value(boost::this_thread::get_id());
         };
 
-        void writeNullableData(client::serialization::ObjectDataOutput& out, const client::serialization::Data *data) {
+        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data) {
             if (data != NULL) {
                 out.writeBoolean(true);
                 data->writeData(out);
@@ -34,7 +34,7 @@ namespace hazelcast {
             }
         };
 
-        void readNullableData(client::serialization::ObjectDataInput & in, client::serialization::Data *data) {
+        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data) {
             bool isNotNull = in.readBoolean();
             if (isNotNull)
                 data->readData(in);

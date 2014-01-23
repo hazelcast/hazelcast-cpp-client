@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            DeleteRequest::DeleteRequest(const std::string& name, serialization::Data& key, int threadId)
+            DeleteRequest::DeleteRequest(const std::string &name, serialization::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {
@@ -26,10 +26,10 @@ namespace hazelcast {
             }
 
 
-            void DeleteRequest::write(serialization::PortableWriter& writer) const {
+            void DeleteRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                writer.writeLong("t", threadId);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
         }

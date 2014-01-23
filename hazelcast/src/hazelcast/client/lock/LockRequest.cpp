@@ -13,14 +13,14 @@ namespace hazelcast {
     namespace client {
         namespace lock {
 
-            LockRequest::LockRequest(serialization::Data& key, int threadId)
+            LockRequest::LockRequest(serialization::Data &key, long threadId)
             :key(key)
             , threadId(threadId)
             , ttl(-1)
             , timeout(-1) {
             };
 
-            LockRequest::LockRequest(serialization::Data& key, int threadId, long ttl, long timeout)
+            LockRequest::LockRequest(serialization::Data &key, long threadId, long ttl, long timeout)
             :key(key)
             , threadId(threadId)
             , ttl(ttl)
@@ -36,11 +36,11 @@ namespace hazelcast {
             };
 
 
-            void LockRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeInt("tid", threadId);
+            void LockRequest::write(serialization::PortableWriter &writer) const {
+                writer.writeLong("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 

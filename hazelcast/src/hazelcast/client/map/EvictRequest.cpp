@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            EvictRequest::EvictRequest(const std::string& name, serialization::Data& key, int threadId)
+            EvictRequest::EvictRequest(const std::string &name, serialization::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {
@@ -27,10 +27,10 @@ namespace hazelcast {
                 return PortableHook::EVICT;
             };
 
-            void EvictRequest::write(serialization::PortableWriter& writer) const {
+            void EvictRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("name", name);
-                writer.writeInt("t", threadId);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                writer.writeLong("t", threadId);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 

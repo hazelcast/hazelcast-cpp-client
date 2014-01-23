@@ -17,15 +17,15 @@ namespace hazelcast {
         namespace multimap {
             class HAZELCAST_API PutRequest : public KeyBasedRequest {
             public:
-                PutRequest(const std::string& name, const serialization::Data& key, const serialization::Data& value, int index, int threadId);
+                PutRequest(const std::string &name, const serialization::Data &key, const serialization::Data &value, int index, long threadId);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data& value;
-                int threadId;
+                const serialization::Data &value;
+                long threadId;
                 int index;
 
             };

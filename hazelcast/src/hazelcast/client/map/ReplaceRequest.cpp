@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            ReplaceRequest::ReplaceRequest(const std::string& name, serialization::Data& key, serialization::Data& value, int threadId)
+            ReplaceRequest::ReplaceRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId)
             :name(name)
             , key(key)
             , value(value)
@@ -28,11 +28,11 @@ namespace hazelcast {
                 return PortableHook::REPLACE;
             }
 
-            void ReplaceRequest::write(serialization::PortableWriter& writer) const {
+            void ReplaceRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("t", threadId);
+                writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
             };

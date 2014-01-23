@@ -15,7 +15,7 @@ namespace hazelcast {
             , threadId(-1) {
             };
 
-            IsLockedRequest::IsLockedRequest(serialization::Data &key, int threadId)
+            IsLockedRequest::IsLockedRequest(serialization::Data &key, long threadId)
             :key(key)
             , threadId(threadId) {
             };
@@ -29,7 +29,7 @@ namespace hazelcast {
             };
 
             void IsLockedRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeInt("tid", threadId);
+                writer.writeLong("tid", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };

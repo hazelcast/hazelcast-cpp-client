@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            RemoveAllRequest::RemoveAllRequest(const std::string &name, const serialization::Data &key, int threadId)
+            RemoveAllRequest::RemoveAllRequest(const std::string &name, const serialization::Data &key, long threadId)
             : KeyBasedRequest(name, key)
             , threadId(threadId) {
 
@@ -22,7 +22,7 @@ namespace hazelcast {
             };
 
             void RemoveAllRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeInt("t", threadId);
+                writer.writeLong("t", threadId);
                 KeyBasedRequest::write(writer);
             };
         }
