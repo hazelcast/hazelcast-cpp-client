@@ -1,7 +1,7 @@
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/connection/SocketInterceptor.h"
-#import "LifecycleListener.h"
-#include "InitialMembershipListener.h"
+#include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -9,7 +9,6 @@ namespace hazelcast {
         ClientConfig::ClientConfig()
         : smart(true)
         , redoOperation(false)
-        , poolSize(100)
         , connectionTimeout(60000)
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
@@ -126,22 +125,22 @@ namespace hazelcast {
             return initialMembershipListeners;
         }
 
-        void ClientConfig::setCredentials(protocol::Credentials *credentials) {
+        void ClientConfig::setCredentials(Credentials *credentials) {
             this->credentials = credentials;
         };
 
-        protocol::Credentials &ClientConfig::getCredentials() {
+        Credentials &ClientConfig::getCredentials() {
             if (credentials == NULL) {
-                credentials = new protocol::Credentials(groupConfig.getName(), groupConfig.getPassword());
+                credentials = new protocol::UsernamePasswordCredentials(groupConfig.getName(), groupConfig.getPassword());
             }
             return *credentials;
         };
 
-        void ClientConfig::setSocketInterceptor(connection::SocketInterceptor *socketInterceptor) {
+        void ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
             this->socketInterceptor.reset(socketInterceptor);
         }
 
-        std::auto_ptr<connection::SocketInterceptor> ClientConfig::getSocketInterceptor() {
+        std::auto_ptr<SocketInterceptor> ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
         };
 

@@ -9,7 +9,7 @@
 #define HAZELCAST_AUTHENTICATION_REQUEST
 
 #include "hazelcast/client/protocol/Principal.h"
-#include "hazelcast/client/protocol/Credentials.h"
+#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {
@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace protocol {
             class HAZELCAST_API AuthenticationRequest : public impl::PortableRequest {
             public:
-                AuthenticationRequest(const Credentials& credential);
+                AuthenticationRequest(const Credentials &credential);
 
                 void setPrincipal(Principal *principal);
 
@@ -32,7 +32,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const Credentials& credentials;
+                const Credentials &credentials;
                 Principal *principal;
                 bool reAuth;
                 bool firstConnection;

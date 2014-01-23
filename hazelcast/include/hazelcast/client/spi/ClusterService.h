@@ -23,7 +23,7 @@ namespace hazelcast {
         class InitialMembershipListener;
 
         namespace protocol {
-            class Credentials;
+            class UsernamePasswordCredentials;
         }
         namespace impl {
             class PortableRequest;

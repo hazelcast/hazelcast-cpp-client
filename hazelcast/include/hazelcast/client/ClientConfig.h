@@ -3,7 +3,7 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
-#include "hazelcast/client/protocol/Credentials.h"
+#include "UsernamePasswordCredentials.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include <vector>
@@ -18,9 +18,7 @@ namespace hazelcast {
 
         class LifecycleListener;
 
-        namespace connection {
-            class SocketInterceptor;
-        }
+        class SocketInterceptor;
 
         /**
          * HazelcastClient configuration class.
@@ -32,7 +30,6 @@ namespace hazelcast {
              * Constructor with default values.
              * smart(true)
              * redoOperation(false)
-             * poolSize(100)
              * connectionTimeout(60000)
              * connectionAttemptLimit(2)
              * attemptPeriod(3000)
@@ -88,27 +85,88 @@ namespace hazelcast {
              */
             GroupConfig &getGroupConfig();
 
-            void setCredentials(protocol::Credentials *credentials);
+            /**
+             * Can be used instead of {@link GroupConfig} in Hazelcast EE.
+             */
+            void setCredentials(Credentials *credentials);
 
-            protocol::Credentials &getCredentials();
+            /**
+             * Can be used instead of {@link GroupConfig} in Hazelcast EE.
+             */
+            Credentials &getCredentials();
 
+            /**
+             * While client is trying to connect initially to one of the members in the {@link ClientConfig#addressList},
+             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
+             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
+             *
+             * @param connectionAttemptLimit
+             * @return itself ClientConfig
+             */
             ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
+            /**
+             * While client is trying to connect initially to one of the members in the {@link ClientConfig#addressList},
+             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
+             * attempt to retry as much as {@link ClientConfig#connectionAttemptLimit} times.
+             *
+             * return int connectionAttemptLimit
+             */
             int getConnectionAttemptLimit() const;
 
+            /**
+             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
+             * passing between client and member within the {@link ClientConfig#connectionTimeout} milliseconds the connection
+             * will be closed.
+             *
+             * @param int connectionTimeoutInMillis
+             * @return itself ClientConfig
+             */
             ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
+            /**
+            * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
+            * passing between client and member within the {@link ClientConfig#connectionTimeout} milliseconds the connection
+            * will be closed.
+            *
+            * @return int connectionTimeoutInMillis
+            */
             int getConnectionTimeout() const;
 
+            /**
+             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
+             *
+             * @param int attemptPeriodInMillis
+             * @return itself ClientConfig
+             */
             ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
 
+            /**
+             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
+             *
+             * @return int attemptPeriodInMillis
+             */
             int getAttemptPeriod() const;
 
+            /**
+             * If true, client will redo the operations that were executing on the server and client lost the connection.
+             * This can be because of network, or simply because the member died. However it is not clear whether the
+             * application is performed or not. For idempotent operations this is harmless, but for non idempotent ones
+             * retrying can cause to undesirable effects. Note that the redo can perform on any member.
+             * <p/>
+             * If false, the operation will throw IOException.
+             *
+             * @param bool redoOperation
+             * return itself ClientConfig
+             */
             ClientConfig &setRedoOperation(bool redoOperation);
 
+            /**
+             *
+             * see setRedoOperation
+             * returns redoOperation
+             */
             bool isRedoOperation() const;
-
-            void setSocketInterceptor(connection::SocketInterceptor *socketInterceptor);
 
             /**
              * @return true if client configured as smart
@@ -126,7 +184,15 @@ namespace hazelcast {
              */
             void setSmart(bool smart);
 
-            std::auto_ptr<connection::SocketInterceptor> getSocketInterceptor();
+            /**
+             * Will be called with the Socket, each time client creates a connection to any Member.
+             */
+            void setSocketInterceptor(SocketInterceptor *socketInterceptor);
+
+            /**
+             * Will be called with the Socket, each time client creates a connection to any Member.
+             */
+            std::auto_ptr<SocketInterceptor> getSocketInterceptor();
 
             /**
              * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -207,49 +273,17 @@ namespace hazelcast {
 
             bool smart;
 
-            /**
-             * If true, client will redo the operations that were executing on the server and client lost the connection.
-             * This can be because of network, or simply because the member died. However it is not clear whether the
-             * application is performed or not. For idempotent operations this is harmless, but for non idempotent ones
-             * retrying can cause to undesirable effects. Note that the redo can perform on any member.
-             * <p/>
-             * If false, the operation will throw {@link RuntimeException} that is wrapping {@link java.io.IOException}.
-             */
             bool redoOperation;
 
-            /**
-             * limit for the Pool size that is used to pool the connections to the members.
-             */
-            int poolSize;
-
-            /**
-             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-             * passing between client and member within the {@link ClientConfig#connectionTimeout} milliseconds the connection
-             * will be closed.
-             */
             int connectionTimeout;
 
-            /**
-             * While client is trying to connect initially to one of the members in the {@link ClientConfig#addressList},
-             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-             * attempt to retry as much as {@link ClientConfig#connectionAttemptLimit} times.
-             */
             int connectionAttemptLimit;
 
-            /**
-             * Period for the next attempt to find a member to connect. (see {@link ClientConfig#connectionAttemptLimit}).
-             */
             int attemptPeriod;
 
-            /**
-             * Will be called with the Socket, each time client creates a connection to any Member.
-             */
-            std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
+            std::auto_ptr<SocketInterceptor> socketInterceptor;
 
-            /**
-             * Can be used instead of {@link GroupConfig} in Hazelcast EE.
-             */
-            protocol::Credentials *credentials;
+            Credentials *credentials;
 
         };
 

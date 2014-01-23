@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
 
-            AuthenticationRequest::AuthenticationRequest(const Credentials& credentials)
+            AuthenticationRequest::AuthenticationRequest(const Credentials &credentials)
             :credentials(credentials)
             , reAuth(true)
             , firstConnection(true) {

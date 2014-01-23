@@ -9,20 +9,19 @@
 #define HAZELCAST_SocketInterceptor
 
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         class Socket;
 
-        namespace connection {
+        class HAZELCAST_API SocketInterceptor {
+        public:
+            virtual void onConnect(const Socket &connectedSocket) = 0;
 
-            class HAZELCAST_API SocketInterceptor {
-            public:
-                virtual void onConnect(const Socket &connectedSocket) = 0;
-
-                virtual ~SocketInterceptor() {
-                };
+            virtual ~SocketInterceptor() {
             };
-        }
+        };
     }
 }
 

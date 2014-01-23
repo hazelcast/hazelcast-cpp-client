@@ -8,7 +8,7 @@
 #include "hazelcast/client/connection/HeartBeatChecker.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/connection/SocketInterceptor.h"
+#include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/connection/IListener.h"
 #include "hazelcast/client/connection/OListener.h"
 #include <boost/atomic.hpp>
@@ -24,7 +24,7 @@ namespace hazelcast {
         namespace protocol {
             class Principal;
 
-            class Credentials;
+            class UsernamePasswordCredentials;
         }
 
         namespace spi {
@@ -67,7 +67,7 @@ namespace hazelcast {
 
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;
-                std::auto_ptr<connection::SocketInterceptor> socketInterceptor;
+                std::auto_ptr<SocketInterceptor> socketInterceptor;
                 IListener iListener;
                 OListener oListener;
                 std::auto_ptr<boost::thread> iListenerThread;
