@@ -11,7 +11,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/IdentifiedDataSerializable.h"
 #include "hazelcast/client/impl/MemberAttributeChange.h"
-#include "hazelcast/client/MembershipEvent.h"
+#include "Sancar.h"
 
 namespace hazelcast {
     namespace client {

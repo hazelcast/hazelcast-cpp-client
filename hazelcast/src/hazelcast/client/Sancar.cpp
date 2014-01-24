@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 23/01/14.
 //
 
-#include "hazelcast/client/MembershipEvent.h"
+#include "Sancar.h"
 #include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
