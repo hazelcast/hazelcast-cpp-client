@@ -151,22 +151,22 @@ namespace hazelcast {
                         membersUpdated = true;
 //                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
                     } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-//                        MemberAttributeChange memberAttributeChange = event.getMemberAttributeChange(); //MTODO
-//                        Map<Address, MemberImpl> memberMap = membersRef.get();
-//                        if (memberMap != null) {
-//                            for (MemberImpl target : memberMap.values()) {
-//                                if (target.getUuid().equals(memberAttributeChange.getUuid())) {
-//                                    final MapOperationType operationType = memberAttributeChange.getOperationType();
-//                                    final String key = memberAttributeChange.getKey();
-//                                    final Object value = memberAttributeChange.getValue();
-//                                    target.updateAttribute(operationType, key, value);
-//                                    MemberAttributeEvent memberAttributeEvent = new MemberAttributeEvent(
-//                                            client.getCluster(), target, operationType, key, value);
-//                                    fireMemberAttributeEvent(memberAttributeEvent);
-//                                    break;
-//                                }
-//                            }
-//                        }
+                        impl::MemberAttributeChange const &memberAttributeChange = event->getMemberAttributeChange();
+                        for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                            Member &target = *it;
+                            if (target.getUuid() == memberAttributeChange.getUuid()) {
+                                int operationType = memberAttributeChange.getOperationType();
+//                                ?? value = memberAttributeChange.getValue();
+                                const std::string &key = memberAttributeChange.getKey();
+                                if (operationType == 1) {//PUT
+//                                    target.setAttribute(key, value );
+                                } else if (operationType == 3) {//REMOVE
+//                                    target.removeAttribute<??>(key);
+                                }
+//                                MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value);
+//                                fireMemberAttributeEvent(memberAttributeEvent);
+                            }
+                        }
                     }
                     if (membersUpdated) {
                         updateMembersRef();
