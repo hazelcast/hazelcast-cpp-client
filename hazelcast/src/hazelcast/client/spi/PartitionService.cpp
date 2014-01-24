@@ -11,6 +11,7 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {

@@ -110,6 +110,11 @@ namespace hazelcast {
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };
 
+
+            void ConnectionManager::removeConnection(const Address &address) {
+                connections.remove(address);
+            }
+
             void ConnectionManager::checkLive() {
                 if (!live) {
                     throw exception::InstanceNotActiveException("client");

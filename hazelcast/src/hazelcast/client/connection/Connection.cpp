@@ -185,6 +185,7 @@ namespace hazelcast {
             }
 
             void Connection::removeConnectionCalls() {
+                clientContext.getConnectionManager().removeConnection(remoteEndpoint);
 //            partitionService.runRefresher(); MTODO
                 typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
                 Address const &address = getRemoteEndpoint();

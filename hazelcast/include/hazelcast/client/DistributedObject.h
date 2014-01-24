@@ -67,7 +67,8 @@ namespace hazelcast {
 
             template<typename Response>
             boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, serialization::Data &keyData) {
-                boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnKeyOwner(request, keyData);
+                spi::InvocationService &invocationService = getContext().getInvocationService();
+                boost::shared_future<serialization::Data> future = invocationService.invokeOnKeyOwner(request, keyData);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 

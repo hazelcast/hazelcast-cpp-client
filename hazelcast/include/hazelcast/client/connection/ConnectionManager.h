@@ -50,6 +50,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
+                void removeConnection(const Address &address);
+
                 void authenticate(Connection &connection, bool reAuth, bool firstConnection);
 
                 void shutdown();

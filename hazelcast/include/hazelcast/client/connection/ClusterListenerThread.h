@@ -5,13 +5,14 @@
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
-#include "hazelcast/client/Member.h"
 #include "hazelcast/client/connection/Connection.h"
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
+
+        class Member;
 
         namespace spi {
             class ClientContext;

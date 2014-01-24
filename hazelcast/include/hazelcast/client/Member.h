@@ -11,6 +11,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace connection {
+            class ClusterListenerThread;
+        }
+
         /**
          * Cluster member class. The default implementation
          *
@@ -19,6 +23,8 @@ namespace hazelcast {
          */
         class HAZELCAST_API Member : public IdentifiedDataSerializable {
         public:
+            friend class connection::ClusterListenerThread;
+
             Member();
 
             Member(const Member &);
@@ -53,7 +59,6 @@ namespace hazelcast {
              */
             const std::string &getUuid() const;
 
-
             /**
              * Returns the value of the specified key for this member or
              * default constructed value if value is undefined.
@@ -69,12 +74,24 @@ namespace hazelcast {
             }
 
             /**
-             * Defines a key-value pair string attribute for this member available
-             * to other cluster members.
+             * check if an attribute is defined for given key.
              *
-             * @param key The key for this property.
-             * @param value The value corresponds to this attribute and this member.
+             * @return true if attribute is defined.
              */
+            template <typename AttributeType>
+            bool lookupAttribute(const std::string &key) const {
+                AttributeType *tag;
+                return lookupAttributeResolved(key, tag);
+            };
+
+        private:
+            /**
+            * Defines a key-value pair string attribute for this member available
+            * to other cluster members.
+            *
+            * @param key The key for this property.
+            * @param value The value corresponds to this attribute and this member.
+            */
             template <typename AttributeType>
             void setAttribute(const std::string &key, AttributeType value) {
                 setAttributeResolved(key, value);
@@ -92,20 +109,6 @@ namespace hazelcast {
                 AttributeType *tag;
                 return removeAttributeResolved(key, tag);
             };
-
-
-            /**
-             * check if an attribute is defined for given key.
-             *
-             * @return true if attribute is defined.
-             */
-            template <typename AttributeType>
-            bool lookupAttribute(const std::string &key) const {
-                AttributeType *tag;
-                return lookupAttributeResolved(key, tag);
-            };
-
-        private:
 
             std::string getAttributeResolved(const std::string &key, std::string *tag);
 
