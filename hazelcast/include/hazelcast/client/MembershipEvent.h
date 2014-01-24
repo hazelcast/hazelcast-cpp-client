@@ -41,7 +41,7 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            const std::vector<Member> &getMembers() const;
+            const std::vector <Member> &getMembers() const;
 
             /**
              * Returns the cluster of the event.

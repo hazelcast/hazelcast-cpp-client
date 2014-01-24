@@ -32,7 +32,7 @@ namespace hazelcast {
                         continue;
                     }
                     if (err == -1) {
-                        std::cerr << "unexpected error in Olistener thread select" << std::endl;
+                        (std::cerr << "Olistener thread select : " << std::string(strerror(errno)) << std::endl);
                         continue;
                     }
                     std::set<Socket const *>::iterator it;

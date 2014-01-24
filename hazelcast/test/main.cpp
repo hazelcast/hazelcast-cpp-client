@@ -29,11 +29,10 @@ int testSpeed() {
 
 int main(int argc, char **argv) {
 
+    HazelcastInstanceFactory factory;
 
     ClientSerializationTest serializationTest;
     serializationTest.executeTests();
-
-    HazelcastInstanceFactory factory;
 
     ClientMapTest mapTest(factory);
     mapTest.executeTests();
