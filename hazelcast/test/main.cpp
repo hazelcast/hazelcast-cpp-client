@@ -1,5 +1,17 @@
 #include "SimpleMapTest.h"
 #include "HazelcastInstanceFactory.h"
+#include "ClientQueueTest.h"
+#include "ClientMultiMapTest.h"
+#include "ClientMapTest.h"
+#include "ClientSerializationTest.h"
+#include "ClientListTest.h"
+#include "ClientSetTest.h"
+#include "IAtomicLongTest.h"
+#include "ClientTopicTest.h"
+#include "IdGeneratorTest.h"
+#include "ICountDownLatchTest.h"
+#include "ClientLockTest.h"
+#include "ClientSemaphoreTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -11,45 +23,45 @@ int testSpeed() {
 
 int main(int argc, char **argv) {
 
-//    HazelcastInstanceFactory factory;
+    HazelcastInstanceFactory factory;
 
-//    ClientSerializationTest serializationTest;
-//    serializationTest.executeTests();
-//
-//    ClientMapTest mapTest(factory);
-//    mapTest.executeTests();
-//
-//    ClientMultiMapTest multiMapTest(factory);
-//    multiMapTest.executeTests();
-//
-//    ClientQueueTest queueTest(factory);
-//    queueTest.executeTests();
-//
-//    ClientListTest listTest(factory);
-//    listTest.executeTests();
-//
-//    ClientSetTest setTest(factory);
-//    setTest.executeTests();
-//
-//    IAtomicLongTest atomTest(factory);
-//    atomTest.executeTests();
-//
-//    IdGeneratorTest generatorTest(factory);
-//    generatorTest.executeTests();
-//
-//    ICountDownLatchTest latchTest(factory);
-//    latchTest.executeTests();
-//
-//    ClientLockTest lockTest(factory);
-//    lockTest.executeTests();
-//
-//    ClientSemaphoreTest semaphoreTest(factory);
-//    semaphoreTest.executeTests();
-//
-//    ClientTopicTest topicTest(factory);
-//    topicTest.executeTests();
-//
-//
+    ClientSerializationTest serializationTest;
+    serializationTest.executeTests();
+
+    ClientMapTest mapTest(factory);
+    mapTest.executeTests();
+
+    ClientMultiMapTest multiMapTest(factory);
+    multiMapTest.executeTests();
+
+    ClientQueueTest queueTest(factory);
+    queueTest.executeTests();
+
+    ClientListTest listTest(factory);
+    listTest.executeTests();
+
+    ClientSetTest setTest(factory);
+    setTest.executeTests();
+
+    IAtomicLongTest atomTest(factory);
+    atomTest.executeTests();
+
+    IdGeneratorTest generatorTest(factory);
+    generatorTest.executeTests();
+
+    ICountDownLatchTest latchTest(factory);
+    latchTest.executeTests();
+
+    ClientLockTest lockTest(factory);
+    lockTest.executeTests();
+
+    ClientSemaphoreTest semaphoreTest(factory);
+    semaphoreTest.executeTests();
+
+    ClientTopicTest topicTest(factory);
+    topicTest.executeTests();
+
+
 //    ClientTxnListTest clientTxnListTest(factory);
 //    clientTxnListTest.executeTests();
 //
@@ -68,7 +80,7 @@ int main(int argc, char **argv) {
 //    ClientTxnTest clientTxnTest(factory);
 //    clientTxnTest.executeTests();
 
-    testSpeed();
+//    testSpeed();
 
 
     return 0;

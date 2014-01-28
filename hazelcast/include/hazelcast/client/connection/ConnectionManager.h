@@ -46,9 +46,9 @@ namespace hazelcast {
 
                 connection::Connection *ownerConnection(const Address &address);
 
-                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress);
+                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress, int tryCount);
 
-                boost::shared_ptr<Connection> getRandomConnection();
+                boost::shared_ptr<Connection> getRandomConnection(int tryCount);
 
                 void removeConnection(const Address &address);
 
@@ -66,6 +66,10 @@ namespace hazelcast {
                 connection::Connection *connectTo(const Address &address);
 
                 boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
+
+                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress);
+
+                boost::shared_ptr<Connection> getRandomConnection();
 
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;

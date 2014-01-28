@@ -51,21 +51,16 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key);
 
-                boost::shared_future<serialization::Data> invokeOnConnection(const impl::PortableRequest *request, connection::Connection &connection);
-
-                bool resend(boost::shared_ptr<util::CallPromise> promise);
+                boost::shared_future<serialization::Data> invokeOnConnection(const impl::PortableRequest *request, boost::shared_ptr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
                 static const int RETRY_COUNT = 20;
-                static const int RETRY_WAIT_TIME = 500;
             private :
                 bool redoOperation;
                 spi::ClientContext &clientContext;
 
-                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, connection::Connection &connection);
-
-                boost::shared_ptr<connection::Connection> getOrConnect(const Address *target);
+                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest *, impl::BaseEventHandler *, boost::shared_ptr<connection::Connection>);
 
             };
         }

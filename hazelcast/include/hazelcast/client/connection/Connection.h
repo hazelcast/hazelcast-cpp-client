@@ -40,15 +40,13 @@ namespace hazelcast {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &listener);
 
-                void connect();
-
                 void init();
+
+                void connect();
 
                 void close();
 
                 void send(boost::shared_ptr<util::CallPromise> promise);
-
-                void resend(boost::shared_ptr<util::CallPromise> promise);
 
                 void handlePacket(const serialization::Data &data);
 
@@ -89,6 +87,8 @@ namespace hazelcast {
                 WriteHandler writeHandler;
 
                 void write(boost::shared_ptr<util::CallPromise> promise);
+
+                void resend(boost::shared_ptr<util::CallPromise> promise);
 
                 boost::shared_ptr<util::CallPromise> registerCall(boost::shared_ptr<util::CallPromise> promise);
 

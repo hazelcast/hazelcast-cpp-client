@@ -56,7 +56,33 @@ namespace hazelcast {
                 return clientConnection;
             }
 
+            boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount) {
+                Address address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
+                return getOrConnect(address, tryCount);
+            }
+
+            boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address &target, int tryCount) {
+                checkLive();
+                int count = 0;
+                exception::IOException lastError("", "");
+                while (count < tryCount) {
+                    try {
+                        if (!clientContext.getClusterService().isMemberExists(target)) {
+                            return getRandomConnection();
+                        } else {
+                            return getOrConnect(target);
+                        }
+                    } catch (exception::IOException &e) {
+                        lastError = e;
+                    }
+                    count++;
+                }
+                throw lastError;
+            }
+
+
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
+                checkLive();
                 if (smartRouting)
                     return getOrConnectResolved(address);
                 else
@@ -124,7 +150,6 @@ namespace hazelcast {
             int ConnectionManager::getNextCallId() {
                 return callIdGenerator++;
             }
-
 
             void ConnectionManager::removeEventHandler(int callId) {
                 std::vector<boost::shared_ptr<Connection> > v = connections.values();

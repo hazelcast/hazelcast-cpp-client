@@ -48,23 +48,34 @@ namespace hazelcast {
             }
 
             void Connection::send(boost::shared_ptr<util::CallPromise> promise) {
-                registerCall(promise);
                 write(promise);
             };
 
             void Connection::resend(boost::shared_ptr<util::CallPromise> promise) {
-                reRegisterCall(promise);
-                write(promise);
+                if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
+                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
+                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                    return;
+                } // MTODO there is already resend mechanism in connectionManager
+
+                boost::shared_ptr<connection::Connection> connection;
+                try {
+                    ConnectionManager &cm = clientContext.getConnectionManager();
+                    connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
+                } catch(exception::IOException &e) {
+                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
+                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                    return;
+                }
+                connection->write(promise);
             };
 
             void Connection::write(boost::shared_ptr<util::CallPromise> promise) {
+                registerCall(promise); //Don't change the order with following line
                 serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
                 if (!live) {
-                    if (clientContext.getInvocationService().resend(promise))
-                        return;
-                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
-                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     deRegisterCall(promise->getRequest().callId);
+                    resend(promise);
                     return;
                 }
                 writeHandler.enqueueData(data);
@@ -156,7 +167,6 @@ namespace hazelcast {
                 return readHandler;
             }
 
-            // USED BY CLUSTER SERVICE
             void Connection::reRegisterCall(boost::shared_ptr<util::CallPromise> promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
@@ -165,6 +175,8 @@ namespace hazelcast {
                     registerEventHandler(promise);
                 }
             }
+
+            // USED BY CLUSTER SERVICE
 
             boost::shared_ptr<util::CallPromise> Connection::deRegisterCall(int callId) {
                 return callPromises.remove(callId);
@@ -209,11 +221,9 @@ namespace hazelcast {
                 Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
-                    if (invocationService.resend(promise))
-                        return;
+                    resend(promise);
                 }
-                exception::InstanceNotActiveException instanceNotActiveException(address.getHost());
-                promise->setException(instanceNotActiveException);
+
             }
         }
     }

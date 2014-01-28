@@ -53,7 +53,7 @@ namespace hazelcast {
                     request->setThreadId(util::getThreadId());
                     spi::InvocationService &invocationService = context->getInvocationService();
                     serialization::SerializationService &ss = context->getSerializationService();
-                    boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, *(context->getConnection()));
+                    boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, context->getConnection());
                     return ss.toObject<Response>(future.get());
                 };
             private:
