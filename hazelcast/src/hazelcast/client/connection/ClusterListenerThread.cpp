@@ -141,8 +141,9 @@ namespace hazelcast {
                         break;
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
                     if (response->isException()) {
-                        std::cerr << response->getException().what() << std::endl;
-                        std::cerr << " exception !!! " << std::endl;
+                        exception::ServerException const &ex = response->getException();
+                        std::cerr << ex.what() << std::endl;
+                        throw ex;
                     }
                     boost::shared_ptr<impl::ClientMembershipEvent> event = clientContext.getSerializationService().toObject<impl::ClientMembershipEvent>(response->getData());
                     Member member = event->getMember();
@@ -159,16 +160,7 @@ namespace hazelcast {
                         for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
                             Member &target = *it;
                             if (target.getUuid() == memberAttributeChange.getUuid()) {
-                                int operationType = memberAttributeChange.getOperationType();
-//                                ?? value = memberAttributeChange.getValue();
-                                const std::string &key = memberAttributeChange.getKey();
-                                if (operationType == 1) {//PUT
-//                                    target.setAttribute(key, value );
-                                } else if (operationType == 3) {//REMOVE
-//                                    target.removeAttribute<??>(key);
-                                }
-//                                MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value);
-//                                fireMemberAttributeEvent(memberAttributeEvent);
+                                fireMemberAttributeEvent(memberAttributeChange, target);
                             }
                         }
                     }
@@ -179,6 +171,39 @@ namespace hazelcast {
                     }
                 }
             };
+
+
+            void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const &memberAttributeChange, Member &target) {
+                MemberAttributeEvent::MapOperationType operationType = memberAttributeChange.getOperationType();
+                const std::string &value = memberAttributeChange.getValue();
+                util::IOUtil::PRIMITIVE_ID primitive_id = memberAttributeChange.getTypeId();
+                const std::string &key = memberAttributeChange.getKey();
+                if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_PUT) {//PUT
+//                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
+//                        target.setAttribute(key, value);                MTODO
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
+//                    }
+                } else if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_REMOVE) {//REMOVE
+//                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
+//                        target.removeAttribute<bool>(key);               MTODO
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
+//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
+//                    }
+                }
+                MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value, primitive_id);
+                clientContext.getClusterService().fireMembershipEvent(memberAttributeEvent);
+            }
 
             void ClusterListenerThread::updateMembersRef() {
                 std::map<Address, Member, addressComparator > map;

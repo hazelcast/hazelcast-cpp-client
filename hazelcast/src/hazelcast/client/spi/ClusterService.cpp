@@ -10,7 +10,6 @@
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/impl/ClientMemberShipEvent.h"
 #include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -180,19 +179,43 @@ namespace hazelcast {
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         (*it)->memberAdded(event);
-                    } else {
+                    } else if (event.getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         (*it)->memberRemoved(event);
+                    } else if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
+                        assert(0 && "MEMBER_ATTRIBUTE_CHANGED cant get here");
                     }
                 }
 
                 for (std::set<InitialMembershipListener *>::iterator it = initialListeners.begin(); it != initialListeners.end(); ++it) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         (*it)->memberAdded(event);
-                    } else {
+                    } else if (event.getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         (*it)->memberRemoved(event);
+                    } else if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
+                        assert(0 && "MEMBER_ATTRIBUTE_CHANGED cant get here");
                     }
                 }
             };
+
+
+            void ClusterService::fireMembershipEvent(MemberAttributeEvent &event) {
+                boost::lock_guard<boost::mutex> guard(listenerLock);
+                for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+                    if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
+                        (*it)->memberAttributeChanged(event);
+                    } else {
+                        assert(0 && "can't get here");
+                    }
+                }
+
+                for (std::set<InitialMembershipListener *>::iterator it = initialListeners.begin(); it != initialListeners.end(); ++it) {
+                    if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
+                        (*it)->memberAttributeChanged(event);
+                    } else {
+                        assert(0 && "can't get here");
+                    }
+                }
+            }
 
             void ClusterService::setMembers(const std::map<Address, Member, addressComparator > &map) {
                 boost::lock_guard<boost::mutex> guard(membersLock);

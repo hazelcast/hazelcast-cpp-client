@@ -9,6 +9,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
+#include "MemberAttributeEvent.h"
 #include <boost/thread/mutex.hpp>
 #include <vector>
 
@@ -32,6 +33,8 @@ namespace hazelcast {
                 void memberAdded(const MembershipEvent &membershipEvent);
 
                 void memberRemoved(const MembershipEvent &membershipEvent);
+
+                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
 
                 virtual ~AbstractLoadBalancer();
 

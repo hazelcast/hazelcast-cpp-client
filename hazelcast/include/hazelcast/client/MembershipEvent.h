@@ -41,28 +41,28 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            const std::vector <Member> &getMembers() const;
+            virtual const std::vector <Member> &getMembers() const;
 
             /**
              * Returns the cluster of the event.
              *
              * @return
              */
-            const Cluster &getCluster() const;
+            virtual const Cluster &getCluster() const;
 
             /**
              * Returns the membership event type; #MEMBER_ADDED or #MEMBER_REMOVED
              *
              * @return the membership event type
              */
-            MembershipEventType getEventType() const;
+            virtual MembershipEventType getEventType() const;
 
             /**
              * Returns the removed or added member.
              *
              * @return member which is removed/added
              */
-            const Member &getMember() const;
+            virtual const Member &getMember() const;
 
         private:
             Member member;

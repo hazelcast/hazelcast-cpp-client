@@ -20,6 +20,8 @@ namespace hazelcast {
 
         namespace impl {
             class ClientMembershipEvent;
+
+            class MemberAttributeChange;
         }
 
         namespace connection {
@@ -53,6 +55,8 @@ namespace hazelcast {
                 void listenMembershipEvents();
 
                 void updateMembersRef();
+
+                void fireMemberAttributeEvent(impl::MemberAttributeChange const &, Member &member);
 
                 std::vector<Address> getClusterAddresses() const;
 

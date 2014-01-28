@@ -6,13 +6,14 @@
 #define HAZELCAST_MemberAttributeChange
 
 #include "hazelcast/client/DataSerializable.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
+#include "hazelcast/util/IOUtil.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            static const int DELTA_MEMBER_PROPERTIES_OP_PUT = 2;
-            static const int DELTA_MEMBER_PROPERTIES_OP_REMOVE = 3;
+
 
             class HAZELCAST_API MemberAttributeChange : public DataSerializable {
             public:
@@ -21,11 +22,13 @@ namespace hazelcast {
 
                 const std::string &getUuid() const;
 
-                int getOperationType() const;
+                MemberAttributeEvent::MapOperationType getOperationType() const;
 
                 const std::string &getKey() const;
 
-                //public Object getValue();MTODO
+                const std::string &getValue() const;
+
+                util::IOUtil::PRIMITIVE_ID getTypeId() const;
 
                 void writeData(serialization::ObjectDataOutput &writer) const;
 
@@ -33,16 +36,10 @@ namespace hazelcast {
 
             private:
                 std::string uuid;
-                int operationType;
+                MemberAttributeEvent::MapOperationType operationType;
                 std::string key;
-                std::string stringValue;
-                long longValue;
-                int intValue;
-                short shortValue;
-                byte byteValue;
-                float floatValue;
-                bool boolValue;
-                double doubleValue;
+                std::string value;
+                util::IOUtil::PRIMITIVE_ID primitive_id;
             };
         }
     }

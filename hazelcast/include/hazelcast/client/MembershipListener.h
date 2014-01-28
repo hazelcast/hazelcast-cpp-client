@@ -16,6 +16,8 @@ namespace hazelcast {
 
         class MembershipEvent;
 
+        class MemberAttributeEvent;
+
         /**
          * Cluster membership listener.
          *
@@ -45,6 +47,13 @@ namespace hazelcast {
              * @param membershipEvent membership event
              */
             virtual void memberRemoved(const MembershipEvent &event) = 0;
+
+            /**
+             * Invoked when an attribute of a member was changed.
+             *
+             * @param memberAttributeEvent member attribute event
+             */
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
 
         };
     }

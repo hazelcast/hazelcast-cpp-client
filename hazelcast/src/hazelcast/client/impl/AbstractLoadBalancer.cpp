@@ -29,6 +29,11 @@ namespace hazelcast {
                 setMembersRef();
             };
 
+
+            void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
+
+            }
+
             std::vector<Member>  AbstractLoadBalancer::getMembers() {
                 boost::lock_guard<boost::mutex> lg(membersLock);
                 return membersRef;

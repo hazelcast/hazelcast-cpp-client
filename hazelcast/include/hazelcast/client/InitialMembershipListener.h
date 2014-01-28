@@ -57,7 +57,7 @@ namespace hazelcast {
              *
              * @param memberAttributeEvent member attribute event
              */
-//            void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) = 0; MTODO
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
         };
 
     }
