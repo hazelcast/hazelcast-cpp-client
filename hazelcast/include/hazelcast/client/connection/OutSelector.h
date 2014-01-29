@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_OListener
 #define HAZELCAST_OListener
 
-#include "IOSelector.h"
+#include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/util/SocketSet.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>

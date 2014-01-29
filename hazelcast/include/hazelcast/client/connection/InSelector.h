@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_IListener
 #define HAZELCAST_IListener
 
-#include "IOSelector.h"
+#include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/util/SocketSet.h"
 
 namespace hazelcast {

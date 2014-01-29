@@ -30,6 +30,10 @@ namespace hazelcast {
 
             };
 
+            Connection::~Connection() {
+                live = false;
+            }
+
             void Connection::connect() {
                 int error = socket.connect();
                 if (error) {
@@ -37,13 +41,13 @@ namespace hazelcast {
                 }
             };
 
-
             void Connection::init() {
                 serialization::OutputSocketStream outputSocketStream(socket);
                 outputSocketStream.write(protocol::ProtocolConstants::PROTOCOL);
             }
 
             void Connection::close() {
+                live = false;
                 socket.close();
             }
 

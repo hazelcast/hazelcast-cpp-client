@@ -40,6 +40,8 @@ namespace hazelcast {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &listener);
 
+                ~Connection();
+
                 void init();
 
                 void connect();

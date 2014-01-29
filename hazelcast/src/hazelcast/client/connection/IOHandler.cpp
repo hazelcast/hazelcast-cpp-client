@@ -3,7 +3,7 @@
 //
 
 #include "hazelcast/client/connection/IOHandler.h"
-#include "IOSelector.h"
+#include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
