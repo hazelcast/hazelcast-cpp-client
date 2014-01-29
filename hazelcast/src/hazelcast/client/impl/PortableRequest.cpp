@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace impl {
 
 
-            PortableRequest::PortableRequest():callId(-1) {
+            PortableRequest::PortableRequest():callId(0) {
 
             }
 

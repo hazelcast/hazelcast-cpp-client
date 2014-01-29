@@ -3,7 +3,7 @@
 //
 
 #include "hazelcast/client/connection/WriteHandler.h"
-#include "OutSelector.h"
+#include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"

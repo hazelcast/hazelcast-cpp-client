@@ -77,16 +77,9 @@ public:
     };
 
     void op(HazelcastClient *a) {
-//        ClientConfig clientConfig;
-//        clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
-//        HazelcastClient hazelcastClient(clientConfig);
-//        IMap<int, vector<byte> > map = hazelcastClient.getMap<int, vector<byte > >("default");
         IMap<int, vector<hazelcast::byte> > map = a->getMap<int, vector<hazelcast::byte > >("default");
 
         std::vector<hazelcast::byte> value(VALUE_SIZE);
-//        for(int i = 0 ; i < ENTRY_COUNT ; i++){
-//              map.put(i, value);
-//        }
         while (true) {
             int key = rand() % ENTRY_COUNT;
             int operation = ((int) (rand() % 100));
@@ -113,7 +106,7 @@ public:
 
     void run() {
         srand(time(NULL));
-        std::cout << "Starting Test with " << std::endl;
+        std::cout << "Starting Test with  " << std::endl;
         std::cout << "      Thread Count: " << THREAD_COUNT << std::endl;
         std::cout << "       Entry Count: " << ENTRY_COUNT << std::endl;
         std::cout << "        Value Size: " << VALUE_SIZE << std::endl;

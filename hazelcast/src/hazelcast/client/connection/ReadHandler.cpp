@@ -4,7 +4,7 @@
 
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "InSelector.h"
+#include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
 //#define BOOST_THREAD_PROVIDES_FUTURE
 

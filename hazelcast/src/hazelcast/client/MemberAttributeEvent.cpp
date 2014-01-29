@@ -3,7 +3,7 @@
 //
 
 #include "hazelcast/client/MemberAttributeEvent.h"
-#include "Cluster.h"
+#include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
     namespace client {
