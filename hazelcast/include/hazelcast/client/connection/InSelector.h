@@ -6,16 +6,16 @@
 #ifndef HAZELCAST_IListener
 #define HAZELCAST_IListener
 
-#include "hazelcast/client/connection/IOListener.h"
+#include "IOSelector.h"
 #include "hazelcast/util/SocketSet.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            class HAZELCAST_API IListener : public IOListener {
+            class HAZELCAST_API InSelector : public IOSelector {
             public:
-                IListener();
+                InSelector();
 
                 void listen();
             };

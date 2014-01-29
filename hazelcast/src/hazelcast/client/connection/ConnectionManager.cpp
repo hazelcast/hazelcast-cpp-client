@@ -36,8 +36,8 @@ namespace hazelcast {
 
             void ConnectionManager::start() {
                 socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
-                iListenerThread.reset(new boost::thread(&IListener::listen, &iListener));
-                oListenerThread.reset(new boost::thread(&OListener::listen, &oListener));
+                iListenerThread.reset(new boost::thread(&InSelector::listen, &iListener));
+                oListenerThread.reset(new boost::thread(&OutSelector::listen, &oListener));
             }
 
             void ConnectionManager::shutdown() {

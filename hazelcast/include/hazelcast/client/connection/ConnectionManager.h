@@ -9,8 +9,8 @@
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/connection/IListener.h"
-#include "hazelcast/client/connection/OListener.h"
+#include "InSelector.h"
+#include "OutSelector.h"
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
 
@@ -52,11 +52,7 @@ namespace hazelcast {
 
                 void removeConnection(const Address &address);
 
-                void authenticate(Connection &connection, bool reAuth, bool firstConnection);
-
                 void shutdown();
-
-                void checkLive();
 
                 int getNextCallId();
 
@@ -71,11 +67,15 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
+                void authenticate(Connection &connection, bool reAuth, bool firstConnection);
+
+                void checkLive();
+
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;
                 std::auto_ptr<SocketInterceptor> socketInterceptor;
-                IListener iListener;
-                OListener oListener;
+                InSelector iListener;
+                OutSelector oListener;
                 std::auto_ptr<boost::thread> iListenerThread;
                 std::auto_ptr<boost::thread> oListenerThread;
                 boost::atomic<bool> live;

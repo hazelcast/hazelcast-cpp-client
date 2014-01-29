@@ -18,11 +18,11 @@ namespace hazelcast {
 
             class IOHandler;
 
-            class HAZELCAST_API IOListener {
+            class HAZELCAST_API IOSelector {
             public:
-                IOListener();
+                IOSelector();
 
-                virtual ~IOListener();
+                virtual ~IOSelector();
 
                 void initListenSocket(util::SocketSet &wakeUpSocketSet);
 

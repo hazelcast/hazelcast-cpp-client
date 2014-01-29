@@ -2,17 +2,17 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include "hazelcast/client/connection/IListener.h"
+#include "InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            IListener::IListener() {
+            InSelector::InSelector() {
                 initListenSocket(socketSet);
             }
 
-            void IListener::listen() {
+            void InSelector::listen() {
                 while (isAlive) {
                     processListenerQueue();
 

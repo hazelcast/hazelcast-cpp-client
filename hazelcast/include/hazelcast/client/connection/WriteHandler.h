@@ -20,13 +20,13 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class OListener;
+            class OutSelector;
 
             class ConnectionManager;
 
             class HAZELCAST_API WriteHandler : public IOHandler {
             public:
-                WriteHandler(Connection &connection, OListener &oListener, int bufferSize);
+                WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize);
 
                 void handle();
 

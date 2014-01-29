@@ -32,13 +32,13 @@ namespace hazelcast {
         namespace connection {
             class ClientResponse;
 
-            class OListener;
+            class OutSelector;
 
-            class IListener;
+            class InSelector;
 
             class HAZELCAST_API Connection {
             public:
-                Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &listener);
+                Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &listener);
 
                 void init();
 
@@ -46,7 +46,7 @@ namespace hazelcast {
 
                 void close();
 
-                void send(boost::shared_ptr<util::CallPromise> promise);
+                void registerAndEnqueue(boost::shared_ptr<util::CallPromise> promise);
 
                 void handlePacket(const serialization::Data &data);
 
@@ -61,14 +61,6 @@ namespace hazelcast {
                 serialization::Data readBlocking();
 
                 ReadHandler &getReadHandler();
-
-                // USED BY CLUSTER SERVICE
-
-                boost::shared_ptr<util::CallPromise> deRegisterCall(int callId);
-
-                void registerEventHandler(boost::shared_ptr<util::CallPromise> promise);
-
-                boost::shared_ptr<util::CallPromise> getEventHandlerPromise(int callId);
 
                 boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
 
@@ -86,13 +78,15 @@ namespace hazelcast {
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
 
-                void write(boost::shared_ptr<util::CallPromise> promise);
+                boost::shared_ptr<util::CallPromise> deRegisterCall(int callId);
+
+                void registerEventHandler(boost::shared_ptr<util::CallPromise> promise);
+
+                boost::shared_ptr<util::CallPromise> getEventHandlerPromise(int callId);
 
                 void resend(boost::shared_ptr<util::CallPromise> promise);
 
                 boost::shared_ptr<util::CallPromise> registerCall(boost::shared_ptr<util::CallPromise> promise);
-
-                void reRegisterCall(boost::shared_ptr<util::CallPromise> promise);
 
                 void targetNotActive(boost::shared_ptr<util::CallPromise> promise);
 

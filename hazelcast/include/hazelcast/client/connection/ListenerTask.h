@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class IOListener;
+            class IOSelector;
 
             class HAZELCAST_API ListenerTask {
             public:

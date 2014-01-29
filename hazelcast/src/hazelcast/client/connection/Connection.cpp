@@ -21,7 +21,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, spi::ClientContext &clientContext, IListener &iListener, OListener &oListener)
+            Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &oListener)
             : clientContext(clientContext)
             , socket(address)
             , live(true)
@@ -47,10 +47,6 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::send(boost::shared_ptr<util::CallPromise> promise) {
-                write(promise);
-            };
-
             void Connection::resend(boost::shared_ptr<util::CallPromise> promise) {
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
                     exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
@@ -67,10 +63,10 @@ namespace hazelcast {
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     return;
                 }
-                connection->write(promise);
+                connection->registerAndEnqueue(promise);
             };
 
-            void Connection::write(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::registerAndEnqueue(boost::shared_ptr<util::CallPromise> promise) {
                 registerCall(promise); //Don't change the order with following line
                 serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
                 if (!live) {
@@ -104,7 +100,7 @@ namespace hazelcast {
                 }
 
                 if (!handleEventUuid(response, promise))
-                    return;
+                    return; //if event uuid return.
 
                 promise->setResponse(response->getData());
 
@@ -165,15 +161,6 @@ namespace hazelcast {
 
             ReadHandler &Connection::getReadHandler() {
                 return readHandler;
-            }
-
-            void Connection::reRegisterCall(boost::shared_ptr<util::CallPromise> promise) {
-                int callId = clientContext.getConnectionManager().getNextCallId();
-                promise->getRequest().callId = callId;
-                callPromises.put(callId, promise);
-                if (promise->getEventHandler() != NULL) {
-                    registerEventHandler(promise);
-                }
             }
 
             // USED BY CLUSTER SERVICE

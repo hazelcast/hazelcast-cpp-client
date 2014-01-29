@@ -12,14 +12,14 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class IOListener;
+            class IOSelector;
 
             class Connection;
 
             class HAZELCAST_API IOHandler : public ListenerTask {
             public:
 
-                IOHandler(Connection &connection, IOListener &ioListener);
+                IOHandler(Connection &connection, IOSelector &ioListener);
 
                 ~IOHandler();
 
@@ -30,7 +30,7 @@ namespace hazelcast {
                 void registerSocket();
 
             protected:
-                IOListener &ioListener;
+                IOSelector &ioListener;
 
                 Connection &connection;
 

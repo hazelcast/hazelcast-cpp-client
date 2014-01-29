@@ -72,7 +72,7 @@ namespace hazelcast {
                 boost::shared_ptr<util::CallPromise> promise(new util::CallPromise(*this));
                 promise->setRequest(request);
                 promise->setEventHandler(eventHandler);
-                connection->send(promise);
+                connection->registerAndEnqueue(promise);
                 return promise->getFuture();
             }
 

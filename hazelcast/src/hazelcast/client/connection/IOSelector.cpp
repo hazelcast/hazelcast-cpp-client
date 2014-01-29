@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 24/12/13.
 //
 
-#include "hazelcast/client/connection/IOListener.h"
+#include "IOSelector.h"
 #include "hazelcast/client/connection/ListenerTask.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/util/ServerSocket.h"
@@ -13,19 +13,19 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOListener::IOListener() {
+            IOSelector::IOSelector() {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 isAlive = true;
             };
 
 
-            IOListener::~IOListener() {
+            IOSelector::~IOSelector() {
                 delete wakeUpSocket;
                 shutdown();
             }
 
-            void IOListener::wakeUp() {
+            void IOSelector::wakeUp() {
                 int wakeUpSignal = 9;
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
@@ -35,7 +35,7 @@ namespace hazelcast {
                 }
             };
 
-            void IOListener::initListenSocket(util::SocketSet &wakeUpSocketSet) {
+            void IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
                 wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
                 int error = wakeUpSocket->connect();
@@ -48,27 +48,27 @@ namespace hazelcast {
                 }
             }
 
-            void IOListener::shutdown() {
+            void IOSelector::shutdown() {
                 isAlive = false;
             }
 
-            void IOListener::addTask(ListenerTask *listenerTask) {
+            void IOSelector::addTask(ListenerTask *listenerTask) {
                 listenerTasks.offer(listenerTask);
             }
 
-            void IOListener::addSocket(const Socket &socket) {
+            void IOSelector::addSocket(const Socket &socket) {
                 socketSet.sockets.insert(&socket);
             }
 
-            void IOListener::removeSocket(const Socket &socket) {
+            void IOSelector::removeSocket(const Socket &socket) {
                 socketSet.sockets.erase(&socket);
             }
 
-            void IOListener::addHandler(int socketId, IOHandler *handler) {
+            void IOSelector::addHandler(int socketId, IOHandler *handler) {
                 ioHandlers[socketId] = handler;
             }
 
-            void IOListener::processListenerQueue() {
+            void IOSelector::processListenerQueue() {
                 while (ListenerTask *task = listenerTasks.poll()) {
                     task->run();
                 }

@@ -3,14 +3,14 @@
 //
 
 #include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/client/connection/IOListener.h"
+#include "IOSelector.h"
 #include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOHandler::IOHandler(Connection &connection, IOListener &ioListener)
+            IOHandler::IOHandler(Connection &connection, IOSelector &ioListener)
             :connection(connection)
             , ioListener(ioListener) {
 

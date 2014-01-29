@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include "hazelcast/client/connection/OListener.h"
+#include "OutSelector.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include <boost/thread/detail/thread.hpp>
 
@@ -11,17 +11,17 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            OListener::OListener() {
+            OutSelector::OutSelector() {
                 initListenSocket(wakeUpSocketSet);
             }
 
-            OListener::~OListener() {
+            OutSelector::~OutSelector() {
                 std::set<Socket const *>::iterator it = wakeUpSocketSet.sockets.begin();
                 delete (*it);
             };
 
 
-            void OListener::listen() {
+            void OutSelector::listen() {
                 while (isAlive) {
                     processListenerQueue();
                     int n = std::max(wakeUpSocketSet.getHighestSocketId(), socketSet.getHighestSocketId());
@@ -45,7 +45,7 @@ namespace hazelcast {
 
                     it = socketSet.sockets.begin();
                     while (it != socketSet.sockets.end()) {
-                        Socket const * currentSocket = *it;
+                        Socket const *currentSocket = *it;
                         ++it;
                         int id = currentSocket->getSocketId();
                         if (FD_ISSET(id, &write_fds)) {

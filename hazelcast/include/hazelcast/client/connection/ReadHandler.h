@@ -22,11 +22,11 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class IListener;
+            class InSelector;
 
-            class HAZELCAST_API ReadHandler : public IOHandler{
+            class HAZELCAST_API ReadHandler : public IOHandler {
             public:
-                ReadHandler(Connection &connection, IListener&iListener, int bufferSize);
+                ReadHandler(Connection &connection, InSelector &iListener, int bufferSize);
 
                 void handle();
 

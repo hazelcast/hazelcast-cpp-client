@@ -4,14 +4,14 @@
 
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/IListener.h"
+#include "InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, IListener &iListener, int bufferSize)
+            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, int bufferSize)
             : IOHandler(connection, iListener)
             , buffer(bufferSize)
             , lastData(NULL) {

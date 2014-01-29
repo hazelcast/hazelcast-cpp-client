@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_OListener
 #define HAZELCAST_OListener
 
-#include "hazelcast/client/connection/IOListener.h"
+#include "IOSelector.h"
 #include "hazelcast/util/SocketSet.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
@@ -22,11 +22,11 @@ namespace hazelcast {
         namespace connection {
             class WriteHandler;
 
-            class HAZELCAST_API OListener : public IOListener {
+            class HAZELCAST_API OutSelector : public IOSelector {
             public:
-                OListener();
+                OutSelector();
 
-                ~OListener();
+                ~OutSelector();
 
                 void listen();
 
