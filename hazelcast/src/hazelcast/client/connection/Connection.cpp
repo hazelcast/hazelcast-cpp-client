@@ -37,7 +37,7 @@ namespace hazelcast {
             void Connection::connect() {
                 int error = socket.connect();
                 if (error) {
-                    throw client::exception::IOException("Socket::connect", strerror(error));
+                    throw exception::IOException("Socket::connect", strerror(error));
                 }
             };
 
@@ -47,13 +47,14 @@ namespace hazelcast {
             }
 
             void Connection::close() {
+                removeConnectionCalls();
                 live = false;
                 socket.close();
             }
 
             void Connection::resend(boost::shared_ptr<util::CallPromise> promise) {
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
-                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
+                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     return;
                 } // MTODO there is already resend mechanism in connectionManager
@@ -63,8 +64,8 @@ namespace hazelcast {
                     ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
                 } catch(exception::IOException &e) {
-                    exception::InstanceNotActiveException instanceNotActiveException(remoteEndpoint.getHost());
-                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
+                    promise->setException(instanceNotActiveException);
                     return;
                 }
                 connection->registerAndEnqueue(promise);
@@ -131,11 +132,11 @@ namespace hazelcast {
             };
 
             const Address &Connection::getRemoteEndpoint() const {
-                return remoteEndpoint;
+                return socket.getRemoteEndpoint();
             };
 
             void Connection::setRemoteEndpoint(Address &remoteEndpoint) {
-                this->remoteEndpoint = remoteEndpoint;
+                socket.setRemoteEndpoint(remoteEndpoint);
             };
 
             void Connection::writeBlocking(serialization::Data const &data) {
@@ -167,7 +168,9 @@ namespace hazelcast {
                 return readHandler;
             }
 
-            // USED BY CLUSTER SERVICE
+            WriteHandler &Connection::getWriteHandler() {
+                return writeHandler;
+            }
 
             boost::shared_ptr<util::CallPromise> Connection::deRegisterCall(int callId) {
                 return callPromises.remove(callId);
@@ -188,7 +191,7 @@ namespace hazelcast {
             }
 
             void Connection::removeConnectionCalls() {
-                clientContext.getConnectionManager().removeConnection(remoteEndpoint);
+                clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
 //            partitionService.runRefresher(); MTODO
                 typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
                 Address const &address = getRemoteEndpoint();
@@ -213,7 +216,10 @@ namespace hazelcast {
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     resend(promise);
+                    return;
                 }
+                exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
+                promise->setException(instanceNotActiveException);
 
             }
         }

@@ -22,6 +22,8 @@ namespace hazelcast {
             :clientContext(clientContext)
             , live(true)
             , callIdGenerator(10)
+            , iListener(*this)
+            , oListener(*this)
             , iListenerThread(NULL)
             , oListenerThread(NULL)
             , smartRouting(smartRouting) {
@@ -63,23 +65,33 @@ namespace hazelcast {
 
             boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address &target, int tryCount) {
                 checkLive();
+                try {
+                    if (clientContext.getClusterService().isMemberExists(target)) {
+                        boost::shared_ptr<Connection> connection = getOrConnect(target);
+                        return connection;
+                    }
+                } catch (exception::IOException &ignored) {
+                }
+
                 int count = 0;
                 exception::IOException lastError("", "");
                 while (count < tryCount) {
                     try {
-                        if (!clientContext.getClusterService().isMemberExists(target)) {
-                            return getRandomConnection();
-                        } else {
-                            return getOrConnect(target);
-                        }
+                        return getRandomConnection();
                     } catch (exception::IOException &e) {
                         lastError = e;
                     }
                     count++;
                 }
+                std::cerr << "Could not connect to any address after 20 try" << std::endl;
                 throw lastError;
             }
 
+            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(const Address &address) {
+                if (!live)
+                    return boost::shared_ptr<Connection>();
+                return connections.get(address);
+            }
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
                 checkLive();
@@ -165,12 +177,21 @@ namespace hazelcast {
             connection::Connection *ConnectionManager::connectTo(const Address &address) {
                 connection::Connection *conn = new Connection(address, clientContext, iListener, oListener);
                 checkLive();
-                conn->connect();
-                //MTODO socket options
-                if (socketInterceptor.get() != NULL) {
-                    socketInterceptor.get()->onConnect(conn->getSocket());
+
+                try {
+                    conn->connect();
+                    //MTODO socket options
+                    if (socketInterceptor.get() != NULL) {
+                        socketInterceptor.get()->onConnect(conn->getSocket());
+                    }
+                    authenticate(*conn, true, true);
+                } catch(exception::IOException &e) {
+                    delete conn;
+                    throw e;
+                } catch(...) {
+                    assert(0 && "No other exception can be here : ConnectionManager::connectTo");
                 }
-                authenticate(*conn, true, true);
+
                 return conn;
             }
         }

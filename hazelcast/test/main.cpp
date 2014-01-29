@@ -12,6 +12,12 @@
 #include "ICountDownLatchTest.h"
 #include "ClientLockTest.h"
 #include "ClientSemaphoreTest.h"
+#include "ClientTxnTest.h"
+#include "ClientTxnSetTest.h"
+#include "ClientTxnQueueTest.h"
+#include "ClientTxnMapTest.h"
+#include "ClientTxnListTest.h"
+#include "ClientTxnMultiMapTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -62,23 +68,23 @@ int main(int argc, char **argv) {
     topicTest.executeTests();
 
 
-//    ClientTxnListTest clientTxnListTest(factory);
-//    clientTxnListTest.executeTests();
-//
-//    ClientTxnMapTest clientTxnMapTest(factory);
-//    clientTxnMapTest.executeTests();
-//
-//    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
-//    clientTxnMultiMapTest.executeTests();
-//
-//    ClientTxnQueueTest clientTxnQueueTest(factory);
-//    clientTxnQueueTest.executeTests();
-//
-//    ClientTxnSetTest clientTxnSetTest(factory);
-//    clientTxnSetTest.executeTests();
-//
-//    ClientTxnTest clientTxnTest(factory);
-//    clientTxnTest.executeTests();
+    ClientTxnListTest clientTxnListTest(factory);
+    clientTxnListTest.executeTests();
+
+    ClientTxnMapTest clientTxnMapTest(factory);
+    clientTxnMapTest.executeTests();
+
+    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
+    clientTxnMultiMapTest.executeTests();
+
+    ClientTxnQueueTest clientTxnQueueTest(factory);
+    clientTxnQueueTest.executeTests();
+
+    ClientTxnSetTest clientTxnSetTest(factory);
+    clientTxnSetTest.executeTests();
+
+    ClientTxnTest clientTxnTest(factory);
+    clientTxnTest.executeTests();
 
 //    testSpeed();
 

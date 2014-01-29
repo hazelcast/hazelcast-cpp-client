@@ -5,12 +5,11 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include "hazelcast/client/connection/HeartBeatChecker.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/SocketInterceptor.h"
-#include "InSelector.h"
-#include "OutSelector.h"
+#include "hazelcast/client/connection/InSelector.h"
+#include "hazelcast/client/connection/OutSelector.h"
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
 
@@ -45,6 +44,8 @@ namespace hazelcast {
                 void start();
 
                 connection::Connection *ownerConnection(const Address &address);
+
+                boost::shared_ptr<Connection> getConnectionIfAvailable(const Address &address);
 
                 boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress, int tryCount);
 

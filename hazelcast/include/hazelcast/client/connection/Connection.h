@@ -64,9 +64,9 @@ namespace hazelcast {
 
                 ReadHandler &getReadHandler();
 
-                boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
+                WriteHandler &getWriteHandler();
 
-                void removeConnectionCalls();
+                boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
 
                 boost::atomic<clock_t> lastRead;
                 boost::atomic<clock_t> lastWrite;
@@ -74,11 +74,12 @@ namespace hazelcast {
             private:
                 spi::ClientContext &clientContext;
                 Socket socket;
-                Address remoteEndpoint;
                 util::SynchronizedMap<int, util::CallPromise > callPromises;
                 util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
+
+                void removeConnectionCalls();
 
                 boost::shared_ptr<util::CallPromise> deRegisterCall(int callId);
 

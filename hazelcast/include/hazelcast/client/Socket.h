@@ -53,19 +53,25 @@ namespace hazelcast {
 
             int getSocketId() const;
 
-            client::Address getAddress() const;
+            void setRemoteEndpoint(client::Address &address);
+
+            const client::Address &getRemoteEndpoint() const;
 
             void close();
 
         private:
 
+            client::Address getAddress() const;
+
             Socket(const Socket &rhs);
+
+            client::Address remoteEndpoint;
 
             struct addrinfo *serverInfo;
             int socketId;
             boost::atomic<bool> isOpen;
 
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			WSADATA wsa_data;
 			#endif
 

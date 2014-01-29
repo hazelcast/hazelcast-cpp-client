@@ -2,16 +2,17 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include "OutSelector.h"
-#include "hazelcast/client/connection/IOHandler.h"
-#include <boost/thread/detail/thread.hpp>
+#include "hazelcast/client/connection/OutSelector.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            OutSelector::OutSelector() {
+            OutSelector::OutSelector(ConnectionManager &connectionManager)
+            :IOSelector(connectionManager) {
                 initListenSocket(wakeUpSocketSet);
             }
 
@@ -50,7 +51,11 @@ namespace hazelcast {
                         int id = currentSocket->getSocketId();
                         if (FD_ISSET(id, &write_fds)) {
                             socketSet.sockets.erase(currentSocket);
-                            ioHandlers[id]->handle();
+                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
+                            if (conn.get() != NULL)
+                                conn->getWriteHandler().handle();
+                            else
+                                std::cerr << "OutSelector null connection " << std::endl;
                         }
                     }
 

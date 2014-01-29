@@ -20,10 +20,6 @@ namespace hazelcast {
             this->promise.set_value(data);
         }
 
-        void CallPromise::setException(std::exception const &exception) {
-            promise.set_exception(exception);
-        }
-
         void CallPromise::setRequest(const client::impl::PortableRequest *request) {
             this->request.reset(request);
         }
@@ -43,7 +39,6 @@ namespace hazelcast {
         client::impl::BaseEventHandler *CallPromise::getEventHandler() const {
             return eventHandler.get();
         }
-
 
         int CallPromise::incrementAndGetResendCount() {
             return ++resendCount;

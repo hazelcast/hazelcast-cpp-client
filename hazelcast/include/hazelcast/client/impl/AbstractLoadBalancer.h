@@ -9,7 +9,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
-#include "MemberAttributeEvent.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
 #include <boost/thread/mutex.hpp>
 #include <vector>
 

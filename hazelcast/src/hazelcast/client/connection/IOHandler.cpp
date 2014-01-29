@@ -26,7 +26,6 @@ namespace hazelcast {
                     return;
                 Socket const &socket = connection.getSocket();
                 ioListener.addSocket(socket);
-                ioListener.addHandler(socket.getSocketId(), this);
             }
 
             IOHandler::~IOHandler() {
@@ -36,7 +35,6 @@ namespace hazelcast {
             void IOHandler::handleSocketException(const std::string &message) {
                 ioListener.removeSocket(connection.getSocket());
                 connection.close();
-                connection.removeConnectionCalls();
                 (std::cerr << " void IOHandler::handleSocketException " << message << std::endl);
             }
         }

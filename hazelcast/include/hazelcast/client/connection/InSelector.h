@@ -15,7 +15,7 @@ namespace hazelcast {
 
             class HAZELCAST_API InSelector : public IOSelector {
             public:
-                InSelector();
+                InSelector(ConnectionManager &connectionManager);
 
                 void listen();
             };

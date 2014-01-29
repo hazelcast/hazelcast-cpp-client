@@ -1,12 +1,11 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include <iostream>
-#include <cassert>
 
 namespace hazelcast {
     namespace client {
-        Socket::Socket(const client::Address &address){
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+        Socket::Socket(const client::Address &address) {
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
                 if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
             #endif
@@ -25,18 +24,18 @@ namespace hazelcast {
             int size = 32 * 1024;
             ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
             ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
-            #if defined(SO_NOSIGPIPE)
+#if defined(SO_NOSIGPIPE)
             int on = 1;
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
-            #endif
+#endif
 
         };
 
 
         Socket::Socket(int socketId)
         : serverInfo(NULL)
-        ,socketId(socketId)
-        ,isOpen(true){
+        , socketId(socketId)
+        , isOpen(true) {
 
         }
 
@@ -53,11 +52,11 @@ namespace hazelcast {
         int Socket::connect() {
             assert(serverInfo != NULL && "Socket is already connected");
             if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();
                 #else
                 int error = errno;
-                #endif
+#endif
                 return error;
             }
             return 0;
@@ -65,13 +64,13 @@ namespace hazelcast {
 
         int Socket::send(const void *buffer, int len) const {
             int bytesSend = 0;
-            if ((bytesSend = ::send(socketId, (char *) buffer, (size_t)len, 0)) == -1)
+            if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, 0)) == -1)
                 throw client::exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             return bytesSend;
         };
 
         int Socket::receive(void *buffer, int len, int flag) const {
-            int size = ::recv(socketId, (char *) buffer, (size_t)len, flag);
+            int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
 
             if (size == -1)
                 throw client::exception::IOException("Socket::receive", "Error socket read");
@@ -85,11 +84,20 @@ namespace hazelcast {
             return socketId;
         }
 
+
+        void Socket::setRemoteEndpoint(client::Address &address) {
+            remoteEndpoint = address;
+        }
+
+        const client::Address &Socket::getRemoteEndpoint() const {
+            return remoteEndpoint;
+        }
+
         client::Address Socket::getAddress() const {
             char host[1024];
             char service[20];
             getnameinfo(serverInfo->ai_addr, serverInfo->ai_addrlen, host, sizeof host, service, sizeof service, 0);
-            Address address(host,atoi(service));
+            Address address(host, atoi(service));
             return address;
         }
 
@@ -99,12 +107,12 @@ namespace hazelcast {
                 ::shutdown(socketId, SHUT_RD);
                 char buffer[1];
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 WSACleanup();
                 closesocket(socketId);
                 #else
                 ::close(socketId);
-                #endif
+#endif
             }
         }
 

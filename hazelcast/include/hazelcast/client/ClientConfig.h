@@ -3,7 +3,7 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
-#include "UsernamePasswordCredentials.h"
+#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include <vector>

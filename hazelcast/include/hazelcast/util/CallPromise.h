@@ -12,6 +12,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
 #include <boost/thread/future.hpp>
+#include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +37,10 @@ namespace hazelcast {
 
             void setResponse(const client::serialization::Data &data);
 
-            void setException(std::exception const &);
+            template<typename E>
+            void setException(E const &exception) {
+                promise.set_exception(exception);
+            }
 
             void setRequest(const client::impl::PortableRequest *request);
 
@@ -55,7 +59,7 @@ namespace hazelcast {
             boost::promise<client::serialization::Data> promise;
             std::auto_ptr<const client::impl::PortableRequest> request;
             std::auto_ptr<client::impl::BaseEventHandler> eventHandler;
-            int resendCount;
+            boost::atomic<int> resendCount;
         };
     }
 }

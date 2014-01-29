@@ -2,13 +2,16 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include "InSelector.h"
+#include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InSelector::InSelector() {
+            InSelector::InSelector(ConnectionManager &connectionManager)
+            : IOSelector(connectionManager) {
                 initListenSocket(socketSet);
             }
 
@@ -23,20 +26,33 @@ namespace hazelcast {
                         continue;
                     }
                     if (err == -1) {
-                        (std::cerr << "Ilistener thread select : " << std::string(strerror(errno)) << std::endl);
+                        (std::cerr << "InSelector thread select : " << std::string(strerror(errno)) << std::endl);
                         continue;
                     }
+
+
                     std::set<Socket const *>::iterator it;
-                    for (it = socketSet.sockets.begin(); it != socketSet.sockets.end(); ++it) {
-                        if (FD_ISSET((*it)->getSocketId(), &read_fds)) {
-                            if (wakeUpListenerSocketId == (*it)->getSocketId()) {
+                    it = socketSet.sockets.begin();
+                    while (it != socketSet.sockets.end()) {
+                        Socket const *currentSocket = *it;
+                        ++it;
+                        int id = currentSocket->getSocketId();
+                        if (FD_ISSET(id, &read_fds)) {
+                            if (wakeUpListenerSocketId == id) {
                                 int wakeUpSignal;
-                                (*it)->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
+                                currentSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
                                 continue;
                             }
-                            ioHandlers[(*it)->getSocketId()]->handle();
+
+                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
+                            if (conn.get() != NULL)
+                                conn->getReadHandler().handle();
+                            else
+                                std::cerr << "InSelector null connection " << std::endl;
                         }
                     }
+
+
                 }
             }
         }

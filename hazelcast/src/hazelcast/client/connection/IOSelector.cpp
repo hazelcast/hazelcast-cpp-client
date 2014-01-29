@@ -13,7 +13,8 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOSelector::IOSelector() {
+            IOSelector::IOSelector(ConnectionManager &connectionManager)
+            :connectionManager(connectionManager) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 isAlive = true;
@@ -62,10 +63,6 @@ namespace hazelcast {
 
             void IOSelector::removeSocket(const Socket &socket) {
                 socketSet.sockets.erase(&socket);
-            }
-
-            void IOSelector::addHandler(int socketId, IOHandler *handler) {
-                ioHandlers[socketId] = handler;
             }
 
             void IOSelector::processListenerQueue() {

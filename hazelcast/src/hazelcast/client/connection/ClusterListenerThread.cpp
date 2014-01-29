@@ -179,27 +179,41 @@ namespace hazelcast {
                 util::IOUtil::PRIMITIVE_ID primitive_id = memberAttributeChange.getTypeId();
                 const std::string &key = memberAttributeChange.getKey();
                 if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_PUT) {//PUT
-//                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
-//                        target.setAttribute(key, value);                MTODO
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
-//                    }
+                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
+                        target.setAttribute(key, util::IOUtil::to_value<bool>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
+                        target.setAttribute(key, util::IOUtil::to_value<byte>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
+                        target.setAttribute(key, util::IOUtil::to_value<double>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
+                        target.setAttribute(key, util::IOUtil::to_value<float>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
+                        target.setAttribute(key, util::IOUtil::to_value<int>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
+                        target.setAttribute(key, util::IOUtil::to_value<long>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
+                        target.setAttribute(key, util::IOUtil::to_value<short>(value));
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
+                        target.setAttribute(key, value);
+                    }
                 } else if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_REMOVE) {//REMOVE
-//                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
-//                        target.removeAttribute<bool>(key);               MTODO
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
-//                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
-//                    }
+                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
+                        target.removeAttribute<bool>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
+                        target.removeAttribute<byte>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
+                        target.removeAttribute<double>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
+                        target.removeAttribute<float>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
+                        target.removeAttribute<int>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
+                        target.removeAttribute<long>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
+                        target.removeAttribute<short>(key);
+                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
+                        target.removeAttribute<std::string>(key);
+                    }
                 }
                 MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value, primitive_id);
                 clientContext.getClusterService().fireMembershipEvent(memberAttributeEvent);

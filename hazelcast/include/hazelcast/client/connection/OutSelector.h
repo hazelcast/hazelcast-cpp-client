@@ -24,7 +24,7 @@ namespace hazelcast {
 
             class HAZELCAST_API OutSelector : public IOSelector {
             public:
-                OutSelector();
+                OutSelector(ConnectionManager &connectionManager);
 
                 ~OutSelector();
 

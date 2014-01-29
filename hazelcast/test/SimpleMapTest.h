@@ -13,7 +13,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 40;
+int THREAD_COUNT = 3;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
@@ -102,7 +102,7 @@ public:
                     ++stats.removeCount;
                 }
             } catch(std::exception &e) {
-                std::cout << ">>SimpleMapTest " << e.what() << std::endl;
+                std::cout << ">smt " << e.what() << std::endl;
                 boost::this_thread::sleep(boost::posix_time::seconds(2));
             } catch(...) {
                 std::cout << "unkown exception" << std::endl;
@@ -121,7 +121,7 @@ public:
         std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.getGroupConfig().setName("sancar").setPassword("dev-pass");
+        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
 //        clientConfig.setSmart(false);
 
