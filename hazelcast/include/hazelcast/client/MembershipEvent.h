@@ -67,7 +67,7 @@ namespace hazelcast {
         private:
             Member member;
             MembershipEventType eventType;
-            Cluster &cluster;
+            Cluster *cluster;
         };
     }
 }
