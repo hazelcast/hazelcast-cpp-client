@@ -16,6 +16,9 @@ namespace hazelcast {
             class IdGeneratorSupport;
         }
 
+        /**
+         * Cluster-wide unique id generator.
+         */
         class HAZELCAST_API IdGenerator : public DistributedObject {
             friend class HazelcastClient;
 

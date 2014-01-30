@@ -69,7 +69,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#put(Object, Object)}.
-             * <p/>
+             *
              * The object to be put will be accessible only in the current transaction context till transaction is committed.
              *
              * @see IMap#put(Object, Object)
@@ -83,7 +83,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#set(Object, Object)}.
-             * <p/>
+             *
              * The object to be set will be accessible only in the current transaction context till transaction is committed.
              *
              * @see IMap#set(Object, Object)
@@ -97,7 +97,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#putIfAbsent(Object, Object)}.
-             * <p/>
+             *
              * The object to be put will be accessible only in the current transaction context till transaction is committed.
              *
              * @see IMap#putIfAbsent(Object, Object)
@@ -111,7 +111,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#replace(Object, Object)}.
-             * <p/>
+             *
              * The object to be replaced will be accessible only in the current transaction context till transaction is committed.
              *
              * @see IMap#replace(Object, Object)
@@ -126,7 +126,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#replace(Object, Object, Object)}.
-             * <p/>
+             *
              * The object to be replaced will be accessible only in the current transaction context till transaction is committed.
              *
              * @see IMap#replace(Object, Object, Object)
@@ -143,7 +143,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#remove(Object)}.
-             * <p/>
+             *
              * The object to be removed will be removed from only the current transaction context till transaction is committed.
              *
              * @see IMap#remove(Object)
@@ -156,7 +156,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#delete(Object)}.
-             * <p/>
+             *
              * The object to be deleted will be removed from only the current transaction context till transaction is committed.
              *
              * @see IMap#delete(Object)
@@ -170,7 +170,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#remove(Object, Object)}.
-             * <p/>
+             *
              * The object to be removed will be removed from only the current transaction context till transaction is committed.
              *
              * @see IMap#remove(Object, Object)
@@ -185,7 +185,7 @@ namespace hazelcast {
 
             /**
             * Transactional implementation of {@link IMap#keySet()}.
-            * <p/>
+            *
             *
             * @see com.hazelcast.core.IMap#keySet()
             */
@@ -203,7 +203,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#keySet(com.hazelcast.query.Predicate)} .
-             * <p/>
+             *
              *
              * @see IMap#keySet(com.hazelcast.query.Predicate)
              */
@@ -221,7 +221,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#values()}.
-             * <p/>
+             *
              *
              * @see IMap#values()
              */
@@ -239,7 +239,7 @@ namespace hazelcast {
 
             /**
              * Transactional implementation of {@link com.hazelcast.core.IMap#values(com.hazelcast.query.Predicate)} .
-             * <p/>
+             *
              *
              * @see IMap#values(com.hazelcast.query.Predicate)
              */

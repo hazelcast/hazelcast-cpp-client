@@ -14,6 +14,12 @@ namespace hazelcast {
             class ClientContext;
         }
 
+        /**
+         * IAtomicLong is a distributed atomic long implementation.
+         * Note that, in node failures atomic long will be restored
+         * via backup.
+         *
+         */
         class HAZELCAST_API IAtomicLong : public DistributedObject {
             friend class HazelcastClient;
 

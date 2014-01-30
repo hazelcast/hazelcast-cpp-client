@@ -51,6 +51,14 @@ namespace hazelcast {
 
         };
 
+        /**
+         * Map Entry event.
+         *
+         * @param <K> key of the map entry
+         * @param <V> value of the map entry
+         * @see EntryListener
+         * @see IMap#addEntryListener(EntryListener, boolean)
+         */
         template <typename K, typename V>
         class HAZELCAST_API EntryEvent {
         public:

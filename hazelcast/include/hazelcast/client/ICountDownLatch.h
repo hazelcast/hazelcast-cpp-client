@@ -17,6 +17,29 @@ namespace hazelcast {
             class ClientContext;
         }
 
+        /**
+         * ICountDownLatch is a backed-up distributed alternative to the
+         * java.util.concurrent.CountDownLatch java.util.concurrent.CountDownLatch
+         *
+         * ICountDownLatch is a cluster-wide synchronization aid
+         * that allows one or more threads to wait until a set of operations being
+         * performed in other threads completes.
+         *
+         * There are a few differences compared to the ICountDownLatch :
+         * <ol>
+         *    <li>
+         *         the ICountDownLatch count can be re-set using trySetCount(int) after a countdown
+         *         has finished but not during an active count. This allows the same latch instance to be reused.
+         *    </li>
+         *    <li>
+         *         there is no await() method to do an unbound wait since this is undesirable in a distributed
+         *         application: it can happen that for example a cluster is split or that the master and
+         *         replica's all die. So in most cases it is best to configure an explicit timeout so have the ability
+         *         to deal with these situations.
+         *    </li>
+         * </ol>
+         *
+         */
         class HAZELCAST_API ICountDownLatch : public DistributedObject {
             friend class HazelcastClient;
 
@@ -25,10 +48,10 @@ namespace hazelcast {
             /**
              * Causes the current thread to wait until the latch has counted down to
              * zero, an exception is thrown, or the specified waiting time elapses.
-             * <p/>
+             *
              * <p>If the current count is zero then this method returns immediately
              * with the value {@code true}.
-             * <p/>
+             *
              * <p>If the current count is greater than zero then the current
              * thread becomes disabled for thread scheduling purposes and lies
              * dormant until one of five things happen:
@@ -41,11 +64,11 @@ namespace hazelcast {
              * the current thread; or
              * <li>The specified waiting time elapses.
              * </ul>
-             * <p/>
+             *
              * <p>If the count reaches zero then the method returns with the
              * value {@code true}.
-             * <p/>
-             * <p/>If the countdown owner becomes disconnected while waiting then
+             *
+             * If the countdown owner becomes disconnected while waiting then
              * {@link MemberLeftException} will be thrown.
              * <p>If the current thread:
              * <ul>
@@ -71,14 +94,14 @@ namespace hazelcast {
             /**
              * Decrements the count of the latch, releasing all waiting threads if
              * the count reaches zero.
-             * <p/>
+             *
              * If the current count is greater than zero then it is decremented.
              * If the new count is zero:
              * <ul>
              * <li>All waiting threads are re-enabled for thread scheduling purposes; and
              * <li>Countdown owner is set to {@code null}.
              * </ul>
-             * <p/>
+             *
              * If the current count equals zero then nothing happens.
              */
             void countDown();
@@ -94,13 +117,13 @@ namespace hazelcast {
              * Sets the count to the given value if the current count is zero. The calling
              * cluster member becomes the owner of the countdown and is responsible for
              * staying connected to the cluster until the count reaches zero.
-             * <p/>If the owner becomes disconnected before the count reaches zero:
+             * If the owner becomes disconnected before the count reaches zero:
              * <ul>
              * <li>Count will be set to zero;
              * <li>Countdown owner will be set to {@code null}; and
              * <li>All awaiting threads will be thrown a {@link MemberLeftException}.
              * </ul>
-             * <p/>If count is not zero then this method does nothing and returns {@code false}.
+             * If count is not zero then this method does nothing and returns {@code false}.
              *
              * @param count the number of times {@link #countDown} must be invoked
              *              before threads can pass through {@link #await}

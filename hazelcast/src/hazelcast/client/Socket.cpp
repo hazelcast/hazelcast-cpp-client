@@ -1,6 +1,7 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include <iostream>
+#include <cassert>
 
 namespace hazelcast {
     namespace client {

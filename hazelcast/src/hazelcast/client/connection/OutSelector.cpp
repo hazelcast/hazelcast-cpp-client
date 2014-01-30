@@ -54,8 +54,6 @@ namespace hazelcast {
                             boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
                             if (conn.get() != NULL)
                                 conn->getWriteHandler().handle();
-                            else
-                                std::cerr << "OutSelector null connection " << std::endl;
                         }
                     }
 

@@ -40,10 +40,11 @@ namespace hazelcast {
         template<typename K, typename V>
         class HAZELCAST_API MultiMap : public DistributedObject {
             friend class HazelcastClient;
+
         public:
             /**
              * Stores a key-value pair in the multimap.
-             * <p/>
+             *
              *
              * @param key   the key to be stored
              * @param value the value to be stored
@@ -202,7 +203,7 @@ namespace hazelcast {
 
             /**
              * Returns number of values matching to given key in the multimap.
-             * <p/>
+             *
              *
              * @param key the key whose values count are to be returned
              * @return number of values matching to given key in the multimap.
@@ -234,7 +235,7 @@ namespace hazelcast {
              * Adds the specified entry listener for the specified key.
              * The listener will get notified for all
              * add/remove/update/evict events of the specified key only.
-             * <p/>
+             *
              *
              * @param listener     entry listener
              * @param key          the key to listen
@@ -268,13 +269,13 @@ namespace hazelcast {
              * <p>If the lock is not available then
              * the current thread becomes disabled for thread scheduling
              * purposes and lies dormant until the lock has been acquired.
-             * <p/>
+             *
              * Scope of the lock is this multimap only.
              * Acquired lock is only for the key in this multimap.
-             * <p/>
+             *
              * Locks are re-entrant so if the key is locked N times then
              * it should be unlocked N times before another thread can acquire it.
-             * <p/>
+             *
              *
              * @param key key to lock.
              */
@@ -287,14 +288,14 @@ namespace hazelcast {
             /**
             * Acquires the lock for the specified key for the specified lease time.
             * <p>After lease time, lock will be released..
-            * <p/>
+            *
             * <p>If the lock is not available then
             * the current thread becomes disabled for thread scheduling
             * purposes and lies dormant until the lock has been acquired.
-            * <p/>
+            *
             * Scope of the lock is this map only.
             * Acquired lock is only for the key in this map.
-            * <p/>
+            *
             * Locks are re-entrant so if the key is locked N times then
             * it should be unlocked N times before another thread can acquire it.
             * @param key key to lock.
@@ -324,7 +325,7 @@ namespace hazelcast {
              * Tries to acquire the lock for the specified key.
              * <p>If the lock is not available then the current thread
              * doesn't wait and returns false immediately.
-             * <p/>
+             *
              *
              * @param key key to lock.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
@@ -345,7 +346,7 @@ namespace hazelcast {
              * <li>The lock is acquired by the current thread; or
              * <li>The specified waiting time elapses
              * </ul>
-             * <p/>
+             *
              *
              * @param time     the maximum time to wait for the lock
              * @param timeunit the time unit of the <tt>time</tt> argument.
@@ -362,7 +363,7 @@ namespace hazelcast {
             /**
              * Releases the lock for the specified key. It never blocks and
              * returns immediately.
-             * <p/>
+             *
              *
              * @param key key to lock.
              */

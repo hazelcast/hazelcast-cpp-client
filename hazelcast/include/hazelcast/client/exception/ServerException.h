@@ -22,10 +22,6 @@ namespace hazelcast {
 
                 virtual char const *what() const throw();
 
-                std::string message;
-
-                int type;
-
                 int getClassId() const;
 
                 int getFactoryId() const;
@@ -33,6 +29,15 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader &reader);
 
                 bool isInstanceNotActiveException() const;
+
+            private:
+                std::string name;
+
+                std::string details;
+
+                std::string message;
+
+                int type;
             };
         }
     }

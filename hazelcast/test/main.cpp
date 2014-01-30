@@ -1,34 +1,32 @@
 #include "SimpleMapTest.h"
 #include "HazelcastInstanceFactory.h"
-#include "ClientQueueTest.h"
-#include "ClientMultiMapTest.h"
-#include "ClientMapTest.h"
-#include "ClientSerializationTest.h"
-#include "ClientListTest.h"
-#include "ClientSetTest.h"
-#include "IAtomicLongTest.h"
-#include "ClientTopicTest.h"
-#include "IdGeneratorTest.h"
-#include "ICountDownLatchTest.h"
-#include "ClientLockTest.h"
-#include "ClientSemaphoreTest.h"
-#include "ClientTxnTest.h"
-#include "ClientTxnSetTest.h"
-#include "ClientTxnQueueTest.h"
-#include "ClientTxnMapTest.h"
-#include "ClientTxnListTest.h"
-#include "ClientTxnMultiMapTest.h"
+#include "queue/ClientQueueTest.h"
+#include "multimap/ClientMultiMapTest.h"
+#include "map/ClientMapTest.h"
+#include "serialization/ClientSerializationTest.h"
+#include "list/ClientListTest.h"
+#include "set/ClientSetTest.h"
+#include "atomiclong/IAtomicLongTest.h"
+#include "topic/ClientTopicTest.h"
+#include "idgenerator/IdGeneratorTest.h"
+#include "countdownlatch/ICountDownLatchTest.h"
+#include "lock/ClientLockTest.h"
+#include "semaphore/ClientSemaphoreTest.h"
+#include "txn/ClientTxnTest.h"
+#include "txn/ClientTxnSetTest.h"
+#include "txn/ClientTxnQueueTest.h"
+#include "txn/ClientTxnMapTest.h"
+#include "txn/ClientTxnListTest.h"
+#include "txn/ClientTxnMultiMapTest.h"
 
 using namespace hazelcast::client::test;
 
-int testSpeed() {
+void testSpeed() {
     SimpleMapTest s(HOST, 5701);
     s.run();
-    return 0;
 };
 
-int main(int argc, char **argv) {
-
+void unitTests() {
     HazelcastInstanceFactory factory;
 
     ClientSerializationTest serializationTest;
@@ -85,7 +83,11 @@ int main(int argc, char **argv) {
 
     ClientTxnTest clientTxnTest(factory);
     clientTxnTest.executeTests();
+}
 
+int main(int argc, char **argv) {
+
+    unitTests();
 //    testSpeed();
 
 

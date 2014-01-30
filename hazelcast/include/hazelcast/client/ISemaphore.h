@@ -28,7 +28,7 @@ namespace hazelcast {
             /**
              * <p>Acquires a permit, if one is available and returns immediately,
              * reducing the number of available permits by one.
-             * <p/>
+             *
              * <p>If no permit is available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
@@ -57,7 +57,7 @@ namespace hazelcast {
              * <p>Acquires the given number of permits, if they are available,
              * and returns immediately, reducing the number of available permits
              * by the given amount.
-             * <p/>
+             *
              * <p>If insufficient permits are available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
@@ -69,7 +69,7 @@ namespace hazelcast {
              * <li>Some other thread {@linkplain Thread#interrupt interrupts}
              * the current thread.
              * </ul>
-             * <p/>
+             *
              * <p>If the current thread:
              * <ul>
              * <li>has its interrupted status set on entry to this method; or
@@ -89,7 +89,7 @@ namespace hazelcast {
 
             /**
              * Returns the current number of permits currently available in this semaphore.
-             * <p/>
+             *
              * <ul><li>This method is typically used for debugging and testing purposes.
              * </ul>
              *
@@ -119,7 +119,7 @@ namespace hazelcast {
              * Releases a permit, increasing the number of available permits by
              * one.  If any threads in the cluster are trying to acquire a permit,
              * then one is selected and given the permit that was just released.
-             * <p/>
+             *
              * There is no requirement that a thread that releases a permit must
              * have acquired that permit by calling one of the {@link #acquire() acquire} methods.
              * Correct usage of a semaphore is established by programming convention
@@ -130,7 +130,7 @@ namespace hazelcast {
             /**
              * Releases the given number of permits, increasing the number of
              * available permits by that amount.
-             * <p/>
+             *
              * There is no requirement that a thread that releases a permit must
              * have acquired that permit by calling one of the {@link #acquire() acquire} methods.
              * Correct usage of a semaphore is established by programming convention
@@ -145,7 +145,7 @@ namespace hazelcast {
              * Acquires a permit, if one is available and returns immediately,
              * with the value {@code true},
              * reducing the number of available permits by one.
-             * <p/>
+             *
              * If no permit is available then this method will return
              * immediately with the value {@code false}.
              *
@@ -158,7 +158,7 @@ namespace hazelcast {
              * Acquires the given number of permits, if they are available, and
              * returns immediately, with the value {@code true},
              * reducing the number of available permits by the given amount.
-             * <p/>
+             *
              * <p>If insufficient permits are available then this method will return
              * immediately with the value {@code false} and the number of available
              * permits is unchanged.
@@ -174,11 +174,11 @@ namespace hazelcast {
              * Acquires a permit from this semaphore, if one becomes available
              * within the given waiting time and the current thread has not
              * been {@linkplain Thread#interrupt interrupted}.
-             * <p/>
+             *
              * Acquires a permit, if one is available and returns immediately,
              * with the value {@code true},
              * reducing the number of available permits by one.
-             * <p/>
+             *
              * If no permit is available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
@@ -189,13 +189,13 @@ namespace hazelcast {
              * the current thread; or
              * <li>The specified waiting time elapses.
              * </ul>
-             * <p/>
+             *
              * If a permit is acquired then the value {@code true} is returned.
-             * <p/>
+             *
              * If the specified waiting time elapses then the value {@code false}
              * is returned.  If the time is less than or equal to zero, the method
              * will not wait at all.
-             * <p/>
+             *
              * <p>If the current thread:
              * <ul>
              * <li>has its interrupted status set on entry to this method; or
@@ -218,7 +218,7 @@ namespace hazelcast {
              * Acquires the given number of permits, if they are available and
              * returns immediately, with the value {@code true},
              * reducing the number of available permits by the given amount.
-             * <p/>
+             *
              * If insufficient permits are available then
              * the current thread becomes disabled for thread scheduling
              * purposes and lies dormant until one of three things happens:
@@ -230,13 +230,13 @@ namespace hazelcast {
              * the current thread; or
              * <li>The specified waiting time elapses.
              * </ul>
-             * <p/>
+             *
              * If the permits are acquired then the value {@code true} is returned.
-             * <p/>
+             *
              * If the specified waiting time elapses then the value {@code false}
              * is returned.  If the time is less than or equal to zero, the method
              * will not wait at all.
-             * <p/>
+             *
              * <p>If the current thread:
              * <ul>
              * <li>has its interrupted status set on entry to this method; or

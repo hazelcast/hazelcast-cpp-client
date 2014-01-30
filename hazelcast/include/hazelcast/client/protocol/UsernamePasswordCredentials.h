@@ -15,7 +15,7 @@ namespace hazelcast {
             /**
              * Credentials is a container object for endpoint (Members and Clients)
              * security attributes.
-             * <p/>
+             *
              * It is used on authentication process by {@link javax.security.auth.spi.LoginModule}s.
              */
             class HAZELCAST_API UsernamePasswordCredentials : public Credentials {

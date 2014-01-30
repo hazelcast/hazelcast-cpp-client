@@ -195,7 +195,7 @@ namespace hazelcast {
              * }
              * </code>
              * ExecutionException is never thrown.
-             * <p/>
+             *
              *
              * @param key the key of the map entry
              * @return Future from which the value of the key can be retrieved.
@@ -223,7 +223,7 @@ namespace hazelcast {
              * }
              * </code>
              * ExecutionException is never thrown.
-             * <p/>
+             *
 
              *
              * @param key   the key of the map entry
@@ -255,7 +255,7 @@ namespace hazelcast {
              * }
              * </code>
              * ExecutionException is never thrown.
-             * <p/>
+             *
 
              *
              * @param key   the key of the map entry
@@ -271,7 +271,7 @@ namespace hazelcast {
 
             /**
              * Asynchronously removes the given key.
-             * <p/>
+             *
 
              *
              * @param key The key of the map entry to remove.
@@ -434,10 +434,10 @@ namespace hazelcast {
             * <p>If the lock is not available then
             * the current thread becomes disabled for thread scheduling
             * purposes and lies dormant until the lock has been acquired.
-            * <p/>
+            *
             * Scope of the lock is this map only.
             * Acquired lock is only for the key in this map.
-            * <p/>
+            *
             * Locks are re-entrant so if the key is locked N times then
             * it should be unlocked N times before another thread can acquire it.
             *
@@ -452,17 +452,17 @@ namespace hazelcast {
             /**
              * Acquires the lock for the specified key for the specified lease time.
              * <p>After lease time, lock will be released..
-             * <p/>
+             *
              * <p>If the lock is not available then
              * the current thread becomes disabled for thread scheduling
              * purposes and lies dormant until the lock has been acquired.
-             * <p/>
+             *
              * Scope of the lock is this map only.
              * Acquired lock is only for the key in this map.
-             * <p/>
+             *
              * Locks are re-entrant so if the key is locked N times then
              * it should be unlocked N times before another thread can acquire it.
-             * <p/>
+             *
              *
              * @param key key to lock.
              * @param leaseTime time in milliseconds to wait before releasing the lock.
@@ -476,7 +476,7 @@ namespace hazelcast {
             /**
              * Checks the lock for the specified key.
              * <p>If the lock is acquired then returns true, else false.
-             * <p/>
+             *
              *
              * @param key key to lock to be checked.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
@@ -492,7 +492,7 @@ namespace hazelcast {
              * Tries to acquire the lock for the specified key.
              * <p>If the lock is not available then the current thread
              * doesn't wait and returns false immediately.
-             * <p/>
+             *
              *
              * @param key key to lock.
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
@@ -510,7 +510,7 @@ namespace hazelcast {
              * <li>The lock is acquired by the current thread; or
              * <li>The specified waiting time elapses
              * </ul>
-             * <p/>
+             *
              *
              * @param key      key to lock in this map
              * @param time     maximum time in milliseconds to wait for the lock
@@ -527,12 +527,12 @@ namespace hazelcast {
             /**
              * Releases the lock for the specified key. It never blocks and
              * returns immediately.
-             * <p/>
+             *
              * <p>If the current thread is the holder of this lock then the hold
              * count is decremented.  If the hold count is now zero then the lock
              * is released.  If the current thread is not the holder of this
              * lock then {@link IllegalMonitorStateException} is thrown.
-             * <p/>
+             *
              *
              * @param key key to lock.
              * @throws IllegalMonitorStateException if the current thread does not hold this lock MTODO
@@ -547,7 +547,7 @@ namespace hazelcast {
              * Releases the lock for the specified key regardless of the lock owner.
              * It always successfully unlocks the key, never blocks
              * and returns immediately.
-             * <p/>
+             *
              *
              * @param key key to lock.
              */
@@ -560,7 +560,7 @@ namespace hazelcast {
             /**
              * Adds an interceptor for this map. Added interceptor will intercept operations
              * and execute user defined methods and will cancel operations if user defined method throw exception.
-             * <p/>
+             *
              *
              * Interceptor should extend either Portable or IdentifiedSerializable.
              * Notice that map interceptor runs on the nodes. Because of that same class should be implemented in java side
@@ -577,7 +577,7 @@ namespace hazelcast {
 
             /**
              * Removes the given interceptor for this map. So it will not intercept operations anymore.
-             * <p/>
+             *
              *
              * @param id registration id of map interceptor
              */
@@ -643,7 +643,7 @@ namespace hazelcast {
              * Adds the specified entry listener for the specified key.
              * The listener will get notified for all
              * add/remove/update/evict events of the specified key only.
-             * <p/>
+             *
              *
              * Listener class should be like in the following example.
              *
@@ -708,7 +708,7 @@ namespace hazelcast {
 
             /**
              * Returns the <tt>EntryView</tt> for the specified key.
-             * <p/>
+             *
              *
              * @param key key of the entry
              * @return <tt>EntryView</tt> of the specified key
@@ -728,7 +728,7 @@ namespace hazelcast {
              * a <tt>MapStore</tt> defined for this map, then the entry is not
              * deleted from the underlying <tt>MapStore</tt>, evict only removes
              * the entry from the memory.
-             * <p/>
+             *
              *
              * @param key key to evict
              * @return <tt>true</tt> if the key is evicted, <tt>false</tt> otherwise.
@@ -827,9 +827,9 @@ namespace hazelcast {
             /**
              * Queries the map based on the specified sql predicate and
              * returns the keys of matching entries.
-             * <p/>
+             *
              * Specified predicate runs on all members in parallel.
-             * <p/>
+             *
              *
              * @param sql string query criteria
              * @return result key set of the query
@@ -850,9 +850,9 @@ namespace hazelcast {
             /**
              * Queries the map based on the specified sql predicate and
              * returns the matching entries.
-             * <p/>
+             *
              * Specified predicate runs on all members in parallel.
-             * <p/>
+             *
              *
              * @param sql string query criteria
              * @return result entry vector of the query
@@ -874,9 +874,9 @@ namespace hazelcast {
             /**
              * Queries the map based on the specified predicate and
              * returns the values of matching entries.
-             * <p/>
+             *
              * Specified predicate runs on all members in parallel.
-             * <p/>
+             *
              *
              * @param predicate query criteria
              * @return result value vector of the query
@@ -972,7 +972,7 @@ namespace hazelcast {
             /**
              * Applies the user defined EntryProcessor to the all entries in the map.
              * Returns the results mapped by each key in the map.
-             * <p/>
+             *
              *
              * EntryProcessor should extend either Portable or IdentifiedSerializable.
              * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
@@ -995,7 +995,7 @@ namespace hazelcast {
             /**
              * Applies the user defined EntryProcessor to the entries in the map which satisfies provided predicate.
              * Returns the results mapped by each key in the map.
-             * <p/>
+             *
              *
              */
             //MTODO Map<K,Object> executeOnEntries(EntryProcessor entryProcessor, Predicate predicate);
@@ -1004,7 +1004,7 @@ namespace hazelcast {
             /**
              * Applies the user defined EntryProcessor to the entries mapped by the collection of keys.
              * the results mapped by each key in the collection.
-             * <p/>
+             *
              *
              * @return result of entry process.
              */

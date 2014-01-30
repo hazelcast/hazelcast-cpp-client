@@ -12,6 +12,12 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * EntryView represents a readonly view of a map entry.
+         *
+         * @param <K> key
+         * @param <V> value
+         */
         template<typename K, typename V>
         class HAZELCAST_API EntryView : public IdentifiedDataSerializable {
         public:
@@ -64,7 +70,6 @@ namespace hazelcast {
             };
             K key;
             V value;
-        private:
             long cost;
             long creationTime;
             long expirationTime;

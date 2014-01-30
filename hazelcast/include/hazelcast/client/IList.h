@@ -179,13 +179,6 @@ namespace hazelcast {
                 return set;
             };
 
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
-            void onDestroy() {
-            };
-
         private:
             template<typename T>
             const std::vector<serialization::Data> toDataCollection(const std::vector<T> &objects) {
@@ -211,6 +204,8 @@ namespace hazelcast {
             , key(toData(instanceName)) {
             };
 
+            void onDestroy() {
+            };
 
             serialization::Data key;
         };

@@ -14,7 +14,7 @@ namespace hazelcast {
         /**
          * Credentials is a container object for endpoint (Members and Clients)
          * security attributes.
-         * <p/>
+         *
          * It is used on authentication process by LoginModule.
          */
         class HAZELCAST_API Credentials : public impl::PortableRequest {

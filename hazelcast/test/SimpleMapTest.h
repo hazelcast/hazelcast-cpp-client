@@ -94,11 +94,15 @@ public:
                     map.remove(key);
                     ++stats.removeCount;
                 }
+            } catch(hazelcast::client::exception::IException &e) {
+                std::cout << ">hz " << e.what() << std::endl;
+                boost::this_thread::sleep(boost::posix_time::seconds(10));
             } catch(std::exception &e) {
-                std::cout << ">smt " << e.what() << std::endl;
-                boost::this_thread::sleep(boost::posix_time::seconds(2));
+                std::cout << ">std " << e.what() << std::endl;
+                boost::this_thread::sleep(boost::posix_time::seconds(10));
             } catch(...) {
                 std::cout << "unkown exception" << std::endl;
+                boost::this_thread::sleep(boost::posix_time::seconds(10));
             }
 
         }

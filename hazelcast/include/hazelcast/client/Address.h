@@ -10,11 +10,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class ObjectDataInput;
-
-            class ObjectDataOutput;
-        }
 
         class HAZELCAST_API Address : public IdentifiedDataSerializable {
         public:
