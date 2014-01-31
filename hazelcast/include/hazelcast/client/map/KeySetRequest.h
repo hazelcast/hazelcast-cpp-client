@@ -14,15 +14,13 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API KeySetRequest : public impl::PortableRequest {
             public:
-                KeySetRequest(const std::string& name);
+                KeySetRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
-
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

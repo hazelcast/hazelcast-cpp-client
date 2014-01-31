@@ -13,36 +13,17 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API PutIfAbsentRequest : public impl::PortableRequest {
             public:
-                PutIfAbsentRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long ttl)
-                :name(name)
-                , key(key)
-                , value(value)
-                , threadId(threadId)
-                , ttl(ttl) {
+                PutIfAbsentRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long ttl);
 
-                };
+                int getFactoryId() const;
 
-                int getFactoryId() const {
-                    return PortableHook::F_ID;
-                }
+                int getClassId() const;
 
-                int getClassId() const {
-                    return PortableHook::PUT_IF_ABSENT;
-                }
-
-
-                void write(serialization::PortableWriter &writer) const {
-                    writer.writeUTF("n", name);
-                    writer.writeLong("t", threadId);
-                    writer.writeLong("ttl", ttl);
-                    serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                    key.writeData(out);
-                    value.writeData(out);
-                };
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data &key;
-                serialization::Data &value;
+                serialization::Data key;
+                serialization::Data value;
                 std::string name;
                 long threadId;
                 long ttl;

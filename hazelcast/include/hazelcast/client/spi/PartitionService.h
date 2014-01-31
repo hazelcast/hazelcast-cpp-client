@@ -32,7 +32,9 @@ namespace hazelcast {
 
                 void stop();
 
-                boost::shared_ptr<Address> getPartitionOwner(const serialization::Data &key);
+                boost::shared_ptr<Address> getPartitionOwner(int partitionId);
+
+                int getPartitionId(const serialization::Data &key);
 
             private:
 
@@ -42,7 +44,7 @@ namespace hazelcast {
 
                 std::auto_ptr<boost::thread> partitionListenerThread;
 
-                volatile int partitionCount;
+                boost::atomic<int> partitionCount;
 
                 util::SynchronizedMap<int, Address> partitions;
 
@@ -55,8 +57,6 @@ namespace hazelcast {
                 boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom();
 
                 void processPartitionResponse(impl::PartitionsResponse &response);
-
-                int getPartitionId(const serialization::Data &key);
 
                 void getInitialPartitions();
             };

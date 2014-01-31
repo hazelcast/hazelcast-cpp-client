@@ -20,7 +20,7 @@ namespace hazelcast {
             template<typename EntryProcessor>
             class HAZELCAST_API ExecuteOnKeyRequest : public impl::PortableRequest {
             public:
-                ExecuteOnKeyRequest(const std::string name, EntryProcessor& entryProcessor, serialization::Data& key)
+                ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::Data &key)
                 :name(name)
                 , entryProcessor(entryProcessor)
                 , key(key) {
@@ -35,17 +35,17 @@ namespace hazelcast {
                     return PortableHook::EXECUTE_ON_KEY;
                 }
 
-                void write(serialization::PortableWriter & writer) const {
+                void write(serialization::PortableWriter &writer) const {
                     writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     key.writeData(out);
                     out.writeObject(&entryProcessor);
                 }
 
             private:
                 std::string name;
-                EntryProcessor& entryProcessor;
-                serialization::Data& key;
+                EntryProcessor entryProcessor;
+                serialization::Data key;
             };
         }
     }

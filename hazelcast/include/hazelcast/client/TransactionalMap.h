@@ -31,7 +31,7 @@ namespace hazelcast {
             */
             bool containsKey(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::CONTAINS_KEY, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::CONTAINS_KEY, data);
                 return invoke<bool>(request);
             }
 
@@ -42,7 +42,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::GET, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::GET, data);
                 return invoke<V>(request);
 
             }
@@ -77,7 +77,7 @@ namespace hazelcast {
             boost::shared_ptr<V> put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT, keyData, valueData);
                 return invoke<V>(request);
             };
 
@@ -91,7 +91,7 @@ namespace hazelcast {
             void set(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, keyData, valueData);
                 invoke<bool>(request);
             }
 
@@ -105,7 +105,7 @@ namespace hazelcast {
             boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, keyData, valueData);
                 return invoke<V>(request);
             };
 
@@ -119,7 +119,7 @@ namespace hazelcast {
             boost::shared_ptr<V> replace(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, keyData, valueData);
                 return invoke<V>(request);
 
             };
@@ -135,7 +135,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data oldValueData = toData(oldValue);
                 serialization::Data newValueData = toData(newValue);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, &keyData, &oldValueData, &newValueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, keyData, oldValueData, newValueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
 
@@ -150,7 +150,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, data);
                 return invoke<V>(request);
             };
 
@@ -164,7 +164,7 @@ namespace hazelcast {
 
             void deleteEntry(const K &key) {
                 serialization::Data data = toData(key);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, &data);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, data);
                 invoke<bool>(request);
             };
 
@@ -178,7 +178,7 @@ namespace hazelcast {
             bool remove(const K &key, const V &value) {
                 serialization::Data data = toData(key);
                 serialization::Data valueData = toData(value);
-                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, &data, &valueData);
+                map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, data, valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             }

@@ -6,19 +6,21 @@
 #include "hazelcast/client/collection/TxnCollectionRequest.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace collection {
             TxnCollectionRequest::TxnCollectionRequest(const std::string &name)
-            :name(name), data(NULL) {
+            :name(name)
+            , hasData(false) {
 
             };
 
-            TxnCollectionRequest::TxnCollectionRequest(const std::string &name, serialization::Data *data)
-            :name(name), data(data) {
+            TxnCollectionRequest::TxnCollectionRequest(const std::string &name, serialization::Data &data)
+            :name(name)
+            , hasData(true)
+            , data(data) {
 
             };
 
@@ -30,7 +32,10 @@ namespace hazelcast {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                util::writeNullableData(out, data);
+                out.writeBoolean(hasData);
+                if (hasData) {
+                    data.writeData(out);
+                }
             };
         }
     }

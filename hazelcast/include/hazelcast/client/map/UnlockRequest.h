@@ -5,13 +5,11 @@
 #define HAZELCAST_UNLOCK_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace map {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
@@ -27,7 +25,7 @@ namespace hazelcast {
 
 
             private:
-                serialization::Data &key;
+                serialization::Data key;
                 std::string name;
                 long threadId;
                 bool force;

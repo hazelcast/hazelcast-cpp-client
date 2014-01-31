@@ -9,12 +9,10 @@
 #define HAZELCAST_ListIndexOfRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace list {
             class HAZELCAST_API ListIndexOfRequest : public collection::CollectionRequest {
             public:
@@ -26,7 +24,7 @@ namespace hazelcast {
                 int getClassId() const;
 
             private:
-                const serialization::Data &data;
+                serialization::Data data;
                 bool last;
             };
         }

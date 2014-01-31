@@ -12,22 +12,22 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API ContainsRequest : public impl::PortableRequest{
+            class HAZELCAST_API ContainsRequest : public impl::PortableRequest {
             public:
 
-                ContainsRequest(const std::string& name, std::vector<serialization::Data>& dataList);
+                ContainsRequest(const std::string &name, std::vector<serialization::Data> &dataList);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                std::vector<serialization::Data>& dataList;
-                const std::string& name;
+                std::vector<serialization::Data> dataList;
+                const std::string &name;
             };
         }
     }

@@ -8,27 +8,26 @@
 #define HAZELCAST_TxnCollectionRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace collection {
             class HAZELCAST_API TxnCollectionRequest : public txn::BaseTxnRequest {
             public:
                 TxnCollectionRequest(const std::string &name);
 
-                TxnCollectionRequest(const std::string &name, serialization::Data *);
+                TxnCollectionRequest(const std::string &name, serialization::Data &);
 
                 int getFactoryId() const;
 
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string &name;
-                serialization::Data *data;
+                std::string name;
+                bool hasData;
+                serialization::Data data;
             };
         }
     }

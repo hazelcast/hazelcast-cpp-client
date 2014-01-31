@@ -29,8 +29,8 @@ namespace hazelcast {
                 return doSend(request, NULL, connection);
             };
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, serialization::Data &key) {
-                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(key);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, int partitionId) {
+                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(partitionId);
                 if (owner.get() != NULL) {
                     return invokeOnTarget(request, *owner);
                 }
@@ -52,8 +52,8 @@ namespace hazelcast {
                 return doSend(request, eventHandler, connection);
             }
 
-            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key) {
-                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(key);
+            boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, int partitionId) {
+                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(partitionId);
                 if (owner.get() != NULL) {
                     return invokeOnTarget(request, handler, *owner);
                 }

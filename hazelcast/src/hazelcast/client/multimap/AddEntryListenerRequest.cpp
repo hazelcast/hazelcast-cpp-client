@@ -49,10 +49,6 @@ namespace hazelcast {
                 return true;
             }
 
-            const serialization::Data *AddEntryListenerRequest::getKey() const {
-                return &key;
-            }
-
         }
     }
 }

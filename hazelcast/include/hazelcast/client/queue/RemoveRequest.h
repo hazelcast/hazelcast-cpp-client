@@ -5,6 +5,7 @@
 #define HAZELCAST_QUEUE_REMOVE_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,17 +17,17 @@ namespace hazelcast {
             class HAZELCAST_API RemoveRequest : public impl::PortableRequest {
             public:
 
-                RemoveRequest(const std::string& name, serialization::Data& data);
+                RemoveRequest(const std::string &name, serialization::Data &data);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data& data;
-                const std::string& name;
+                serialization::Data data;
+                std::string name;
             };
         }
     }

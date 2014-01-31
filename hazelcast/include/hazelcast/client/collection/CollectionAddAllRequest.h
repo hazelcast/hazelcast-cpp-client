@@ -9,6 +9,7 @@
 #define HAZELCAST_CollectionAddAllRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 
 namespace hazelcast {
@@ -27,7 +28,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::vector<serialization::Data> &valueList;
+                std::vector<serialization::Data> valueList;
             };
         }
     }

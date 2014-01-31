@@ -6,16 +6,13 @@
 #define HAZELCAST_MAP_CONTAINS_VALUE_R
 
 #include "hazelcast/client/impl/PortableRequest.h"
-
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace map {
-            class HAZELCAST_API ContainsValueRequest : public impl::PortableRequest{
+            class HAZELCAST_API ContainsValueRequest : public impl::PortableRequest {
             public:
                 ContainsValueRequest(const std::string &name, const serialization::Data &value);
 
@@ -26,7 +23,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data &value;
+                const serialization::Data value;
                 const std::string name;
             };
         }

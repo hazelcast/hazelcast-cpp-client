@@ -27,7 +27,6 @@ namespace hazelcast {
                 return PortableHook::PUT;
             }
 
-
             void PutRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);

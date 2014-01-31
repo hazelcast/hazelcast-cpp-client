@@ -46,8 +46,6 @@ namespace hazelcast {
 
                 int hashCode() const;
 
-                Data clone() const;
-
                 template<typename  Out>
                 void writeData(Out &dataOutput) const {
                     dataOutput.writeInt(type);

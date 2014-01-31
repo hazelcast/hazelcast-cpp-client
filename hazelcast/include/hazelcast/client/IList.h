@@ -50,7 +50,7 @@ namespace hazelcast {
 
             int size() {
                 collection::CollectionSizeRequest *request = new collection::CollectionSizeRequest(getName(), getServiceName());
-                boost::shared_ptr<int> s = invoke<int>(request, key);
+                boost::shared_ptr<int> s = invoke<int>(request, partitionId);
                 return *s;
             };
 
@@ -63,12 +63,12 @@ namespace hazelcast {
                 std::vector<serialization::Data> valueSet;
                 valueSet.push_back(valueData);
                 collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest (getName(), getServiceName(), valueSet);
-                return *(invoke<bool>(request, key));
+                return *(invoke<bool>(request, partitionId));
             };
 
             std::vector<E> toArray() {
                 collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
-                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, key);
+                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
                 const std::vector<serialization::Data *> &collection = result->getCollection();
                 std::vector<E> set(collection.size());
                 for (int i = 0; i < collection.size(); ++i) {
@@ -81,95 +81,95 @@ namespace hazelcast {
             bool add(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionAddRequest *request = new collection::CollectionAddRequest(getName(), getServiceName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool remove(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionRemoveRequest *request = new collection::CollectionRemoveRequest(getName(), getServiceName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool containsAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest(getName(), getServiceName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool addAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionAddAllRequest *request = new collection::CollectionAddAllRequest(getName(), getServiceName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool addAll(int index, const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 list::ListAddAllRequest *request = new list::ListAddAllRequest(getName(), getServiceName(), dataCollection, index);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool removeAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, false);
-                boost::shared_ptr<bool> success = invoke<bool>(request, key);
+                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
 
             bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, true);
-                return *(invoke<bool>(request, key));
+                return *(invoke<bool>(request, partitionId));
             };
 
             void clear() {
                 collection::CollectionClearRequest *request = new collection::CollectionClearRequest(getName(), getServiceName());
-                invoke<bool>(request, key);
+                invoke<bool>(request, partitionId);
             };
 
             boost::shared_ptr<E> get(int index) {
                 list::ListGetRequest *request = new list::ListGetRequest(getName(), getServiceName(), index);
-                return invoke<E>(request, key);
+                return invoke<E>(request, partitionId);
             };
 
             boost::shared_ptr<E> set(int index, const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListSetRequest *request = new list::ListSetRequest(getName(), getServiceName(), valueData, index);
-                return invoke<E>(request, key);
+                return invoke<E>(request, partitionId);
             };
 
             void add(int index, const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListAddRequest *request = new list::ListAddRequest(getName(), getServiceName(), valueData, index);
-                invoke<bool>(request, key);
+                invoke<bool>(request, partitionId);
             };
 
             boost::shared_ptr<E> remove(int index) {
                 list::ListRemoveRequest *request = new list::ListRemoveRequest(getName(), getServiceName(), index);
-                return invoke<E>(request, key);
+                return invoke<E>(request, partitionId);
             };
 
             int indexOf(const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListIndexOfRequest *request = new list::ListIndexOfRequest(getName(), getServiceName(), valueData, false);
-                boost::shared_ptr<int> i = invoke<int>(request, key);
+                boost::shared_ptr<int> i = invoke<int>(request, partitionId);
                 return *i;
             };
 
             int lastIndexOf(const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListIndexOfRequest *request = new list::ListIndexOfRequest(getName(), getServiceName(), valueData, true);
-                boost::shared_ptr<int> i = invoke<int>(request, key);
+                boost::shared_ptr<int> i = invoke<int>(request, partitionId);
                 return *i;
             };
 
             std::vector<E> subList(int fromIndex, int toIndex) {
                 list::ListSubRequest *request = new list::ListSubRequest(getName(), getServiceName(), fromIndex, toIndex);
-                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, key);
+                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
                 const std::vector<serialization::Data *> &collection = result->getCollection();
                 std::vector<E> set(toIndex - fromIndex);
                 for (int i = 0; i < collection.size(); ++i) {
@@ -200,14 +200,15 @@ namespace hazelcast {
             };
 
             IList(const std::string &instanceName, spi::ClientContext *context)
-            :DistributedObject("hz:impl:listService", instanceName, context)
-            , key(toData(instanceName)) {
+            :DistributedObject("hz:impl:listService", instanceName, context) {
+                serialization::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
+                partitionId = getPartitionId(keyData);
             };
 
             void onDestroy() {
             };
 
-            serialization::Data key;
+            int partitionId;
         };
     }
 }

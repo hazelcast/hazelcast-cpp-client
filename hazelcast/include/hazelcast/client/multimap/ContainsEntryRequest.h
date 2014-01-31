@@ -8,30 +8,30 @@
 #define HAZELCAST_ContainsEntryRequest
 
 #include "hazelcast/client/multimap/AllPartitionsRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
-            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest{
+            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest {
             public:
-                ContainsEntryRequest(const serialization::Data& key, const std::string& name, const serialization::Data& value);
+                ContainsEntryRequest(serialization::Data &key, const std::string &name, serialization::Data &value);
 
-                ContainsEntryRequest(const serialization::Data& key, const std::string& name);
+                ContainsEntryRequest(serialization::Data &key, const std::string &name);
 
-                ContainsEntryRequest(const std::string& name, const serialization::Data& value);
+                ContainsEntryRequest(const std::string &name, serialization::Data &value);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                const serialization::Data *key;
-                const serialization::Data *value;
+                bool hasKey;
+                bool hasValue;
+                serialization::Data key;
+                serialization::Data value;
             };
         }
     }

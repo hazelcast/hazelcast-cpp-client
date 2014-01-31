@@ -28,7 +28,7 @@ namespace hazelcast {
             public:
                 ServerListenerService(spi::ClientContext &clientContext);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler);
+                std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
                 std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 

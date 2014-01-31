@@ -15,17 +15,17 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API RemoveInterceptorRequest : public impl::PortableRequest {
             public:
-                RemoveInterceptorRequest(const std::string&, const std::string&);
+                RemoveInterceptorRequest(const std::string &, const std::string &);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter & writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
-                const std::string& id;
+                std::string name;
+                std::string id;
             };
         }
     }

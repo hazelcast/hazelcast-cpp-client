@@ -5,15 +5,13 @@
 #define HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace map {
-            class HAZELCAST_API GetEntryViewRequest : public impl::PortableRequest{
+            class HAZELCAST_API GetEntryViewRequest : public impl::PortableRequest {
             public:
                 GetEntryViewRequest(const std::string &name, const serialization::Data &key);
 
@@ -26,8 +24,8 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                const serialization::Data &key;
-                const std::string &name;
+                serialization::Data key;
+                std::string name;
             };
         }
     }

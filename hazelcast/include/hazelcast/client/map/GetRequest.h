@@ -27,9 +27,10 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
+
             private:
                 serialization::Data key;
-                const std::string &name;
+                std::string name;
             };
         }
     }

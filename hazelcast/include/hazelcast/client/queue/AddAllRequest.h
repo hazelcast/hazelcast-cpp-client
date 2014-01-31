@@ -23,8 +23,8 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                std::vector<serialization::Data> &dataList;
-                const std::string &name;
+                std::vector<serialization::Data> dataList;
+                std::string name;
             };
         }
     }

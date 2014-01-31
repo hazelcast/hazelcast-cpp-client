@@ -8,6 +8,7 @@
 #include "hazelcast/client/impl/ClientDestroyRequest.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
@@ -40,8 +41,8 @@ namespace hazelcast {
             context->getInvocationService().invokeOnRandomTarget(request);
         }
 
-        std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler) {
-            return context->getServerListenerService().listen(registrationRequest, partitionKey, handler);
+        std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
+            return context->getServerListenerService().listen(registrationRequest, partitionId, handler);
         }
 
         std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
@@ -50,6 +51,10 @@ namespace hazelcast {
 
         bool DistributedObject::stopListening(const impl::PortableRequest *request, const std::string &registrationId) {
             return context->getServerListenerService().stopListening(request, registrationId);
+        }
+
+        int DistributedObject::getPartitionId(const serialization::Data &key) {
+            return context->getPartitionService().getPartitionId(key);
         }
     }
 }

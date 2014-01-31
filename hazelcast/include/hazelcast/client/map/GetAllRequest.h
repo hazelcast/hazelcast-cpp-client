@@ -12,21 +12,21 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetAllRequest : public impl::PortableRequest{
+            class HAZELCAST_API GetAllRequest : public impl::PortableRequest {
             public:
-                GetAllRequest(const std::string& name,const std::vector<serialization::Data>& keys);
+                GetAllRequest(const std::string &name, const std::vector<serialization::Data> &keys);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                const std::vector<serialization::Data> &keys;
-                const std::string& name;
+                std::vector<serialization::Data> keys;
+                std::string name;
             };
         }
     }

@@ -29,14 +29,14 @@ namespace hazelcast {
             void publish(E message) {
                 serialization::Data data = getContext().getSerializationService().template toData<E>(&message);
                 topic::PublishRequest *request = new topic::PublishRequest(getName(), data);
-                invoke<bool>(request, key);
+                invoke<bool>(request, partitionId);
             }
 
             template <typename L>
             std::string addMessageListener(L &listener) {
                 topic::AddMessageListenerRequest *request = new topic::AddMessageListenerRequest(getName());
                 topic::TopicEventHandler<E, L> *topicEventHandler = new topic::TopicEventHandler<E, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener);
-                return listen(request, &key, topicEventHandler);
+                return listen(request, partitionId, topicEventHandler);
             }
 
             bool removeMessageListener(const std::string &registrationId) {
@@ -49,12 +49,12 @@ namespace hazelcast {
 
         private:
             ITopic(const std::string &instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:topicService", instanceName, context)
-            , key(getContext().getSerializationService().template toData<std::string>(&instanceName)) {
-
+            : DistributedObject("hz:impl:topicService", instanceName, context) {
+                serialization::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
+                partitionId = getPartitionId(keyData);
             };
 
-            serialization::Data key;
+            int partitionId;
         };
     }
 }

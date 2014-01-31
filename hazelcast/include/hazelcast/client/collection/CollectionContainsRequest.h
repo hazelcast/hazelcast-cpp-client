@@ -9,6 +9,7 @@
 #define HAZELCAST_CollectionContainsRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 
 namespace hazelcast {
@@ -26,7 +27,7 @@ namespace hazelcast {
                 int getClassId() const;
 
             private:
-                const std::vector<serialization::Data> &valueSet;
+                std::vector<serialization::Data> valueSet;
 
             };
         }

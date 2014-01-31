@@ -17,7 +17,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             PartitionService::PartitionService(spi::ClientContext &clientContext)
-            :partitionCount(271)
+            :partitionCount(0)
             , clientContext(clientContext) {
 
             };
@@ -34,8 +34,8 @@ namespace hazelcast {
                 partitionListenerThread->join();
             }
 
-            boost::shared_ptr<Address> PartitionService::getPartitionOwner(const serialization::Data &key) {
-                return partitions.get(getPartitionId(key));
+            boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
+                return partitions.get(partitionId);
             }
 
             int PartitionService::getPartitionId(const serialization::Data &key) {
@@ -43,7 +43,6 @@ namespace hazelcast {
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             };
-
 
             void PartitionService::runListener() {
                 while (clientContext.getLifecycleService().isRunning()) {

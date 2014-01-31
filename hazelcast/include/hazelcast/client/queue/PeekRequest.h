@@ -10,20 +10,20 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API PeekRequest : public impl::PortableRequest{
+            class HAZELCAST_API PeekRequest : public impl::PortableRequest {
             public:
-                PeekRequest(const std::string& name);
+                PeekRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                const std::string& name;
+                std::string name;
             };
         }
     }

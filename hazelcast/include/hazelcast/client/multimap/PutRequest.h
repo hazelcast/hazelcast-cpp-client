@@ -8,12 +8,10 @@
 #define HAZELCAST_PutRequest
 
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
             class HAZELCAST_API PutRequest : public KeyBasedRequest {
             public:
@@ -24,7 +22,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data &value;
+                serialization::Data value;
                 long threadId;
                 int index;
 

@@ -5,29 +5,25 @@
 #define HAZELCAST_MAP_PUT_ALL_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/MapEntrySet.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-
-            class MapEntrySet;
-
             class HAZELCAST_API PutAllRequest : public impl::PortableRequest {
             public:
-                PutAllRequest(const std::string& name, map::MapEntrySet& entrySet);
+                PutAllRequest(const std::string &name, map::MapEntrySet &entrySet);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
-
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;
-                map::MapEntrySet& entrySet;
+                map::MapEntrySet entrySet;
             };
         }
     }

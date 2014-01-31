@@ -9,14 +9,12 @@
 #define HAZELCAST_PortableEntrySetResponse
 
 #include "hazelcast/client/impl/PortableResponse.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 #include <utility>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
             class HAZELCAST_API PortableEntrySetResponse : public impl::PortableResponse {
             public:

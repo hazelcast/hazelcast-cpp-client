@@ -12,18 +12,18 @@ namespace hazelcast {
         namespace queue {
             class HAZELCAST_API PollRequest : public impl::PortableRequest {
             public:
-                PollRequest(const std::string& name, long timeout);
+                PollRequest(const std::string &name, long timeout);
 
-                PollRequest(const std::string& name);
+                PollRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                std::string name;
                 long timeoutInMillis;
             };
         }

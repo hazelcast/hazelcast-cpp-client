@@ -8,6 +8,7 @@
 #define HAZELCAST_RemoveRequest
 
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,7 +23,7 @@ namespace hazelcast {
 
             private:
                 long threadId;
-                const serialization::Data &value;
+                serialization::Data value;
             };
         }
     }

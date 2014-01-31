@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/map/TxnMapRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
@@ -63,55 +62,62 @@ namespace hazelcast {
 
             //----------------------------------//
             TxnMapRequest::TxnMapRequest()
-            : key(NULL)
-            , value(NULL)
-            , newValue(NULL)
-            , predicate(NULL) {
+            : hasKey(false)
+            , hasValue(false)
+            , hasNewValue(false)
+            , hasPredicate(false) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType)
             : name(name)
             , requestType(requestType)
-            , key(NULL)
-            , value(NULL)
-            , newValue(NULL)
-            , predicate(NULL) {
+            , hasKey(false)
+            , hasValue(false)
+            , hasNewValue(false)
+            , hasPredicate(false) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key)
             : name(name)
             , requestType(requestType)
             , key(key)
-            , value(NULL)
-            , newValue(NULL)
-            , predicate(NULL) {
+            , hasKey(true)
+            , hasValue(false)
+            , hasNewValue(false)
+            , hasPredicate(false) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value)
             : name(name)
             , requestType(requestType)
             , key(key)
             , value(value)
-            , newValue(NULL)
-            , predicate(NULL) {
+            , hasKey(true)
+            , hasValue(true)
+            , hasNewValue(false)
+            , hasPredicate(false) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value, serialization::Data &newValue)
             : name(name)
             , requestType(requestType)
             , key(key)
             , value(value)
             , newValue(newValue)
-            , predicate(NULL) {
+            , hasKey(true)
+            , hasValue(true)
+            , hasNewValue(true)
+            , hasPredicate(false) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate)
             : name(name)
             , requestType(requestType)
-            , key(NULL)
-            , value(NULL)
-            , newValue(NULL)
-            , predicate(&predicate) {
+            , hasKey(false)
+            , hasValue(false)
+            , hasNewValue(false)
+            , hasPredicate(true)
+            , predicate(predicate) {
             };
 
             int TxnMapRequest::getFactoryId() const {
@@ -128,18 +134,23 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", (int) requestType);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                util::writeNullableData(out, key);
-                util::writeNullableData(out, value);
-                util::writeNullableData(out, newValue);
-                if (predicate != NULL) {
-                    out.writeBoolean(true);
-                    out.writeUTF(*predicate);
-                } else {
-                    out.writeBoolean(false);
+                out.writeBoolean(hasKey);
+                if (hasKey) {
+                    key.writeData(out);
+                }
+                out.writeBoolean(hasValue);
+                if (hasValue) {
+                    value.writeData(out);
+                }
+                out.writeBoolean(hasNewValue);
+                if (hasNewValue) {
+                    newValue.writeData(out);
+                }
+                out.writeBoolean(hasPredicate);
+                if (hasPredicate) {
+                    out.writeUTF(predicate);
                 }
             };
-
-
         }
     }
 }

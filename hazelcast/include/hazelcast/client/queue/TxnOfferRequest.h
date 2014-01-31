@@ -8,13 +8,11 @@
 #define HAZELCAST_TxnOfferRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace queue {
             class HAZELCAST_API TxnOfferRequest : public txn::BaseTxnRequest {
             public:
@@ -27,9 +25,9 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string &name;
+                std::string name;
                 long timeoutInMillis;
-                serialization::Data &data;
+                serialization::Data data;
             };
         }
     }

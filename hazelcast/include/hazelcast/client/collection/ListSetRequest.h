@@ -9,6 +9,7 @@
 #define HAZELCAST_ListSetRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,7 +27,7 @@ namespace hazelcast {
                 int getClassId() const;
 
             private:
-                const serialization::Data &data;
+                serialization::Data data;
                 int index;
             };
         }

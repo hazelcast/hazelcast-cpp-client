@@ -59,6 +59,8 @@ namespace hazelcast {
 
                 void testIssue537();
 
+                void testMultiPut();
+
                 void testPredicateListenerWithPortableKey();
 
                 void testListener();
@@ -88,6 +90,7 @@ namespace hazelcast {
             private:
                 HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;
+                HazelcastInstance instance2;
                 ClientConfig clientConfig;
                 auto_ptr<HazelcastClient> client;
                 auto_ptr<IMap<string, string> > imap;

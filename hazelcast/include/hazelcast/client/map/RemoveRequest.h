@@ -10,9 +10,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace map {
             class HAZELCAST_API RemoveRequest : public impl::PortableRequest {
             public:

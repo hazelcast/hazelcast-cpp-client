@@ -16,9 +16,9 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename Interceptor>
-            class HAZELCAST_API AddInterceptorRequest : impl::PortableRequest{
+            class HAZELCAST_API AddInterceptorRequest : impl::PortableRequest {
             public:
-                AddInterceptorRequest(const std::string name, Interceptor& interceptor)
+                AddInterceptorRequest(const std::string name, Interceptor &interceptor)
                 :name(name)
                 , interceptor(interceptor) {
 
@@ -32,15 +32,15 @@ namespace hazelcast {
                     return PortableHook::ADD_INTERCEPTOR;
                 }
 
-                void write(serialization::PortableWriter & writer) const {
+                void write(serialization::PortableWriter &writer) const {
                     writer.writeUTF("n", name);
-                    serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                    serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     out.writeObject<Interceptor>(&interceptor);
                 }
 
             private:
                 std::string name;
-                Interceptor& interceptor;
+                Interceptor interceptor;
             };
         };
     }

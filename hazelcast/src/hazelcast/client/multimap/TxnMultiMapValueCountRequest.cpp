@@ -6,7 +6,6 @@
 #include "hazelcast/client/multimap/TxnMultiMapValueCountRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {

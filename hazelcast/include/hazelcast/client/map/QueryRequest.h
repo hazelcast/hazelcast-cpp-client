@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API QueryRequest : public impl::PortableRequest{
+            class HAZELCAST_API QueryRequest : public impl::PortableRequest {
             public:
                 QueryRequest(const std::string &name, const std::string &iterationType, const std::string &sql);
 
@@ -26,9 +26,9 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                const std::string& name;
-                const std::string& iterationType;
-                const std::string& sql;
+                std::string name;
+                std::string iterationType;
+                std::string sql;
             };
         }
     }

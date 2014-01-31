@@ -19,6 +19,7 @@ namespace hazelcast {
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientMapTest")
             , instance(hazelcastInstanceFactory)
+            , instance2(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
             };
@@ -28,6 +29,7 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
+                addTest(&ClientMapTest::testMultiPut, "testMultiPut");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -57,6 +59,7 @@ namespace hazelcast {
             void ClientMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
+                instance2.shutdown();
             };
 
             void ClientMapTest::beforeTest() {
@@ -171,6 +174,33 @@ namespace hazelcast {
 
                 assertFalse(imap->containsValue("value10"));
                 assertTrue(imap->containsValue("value1"));
+
+            }
+
+            void putThread(int start, IMap<int, int> *map, util::CountDownLatch *latch) {
+                for (int i = 0; i < 10000; i++) {
+                    map->put(start * 10000, start * 10000 + i);
+                }
+                latch->countDown();
+            }
+
+            void ClientMapTest::testMultiPut() {
+                int THREAD_COUNT = 4;
+                util::CountDownLatch latch(THREAD_COUNT);
+                IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
+                for (int i = 0; i < THREAD_COUNT; i++) {
+                    boost::thread t(putThread, i, &iMap, &latch);
+                }
+
+                latch.await(1000 * 5);
+                for (int i = 0; i < 10000 * THREAD_COUNT; i++) {
+                    boost::shared_ptr<int> actual = iMap.get(i);
+                    assertNotNull(actual.get());
+                    assertEqual(i, *(actual.get()));
+                }
+
+                iMap.clear();
+                iMap.destroy();
 
             }
 

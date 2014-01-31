@@ -14,15 +14,13 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API FlushRequest : public impl::PortableRequest {
             public:
-                FlushRequest(const std::string& name);
+                FlushRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
-
-
+                void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;

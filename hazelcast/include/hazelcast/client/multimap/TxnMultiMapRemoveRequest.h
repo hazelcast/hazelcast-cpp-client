@@ -9,26 +9,25 @@
 #define HAZELCAST_TxnMultiMapRemoveRequest
 
 #include "hazelcast/client/multimap/TxnMultiMapRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
             class HAZELCAST_API TxnMultiMapRemoveRequest : public TxnMultiMapRequest {
             public:
-                TxnMultiMapRemoveRequest(const std::string& name, serialization::Data& key);
+                TxnMultiMapRemoveRequest(const std::string &name, serialization::Data &key);
 
-                TxnMultiMapRemoveRequest(const std::string& name, serialization::Data& key, const serialization::Data& value);
+                TxnMultiMapRemoveRequest(const std::string &name, serialization::Data &key, serialization::Data &value);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data& key;
-                const serialization::Data *value;
+                serialization::Data key;
+                bool hasValue;
+                serialization::Data value;
             };
 
         }

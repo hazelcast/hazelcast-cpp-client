@@ -12,16 +12,16 @@ namespace hazelcast {
         namespace queue {
             class HAZELCAST_API DrainRequest : public impl::PortableRequest {
             public:
-                DrainRequest(const std::string& name, int maxSize);
+                DrainRequest(const std::string &name, int maxSize);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string& name;
+                std::string name;
                 int maxSize;
             };
         }

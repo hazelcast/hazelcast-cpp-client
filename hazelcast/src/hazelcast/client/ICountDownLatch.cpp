@@ -8,31 +8,31 @@ namespace hazelcast {
     namespace client {
 
         ICountDownLatch::ICountDownLatch(const std::string &instanceName, spi::ClientContext *context)
-        :DistributedObject("hz:impl:atomicLongService", instanceName, context)
-        , key(context->getSerializationService().toData<std::string>(&instanceName)) {
-
+        :DistributedObject("hz:impl:atomicLongService", instanceName, context) {
+            serialization::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+            partitionId = getPartitionId(keyData);
         };
 
         bool ICountDownLatch::await(long timeoutInMillis) {
-            countdownlatch::AwaitRequest* request = new countdownlatch::AwaitRequest(getName(), timeoutInMillis);
-            return *(invoke<bool>(request, key));
+            countdownlatch::AwaitRequest *request = new countdownlatch::AwaitRequest(getName(), timeoutInMillis);
+            return *(invoke<bool>(request, partitionId));
         };
 
         void ICountDownLatch::countDown() {
-            countdownlatch::CountDownRequest* request = new countdownlatch::CountDownRequest(getName());
-            invoke<bool>(request, key);
+            countdownlatch::CountDownRequest *request = new countdownlatch::CountDownRequest(getName());
+            invoke<bool>(request, partitionId);
         };
 
         int ICountDownLatch::getCount() {
-            countdownlatch::GetCountRequest* request = new countdownlatch::GetCountRequest(getName());
-            boost::shared_ptr<int> response = invoke<int>(request, key);
+            countdownlatch::GetCountRequest *request = new countdownlatch::GetCountRequest(getName());
+            boost::shared_ptr<int> response = invoke<int>(request, partitionId);
             return *response;
 
         };
 
         bool ICountDownLatch::trySetCount(int count) {
-            countdownlatch::SetCountRequest* request = new countdownlatch::SetCountRequest(getName(), count);
-            boost::shared_ptr<bool> response = invoke<bool>(request, key);
+            countdownlatch::SetCountRequest *request = new countdownlatch::SetCountRequest(getName(), count);
+            boost::shared_ptr<bool> response = invoke<bool>(request, partitionId);
             return *response;
         };
 

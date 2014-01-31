@@ -14,17 +14,17 @@ namespace hazelcast {
             class HAZELCAST_API CompareAndRemoveRequest : public impl::PortableRequest {
             public:
 
-                CompareAndRemoveRequest(const std::string& name, std::vector<serialization::Data>& dataList, bool retain);
+                CompareAndRemoveRequest(const std::string &name, std::vector<serialization::Data> &dataList, bool retain);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                std::vector<serialization::Data>& dataList;
-                const std::string& name;
+                std::vector<serialization::Data> dataList;
+                std::string name;
                 bool retain;
             };
         }

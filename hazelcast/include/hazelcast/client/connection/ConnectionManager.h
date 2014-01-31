@@ -60,7 +60,7 @@ namespace hazelcast {
                 void removeEventHandler(int callId);
 
             protected:
-                connection::Connection *connectTo(const Address &address);
+                connection::Connection *connectTo(const Address &address, bool reAuth);
 
                 boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
 

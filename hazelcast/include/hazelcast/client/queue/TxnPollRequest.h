@@ -8,6 +8,7 @@
 #define HAZELCAST_TxnPollRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -24,7 +25,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string &name;
+                std::string name;
                 long timeout;
             };
         }

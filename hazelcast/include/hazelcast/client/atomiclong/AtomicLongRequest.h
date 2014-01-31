@@ -28,7 +28,7 @@ namespace hazelcast {
 
             private:
                 long delta;
-                const std::string &instanceName;
+                std::string instanceName;
             };
         }
     }

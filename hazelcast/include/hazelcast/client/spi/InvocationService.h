@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnRandomTarget(const impl::PortableRequest *request);
 
-                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, serialization::Data &key);
+                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, int partitionId);
 
                 boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest *request, const Address &target);
 
@@ -49,7 +49,7 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::Data> invokeOnTarget(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const Address &target);
 
-                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const serialization::Data &key);
+                boost::shared_future<serialization::Data> invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, int partitionId);
 
                 boost::shared_future<serialization::Data> invokeOnConnection(const impl::PortableRequest *request, boost::shared_ptr<connection::Connection> connection);
 

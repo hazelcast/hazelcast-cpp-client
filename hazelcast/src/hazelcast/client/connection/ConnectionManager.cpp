@@ -53,7 +53,7 @@ namespace hazelcast {
             }
 
             connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
-                Connection *clientConnection = connectTo(address);
+                Connection *clientConnection = connectTo(address, true);
                 ownerConnectionAddress = clientConnection->getRemoteEndpoint();
                 return clientConnection;
             }
@@ -108,7 +108,7 @@ namespace hazelcast {
                     boost::lock_guard<boost::mutex> l(lockMutex);
                     conn = connections.get(address);
                     if (conn.get() == NULL) {
-                        boost::shared_ptr<Connection> newConnection(connectTo(address));
+                        boost::shared_ptr<Connection> newConnection(connectTo(address, false));
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         return newConnection;
@@ -174,7 +174,7 @@ namespace hazelcast {
                 }
             }
 
-            connection::Connection *ConnectionManager::connectTo(const Address &address) {
+            connection::Connection *ConnectionManager::connectTo(const Address &address, bool reAuth) {
                 connection::Connection *conn = new Connection(address, clientContext, iListener, oListener);
                 checkLive();
 
@@ -184,7 +184,7 @@ namespace hazelcast {
                     if (socketInterceptor.get() != NULL) {
                         socketInterceptor.get()->onConnect(conn->getSocket());
                     }
-                    authenticate(*conn, true, true);
+                    authenticate(*conn, reAuth, reAuth);
                 } catch(exception::IOException &e) {
                     delete conn;
                     throw e;

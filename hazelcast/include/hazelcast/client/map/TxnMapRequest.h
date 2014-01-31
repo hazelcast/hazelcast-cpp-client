@@ -9,6 +9,7 @@
 #define HAZELCAST_TxnMapRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -60,11 +61,11 @@ namespace hazelcast {
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data *key, serialization::Data *value, serialization::Data *newValue);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value, serialization::Data &newValue);
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate);
 
@@ -77,10 +78,14 @@ namespace hazelcast {
             private:
                 std::string name;
                 TxnMapRequestType requestType;
-                serialization::Data *key;
-                serialization::Data *value;
-                serialization::Data *newValue;
-                const std::string *predicate;
+                bool hasKey;
+                bool hasValue;
+                bool hasNewValue;
+                bool hasPredicate;
+                serialization::Data key;
+                serialization::Data value;
+                serialization::Data newValue;
+                std::string predicate;
             };
 
         }

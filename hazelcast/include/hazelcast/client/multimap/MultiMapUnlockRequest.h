@@ -11,9 +11,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
             class HAZELCAST_API MultiMapUnlockRequest : public KeyBasedRequest {
             public:

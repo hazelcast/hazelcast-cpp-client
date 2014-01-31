@@ -6,29 +6,32 @@
 #include "hazelcast/client/multimap/ContainsEntryRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data &key, const std::string &name, const serialization::Data &value)
+            ContainsEntryRequest::ContainsEntryRequest(serialization::Data &key, const std::string &name, serialization::Data &value)
             : AllPartitionsRequest(name)
-            , key(&key)
-            , value(&value) {
+            , hasKey(true)
+            , hasValue(true)
+            , key(key)
+            , value(value) {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(const serialization::Data &key, const std::string &name)
+            ContainsEntryRequest::ContainsEntryRequest(serialization::Data &key, const std::string &name)
             : AllPartitionsRequest(name)
-            , key(&key)
-            , value(NULL) {
+            , hasKey(true)
+            , hasValue(false)
+            , key(key) {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(const std::string &name, const serialization::Data &value)
+            ContainsEntryRequest::ContainsEntryRequest(const std::string &name, serialization::Data &value)
             : AllPartitionsRequest(name)
-            , key(NULL)
-            , value(&value) {
+            , hasKey(false)
+            , hasValue(true)
+            , value(value) {
 
             };
 
@@ -40,8 +43,14 @@ namespace hazelcast {
             void ContainsEntryRequest::write(serialization::PortableWriter &writer) const {
                 AllPartitionsRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                util::writeNullableData(out, key);
-                util::writeNullableData(out, value);
+                out.writeBoolean(hasKey);
+                if (hasKey) {
+                    key.writeData(out);
+                }
+                out.writeBoolean(hasValue);
+                if (hasValue) {
+                    value.writeData(out);
+                }
             };
 
 

@@ -9,6 +9,7 @@
 #define HAZELCAST_TxnMultiMapValueCountRequest
 
 #include "hazelcast/client/multimap/TxnMultiMapRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,14 +19,14 @@ namespace hazelcast {
         namespace multimap {
             class HAZELCAST_API TxnMultiMapValueCountRequest : public TxnMultiMapRequest {
             public:
-                TxnMultiMapValueCountRequest(const std::string& name, const serialization::Data& data);
+                TxnMultiMapValueCountRequest(const std::string &name, const serialization::Data &data);
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::Data& data;
+                serialization::Data data;
             };
 
         }

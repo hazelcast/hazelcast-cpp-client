@@ -10,20 +10,20 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API RemainingCapacityRequest : public impl::PortableRequest{
+            class HAZELCAST_API RemainingCapacityRequest : public impl::PortableRequest {
             public:
-                RemainingCapacityRequest(const std::string& name);
+                RemainingCapacityRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                const std::string& name;
+                std::string name;
             };
         }
     }

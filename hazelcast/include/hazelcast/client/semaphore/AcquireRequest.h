@@ -22,7 +22,6 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-
                 long timeout;
             };
         }

@@ -12,20 +12,20 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ValuesRequest : public impl::PortableRequest{
+            class HAZELCAST_API ValuesRequest : public impl::PortableRequest {
             public:
-                ValuesRequest(const std::string& name);
+                ValuesRequest(const std::string &name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter& writer) const;
+                void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
 
             private:
-                const std::string& name;
+                std::string name;
             };
         }
     }

@@ -97,17 +97,13 @@ namespace hazelcast {
              */
             void set(long newValue);
 
-            /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void onDestroy();
-
         private:
 
             IAtomicLong(const std::string &instanceName, spi::ClientContext *context);
 
-            serialization::Data key;
+            int partitionId;
+
+            void onDestroy();
         };
     }
 }

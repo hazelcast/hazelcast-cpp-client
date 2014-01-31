@@ -21,7 +21,6 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter &writer) const;
 
-
             private:
                 serialization::Data key;
                 serialization::Data value;

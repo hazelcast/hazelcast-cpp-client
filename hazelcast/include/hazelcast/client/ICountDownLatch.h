@@ -133,17 +133,14 @@ namespace hazelcast {
              */
             bool trySetCount(int count);
 
-            /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void onDestroy();
-
-
         private:
             ICountDownLatch(const std::string &instanceName, spi::ClientContext *clientContext);
 
             serialization::Data key;
+
+            int partitionId;
+
+            void onDestroy();
         };
     }
 }

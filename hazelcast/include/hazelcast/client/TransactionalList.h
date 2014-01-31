@@ -24,14 +24,14 @@ namespace hazelcast {
         public:
             bool add(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), &data);
+                collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return success;
             }
 
             bool remove(const E &e) {
                 serialization::Data data = toData(e);
-                collection::TxnListRemoveRequest *request = new collection::TxnListRemoveRequest(getName(), &data);
+                collection::TxnListRemoveRequest *request = new collection::TxnListRemoveRequest(getName(), data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             }

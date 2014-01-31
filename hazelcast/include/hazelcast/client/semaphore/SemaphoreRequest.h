@@ -23,7 +23,7 @@ namespace hazelcast {
 
             private:
 
-                const std::string &instanceName;
+                std::string instanceName;
                 int permitCount;
             };
         }

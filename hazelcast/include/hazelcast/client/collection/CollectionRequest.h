@@ -21,8 +21,8 @@ namespace hazelcast {
                 virtual void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::string &name;
-                const std::string &serviceName;
+                std::string name;
+                std::string serviceName;
 
             };
         }

@@ -13,11 +13,8 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace multimap {
-            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest{
+            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue);
 
@@ -30,8 +27,6 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
                 bool isRetryable() const;
-
-                const serialization::Data *getKey() const;
 
             private:
                 std::string name;

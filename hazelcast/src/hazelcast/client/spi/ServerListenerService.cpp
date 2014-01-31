@@ -20,13 +20,9 @@ namespace hazelcast {
 
             };
 
-            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler) {
+            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
                 boost::shared_future<serialization::Data> future;
-                if (partitionKey == NULL) {
-                    future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
-                } else {
-                    future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, *partitionKey);
-                }
+                future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, partitionId);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
                 handler->registrationId = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
@@ -35,7 +31,13 @@ namespace hazelcast {
             }
 
             std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
-                return listen(registrationRequest, NULL, handler);
+                boost::shared_future<serialization::Data> future;
+                future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
+                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
+                handler->registrationId = *registrationId;
+                registerListener(registrationId, registrationRequest->callId);
+
+                return *registrationId;
             }
 
             bool ServerListenerService::stopListening(const impl::PortableRequest *request, const std::string &registrationId) {

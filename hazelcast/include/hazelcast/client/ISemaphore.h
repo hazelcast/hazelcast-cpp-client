@@ -268,7 +268,7 @@ namespace hazelcast {
 
             ISemaphore(const std::string &instanceName, spi::ClientContext *context);
 
-            serialization::Data key;
+            int partitionId;
         };
     }
 }

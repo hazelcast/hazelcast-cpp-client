@@ -66,9 +66,9 @@ namespace hazelcast {
             virtual void onDestroy() = 0;
 
             template<typename Response>
-            boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, serialization::Data &keyData) {
+            boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
-                boost::shared_future<serialization::Data> future = invocationService.invokeOnKeyOwner(request, keyData);
+                boost::shared_future<serialization::Data> future = invocationService.invokeOnKeyOwner(request, partitionId);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
@@ -78,11 +78,13 @@ namespace hazelcast {
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
-            std::string listen(const impl::PortableRequest *registrationRequest, const serialization::Data *partitionKey, impl::BaseEventHandler *handler);
+            std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
             std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 
             bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
+
+            int getPartitionId(const serialization::Data &key);
 
         private:
             const std::string serviceName;

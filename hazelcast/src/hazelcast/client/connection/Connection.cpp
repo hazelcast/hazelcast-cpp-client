@@ -57,7 +57,7 @@ namespace hazelcast {
                     exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     return;
-                } // MTODO there is already resend mechanism in connectionManager
+                }
 
                 boost::shared_ptr<connection::Connection> connection;
                 try {

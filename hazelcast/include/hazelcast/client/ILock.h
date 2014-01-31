@@ -62,17 +62,15 @@ namespace hazelcast {
 
             bool tryLock(long timeInMillis);
 
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
-            void onDestroy();
-
         private:
+
             ILock(const std::string &instanceName, spi::ClientContext *context);
 
+            void onDestroy();
 
             serialization::Data key;
+
+            int partitionId;
         };
     }
 }

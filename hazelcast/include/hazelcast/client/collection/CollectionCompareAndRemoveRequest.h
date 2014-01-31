@@ -8,13 +8,11 @@
 #define HAZELCAST_CollectionCompareAndRemoveRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
+#include "hazelcast/client/serialization/Data.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class Data;
-        }
         namespace collection {
             class HAZELCAST_API CollectionCompareAndRemoveRequest : public CollectionRequest {
             public:
@@ -25,7 +23,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const std::vector<serialization::Data> &valueSet;
+                std::vector<serialization::Data> valueSet;
                 bool retain;
 
             };
