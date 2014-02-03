@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace lock {
             IsLockedRequest::IsLockedRequest(serialization::Data &key)
             :key(key)
-            , threadId(-1) {
+            , threadId(0) {
             };
 
             IsLockedRequest::IsLockedRequest(serialization::Data &key, long threadId)

@@ -82,13 +82,13 @@ namespace hazelcast {
                 return *s;
             }
 
-            void onDestroy() {
-            }
-
         private :
             TransactionalMultiMap(const std::string &name, txn::TransactionProxy *transactionProxy)
             :TransactionalObject("hz:impl:multiMapService", name, transactionProxy) {
 
+            }
+
+            void onDestroy() {
             }
 
         };

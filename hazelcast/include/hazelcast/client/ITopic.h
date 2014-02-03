@@ -44,14 +44,14 @@ namespace hazelcast {
                 return stopListening(request, registrationId);
             };
 
-            void onDestroy() {
-            };
-
         private:
             ITopic(const std::string &instanceName, spi::ClientContext *context)
             : DistributedObject("hz:impl:topicService", instanceName, context) {
                 serialization::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
                 partitionId = getPartitionId(keyData);
+            };
+
+            void onDestroy() {
             };
 
             int partitionId;

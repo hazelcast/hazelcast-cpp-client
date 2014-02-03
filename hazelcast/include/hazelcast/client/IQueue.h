@@ -249,14 +249,8 @@ namespace hazelcast {
                 invoke<bool>(request, partitionId);
             };
 
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
-            void onDestroy() {
-            };
-
         private:
+
             int partitionId;
 
             IQueue(const std::string &instanceName, spi::ClientContext *context)
@@ -287,6 +281,10 @@ namespace hazelcast {
                 }
                 return objects;
             };
+
+            void onDestroy() {
+            };
+
 
         };
     }

@@ -26,7 +26,7 @@ namespace hazelcast {
 
 
             void MultiMapIsLockedRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeInt("tid", -1);
+                writer.writeLong("tid", 0);
                 KeyBasedRequest::write(writer);
             };
 

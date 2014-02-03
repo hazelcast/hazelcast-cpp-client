@@ -179,7 +179,7 @@ namespace hazelcast {
 
             void putThread(int start, IMap<int, int> *map, util::CountDownLatch *latch) {
                 for (int i = 0; i < 10000; i++) {
-                    map->put(start * 10000, start * 10000 + i);
+                    map->put(start * 10000 + i, start * 10000 + i);
                 }
                 latch->countDown();
             }
@@ -190,9 +190,11 @@ namespace hazelcast {
                 IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
                 for (int i = 0; i < THREAD_COUNT; i++) {
                     boost::thread t(putThread, i, &iMap, &latch);
+                    t.detach();
                 }
 
-                latch.await(1000 * 5);
+                assertTrue(latch.await(1000 * 40), "put not finished");
+
                 for (int i = 0; i < 10000 * THREAD_COUNT; i++) {
                     boost::shared_ptr<int> actual = iMap.get(i);
                     assertNotNull(actual.get());
@@ -435,21 +437,21 @@ namespace hazelcast {
 
             void ClientMapTest::testTryLock() {
 
-                assertTrue(imap->tryLock("key1", 2 * 1000));
+                assertTrue(imap->tryLock("key1", 2 * 1000), "1");
                 util::CountDownLatch latch(1);
                 boost::thread t1(boost::bind(testTryLockThread1, &latch, imap.get()));
 
-                assertTrue(latch.await(100 * 1000));
+                assertTrue(latch.await(100 * 1000), "2");
 
-                assertTrue(imap->isLocked("key1"));
+                assertTrue(imap->isLocked("key1"), "3");
 
                 util::CountDownLatch latch2(1);
                 boost::thread t2(boost::bind(testTryLockThread2, &latch2, imap.get()));
 
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
                 imap->unlock("key1");
-                assertTrue(latch2.await(100 * 1000));
-                assertTrue(imap->isLocked("key1"));
+                assertTrue(latch2.await(100 * 1000) , "4");
+                assertTrue(imap->isLocked("key1"), "5");
                 imap->forceUnlock("key1");
 
             }

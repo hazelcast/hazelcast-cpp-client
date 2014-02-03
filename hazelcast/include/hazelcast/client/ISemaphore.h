@@ -257,14 +257,10 @@ namespace hazelcast {
              */
             bool tryAcquire(int permits, long timeoutInMillis);
 
-            /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void onDestroy();
-
         private:
             void checkNegative(int permits);
+
+            void onDestroy();
 
             ISemaphore(const std::string &instanceName, spi::ClientContext *context);
 

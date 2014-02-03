@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/map/EvictRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 

@@ -68,13 +68,14 @@ namespace hazelcast {
                 return *s;
             }
 
-            void onDestroy() {
-            }
-
         private:
             TransactionalQueue(const std::string &name, txn::TransactionProxy *transactionProxy)
             :TransactionalObject("hz:impl:queueService", name, transactionProxy) {
 
+            }
+
+
+            void onDestroy() {
             }
 
         };

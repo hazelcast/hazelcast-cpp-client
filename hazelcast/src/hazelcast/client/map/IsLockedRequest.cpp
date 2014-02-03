@@ -5,14 +5,12 @@
 
 #include "hazelcast/client/map/IsLockedRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
-
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            IsLockedRequest::IsLockedRequest(const std::string& name, serialization::Data& key)
+            IsLockedRequest::IsLockedRequest(const std::string &name, serialization::Data &key)
             :key(key),
             name(name) {
 
@@ -26,10 +24,10 @@ namespace hazelcast {
                 return PortableHook::IS_LOCKED;
             }
 
-            void IsLockedRequest::write(serialization::PortableWriter& writer) const {
+            void IsLockedRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("tid", -1);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                writer.writeLong("tid", 0);
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 

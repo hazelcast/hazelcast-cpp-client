@@ -41,13 +41,13 @@ namespace hazelcast {
                 return *s;
             }
 
-            void onDestroy() {
-            }
-
         private:
             TransactionalSet(const std::string &name, txn::TransactionProxy *transactionProxy)
             :TransactionalObject("hz:impl:setService", name, transactionProxy) {
 
+            }
+
+            void onDestroy() {
             }
 
         };

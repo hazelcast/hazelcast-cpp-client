@@ -42,13 +42,13 @@ namespace hazelcast {
                 return *s;
             }
 
-            void onDestroy() {
-            }
-
         private:
             TransactionalList(const std::string &instanceName, txn::TransactionProxy *context)
             :TransactionalObject("hz:impl:listService", instanceName, context) {
 
+            }
+
+            void onDestroy() {
             }
 
         };

@@ -82,7 +82,7 @@ namespace hazelcast {
                 boost::atomic<bool> live;
                 boost::mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
-                boost::atomic<long> callIdGenerator;
+                boost::atomic<int> callIdGenerator;
                 bool smartRouting;
                 Address ownerConnectionAddress;
 

@@ -44,19 +44,15 @@ namespace hazelcast {
              */
             long newId();
 
-            /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void onDestroy();
-
         private:
+
             IAtomicLong atomicLong;
             boost::shared_ptr< boost::mutex > localLock;
             boost::shared_ptr< boost::atomic<int> > local;
             boost::shared_ptr< boost::atomic<int> > residue;
-
             IdGenerator(const std::string &instanceName, spi::ClientContext *context);
+
+            void onDestroy();
 
         };
     }

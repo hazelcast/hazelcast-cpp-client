@@ -255,15 +255,14 @@ namespace hazelcast {
                 return values;
             }
 
-            void onDestroy() {
-            }
-
         private:
             TransactionalMap(const std::string &name, txn::TransactionProxy *transactionProxy)
             :TransactionalObject("hz:impl:mapService", name, transactionProxy) {
 
             }
 
+            void onDestroy() {
+            }
         };
     }
 }
