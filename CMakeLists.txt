@@ -66,17 +66,17 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(Hz_Bit "32")
 	ENDIF(${CMAKE_GENERATOR} MATCHES "Win64")
 	
-	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-gd-1_55.lib)
+	set(Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-gd-1_55.lib)
 	
-	#LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-1_55.lib)
-	#LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-1_55.lib)
-	#LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-1_55.lib)
-	#LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-1_55.lib)
-	#LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-1_55.lib)
+	set(Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-gd-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-1_55.lib)
 	
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/zlibstaticd.lib)
 	
@@ -87,8 +87,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set_target_properties(HazelcastClientShared PROPERTIES COMPILE_FLAGS " /EHsc " )    	
 	set_target_properties(HazelcastClientStatic PROPERTIES COMPILE_FLAGS " /EHsc " )
 
-	target_link_libraries(HazelcastClientShared ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientStatic ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientShared debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientStatic debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES})
+	
 	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
