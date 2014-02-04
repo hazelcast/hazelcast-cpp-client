@@ -19,6 +19,7 @@ namespace hazelcast {
             void OutSelector::listen() {
                 while (isAlive) {
                     processListenerQueue();
+                    using std::max;
                     int n = max(wakeUpSocketSet.getHighestSocketId(), socketSet.getHighestSocketId());
                     fd_set write_fds = socketSet.get_fd_set();
                     fd_set wakeUp_fd = wakeUpSocketSet.get_fd_set();
