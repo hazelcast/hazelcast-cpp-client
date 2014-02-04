@@ -26,8 +26,6 @@ namespace hazelcast {
             public:
                 OutSelector(ConnectionManager &connectionManager);
 
-                ~OutSelector();
-
                 void listen();
 
             private:

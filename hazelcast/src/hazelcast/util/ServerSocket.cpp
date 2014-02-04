@@ -4,15 +4,17 @@
 
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace util {
 
         ServerSocket::ServerSocket(int port) {
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
-                if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
-            #endif
+            int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+            if(n == -1) 
+				throw client::exception::IOException("Socket::Socket ", "WSAStartup error");
+			#endif
             struct addrinfo hints;
             struct addrinfo *serverInfo;
 
@@ -23,6 +25,13 @@ namespace hazelcast {
             ::getaddrinfo(NULL, hazelcast::util::to_string(port).c_str(), &hints, &serverInfo);
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
+			if(serverInfo->ai_family == AF_INET){
+				ipv4 = true;
+			}else if(serverInfo->ai_family == AF_INET6){
+				ipv4 = false;
+			}else{
+				throw client::exception::IOException("ServerSocket(int)","unsupported ip protocol");
+			}
             ::bind(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
             ::listen(socketId, 10);
             ::freeaddrinfo(serverInfo);
@@ -34,16 +43,23 @@ namespace hazelcast {
             close();
         }
 
+		bool ServerSocket::isIpv4() const{
+			return ipv4;
+		}
+
         void ServerSocket::close() {
             bool expected = true;
             if (isOpen.compare_exchange_strong(expected, false)) {
-                ::shutdown(socketId, SHUT_RD);
-                char buffer[1];
-                ::recv(socketId, buffer, 1, MSG_WAITALL);
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                WSACleanup();
+				::shutdown(socketId, SD_RECEIVE);
+				char buffer[1];
+                ::recv(socketId, buffer, 1, MSG_WAITALL);
+				WSACleanup();
                 closesocket(socketId);
                 #else
+				::shutdown(socketId, SHUT_RD);
+				char buffer[1];
+                ::recv(socketId, buffer, 1, MSG_WAITALL);
                 ::close(socketId);
                 #endif
             }
@@ -51,11 +67,21 @@ namespace hazelcast {
         }
 
         int ServerSocket::getPort() const {
-            struct sockaddr_in sin;
-            socklen_t len = sizeof(sin);
-            if (getsockname(socketId, (struct sockaddr *)&sin, &len) == -1)
-                throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
-            return ntohs(sin.sin_port);
+			if(ipv4){
+				struct sockaddr_in sin;
+				socklen_t len = sizeof(sin);
+				if (getsockname(socketId, (struct sockaddr *)&sin, &len) == 0 && sin.sin_family == AF_INET){
+					return ntohs(sin.sin_port);	
+				}
+				throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
+			}
+            
+			struct sockaddr_in6 sin6;
+			socklen_t len = sizeof(sin6);
+			if (getsockname(socketId, (struct sockaddr *)&sin6, &len) == 0 && sin6.sin6_family == AF_INET6){
+				return ntohs(sin6.sin6_port);	
+			}
+            throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
         }
 
         client::Socket *ServerSocket::accept() {

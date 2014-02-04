@@ -86,9 +86,13 @@ void unitTests() {
 }
 
 int main(int argc, char **argv) {
-
+	try{
     unitTests();
 //    testSpeed();
+
+	}catch(std::exception& e){
+		std::cout << "main " << e.what() << std::endl;
+	}
 
 
     return 0;

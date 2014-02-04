@@ -6,6 +6,7 @@
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/Member.h"
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 

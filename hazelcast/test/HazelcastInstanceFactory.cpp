@@ -25,8 +25,8 @@ namespace hazelcast {
 
 
             HazelcastInstanceFactory::~HazelcastInstanceFactory() {
-                outputSocketStream.writeInt(END);
                 try {
+					outputSocketStream.writeInt(END);
                     inputSocketStream.readInt();
                     //system("killall -9 java");
                 } catch(std::exception &e) {

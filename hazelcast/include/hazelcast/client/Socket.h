@@ -69,9 +69,9 @@ namespace hazelcast {
 
             struct addrinfo *serverInfo;
             int socketId;
-            boost::atomic<bool> isOpen;
+			boost::atomic<bool> isOpen;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			WSADATA wsa_data;
 			#endif
 

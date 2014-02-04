@@ -6,10 +6,10 @@
 namespace hazelcast {
     namespace client {
         Socket::Socket(const client::Address &address) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
-                if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
-            #endif
+			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)			
+            int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+            if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
+			#endif
             struct addrinfo hints;
             std::memset(&hints, 0, sizeof (hints));
             hints.ai_family = AF_UNSPEC;
@@ -17,6 +17,7 @@ namespace hazelcast {
             hints.ai_flags = AI_PASSIVE;
 
             int status;
+			serverInfo = NULL;
             if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
                 throw client::exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
             }
@@ -24,11 +25,11 @@ namespace hazelcast {
             isOpen = true;
             int size = 32 * 1024;
             ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
-            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
-#if defined(SO_NOSIGPIPE)
+            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));	
+			#if defined(SO_NOSIGPIPE)
             int on = 1;
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
-#endif
+			#endif
 
         };
 
@@ -37,7 +38,10 @@ namespace hazelcast {
         : serverInfo(NULL)
         , socketId(socketId)
         , isOpen(true) {
-
+			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)			
+            int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+            if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
+			#endif
         }
 
         Socket::Socket(const Socket &rhs) {
@@ -45,19 +49,17 @@ namespace hazelcast {
         };
 
         Socket::~Socket() {
-            close();
-            if (serverInfo != NULL)
-                ::freeaddrinfo(serverInfo);
+            close();           
         };
 
         int Socket::connect() {
             assert(serverInfo != NULL && "Socket is already connected");
             if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+				#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();
                 #else
                 int error = errno;
-#endif
+				#endif
                 return error;
             }
             return 0;
@@ -105,15 +107,21 @@ namespace hazelcast {
         void Socket::close() {
             bool expected = true;
             if (isOpen.compare_exchange_strong(expected, false)) {
-                ::shutdown(socketId, SHUT_RD);
-                char buffer[1];
+				if (serverInfo != NULL)
+					::freeaddrinfo(serverInfo);
+
+				#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+				::shutdown(socketId, SD_RECEIVE);
+				char buffer[1];
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                WSACleanup();
+				WSACleanup();
                 closesocket(socketId);
                 #else
+				::shutdown(socketId, SHUT_RD);
+				char buffer[1];
+                ::recv(socketId, buffer, 1, MSG_WAITALL);
                 ::close(socketId);
-#endif
+                #endif	
             }
         }
 

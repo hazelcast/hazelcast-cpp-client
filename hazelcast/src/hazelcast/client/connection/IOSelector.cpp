@@ -22,7 +22,6 @@ namespace hazelcast {
 
 
             IOSelector::~IOSelector() {
-                delete wakeUpSocket;
                 shutdown();
             }
 
@@ -38,12 +37,19 @@ namespace hazelcast {
 
             void IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
-                wakeUpSocket = new Socket(Address("127.0.0.1", serverSocket.getPort()));
+				int p = serverSocket.getPort();
+				std::string localAddress;
+				if(serverSocket.isIpv4())
+					localAddress = "127.0.0.1";
+				else 
+					localAddress = "::1";
+
+				wakeUpSocket.reset(new Socket(Address(localAddress, p)));
                 int error = wakeUpSocket->connect();
                 if (error == 0) {
-                    Socket *socket = serverSocket.accept();
-                    wakeUpSocketSet.sockets.insert(socket);
-                    wakeUpListenerSocketId = socket->getSocketId();
+					sleepingSocket.reset(serverSocket.accept());
+					wakeUpSocketSet.sockets.insert(sleepingSocket.get());
+                    wakeUpListenerSocketId = sleepingSocket->getSocketId();
                 } else {
                     throw exception::IOException("OListener::init", std::string(strerror(errno)));
                 }

@@ -48,7 +48,8 @@ namespace hazelcast {
                 boost::atomic<bool> isAlive;
                 util::SocketSet socketSet;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
-                Socket *wakeUpSocket;
+                std::auto_ptr<Socket> wakeUpSocket;
+				std::auto_ptr<Socket> sleepingSocket;
                 int wakeUpListenerSocketId;
                 ConnectionManager &connectionManager;
             };

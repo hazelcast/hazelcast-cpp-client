@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace serialization {
             class SerializationContext;
 
-            class DataAdapter {
+            class HAZELCAST_API DataAdapter {
                 enum StatusBit {
                     stType,
                     stClassId,

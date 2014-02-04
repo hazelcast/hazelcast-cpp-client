@@ -24,8 +24,11 @@ namespace hazelcast {
 
             void close();
 
+			bool isIpv4() const;
+
         private:
             int socketId;
+			bool ipv4;
             boost::atomic<bool> isOpen;
 
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

@@ -38,8 +38,8 @@ namespace hazelcast {
             void setResponse(const client::serialization::Data &data);
 
             template<typename E>
-            void setException(E const &exception) {
-                promise.set_exception(exception);
+            void setException(E const &e) {
+				promise.set_exception(boost::copy_exception(e));
             }
 
             void setRequest(const client::impl::PortableRequest *request);

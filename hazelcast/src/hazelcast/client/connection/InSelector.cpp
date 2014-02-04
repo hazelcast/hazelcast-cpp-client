@@ -31,7 +31,7 @@ namespace hazelcast {
                     }
 
 
-                    std::set<Socket const *>::iterator it;
+                    std::set<Socket const *, client::socketPtrComp>::iterator it;
                     it = socketSet.sockets.begin();
                     while (it != socketSet.sockets.end()) {
                         Socket const *currentSocket = *it;

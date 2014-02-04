@@ -10,7 +10,7 @@ namespace hazelcast {
         fd_set SocketSet::get_fd_set() const {
             fd_set fdSet;
             FD_ZERO(&fdSet);
-            std::set<client::Socket const *>::iterator it;
+            std::set<client::Socket const *, client::socketPtrComp>::iterator it;
             for (it = sockets.begin(); it != sockets.end(); it++) {
                 FD_SET((*it)->getSocketId(), &fdSet);
             }

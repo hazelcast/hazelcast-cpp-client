@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class BaseTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API BaseTxnRequest : public impl::PortableRequest {
             public:
                 void write(serialization::PortableWriter &writer) const;
 

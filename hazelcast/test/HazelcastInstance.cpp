@@ -8,6 +8,7 @@
 
 #include "HazelcastInstance.h"
 #include "HazelcastInstanceFactory.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -21,17 +22,20 @@ namespace hazelcast {
 
 
             void HazelcastInstance::shutdown() {
-                if (!isShutDown) {
-                    factory.shutdownInstance(id);
-                    isShutDown = true;
-                }
+				try{
+					if (!isShutDown) {
+						factory.shutdownInstance(id);
+						isShutDown = true;
+					}
+				}catch(std::exception& e){
+					isShutDown = true;
+					std::cerr << e.what() << std::endl;
+				}
+                
             };
 
             HazelcastInstance::~HazelcastInstance() {
-                if (!isShutDown) {
-                    factory.shutdownInstance(id);
-                    isShutDown = true;
-                }
+                shutdown();
             };
         }
     }

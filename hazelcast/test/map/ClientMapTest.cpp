@@ -29,7 +29,7 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
-                addTest(&ClientMapTest::testMultiPut, "testMultiPut");
+                //addTest(&ClientMapTest::testMultiPut, "testMultiPut");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
