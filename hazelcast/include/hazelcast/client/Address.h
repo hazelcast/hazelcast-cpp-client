@@ -11,26 +11,61 @@
 namespace hazelcast {
     namespace client {
 
+        /**
+         * IP Address
+         */
         class HAZELCAST_API Address : public IdentifiedDataSerializable {
         public:
+            /**
+             * Constructor
+             */
             Address();
 
-            Address(std::string url, int port);
+            /**
+             * Constructor
+             */
+            Address(const std::string &url, int port);
 
-            bool operator == (const Address &) const;
+            /**
+             * comparison operator
+             * @param address to be compared.
+             */
+            bool operator == (const Address &address) const;
 
-            bool operator <(const Address &) const;
+            /**
+             * comparison operator
+             * @param address tob compared.
+             */
+            bool operator <(const Address &address) const;
 
+            /**
+             * @return port number.
+             */
             int getPort() const;
 
+            /**
+             * @return host address as string
+             */
             std::string getHost() const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getFactoryId() const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getClassId() const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             void writeData(serialization::ObjectDataOutput &writer) const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             void readData(serialization::ObjectDataInput &reader);
 
         private:
@@ -43,7 +78,15 @@ namespace hazelcast {
             mutable int hash;
         };
 
+        /**
+         * Address comparator functor
+         */
         struct HAZELCAST_API addressComparator {
+            /**
+             * Address comparator functor
+             * @param lhs
+             * @param rhs
+             */
             bool operator ()(const Address &lhs, const Address &rhs) const {
                 int i = lhs.getHost().compare(rhs.getHost());
                 if (i == 0) {

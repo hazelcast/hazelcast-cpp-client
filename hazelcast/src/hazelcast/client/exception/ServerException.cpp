@@ -38,7 +38,7 @@ namespace hazelcast {
 
 
             bool ServerException::isInstanceNotActiveException() const {
-                return message.find(INSTANCE_NOT_ACTIVE_STR, 0) != std::string::npos;
+                return message.find("HazelcastInstanceNotActiveException", 0) != std::string::npos;
             }
         }
     }

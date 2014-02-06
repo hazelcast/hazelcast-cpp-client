@@ -82,8 +82,9 @@ namespace hazelcast {
 
             /**
              * check if this map contains key.
-             * @param key key whose presence in this map is to be tested
+             * @param key
              * @return true if contains, false otherwise
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -95,8 +96,9 @@ namespace hazelcast {
 
             /**
              * check if this map contains value.
-             * @param value value whose presence in this map is to be tested
+             * @param value
              * @return true if contains, false otherwise
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsValue(const V &value) {
                 serialization::Data valueData = toData(value);
@@ -107,9 +109,10 @@ namespace hazelcast {
 
             /**
              * get the value.
-             * @param key key the key whose associated value is to be returned
+             * @param key
              * @return value value in shared_ptr, if there is no mapping for key
              * then return NULL in shared_ptr.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -120,9 +123,10 @@ namespace hazelcast {
 
             /**
              * put new entry into map.
-             * @param key key with which the specified value is to be associated
-             * @param value value to be associated with the specified key
+             * @param key
+             * @param value
              * @return the previous value in shared_ptr, if there is no mapping for key
+             * @throws ClassCastException if the type of the specified elements are incompatible with the server side.
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> put(const K &key, const V &value) {
@@ -135,9 +139,10 @@ namespace hazelcast {
 
             /**
              * remove entry form map
-             * @param key key whose mapping is to be removed from the map
+             * @param key
              * @return the previous value in shared_ptr, if there is no mapping for key
              * then returns NULL in shared_ptr.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -148,9 +153,10 @@ namespace hazelcast {
 
             /**
              * removes entry from map if there is an entry with same key and value.
-             * @param key key with which the specified value is associated
-             * @param value value expected to be associated with the specified key
+             * @param key
+             * @param value
              * @return true if remove is successful false otherwise
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool remove(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -165,6 +171,7 @@ namespace hazelcast {
              * removes entry from map.
              * Does not return anything.
              * @param key The key of the map entry to remove.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             void deleteEntry(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -207,6 +214,7 @@ namespace hazelcast {
              * @return Future from which the value of the key can be retrieved.
 
              * @see java.util.concurrent.Future
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             //MTODO Future<V> getAsync(K key);
 
@@ -237,6 +245,7 @@ namespace hazelcast {
              * @return Future from which the old value of the key can be retrieved.
              * @throws NullPointerException if the specified key or value is null
              * @see java.util.concurrent.Future
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             //MTODO Future<V> putAsync(K key, V value);
 
@@ -281,7 +290,7 @@ namespace hazelcast {
 
              *
              * @param key The key of the map entry to remove.
-             * @return A {@link java.util.concurrent.Future} from which the value
+             * @return A java.util.concurrent.Future from which the value
              *         removed from the map can be retrieved.
 
              */
@@ -346,7 +355,7 @@ namespace hazelcast {
             };
 
             /**
-             * Same as {@link #put(K, V, long, TimeUnit)} but MapStore, if defined,
+             * Same as put(K, V, long, TimeUnit) but MapStore, if defined,
              * will not be called to store/persist the entry.  If ttl is 0, then
              * the entry lives forever.
              *
@@ -367,7 +376,7 @@ namespace hazelcast {
              * Puts an entry into this map, if the specified key is not already associated with a value.
              *
              * @param key key with which the specified value is to be associated
-             * @param value value to be associated with the specified key
+             * @param value 
              * @return the previous value in shared_ptr, if there is no mapping for key
              * then returns NULL in shared_ptr.
              */
@@ -398,7 +407,7 @@ namespace hazelcast {
              * Replaces the entry for a key only if currently mapped to a given value.
              * @param key key with which the specified value is associated
              * @param oldValue value expected to be associated with the specified key
-             * @param newValue value to be associated with the specified key
+             * @param newValue 
              * @return <tt>true</tt> if the value was replaced
              */
             bool replace(const K &key, const V &oldValue, const V &newValue) {
@@ -414,7 +423,7 @@ namespace hazelcast {
             /**
              * Replaces the entry for a key only if currently mapped to some value.
              * @param key key with which the specified value is associated
-             * @param value value to be associated with the specified key
+             * @param value 
              * @return the previous value of the entry, if there is no mapping for key
              * then returns NULL in shared_ptr.
              */
@@ -431,7 +440,7 @@ namespace hazelcast {
              * Similar to put operation except that set
              * doesn't return the old value which is more efficient.
              * @param key key with which the specified value is associated
-             * @param value value to be associated with the specified key
+             * @param value 
              * @param ttl maximum time in milliseconds for this entry to stay in the map
                       0 means infinite.
              */
@@ -549,7 +558,7 @@ namespace hazelcast {
              * <p>If the current thread is the holder of this lock then the hold
              * count is decremented.  If the hold count is now zero then the lock
              * is released.  If the current thread is not the holder of this
-             * lock then {@link IllegalMonitorStateException} is thrown.
+             * lock then IllegalMonitorStateException is thrown.
              *
              *
              * @param key key to lock.
@@ -1039,8 +1048,8 @@ namespace hazelcast {
              * Puts an entry into this map.
              * Similar to put operation except that set
              * doesn't return the old value which is more efficient.
-             * @param key key with which the specified value is associated
-             * @param value value to be associated with the specified key
+             * @param key 
+             * @param value 
              */
             void set(const K &key, const V &value) {
                 set(key, value, -1);
@@ -1072,7 +1081,7 @@ namespace hazelcast {
             /**
              * Copies all of the mappings from the specified map to this map
              * (optional operation).  The effect of this call is equivalent to that
-             * of calling {@link #put(Object,Object) put(k, v)} on this map once
+             * of calling #put(Object,Object) put(k, v) on this map once
              * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
              * specified map.  The behavior of this operation is undefined if the
              * specified map is modified while the operation is in progress.

@@ -11,23 +11,44 @@ namespace hazelcast {
     namespace client {
         namespace exception {
 
-            static std::string INSTANCE_NOT_ACTIVE_STR = "HazelcastInstanceNotActiveException";
-
+            /**
+             * Thrown when an exception occured in server nodes.
+             */
             class HAZELCAST_API ServerException : public impl::PortableResponse, public std::exception {
-
             public:
+                /**
+                 * Constructor
+                 */
                 ServerException();
 
+                /**
+                 * Destructor
+                 */
                 virtual ~ServerException() throw();
 
+                /**
+                 * return exception explanation string.
+                 */
                 virtual char const *what() const throw();
 
+                /**
+                 * @see Portable#getClassId
+                 */
                 int getClassId() const;
 
+                /**
+                 * @see Portable#getFactoryId
+                 */
                 int getFactoryId() const;
 
+                /**
+                 * @see Portable#readPortable
+                 */
                 void readPortable(serialization::PortableReader &reader);
 
+                /**
+                 * return true if exception isInstanceNotActiveException.
+                 */
                 bool isInstanceNotActiveException() const;
 
             private:

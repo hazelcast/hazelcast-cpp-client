@@ -39,14 +39,14 @@ namespace hazelcast {
              *
              * @param membershipEvent membership event
              */
-            virtual void memberAdded(const MembershipEvent &event) = 0;
+            virtual void memberAdded(const MembershipEvent &membershipEvent) = 0;
 
             /**
              * Invoked when an existing member leaves the cluster.
              *
              * @param membershipEvent membership event
              */
-            virtual void memberRemoved(const MembershipEvent &event) = 0;
+            virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
 
             /**
              * Invoked when an attribute of a member was changed.

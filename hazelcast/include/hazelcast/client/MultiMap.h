@@ -76,8 +76,8 @@ namespace hazelcast {
             /**
              * Removes the given key value pair from the multimap.
              *
-             * @param key   the key of the entry to remove
-             * @param value the value of the entry to remove
+             * @param key
+             * @param value
              * @return true if the size of the multimap changed after the remove operation, false otherwise.
              */
             bool remove(const K &key, const V &value) {
@@ -92,7 +92,7 @@ namespace hazelcast {
             /**
              * Removes all the entries with the given key.
              *
-             * @param key the key of the entries to remove
+             * @param key
              * @return the multimap of removed values associated with the given key. Returned multimap
              *         might be modifiable but it has no effect on the multimap
              */
@@ -310,7 +310,7 @@ namespace hazelcast {
             * Locks are re-entrant so if the key is locked N times then
             * it should be unlocked N times before another thread can acquire it.
             * @param key key to lock.
-            * @param leaseTime time in milliseconds to wait before releasing the lock.
+            * @param leaseTimeInMillis time in milliseconds to wait before releasing the lock.
             */
             void lock(const K &key, long leaseTimeInMillis) {
                 serialization::Data keyData = toData(key);
@@ -362,8 +362,8 @@ namespace hazelcast {
              * </ul>
              *
              *
-             * @param time     the maximum time to wait for the lock
-             * @param timeunit the time unit of the <tt>time</tt> argument.
+             * @param key to be locked.
+             * @param timeoutInMillis     the maximum time to wait for the lock
              * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
              *         if the waiting time elapsed before the lock was acquired.
              */

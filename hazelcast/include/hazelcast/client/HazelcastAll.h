@@ -10,7 +10,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/Credentials.h"
-#include "hazelcast/client/DataSerializable.h"
+#include "hazelcast/client/serialization/DataSerializable.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryView.h"

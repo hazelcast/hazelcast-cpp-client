@@ -18,11 +18,22 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Transactional implementation of IQueue.
+         *
+         * @see IQueue
+         * @param <E> element type
+         */
         template <typename E>
         class HAZELCAST_API TransactionalQueue : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
+            /**
+             * Transactional implementation of IQueue::offer(const E &e)
+             *
+             * @see IQueue::offer(const E &e)
+             */
             bool offer(const E &e) {
                 try {
                     return offer(e, 0);
@@ -31,6 +42,11 @@ namespace hazelcast {
                 }
             };
 
+            /**
+             * Transactional implementation of IQueue::offer(const E &e, long timeoutInMillis)
+             *
+             * @see IQueue::offer(const E &e, long timeoutInMillis)
+             */
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
                 queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, data);
@@ -43,6 +59,11 @@ namespace hazelcast {
                 return result;
             };
 
+            /**
+             * Transactional implementation of IQueue::poll()
+             *
+             * @see IQueue::poll()
+             */
             boost::shared_ptr<E> poll() {
                 try {
                     return poll(0);
@@ -51,6 +72,11 @@ namespace hazelcast {
                 }
             };
 
+            /**
+             * Transactional implementation of IQueue::poll(long timeoutInMillis)
+             *
+             * @see IQueue::poll(long timeoutInMillis)
+             */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::TxnPollRequest *request = new queue::TxnPollRequest(getName(), timeoutInMillis);
                 boost::shared_ptr<E> result;
@@ -62,6 +88,11 @@ namespace hazelcast {
                 return result;
             };
 
+            /**
+             * Transactional implementation of IQueue::size()
+             *
+             * @see IQueue::size()
+             */
             int size() {
                 queue::TxnSizeRequest *request = new queue::TxnSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);

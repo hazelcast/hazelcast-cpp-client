@@ -13,12 +13,22 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
+            /**
+             * Raised when an Input Output error is occured.
+             */
             class HAZELCAST_API IOException : public IException {
             public:
+                /**
+                 * Constructor
+                 */
                 IOException(const std::string& source, const std::string& message);
-
+                /**
+                 * Destructor
+                 */
                 virtual ~IOException() throw();
-
+                /**
+                 * return exception explanation string.
+                 */
                 virtual char const *what() const throw();
             };
         }

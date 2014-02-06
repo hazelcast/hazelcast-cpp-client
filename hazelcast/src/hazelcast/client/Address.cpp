@@ -10,12 +10,12 @@ namespace hazelcast {
         : hash(0) {
         };
 
-        Address::Address(std::string url, int port)
+        Address::Address(const std::string &url, int port)
         : host(url), port(port), type(IPv4), hash(0) {
 
         };
 
-        bool Address::operator ==(const Address& rhs) const {
+        bool Address::operator ==(const Address &rhs) const {
             if (rhs.host.compare(host) != 0) {
                 return false;
             } else {
@@ -23,7 +23,7 @@ namespace hazelcast {
             }
         };
 
-        bool Address::operator <(const Address& rhs) const {
+        bool Address::operator <(const Address &rhs) const {
             int cmpResult = host.compare(rhs.host);
             if (cmpResult > 1) {
                 return true;
@@ -50,7 +50,7 @@ namespace hazelcast {
             return protocol::ProtocolConstants::ADDRESS_ID;
         };
 
-        void Address::writeData(serialization::ObjectDataOutput & writer) const {
+        void Address::writeData(serialization::ObjectDataOutput &writer) const {
             writer.writeInt(port);
             writer.writeByte(type);
             int size = host.size();
@@ -63,7 +63,7 @@ namespace hazelcast {
             }
         };
 
-        void Address::readData(serialization::ObjectDataInput & reader) {
+        void Address::readData(serialization::ObjectDataInput &reader) {
             port = reader.readInt();
             type = reader.readByte();
             int size = reader.readInt();

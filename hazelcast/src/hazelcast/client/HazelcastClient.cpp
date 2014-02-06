@@ -12,6 +12,9 @@
 namespace hazelcast {
     namespace client {
 
+        /**
+         * Private API.
+         */
         class HazelcastClient::HazelcastClientImpl {
         public:
             HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &hazelcastClient)

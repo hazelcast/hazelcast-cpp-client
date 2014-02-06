@@ -10,12 +10,25 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
+            /**
+             * Some of the Hazelcast operations may throw an <tt>RuntimeInterruptedException</tt>
+             * if a user thread is interrupted while waiting a response.
+             *
+             */
             class HAZELCAST_API InterruptedException : public IException {
             public:
+                /**
+                 * Constructor
+                 */
                 InterruptedException(const std::string& source, const std::string& message);
-
+                /**
+                 * Destructor
+                 */
                 virtual ~InterruptedException() throw();
 
+                /**
+                 * return exception explanation string.
+                 */
                 virtual char const *what() const throw();
             };
         }

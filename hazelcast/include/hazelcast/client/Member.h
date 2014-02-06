@@ -25,24 +25,54 @@ namespace hazelcast {
         public:
             friend class connection::ClusterListenerThread;
 
+            /**
+             * Constructor
+             */
             Member();
 
+            /**
+             * Constructor
+             */
             Member(const Member &);
 
+            /**
+             * Constructor
+             */
             Member(const Address &);
 
+            /**
+             * copy operation
+             */
             Member &operator = (const Member &);
 
+            /**
+             * comparison operation
+             */
             bool operator ==(const Member &) const;
 
+            /**
+             * comparison operation
+             */
             int operator <(const Member &) const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getFactoryId() const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getClassId() const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             void writeData(serialization::ObjectDataOutput &writer) const;
 
+            /**
+             * @see IdentifiedDataSerializable
+             */
             void readData(serialization::ObjectDataInput &reader);
 
             /**
@@ -85,25 +115,11 @@ namespace hazelcast {
             };
 
         private:
-            /**
-            * Defines a key-value pair string attribute for this member available
-            * to other cluster members.
-            *
-            * @param key The key for this property.
-            * @param value The value corresponds to this attribute and this member.
-            */
             template <typename AttributeType>
             void setAttribute(const std::string &key, AttributeType value) {
                 setAttributeResolved(key, value);
             }
 
-            /**
-             * Removes a key-value pair attribute for this member if given key was
-             * previously assigned as an attribute.<br/>
-             *
-             * @param key The key to be deleted from the member attributes
-             * @return true if remove successful.
-             */
             template <typename AttributeType>
             bool removeAttribute(const std::string &key) {
                 AttributeType *tag;

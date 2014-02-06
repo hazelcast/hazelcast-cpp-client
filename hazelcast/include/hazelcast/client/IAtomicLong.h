@@ -28,7 +28,7 @@ namespace hazelcast {
         public:
 
             /**
-             * Atomically adds the given value to the current value.
+             * adds the given value to the current value.
              *
              * @param delta the value to add
              * @return the updated value
@@ -36,8 +36,8 @@ namespace hazelcast {
             long addAndGet(long delta);
 
             /**
-             * Atomically sets the value to the given updated value
-             * only if the current value {@code ==} the expected value.
+             * sets the value to the given updated value
+             * only if the current value is equal to the expected value.
              *
              * @param expect the expected value
              * @param update the new value
@@ -47,7 +47,7 @@ namespace hazelcast {
             bool compareAndSet(long expect, long update);
 
             /**
-             * Atomically decrements the current value by one.
+             * decrements the current value by one.
              *
              * @return the updated value
              */
@@ -61,7 +61,7 @@ namespace hazelcast {
             long get();
 
             /**
-             * Atomically adds the given value to the current value.
+             * adds the given value to the current value.
              *
              * @param delta the value to add
              * @return the old value before the add
@@ -69,7 +69,7 @@ namespace hazelcast {
             long getAndAdd(long delta);
 
             /**
-             * Atomically sets the given value and returns the old value.
+             * sets the given value and returns the old value.
              *
              * @param newValue the new value
              * @return the old value
@@ -77,21 +77,21 @@ namespace hazelcast {
             long getAndSet(long newValue);
 
             /**
-             * Atomically increments the current value by one.
+             * increments the current value by one.
              *
              * @return the updated value
              */
             long incrementAndGet();
 
             /**
-             * Atomically increments the current value by one.
+             * increments the current value by one.
              *
              * @return the old value
              */
             long getAndIncrement();
 
             /**
-             * Atomically sets the given value.
+             * sets the given value.
              *
              * @param newValue the new value
              */

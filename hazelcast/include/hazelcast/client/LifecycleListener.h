@@ -18,6 +18,7 @@ namespace hazelcast {
          *
          * @see LifecycleEvent
          * @see HazelcastInstance#getLifecycleService()
+         * @see LifecycleService#addLifecycleListener(LifecycleListener *lifecycleListener)
          *
          */
         class HAZELCAST_API LifecycleListener {

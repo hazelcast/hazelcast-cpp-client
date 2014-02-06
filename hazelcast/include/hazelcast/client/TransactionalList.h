@@ -17,11 +17,20 @@
 
 namespace hazelcast {
     namespace client {
+
+        /**
+         * Transactional implementation of IList.
+         */
         template <typename E>
         class HAZELCAST_API TransactionalList : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
+            /**
+             * Add new item to transactional list
+             * @param e item
+             * @return true if item is added successfully
+             */
             bool add(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), data);
@@ -29,6 +38,11 @@ namespace hazelcast {
                 return success;
             }
 
+            /**
+             * Add item from transactional list
+             * @param e item
+             * @return true if item is remove successfully
+             */
             bool remove(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnListRemoveRequest *request = new collection::TxnListRemoveRequest(getName(), data);
@@ -36,6 +50,10 @@ namespace hazelcast {
                 return *success;
             }
 
+            /**
+             * Returns the size of the list
+             * @return size
+             */
             int size() {
                 collection::TxnListSizeRequest *request = new collection::TxnListSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);

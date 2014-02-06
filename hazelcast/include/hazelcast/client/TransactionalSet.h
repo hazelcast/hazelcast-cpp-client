@@ -16,11 +16,19 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Transactional implementation of ISet.
+         */
         template <typename E>
         class HAZELCAST_API TransactionalSet : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
+            /**
+             * Add new item to transactional set
+             * @param e item
+             * @return true if item is added successfully
+             */
             bool add(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnSetAddRequest *request = new collection::TxnSetAddRequest(getName(), data);
@@ -28,6 +36,11 @@ namespace hazelcast {
                 return *success;
             }
 
+            /**
+             * Add item from transactional set
+             * @param e item
+             * @return true if item is remove successfully
+             */
             bool remove(const E &e) {
                 serialization::Data data = toData(e);
                 collection::TxnSetRemoveRequest *request = new collection::TxnSetRemoveRequest(getName(), data);
@@ -35,6 +48,10 @@ namespace hazelcast {
                 return *success;
             }
 
+            /**
+             * Returns the size of the set
+             * @return size
+             */
             int size() {
                 collection::TxnSetSizeRequest *request = new collection::TxnSetSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);

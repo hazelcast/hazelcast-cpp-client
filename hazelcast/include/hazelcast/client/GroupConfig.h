@@ -26,6 +26,7 @@ namespace hazelcast {
              * Creates a GroupConfig with the given group-name and default group-password
              *
              * @param name  the name of the group
+             * @param password  the password of the group
             */
             GroupConfig(const std::string &name, const std::string &password);
 
@@ -50,7 +51,7 @@ namespace hazelcast {
              * @param password the password to set
              * @return the updated GroupConfig.
              */
-            GroupConfig &setPassword(std::string password);
+            GroupConfig &setPassword(const std::string &password);
 
             /**
              * Sets the group name.
@@ -58,7 +59,7 @@ namespace hazelcast {
              * @param name the name to set
              * @return the updated GroupConfig.
              */
-            GroupConfig &setName(std::string name);
+            GroupConfig &setName(const std::string &name);
 
         private:
             std::string name;

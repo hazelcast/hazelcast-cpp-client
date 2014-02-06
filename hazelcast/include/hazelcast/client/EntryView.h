@@ -21,6 +21,9 @@ namespace hazelcast {
         template<typename K, typename V>
         class HAZELCAST_API EntryView : public IdentifiedDataSerializable {
         public:
+            /**
+             * Constrcutor
+             */
             EntryView(const K &key, const V &value, const EntryView<serialization::Data, serialization::Data> &rhs)
             : key(key)
             , value(value)
@@ -34,15 +37,22 @@ namespace hazelcast {
             , version (rhs.version) {
 
             };
-
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getFactoryId() const {
                 return map::DataSerializableHook::F_ID;
             };
-
+            /**
+             * @see IdentifiedDataSerializable
+             */
             int getClassId() const {
                 return map::DataSerializableHook::ENTRY_VIEW;
             };
-
+            /**
+             * @see IdentifiedDataSerializable
+             * @param out
+             */
             void writeData(serialization::ObjectDataOutput &out) const {
                 out.writeObject(&key);
                 out.writeObject(&value);
@@ -55,7 +65,10 @@ namespace hazelcast {
                 out.writeLong(lastUpdateTime);
                 out.writeLong(version);
             };
-
+            /**
+             * @see IdentifiedDataSerializable
+             * @param in
+             */
             void readData(serialization::ObjectDataInput &in) {
                 key = in.readObject<K>();
                 value = in.readObject<V>();
@@ -68,15 +81,45 @@ namespace hazelcast {
                 lastUpdateTime = in.readLong();
                 version = in.readLong();
             };
+            /**
+             * key
+             */
             K key;
+            /**
+             * value
+             */
             V value;
+            /**
+             * memory cost of entry
+             */
             long cost;
+            /**
+             * entry creadion time
+             */
             long creationTime;
+            /**
+             * entry expriation time if ttl is defined.
+             */
             long expirationTime;
+            /**
+             * number of hits.
+             */
             long hits;
+            /**
+             * last access time
+             */
             long lastAccessTime;
+            /**
+             * last stored time.
+             */
             long lastStoredTime;
+            /**
+             * last update time.
+             */
             long lastUpdateTime;
+            /**
+             * version.
+             */
             long version;
         };
     }

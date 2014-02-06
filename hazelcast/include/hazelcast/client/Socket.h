@@ -36,27 +36,64 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * c Sockets wrapper class.
+         */
         class HAZELCAST_API Socket {
         public:
-
+            /**
+             * Constructor
+             */
             Socket(int socketId);
-
+            /**
+             * Constructor
+             */
             Socket(const client::Address &address);
-
+            /**
+             * Destructor
+             */
             ~Socket();
-
+            /**
+             * connects to given address in constructor.
+             * @return zero if error. -1 otherwise.
+             */
             int connect();
 
+            /**
+             * @param buffer
+             * @param len length of the buffer
+             * @return number of bytes send
+             * @throw IOException in failure.
+             */
             int send(const void *buffer, int len) const;
 
+            /**
+             * @param buffer
+             * @param len  length of the buffer to be received.
+             * @param flag bsd socktes options flag.
+             * @return number of bytes received.
+             * @throw IOException in failure.
+             */
             int receive(void *buffer, int len, int flag = 0) const;
 
+            /**
+             * return socketId
+             */
             int getSocketId() const;
 
+            /**
+             * @param address remote endpoint address.
+             */
             void setRemoteEndpoint(client::Address &address);
 
+            /**
+             * @return remoteEndpoint
+             */
             const client::Address &getRemoteEndpoint() const;
-
+            /**
+             * closes the socket. Automatically called in destructor.
+             * Second call to this function is no op.
+             */
             void close();
 
         private:
@@ -77,7 +114,13 @@ namespace hazelcast {
 
         };
 
+        /**
+         * Socket Ptr compare method. Compares based on socket id.
+         */
         struct HAZELCAST_API socketPtrComp {
+            /**
+             * Functor.
+             */
             bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
                 return lhs->getSocketId() > rhs->getSocketId();
             }

@@ -28,43 +28,113 @@ namespace hazelcast {
             class ConnectionManager;
         }
 
+        /**
+         * Provides a context to do transactional operations; so beginning/committing transactions, but also retrieving
+         * transactional data-structures like the TransactionalMap.
+         *
+         * @see HazelcastClient::newTransactionContext
+         */
         class HAZELCAST_API TransactionContext {
         public:
+            /**
+             *  Constructor to be used internally. Not public API.
+             *
+             */
             TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &);
-
+            /**
+             *  @return txn id.
+             */
             std::string getTxnId() const;
 
+            /**
+             * Begins a transaction.
+             *
+             * @throws IllegalStateException if a transaction already is active.
+             */
             void beginTransaction();
 
+            /**
+             * Commits a transaction.
+             *
+             * @throws TransactionException if no transaction is active or the transaction could not be committed.
+             */
             void commitTransaction();
 
+            /**
+             * Begins a transaction.
+             *
+             * @throws IllegalStateException if a transaction already is active.
+             */
             void rollbackTransaction();
+
+            /**
+             * Returns the transactional distributed map instance with the specified name.
+             *
+             *
+             * @param name name of the distributed map
+             * @return transactional distributed map instance with the specified name
+            */
 
             template<typename K, typename V>
             TransactionalMap<K, V> getMap(const std::string &name) {
                 return getTransactionalObject< TransactionalMap<K, V> >(name);
             }
 
+            /**
+             * Returns the transactional queue instance with the specified name.
+             *
+             *
+             * @param name name of the queue
+             * @return transactional queue instance with the specified name
+             */
             template<typename E>
             TransactionalQueue< E > getQueue(const std::string &name) {
                 return getTransactionalObject< TransactionalQueue< E > >(name);
             }
 
+            /**
+             * Returns the transactional multimap instance with the specified name.
+             *
+             *
+             * @param name name of the multimap
+             * @return transactional multimap instance with the specified name
+             */
             template<typename K, typename V>
             TransactionalMultiMap<K, V> getMultiMap(const std::string &name) {
                 return getTransactionalObject< TransactionalMultiMap<K, V> >(name);
             }
 
+            /**
+             * Returns the transactional list instance with the specified name.
+             *
+             *
+             * @param name name of the list
+             * @return transactional list instance with the specified name
+             */
             template<typename E>
             TransactionalList< E > getList(const std::string &name) {
                 return getTransactionalObject< TransactionalList< E > >(name);
             }
 
+            /**
+             * Returns the transactional set instance with the specified name.
+             *
+             *
+             * @param name name of the set
+             * @return transactional set instance with the specified name
+             */
             template<typename E>
             TransactionalSet< E > getSet(const std::string &name) {
                 return getTransactionalObject< TransactionalSet< E > >(name);
             }
 
+            /**
+             * get any transactional object with template T.
+             *
+             * Mostly to be used by spi implementers of Hazelcast.
+             *
+             * @return transactionalObject.
+             */
             template<typename T>
             T getTransactionalObject(const std::string &name) {
                 if (transaction.getState() != txn::TxnState::ACTIVE) {

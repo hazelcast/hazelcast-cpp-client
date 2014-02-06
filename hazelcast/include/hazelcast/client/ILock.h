@@ -15,27 +15,34 @@
 
 namespace hazelcast {
     namespace client {
+
+        /**
+         * Re-entrant Lock, Distributed client implementation of Lock.
+         *
+         */
         class HAZELCAST_API ILock : public DistributedObject {
             friend class HazelcastClient;
 
         public:
 
+            /**
+             * Acquires the lock.
+             * If lock is not available waits for unlock indefinitely
+             */
             void lock();
 
             /**
-             * Acquires the lock for the specified lease time.
-             * <p>After lease time, lock will be released..
-             *
-             * <p>If the lock is not available then
-             * the current thread becomes disabled for thread scheduling
-             * purposes and lies dormant until the lock has been acquired.
-             *
+             * Gets the lock for the specified lease time.
+             * After lease time, lock will be released..
              *
              * @param leaseTime time to wait before releasing the lock.
              * @param timeUnit unit of time to specify lease time.
              */
             void lock(long leaseTimeInMillis);
 
+            /**
+             * Releases the lock
+             */
             void unlock();
 
             /**
@@ -44,10 +51,23 @@ namespace hazelcast {
              */
             void forceUnlock();
 
+            /**
+             *
+             * @return true if this lock is locked, false otherwise.
+             */
             bool isLocked();
 
+            /**
+             *
+             * @return true if this lock is locked by current thread, false otherwise.
+             */
             bool isLockedByCurrentThread();
 
+            /**
+             * Returns re-entrant lock hold count, regardless of lock ownership.
+             *
+             * @return lock hold count.
+             */
             int getLockCount();
 
             /**
@@ -58,7 +78,19 @@ namespace hazelcast {
              */
             long getRemainingLeaseTime();
 
+            /**
+             * Tries to acquire the lock. Returns immediately without blocking.
+             *
+             * @return true if lock is get, false otherwise.
+             */
             bool tryLock();
+
+            /**
+             * Tries to acquire the lock. Returns after timeInMillis seconds
+             *
+             * @param long timeInMillis time to wait
+             * @return true if lock is get, false otherwise.
+             */
 
             bool tryLock(long timeInMillis);
 

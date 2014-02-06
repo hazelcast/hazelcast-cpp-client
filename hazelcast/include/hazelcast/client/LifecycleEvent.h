@@ -11,21 +11,43 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Event to be fired when lifecycle states are changed.
+         *
+         *      enum LifeCycleState {
+         *          STARTING,
+         *          STARTED,
+         *          SHUTTING_DOWN,
+         *          SHUTDOWN,
+         *          CLIENT_CONNECTED,
+         *          CLIENT_DISCONNECTED
+         *      };
+         *
+         * @see HazelcastInstance#getLifecycleService()
+         * @see LifecycleService#addLifecycleListener(LifecycleListener *lifecycleListener)
+         */
         class HAZELCAST_API LifecycleEvent {
         public:
+            /**
+             * State enum.
+             */
             enum LifeCycleState {
                 STARTING,
                 STARTED,
                 SHUTTING_DOWN,
                 SHUTDOWN,
-                MERGING,
-                MERGED,
                 CLIENT_CONNECTED,
                 CLIENT_DISCONNECTED
             };
 
+            /**
+             * Constructor
+             */
             LifecycleEvent(LifeCycleState state);
 
+            /**
+             * @return State;
+             */
             LifeCycleState getState() const;
 
         private:

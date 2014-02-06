@@ -15,11 +15,11 @@ namespace hazelcast {
         class MembershipEvent;
 
         /**
-         * The InitializingMembershipListener is a {@link MembershipListener} that will first receives a
-         * {@link InitialMembershipEvent} when it is registered so it immediately knows which members are available. After
+         * The InitializingMembershipListener is a MembershipListener that will first receives a
+         * InitialMembershipEvent when it is registered so it immediately knows which members are available. After
          * that event has been received, it will receive the normal MembershipEvents.
          *
-         * When the InitializingMembershipListener already is registered on a {@link Cluster} and is registered again on the same
+         * When the InitializingMembershipListener already is registered on a Cluster and is registered again on the same
          * Cluster instance, it will not receive an additional MembershipInitializeEvent. So this is a once only event.
          *
          * @see Cluster#addMembershipListener(InitialMembershipListener *listener)

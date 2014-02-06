@@ -17,12 +17,23 @@
 namespace hazelcast {
     namespace client {
 
+        /**
+         *
+         * Transactional implementation of MultiMap.
+         *
+         * @see MultiMap
+         * @param <K> key
+         * @param <V> value
+         */
         template<typename K, typename V>
         class HAZELCAST_API TransactionalMultiMap : public proxy::TransactionalObject {
             friend class TransactionContext;
-
         public:
-
+            /**
+             * Transactional implementation of Multimap#put(key , value).
+             *
+             * @see Multimap#put(key , value)
+             */
             bool put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
@@ -31,6 +42,11 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             * Transactional implementation of Multimap#get(key).
+             *
+             * @see Multimap#get(key)
+             */
             std::vector<V> get(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), data);
@@ -46,6 +62,11 @@ namespace hazelcast {
                 return result;
             };
 
+            /**
+             * Transactional implementation of Multimap#remove(key , value).
+             *
+             * @see Multimap#remove(key , value)
+             */
             bool remove(const K &key, const V &value) {
                 serialization::Data dataKey = toData(key);
                 serialization::Data dataValue = toData(value);
@@ -54,6 +75,11 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             * Transactional implementation of Multimap#remove(key).
+             *
+             * @see Multimap#remove(key)
+             */
             std::vector<V> remove(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), &data);
@@ -69,6 +95,11 @@ namespace hazelcast {
             };
 
 
+            /**
+             * Transactional implementation of Multimap#valueCount(key).
+             *
+             * @see Multimap#valueCount(key)
+             */
             int valueCount(const K &key) {
                 serialization::Data data = toData(key);
                 multimap::TxnMultiMapValueCountRequest *request = new multimap::TxnMultiMapValueCountRequest(getName(), data);
@@ -76,6 +107,11 @@ namespace hazelcast {
                 return *cnt;
             }
 
+            /**
+             * Transactional implementation of Multimap#size().
+             *
+             * @see Multimap#size()
+             */
             int size() {
                 multimap::TxnMultiMapSizeRequest *request = new multimap::TxnMultiMapSizeRequest(getName());
                 boost::shared_ptr<int> s = invoke<int>(request);

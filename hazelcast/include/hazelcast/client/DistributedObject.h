@@ -19,17 +19,25 @@ namespace hazelcast {
         }
 
         /**
-         * Base interface for all distributed objects.
+         * Base class for all distributed objects.
          *
          * @see IMap
-         * @see IQueue
          * @see MultiMap
+         * @see IQueue
+         * @see IList
+         * @see ISet
          * @see ITopic
          * @see ILock
+         * @see ISemaphore
+         * @see ICountDownLatch
+         * @see IdGenerator
+         * @see IAtomicLong
          * @see IExecutorService
          * @see TransactionalMap
          * @see TransactionalQueue
          * @see TransactionalMultiMap
+         * @see TransactionalSet
+         * @see TransactionalList
          */
         class HAZELCAST_API DistributedObject {
             friend class HazelcastClient;
@@ -59,31 +67,78 @@ namespace hazelcast {
             virtual ~DistributedObject();
 
         protected:
+            /**
+             * Constructor.
+             */
             DistributedObject(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
 
+            /**
+             * @returns ClientContext.
+             */
             spi::ClientContext &getContext();
 
+            /**
+             * method to be called when cluster-wide destroy method is called.
+             */
             virtual void onDestroy() = 0;
 
             template<typename Response>
+            /**
+             * Internal API.
+             * method to be called by distributed objects.
+             * memory ownership is moved to DistributedObject.
+             *
+             * @param partitionId that given request will be send to.
+             * @param request PortableRequest ptr.
+             */
             boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
                 boost::shared_future<serialization::Data> future = invocationService.invokeOnKeyOwner(request, partitionId);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
+            /**
+             * Internal API.
+             * method to be called by distributed objects.
+             * memory ownership is moved to DistributedObject.
+             *
+             * @param request PortableRequest ptr.
+             */
             template<typename Response>
             boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
                 boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
+            /**
+             * Internal API.
+             *
+             * @param registrationRequest PortableRequest ptr.
+             * @param partitionId
+             * @param handler
+             */
             std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
+            /**
+             * Internal API.
+             *
+             * @param registrationRequest PortableRequest ptr.
+             * @param handler
+             */
             std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 
+            /**
+             * Internal API.
+             *
+             * @param request PortableRequest ptr.
+             * @param registrationId.
+             */
             bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
 
+            /**
+             * Internal API.
+             * @param key
+             */
             int getPartitionId(const serialization::Data &key);
 
         private:

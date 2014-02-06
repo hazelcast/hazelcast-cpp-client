@@ -19,15 +19,22 @@
 namespace hazelcast {
     namespace client {
 
+        /**
+         * Transactional implementation of IMap.
+         *
+         * @see IMap
+         * @param <K> key
+         * @param <V> value
+         */
         template<typename K, typename V>
         class HAZELCAST_API TransactionalMap : public proxy::TransactionalObject {
             friend class TransactionContext;
 
         public:
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#containsKey(Object)}.
+             * Transactional implementation of IMap#containsKey(Object).
              *
-             * @see IMap#containsKey(Object)
+             * @see IMap#containsKey(key)
             */
             bool containsKey(const K &key) {
                 serialization::Data data = toData(key);
@@ -36,9 +43,9 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#get(Object)}.
+             * Transactional implementation of IMap#get(Object).
              *
-             * @see IMap#get(Object)
+             * @see IMap#get(keu)
              */
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data data = toData(key);
@@ -48,9 +55,9 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#size()}.
+             * Transactional implementation of IMap#size().
              *
-             * @see com.hazelcast.core.IMap#size()
+             * @see IMap#size()
              */
             int size() {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SIZE);
@@ -59,20 +66,20 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link IMap#isEmpty()}.
+             * Transactional implementation of IMap#isEmpty().
              *
-             * @see com.hazelcast.core.IMap#isEmpty()
+             * @see IMap#isEmpty()
              */
             bool isEmpty() {
                 return size() == 0;
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#put(Object, Object)}.
+             * Transactional implementation of IMap#put(Object, Object).
              *
              * The object to be put will be accessible only in the current transaction context till transaction is committed.
              *
-             * @see IMap#put(Object, Object)
+             * @see IMap#put(key, value)
              */
             boost::shared_ptr<V> put(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -82,11 +89,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#set(Object, Object)}.
+             * Transactional implementation of IMap#set(key, value).
              *
              * The object to be set will be accessible only in the current transaction context till transaction is committed.
              *
-             * @see IMap#set(Object, Object)
+             * @see IMap#set(key, value)
              */
             void set(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -96,11 +103,11 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#putIfAbsent(Object, Object)}.
+             * Transactional implementation of IMap#putIfAbsent(key, value)
              *
              * The object to be put will be accessible only in the current transaction context till transaction is committed.
              *
-             * @see IMap#putIfAbsent(Object, Object)
+             * @see IMap#putIfAbsent(key, value)
              */
             boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -110,11 +117,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#replace(Object, Object)}.
+             * Transactional implementation of IMap#replace(key, value).
              *
              * The object to be replaced will be accessible only in the current transaction context till transaction is committed.
              *
-             * @see IMap#replace(Object, Object)
+             * @see IMap#replace(key, value)
              */
             boost::shared_ptr<V> replace(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -125,11 +132,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#replace(Object, Object, Object)}.
+             * Transactional implementation of IMap#replace(key, value, oldValue).
              *
              * The object to be replaced will be accessible only in the current transaction context till transaction is committed.
              *
-             * @see IMap#replace(Object, Object, Object)
+             * @see IMap#replace(key, value, oldValue)
              */
             bool replace(const K &key, const V &oldValue, const V &newValue) {
                 serialization::Data keyData = toData(key);
@@ -142,11 +149,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#remove(Object)}.
+             * Transactional implementation of IMap#remove(key).
              *
              * The object to be removed will be removed from only the current transaction context till transaction is committed.
              *
-             * @see IMap#remove(Object)
+             * @see IMap#remove(key)
              */
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data data = toData(key);
@@ -155,11 +162,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#delete(Object)}.
+             * Transactional implementation of IMap#delete(key).
              *
              * The object to be deleted will be removed from only the current transaction context till transaction is committed.
              *
-             * @see IMap#delete(Object)
+             * @see IMap#delete(keu)
              */
 
             void deleteEntry(const K &key) {
@@ -169,11 +176,11 @@ namespace hazelcast {
             };
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#remove(Object, Object)}.
+             * Transactional implementation of IMap#remove(key, value).
              *
              * The object to be removed will be removed from only the current transaction context till transaction is committed.
              *
-             * @see IMap#remove(Object, Object)
+             * @see IMap#remove(key, value)
              */
             bool remove(const K &key, const V &value) {
                 serialization::Data data = toData(key);
@@ -184,10 +191,10 @@ namespace hazelcast {
             }
 
             /**
-            * Transactional implementation of {@link IMap#keySet()}.
+            * Transactional implementation of IMap#keySet().
             *
             *
-            * @see com.hazelcast.core.IMap#keySet()
+            * @see IMap#keySet()
             */
             std::vector<K> keySet() {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET);
@@ -202,10 +209,10 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#keySet(com.hazelcast.query.Predicate)} .
+             * Transactional implementation of IMap#keySet(Predicate) .
              *
              *
-             * @see IMap#keySet(com.hazelcast.query.Predicate)
+             * @see IMap#keySet(predicate)
              */
             std::vector<K> keySet(const std::string &predicate) {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
@@ -220,7 +227,7 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#values()}.
+             * Transactional implementation of IMap#values().
              *
              *
              * @see IMap#values()
@@ -238,10 +245,9 @@ namespace hazelcast {
             }
 
             /**
-             * Transactional implementation of {@link com.hazelcast.core.IMap#values(com.hazelcast.query.Predicate)} .
+             * Transactional implementation of IMap#values(Predicate) .
              *
-             *
-             * @see IMap#values(com.hazelcast.query.Predicate)
+             * @see IMap#values(Predicate)
              */
             std::vector<V> values(const std::string &predicate) {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);

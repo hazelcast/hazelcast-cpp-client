@@ -15,23 +15,42 @@ namespace hazelcast {
          */
         class HAZELCAST_API EntryEventType {
         public:
+            /**
+             * Type enum.
+             */
             enum Type {
                 ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4
-            } value;
+            };
+            /**
+             * Type value
+             */
+            Type value;
 
+            /**
+             * Constrcutor
+             */
             EntryEventType() {
 
             }
 
+            /**
+             * Constrcutor
+             */
             EntryEventType(Type value)
             :value(value) {
 
             }
 
+            /**
+             * cast to int.
+             */
             operator int() const {
                 return value;
             }
 
+            /**
+             * copy method.
+             */
             void operator = (int i) {
                 switch (i) {
                     case 1:
@@ -62,7 +81,9 @@ namespace hazelcast {
         template <typename K, typename V>
         class HAZELCAST_API EntryEvent {
         public:
-
+            /**
+             * Constrcutor
+             */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
             : name(name)
             , member(member)
@@ -72,6 +93,9 @@ namespace hazelcast {
 
             };
 
+            /**
+             * Constrcutor
+             */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
             : name(name)
             , member(member)

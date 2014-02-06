@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_MemberAttributeChange
 #define HAZELCAST_MemberAttributeChange
 
-#include "hazelcast/client/DataSerializable.h"
+#include "hazelcast/client/serialization/DataSerializable.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/util/IOUtil.h"
 #include <string>

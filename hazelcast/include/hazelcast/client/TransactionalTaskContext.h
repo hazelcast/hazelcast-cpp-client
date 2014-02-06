@@ -12,8 +12,17 @@
 
 namespace hazelcast {
     namespace client {
+        /**
+         * Provides a context to access transactional data-structures like the TransactionalMap.
+         *
+         * @see HazelcastClient#executeTransaction(...)
+         */
         class HAZELCAST_API TransactionalTaskContext {
         public:
+            /**
+             *  Constructor to be used internally. Not public API.
+             *
+             */
             TransactionalTaskContext(TransactionContext& context);
 
             /**
@@ -28,7 +37,7 @@ namespace hazelcast {
                 return context.getMap<K, V>(name);
             }
 
-            /*
+            /**
              * Returns the transactional queue instance with the specified name.
              *
              *
@@ -71,12 +80,18 @@ namespace hazelcast {
              * @param name name of the set
              * @return transactional set instance with the specified name
              */
-
             template<typename E>
             TransactionalSet< E > getSet(const std::string& name) {
                 return context.getSet< E >(name);
             }
 
+            /**
+             * get any transactional object with template T.
+             *
+             * Mostly to be used by spi implementers of Hazelcast.
+             *
+             * @return transactionalObject.
+             */
             template<typename T>
             T getTransactionalObject(const std::string& name) {
                 return context.getTransactionalObject< T >(name);

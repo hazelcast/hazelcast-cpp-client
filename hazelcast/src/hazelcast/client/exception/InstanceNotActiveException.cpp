@@ -4,14 +4,13 @@
 
 
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "hazelcast/client/exception/ServerException.h"
 
 namespace hazelcast {
     namespace client {
         namespace exception {
 
             InstanceNotActiveException::InstanceNotActiveException(const std::string &source)
-            :IException(source, INSTANCE_NOT_ACTIVE_STR) {
+            :IException(source, "HazelcastInstanceNotActiveException") {
 
             }
 

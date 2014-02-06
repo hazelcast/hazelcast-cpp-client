@@ -20,7 +20,6 @@
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/InterruptedException.h"
-#include "hazelcast/client/exception/NoSuchElementException.h"
 #include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/DistributedObject.h"
@@ -29,7 +28,11 @@
 namespace hazelcast {
     namespace client {
 
-
+        /**
+         * Concurrent, blocking, distributed, observable, client queue.
+         *
+         * @param <E> item type
+         */
         template<typename E>
         class HAZELCAST_API IQueue : public DistributedObject {
             friend class HazelcastClient;
@@ -54,34 +57,39 @@ namespace hazelcast {
             };
 
             /**
-            * Removes the specified item listener.
-            * Returns silently if the specified listener is not added before.
-            *
-            * @param registrationId Id of listener registration.
-            *
-            * @return true if registration is removed, false otherwise
-            */
+             * Removes the specified item listener.
+             * Returns silently if the specified listener is not added before.
+             *
+             * @param registrationId Id of listener registration.
+             *
+             * @return true if registration is removed, false otherwise
+             */
             bool removeItemListener(const std::string &registrationId) {
                 queue::RemoveListenerRequest *request = new queue::RemoveListenerRequest(getName(), registrationId);
                 return stopListening(request, registrationId);
             };
 
-            bool add(const E &e) {
-                if (offer(e)) {
+            /**
+             *
+             * @param element E
+             * @return true if element is added successfully.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IllegalStateException if queue is full.
+             */
+            bool add(const E &element) {
+                if (offer(element)) {
                     return true;
                 }
-                throw exception::IllegalStateException("bool IQueue::dd(const E& e)", "Queue is full!");
+                throw exception::IllegalStateException("bool IQueue::add(const E& e)", "Queue is full!");
             };
 
             /**
-             * Inserts the specified element into this queue if it is possible to do
-             * so immediately without violating capacity restrictions, returning
-             * <tt>true</tt> upon success and <tt>false</tt> if no space is currently
-             * available.
+             * Inserts the specified element into this queue.
              *
-             * @param e the element to add
+             * @param element to add
              * @return <tt>true</tt> if the element was added to this queue, else
              *         <tt>false</tt>
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool offer(const E &e) {
                 try {
@@ -91,23 +99,24 @@ namespace hazelcast {
                 }
             };
 
+            /**
+             * Puts the element into queue.
+             * If queue is  full waits for space to became available.
+             */
             void put(const E &e) {
                 offer(e, -1);
             };
 
             /**
-            * Inserts the specified element into this queue, waiting up to the
-            * specified wait time if necessary for space to become available.
-            *
-            * @param e the element to add
-            * @param timeout how long to wait before giving up, in units of
-            *        
-            * @param unit a <tt>TimeUnit</tt> determining how to interpret the
-            *        <tt>timeout</tt> parameter
-            * @return <tt>true</tt> if successful, or <tt>false</tt> if
-            *         the specified waiting time elapses before space is available
-            * @throws InterruptedException if interrupted while waiting
-            */
+             * Inserts the specified element into this queue.
+             * If queue is  full waits for space to became available for specified time.
+             *
+             * @param e the element to add
+             * @param timeout how long to wait before giving up, in units of
+             * @return <tt>true</tt> if successful, or <tt>false</tt> if
+             *         the specified waiting time elapses before space is available
+             * @throws InterruptedException if interrupted while waiting
+             */
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
                 queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
@@ -120,10 +129,19 @@ namespace hazelcast {
                 return result;
             };
 
+            /**
+             *
+             * @return the head of the queue. If queue is empty waits for an item to be added.
+             */
             boost::shared_ptr<E> take() {
                 return poll(-1);
             };
 
+            /**
+             *
+             * @param long timeoutInMillis time to wait if item is not available.
+             * @return the head of the queue. If queue is empty waits for specified time.
+             */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::PollRequest *request = new queue::PollRequest(getName(), timeoutInMillis);
                 boost::shared_ptr<E> result;
@@ -135,30 +153,57 @@ namespace hazelcast {
                 return result;
             };
 
+            /**
+             *
+             * @return remaining capacity
+             */
             int remainingCapacity() {
                 queue::RemainingCapacityRequest *request = new queue::RemainingCapacityRequest(getName());
                 boost::shared_ptr<int> cap = invoke<int>(request, partitionId);
                 return *cap;
             };
 
-            bool remove(const E &o) {
-                serialization::Data data = toData(o);
+            /**
+             *
+             * @param element to be removed.
+             * @return true if element removed successfully.
+             */
+            bool remove(const E &element) {
+                serialization::Data data = toData(element);
                 queue::RemoveRequest *request = new queue::RemoveRequest(getName(), data);
                 bool result = *(invoke<bool>(request, partitionId));
                 return result;
             };
 
-            bool contains(const E &o) {
+            /**
+             *
+             * @param element to be checked.
+             * @return true if queue contains the element.
+             */
+            bool contains(const E &element) {
                 std::vector<serialization::Data> list(1);
-                list[0] = toData(o);
+                list[0] = toData(element);
                 queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
                 return *(invoke<bool>(request, partitionId));
             };
 
-            int drainTo(std::vector<E> &objects) {
-                return drainTo(objects, -1);
+            /**
+             * Note that elements will be pushed_back to vector.
+             *
+             * @param vector that elements will be drained to.
+             * @return number of elements drained.
+             */
+            int drainTo(std::vector<E> &elements) {
+                return drainTo(elements, -1);
             };
 
+            /**
+             * Note that elements will be pushed_back to vector.
+             *
+             * @param maxElements upper limit to be filled to vector.
+             * @param vector that elements will be drained to.
+             * @return number of elements drained.
+             */
             int drainTo(std::vector<E> &c, int maxElements) {
                 queue::DrainRequest *request = new queue::DrainRequest(getName(), maxElements);
                 boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, partitionId);
@@ -170,14 +215,11 @@ namespace hazelcast {
                 return coll.size();
             };
 
-            boost::shared_ptr<E> remove() {
-                boost::shared_ptr<E> res = poll();
-                if (res == NULL) {
-                    throw exception::NoSuchElementException("E IQueue::remove()", "Queue is empty!");
-                }
-                return res;
-            };
-
+            /**
+             * Returns immediately without waiting.
+             *
+             * @return removes head of the queue and returns it to user . If not available returns empty constructed shared_ptr.
+             */
             boost::shared_ptr<E> poll() {
                 try {
                     return poll(0);
@@ -186,29 +228,38 @@ namespace hazelcast {
                 }
             };
 
-            boost::shared_ptr<E> element() {
-                boost::shared_ptr<E> res = peek();
-                if (res == NULL) {
-                    throw exception::NoSuchElementException("E IQueue::element()", "Queue is empty!");
-                }
-                return res;
-            };
-
+            /**
+             * Returns immediately without waiting.
+             *
+             * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
+             */
             boost::shared_ptr<E> peek() {
                 queue::PeekRequest *request = new queue::PeekRequest(getName());
                 return invoke<E>(request, partitionId);
             };
 
+            /**
+             *
+             * @return size of this distributed queue
+             */
             int size() {
                 queue::SizeRequest *request = new queue::SizeRequest(getName());
                 boost::shared_ptr<int> size = invoke<int>(request, partitionId);
                 return *size;
             }
 
+            /**
+             *
+             * @return true if queue is empty
+             */
             bool isEmpty() {
                 return size() == 0;
             };
 
+            /**
+             *
+             * @returns all elements as std::vector
+             */
             std::vector<E> toArray() {
                 queue::IteratorRequest *request = new queue::IteratorRequest(getName());
                 boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, partitionId);
@@ -216,20 +267,38 @@ namespace hazelcast {
                 return getObjectList(coll);
             };
 
-            bool containsAll(const std::vector<E> &c) {
-                std::vector<serialization::Data> list = getDataList(c);
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if this queue contains all elements given in vector.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
+            bool containsAll(const std::vector<E> &elements) {
+                std::vector<serialization::Data> list = getDataList(elements);
                 queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
                 boost::shared_ptr<bool> contains = invoke<bool>(request, partitionId);
                 return *contains;
             }
 
-            bool addAll(const std::vector<E> &c) {
-                std::vector<serialization::Data> dataList = getDataList(c);
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if all elements given in vector can be added to queue.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
+            bool addAll(const std::vector<E> &elements) {
+                std::vector<serialization::Data> dataList = getDataList(elements);
                 queue::AddAllRequest *request = new queue::AddAllRequest(getName(), dataList);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             }
 
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if all elements are removed successfully.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool removeAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, false);
@@ -237,6 +306,13 @@ namespace hazelcast {
                 return *success;
             }
 
+            /**
+             *
+             * Removes the elements from this queue that are not available in given "elements" vector
+             * @param elements std::vector<E>
+             * @return true if operation is successful.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool retainAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, true);
@@ -244,6 +320,9 @@ namespace hazelcast {
                 return *success;
             }
 
+            /**
+             * Removes all elements from queue.
+             */
             void clear() {
                 queue::ClearRequest *request = new queue::ClearRequest(getName());
                 invoke<bool>(request, partitionId);

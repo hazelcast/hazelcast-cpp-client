@@ -23,12 +23,38 @@
 namespace hazelcast {
     namespace client {
 
+        /**
+         * Concurrent, distributed client implementation of std::unordered_set.
+         *
+         * @param <E> item type
+         */
         template<typename E>
         class HAZELCAST_API ISet : public DistributedObject {
             friend class HazelcastClient;
 
         public:
-
+            /**
+             * Listener should implement itemAdded and itemRemoved as follows
+             *
+             *      class MyListItemListener {
+             *      public:
+             *      //....
+             *
+             *      void itemAdded(ItemEvent<std::string> itemEvent) {
+             *          //...
+             *      }
+             *
+             *      void itemRemoved(ItemEvent<std::string> item) {
+             *              //...
+             *      }
+             *
+             *      };
+             *
+             *  Note that E is std::string in the example
+             *
+             *  @param L listener
+             *  @param bool includeValue should ItemEvent include value or not.
+             */
             template < typename L>
             std::string addItemListener(L &listener, bool includeValue) {
                 collection::CollectionAddListenerRequest *request = new collection::CollectionAddListenerRequest(getName(), getServiceName(), includeValue);
@@ -36,21 +62,43 @@ namespace hazelcast {
                 return listen(request, entryEventHandler);
             };
 
+            /**
+             * Removes the specified item listener.
+             * Returns false if the specified listener is not added before.
+             *
+             * @param registrationId Id of listener registration.
+             *
+             * @return true if registration is removed, false otherwise
+             */
             bool removeItemListener(const std::string &registrationId) {
                 collection::CollectionRemoveListenerRequest *request = new collection::CollectionRemoveListenerRequest(getName(), getServiceName(), registrationId);
                 return stopListening(request, registrationId);
             };
 
+            /**
+             *
+             * @returns size of the distributed set
+             */
             int size() {
                 collection::CollectionSizeRequest *request = new collection::CollectionSizeRequest(getName(), getServiceName());
                 boost::shared_ptr<int> i = invoke<int>(request, partitionId);
                 return *i;
             };
 
+            /**
+             *
+             * @returns true if empty
+             */
             bool isEmpty() {
                 return size() == 0;
             };
 
+            /**
+             *
+             * @param element
+             * @returns true if set contains element
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool contains(const E &o) {
                 serialization::Data valueData = toData(o);
                 std::vector<serialization::Data> valueSet;
@@ -60,6 +108,10 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * @returns all elements as std::vector
+             */
             std::vector<E> toArray() {
                 collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
                 boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
@@ -72,6 +124,12 @@ namespace hazelcast {
                 return set;
             };
 
+            /**
+             *
+             * @param E e
+             * @return true if element is added successfully. If elements was already there returns false.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool add(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionAddRequest *request = new collection::CollectionAddRequest(getName(), getServiceName(), valueData);
@@ -79,6 +137,12 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * @param E e
+             * @return true if element is removed successfully.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool remove(const E &e) {
                 serialization::Data valueData = toData(e);
                 collection::CollectionRemoveRequest *request = new collection::CollectionRemoveRequest(getName(), getServiceName(), valueData);
@@ -86,6 +150,12 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if this set contains all elements given in vector.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool containsAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest(getName(), getServiceName(), dataCollection);
@@ -93,6 +163,12 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if all elements given in vector can be added to set.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool addAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionAddAllRequest *request = new collection::CollectionAddAllRequest(getName(), getServiceName(), dataCollection);
@@ -100,6 +176,12 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * @param elements std::vector<E>
+             * @return true if all elements are removed successfully.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool removeAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, false);
@@ -107,6 +189,13 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * Removes the elements from this set that are not available in given "elements" vector
+             * @param elements std::vector<E>
+             * @return true if operation is successful.
+             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             */
             bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, true);
@@ -114,15 +203,15 @@ namespace hazelcast {
                 return *success;
             };
 
+            /**
+             *
+             * Removes all elements from set.
+             */
             void clear() {
                 collection::CollectionClearRequest *request = new collection::CollectionClearRequest(getName(), getServiceName());
                 invoke<bool>(request, partitionId);
             };
 
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
 
         private:
             template<typename T>

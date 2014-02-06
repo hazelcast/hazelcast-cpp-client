@@ -51,7 +51,7 @@ namespace hazelcast {
              *
              * WARNING:
              *
-             * Should be in sync with {@link #writeData(com.hazelcast.nio.ObjectDataOutput)}
+             * Should be in sync with #writeData(com.hazelcast.nio.ObjectDataOutput)
              */
             int Data::totalSize() const {
                 int total = 0;

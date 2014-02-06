@@ -18,12 +18,12 @@ namespace hazelcast {
             return name;
         };
 
-        GroupConfig &GroupConfig::setName(std::string name) {
+        GroupConfig &GroupConfig::setName(const std::string &name) {
             this->name = name;
             return (*this);
         };
 
-        GroupConfig &GroupConfig::setPassword(std::string password) {
+        GroupConfig &GroupConfig::setPassword(const std::string &password) {
             this->password = password;
             return (*this);
         };

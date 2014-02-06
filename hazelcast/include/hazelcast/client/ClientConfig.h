@@ -79,24 +79,23 @@ namespace hazelcast {
             ClientConfig &setGroupConfig(GroupConfig &groupConfig);
 
             /**
-             * Returns GroupConfig
              *
              * @return groupConfig
              */
             GroupConfig &getGroupConfig();
 
             /**
-             * Can be used instead of {@link GroupConfig} in Hazelcast EE.
+             * Can be used instead of GroupConfig in Hazelcast EE.
              */
             void setCredentials(Credentials *credentials);
 
             /**
-             * Can be used instead of {@link GroupConfig} in Hazelcast EE.
+             * Can be used instead of GroupConfig in Hazelcast EE.
              */
             Credentials &getCredentials();
 
             /**
-             * While client is trying to connect initially to one of the members in the {@link ClientConfig#addressList},
+             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
              * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
              * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
              *
@@ -106,9 +105,9 @@ namespace hazelcast {
             ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
             /**
-             * While client is trying to connect initially to one of the members in the {@link ClientConfig#addressList},
+             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
              * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-             * attempt to retry as much as {@link ClientConfig#connectionAttemptLimit} times.
+             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
              *
              * return int connectionAttemptLimit
              */
@@ -116,7 +115,7 @@ namespace hazelcast {
 
             /**
              * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-             * passing between client and member within the {@link ClientConfig#connectionTimeout} milliseconds the connection
+             * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
              * will be closed.
              *
              * @param int connectionTimeoutInMillis
@@ -126,7 +125,7 @@ namespace hazelcast {
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-            * passing between client and member within the {@link ClientConfig#connectionTimeout} milliseconds the connection
+            * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
             * will be closed.
             *
             * @return int connectionTimeoutInMillis
@@ -202,8 +201,7 @@ namespace hazelcast {
              */
             ClientConfig &addListener(LifecycleListener *listener);
 
-            /*
-             * Returns registered lifecycleListeners
+            /**
              *
              * @return registered lifecycleListeners
              */
@@ -217,7 +215,7 @@ namespace hazelcast {
              */
             ClientConfig &addListener(MembershipListener *listener);
 
-            /*
+            /**
              * Returns registered membershipListeners
              *
              * @return registered membershipListeners
@@ -232,7 +230,7 @@ namespace hazelcast {
              */
             ClientConfig &addListener(InitialMembershipListener *listener);
 
-            /*
+            /**
              * Returns registered initialMembershipListeners
              *
              * @return registered initialMembershipListeners

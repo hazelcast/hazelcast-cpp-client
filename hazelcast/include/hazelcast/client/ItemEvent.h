@@ -14,23 +14,43 @@ namespace hazelcast {
         */
         class HAZELCAST_API ItemEventType {
         public:
+            /**
+             * Type enum.
+             */
             enum Type {
                 ADDED = 1, REMOVED = 2
-            } value;
+            };
 
+            /**
+             * type value.
+             */
+            Type value;
+
+            /**
+             * Constructor.
+             */
             ItemEventType() {
 
             }
 
+            /**
+             * Constructor.
+             */
             ItemEventType(Type value)
             :value(value) {
 
             }
 
+            /**
+             * cast to int.
+             */
             operator int() const {
                 return value;
             }
 
+            /**
+             * copy function.
+             */
             void operator = (int i) {
                 switch (i) {
                     case 1:
@@ -44,10 +64,20 @@ namespace hazelcast {
 
         };
 
+        /**
+         * ItemEvent
+         *
+         * @param E type of item.
+         * @see Queue#addItemListener
+         * @see List#addItemListener
+         * @see Set#addItemListener
+         */
         template <typename E>
         class HAZELCAST_API ItemEvent {
         public:
-
+            /**
+             * constructor
+             */
             ItemEvent(const std::string &name, ItemEventType eventType, const E &item, const Member &member)
             : name(name)
             , member(member)
@@ -57,6 +87,9 @@ namespace hazelcast {
             };
 
 
+            /**
+             * @returns the item.
+             */
             const E &geItem() const {
                 return item;
             };
@@ -80,9 +113,9 @@ namespace hazelcast {
             };
 
             /**
-             * Returns the name of the map for this event.
+             * Returns the name of the collection for this event.
              *
-             * @return name of the map.
+             * @return name of the collection.
              */
             std::string getName() const {
                 return name;

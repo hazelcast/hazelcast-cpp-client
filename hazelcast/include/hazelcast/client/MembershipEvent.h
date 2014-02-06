@@ -20,12 +20,23 @@ namespace hazelcast {
          */
         class MembershipEvent {
         public:
+            /**
+             * MembershipEventType
+             *
+             * MEMBER_ADDED = 1,
+             * MEMBER_REMOVED = 2,
+             * MEMBER_ATTRIBUTE_CHANGED = 5
+             */
             enum MembershipEventType {
                 MEMBER_ADDED = 1,
                 MEMBER_REMOVED = 2,
                 MEMBER_ATTRIBUTE_CHANGED = 5
             };
 
+            /**
+             * Internal API.
+             * Constructor.
+             */
             MembershipEvent(Cluster &cluster, MembershipEventType eventType, const Member &member);
 
             /**
@@ -33,11 +44,11 @@ namespace hazelcast {
              * member is removed, the returned set will not include this member. And if a member is added it will include
              * this member.
              *
-             * The problem with calling the {@link com.hazelcast.core.Cluster#getMembers()} is that the content could already
+             * The problem with calling the Cluster#getMembers() is that the content could already
              * have changed while processing this event so it becomes very difficult to write a deterministic algorithm since
              * you can't get a deterministic view of the members. This method solves that problem.
              *
-             * The set is immutable and ordered. For more information see {@link com.hazelcast.core.Cluster#getMembers()}.
+             * The set is immutable and ordered. For more information see Cluster#getMembers().
              *
              * @return the members at the moment after this event.
              */
@@ -51,7 +62,8 @@ namespace hazelcast {
             virtual const Cluster &getCluster() const;
 
             /**
-             * Returns the membership event type; #MEMBER_ADDED or #MEMBER_REMOVED
+             * Returns the membership event type; MembershipEvent#MEMBER_ADDED ,
+             * MembershipEvent#MEMBER_REMOVED and MembershipEvent#MEMBER_ATTRIBUTE_CHANGED
              *
              * @return the membership event type
              */

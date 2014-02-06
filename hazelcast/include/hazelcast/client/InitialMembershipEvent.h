@@ -13,8 +13,8 @@ namespace hazelcast {
         class Cluster;
 
         /**
-         * A event that is send when a {@link InitialMembershipListener} registers itself on a {@link Cluster}. For more
-         * information see the {@link InitialMembershipListener}.
+         * A event that is send when a InitialMembershipListener} registers itself on a Cluster. For more
+         * information see the InitialMembershipListener.
          *
          * @see InitialMembershipListener
          * @see MembershipListener
@@ -23,11 +23,14 @@ namespace hazelcast {
         class InitialMembershipEvent {
         public:
 
+            /**
+             * Constructor
+             */
             InitialMembershipEvent(Cluster &cluster, const std::vector<Member> &members);
 
             /**
-             * Returns an immutable set of ordered members at the moment this {@link InitialMembershipListener} is
-             * registered. See {@link com.hazelcast.core.Cluster#getMembers()} for more information.
+             * Returns an immutable set of ordered members at the moment this InitialMembershipListener is
+             * registered. See Cluster#getMembers() for more information.
              *
              * @return a set of members.
              */
