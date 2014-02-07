@@ -10,8 +10,8 @@
 *.pdb
 *~
 build*/*
-docs/*
-java/Debug*
+java/*
+releaseBundle/*
 # Compiled Dynamic libraries
 *.so
 *.dylib
