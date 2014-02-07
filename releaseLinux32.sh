@@ -11,6 +11,7 @@ cp -R docs/* releaseBundle32/docs/
 cp -R external/include/* releaseBundle32/external/include/
 cp -R hazelcast/include/hazelcast/* releaseBundle32/hazelcast/include/hazelcast/
 cp -R external/lib/linux/32/* releaseBundle32/external/lib/
+cp enterprise-license.txt releaseBundle32/enterprise-license.txt
 
 ln -s ./docs/html/index.html releaseBundle32/readme.html
 

@@ -15,5 +15,6 @@ cp -R docs/ releaseBundle/docs/
 cp -R external/include/ releaseBundle/external/include/
 cp -R hazelcast/include/hazelcast/ releaseBundle/hazelcast/include/hazelcast/
 cp -R external/lib/darwin/64/ releaseBundle/external/lib/
+cp enterprise-license.txt releaseBundle/enterprise-license.txt
 
 ln -s ./docs/html/index.html releaseBundle/readme.html
