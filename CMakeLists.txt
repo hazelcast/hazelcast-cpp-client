@@ -72,7 +72,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-gd-1_55.lib)
 	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_date_time-vc100-mt-gd-1_55.lib)
 	
-	set(Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-gd-1_55.lib)
+	set(Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_atomic-vc100-mt-1_55.lib)
 	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_system-vc100-mt-1_55.lib)
 	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_chrono-vc100-mt-1_55.lib)
 	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/libboost_thread-vc100-mt-1_55.lib)
