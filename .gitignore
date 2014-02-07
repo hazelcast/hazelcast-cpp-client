@@ -12,6 +12,7 @@
 build*/*
 java/*
 releaseBundle/*
+releaseBundle*
 # Compiled Dynamic libraries
 *.so
 *.dylib
