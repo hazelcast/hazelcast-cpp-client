@@ -10,9 +10,10 @@ include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
+	
 	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
 	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
-	
+					
 	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_atomic.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_system.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libboost_chrono.a)
@@ -22,7 +23,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libz.a)
 	
     target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
-	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_sZLIB_LIBRARIES})
+	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
