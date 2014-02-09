@@ -42,8 +42,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set_target_properties(clientTestShared${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
 	set_target_properties(clientTestStatic${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
 		
-	target_link_libraries(clientTestShared${Hz_Bit} HazelcastClientShared debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES})
-	target_link_libraries(clientTestStatic${Hz_Bit} HazelcastClientStatic debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(clientTestShared${Hz_Bit} HazelcastClientShared optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
+	target_link_libraries(clientTestStatic${Hz_Bit} HazelcastClientStatic optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
