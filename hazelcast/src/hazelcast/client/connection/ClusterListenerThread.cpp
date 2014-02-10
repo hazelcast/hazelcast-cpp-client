@@ -152,9 +152,11 @@ namespace hazelcast {
                         members.push_back(member);
                         membersUpdated = true;
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
-                        members.erase(std::find(members.begin(), members.end(), member));
+                        std::vector<Member>::iterator it = std::find(members.begin(), members.end(), member);
+                        if(members.end() != it){
+                            members.erase(it);
+                        }
                         membersUpdated = true;
-//                        connectionManager.removeConnectionPool(member.getAddress()); MTODO
                     } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
                         impl::MemberAttributeChange const &memberAttributeChange = event->getMemberAttributeChange();
                         for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
