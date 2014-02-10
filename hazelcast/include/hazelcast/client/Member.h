@@ -33,17 +33,7 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            Member(const Member &);
-
-            /**
-             * Constructor
-             */
             Member(const Address &);
-
-            /**
-             * copy operation
-             */
-            Member &operator = (const Member &);
 
             /**
              * comparison operation

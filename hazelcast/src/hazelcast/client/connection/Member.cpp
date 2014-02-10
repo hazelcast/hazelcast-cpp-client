@@ -14,22 +14,9 @@ namespace hazelcast {
 
         };
 
-        Member::Member(Member const &rhs)
-        :address(rhs.address)
-        , uuid(rhs.uuid) {
-
-        };
-
-
         Member::Member(Address const &rhs)
         : address(rhs) {
 
-        };
-
-        Member &Member::operator = (Member const &rhs) {
-            address = rhs.address;
-            uuid = rhs.uuid;
-            return (*this);
         };
 
         bool Member::operator ==(const Member &rhs) const {
