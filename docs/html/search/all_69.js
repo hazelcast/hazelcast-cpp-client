@@ -12,6 +12,7 @@ var searchData=
   ['ilock',['ILock',['../classhazelcast_1_1client_1_1_i_lock.html',1,'hazelcast::client']]],
   ['imap',['IMap',['../classhazelcast_1_1client_1_1_i_map.html',1,'hazelcast::client']]],
   ['incrementandget',['incrementAndGet',['../classhazelcast_1_1client_1_1_i_atomic_long.html#a64e63d5cd15e6eaa79021ecec4e4913b',1,'hazelcast::client::IAtomicLong']]],
+  ['introduction',['Introduction',['../index.html',1,'']]],
   ['indexof',['indexOf',['../classhazelcast_1_1client_1_1_i_list.html#a2c9a61156817adc445f5e4afd9219cf6',1,'hazelcast::client::IList']]],
   ['init',['init',['../classhazelcast_1_1client_1_1_id_generator.html#ae87faa0deadbb2ec056eabae9194a369',1,'hazelcast::client::IdGenerator::init()'],['../classhazelcast_1_1client_1_1_initial_membership_listener.html#ae92ee6ea9c4c045e42658f44675fd291',1,'hazelcast::client::InitialMembershipListener::init()'],['../classhazelcast_1_1client_1_1_i_semaphore.html#afb8252742d1cd824ade2e7afe6e2e244',1,'hazelcast::client::ISemaphore::init()'],['../classhazelcast_1_1client_1_1_load_balancer.html#a8860ecfbde4e3ad976ad001d3736ea7f',1,'hazelcast::client::LoadBalancer::init()']]],
   ['initialmembershipevent',['InitialMembershipEvent',['../classhazelcast_1_1client_1_1_initial_membership_event.html',1,'hazelcast::client']]],
@@ -33,9 +34,9 @@ var searchData=
   ['islockedbycurrentthread',['isLockedByCurrentThread',['../classhazelcast_1_1client_1_1_i_lock.html#a7ae71d144e4ea128cb3551a8819812f5',1,'hazelcast::client::ILock']]],
   ['isredooperation',['isRedoOperation',['../classhazelcast_1_1client_1_1_client_config.html#ad6f803f1181c33d83a3742d7c46bc99c',1,'hazelcast::client::ClientConfig']]],
   ['issmart',['isSmart',['../classhazelcast_1_1client_1_1_client_config.html#ae9b54389cf1ca5ac70c57a444ab3e276',1,'hazelcast::client::ClientConfig']]],
-  ['itemevent',['ItemEvent',['../classhazelcast_1_1client_1_1_item_event.html',1,'hazelcast::client']]],
   ['itemevent',['ItemEvent',['../classhazelcast_1_1client_1_1_item_event.html#ac2346adfa15ba2c507ac9ea64590d01b',1,'hazelcast::client::ItemEvent']]],
-  ['itemeventtype',['ItemEventType',['../classhazelcast_1_1client_1_1_item_event_type.html',1,'hazelcast::client']]],
+  ['itemevent',['ItemEvent',['../classhazelcast_1_1client_1_1_item_event.html',1,'hazelcast::client']]],
   ['itemeventtype',['ItemEventType',['../classhazelcast_1_1client_1_1_item_event_type.html#a632dd06c34f479a2577ccb37c8c8a108',1,'hazelcast::client::ItemEventType::ItemEventType()'],['../classhazelcast_1_1client_1_1_item_event_type.html#a433c8049284d3048bdafdd5f284a3d94',1,'hazelcast::client::ItemEventType::ItemEventType(Type value)']]],
+  ['itemeventtype',['ItemEventType',['../classhazelcast_1_1client_1_1_item_event_type.html',1,'hazelcast::client']]],
   ['itopic',['ITopic',['../classhazelcast_1_1client_1_1_i_topic.html',1,'hazelcast::client']]]
 ];

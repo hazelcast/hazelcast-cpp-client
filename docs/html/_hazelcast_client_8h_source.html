@@ -98,194 +98,195 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/TransactionOptions.h&quot;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/TransactionContext.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/TransactionalTaskContext.h&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keyword">namespace </span>client {</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keyword">namespace </span>connection {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            <span class="keyword">class </span>ConnectionManager;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keyword">namespace </span>serialization {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            <span class="keyword">class </span>SerializationService;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        }</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keyword">namespace </span>spi {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <span class="keyword">class </span>ClientContext;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <span class="keyword">class </span>InvocationService;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <span class="keyword">class </span>ClusterService;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            <span class="keyword">class </span>PartitionService;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keyword">class </span>LifecycleService;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <span class="keyword">class </span>ServerListenerService;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        }</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">class </span>ClientConfig;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">class </span>IdGenerator;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">class </span>IAtomicLong;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">class </span>ICountDownLatch;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keyword">class </span>ISemaphore;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keyword">class </span>ILock;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keyword">class </span>TransactionContext;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keyword">class </span>TransactionOptions;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keyword">class </span>Cluster;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
-<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html">   75</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keyword">friend</span> <span class="keyword">class </span>spi::ClientContext;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>(<a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            ~<a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>();</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">   97</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">getDistributedObject</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                T t(instanceName, &amp;getClientContext());</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                <span class="keywordflow">return</span> t;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            };</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> K, <span class="keyword">typename</span> V&gt;</div>
-<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">  111</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_map.html">IMap&lt;K, V&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">getMap</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IMap&lt;K, V &gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            };</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> K, <span class="keyword">typename</span> V&gt;</div>
-<div class="line"><a name="l00122"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">  122</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html">MultiMap&lt;K, V&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">getMultiMap</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; MultiMap&lt;K, V &gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            };</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
-<div class="line"><a name="l00133"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">  133</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_queue.html">IQueue&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">getQueue</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IQueue&lt;E &gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            };</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
-<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">  146</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_set.html">ISet&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">getSet</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; ISet&lt;E &gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            };</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
-<div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">  158</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_list.html">IList&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">getList</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IList&lt;E &gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            };</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
-<div class="line"><a name="l00169"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">  169</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_topic.html">ITopic&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">getTopic</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; ITopic&lt;E&gt; &gt;(instanceName);</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            };</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_id_generator.html">IdGenerator</a> getIdGenerator(<span class="keyword">const</span> std::string &amp;instanceName);</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_atomic_long.html">IAtomicLong</a> getIAtomicLong(<span class="keyword">const</span> std::string &amp;instanceName);</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_count_down_latch.html">ICountDownLatch</a> getICountDownLatch(<span class="keyword">const</span> std::string &amp;instanceName);</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_lock.html">ILock</a> getILock(<span class="keyword">const</span> std::string &amp;instanceName);</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_semaphore.html">ISemaphore</a> getISemaphore(<span class="keyword">const</span> std::string &amp;instanceName);</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;getClientConfig();</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> newTransactionContext();</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> newTransactionContext(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options);</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> TransactionalTask &gt;</div>
-<div class="line"><a name="l00271"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">  271</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">executeTransaction</a>(<span class="keyword">const</span> TransactionalTask &amp;task) {</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> defaultOptions;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;                <span class="keywordflow">return</span> executeTransaction&lt;T, TransactionalTask&gt;(defaultOptions, task);</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            };</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> TransactionalTask &gt;</div>
-<div class="line"><a name="l00288"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">  288</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">executeTransaction</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options, <span class="keyword">const</span> TransactionalTask &amp;task) {</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> context = newTransactionContext(options);</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transactional_task_context.html">TransactionalTaskContext</a> transactionalTaskContext(context);</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;                context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a8b3808114984b69dabc94322476210d7">beginTransaction</a>();</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;                <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                    T value = task.execute(transactionalTaskContext);</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;                    context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a685f376fefeb2e566fb8790f87e1f8ef">commitTransaction</a>();</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;                    <span class="keywordflow">return</span> value;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                } <span class="keywordflow">catch</span> (std::exception &amp;e) {</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;                    context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a69ad3fcf32b5a20af9bb7c0de531d2dd">rollbackTransaction</a>();</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;                    <span class="keywordflow">throw</span> e;</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                }</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;            };</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;getCluster();</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;            <span class="keyword">class </span>HazelcastClientImpl;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;            HazelcastClientImpl *impl;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;            spi::ClientContext &amp;getClientContext();</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;            connection::ConnectionManager &amp;getConnectionManager();</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            serialization::SerializationService &amp;getSerializationService();</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;            spi::InvocationService &amp;getInvocationService();</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;            spi::ClusterService &amp;getClusterService();</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keyword">namespace </span>client {</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        <span class="keyword">namespace </span>connection {</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;            <span class="keyword">class </span>ConnectionManager;</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        }</div>
 <div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;            spi::PartitionService &amp;getPartitionService();</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;            spi::LifecycleService &amp;getLifecycleService();</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;            spi::ServerListenerService &amp;getServerListenerService();</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        <span class="keyword">namespace </span>serialization {</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;            <span class="keyword">class </span>SerializationService;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        }</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        <span class="keyword">namespace </span>spi {</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;            <span class="keyword">class </span>ClientContext;</div>
 <div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> &amp;rhs);</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            <span class="keyword">class </span>InvocationService;</div>
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;</div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;            <span class="keywordtype">void</span> operator = (<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> &amp;rhs);</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;            <span class="keyword">class </span>ClusterService;</div>
 <div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        };</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;            <span class="keyword">class </span>PartitionService;</div>
 <div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    }</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;}</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_CLIENT */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;            <span class="keyword">class </span>LifecycleService;</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;            <span class="keyword">class </span>ServerListenerService;</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        }</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;        <span class="keyword">class </span>ClientConfig;</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keyword">class </span>IdGenerator;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;        <span class="keyword">class </span>IAtomicLong;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;        <span class="keyword">class </span>ICountDownLatch;</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        <span class="keyword">class </span>ISemaphore;</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;        <span class="keyword">class </span>ILock;</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;        <span class="keyword">class </span>TransactionContext;</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        <span class="keyword">class </span>TransactionOptions;</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        <span class="keyword">class </span>Cluster;</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;</div>
+<div class="line"><a name="l00370"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html">  370</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> {</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;            <span class="keyword">friend</span> <span class="keyword">class </span>spi::ClientContext;</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>(<a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;);</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;            ~<a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>();</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00392"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">  392</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">getDistributedObject</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;                T t(instanceName, &amp;getClientContext());</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;                <span class="keywordflow">return</span> t;</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;            };</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> K, <span class="keyword">typename</span> V&gt;</div>
+<div class="line"><a name="l00406"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">  406</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_map.html">IMap&lt;K, V&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">getMap</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IMap&lt;K, V &gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;            };</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> K, <span class="keyword">typename</span> V&gt;</div>
+<div class="line"><a name="l00417"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">  417</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html">MultiMap&lt;K, V&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">getMultiMap</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; MultiMap&lt;K, V &gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;            };</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
+<div class="line"><a name="l00428"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">  428</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_queue.html">IQueue&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">getQueue</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IQueue&lt;E &gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;            };</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
+<div class="line"><a name="l00441"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">  441</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_set.html">ISet&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">getSet</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; ISet&lt;E &gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;            };</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
+<div class="line"><a name="l00453"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">  453</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_list.html">IList&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">getList</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; IList&lt;E &gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;            };</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</div>
+<div class="line"><a name="l00464"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">  464</a></span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_topic.html">ITopic&lt;E&gt;</a> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">getTopic</a>(<span class="keyword">const</span> std::string &amp;instanceName) {</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;                <span class="keywordflow">return</span> getDistributedObject&lt; ITopic&lt;E&gt; &gt;(instanceName);</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            };</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_id_generator.html">IdGenerator</a> getIdGenerator(<span class="keyword">const</span> std::string &amp;instanceName);</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_atomic_long.html">IAtomicLong</a> getIAtomicLong(<span class="keyword">const</span> std::string &amp;instanceName);</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;</div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_count_down_latch.html">ICountDownLatch</a> getICountDownLatch(<span class="keyword">const</span> std::string &amp;instanceName);</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;</div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_lock.html">ILock</a> getILock(<span class="keyword">const</span> std::string &amp;instanceName);</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_semaphore.html">ISemaphore</a> getISemaphore(<span class="keyword">const</span> std::string &amp;instanceName);</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;</div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;getClientConfig();</div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> newTransactionContext();</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;</div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> newTransactionContext(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options);</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> TransactionalTask &gt;</div>
+<div class="line"><a name="l00566"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">  566</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">executeTransaction</a>(<span class="keyword">const</span> TransactionalTask &amp;task) {</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> defaultOptions;</div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;                <span class="keywordflow">return</span> executeTransaction&lt;T, TransactionalTask&gt;(defaultOptions, task);</div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;            };</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;</div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> TransactionalTask &gt;</div>
+<div class="line"><a name="l00583"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">  583</a></span>&#160;            T <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">executeTransaction</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options, <span class="keyword">const</span> TransactionalTask &amp;task) {</div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a> context = newTransactionContext(options);</div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1_transactional_task_context.html">TransactionalTaskContext</a> transactionalTaskContext(context);</div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;                context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a8b3808114984b69dabc94322476210d7">beginTransaction</a>();</div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;                <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;                    T value = task.execute(transactionalTaskContext);</div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;                    context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a685f376fefeb2e566fb8790f87e1f8ef">commitTransaction</a>();</div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;                    <span class="keywordflow">return</span> value;</div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;                } <span class="keywordflow">catch</span> (std::exception &amp;e) {</div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;                    context.<a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html#a69ad3fcf32b5a20af9bb7c0de531d2dd">rollbackTransaction</a>();</div>
+<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;                    <span class="keywordflow">throw</span> e;</div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;                }</div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;            };</div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;</div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;getCluster();</div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;</div>
+<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;            <span class="keyword">class </span>HazelcastClientImpl;</div>
+<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;</div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;            HazelcastClientImpl *impl;</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;            spi::ClientContext &amp;getClientContext();</div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;</div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;            connection::ConnectionManager &amp;getConnectionManager();</div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;            serialization::SerializationService &amp;getSerializationService();</div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;</div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;            spi::InvocationService &amp;getInvocationService();</div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;</div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;            spi::ClusterService &amp;getClusterService();</div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;            spi::PartitionService &amp;getPartitionService();</div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;</div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;            spi::LifecycleService &amp;getLifecycleService();</div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;</div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;            spi::ServerListenerService &amp;getServerListenerService();</div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;</div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> &amp;rhs);</div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;</div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;            <span class="keywordtype">void</span> operator = (<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_hazelcast_client.html">HazelcastClient</a> &amp;rhs);</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;</div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;        };</div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;</div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;    }</div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;}</div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_CLIENT */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_options_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_options.html">hazelcast::client::TransactionOptions</a></div><div class="ttdoc">Contains the configuration for a Hazelcast transaction. </div><div class="ttdef"><b>Definition:</b> TransactionOptions.h:50</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html">hazelcast::client::IQueue</a></div><div class="ttdoc">Concurrent, blocking, distributed, observable, client queue. </div><div class="ttdef"><b>Definition:</b> IQueue.h:37</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_id_generator_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_id_generator.html">hazelcast::client::IdGenerator</a></div><div class="ttdoc">Cluster-wide unique id generator. </div><div class="ttdef"><b>Definition:</b> IdGenerator.h:22</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_accaaa4243822faa81dab7636ef6fb3da"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">hazelcast::client::HazelcastClient::executeTransaction</a></div><div class="ttdeci">T executeTransaction(const TransactionalTask &amp;task)</div><div class="ttdoc">Executes given transactional task in current thread using default options and returns the result of t...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:271</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_accaaa4243822faa81dab7636ef6fb3da"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">hazelcast::client::HazelcastClient::executeTransaction</a></div><div class="ttdeci">T executeTransaction(const TransactionalTask &amp;task)</div><div class="ttdoc">Executes given transactional task in current thread using default options and returns the result of t...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:566</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_atomic_long_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_atomic_long.html">hazelcast::client::IAtomicLong</a></div><div class="ttdoc">IAtomicLong is a distributed atomic long implementation. </div><div class="ttdef"><b>Definition:</b> IAtomicLong.h:23</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a5529675ea2c27dfcb44e4602f7e85bff"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">hazelcast::client::HazelcastClient::getList</a></div><div class="ttdeci">IList&lt; E &gt; getList(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed list instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:158</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a5529675ea2c27dfcb44e4602f7e85bff"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a5529675ea2c27dfcb44e4602f7e85bff">hazelcast::client::HazelcastClient::getList</a></div><div class="ttdeci">IList&lt; E &gt; getList(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed list instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:453</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_count_down_latch_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_count_down_latch.html">hazelcast::client::ICountDownLatch</a></div><div class="ttdoc">ICountDownLatch is a backed-up distributed alternative to the java.util.concurrent.CountDownLatch java.util.concurrent.CountDownLatch. </div><div class="ttdef"><b>Definition:</b> ICountDownLatch.h:43</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transactional_task_context_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transactional_task_context.html">hazelcast::client::TransactionalTaskContext</a></div><div class="ttdoc">Provides a context to access transactional data-structures like the TransactionalMap. </div><div class="ttdef"><b>Definition:</b> TransactionalTaskContext.h:20</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_context_html_a69ad3fcf32b5a20af9bb7c0de531d2dd"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_context.html#a69ad3fcf32b5a20af9bb7c0de531d2dd">hazelcast::client::TransactionContext::rollbackTransaction</a></div><div class="ttdeci">void rollbackTransaction()</div><div class="ttdoc">Begins a transaction. </div><div class="ttdef"><b>Definition:</b> TransactionContext.cpp:32</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a65db0d02884126e16a8d3acbc17f04be"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">hazelcast::client::HazelcastClient::executeTransaction</a></div><div class="ttdeci">T executeTransaction(const TransactionOptions &amp;options, const TransactionalTask &amp;task)</div><div class="ttdoc">Executes given transactional task in current thread using given options and returns the result of the...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:288</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a65db0d02884126e16a8d3acbc17f04be"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">hazelcast::client::HazelcastClient::executeTransaction</a></div><div class="ttdeci">T executeTransaction(const TransactionOptions &amp;options, const TransactionalTask &amp;task)</div><div class="ttdoc">Executes given transactional task in current thread using given options and returns the result of the...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:583</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_multi_map_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_multi_map.html">hazelcast::client::MultiMap</a></div><div class="ttdoc">A specialized distributed map client whose keys can be associated with multiple values. </div><div class="ttdef"><b>Definition:</b> MultiMap.h:41</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_lock_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_lock.html">hazelcast::client::ILock</a></div><div class="ttdoc">Re-entrant Lock, Distributed client implementation of Lock. </div><div class="ttdef"><b>Definition:</b> ILock.h:23</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_list_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_list.html">hazelcast::client::IList</a></div><div class="ttdoc">Concurrent, distributed , client implementation of std::list. </div><div class="ttdef"><b>Definition:</b> IList.h:39</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html">hazelcast::client::ISet</a></div><div class="ttdoc">Concurrent, distributed client implementation of std::unordered_set. </div><div class="ttdef"><b>Definition:</b> ISet.h:32</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_ad14799fef26514071be514006df64c10"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">hazelcast::client::HazelcastClient::getTopic</a></div><div class="ttdeci">ITopic&lt; E &gt; getTopic(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed topic instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:169</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_aca7341d6da894022cec8dc98b1202542"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">hazelcast::client::HazelcastClient::getMap</a></div><div class="ttdeci">IMap&lt; K, V &gt; getMap(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed map instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:111</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_ad14799fef26514071be514006df64c10"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#ad14799fef26514071be514006df64c10">hazelcast::client::HazelcastClient::getTopic</a></div><div class="ttdeci">ITopic&lt; E &gt; getTopic(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed topic instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:464</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_aca7341d6da894022cec8dc98b1202542"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#aca7341d6da894022cec8dc98b1202542">hazelcast::client::HazelcastClient::getMap</a></div><div class="ttdeci">IMap&lt; K, V &gt; getMap(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed map instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:406</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_context_html_a685f376fefeb2e566fb8790f87e1f8ef"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_context.html#a685f376fefeb2e566fb8790f87e1f8ef">hazelcast::client::TransactionContext::commitTransaction</a></div><div class="ttdeci">void commitTransaction()</div><div class="ttdoc">Commits a transaction. </div><div class="ttdef"><b>Definition:</b> TransactionContext.cpp:28</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_topic_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_topic.html">hazelcast::client::ITopic</a></div><div class="ttdoc">Hazelcast provides distribution mechanism for publishing messages that are delivered to multiple subs...</div><div class="ttdef"><b>Definition:</b> ITopic.h:37</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_context_html_a8b3808114984b69dabc94322476210d7"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_context.html#a8b3808114984b69dabc94322476210d7">hazelcast::client::TransactionContext::beginTransaction</a></div><div class="ttdeci">void beginTransaction()</div><div class="ttdoc">Begins a transaction. </div><div class="ttdef"><b>Definition:</b> TransactionContext.cpp:24</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_cluster_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_cluster.html">hazelcast::client::Cluster</a></div><div class="ttdoc">Hazelcast cluster interface. </div><div class="ttdef"><b>Definition:</b> Cluster.h:25</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a2b203cf73b89281ba16ea081cec040a3"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">hazelcast::client::HazelcastClient::getQueue</a></div><div class="ttdeci">IQueue&lt; E &gt; getQueue(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed queue instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:133</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a2b203cf73b89281ba16ea081cec040a3"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a2b203cf73b89281ba16ea081cec040a3">hazelcast::client::HazelcastClient::getQueue</a></div><div class="ttdeci">IQueue&lt; E &gt; getQueue(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed queue instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:428</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_map_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_map.html">hazelcast::client::IMap</a></div><div class="ttdoc">Concurrent, distributed, observable and queryable map client. </div><div class="ttdef"><b>Definition:</b> IMap.h:78</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_semaphore_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_semaphore.html">hazelcast::client::ISemaphore</a></div><div class="ttdoc">ISemaphore is a backed-up distributed alternative to the java.util.concurrent.Semaphore. </div><div class="ttdef"><b>Definition:</b> ISemaphore.h:43</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a1aa3f023fe19886d8fe2e41937d2a97c"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">hazelcast::client::HazelcastClient::getSet</a></div><div class="ttdeci">ISet&lt; E &gt; getSet(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed set instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:146</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a624cc41ca297f7f45f8dd2802b095d78"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">hazelcast::client::HazelcastClient::getDistributedObject</a></div><div class="ttdeci">T getDistributedObject(const std::string &amp;instanceName)</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:97</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a1aa3f023fe19886d8fe2e41937d2a97c"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a1aa3f023fe19886d8fe2e41937d2a97c">hazelcast::client::HazelcastClient::getSet</a></div><div class="ttdeci">ISet&lt; E &gt; getSet(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed set instance with the specified name and entry type E. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:441</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a624cc41ca297f7f45f8dd2802b095d78"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a624cc41ca297f7f45f8dd2802b095d78">hazelcast::client::HazelcastClient::getDistributedObject</a></div><div class="ttdeci">T getDistributedObject(const std::string &amp;instanceName)</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:392</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_client_config_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_client_config.html">hazelcast::client::ClientConfig</a></div><div class="ttdoc">HazelcastClient configuration class. </div><div class="ttdef"><b>Definition:</b> ClientConfig.h:26</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:75</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a9b4bd2b2ddba4b713cbce1329027383a"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">hazelcast::client::HazelcastClient::getMultiMap</a></div><div class="ttdeci">MultiMap&lt; K, V &gt; getMultiMap(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed multimap instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:122</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:370</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html_a9b4bd2b2ddba4b713cbce1329027383a"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html#a9b4bd2b2ddba4b713cbce1329027383a">hazelcast::client::HazelcastClient::getMultiMap</a></div><div class="ttdeci">MultiMap&lt; K, V &gt; getMultiMap(const std::string &amp;instanceName)</div><div class="ttdoc">Returns the distributed multimap instance with the specified name. </div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:417</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_context_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_context.html">hazelcast::client::TransactionContext</a></div><div class="ttdoc">Provides a context to do transactional operations; so beginning/committing transactions, but also retrieving transactional data-structures like the TransactionalMap. </div><div class="ttdef"><b>Definition:</b> TransactionContext.h:37</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Feb 6 2014 13:28:02 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 10 2014 17:27:30 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

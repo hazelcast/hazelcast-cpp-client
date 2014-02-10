@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace exception {
             /**
-             * Some of the Hazelcast operations may throw an <tt>RuntimeInterruptedException</tt>
+             * Some of the Hazelcast operations may throw an InterruptedException
              * if a user thread is interrupted while waiting a response.
              *
              */
