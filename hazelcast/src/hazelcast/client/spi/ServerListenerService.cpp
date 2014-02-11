@@ -10,6 +10,7 @@
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/impl/BaseRemoveListenerRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,10 +41,14 @@ namespace hazelcast {
                 return *registrationId;
             }
 
-            bool ServerListenerService::stopListening(const impl::PortableRequest *request, const std::string &registrationId) {
+            bool ServerListenerService::stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId) {
+                std::string resolvedRegistrationId = registrationId;
+                bool notRegistered = deRegisterListener(resolvedRegistrationId);
+                if(notRegistered)
+                    return false;
+                request->setRegistrationId(resolvedRegistrationId);
                 boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                 bool result = clientContext.getSerializationService().toObject<bool>(future.get());
-                deRegisterListener(registrationId);
                 return result;
             }
 
@@ -60,10 +65,11 @@ namespace hazelcast {
                 }
             }
 
-            bool ServerListenerService::deRegisterListener(const std::string &registrationId) {
-                boost::shared_ptr<const std::string> alias = registrationAliasMap.remove(registrationId);
-                if (alias != NULL) {
-                    boost::shared_ptr<int> callId = registrationIdMap.remove(*alias);
+            bool ServerListenerService::deRegisterListener(std::string &registrationId) {
+                boost::shared_ptr<const std::string> uuid = registrationAliasMap.remove(registrationId);
+                if (uuid != NULL) {
+                    registrationId = *uuid;
+                    boost::shared_ptr<int> callId = registrationIdMap.remove(*uuid);
                     clientContext.getConnectionManager().removeEventHandler(*callId);
                     return true;
                 }

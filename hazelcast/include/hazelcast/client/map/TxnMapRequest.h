@@ -86,6 +86,7 @@ namespace hazelcast {
                 serialization::Data value;
                 serialization::Data newValue;
                 std::string predicate;
+                long ttl;
             };
 
         }

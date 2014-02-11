@@ -95,8 +95,9 @@ namespace hazelcast {
                 }
                 boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
                 if (response->isException()) {
-                    exception::ServerException const &ex = response->getException();
-                    if (ex.isInstanceNotActiveException()) {
+                    serialization::Data const &data = response->getData();
+                    boost::shared_ptr<exception::ServerException> ex = serializationService.toObject<exception::ServerException>(data);
+                    if (ex->isInstanceNotActiveException()) {
                         targetNotActive(promise);
                         return;
                     }

@@ -65,7 +65,8 @@ namespace hazelcast {
             : hasKey(false)
             , hasValue(false)
             , hasNewValue(false)
-            , hasPredicate(false) {
+            , hasPredicate(false)
+            , ttl(-1) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType)
@@ -74,7 +75,8 @@ namespace hazelcast {
             , hasKey(false)
             , hasValue(false)
             , hasNewValue(false)
-            , hasPredicate(false) {
+            , hasPredicate(false)
+            , ttl(-1) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key)
@@ -84,7 +86,8 @@ namespace hazelcast {
             , hasKey(true)
             , hasValue(false)
             , hasNewValue(false)
-            , hasPredicate(false) {
+            , hasPredicate(false)
+            , ttl(-1) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value)
@@ -95,7 +98,8 @@ namespace hazelcast {
             , hasKey(true)
             , hasValue(true)
             , hasNewValue(false)
-            , hasPredicate(false) {
+            , hasPredicate(false)
+            , ttl(-1) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value, serialization::Data &newValue)
@@ -107,7 +111,8 @@ namespace hazelcast {
             , hasKey(true)
             , hasValue(true)
             , hasNewValue(true)
-            , hasPredicate(false) {
+            , hasPredicate(false)
+            , ttl(-1) {
             };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate)
@@ -117,7 +122,8 @@ namespace hazelcast {
             , hasValue(false)
             , hasNewValue(false)
             , hasPredicate(true)
-            , predicate(predicate) {
+            , predicate(predicate)
+            , ttl(-1) {
             };
 
             int TxnMapRequest::getFactoryId() const {
@@ -150,6 +156,7 @@ namespace hazelcast {
                 if (hasPredicate) {
                     out.writeUTF(predicate);
                 }
+                out.writeLong(ttl);
             };
         }
     }

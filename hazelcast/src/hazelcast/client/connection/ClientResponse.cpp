@@ -21,10 +21,6 @@ namespace hazelcast {
                 return data;
             }
 
-            const exception::ServerException &ClientResponse::getException() const {
-                return error;
-            }
-
             int ClientResponse::getCallId() const {
                 return callId;
             }
@@ -40,12 +36,8 @@ namespace hazelcast {
             void ClientResponse::readData(serialization::ObjectDataInput &reader) {
                 callId = reader.readInt();
                 event = reader.readBoolean();
-                exception = !(reader.readBoolean());
-                if (exception) {
-                    error = *(reader.readObject<exception::ServerException>());
-                } else {
-                    data.readData(reader);
-                }
+                exception = reader.readBoolean();
+                data.readData(reader);
             }
         }
     }

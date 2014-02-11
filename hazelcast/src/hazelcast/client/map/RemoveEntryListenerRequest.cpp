@@ -3,7 +3,6 @@
 //
 
 #include "hazelcast/client/map/RemoveEntryListenerRequest.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 
 namespace hazelcast {
@@ -11,7 +10,7 @@ namespace hazelcast {
         namespace map {
 
             RemoveEntryListenerRequest::RemoveEntryListenerRequest(const std::string &name, const std::string &registrationId)
-            :name(name), registrationId(registrationId) {
+            :impl::BaseRemoveListenerRequest(name, registrationId) {
 
             }
 
@@ -21,11 +20,6 @@ namespace hazelcast {
 
             int RemoveEntryListenerRequest::getClassId() const {
                 return PortableHook::REMOVE_ENTRY_LISTENER;
-            }
-
-            void RemoveEntryListenerRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
-                writer.writeUTF("r", registrationId);
             }
         }
     }

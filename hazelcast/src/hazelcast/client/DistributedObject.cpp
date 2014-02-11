@@ -49,7 +49,7 @@ namespace hazelcast {
             return context->getServerListenerService().listen(registrationRequest, handler);
         }
 
-        bool DistributedObject::stopListening(const impl::PortableRequest *request, const std::string &registrationId) {
+        bool DistributedObject::stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId) {
             return context->getServerListenerService().stopListening(request, registrationId);
         }
 

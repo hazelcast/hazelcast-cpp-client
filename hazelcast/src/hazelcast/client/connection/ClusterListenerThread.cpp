@@ -140,11 +140,6 @@ namespace hazelcast {
                     if (!clientContext.getLifecycleService().isRunning())
                         break;
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
-                    if (response->isException()) {
-                        exception::ServerException const &ex = response->getException();
-                        std::cerr << ex.what() << std::endl;
-                        throw ex;
-                    }
                     boost::shared_ptr<impl::ClientMembershipEvent> event = clientContext.getSerializationService().toObject<impl::ClientMembershipEvent>(response->getData());
                     Member member = event->getMember();
                     bool membersUpdated = false;

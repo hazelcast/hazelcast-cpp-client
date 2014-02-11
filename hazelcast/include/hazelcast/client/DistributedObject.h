@@ -16,6 +16,8 @@ namespace hazelcast {
     namespace client {
         namespace impl {
             class BaseEventHandler;
+
+            class BaseRemoveListenerRequest;
         }
 
         /**
@@ -133,7 +135,7 @@ namespace hazelcast {
              * @param request PortableRequest ptr.
              * @param registrationId.
              */
-            bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
+            bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 
             /**
              * Internal API.

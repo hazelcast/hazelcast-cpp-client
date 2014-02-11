@@ -22,8 +22,6 @@ namespace hazelcast {
             public:
                 const serialization::Data &getData() const;
 
-                const exception::ServerException &getException() const;
-
                 bool isEvent() const;
 
                 bool isException() const;
@@ -39,7 +37,6 @@ namespace hazelcast {
             private:
                 int callId;
                 serialization::Data data;
-                exception::ServerException error;
                 bool event;
                 bool exception;
             };

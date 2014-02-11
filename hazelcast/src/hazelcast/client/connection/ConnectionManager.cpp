@@ -137,8 +137,11 @@ namespace hazelcast {
                 serialization::Data result = connection.readBlocking();
 
                 boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
-                if (clientResponse->isException())
-                    throw exception::IOException("ConnectionManager::authenticate", clientResponse->getException().what());
+                if (clientResponse->isException()) {
+                    serialization::Data const &data = clientResponse->getData();
+                    boost::shared_ptr<exception::ServerException> ex = serializationService.toObject<exception::ServerException>(data);
+                    throw exception::IOException("ConnectionManager::authenticate", ex->what());
+                }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));

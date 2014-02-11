@@ -15,6 +15,8 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
+            class BaseRemoveListenerRequest;
+
             class BaseEventHandler;
         }
 
@@ -32,7 +34,7 @@ namespace hazelcast {
 
                 std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
 
-                bool stopListening(const impl::PortableRequest *request, const std::string &registrationId);
+                bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 
                 void reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId);
 
@@ -43,7 +45,7 @@ namespace hazelcast {
 
                 void registerListener(boost::shared_ptr<std::string> registrationId, int callId);
 
-                bool deRegisterListener(const std::string &registrationId);
+                bool deRegisterListener(std::string &registrationId);
             };
         }
     }
