@@ -62,6 +62,8 @@ namespace hazelcast {
  *
  * \section guides Platform Specific Installation Guides
  *
+ * C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.
+ *
  * \subsection Linux
  *
  * For linux, there are two distributions one is 32bit the other is 64bit.
@@ -146,11 +148,11 @@ namespace hazelcast {
  *
  * \subsection entry_listener Entry Listener Example
  *
- *      #include "hazelcast/client/ClientConfig.h"   //
- *      #include "hazelcast/client/EntryEvent.h"     ///
- *      #include "hazelcast/client/IMap.h"           //// OR <hazelcast/client/HazelcastAll.h> to rule them all!
- *      #include "hazelcast/client/Address.h"        ///
- *      #include "hazelcast/client/HazelcastClient.h"//
+ *      #include "hazelcast/client/ClientConfig.h"
+ *      #include "hazelcast/client/EntryEvent.h"
+ *      #include "hazelcast/client/IMap.h"
+ *      #include "hazelcast/client/Address.h"
+ *      #include "hazelcast/client/HazelcastClient.h"
  *      #include <iostream>
  *      #include <string>
  *
@@ -314,7 +316,7 @@ namespace hazelcast {
                 float y;
          };
  *
- *  Now you can use class Foo and Bar in distributed structures. For example as Key or Value of IMap,
+ *  Now, you can use class Foo and Bar in distributed structures. For example as Key or Value of IMap,
  *  or as an Item in IQueue
  *
  *
