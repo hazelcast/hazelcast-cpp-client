@@ -103,7 +103,7 @@ namespace hazelcast {
                 }
 				binary.resize(compSize);
 				std::copy(compressedTemp, compressedTemp + compSize , binary.begin());
-				delete compressedTemp;
+				delete [] compressedTemp;
 
             };
 

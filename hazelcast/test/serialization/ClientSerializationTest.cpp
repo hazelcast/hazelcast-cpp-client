@@ -226,7 +226,7 @@ namespace hazelcast {
 
                 byte *tempPtr = (byte *) bytes;
                 std::vector<byte> buffer(tempPtr, tempPtr + size);
-                delete bytes;
+                delete [] bytes;
                 serialization::DataInput dataInput(buffer);
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
 

@@ -146,7 +146,7 @@ namespace hazelcast {
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
-                (std::cout << " --- authenticated by " << *address << " --- " << std::endl);
+                (std::cout << " --- authenticated by " << address->getHost() << ":"  << address->getPort() << " --- " << std::endl);
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };

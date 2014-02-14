@@ -18,6 +18,7 @@ namespace hazelcast {
         namespace spi {
             PartitionService::PartitionService(spi::ClientContext &clientContext)
             :partitionCount(0)
+            , updating(false)
             , clientContext(clientContext) {
 
             };

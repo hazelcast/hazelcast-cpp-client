@@ -38,7 +38,7 @@ namespace hazelcast {
 
             class HAZELCAST_API TxnState {
             public:
-                enum states {
+                enum State {
                     NO_TXN,
                     ACTIVE,
                     PREPARING,
@@ -50,13 +50,13 @@ namespace hazelcast {
                     ROLLED_BACK
                 } value;
 
-                TxnState(states value);
+                TxnState(State value);
 
                 virtual operator int() const;
 
                 virtual void operator = (int i);
 
-                std::vector<states> values;
+                std::vector<State> values;
             };
 
             class HAZELCAST_API TransactionProxy {

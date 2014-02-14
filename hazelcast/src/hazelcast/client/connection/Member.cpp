@@ -14,11 +14,6 @@ namespace hazelcast {
 
         };
 
-        Member::Member(Address const &rhs)
-        : address(rhs) {
-
-        };
-
         bool Member::operator ==(const Member &rhs) const {
             return address == rhs.address;
         };

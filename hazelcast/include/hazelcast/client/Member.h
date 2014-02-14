@@ -31,11 +31,6 @@ namespace hazelcast {
             Member();
 
             /**
-             * Constructor
-             */
-            Member(const Address &);
-
-            /**
              * comparison operation
              */
             bool operator ==(const Member &) const;

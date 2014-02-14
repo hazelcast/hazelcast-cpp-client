@@ -136,7 +136,8 @@ namespace hazelcast {
                 }
             }
 
-            TxnState::TxnState(TxnState::states value) {
+            TxnState::TxnState(State value)
+            : value(value) {
                 values.resize(9);
                 values[0] = NO_TXN;
                 values[1] = ACTIVE;

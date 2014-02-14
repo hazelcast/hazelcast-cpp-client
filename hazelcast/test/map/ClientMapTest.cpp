@@ -184,28 +184,6 @@ namespace hazelcast {
                 latch->countDown();
             }
 
-            void ClientMapTest::testMultiPut() {
-                int THREAD_COUNT = 4;
-                util::CountDownLatch latch(THREAD_COUNT);
-                IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
-                for (int i = 0; i < THREAD_COUNT; i++) {
-                    boost::thread t(putThread, i, &iMap, &latch);
-                    t.detach();
-                }
-
-                assertTrue(latch.await(1000 * 40), "put not finished");
-
-                for (int i = 0; i < 10000 * THREAD_COUNT; i++) {
-                    boost::shared_ptr<int> actual = iMap.get(i);
-                    assertNotNull(actual.get());
-                    assertEqual(i, *(actual.get()));
-                }
-
-                iMap.clear();
-                iMap.destroy();
-
-            }
-
             void ClientMapTest::testGet() {
                 fillMap();
                 for (int i = 0; i < 10; i++) {

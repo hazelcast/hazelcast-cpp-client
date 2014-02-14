@@ -59,8 +59,6 @@ namespace hazelcast {
 
                 void testIssue537();
 
-                void testMultiPut();
-
                 void testPredicateListenerWithPortableKey();
 
                 void testListener();
