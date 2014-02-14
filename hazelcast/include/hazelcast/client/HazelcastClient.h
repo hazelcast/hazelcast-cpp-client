@@ -90,10 +90,10 @@ namespace hazelcast {
  *
  * \subsection Windows
  *
- *
  * For Windows, there are two distributions one is 32bit the other is 64bit.
- *
- *
+ * 
+ * 
+ * 
  * \section code_samples Code Samples
  *
  * Note that these codes to work, there should be a Hazelcast node is running.
