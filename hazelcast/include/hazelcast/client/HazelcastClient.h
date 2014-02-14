@@ -597,12 +597,11 @@ namespace hazelcast {
             };
 
             /**
-             * Returns the Cluster that this Hazelcast instance is part of.
+             * Returns the Cluster that connected Hazelcast instance is a part of.
              * Cluster interface allows you to add listener for membership
-             * events and learn more about the cluster that this Hazelcast
-             * instance is part of.
+             * events and learn more about the cluster.
              *
-             * @return cluster that this Hazelcast instance is part of
+             * @return cluster
              */
             Cluster &getCluster();
         private:
