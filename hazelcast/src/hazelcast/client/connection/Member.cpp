@@ -10,7 +10,7 @@
 
 namespace hazelcast {
     namespace client {
-        Member::Member():address("", 0) {
+        Member::Member():address("", 0),uuid("") {
 
         };
 

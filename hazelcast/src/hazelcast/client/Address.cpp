@@ -7,7 +7,7 @@ namespace hazelcast {
     namespace client {
 
         Address::Address()
-        : hash(0) {
+        : hash(0),host("") {
         };
 
         Address::Address(const std::string &url, int port)
