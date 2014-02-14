@@ -6,12 +6,11 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address()
-        : hash(0),host("") {
+        Address::Address(){
         };
 
         Address::Address(const std::string &url, int port)
-        : host(url), port(port), type(IPv4), hash(0) {
+        : host(url), port(port), type(IPv4){
 
         };
 

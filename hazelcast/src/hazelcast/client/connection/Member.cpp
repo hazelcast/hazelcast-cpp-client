@@ -10,9 +10,6 @@
 
 namespace hazelcast {
     namespace client {
-        Member::Member():address("", 0),uuid("") {
-
-        };
 
         bool Member::operator ==(const Member &rhs) const {
             return address == rhs.address;

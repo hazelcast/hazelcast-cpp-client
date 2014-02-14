@@ -26,11 +26,6 @@ namespace hazelcast {
             friend class connection::ClusterListenerThread;
 
             /**
-             * Constructor
-             */
-            Member();
-
-            /**
              * comparison operation
              */
             bool operator ==(const Member &) const;

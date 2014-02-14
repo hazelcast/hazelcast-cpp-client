@@ -75,7 +75,6 @@ namespace hazelcast {
             std::string host;
             int port;
             byte type;
-            mutable int hash;
         };
 
         /**
