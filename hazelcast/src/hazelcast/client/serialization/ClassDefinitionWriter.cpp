@@ -84,7 +84,7 @@ namespace hazelcast {
                 if (!raw) {
                     FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
                     if (!context.isClassDefinitionExists(factoryId, classId)) {
-                        throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable withouy explicitly registering class definition!");
+                        throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable without explicitly registering class definition!");
                     } else {
                         cd->add(fd);
                         cd->add(context.lookup(factoryId, classId));

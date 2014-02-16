@@ -554,49 +554,6 @@ namespace hazelcast {
             TransactionContext newTransactionContext(const TransactionOptions &options);
 
             /**
-             * Executes given transactional task in current thread using default options
-             * and returns the result of the task.
-             *
-             * @param task task to be executed
-             * @param T return type of task
-             * @param TransactionalTask transactional task should implement "T execute(TransactionalTaskContext &context)"
-             * @return returns result of transactional task
-             *
-             * @throws TransactionException if an error occurs during transaction.
-             */
-            template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionalTask &task) {
-                TransactionOptions defaultOptions;
-                return executeTransaction<T, TransactionalTask>(defaultOptions, task);
-            };
-
-            /**
-             * Executes given transactional task in current thread using given options
-             * and returns the result of the task.
-             *
-             * @param options options for this transactional task
-             * @param task task to be executed
-             * @param <T> return type of task
-             * @return returns result of transactional task
-             *
-             * @throws TransactionException if an error occurs during transaction.
-             */
-            template<typename T, typename TransactionalTask >
-            T executeTransaction(const TransactionOptions &options, const TransactionalTask &task) {
-                TransactionContext context = newTransactionContext(options);
-                TransactionalTaskContext transactionalTaskContext(context);
-                context.beginTransaction();
-                try {
-                    T value = task.execute(transactionalTaskContext);
-                    context.commitTransaction();
-                    return value;
-                } catch (std::exception &e) {
-                    context.rollbackTransaction();
-                    throw e;
-                }
-            };
-
-            /**
              * Returns the Cluster that connected Hazelcast instance is a part of.
              * Cluster interface allows you to add listener for membership
              * events and learn more about the cluster.

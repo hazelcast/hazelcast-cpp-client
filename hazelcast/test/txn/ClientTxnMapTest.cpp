@@ -31,8 +31,6 @@ namespace hazelcast {
                 addTest(&ClientTxnMapTest::testPutGet, "testPutGet");
                 addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
                 addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
-                addTest(&ClientTxnMapTest::testExecuteTxn, "testExecuteTxn");
-                addTest(&ClientTxnMapTest::testExecuteTxnWithException, "testExecuteTxnWithException");
 
             };
 
@@ -158,52 +156,6 @@ namespace hazelcast {
 
             }
 
-            class SimpleTxnTask {
-            public:
-                bool execute(TransactionalTaskContext &context) const {
-                    TransactionalMap<string, string> map = context.getMap<string, string>("testExecuteTxn");
-                    map.put("key1", "val1");
-                    return true;
-                }
-            };
-
-            void ClientTxnMapTest::testExecuteTxn() {
-
-                SimpleTxnTask task;
-
-                bool res = client->executeTransaction<bool>(task);
-
-                IMap<string, string> map = client->getMap<string, string>("testExecuteTxn");
-
-                assertTrue(res);
-
-                assertEqual("val1", *(map.get("key1")));
-                assertEqual(1, map.size());
-            }
-
-
-            class SimpleTnxTaskFail {
-            public:
-                bool execute(TransactionalTaskContext &context) const {
-                    TransactionalMap<string, string> map = context.getMap<string, string>("testExecuteTxnWithException");
-                    map.put("key1", "Val1");
-                    map.put("key2", "Val2");
-                    map.put("key3", "Val3");
-                    throw  std::exception();
-                }
-            };
-
-            void ClientTxnMapTest::testExecuteTxnWithException() {
-                SimpleTnxTaskFail task;
-                try {
-                    client->executeTransaction<bool>(task);
-                } catch(std::exception &e) {}
-
-                IMap<string, string> map = client->getMap<string, string>("testExecuteTxnWithException");
-
-                assertNull(map.get("key1").get());
-                assertEqual(0, map.size());
-            }
         }
     }
 }

@@ -44,10 +44,6 @@ namespace hazelcast {
 
                 void testKeySetValues();
 
-                void testExecuteTxn();
-
-                void testExecuteTxnWithException();
-
             private:
                 HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;
