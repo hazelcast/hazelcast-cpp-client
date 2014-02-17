@@ -7,18 +7,16 @@
 #ifndef HAZELCAST_PortableMessage
 #define HAZELCAST_PortableMessage
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include "hazelcast/client/serialization/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class HAZELCAST_API PortableMessage : public Portable {
+            class HAZELCAST_API PortableMessage : public impl::PortableResponse {
             public:
                 PortableMessage();
-
-                PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid);
 
                 const serialization::Data& getMessage() const;
 
@@ -29,8 +27,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
 

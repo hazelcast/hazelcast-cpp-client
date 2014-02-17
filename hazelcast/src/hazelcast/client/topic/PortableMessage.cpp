@@ -16,13 +16,6 @@ namespace hazelcast {
 
             };
 
-            PortableMessage::PortableMessage(const serialization::Data& message, long publishTime, const std::string& uuid)
-            : uuid(uuid)
-            , message(message)
-            , publishTime(publishTime) {
-
-            };
-
             const serialization::Data& PortableMessage::getMessage() const {
                 return message;
             };
@@ -41,13 +34,6 @@ namespace hazelcast {
 
             int PortableMessage::getClassId() const {
                 return TopicPortableHook::PORTABLE_MESSAGE;
-            };
-
-            void PortableMessage::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeLong("pt", publishTime);
-                writer.writeUTF("u", uuid);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                message.writeData(out);
             };
 
             void PortableMessage::readPortable(serialization::PortableReader& reader) {
