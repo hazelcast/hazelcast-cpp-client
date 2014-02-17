@@ -6,6 +6,5 @@ var searchData=
   ['entryview',['EntryView',['../classhazelcast_1_1client_1_1_entry_view.html#ad9a31f58d396d6eb7536f0414a1c6226',1,'hazelcast::client::EntryView']]],
   ['evict',['evict',['../classhazelcast_1_1client_1_1_i_map.html#a998d5cb825215da4452dcfba68a44693',1,'hazelcast::client::IMap']]],
   ['executeonentries',['executeOnEntries',['../classhazelcast_1_1client_1_1_i_map.html#ad1825dd18743a360e3dbf5b491b65808',1,'hazelcast::client::IMap']]],
-  ['executeonkey',['executeOnKey',['../classhazelcast_1_1client_1_1_i_map.html#a4f9de0e8c5b65dbc96410125a5167f15',1,'hazelcast::client::IMap']]],
-  ['executetransaction',['executeTransaction',['../classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da',1,'hazelcast::client::HazelcastClient::executeTransaction(const TransactionalTask &amp;task)'],['../classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be',1,'hazelcast::client::HazelcastClient::executeTransaction(const TransactionOptions &amp;options, const TransactionalTask &amp;task)']]]
+  ['executeonkey',['executeOnKey',['../classhazelcast_1_1client_1_1_i_map.html#a4f9de0e8c5b65dbc96410125a5167f15',1,'hazelcast::client::IMap']]]
 ];

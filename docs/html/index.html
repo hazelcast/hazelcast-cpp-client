@@ -124,6 +124,7 @@ How to Setup</h1>
 </ul>
 <h1><a class="anchor" id="guides"></a>
 Platform Specific Installation Guides</h1>
+<p>C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.</p>
 <h2><a class="anchor" id="Linux"></a>
 Linux</h2>
 <p>For linux, there are two distributions one is 32bit the other is 64bit.</p>
@@ -200,11 +201,11 @@ Queue Example</h2>
      }
 </pre><h2><a class="anchor" id="entry_listener"></a>
 Entry Listener Example</h2>
-<pre class="fragment"> #include "hazelcast/client/ClientConfig.h"   //
- #include "hazelcast/client/EntryEvent.h"     ///
- #include "hazelcast/client/IMap.h"           //// OR &lt;hazelcast/client/HazelcastAll.h&gt; to rule them all!
- #include "hazelcast/client/Address.h"        ///
- #include "hazelcast/client/HazelcastClient.h"//
+<pre class="fragment"> #include "hazelcast/client/ClientConfig.h"
+ #include "hazelcast/client/EntryEvent.h"
+ #include "hazelcast/client/IMap.h"
+ #include "hazelcast/client/Address.h"
+ #include "hazelcast/client/HazelcastClient.h"
  #include &lt;iostream&gt;
  #include &lt;string&gt;
 
@@ -359,11 +360,11 @@ Serialization Example</h2>
          float x;
          float y;
   };
-</pre><p>Now you can use class Foo and Bar in distributed structures. For example as Key or Value of <a class="el" href="classhazelcast_1_1client_1_1_i_map.html" title="Concurrent, distributed, observable and queryable map client. ">IMap</a>, or as an Item in <a class="el" href="classhazelcast_1_1client_1_1_i_queue.html" title="Concurrent, blocking, distributed, observable, client queue. ">IQueue</a></p>
+</pre><p>Now, you can use class Foo and Bar in distributed structures. For example as Key or Value of <a class="el" href="classhazelcast_1_1client_1_1_i_map.html" title="Concurrent, distributed, observable and queryable map client. ">IMap</a>, or as an Item in <a class="el" href="classhazelcast_1_1client_1_1_i_queue.html" title="Concurrent, blocking, distributed, observable, client queue. ">IQueue</a></p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 10 2014 17:27:31 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2014 17:29:21 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

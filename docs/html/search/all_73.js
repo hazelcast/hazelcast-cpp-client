@@ -26,6 +26,6 @@ var searchData=
   ['socketinterceptor',['SocketInterceptor',['../classhazelcast_1_1client_1_1_socket_interceptor.html',1,'hazelcast::client']]],
   ['socketptrcomp',['socketPtrComp',['../structhazelcast_1_1client_1_1socket_ptr_comp.html',1,'hazelcast::client']]],
   ['statechanged',['stateChanged',['../classhazelcast_1_1client_1_1_lifecycle_listener.html#a4cdc482b2439c04ec3450747792f4e1e',1,'hazelcast::client::LifecycleListener']]],
-  ['stoplistening',['stopListening',['../classhazelcast_1_1client_1_1_distributed_object.html#aee504ac49d3048e42986201c72c1c7a7',1,'hazelcast::client::DistributedObject']]],
+  ['stoplistening',['stopListening',['../classhazelcast_1_1client_1_1_distributed_object.html#a7842fa1472d63193822acfb9ab4a1b34',1,'hazelcast::client::DistributedObject']]],
   ['sublist',['subList',['../classhazelcast_1_1client_1_1_i_list.html#a3f6dc20699ed78f6ef5a958a86df6228',1,'hazelcast::client::IList']]]
 ];

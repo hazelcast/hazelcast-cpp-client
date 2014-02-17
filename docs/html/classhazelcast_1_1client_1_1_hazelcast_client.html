@@ -165,16 +165,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a99736367633c09d9db95b3b28d19e30e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a99736367633c09d9db95b3b28d19e30e">newTransactionContext</a> (const <a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options)</td></tr>
 <tr class="memdesc:a99736367633c09d9db95b3b28d19e30e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classhazelcast_1_1client_1_1_transaction_context.html" title="Provides a context to do transactional operations; so beginning/committing transactions, but also retrieving transactional data-structures like the TransactionalMap. ">TransactionContext</a> associated with the current thread with given options.  <a href="#a99736367633c09d9db95b3b28d19e30e">More...</a><br/></td></tr>
 <tr class="separator:a99736367633c09d9db95b3b28d19e30e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accaaa4243822faa81dab7636ef6fb3da"><td class="memTemplParams" colspan="2">template&lt;typename T , typename TransactionalTask &gt; </td></tr>
-<tr class="memitem:accaaa4243822faa81dab7636ef6fb3da"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#accaaa4243822faa81dab7636ef6fb3da">executeTransaction</a> (const TransactionalTask &amp;task)</td></tr>
-<tr class="memdesc:accaaa4243822faa81dab7636ef6fb3da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes given transactional task in current thread using default options and returns the result of the task.  <a href="#accaaa4243822faa81dab7636ef6fb3da">More...</a><br/></td></tr>
-<tr class="separator:accaaa4243822faa81dab7636ef6fb3da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65db0d02884126e16a8d3acbc17f04be"><td class="memTemplParams" colspan="2">template&lt;typename T , typename TransactionalTask &gt; </td></tr>
-<tr class="memitem:a65db0d02884126e16a8d3acbc17f04be"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a65db0d02884126e16a8d3acbc17f04be">executeTransaction</a> (const <a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;options, const TransactionalTask &amp;task)</td></tr>
-<tr class="memdesc:a65db0d02884126e16a8d3acbc17f04be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes given transactional task in current thread using given options and returns the result of the task.  <a href="#a65db0d02884126e16a8d3acbc17f04be">More...</a><br/></td></tr>
-<tr class="separator:a65db0d02884126e16a8d3acbc17f04be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af400b0a86cf20e770d39949608deba74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#af400b0a86cf20e770d39949608deba74">getCluster</a> ()</td></tr>
-<tr class="memdesc:af400b0a86cf20e770d39949608deba74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> that this Hazelcast instance is part of.  <a href="#af400b0a86cf20e770d39949608deba74">More...</a><br/></td></tr>
+<tr class="memdesc:af400b0a86cf20e770d39949608deba74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> that connected Hazelcast instance is a part of.  <a href="#af400b0a86cf20e770d39949608deba74">More...</a><br/></td></tr>
 <tr class="separator:af400b0a86cf20e770d39949608deba74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
@@ -207,102 +199,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>spi::ClientContext</
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="accaaa4243822faa81dab7636ef6fb3da"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T , typename TransactionalTask &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">T hazelcast::client::HazelcastClient::executeTransaction </td>
-          <td>(</td>
-          <td class="paramtype">const TransactionalTask &amp;&#160;</td>
-          <td class="paramname"><em>task</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Executes given transactional task in current thread using default options and returns the result of the task. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">task</td><td>task to be executed </td></tr>
-    <tr><td class="paramname">T</td><td>return type of task </td></tr>
-    <tr><td class="paramname">TransactionalTask</td><td>transactional task should implement "T execute(TransactionalTaskContext &amp;context)" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>returns result of transactional task</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">TransactionException</td><td>if an error occurs during transaction. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="a65db0d02884126e16a8d3acbc17f04be"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T , typename TransactionalTask &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">T hazelcast::client::HazelcastClient::executeTransaction </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;&#160;</td>
-          <td class="paramname"><em>options</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const TransactionalTask &amp;&#160;</td>
-          <td class="paramname"><em>task</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Executes given transactional task in current thread using given options and returns the result of the task. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">options</td><td>options for this transactional task </td></tr>
-    <tr><td class="paramname">task</td><td>task to be executed </td></tr>
-    <tr><td class="paramname">&lt;T&gt;</td><td>return type of task </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>returns result of transactional task</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">TransactionException</td><td>if an error occurs during transaction. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="adf8c8be9c97cdd5651184e2f626bb1e2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -332,9 +228,9 @@ template&lt;typename T , typename TransactionalTask &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Returns the <a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> that this Hazelcast instance is part of. </p>
-<p><a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> interface allows you to add listener for membership events and learn more about the cluster that this Hazelcast instance is part of.</p>
-<dl class="section return"><dt>Returns</dt><dd>cluster that this Hazelcast instance is part of </dd></dl>
+<p>Returns the <a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> that connected Hazelcast instance is a part of. </p>
+<p><a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> interface allows you to add listener for membership events and learn more about the cluster.</p>
+<dl class="section return"><dt>Returns</dt><dd>cluster </dd></dl>
 
 </div>
 </div>
@@ -775,7 +671,7 @@ template&lt;typename E &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 10 2014 17:27:30 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
