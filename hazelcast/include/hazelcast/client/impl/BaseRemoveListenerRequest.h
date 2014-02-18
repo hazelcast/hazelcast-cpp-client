@@ -19,6 +19,8 @@ namespace hazelcast {
             public:
                 BaseRemoveListenerRequest(const std::string &name, const std::string registrationId);
 
+                virtual ~BaseRemoveListenerRequest();
+
                 void setRegistrationId(const std::string &registrationId);
 
                 virtual void write(serialization::PortableWriter &writer) const;

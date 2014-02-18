@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            RoundRobinLB::RoundRobinLB() {
+            RoundRobinLB::RoundRobinLB():index(0) {
 
             };
 
