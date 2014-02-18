@@ -43,9 +43,11 @@ namespace hazelcast {
 
             bool ServerListenerService::stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId) {
                 std::string resolvedRegistrationId = registrationId;
-                bool notRegistered = deRegisterListener(resolvedRegistrationId);
-                if(notRegistered)
+                bool isValidId = deRegisterListener(resolvedRegistrationId);
+                if(!isValidId){
+                    delete request;
                     return false;
+                }
                 request->setRegistrationId(resolvedRegistrationId);
                 boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                 bool result = clientContext.getSerializationService().toObject<bool>(future.get());

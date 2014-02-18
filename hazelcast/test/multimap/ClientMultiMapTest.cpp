@@ -179,8 +179,8 @@ namespace hazelcast {
                 assertTrue(latch2Add.await(20 * 1000), "c");
                 assertTrue(latch2Remove.await(20 * 1000), "d");
 
-                mm->removeEntryListener(id1);
-                mm->removeEntryListener(id2);
+                assertTrue(mm->removeEntryListener(id1));
+                assertTrue(mm->removeEntryListener(id2));
 
             }
 

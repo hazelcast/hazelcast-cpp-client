@@ -95,7 +95,7 @@ namespace hazelcast {
                 boost::thread t(boost::bind(testListenerThread, q.get()));
 
                 assertTrue(latch.await(5 * 1000));
-                q->removeItemListener(id);
+                assertTrue(q->removeItemListener(id));
             }
 
             void testOfferPollThread2(IQueue<std::string> *q) {

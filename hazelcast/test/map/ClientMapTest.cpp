@@ -160,7 +160,7 @@ namespace hazelcast {
                 assertTrue(latch.await(10 * 1000));
                 assertTrue(nullLatch.await(1000));
 
-                imap->removeEntryListener(id);
+                assertTrue(imap->removeEntryListener(id));
 
                 imap->put("key2", "value2");
                 assertEqual(1, imap->size());
@@ -299,7 +299,7 @@ namespace hazelcast {
                 boost::shared_ptr<std::string> temp2 = imap->get("key1");
                 assertNull(temp2.get());
 
-                imap->removeEntryListener(id);
+                assertTrue(imap->removeEntryListener(id));
             }
 
             void ClientMapTest::testPutIfAbsent() {
@@ -517,7 +517,7 @@ namespace hazelcast {
                 assertTrue(countDownLatch.await(5 * 1000));
                 assertEqual(1, atomicInteger);
 
-                tradeMap.removeEntryListener(id);
+                assertTrue(tradeMap.removeEntryListener(id));
             }
 
             void ClientMapTest::testListener() {
@@ -549,8 +549,8 @@ namespace hazelcast {
                 assertTrue(latch2Add.await(5 * 1000));
                 assertTrue(latch2Remove.await(5 * 1000));
 
-                imap->removeEntryListener(listener1ID);
-                imap->removeEntryListener(listener2ID);
+                assertTrue(imap->removeEntryListener(listener1ID));
+                assertTrue(imap->removeEntryListener(listener2ID));
 
             }
 

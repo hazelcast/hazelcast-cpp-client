@@ -156,7 +156,7 @@ namespace hazelcast {
                 boost::thread t(listenerTestThread, set.get());
                 assertTrue(latch.await(20 * 1000));
 
-                set->removeItemListener(registrationId);
+                assertTrue(set->removeItemListener(registrationId));
             }
 
         }
