@@ -15,12 +15,16 @@ namespace hazelcast {
         namespace txn {
             class HAZELCAST_API CommitTxnRequest : public BaseTxnRequest {
             public:
+                CommitTxnRequest(bool prepareAndCommit);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
                 void write(serialization::PortableWriter &writer) const;
+
+            private:
+                bool prepareAndCommit;
             };
         }
     }

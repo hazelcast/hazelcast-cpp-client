@@ -27,6 +27,7 @@ namespace hazelcast {
                 BaseTxnRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 options.writeData(out);
+                out.writeBoolean(false);//SerializableXID null
             };
 
         }

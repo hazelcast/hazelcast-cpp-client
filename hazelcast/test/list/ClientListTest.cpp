@@ -31,7 +31,7 @@ namespace hazelcast {
                 addTest(&ClientListTest::testIndexOf, "testIndexOf");
                 addTest(&ClientListTest::testToArray, "testToArray");
                 addTest(&ClientListTest::testContains, "testContains");
-                addTest(&ClientListTest::testRemoveRetainAll, "removeRetainAll");
+                addTest(&ClientListTest::testRemoveRetainAll, "testRemoveRetainAll");
                 addTest(&ClientListTest::testListener, "testListener");
 
             };

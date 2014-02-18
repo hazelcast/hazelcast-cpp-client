@@ -68,7 +68,7 @@ namespace hazelcast {
                     }
                     checkThread();
                     checkTimeout();
-                    CommitTxnRequest *request = new CommitTxnRequest();
+                    CommitTxnRequest *request = new CommitTxnRequest(true);
                     invoke<bool>(request);
                     state = TxnState::COMMITTED;
                 } catch (exception::IOException &e) {
