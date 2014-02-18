@@ -25,8 +25,9 @@ namespace hazelcast {
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request) {
+                std::auto_ptr<const impl::PortableRequest> managedRequest(request);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getRandomConnection(RETRY_COUNT);
-                return doSend(request, NULL, connection);
+                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
             };
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, int partitionId) {
@@ -38,18 +39,23 @@ namespace hazelcast {
             };
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, const Address &address) {
+                std::auto_ptr<const impl::PortableRequest> managedRequest(request);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getOrConnect(address, RETRY_COUNT);
-                return doSend(request, NULL, connection);
+                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
             };
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnRandomTarget(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler) {
+                std::auto_ptr<const impl::PortableRequest> managedRequest(request);
+                std::auto_ptr<impl::BaseEventHandler> managedEventHandler(eventHandler);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getRandomConnection(RETRY_COUNT);
-                return doSend(request, eventHandler, connection);
+                return doSend(managedRequest, managedEventHandler, connection);
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnTarget(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, const Address &address) {
+                std::auto_ptr<const impl::PortableRequest> managedRequest(request);
+                std::auto_ptr<impl::BaseEventHandler> managedEventHandler(eventHandler);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getOrConnect(address, RETRY_COUNT);
-                return doSend(request, eventHandler, connection);
+                return doSend(managedRequest, managedEventHandler, connection);
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, int partitionId) {
@@ -61,14 +67,15 @@ namespace hazelcast {
             }
 
             boost::shared_future<serialization::Data> InvocationService::invokeOnConnection(const impl::PortableRequest *request, boost::shared_ptr<connection::Connection> connection) {
-                return doSend(request, NULL, connection);
+                std::auto_ptr<const impl::PortableRequest> managedRequest(request);
+                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
             }
 
             bool InvocationService::isRedoOperation() const {
                 return redoOperation;
             }
 
-            boost::shared_future<serialization::Data> InvocationService::doSend(const impl::PortableRequest *request, impl::BaseEventHandler *eventHandler, boost::shared_ptr<connection::Connection> connection) {
+            boost::shared_future<serialization::Data> InvocationService::doSend(std::auto_ptr<const impl::PortableRequest> request, std::auto_ptr<impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection> connection) {
                 boost::shared_ptr<util::CallPromise> promise(new util::CallPromise(*this));
                 promise->setRequest(request);
                 promise->setEventHandler(eventHandler);

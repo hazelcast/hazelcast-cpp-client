@@ -60,7 +60,7 @@ namespace hazelcast {
                 bool redoOperation;
                 spi::ClientContext &clientContext;
 
-                boost::shared_future<serialization::Data> doSend(const impl::PortableRequest *, impl::BaseEventHandler *, boost::shared_ptr<connection::Connection>);
+                boost::shared_future<serialization::Data> doSend(std::auto_ptr<const impl::PortableRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>);
 
             };
         }

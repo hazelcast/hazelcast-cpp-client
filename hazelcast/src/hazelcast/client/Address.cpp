@@ -6,7 +6,7 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address(){
+        Address::Address():host("localhost"){
         };
 
         Address::Address(const std::string &url, int port)

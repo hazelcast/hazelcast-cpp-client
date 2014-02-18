@@ -20,8 +20,8 @@ namespace hazelcast {
             this->promise.set_value(data);
         }
 
-        void CallPromise::setRequest(const client::impl::PortableRequest *request) {
-            this->request.reset(request);
+        void CallPromise::setRequest(std::auto_ptr<const client::impl::PortableRequest>request) {
+            this->request = request;
         }
 
         const client::impl::PortableRequest &CallPromise::getRequest() const {
@@ -32,8 +32,8 @@ namespace hazelcast {
             return (boost::shared_future<client::serialization::Data>) promise.get_future();
         }
 
-        void CallPromise::setEventHandler(client::impl::BaseEventHandler *eventHandler) {
-            this->eventHandler.reset(eventHandler);
+        void CallPromise::setEventHandler(std::auto_ptr<client::impl::BaseEventHandler> eventHandler) {
+            this->eventHandler = eventHandler;
         }
 
         client::impl::BaseEventHandler *CallPromise::getEventHandler() const {

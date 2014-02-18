@@ -42,13 +42,13 @@ namespace hazelcast {
 				promise.set_exception(boost::copy_exception(e));
             }
 
-            void setRequest(const client::impl::PortableRequest *request);
+            void setRequest(std::auto_ptr<const client::impl::PortableRequest>request);
 
             const client::impl::PortableRequest &getRequest() const;
 
             boost::shared_future<client::serialization::Data> getFuture();
 
-            void setEventHandler(client::impl::BaseEventHandler *eventHandler);
+            void setEventHandler(std::auto_ptr<client::impl::BaseEventHandler> eventHandler);
 
             client::impl::BaseEventHandler *getEventHandler() const;
 
