@@ -5,7 +5,7 @@ FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test)
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/java/)
+#set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/java/)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
@@ -25,6 +25,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
 	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
 	
+	#set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
 	set_target_properties(clientTestStatic_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	set_target_properties(clientTestShared_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 		

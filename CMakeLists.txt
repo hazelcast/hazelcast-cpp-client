@@ -51,8 +51,10 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	add_library(HazelcastClientShared_64 SHARED ${HZ_SOURCES})
 	add_library(HazelcastClientStatic_64 STATIC ${HZ_SOURCES})
 	
-	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+
+	#set_target_properties(HazelcastClientStatic_64 PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
 	set_target_properties(HazelcastClientStatic_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	set_target_properties(HazelcastClientShared_32 PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	
 	target_link_libraries(HazelcastClientShared_64 pthread rt ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
 	target_link_libraries(HazelcastClientShared_32 pthread rt ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})	

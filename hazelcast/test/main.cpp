@@ -83,6 +83,7 @@ void unitTests() {
 
     ClientTxnTest clientTxnTest(factory);
     clientTxnTest.executeTests();
+
 }
 
 int main(int argc, char **argv) {
