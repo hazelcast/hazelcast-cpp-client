@@ -20,7 +20,10 @@ namespace hazelcast {
              * Constructor
              */
             Address();
-
+            /**
+             * Copy Constructor
+             */
+            Address(const Address& );
             /**
              * Constructor
              */

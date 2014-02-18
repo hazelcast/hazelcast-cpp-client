@@ -6,11 +6,19 @@
 namespace hazelcast {
     namespace client {
 
-        Address::Address():host("localhost"){
+        Address::Address():host("localhost") {
         };
 
+
+        Address::Address(hazelcast::client::Address const &address)
+        : host(address.host)
+        , port(address.port)
+        , type(address.type) {
+
+        }
+
         Address::Address(const std::string &url, int port)
-        : host(url), port(port), type(IPv4){
+        : host(url), port(port), type(IPv4) {
 
         };
 
