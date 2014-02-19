@@ -177,13 +177,6 @@ namespace hazelcast {
 
             }
 
-            void putThread(int start, IMap<int, int> *map, util::CountDownLatch *latch) {
-                for (int i = 0; i < 10000; i++) {
-                    map->put(start * 10000 + i, start * 10000 + i);
-                }
-                latch->countDown();
-            }
-
             void ClientMapTest::testGet() {
                 fillMap();
                 for (int i = 0; i < 10; i++) {

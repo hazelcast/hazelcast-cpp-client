@@ -9,18 +9,16 @@
 #define HAZELCAST_CLIENT_MEMBERSHIP_EVENT
 
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include "hazelcast/client/impl/MemberAttributeChange.h"
 #include "hazelcast/client/MembershipEvent.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API ClientMembershipEvent : public IdentifiedDataSerializable {
+            class HAZELCAST_API ClientMembershipEvent : public impl::IdentifiedDataSerializableResponse {
             public:
                 ClientMembershipEvent();
-
-                ClientMembershipEvent(const Member &member, MembershipEvent::MembershipEventType eventType);
 
                 const Member &getMember() const;
 
@@ -31,8 +29,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writeData(serialization::ObjectDataOutput &writer) const;
 
                 void readData(serialization::ObjectDataInput &reader);
 

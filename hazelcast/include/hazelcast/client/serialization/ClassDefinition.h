@@ -40,13 +40,9 @@ namespace hazelcast {
 
                 const FieldDefinition &get(const char *);
 
-                const FieldDefinition &get(int);
-
                 std::vector<boost::shared_ptr<ClassDefinition>  > &getNestedClassDefinitions();
 
                 bool hasField(const char *fieldName) const;
-
-                std::vector<std::string> getFieldNames() const;
 
                 FieldType getFieldType(const char *fieldName) const;
 

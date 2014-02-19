@@ -5,16 +5,11 @@
 
 #include "hazelcast/client/topic/PortableMessage.h"
 #include "hazelcast/client/topic/TopicPortableHook.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-
-            PortableMessage::PortableMessage() {
-
-            };
 
             const serialization::Data& PortableMessage::getMessage() const {
                 return message;

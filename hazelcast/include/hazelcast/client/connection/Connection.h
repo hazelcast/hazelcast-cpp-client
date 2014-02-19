@@ -68,6 +68,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
 
+                void setAsOwnerConnection(bool isOwnerConnection);
+
                 boost::atomic<clock_t> lastRead;
                 boost::atomic<clock_t> lastWrite;
                 boost::atomic<bool> live;
@@ -78,6 +80,7 @@ namespace hazelcast {
                 util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
+                bool _isOwnerConnection;
 
                 void removeConnectionCalls();
 

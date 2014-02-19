@@ -16,8 +16,6 @@ namespace hazelcast {
         namespace topic {
             class HAZELCAST_API PortableMessage : public impl::PortableResponse {
             public:
-                PortableMessage();
-
                 const serialization::Data& getMessage() const;
 
                 std::string getUuid() const;

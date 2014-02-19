@@ -13,10 +13,6 @@ namespace hazelcast {
 
                 TestNamedPortableV2(std::string name, int v);
 
-                bool operator ==(TestNamedPortableV2 & m);
-
-                bool operator !=(TestNamedPortableV2 & m);
-
                 int getFactoryId() const;
 
                 int getClassId() const;

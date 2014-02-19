@@ -38,9 +38,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                bool operator ==(const FieldDefinition&) const;
+//                bool operator ==(const FieldDefinition&) const;
 
-                bool operator !=(const FieldDefinition&) const;
+//                bool operator !=(const FieldDefinition&) const;
 
                 void writeData(DataOutput & dataOutput);
 

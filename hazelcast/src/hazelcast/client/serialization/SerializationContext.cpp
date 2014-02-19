@@ -21,15 +21,6 @@ namespace hazelcast {
 //                portableContextMap[0] = new PortableContext(this);
             };
 
-            SerializationContext::SerializationContext(const SerializationContext &rhs)
-            :serializerHolder(*this) {
-                //private
-            };
-
-            void SerializationContext::operator = (const SerializationContext &rhs) {
-                //private
-            };
-
             bool SerializationContext::isClassDefinitionExists(int factoryId, int classId) {
                 return isClassDefinitionExists(factoryId, classId, contextVersion);
             };

@@ -15,10 +15,6 @@ namespace hazelcast {
             return address == rhs.address;
         };
 
-        int Member::operator <(const Member &rhs) const {
-            return address < rhs.address;
-        };
-
         const Address &Member::getAddress() const {
             return address;
         };
@@ -33,63 +29,6 @@ namespace hazelcast {
 
         int Member::getClassId() const {
             return protocol::ProtocolConstants::MEMBER_ID;
-        };
-
-
-        void Member::writeData(serialization::ObjectDataOutput &writer) const {
-            address.writeData(writer);
-            writer.writeUTF(uuid);
-            int size = boolAttributes.size();
-            size += byteAttributes.size();
-            size += intAttributes.size();
-            size += floatAttributes.size();
-            size += shortAttributes.size();
-            size += longAttributes.size();
-            size += doubleAttributes.size();
-            size += stringAttributes.size();
-            writer.writeInt(size);
-
-            for (std::map< std::string, bool >::const_iterator it = boolAttributes.begin(); it != boolAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_BOOLEAN);
-                writer.writeBoolean(it->second);
-            }
-            for (std::map< std::string, byte >::const_iterator it = byteAttributes.begin(); it != byteAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_BYTE);
-                writer.writeByte(it->second);
-            }
-            for (std::map< std::string, int >::const_iterator it = intAttributes.begin(); it != intAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_INTEGER);
-                writer.writeInt(it->second);
-            }
-            for (std::map< std::string, float >::const_iterator it = floatAttributes.begin(); it != floatAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_FLOAT);
-                writer.writeFloat(it->second);
-            }
-            for (std::map< std::string, short >::const_iterator it = shortAttributes.begin(); it != shortAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_SHORT);
-                writer.writeShort(it->second);
-            }
-            for (std::map< std::string, long >::const_iterator it = longAttributes.begin(); it != longAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_LONG);
-                writer.writeLong(it->second);
-            }
-            for (std::map< std::string, double >::const_iterator it = doubleAttributes.begin(); it != doubleAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_DOUBLE);
-                writer.writeDouble(it->second);
-            }
-            for (std::map< std::string, std::string >::const_iterator it = stringAttributes.begin(); it != stringAttributes.end(); ++it) {
-                writer.writeUTF(it->first);
-                writer.writeByte(util::IOUtil::PRIMITIVE_TYPE_UTF);
-                writer.writeUTF(it->second);
-            }
-
         };
 
         void Member::readData(serialization::ObjectDataInput &reader) {

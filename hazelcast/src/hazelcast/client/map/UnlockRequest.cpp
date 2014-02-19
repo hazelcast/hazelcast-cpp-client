@@ -4,19 +4,12 @@
 
 
 #include "hazelcast/client/map/UnlockRequest.h"
-#include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            UnlockRequest::UnlockRequest(const std::string &name, serialization::Data &key, long threadId)
-            :name(name)
-            , key(key)
-            , threadId(threadId)
-            , force(false) {
-            };
 
             UnlockRequest::UnlockRequest(const std::string &name, serialization::Data &key, long threadId, bool force)
             :name(name)

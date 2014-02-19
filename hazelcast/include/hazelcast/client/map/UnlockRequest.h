@@ -13,7 +13,6 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
-                UnlockRequest(const std::string &name, serialization::Data &key, long threadId);
 
                 UnlockRequest(const std::string &name, serialization::Data &key, long threadId, bool force);
 

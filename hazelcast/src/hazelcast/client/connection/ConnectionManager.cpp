@@ -54,6 +54,7 @@ namespace hazelcast {
 
             connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
                 Connection *clientConnection = connectTo(address, true);
+                clientConnection->setAsOwnerConnection(true);
                 ownerConnectionAddress = clientConnection->getRemoteEndpoint();
                 return clientConnection;
             }

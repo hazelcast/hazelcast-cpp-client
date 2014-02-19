@@ -24,25 +24,6 @@ namespace hazelcast {
             , binary(new std::vector<byte>) {
             };
 
-            ClassDefinition::ClassDefinition(const ClassDefinition &rhs)
-            : factoryId(rhs.factoryId)
-            , classId(rhs.classId)
-            , version(rhs.version)
-            , fieldDefinitions(rhs.fieldDefinitions)
-            , fieldDefinitionsMap(rhs.fieldDefinitionsMap)
-            , nestedClassDefinitions(rhs.nestedClassDefinitions) {
-            };
-
-            ClassDefinition &ClassDefinition::operator = (const ClassDefinition &rhs) {
-                factoryId = rhs.factoryId;
-                classId = rhs.classId;
-                version = rhs.version;
-                fieldDefinitions = rhs.fieldDefinitions;
-                fieldDefinitionsMap = rhs.fieldDefinitionsMap;
-                nestedClassDefinitions = rhs.nestedClassDefinitions;
-                return (*this);
-            };
-
             void ClassDefinition::add(FieldDefinition &fd) {
                 fieldDefinitions.push_back(fd);
                 fieldDefinitionsMap[fd.getName()] = fd;
@@ -60,10 +41,6 @@ namespace hazelcast {
                 return fieldDefinitionsMap[name];
             };
 
-            const FieldDefinition &ClassDefinition::get(int fieldIndex) {
-                return fieldDefinitions[fieldIndex];
-            };
-
             std::vector<boost::shared_ptr<ClassDefinition> > &ClassDefinition::getNestedClassDefinitions() {
                 return nestedClassDefinitions;
             };
@@ -71,14 +48,6 @@ namespace hazelcast {
             bool ClassDefinition::hasField(const char *fieldName) const {
                 return fieldDefinitionsMap.count(fieldName) != 0;
             };
-
-            std::vector<std::string>  ClassDefinition::getFieldNames() const {
-                std::vector<std::string> fieldNames;
-                for (std::map<std::string, FieldDefinition>::const_iterator it = fieldDefinitionsMap.begin(); it != fieldDefinitionsMap.end(); ++it) {
-                    fieldNames.push_back(it->first);
-                }
-                return fieldNames;
-            }
 
             FieldType ClassDefinition::getFieldType(const char *fieldName) const {
                 if (hasField(fieldName)) {

@@ -43,8 +43,6 @@ namespace hazelcast {
 
                 } value;
 
-                TxnMapRequestType();
-
                 TxnMapRequestType(Type value);
 
                 operator int() const;
@@ -57,7 +55,6 @@ namespace hazelcast {
 
             class HAZELCAST_API TxnMapRequest : public txn::BaseTxnRequest {
             public:
-                TxnMapRequest();
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 

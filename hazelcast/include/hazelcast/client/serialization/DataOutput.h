@@ -70,8 +70,6 @@ namespace hazelcast {
 
                 void position(int newPos);
 
-                void reset();
-
                 static int const STRING_CHUNK_SIZE = 16 * 1024;
                 static int const DEFAULT_SIZE = 4 * 1024;
 

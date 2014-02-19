@@ -99,8 +99,6 @@ namespace hazelcast {
 
                 void setPosition(const char *fieldName);
 
-                boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable &p);
-
                 void write(const Portable &p);
 
                 int index;

@@ -23,10 +23,6 @@ namespace hazelcast {
                 return DataSerializableHook::ENTRY_SET;
             }
 
-            const std::vector< std::pair< serialization::Data, serialization::Data> >  & MapEntrySet::getEntrySet() const {
-                return entrySet;
-            }
-
             std::vector< std::pair< serialization::Data, serialization::Data> >  & MapEntrySet::getEntrySet() {
                 return entrySet;
             }

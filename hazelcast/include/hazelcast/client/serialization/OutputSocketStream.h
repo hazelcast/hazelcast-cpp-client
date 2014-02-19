@@ -27,30 +27,13 @@ namespace hazelcast {
 
                 void write(const std::vector<byte> &bytes);
 
-                void writeBoolean(bool b);
-
                 void writeByte(int i);
 
-                void writeShort(int i);
-
-                void writeChar(int i);
-
                 void writeInt(int i);
-
-                void writeLong(long l);
-
-                void writeFloat(float v);
-
-                void writeDouble(double v);
-
-                void writeUTF(const std::string &s);
-
-                static int const STRING_CHUNK_SIZE = 16 * 1024;
 
             private:
                 Socket &socket;
 
-                void writeShortUTF(const std::string &);
             };
 
         }

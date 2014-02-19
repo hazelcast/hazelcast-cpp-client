@@ -47,7 +47,9 @@ namespace hazelcast {
             }
 
             void Connection::close() {
-                removeConnectionCalls();
+                if(!_isOwnerConnection){
+                    removeConnectionCalls();
+                }
                 live = false;
                 socket.close();
             }
@@ -191,9 +193,12 @@ namespace hazelcast {
                 return eventHandlerPromises.remove(callId);
             }
 
+            void Connection::setAsOwnerConnection(bool isOwnerConnection) {
+                _isOwnerConnection = isOwnerConnection;
+            }
+
             void Connection::removeConnectionCalls() {
                 clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
-//            partitionService.runRefresher(); MTODO
                 typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
                 Address const &address = getRemoteEndpoint();
                 {

@@ -72,21 +72,21 @@ namespace hazelcast {
 
             };
 
-            bool FieldDefinition::operator ==(const FieldDefinition & other) const {
-                if (this == &other) return true;
-
-                if (classId != other.classId) return false;
-                if (factoryId != other.factoryId) return false;
-                if (index != other.index) return false;
-                if (type.getId() != other.type.getId()) return false;
-                if (fieldName.compare(other.fieldName)) return false;
-
-                return true;
-            };
-
-            bool FieldDefinition::operator !=(const FieldDefinition & other) const {
-                return !(*this == other);
-            };
+//            bool FieldDefinition::operator ==(const FieldDefinition & other) const {
+//                if (this == &other) return true;
+//
+//                if (classId != other.classId) return false;
+//                if (factoryId != other.factoryId) return false;
+//                if (index != other.index) return false;
+//                if (type.getId() != other.type.getId()) return false;
+//                if (fieldName.compare(other.fieldName)) return false;
+//
+//                return true;
+//            };
+//
+//            bool FieldDefinition::operator !=(const FieldDefinition & other) const {
+//                return !(*this == other);
+//            };
         }
     }
 }

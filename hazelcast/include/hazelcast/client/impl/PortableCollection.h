@@ -6,23 +6,20 @@
 #define HAZELCAST_PORTABLE_COLLECTION
 
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PortableCollection : public Portable {
+            class HAZELCAST_API PortableCollection : public impl::PortableResponse {
             public:
-                PortableCollection();
 
                 const std::vector<serialization::Data>& getCollection() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
 

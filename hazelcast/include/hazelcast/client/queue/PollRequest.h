@@ -14,8 +14,6 @@ namespace hazelcast {
             public:
                 PollRequest(const std::string &name, long timeout);
 
-                PollRequest(const std::string &name);
-
                 int getFactoryId() const;
 
                 int getClassId() const;

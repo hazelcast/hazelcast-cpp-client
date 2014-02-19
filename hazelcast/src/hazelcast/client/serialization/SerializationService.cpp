@@ -19,10 +19,6 @@ namespace hazelcast {
             : serializationContext(version) {
             };
 
-            SerializationService::SerializationService(SerializationService const & rhs)
-            : serializationContext(1) {
-            };
-
 
             SerializationContext & SerializationService::getSerializationContext() {
                 return serializationContext;

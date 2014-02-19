@@ -9,19 +9,15 @@
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include "hazelcast/client/ItemEvent.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PortableItemEvent : public Portable {
+            class HAZELCAST_API PortableItemEvent : public impl::PortableResponse {
             public:
-
-                PortableItemEvent();
-
-                PortableItemEvent(ItemEventType eventType, const serialization::Data& item, const std::string& uuid);
 
                 const serialization::Data&  getItem() const;
 
@@ -32,8 +28,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
 

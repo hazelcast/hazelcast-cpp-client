@@ -7,20 +7,14 @@
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/impl/PortableResponse.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PortableEntryEvent : public Portable {
+            class HAZELCAST_API PortableEntryEvent : public impl::PortableResponse {
             public:
-                PortableEntryEvent();
-
-                PortableEntryEvent(const std::string &name, const Member &member, EntryEventType eventType, const serialization::Data &key, const serialization::Data &value);
-
-                PortableEntryEvent(const std::string &name, const Member &member, EntryEventType eventType, const serialization::Data &key, const serialization::Data &value, const serialization::Data &oldValue);
-
                 const serialization::Data &getKey() const;
 
                 const serialization::Data &getOldValue() const;
@@ -36,9 +30,6 @@ namespace hazelcast {
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-
-                void writePortable(serialization::PortableWriter &writer) const;
 
                 void readPortable(serialization::PortableReader &reader);
 

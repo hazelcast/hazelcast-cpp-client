@@ -11,27 +11,6 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            PortableEntryEvent::PortableEntryEvent() {
-
-            };
-
-            PortableEntryEvent::PortableEntryEvent(const std::string& name, const Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value)
-            : name(name)
-            , eventType(eventType)
-            , key(key)
-            , value(value) {
-
-            };
-
-            PortableEntryEvent::PortableEntryEvent(const std::string& name, const Member& member, EntryEventType eventType, const serialization::Data& key, const serialization::Data& value, const serialization::Data& oldValue)
-            : name(name)
-            , eventType(eventType)
-            , key(key)
-            , value(value)
-            , oldValue(oldValue) {
-
-            };
-
             const serialization::Data& PortableEntryEvent::getKey() const {
                 return key;
             }
@@ -62,16 +41,6 @@ namespace hazelcast {
 
             int PortableEntryEvent::getClassId() const {
                 return protocol::SpiConstants::ENTRY_EVENT;
-            };
-
-            void PortableEntryEvent::writePortable(serialization::PortableWriter& writer) const {
-                int i = eventType;
-                writer.writeInt("e", i);
-                writer.writeUTF("u", uuid);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                key.writeData(out);
-                util::writeNullableData(out, &value);
-                util::writeNullableData(out, &oldValue);
             };
 
 

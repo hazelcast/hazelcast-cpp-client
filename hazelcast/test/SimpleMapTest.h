@@ -77,9 +77,9 @@ public:
     };
 
     void op(HazelcastClient *a) {
-        IMap<int, vector<hazelcast::byte> > map = a->getMap<int, vector<hazelcast::byte > >("default");
+        IMap<int, vector<char> > map = a->getMap<int, vector<char > >("default");
 
-        std::vector<hazelcast::byte> value(VALUE_SIZE);
+        std::vector<char> value(VALUE_SIZE);
         while (true) {
             int key = rand() % ENTRY_COUNT;
             int operation = ((int) (rand() % 100));
@@ -88,7 +88,7 @@ public:
                     map.get(key);
                     ++stats.getCount;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                    boost::shared_ptr<vector<hazelcast::byte> > vector = map.put(key, value);
+                    boost::shared_ptr<vector<char> > vector = map.put(key, value);
                     ++stats.putCount;
                 } else {
                     map.remove(key);

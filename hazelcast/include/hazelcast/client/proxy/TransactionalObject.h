@@ -30,8 +30,6 @@ namespace hazelcast {
 
                 const std::string &getName();
 
-                txn::TransactionProxy &getContext();
-
                 void destroy();
 
                 virtual void onDestroy() = 0;

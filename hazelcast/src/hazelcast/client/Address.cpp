@@ -30,17 +30,6 @@ namespace hazelcast {
             }
         };
 
-        bool Address::operator <(const Address &rhs) const {
-            int cmpResult = host.compare(rhs.host);
-            if (cmpResult > 1) {
-                return true;
-            } else if (cmpResult < 1) {
-                return false;
-            } else {
-                return port < rhs.port;
-            }
-        };
-
         int Address::getPort() const {
             return port;
         };

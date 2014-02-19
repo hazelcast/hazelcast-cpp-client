@@ -28,12 +28,6 @@ namespace hazelcast {
 
             };
 
-            Data::Data(const int type, std::auto_ptr <std::vector<byte> > buffer)
-            : partitionHash(0)
-            , buffer(buffer) {
-                this->type = type;
-            };
-
             Data &Data::operator = (const Data &rhs) {
                 partitionHash = rhs.partitionHash;
                 type = rhs.type;
@@ -92,10 +86,6 @@ namespace hazelcast {
                 return partitionHash;
             };
 
-            void Data::setPartitionHash(int partitionHash) {
-                this->partitionHash = partitionHash;
-            };
-
             int Data::getType() const {
                 return type;
             };
@@ -106,14 +96,6 @@ namespace hazelcast {
 
             void Data::setBuffer(std::auto_ptr<std::vector<unsigned char> > buffer) {
                 this->buffer = buffer;
-            };
-
-            int Data::getFactoryId() const {
-                return FACTORY_ID;
-            };
-
-            int Data::getClassId() const {
-                return ID;
             };
 
 

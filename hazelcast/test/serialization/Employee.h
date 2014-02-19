@@ -23,10 +23,6 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                bool operator ==(const Employee &employee) const;
-
-                bool operator !=(const Employee &employee) const;
-
                 void writePortable(serialization::PortableWriter &writer) const;
 
                 void readPortable(serialization::PortableReader &reader);

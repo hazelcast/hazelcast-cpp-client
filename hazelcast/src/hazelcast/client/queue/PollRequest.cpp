@@ -17,12 +17,6 @@ namespace hazelcast {
 
             };
 
-            PollRequest::PollRequest(const std::string& name)
-            :name(name)
-            , timeoutInMillis(0) {
-
-            };
-
             int PollRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
             }

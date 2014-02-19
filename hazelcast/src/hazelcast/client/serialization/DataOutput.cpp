@@ -180,10 +180,6 @@ namespace hazelcast {
                     outputStream->resize(newPos, 0);
             };
 
-            void DataOutput::reset() {
-                outputStream->clear();
-            };
-
             //private functions
 
             void DataOutput::writeShortUTF(const std::string& str) {

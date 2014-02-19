@@ -12,9 +12,6 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            QueryResultEntry::QueryResultEntry() {
-
-            };
 
             int QueryResultEntry::getFactoryId() const {
                 return map::DataSerializableHook::F_ID;
@@ -23,15 +20,6 @@ namespace hazelcast {
             int QueryResultEntry::getClassId() const {
                 return map::DataSerializableHook::QUERY_RESULT_ENTRY;
             }
-
-            void QueryResultEntry::writeData(serialization::ObjectDataOutput& writer) const {
-                writer.writeBoolean(true);
-                keyIndex.writeData(writer);
-                writer.writeBoolean(true);
-                key.writeData(writer);
-                writer.writeBoolean(true);
-                value.writeData(writer);
-            };
 
             void QueryResultEntry::readData(serialization::ObjectDataInput& reader) {
                 bool isNotNull = reader.readBoolean();

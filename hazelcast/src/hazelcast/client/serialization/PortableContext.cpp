@@ -17,10 +17,6 @@ namespace hazelcast {
         namespace serialization {
 
 
-            PortableContext::PortableContext() {
-
-            };
-
             PortableContext::PortableContext(SerializationContext *serializationContext)
             : serializationContext(serializationContext) {
 
@@ -138,10 +134,6 @@ namespace hazelcast {
             long long PortableContext::combineToLong(int x, int y) const {
 				return ((long long)x) << 32 |  (((long long) y) & 0xFFFFFFFL);
 			};
-
-            int PortableContext::extractInt(long long value, bool lowerBits) const {
-                return (lowerBits) ? (int) value : (int) (value >> 32);
-            };
 
         }
     }

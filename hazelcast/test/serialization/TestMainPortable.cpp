@@ -9,13 +9,6 @@ namespace hazelcast {
             :null(true) {
             };
 
-            TestMainPortable::TestMainPortable(const TestMainPortable &rhs) {
-                *this = rhs;
-            }
-
-            TestMainPortable::~TestMainPortable() {
-            }
-
             TestMainPortable::TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p) {
                 null = false;
                 this->b = b;
@@ -29,22 +22,6 @@ namespace hazelcast {
                 this->str = str;
                 this->p = p;
             };
-
-            const TestMainPortable &TestMainPortable::operator = (const TestMainPortable &rhs) {
-                null = rhs.null;
-                b = rhs.b;
-                boolean = rhs.boolean;
-                c = rhs.c;
-                s = rhs.s;
-                i = rhs.i;
-                l = rhs.l;
-                f = rhs.f;
-                d = rhs.d;
-                str = rhs.str;
-                p = rhs.p;
-                return (*this);
-            };
-
 
             bool TestMainPortable::operator ==(const TestMainPortable &m) const {
                 if (this == &m) return true;

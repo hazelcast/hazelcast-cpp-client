@@ -8,29 +8,21 @@
 #define HAZELCAST_PARTITION_RESPONSE
 
 #include "hazelcast/client/Address.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PartitionsResponse : public IdentifiedDataSerializable {
+            class HAZELCAST_API PartitionsResponse : public impl::IdentifiedDataSerializableResponse {
             public:
-                PartitionsResponse();
-
-                PartitionsResponse(std::vector<Address>& addresses, std::vector<int>& ownerIndexes);
-
                 const std::vector<Address>& getMembers() const;
 
                 const std::vector<int>& getOwnerIndexes() const;
 
-                bool isEmpty();
-
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

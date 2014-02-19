@@ -151,10 +151,6 @@ namespace hazelcast {
                 dataOutput.writeInt(begin, dataOutput.position()); // write final offset
             };
 
-            boost::shared_ptr<ClassDefinition> DefaultPortableWriter::getClassDefinition(const Portable& p) {
-                return serializerHolder.getPortableSerializer().getClassDefinition(p);
-            };
-
             void DefaultPortableWriter::write(const Portable& p) {
                 return serializerHolder.getPortableSerializer().write(dataOutput, p);
             }

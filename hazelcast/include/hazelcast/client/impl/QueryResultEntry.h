@@ -8,21 +8,17 @@
 #ifndef HAZELCAST_QueryResultEntry
 #define HAZELCAST_QueryResultEntry
 
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include "hazelcast/client/serialization/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API QueryResultEntry : public IdentifiedDataSerializable {
+            class HAZELCAST_API QueryResultEntry : public impl::IdentifiedDataSerializableResponse {
             public:
-                QueryResultEntry();
-
                 int getFactoryId() const;
 
                 int getClassId() const;
-
-                void writeData(serialization::ObjectDataOutput& writer) const;
 
                 void readData(serialization::ObjectDataInput& reader);
 

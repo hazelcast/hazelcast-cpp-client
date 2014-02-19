@@ -8,6 +8,7 @@
 
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,7 +22,7 @@ namespace hazelcast {
          * @see Cluster
          * @see MembershipListener
          */
-        class HAZELCAST_API Member : public IdentifiedDataSerializable {
+        class HAZELCAST_API Member : public impl::IdentifiedDataSerializableResponse {
         public:
             friend class connection::ClusterListenerThread;
 
@@ -29,11 +30,6 @@ namespace hazelcast {
              * comparison operation
              */
             bool operator ==(const Member &) const;
-
-            /**
-             * comparison operation
-             */
-            int operator <(const Member &) const;
 
             /**
              * @see IdentifiedDataSerializable
@@ -44,11 +40,6 @@ namespace hazelcast {
              * @see IdentifiedDataSerializable
              */
             int getClassId() const;
-
-            /**
-             * @see IdentifiedDataSerializable
-             */
-            void writeData(serialization::ObjectDataOutput &writer) const;
 
             /**
              * @see IdentifiedDataSerializable

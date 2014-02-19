@@ -102,6 +102,8 @@ namespace hazelcast {
 
             Socket(const Socket &rhs);
 
+            Socket& operator=(const Socket &rhs);
+
             client::Address remoteEndpoint;
 
             struct addrinfo *serverInfo;

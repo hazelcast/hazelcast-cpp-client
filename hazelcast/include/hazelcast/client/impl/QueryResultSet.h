@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_QueryResultSet
 #define HAZELCAST_QueryResultSet
 
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include "hazelcast/client/impl/QueryResultEntry.h"
 #include <string>
 #include <vector>
@@ -17,26 +17,18 @@ namespace hazelcast {
             class QueryResultEntry;
         }
         namespace impl {
-            class HAZELCAST_API QueryResultSet : public IdentifiedDataSerializable {
+            class HAZELCAST_API QueryResultSet : public impl::IdentifiedDataSerializableResponse {
             public:
-                QueryResultSet();
-
-                QueryResultSet(const std::string& name, const std::string& iterationType, const std::string& sql);
-
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                const std::vector< boost::shared_ptr<QueryResultEntry> > & getResultData() const;
-
-                void writeData(serialization::ObjectDataOutput& out) const;
+                const std::vector<QueryResultEntry> & getResultData() const;
 
                 void readData(serialization::ObjectDataInput& in);
 
             private:
-                std::string iterationType;
-                std::vector< boost::shared_ptr<QueryResultEntry> > q;
-                bool data;
+                std::vector<QueryResultEntry> q;
             };
         }
     }

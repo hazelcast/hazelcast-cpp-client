@@ -109,7 +109,6 @@ namespace hazelcast {
             return m;
         }
 
-        //private
         void ByteBuffer::skip(int l) {
             pos += l;
         }

@@ -13,12 +13,6 @@ namespace hazelcast {
 
             };
 
-            ClientMembershipEvent::ClientMembershipEvent(Member const &member, MembershipEvent::MembershipEventType eventType)
-            : member(member)
-            , eventType(eventType) {
-
-            };
-
             const Member &ClientMembershipEvent::getMember() const {
                 return member;
             };
@@ -39,10 +33,6 @@ namespace hazelcast {
             int ClientMembershipEvent::getClassId() const {
                 return protocol::ProtocolConstants::MEMBERSHIP_EVENT;
 
-            }
-
-            void ClientMembershipEvent::writeData(serialization::ObjectDataOutput &writer) const {
-                assert(0 && "This method is never called");
             }
 
             void ClientMembershipEvent::readData(serialization::ObjectDataInput &reader) {

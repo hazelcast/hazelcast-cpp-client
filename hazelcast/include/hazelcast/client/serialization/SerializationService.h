@@ -144,6 +144,8 @@ namespace hazelcast {
 
                 SerializationService(const SerializationService &);
 
+                SerializationService& operator =(const SerializationService&);
+
                 SerializationContext serializationContext;
 
             };
@@ -243,19 +245,6 @@ namespace hazelcast {
                 data.setType(SerializationConstants::CONSTANT_TYPE_DOUBLE);
                 return data;
             };
-
-
-            template<>
-            inline Data SerializationService::toData<std::vector<byte> >(const void *serializable) {
-                DataOutput output;
-                const std::vector<byte> *object = static_cast<const std::vector<byte> *>(serializable);
-                output.writeByteArray(*object);
-                Data data;
-                data.setBuffer(output.toByteArray());
-                data.setType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY);
-                return data;
-            };
-
 
             template<>
             inline Data SerializationService::toData<std::vector<char> >(const void *serializable) {
@@ -417,16 +406,6 @@ namespace hazelcast {
                 boost::shared_ptr<double> object(new double);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readDouble();
-                return object;
-            };
-
-            template<>
-            inline boost::shared_ptr<std::vector<byte> > SerializationService::toObject(const Data &data) {
-                
-                if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<byte> >();
-                boost::shared_ptr<std::vector<byte> > object(new std::vector<byte>);
-                DataInput dataInput(*(data.buffer.get()));
-                *object = dataInput.readByteArray();
                 return object;
             };
 

@@ -12,22 +12,6 @@ namespace hazelcast {
             TestNamedPortableV2::TestNamedPortableV2(std::string name, int v) : name(name), k(v * 10), v(v) {
             };
 
-            bool TestNamedPortableV2::operator ==(TestNamedPortableV2 & m) {
-                if (this == &m)
-                    return true;
-                if (k != m.k)
-                    return false;
-                if (name.compare(m.name))
-                    return false;
-                if (v != m.v) return false;
-                return true;
-            };
-
-            bool TestNamedPortableV2::operator !=(TestNamedPortableV2 & m) {
-                return !(*this == m);
-            };
-
-
             int TestNamedPortableV2::getFactoryId() const {
                 return 1;
             }

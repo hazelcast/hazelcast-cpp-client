@@ -28,15 +28,6 @@ namespace hazelcast {
 
             };
 
-
-            ObjectDataOutput::ObjectDataOutput(ObjectDataOutput const & param) {
-                //private
-            }
-
-            void ObjectDataOutput::operator = (ObjectDataOutput const & param) {
-                //private
-            }
-
             std::auto_ptr< std::vector<byte> > ObjectDataOutput::toByteArray() {
                 if (isEmpty)
                     return std::auto_ptr< std::vector<byte > >(NULL);
@@ -172,9 +163,6 @@ namespace hazelcast {
                 dataOutput->position(newPos);
             };
 
-            void ObjectDataOutput::reset() {
-                dataOutput->reset();
-            };
         }
     }
 }

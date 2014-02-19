@@ -10,26 +10,6 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            TxnMapRequestType::TxnMapRequestType()
-            :value(NONE) {
-                types.resize(16);
-                types[0] = NONE;
-                types[1] = CONTAINS_KEY;
-                types[2] = GET;
-                types[3] = SIZE;
-                types[4] = PUT;
-                types[5] = PUT_IF_ABSENT;
-                types[6] = REPLACE;
-                types[7] = REPLACE_IF_SAME;
-                types[8] = SET;
-                types[9] = REMOVE;
-                types[10] = DELETE_R;
-                types[11] = REMOVE_IF_SAME;
-                types[12] = KEYSET;
-                types[13] = KEYSET_BY_PREDICATE;
-                types[14] = VALUES;
-                types[15] = VALUES_BY_PREDICATE;
-            };
 
             TxnMapRequestType::TxnMapRequestType(TxnMapRequestType::Type value)
             :value(value) {
@@ -61,13 +41,6 @@ namespace hazelcast {
             };
 
             //----------------------------------//
-            TxnMapRequest::TxnMapRequest()
-            : hasKey(false)
-            , hasValue(false)
-            , hasNewValue(false)
-            , hasPredicate(false)
-            , ttl(-1) {
-            };
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType)
             : name(name)

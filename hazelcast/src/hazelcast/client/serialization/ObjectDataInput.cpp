@@ -20,17 +20,6 @@ namespace hazelcast {
 
             }
 
-            ObjectDataInput::ObjectDataInput(ObjectDataInput const & rhs)
-            : dataInput(rhs.dataInput)
-            , serializationContext(rhs.serializationContext)
-            , serializerHolder(rhs.serializerHolder) {
-                //private
-            }
-
-            void ObjectDataInput::operator = (ObjectDataInput const & param) {
-                //private
-            }
-
             SerializationContext *ObjectDataInput::getSerializationContext() {
                 return &serializationContext;
             };

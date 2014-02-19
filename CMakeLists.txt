@@ -22,7 +22,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/64/libz.a)
 	
-	#set_target_properties(HazelcastClientStatic_64 PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
+	set_target_properties(HazelcastClientStatic_64 PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
 	
     target_link_libraries(HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
 	target_link_libraries(HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})

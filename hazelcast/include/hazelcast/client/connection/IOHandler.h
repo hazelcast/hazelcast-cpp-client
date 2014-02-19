@@ -21,7 +21,7 @@ namespace hazelcast {
 
                 IOHandler(Connection &connection, IOSelector &ioListener);
 
-                ~IOHandler();
+                virtual ~IOHandler();
 
                 virtual void handle() = 0;
 

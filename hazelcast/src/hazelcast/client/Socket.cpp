@@ -44,10 +44,6 @@ namespace hazelcast {
 			#endif
         }
 
-        Socket::Socket(const Socket &rhs) {
-            //private
-        };
-
         Socket::~Socket() {
             close();           
         };

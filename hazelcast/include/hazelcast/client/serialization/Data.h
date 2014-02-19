@@ -24,8 +24,6 @@ namespace hazelcast {
 
                 Data();
 
-                Data(const int type, std::auto_ptr <std::vector<byte> > bytes);
-
                 Data(const Data &);
 
                 Data &operator = (const Data &);
@@ -35,8 +33,6 @@ namespace hazelcast {
                 int totalSize() const;
 
                 int getPartitionHash() const;
-
-                void setPartitionHash(int partitionHash);
 
                 int getType() const;
 
@@ -106,10 +102,6 @@ namespace hazelcast {
             private:
                 static int const FACTORY_ID = 0;
                 static int const ID = 0;
-
-                int getFactoryId() const;
-
-                int getClassId() const;
             };
         }
     }

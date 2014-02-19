@@ -23,8 +23,6 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                const std::vector<std::pair<serialization::Data, serialization::Data > > &getEntrySet() const;
-
                 std::vector<std::pair<serialization::Data, serialization::Data > > &getEntrySet();
 
                 void writeData(serialization::ObjectDataOutput &writer) const;

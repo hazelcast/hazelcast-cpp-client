@@ -9,7 +9,6 @@
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/TransactionalTaskContext.h"
 
 namespace hazelcast {
     namespace client {

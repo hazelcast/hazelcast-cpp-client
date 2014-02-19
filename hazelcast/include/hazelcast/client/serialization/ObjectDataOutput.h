@@ -108,8 +108,6 @@ namespace hazelcast {
 
                 void position(int newPos);
 
-                void reset();
-
                 void writePortable(const Portable *portable);
 
                 void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);

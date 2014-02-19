@@ -16,16 +16,6 @@ namespace hazelcast {
             , pos(0) {
             };
 
-            DataInput::DataInput(DataInput const &param)
-            :buffer(param.buffer) {
-                //private
-            };
-
-            DataInput &DataInput::operator = (const DataInput &) {
-                //private
-                return *this;
-            };
-
             void DataInput::readFully(std::vector<byte> &bytes) {
                 bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
                 pos += bytes.size();

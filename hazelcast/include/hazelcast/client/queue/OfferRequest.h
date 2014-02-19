@@ -15,8 +15,6 @@ namespace hazelcast {
             public:
                 OfferRequest(const std::string &name, serialization::Data &data, long timeout);
 
-                OfferRequest(const std::string &name, serialization::Data &data);
-
                 int getFactoryId() const;
 
                 int getClassId() const;

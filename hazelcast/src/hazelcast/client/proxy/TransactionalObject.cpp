@@ -23,10 +23,6 @@ namespace hazelcast {
                 return name;
             }
 
-            txn::TransactionProxy &TransactionalObject::getContext() {
-                return *context;
-            }
-
             void TransactionalObject::destroy() {
                 onDestroy();
                 impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);

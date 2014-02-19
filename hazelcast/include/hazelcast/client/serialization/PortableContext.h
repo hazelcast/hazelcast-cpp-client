@@ -23,12 +23,8 @@ namespace hazelcast {
 
             class SerializationContext;
 
-
-
             class HAZELCAST_API PortableContext {
             public:
-
-                PortableContext();
 
                 PortableContext(SerializationContext *serializationContext);
 
@@ -44,8 +40,6 @@ namespace hazelcast {
                 void compress(std::vector<byte>&);
 
                 long long combineToLong(int x, int y) const;
-
-                int extractInt(long long value, bool lowerBits) const;
 
                 std::vector<byte> decompress(std::vector<byte> const &) const;
 

@@ -13,13 +13,6 @@ namespace hazelcast {
     namespace client {
         namespace lock {
 
-            LockRequest::LockRequest(serialization::Data &key, long threadId)
-            :key(key)
-            , threadId(threadId)
-            , ttl(-1)
-            , timeout(-1) {
-            };
-
             LockRequest::LockRequest(serialization::Data &key, long threadId, long ttl, long timeout)
             :key(key)
             , threadId(threadId)
