@@ -198,7 +198,7 @@ namespace hazelcast {
             };
 
 
-            void ClusterService::fireMembershipEvent(MemberAttributeEvent &event) {
+            void ClusterService::fireMemberAttributeEvent(MemberAttributeEvent &event) {
                 boost::lock_guard<boost::mutex> guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {

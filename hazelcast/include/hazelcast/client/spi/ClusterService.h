@@ -83,7 +83,7 @@ namespace hazelcast {
                 //--------- Used by CLUSTER LISTENER THREAD ------------
                 void fireMembershipEvent(MembershipEvent &membershipEvent);
 
-                void fireMembershipEvent(MemberAttributeEvent &membershipEvent);
+                void fireMemberAttributeEvent(MemberAttributeEvent &membershipEvent);
 
                 void setMembers(const std::map<Address, Member, addressComparator > &map);
 

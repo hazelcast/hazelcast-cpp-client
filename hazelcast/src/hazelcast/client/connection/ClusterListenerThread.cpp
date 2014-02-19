@@ -213,7 +213,7 @@ namespace hazelcast {
                     }
                 }
                 MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value, primitive_id);
-                clientContext.getClusterService().fireMembershipEvent(memberAttributeEvent);
+                clientContext.getClusterService().fireMemberAttributeEvent(memberAttributeEvent);
             }
 
             void ClusterListenerThread::updateMembersRef() {
