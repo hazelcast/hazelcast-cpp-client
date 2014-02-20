@@ -7,6 +7,10 @@
 //
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/serialization/OutputSocketStream.h"
 
 
 namespace hazelcast {
@@ -67,7 +71,8 @@ namespace hazelcast {
 
 
             int Data::hashCode() const {
-                if (buffer.get() == NULL) return INT_MIN;
+                if (buffer.get() == NULL)
+                    return 0;
                 // FNV (Fowler/Noll/Vo) Hash "1a"
                 const int prime = 0x01000193;
                 int hash = 0x811c9dc5;
@@ -86,6 +91,11 @@ namespace hazelcast {
                 return partitionHash;
             };
 
+
+            void Data::setPartitionHash(int partitionHash) {
+                this->partitionHash = partitionHash;
+            }
+
             int Data::getType() const {
                 return type;
             };
@@ -98,6 +108,110 @@ namespace hazelcast {
                 this->buffer = buffer;
             };
 
+
+            int Data::getFactoryId() const {
+                return FACTORY_ID;
+            }
+
+            int Data::getClassId() const {
+                return CLASS_ID;
+            }
+
+            void Data::writeData(serialization::ObjectDataOutput &objectDataOutput) const {
+                objectDataOutput.writeInt(type);
+                if (cd != NULL) {
+                    objectDataOutput.writeInt(cd->getClassId());
+                    objectDataOutput.writeInt(cd->getFactoryId());
+                    objectDataOutput.writeInt(cd->getVersion());
+                    const std::vector<byte> &classDefBytes = cd->getBinary();
+
+                    objectDataOutput.writeInt(classDefBytes.size());
+                    objectDataOutput.write(classDefBytes);
+                } else {
+                    objectDataOutput.writeInt(NO_CLASS_ID);
+                }
+                int len = bufferSize();
+                objectDataOutput.writeInt(len);
+                if (len > 0) {
+                    objectDataOutput.write(*(buffer.get()));
+                }
+                objectDataOutput.writeInt(partitionHash);
+            }
+
+            void Data::readData(serialization::ObjectDataInput &objectDataInput) {
+                type = objectDataInput.readInt();
+                int classId = objectDataInput.readInt();
+
+                if (classId != NO_CLASS_ID) {
+                    int factoryId = objectDataInput.readInt();
+                    int version = objectDataInput.readInt();
+
+                    int classDefSize = objectDataInput.readInt();
+                    SerializationContext *serializationContext = objectDataInput.getSerializationContext();
+                    if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
+                        cd = serializationContext->lookup(factoryId, classId, version);
+                        objectDataInput.skipBytes(classDefSize);
+                    } else {
+                        std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
+                        objectDataInput.readFully(*(classDefBytes.get()));
+                        cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = objectDataInput.readInt();
+                if (size > 0) {
+                    this->buffer->resize(size);
+                    objectDataInput.readFully(*(buffer.get()));
+                }
+                partitionHash = objectDataInput.readInt();
+            }
+
+            void Data::writeToSocket(serialization::OutputSocketStream &outputSocketStream) const {
+                outputSocketStream.writeInt(type);
+                if (cd != NULL) {
+                    outputSocketStream.writeInt(cd->getClassId());
+                    outputSocketStream.writeInt(cd->getFactoryId());
+                    outputSocketStream.writeInt(cd->getVersion());
+                    const std::vector<byte> &classDefBytes = cd->getBinary();
+
+                    outputSocketStream.writeInt(classDefBytes.size());
+                    outputSocketStream.write(classDefBytes);
+                } else {
+                    outputSocketStream.writeInt(NO_CLASS_ID);
+                }
+                int len = bufferSize();
+                outputSocketStream.writeInt(len);
+                if (len > 0) {
+                    outputSocketStream.write(*(buffer.get()));
+                }
+                outputSocketStream.writeInt(partitionHash);
+
+            }
+            void Data::readFromSocket(serialization::InputSocketStream &inputSocketStream) {
+                type = inputSocketStream.readInt();
+                int classId = inputSocketStream.readInt();
+
+                if (classId != NO_CLASS_ID) {
+                    int factoryId = inputSocketStream.readInt();
+                    int version = inputSocketStream.readInt();
+
+                    int classDefSize = inputSocketStream.readInt();
+                    SerializationContext *serializationContext = inputSocketStream.getSerializationContext();
+                    if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
+                        cd = serializationContext->lookup(factoryId, classId, version);
+                        inputSocketStream.skipBytes(classDefSize);
+                    } else {
+                        std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
+                        inputSocketStream.readFully(*(classDefBytes.get()));
+                        cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = inputSocketStream.readInt();
+                if (size > 0) {
+                    this->buffer->resize(size);
+                    inputSocketStream.readFully(*(buffer.get()));
+                }
+                partitionHash = inputSocketStream.readInt();
+            }
 
         }
     }

@@ -44,6 +44,7 @@
 #include "hazelcast/client/map/RemoveInterceptorRequest.h"
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/map/RemoveEntryListenerRequest.h"
+#include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/impl/EntryListener.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
@@ -745,11 +746,10 @@ namespace hazelcast {
              * @see EntryView
              */
             EntryView<K, V> getEntryView(const K &key) {
-                typedef EntryView<serialization::Data, serialization::Data> DataView;
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), keyData);
-                boost::shared_ptr< DataView > dataEntryView = invoke<DataView >(request, partitionId);
+                boost::shared_ptr< map::DataEntryView  > dataEntryView = invoke<map::DataEntryView >(request, partitionId);
                 boost::shared_ptr<V> v = toObject<V>(dataEntryView->value);
                 EntryView<K, V> view(key, *v, *dataEntryView);
                 return view;

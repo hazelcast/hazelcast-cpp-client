@@ -85,6 +85,10 @@ namespace hazelcast {
 
                 void testPutIfAbsentTtl();
 
+                void testMapWithPortable();
+
+                void testMapStoreRelatedRequests();
+
             private:
                 HazelcastInstanceFactory &hazelcastInstanceFactory;
                 HazelcastInstance instance;

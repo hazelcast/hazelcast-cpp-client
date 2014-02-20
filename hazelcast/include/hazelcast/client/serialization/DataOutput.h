@@ -16,9 +16,6 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-
-
-
             class HAZELCAST_API DataOutput {
             public:
 

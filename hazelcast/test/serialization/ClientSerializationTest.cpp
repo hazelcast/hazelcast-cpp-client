@@ -180,10 +180,11 @@ namespace hazelcast {
 
                 serialization::Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
-                serialization::DataOutput out;
-                data.writeData(out);
+                serialization::DataOutput dataOutput;
+                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService1.getSerializationContext());
+                data.writeData(objectDataOutput);
 
-                std::auto_ptr< vector < byte> > xxx = out.toByteArray();
+                std::auto_ptr< vector < byte> > xxx = objectDataOutput.toByteArray();
 
                 serialization::SerializationService serializationService2(1);
 
@@ -200,9 +201,10 @@ namespace hazelcast {
                 serialization::SerializationService serializationService(1);
                 TestMainPortable mainPortable = getTestMainPortable();
                 serialization::Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-                serialization::DataOutput out;
-                data.writeData(out);
-                auto_ptr<vector<byte> > output = out.toByteArray();
+                serialization::DataOutput dataOutput;
+                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getSerializationContext());
+                data.writeData(objectDataOutput);
+                auto_ptr<vector<byte> > output = objectDataOutput.toByteArray();
                 int size = output->size();
                 ofstream outfile;
                 outfile.open("./text.txt", std::ios_base::out);

@@ -28,7 +28,7 @@ namespace hazelcast {
 
 
             void AddIndexRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", name);
+                writer.writeUTF("n", name);
                 writer.writeUTF("a", attribute);
                 writer.writeBoolean("o", ordered);
             };

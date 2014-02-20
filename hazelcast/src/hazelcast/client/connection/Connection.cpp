@@ -144,14 +144,14 @@ namespace hazelcast {
 
             void Connection::writeBlocking(serialization::Data const &data) {
                 serialization::OutputSocketStream outputSocketStream(socket);
-                data.writeData(outputSocketStream);
+                data.writeToSocket(outputSocketStream);
             }
 
             serialization::Data Connection::readBlocking() {
                 serialization::InputSocketStream inputSocketStream(socket);
                 inputSocketStream.setSerializationContext(&(clientContext.getSerializationService().getSerializationContext()));
                 serialization::Data data;
-                data.readData(inputSocketStream);
+                data.readFromSocket(inputSocketStream);
                 return data;
             }
 

@@ -19,6 +19,10 @@ namespace hazelcast {
 
                 Employee(std::string name, int age);
 
+                bool operator ==(const Employee &employee) const;
+
+                bool operator !=(const Employee &employee) const;
+
                 int getFactoryId() const;
 
                 int getClassId() const;

@@ -27,14 +27,14 @@ namespace hazelcast {
             Type value;
 
             /**
-             * Constrcutor
+             * Constructor
              */
             EntryEventType() {
 
             }
 
             /**
-             * Constrcutor
+             * Constructor
              */
             EntryEventType(Type value)
             :value(value) {
@@ -82,7 +82,7 @@ namespace hazelcast {
         class HAZELCAST_API EntryEvent {
         public:
             /**
-             * Constrcutor
+             * Constructor
              */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
             : name(name)
@@ -94,7 +94,7 @@ namespace hazelcast {
             };
 
             /**
-             * Constrcutor
+             * Constructor
              */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
             : name(name)

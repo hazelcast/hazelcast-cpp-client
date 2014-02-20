@@ -27,7 +27,7 @@ namespace hazelcast {
             };
 
             void EvictRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("name", name);
+                writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);

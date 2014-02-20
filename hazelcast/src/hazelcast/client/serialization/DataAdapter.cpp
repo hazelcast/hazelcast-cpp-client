@@ -21,10 +21,6 @@ namespace hazelcast {
 
             }
 
-
-            DataAdapter::~DataAdapter() {
-            }
-
             DataAdapter::DataAdapter()
             :status(stType)
             , factoryId(0)
@@ -48,7 +44,7 @@ namespace hazelcast {
                     if (destination.remaining() < 4) {
                         return false;
                     }
-                    destination.writeInt(data.type);
+                    destination.writeInt(data.getType());
                     setStatus(stType);
                 }
                 if (!isStatusSet(stClassId)) {
@@ -134,7 +130,7 @@ namespace hazelcast {
                     if (source.remaining() < 4) {
                         return false;
                     }
-                    data.type = source.readInt();
+                    data.setType(source.readInt());
                     setStatus(stType);
                 }
                 if (!isStatusSet(stClassId)) {
@@ -212,7 +208,7 @@ namespace hazelcast {
                     if (source.remaining() < 4) {
                         return false;
                     }
-                    data.partitionHash = source.readInt();
+                    data.setPartitionHash(source.readInt()) ;
                     setStatus(stHash);
                 }
                 setStatus(stAll);

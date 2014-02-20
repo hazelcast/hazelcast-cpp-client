@@ -11,6 +11,7 @@
 
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/IdentifiedDataSerializable.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include <vector>
@@ -19,7 +20,11 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class HAZELCAST_API Data {
+            class OutputSocketStream;
+
+            class InputSocketStream;
+
+            class HAZELCAST_API Data : public IdentifiedDataSerializable {
             public:
 
                 Data();
@@ -34,6 +39,8 @@ namespace hazelcast {
 
                 int getPartitionHash() const;
 
+                void setPartitionHash(int );
+
                 int getType() const;
 
                 void setType(int type);
@@ -42,66 +49,26 @@ namespace hazelcast {
 
                 int hashCode() const;
 
-                template<typename  Out>
-                void writeData(Out &dataOutput) const {
-                    dataOutput.writeInt(type);
-                    if (cd != NULL) {
-                        dataOutput.writeInt(cd->getClassId());
-                        dataOutput.writeInt(cd->getFactoryId());
-                        dataOutput.writeInt(cd->getVersion());
-                        const std::vector<byte> &classDefBytes = cd->getBinary();
+                void writeData(serialization::ObjectDataOutput &objectDataOutput) const;
 
-                        dataOutput.writeInt(classDefBytes.size());
-                        dataOutput.write(classDefBytes);
-                    } else {
-                        dataOutput.writeInt(NO_CLASS_ID);
-                    }
-                    int len = bufferSize();
-                    dataOutput.writeInt(len);
-                    if (len > 0) {
-                        dataOutput.write(*(buffer.get()));
-                    }
-                    dataOutput.writeInt(partitionHash);
+                void readData(serialization::ObjectDataInput &objectDataInput);
 
-                }
+                int getFactoryId() const;
 
-                template<typename  Input>
-                void readData(Input &dataInput) {
-                    type = dataInput.readInt();
-                    int classId = dataInput.readInt();
+                int getClassId() const;
 
-                    if (classId != NO_CLASS_ID) {
-                        int factoryId = dataInput.readInt();
-                        int version = dataInput.readInt();
+                void writeToSocket(serialization::OutputSocketStream &outputSocketStream) const;
 
-                        int classDefSize = dataInput.readInt();
-                        SerializationContext *serializationContext = dataInput.getSerializationContext();
-                        if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = serializationContext->lookup(factoryId, classId, version);
-                            dataInput.skipBytes(classDefSize);
-                        } else {
-                            std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                            dataInput.readFully(*(classDefBytes.get()));
-                            cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
-                        }
-                    }
-                    int size = dataInput.readInt();
-                    if (size > 0) {
-                        this->buffer->resize(size);
-                        dataInput.readFully(*(buffer.get()));
-                    }
-                    partitionHash = dataInput.readInt();
-                }
+                void readFromSocket(serialization::InputSocketStream &inputSocketStream);
 
                 boost::shared_ptr<ClassDefinition> cd;
-                int type;
                 mutable std::auto_ptr< std::vector<byte> > buffer;
                 static int const NO_CLASS_ID = 0;
-                mutable int partitionHash;
-
             private:
+                mutable int partitionHash;
+                int type;
                 static int const FACTORY_ID = 0;
-                static int const ID = 0;
+                static int const CLASS_ID = 0;
             };
         }
     }

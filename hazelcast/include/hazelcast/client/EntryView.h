@@ -7,8 +7,8 @@
 #include "hazelcast/client/serialization/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,12 +19,13 @@ namespace hazelcast {
          * @param <V> value
          */
         template<typename K, typename V>
-        class HAZELCAST_API EntryView : public IdentifiedDataSerializable {
+        class HAZELCAST_API EntryView{
         public:
+
             /**
-             * Constrcutor
+             * Constructor
              */
-            EntryView(const K &key, const V &value, const EntryView<serialization::Data, serialization::Data> &rhs)
+            EntryView(const K &key, const V &value, const map::DataEntryView& rhs)
             : key(key)
             , value(value)
             , cost (rhs.cost)
@@ -36,50 +37,6 @@ namespace hazelcast {
             , lastUpdateTime (rhs.lastUpdateTime)
             , version (rhs.version) {
 
-            };
-            /**
-             * @see IdentifiedDataSerializable
-             */
-            int getFactoryId() const {
-                return map::DataSerializableHook::F_ID;
-            };
-            /**
-             * @see IdentifiedDataSerializable
-             */
-            int getClassId() const {
-                return map::DataSerializableHook::ENTRY_VIEW;
-            };
-            /**
-             * @see IdentifiedDataSerializable
-             * @param out
-             */
-            void writeData(serialization::ObjectDataOutput &out) const {
-                out.writeObject(&key);
-                out.writeObject(&value);
-                out.writeLong(cost);
-                out.writeLong(creationTime);
-                out.writeLong(expirationTime);
-                out.writeLong(hits);
-                out.writeLong(lastAccessTime);
-                out.writeLong(lastStoredTime);
-                out.writeLong(lastUpdateTime);
-                out.writeLong(version);
-            };
-            /**
-             * @see IdentifiedDataSerializable
-             * @param in
-             */
-            void readData(serialization::ObjectDataInput &in) {
-                key = in.readObject<K>();
-                value = in.readObject<V>();
-                cost = in.readLong();
-                creationTime = in.readLong();
-                expirationTime = in.readLong();
-                hits = in.readLong();
-                lastAccessTime = in.readLong();
-                lastStoredTime = in.readLong();
-                lastUpdateTime = in.readLong();
-                version = in.readLong();
             };
             /**
              * key
@@ -94,11 +51,11 @@ namespace hazelcast {
              */
             long cost;
             /**
-             * entry creadion time
+             * entry creation time
              */
             long creationTime;
             /**
-             * entry expriation time if ttl is defined.
+             * entry expiration time if ttl is defined.
              */
             long expirationTime;
             /**

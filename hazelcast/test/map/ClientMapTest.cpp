@@ -29,7 +29,6 @@ namespace hazelcast {
             };
 
             void ClientMapTest::addTests() {
-                //addTest(&ClientMapTest::testMultiPut, "testMultiPut");
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -51,6 +50,8 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
                 addTest(&ClientMapTest::testIssue537, "testIssue537");
+                addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
+                addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
             };
 
             void ClientMapTest::beforeClass() {
@@ -421,7 +422,7 @@ namespace hazelcast {
 
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
                 imap->unlock("key1");
-                assertTrue(latch2.await(100 * 1000) , "4");
+                assertTrue(latch2.await(100 * 1000), "4");
                 assertTrue(imap->isLocked("key1"), "5");
                 imap->forceUnlock("key1");
 
@@ -569,6 +570,32 @@ namespace hazelcast {
                 assertEqual("key1", (*it3).first);
                 assertEqual("value1", (*it3).second);
 
+            }
+
+            void ClientMapTest::testMapWithPortable() {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
+                boost::shared_ptr<Employee> n1 = employees.get(1);
+                assertNull(n1.get());
+                Employee employee("sancar", 24);
+                boost::shared_ptr<Employee> ptr = employees.put(1, employee);
+                assertNull(ptr.get());
+                assertFalse(employees.isEmpty());
+                EntryView<int, Employee> view = employees.getEntryView(1);
+                assertEqual(view.value, employee);
+                assertEqual(view.key, 1);
+
+                employees.addIndex("age", true);
+                employees.addIndex("name", false);
+            }
+
+
+            void ClientMapTest::testMapStoreRelatedRequests() {
+                imap->putTransient("ali", "veli", 1100);
+                imap->flush();
+                assertEqual(1, imap->size());
+                assertFalse(imap->evict("deli"));
+                assertTrue(imap->evict("ali"));
+                assertNull(imap->get("ali").get());
             }
         }
     }

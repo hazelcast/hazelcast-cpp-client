@@ -30,8 +30,6 @@ namespace hazelcast {
             public:
                 DataAdapter();
 
-                ~DataAdapter();
-
                 DataAdapter(const Data& data);
 
                 Data &getData();

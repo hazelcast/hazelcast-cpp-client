@@ -20,6 +20,19 @@ namespace hazelcast {
 
             };
 
+            bool Employee::operator ==(const Employee &employee) const {
+                if (age != employee.age)
+                    return false;
+                else if (name.compare(employee.name))
+                    return false;
+                else
+                    return true;
+            }
+
+            bool Employee::operator !=(const Employee &employee) const {
+                return !(*this == employee);
+            }
+
             int Employee::getFactoryId() const {
                 return 666;
             };
