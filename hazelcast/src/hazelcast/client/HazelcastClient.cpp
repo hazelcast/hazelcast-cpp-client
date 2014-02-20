@@ -52,7 +52,6 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig &config)
         :impl(new HazelcastClientImpl(config, *this)) {
-            srand(time(NULL));
             impl->lifecycleService.start();
             impl->connectionManager.start();
             impl->invocationService.start();

@@ -12,10 +12,11 @@ namespace hazelcast {
         namespace connection {
             InSelector::InSelector(ConnectionManager &connectionManager)
             : IOSelector(connectionManager) {
-                initListenSocket(socketSet);
+
             }
 
             void InSelector::listen() {
+                initListenSocket(socketSet);
                 while (isAlive) {
                     processListenerQueue();
 

@@ -13,10 +13,11 @@ namespace hazelcast {
 
             OutSelector::OutSelector(ConnectionManager &connectionManager)
             :IOSelector(connectionManager) {
-                initListenSocket(wakeUpSocketSet);
+
             }
 
             void OutSelector::listen() {
+                initListenSocket(wakeUpSocketSet);
                 while (isAlive) {
                     processListenerQueue();
                     using std::max;

@@ -20,6 +20,10 @@ namespace hazelcast {
 
         class SocketInterceptor;
 
+        enum LogLevel {
+            SEVERE = 100, WARNING = 90, INFO = 50
+        };
+
         /**
          * HazelcastClient configuration class.
          */
@@ -251,8 +255,16 @@ namespace hazelcast {
              * @param LoadBalancer
              */
             void setLoadBalancer(LoadBalancer *loadBalancer);
-
-
+             /**
+              *  enum LoggerLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
+              *  set INFO to see every log.
+              *  set WARNING to see only possible warnings and serious errors.
+              *  set SEVERE to see only serious errors
+              *
+              *  Default log level is INFO
+              * @return itself ClientConfig
+              */
+             ClientConfig & setLogLevel(LogLevel loggerLevel);
         private:
 
             GroupConfig groupConfig;
