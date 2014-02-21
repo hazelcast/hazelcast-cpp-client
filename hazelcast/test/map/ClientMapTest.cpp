@@ -365,12 +365,8 @@ namespace hazelcast {
                 if (!imap->tryLock("key1")) {
                     latch->countDown();
                 }
-                try {
-                    if (imap->tryLock("key1", 5 * 1000)) {
-                        latch->countDown();
-                    }
-                } catch (exception::InterruptedException &e) {
-                    std::cout << e.what() << std::endl;
+                if (imap->tryLock("key1", 5 * 1000)) {
+                    latch->countDown();
                 }
             }
 
@@ -384,26 +380,14 @@ namespace hazelcast {
             }
 
             void testTryLockThread1(util::CountDownLatch *latch, IMap<std::string, std::string> *imap) {
-                try {
-                    if (!imap->tryLock("key1", 2 * 1000)) {
-                        latch->countDown();
-                    }
-                } catch (exception::InterruptedException &e) {
-                    std::cout << e.what() << std::endl;
-                } catch(...) {
-                    std::cout << "testTryLockThread1 fail" << std::endl;
+                if (!imap->tryLock("key1", 2 * 1000)) {
+                    latch->countDown();
                 }
             }
 
             void testTryLockThread2(util::CountDownLatch *latch, IMap<std::string, std::string> *imap) {
-                try {
-                    if (imap->tryLock("key1", 20 * 1000)) {
-                        latch->countDown();
-                    }
-                } catch (exception::InterruptedException &e) {
-                    std::cout << e.what() << std::endl;
-                } catch(...) {
-                    std::cout << "testTryLockThread2 fail" << std::endl;
+                if (imap->tryLock("key1", 20 * 1000)) {
+                    latch->countDown();
                 }
             }
 

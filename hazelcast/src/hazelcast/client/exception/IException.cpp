@@ -9,6 +9,12 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
+            IException::IException()
+            :std::exception()
+            ,report(""){
+
+            }
+
 
             IException::IException(const std::string& source, const std::string& message)
             : std::exception(){

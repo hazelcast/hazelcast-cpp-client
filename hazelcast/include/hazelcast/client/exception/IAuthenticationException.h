@@ -1,12 +1,11 @@
 //
-// Created by sancar koyunlu on 7/11/13.
-// Copyright (c) 2013 hazelcast. All rights reserved.
+// Created by sancar koyunlu on 21/02/14.
+//
 
 
+#ifndef HAZELCAST_IAuthenticationException
+#define HAZELCAST_IAuthenticationException
 
-
-#ifndef HAZELCAST_HazelcastIOException
-#define HAZELCAST_HazelcastIOException
 
 #include "hazelcast/client/exception/IException.h"
 
@@ -14,18 +13,20 @@ namespace hazelcast {
     namespace client {
         namespace exception {
             /**
-             * Raised when an Input Output error is occurred.
+             * Raised an unexpected type data comes from server.
              */
-            class HAZELCAST_API IOException : public IException {
+            class HAZELCAST_API IAuthenticationException : public IException {
             public:
                 /**
                  * Constructor
                  */
-                IOException(const std::string& source, const std::string& message);
+                IAuthenticationException(const std::string &source, const std::string &message);
+
                 /**
                  * Destructor
                  */
-                ~IOException() throw();
+                ~IAuthenticationException() throw();
+
                 /**
                  * return exception explanation string.
                  */
@@ -36,4 +37,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_HazelcastIOException
+#endif //HAZELCAST_IAuthenticationException

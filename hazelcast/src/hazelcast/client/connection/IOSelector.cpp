@@ -7,7 +7,7 @@
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
-
+#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,6 +34,21 @@ namespace hazelcast {
                     throw e;
                 }
             };
+
+            void IOSelector::listen() {
+                while (isAlive) {
+                    try{
+                        processListenerQueue();
+                        listenInternal();
+                    }catch(exception::IException& e){
+                        hazelcast::util::ILogger::warning("IOSelector::listen ", e.what());
+                    }catch(boost::thread_interrupted&){
+                        break;
+                    } catch(...){
+                        hazelcast::util::ILogger::severe("IOSelector::listen ", "unknown exception");
+                    }
+                }
+            }
 
             void IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);

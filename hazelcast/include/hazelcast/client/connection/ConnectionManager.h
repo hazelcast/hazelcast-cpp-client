@@ -39,8 +39,6 @@ namespace hazelcast {
             public:
                 ConnectionManager(spi::ClientContext &clientContext, bool smartRouting);
 
-                ~ConnectionManager();
-
                 void start();
 
                 connection::Connection *ownerConnection(const Address &address);
@@ -53,7 +51,7 @@ namespace hazelcast {
 
                 void removeConnection(const Address &address);
 
-                void shutdown();
+                void stop();
 
                 int getNextCallId();
 

@@ -17,6 +17,8 @@
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
+#include "hazelcast/client/exception/InterruptedException.h"
+#include "hazelcast/client/impl/ServerException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,7 +49,7 @@ namespace hazelcast {
             }
 
             void Connection::close() {
-                if(!_isOwnerConnection){
+                if (!_isOwnerConnection) {
                     removeConnectionCalls();
                 }
                 live = false;
@@ -96,22 +98,36 @@ namespace hazelcast {
                     return;
                 }
                 boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
-                if (response->isException()) {
-                    serialization::Data const &data = response->getData();
-                    boost::shared_ptr<exception::ServerException> ex = serializationService.toObject<exception::ServerException>(data);
-                    if (ex->isInstanceNotActiveException()) {
-                        targetNotActive(promise);
-                        return;
-                    }
-                    promise->setException(ex);
-                    return;
-                }
+                if (!handleException(response, promise))
+                    return;//if response is exception,then return
 
                 if (!handleEventUuid(response, promise))
-                    return; //if event uuid return.
+                    return; //if response is event uuid,then return.
 
                 promise->setResponse(response->getData());
 
+            }
+
+            /* returns shouldSetResponse */
+            bool Connection::handleException(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise) {
+                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+                if (response->isException()) {
+                    serialization::Data const &data = response->getData();
+                    boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
+                    std::string exceptionClassName = ex->name;
+                    if (exceptionClassName == "HazelcastInstanceNotActiveException") {
+                        targetNotActive(promise);
+                    } else if (exceptionClassName == "InterruptedException") {
+                        exception::InterruptedException exception("Server:" + ex->name, ex->message + "\n" + ex->details);
+                        promise->setException(exception);
+                    } else {
+                        exception::IException exception("Server:" + ex->name, ex->message + "\n" + ex->details);
+                        promise->setException(exception);
+                    }
+                    return false;
+                }
+
+                return true;
             }
 
             /* returns shouldSetResponse */

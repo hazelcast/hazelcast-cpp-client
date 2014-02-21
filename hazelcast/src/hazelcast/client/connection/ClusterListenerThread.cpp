@@ -19,7 +19,7 @@ namespace hazelcast {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
             : clientContext(clientContext)
             , conn(NULL)
-            , isReady(false)
+            , startLatch(1)
             , deletingConnection(false) {
 
             };
@@ -40,7 +40,7 @@ namespace hazelcast {
                             }
                         }
                         loadInitialMemberList();
-                        isReady = true;
+                        startLatch.countDown();
                         listenMembershipEvents();
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(std::exception &e) {
@@ -148,7 +148,7 @@ namespace hazelcast {
                         membersUpdated = true;
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         std::vector<Member>::iterator it = std::find(members.begin(), members.end(), member);
-                        if(members.end() != it){
+                        if (members.end() != it) {
                             members.erase(it);
                         }
                         membersUpdated = true;

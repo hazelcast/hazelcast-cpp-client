@@ -18,11 +18,10 @@
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/ItemEvent.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/exception/InterruptedException.h"
-#include "hazelcast/client/exception/ServerException.h"
+#include "hazelcast/client/impl/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/DistributedObject.h"
+#include "ServerException.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -70,33 +69,15 @@ namespace hazelcast {
             };
 
             /**
-             *
-             * @param element E
-             * @return true if element is added successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
-             * @throws IllegalStateException if queue is full.
-             */
-            bool add(const E &element) {
-                if (offer(element)) {
-                    return true;
-                }
-                throw exception::IllegalStateException("bool IQueue::add(const E& e)", "Queue is full!");
-            };
-
-            /**
              * Inserts the specified element into this queue.
              *
              * @param element to add
              * @return <tt>true</tt> if the element was added to this queue, else
              *         <tt>false</tt>
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool offer(const E &e) {
-                try {
-                    return offer(e, 0);
-                } catch (exception::InterruptedException &ex) {
-                    return false;
-                }
+                return offer(e, 0);
             };
 
             /**
@@ -115,18 +96,11 @@ namespace hazelcast {
              * @param timeout how long to wait before giving up, in units of
              * @return <tt>true</tt> if successful, or <tt>false</tt> if
              *         the specified waiting time elapses before space is available
-             * @throws InterruptedException if interrupted while waiting
              */
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
                 queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
-                bool result;
-                try {
-                    result = *(invoke<bool>(request, partitionId));
-                } catch(exception::ServerException &e) {
-                    throw exception::InterruptedException("IQueue::offer", "timeout");
-                }
-                return result;
+                return *(invoke<bool>(request, partitionId));
             };
 
             /**
@@ -144,13 +118,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::PollRequest *request = new queue::PollRequest(getName(), timeoutInMillis);
-                boost::shared_ptr<E> result;
-                try {
-                    result = invoke<E>(request, partitionId);
-                } catch(exception::ServerException &) {
-                    throw exception::InterruptedException("IQueue::poll", "timeout");
-                }
-                return result;
+                return invoke<E>(request, partitionId);
             };
 
             /**
@@ -171,8 +139,7 @@ namespace hazelcast {
             bool remove(const E &element) {
                 serialization::Data data = toData(element);
                 queue::RemoveRequest *request = new queue::RemoveRequest(getName(), data);
-                bool result = *(invoke<bool>(request, partitionId));
-                return result;
+                return *(invoke<bool>(request, partitionId));
             };
 
             /**
@@ -221,11 +188,7 @@ namespace hazelcast {
              * @return removes head of the queue and returns it to user . If not available returns empty constructed shared_ptr.
              */
             boost::shared_ptr<E> poll() {
-                try {
-                    return poll(0);
-                } catch (exception::InterruptedException &) {
-                    return boost::shared_ptr<E>();
-                }
+                return poll(0);
             };
 
             /**
@@ -271,7 +234,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if this queue contains all elements given in vector.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> list = getDataList(elements);
@@ -284,7 +247,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements given in vector can be added to queue.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool addAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> dataList = getDataList(elements);
@@ -297,7 +260,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements are removed successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool removeAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
@@ -311,7 +274,7 @@ namespace hazelcast {
              * Removes the elements from this queue that are not available in given "elements" vector
              * @param elements std::vector<E>
              * @return true if operation is successful.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool retainAll(const std::vector<E> &c) {
                 std::vector<serialization::Data> dataList = getDataList(c);
@@ -325,7 +288,7 @@ namespace hazelcast {
              */
             void clear() {
                 queue::ClearRequest *request = new queue::ClearRequest(getName());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
         private:

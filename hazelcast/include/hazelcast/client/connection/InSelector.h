@@ -17,7 +17,9 @@ namespace hazelcast {
             public:
                 InSelector(ConnectionManager &connectionManager);
 
-                void listen();
+                void listenInternal();
+
+                void start();
             };
         }
     }

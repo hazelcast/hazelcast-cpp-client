@@ -77,11 +77,7 @@ namespace hazelcast {
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
                 boost::shared_ptr<std::string> s;
                 latch.countDown();
-                try {
-                    s = q0.poll(10 * 1000);
-                } catch (exception::InterruptedException &e) {
-                    assertTrue(false, e.what());
-                }
+                s = q0.poll(10 * 1000);
                 assertEqual("item0", *s);
                 q1.offer(*s);
 

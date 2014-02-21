@@ -204,7 +204,7 @@ namespace hazelcast {
              */
             void clear() {
                 multimap::ClearRequest *request = new multimap::ClearRequest(getName());
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
 
             /**
@@ -293,7 +293,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -316,7 +316,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), leaseTimeInMillis, -1);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             }
 
             /**
@@ -386,7 +386,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapUnlockRequest *request = new multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -399,7 +399,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapUnlockRequest *request = new multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId(), true);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             }
 
 

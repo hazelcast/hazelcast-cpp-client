@@ -98,6 +98,8 @@ namespace hazelcast {
 
                 bool handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise);
 
+                bool handleException(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise);
+
             };
 
         }

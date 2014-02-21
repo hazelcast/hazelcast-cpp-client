@@ -32,11 +32,6 @@ namespace hazelcast {
                 loadBalancer->init(cluster);
             };
 
-
-            ~HazelcastClientImpl() {
-                lifecycleService.shutdown();
-            }
-
             ClientConfig clientConfig;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
@@ -53,15 +48,10 @@ namespace hazelcast {
         HazelcastClient::HazelcastClient(ClientConfig &config)
         :impl(new HazelcastClientImpl(config, *this)) {
             impl->lifecycleService.start();
-            impl->connectionManager.start();
-            impl->invocationService.start();
-            impl->clusterService.start();
-            impl->partitionService.start();
-
         };
 
         HazelcastClient::~HazelcastClient() {
-            delete impl;
+            impl->lifecycleService.shutdown();
         };
 
         serialization::SerializationService &HazelcastClient::getSerializationService() {

@@ -26,11 +26,12 @@ namespace hazelcast {
             public:
                 OutSelector(ConnectionManager &connectionManager);
 
-                void listen();
+                void listenInternal();
+
+                void start();
 
             private:
                 util::SocketSet wakeUpSocketSet;
-
             };
         }
     }

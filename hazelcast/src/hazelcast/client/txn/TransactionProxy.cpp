@@ -9,7 +9,6 @@
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/exception/ServerException.h"
 
 
 namespace hazelcast {
@@ -69,13 +68,9 @@ namespace hazelcast {
                     checkThread();
                     checkTimeout();
                     CommitTxnRequest *request = new CommitTxnRequest(true);
-                    invoke<bool>(request);
+                    invoke<serialization::Void>(request);
                     state = TxnState::COMMITTED;
-                } catch (exception::IOException &e) {
-                    state = TxnState::ROLLING_BACK;
-                    onTxnEnd();
-                    throw e;
-                } catch (exception::ServerException &e) {
+                } catch (exception::IException &e) {
                     state = TxnState::ROLLING_BACK;
                     onTxnEnd();
                     throw e;
@@ -96,7 +91,7 @@ namespace hazelcast {
                     checkThread();
                     try {
                         RollbackTxnRequest *request = new RollbackTxnRequest();
-                        invoke<bool>(request);
+                        invoke<serialization::Void>(request);
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;

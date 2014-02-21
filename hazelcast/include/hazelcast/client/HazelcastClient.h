@@ -564,7 +564,7 @@ namespace hazelcast {
 
             class HazelcastClientImpl;
 
-            HazelcastClientImpl *impl;
+            std::auto_ptr<HazelcastClientImpl> impl;
 
             spi::ClientContext &getClientContext();
 

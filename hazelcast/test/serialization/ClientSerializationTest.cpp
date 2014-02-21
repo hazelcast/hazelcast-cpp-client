@@ -14,7 +14,6 @@
 #include "hazelcast/client/serialization/InputSocketStream.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
-#include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/ClientSerializationTest.h"

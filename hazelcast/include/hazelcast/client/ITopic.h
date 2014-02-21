@@ -47,7 +47,7 @@ namespace hazelcast {
             void publish(const E &message) {
                 serialization::Data data = getContext().getSerializationService().template toData<E>(&message);
                 topic::PublishRequest *request = new topic::PublishRequest(getName(), data);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             }
 
             /**

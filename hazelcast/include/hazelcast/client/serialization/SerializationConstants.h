@@ -10,6 +10,8 @@
 #define HAZELCAST_SERIALIZATION_CONSTANTS
 
 #include "hazelcast/util/HazelcastDll.h"
+#include <string>
+#include <vector>
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +19,6 @@ namespace hazelcast {
 
             class HAZELCAST_API SerializationConstants {
             public:
-                static int ID;
                 static int const CONSTANT_TYPE_PORTABLE = -1;
                 static int const CONSTANT_TYPE_DATA = -2;
                 static int const CONSTANT_TYPE_BYTE = -3;
@@ -41,11 +42,21 @@ namespace hazelcast {
                 static int const DEFAULT_TYPE_CLASS = -19;
                 static int const DEFAULT_TYPE_DATE = -20;
                 static int const DEFAULT_TYPE_BIG_INTEGER = -21;
-                static int const DEFAULT_TYPE_OBJECT = -22;
-                static int const DEFAULT_TYPE_EXTERNALIZABLE = -23;
+                static int const DEFAULT_TYPE_BIG_DECIMAL = -22;
+                static int const DEFAULT_TYPE_OBJECT = -23;
+                static int const DEFAULT_TYPE_EXTERNALIZABLE = -24;
+                static int const DEFAULT_TYPE_ENUM = -25;
+
+                SerializationConstants();
+
+                std::string typeIdToName(int typeId);
+
             private:
-                SerializationConstants() {
-                };
+                int size;
+                std::vector<std::string> typeIdNameVector;
+
+                int idToIndex(int id);
+
             };
 
         }

@@ -4,10 +4,11 @@
 
 
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/util/CallPromise.h"
@@ -15,6 +16,8 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,12 +42,8 @@ namespace hazelcast {
 
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
                 clusterThread.setThread(t);
-                while (!clusterThread.isReady) {
-                    try {
-                        boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    } catch(...) {
-                        throw  exception::IException("ClusterService::start", "ClusterService can not be started");
-                    }
+                if (!clusterThread.startLatch.await(10000)) {
+                    throw  exception::IllegalStateException("ClusterService::start", "ClusterService can not be started in 10 seconds");
                 }
                 initMembershipListeners();
                 active = true;
@@ -66,7 +65,7 @@ namespace hazelcast {
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
-                vector<Member> list = getMemberList();
+                std::vector<Member> list = getMemberList();
                 if (list.empty()) {
                     return std::auto_ptr<Address>(NULL);
                 }
@@ -108,12 +107,11 @@ namespace hazelcast {
             Member ClusterService::getMember(Address &address) {
                 boost::lock_guard<boost::mutex> guard(membersLock);
                 return members[address];
-
             }
 
             Member ClusterService::getMember(const std::string &uuid) {
-                vector<Member> list = getMemberList();
-                for (vector<Member>::iterator it = list.begin(); it != list.end(); ++it) {
+                std::vector<Member> list = getMemberList();
+                for (std::vector<Member>::iterator it = list.begin(); it != list.end(); ++it) {
                     if (uuid.compare(it->getUuid())) {
                         return *it;
                     }
@@ -139,7 +137,7 @@ namespace hazelcast {
                 active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
-                std::exception lastError;
+                exception::IException lastError;
                 while (true) {
                     time_t tryStartTime = std::time(NULL);
                     std::vector<Address>::const_iterator it;
@@ -149,13 +147,11 @@ namespace hazelcast {
                             active = true;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;
-                        } catch (exception::IOException &e) {
+                        } catch (exception::IException &e) {
                             lastError = e;
-                            std::cerr << "IO error  during initial connection..\n" << e.what() << std::endl;
-                        } catch (exception::ServerException &e) {
-                            lastError = e;
-                            std::cerr << "IO error from server during initial connection..\n" << e.what() << std::endl;
-
+                            std::ostringstream errorStream;
+                            errorStream << "IO error  during initial connection " << e.what();
+                            util::ILogger::warning("ClusterService::connectToOne", errorStream.str());
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -163,14 +159,16 @@ namespace hazelcast {
                     }
                     const double remainingTime = clientContext.getClientConfig().getAttemptPeriod() - std::difftime(std::time(NULL), tryStartTime);
                     using namespace std;
-                    std::cerr << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
+                    std::ostringstream errorStream;
+                    errorStream << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
+                    util::ILogger::warning("ClusterService::connectToOne", errorStream.str());
 
                     if (remainingTime > 0) {
                         boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
                     }
                 }
-                throw  exception::IException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
+                throw  exception::IllegalStateException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
             };
 
 
@@ -181,8 +179,6 @@ namespace hazelcast {
                         (*it)->memberAdded(event);
                     } else if (event.getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         (*it)->memberRemoved(event);
-                    } else if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        assert(0 && "MEMBER_ATTRIBUTE_CHANGED cant get here");
                     }
                 }
 
@@ -191,8 +187,6 @@ namespace hazelcast {
                         (*it)->memberAdded(event);
                     } else if (event.getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         (*it)->memberRemoved(event);
-                    } else if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        assert(0 && "MEMBER_ATTRIBUTE_CHANGED cant get here");
                     }
                 }
             };
@@ -201,19 +195,11 @@ namespace hazelcast {
             void ClusterService::fireMemberAttributeEvent(MemberAttributeEvent &event) {
                 boost::lock_guard<boost::mutex> guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        (*it)->memberAttributeChanged(event);
-                    } else {
-                        assert(0 && "can't get here");
-                    }
+                    (*it)->memberAttributeChanged(event);
                 }
 
                 for (std::set<InitialMembershipListener *>::iterator it = initialListeners.begin(); it != initialListeners.end(); ++it) {
-                    if (event.getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        (*it)->memberAttributeChanged(event);
-                    } else {
-                        assert(0 && "can't get here");
-                    }
+                    (*it)->memberAttributeChanged(event);
                 }
             }
 

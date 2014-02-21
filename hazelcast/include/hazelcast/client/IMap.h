@@ -85,7 +85,7 @@ namespace hazelcast {
              * check if this map contains key.
              * @param key
              * @return true if contains, false otherwise
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsKey(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -99,7 +99,7 @@ namespace hazelcast {
              * check if this map contains value.
              * @param value
              * @return true if contains, false otherwise
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsValue(const V &value) {
                 serialization::Data valueData = toData(value);
@@ -113,7 +113,7 @@ namespace hazelcast {
              * @param key
              * @return value value in shared_ptr, if there is no mapping for key
              * then return NULL in shared_ptr.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> get(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -127,7 +127,7 @@ namespace hazelcast {
              * @param key
              * @param value
              * @return the previous value in shared_ptr, if there is no mapping for key
-             * @throws ClassCastException if the type of the specified elements are incompatible with the server side.
+             * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> put(const K &key, const V &value) {
@@ -143,7 +143,7 @@ namespace hazelcast {
              * @param key
              * @return the previous value in shared_ptr, if there is no mapping for key
              * then returns NULL in shared_ptr.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> remove(const K &key) {
                 serialization::Data keyData = toData(key);
@@ -157,7 +157,7 @@ namespace hazelcast {
              * @param key
              * @param value
              * @return true if remove is successful false otherwise
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool remove(const K &key, const V &value) {
                 serialization::Data keyData = toData(key);
@@ -172,13 +172,13 @@ namespace hazelcast {
              * removes entry from map.
              * Does not return anything.
              * @param key The key of the map entry to remove.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             void deleteEntry(const K &key) {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::DeleteRequest *request = new map::DeleteRequest(getName(), keyData, util::getThreadId());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -187,7 +187,7 @@ namespace hazelcast {
              */
             void flush() {
                 map::FlushRequest *request = new map::FlushRequest(getName());
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
 
             /**
@@ -215,7 +215,7 @@ namespace hazelcast {
              * @return Future from which the value of the key can be retrieved.
 
              * @see java.util.concurrent.Future
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             //MTODO Future<V> getAsync(K key);
 
@@ -246,7 +246,7 @@ namespace hazelcast {
              * @return Future from which the old value of the key can be retrieved.
              * @throws NullPointerException if the specified key or value is null
              * @see java.util.concurrent.Future
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             //MTODO Future<V> putAsync(K key, V value);
 
@@ -370,7 +370,7 @@ namespace hazelcast {
                 int partitionId = getPartitionId(keyData);
                 serialization::Data valueData = toData(value);
                 map::PutTransientRequest *request = new map::PutTransientRequest(getName(), keyData, valueData, util::getThreadId(), ttlInMillis);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -450,7 +450,7 @@ namespace hazelcast {
                 int partitionId = getPartitionId(keyData);
                 serialization::Data valueData = toData(value);
                 map::SetRequest *request = new map::SetRequest(getName(), keyData, valueData, util::getThreadId(), ttl);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -471,7 +471,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::LockRequest *request = new map::LockRequest(getName(), keyData, util::getThreadId());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -496,7 +496,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::LockRequest *request = new map::LockRequest (getName(), keyData, util::getThreadId(), leaseTime, -1);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -569,7 +569,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::UnlockRequest *request = new map::UnlockRequest(getName(), keyData, util::getThreadId(), false);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -584,7 +584,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::UnlockRequest *request = new map::UnlockRequest(getName(), keyData, util::getThreadId(), true);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -613,7 +613,7 @@ namespace hazelcast {
              */
             void removeInterceptor(const std::string &id) {
                 map::RemoveInterceptorRequest *request = new map::RemoveInterceptorRequest(getName(), id);
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             }
 
             /**
@@ -961,7 +961,7 @@ namespace hazelcast {
              */
             void addIndex(const string &attribute, bool ordered) {
                 map::AddIndexRequest *request = new map::AddIndexRequest(getName(), attribute, ordered);
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
 
             /**
@@ -1097,7 +1097,7 @@ namespace hazelcast {
                     entryDataSet[i++] = std::make_pair(toData(it->first), toData(it->second));
                 }
                 map::PutAllRequest *request = new map::PutAllRequest(getName(), entrySet);
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
 
             /**
@@ -1106,7 +1106,7 @@ namespace hazelcast {
              */
             void clear() {
                 map::ClearRequest *request = new map::ClearRequest(getName());
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
         private:
             IMap(const std::string &instanceName, spi::ClientContext *context)

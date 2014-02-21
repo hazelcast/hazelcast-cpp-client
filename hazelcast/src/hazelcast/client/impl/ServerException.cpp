@@ -3,13 +3,13 @@
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
 
-#include "hazelcast/client/exception/ServerException.h"
+#include "hazelcast/client/impl/ServerException.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
-        namespace exception {
+        namespace impl {
             ServerException::ServerException() {
 
             }
@@ -36,10 +36,6 @@ namespace hazelcast {
                 type = reader.readInt("t");
             };
 
-
-            bool ServerException::isInstanceNotActiveException() const {
-                return message.find("HazelcastInstanceNotActiveException", 0) != std::string::npos;
-            }
         }
     }
 }

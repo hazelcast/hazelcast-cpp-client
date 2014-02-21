@@ -9,22 +9,21 @@ namespace hazelcast {
     namespace util {
         namespace ILogger {
             void severe(const std::string &methodName, const std::string &message) {
-                log((int) client::SEVERE, methodName, message);
+                if (client::SEVERE >= HazelcastLogLevel) {
+                    (std::cout << "SEVERE :: " << methodName << " " << message << std::endl);
+                }
             }
 
             void warning(const std::string &methodName, const std::string &message) {
-                log((int) client::WARNING, methodName, message);
+                if (client::WARNING >= HazelcastLogLevel) {
+                    (std::cout << "WARNING :: " << methodName << " " << message << std::endl);
+                }
             }
 
             void info(const std::string &methodName, const std::string &message) {
-                log((int) client::INFO, methodName, message);
-            }
-
-            void log(int logLevel, const std::string &methodName, const std::string &message) {
-                if (logLevel >= HazelcastLogLevel) {
-                    (std::cout << message << " at " << methodName << std::endl);
+                if (client::WARNING >= HazelcastLogLevel) {
+                    (std::cout << "INFO :: " << methodName << " " << message << std::endl);
                 }
-
             }
         }
     }

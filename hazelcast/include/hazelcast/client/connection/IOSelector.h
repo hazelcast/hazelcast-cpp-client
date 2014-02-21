@@ -26,9 +26,13 @@ namespace hazelcast {
 
                 virtual ~IOSelector();
 
+                virtual void start() = 0;
+
                 void initListenSocket(util::SocketSet &wakeUpSocketSet);
 
-                virtual void listen() = 0;
+                void listen();
+
+                virtual void listenInternal() = 0;
 
                 void addTask(ListenerTask *listenerTask);
 
@@ -42,16 +46,17 @@ namespace hazelcast {
 
             protected:
 
-                void processListenerQueue();
-
                 struct timeval t;
-                boost::atomic<bool> isAlive;
                 util::SocketSet socketSet;
-                util::ConcurrentQueue<ListenerTask> listenerTasks;
-                std::auto_ptr<Socket> wakeUpSocket;
-				std::auto_ptr<Socket> sleepingSocket;
                 int wakeUpListenerSocketId;
                 ConnectionManager &connectionManager;
+            private:
+                void processListenerQueue();
+
+                std::auto_ptr<Socket> wakeUpSocket;
+                std::auto_ptr<Socket> sleepingSocket;
+                util::ConcurrentQueue<ListenerTask> listenerTasks;
+                boost::atomic<bool> isAlive;
             };
         }
     }

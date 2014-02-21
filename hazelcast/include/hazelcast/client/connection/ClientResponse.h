@@ -9,7 +9,6 @@
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/exception/ServerException.h"
 #include <memory>
 
 namespace hazelcast {

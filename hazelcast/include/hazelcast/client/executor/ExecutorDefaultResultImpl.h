@@ -64,7 +64,7 @@
 //                void asyncInvokeToAddress(Callable &task, Address address, Future<Result> future, const Result &result) {
 //                    executor::TargetCallableRequest<Callable> request(instanceName, task, address);
 //                    try{
-//                        invoke<bool>(request, address);
+//                        invoke<serialization::Void>(request, address);
 //                        future.accessInternal().setValue((new Result(result)));
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
@@ -77,7 +77,7 @@
 //                void asyncInvoke(Callable &callable, Future<Result> future, const Result &result) {
 //                    executor::LocalTargetCallableRequest<Callable > request(instanceName, callable);
 //                    try{
-//                        invoke<bool>(request);
+//                        invoke<serialization::Void>(request);
 //                        future.accessInternal().setValue(new Result(result));
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));

@@ -125,6 +125,13 @@ public:
         try {
             boost::thread monitor(printStats);
             HazelcastClient hazelcastClient(clientConfig);
+            IMap<int, std::string> iMap = hazelcastClient.getMap<int, std::string>("sancar");
+            boost::shared_ptr<std::string> ptr = iMap.get(1);
+            if (ptr.get() != NULL)
+                std::cout << *(ptr.get()) << std::endl;
+            else
+                std::cout << "NULLLLL" << std::endl;
+
             for (int i = 0; i < THREAD_COUNT; i++) {
                 boost::thread t(boost::bind(&SimpleMapTest::op, this, &hazelcastClient));
             }

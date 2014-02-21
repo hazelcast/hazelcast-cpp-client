@@ -11,6 +11,8 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "IllegalStateException.h"
+#include "ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -52,11 +54,12 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
+                    }catch(exception::IException& e){
+                        util::ILogger::warning("PartitionService::runListener", "unkown exception");
                     } catch(boost::thread_interrupted &) {
                         break;
                     } catch(...) {
-                        //ignored
-                        std::cerr << "PartitionService::runListener ignored exception " << std::endl;
+                        util::ILogger::severe("PartitionService::runListener", "unkown exception");
                     }
                 }
             };
@@ -132,7 +135,7 @@ namespace hazelcast {
                         return;
                     }
                 }
-                throw exception::IException("PartitionService::getInitialPartitions", " Cannot get initial partitions!");
+                throw exception::IllegalStateException("PartitionService::getInitialPartitions", " Cannot get initial partitions!");
             };
 
 

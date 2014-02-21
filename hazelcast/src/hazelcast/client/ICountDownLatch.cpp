@@ -20,7 +20,7 @@ namespace hazelcast {
 
         void ICountDownLatch::countDown() {
             countdownlatch::CountDownRequest *request = new countdownlatch::CountDownRequest(getName());
-            invoke<bool>(request, partitionId);
+            invoke<serialization::Void>(request, partitionId);
         };
 
         int ICountDownLatch::getCount() {

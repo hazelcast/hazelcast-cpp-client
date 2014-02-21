@@ -97,7 +97,7 @@ namespace hazelcast {
              *
              * @param element
              * @returns true if set contains element
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool contains(const E &o) {
                 serialization::Data valueData = toData(o);
@@ -128,7 +128,7 @@ namespace hazelcast {
              *
              * @param E e
              * @return true if element is added successfully. If elements was already there returns false.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool add(const E &e) {
                 serialization::Data valueData = toData(e);
@@ -141,7 +141,7 @@ namespace hazelcast {
              *
              * @param E e
              * @return true if element is removed successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool remove(const E &e) {
                 serialization::Data valueData = toData(e);
@@ -154,7 +154,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if this set contains all elements given in vector.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
@@ -167,7 +167,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements given in vector can be added to set.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool addAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
@@ -180,7 +180,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements are removed successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool removeAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
@@ -194,7 +194,7 @@ namespace hazelcast {
              * Removes the elements from this set that are not available in given "elements" vector
              * @param elements std::vector<E>
              * @return true if operation is successful.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool retainAll(const std::vector<E> &objects) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(objects);
@@ -209,7 +209,7 @@ namespace hazelcast {
              */
             void clear() {
                 collection::CollectionClearRequest *request = new collection::CollectionClearRequest(getName(), getServiceName());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
 

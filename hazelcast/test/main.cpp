@@ -27,75 +27,71 @@ void testSpeed() {
 };
 
 void unitTests() {
-    HazelcastInstanceFactory factory;
+    try {
+        HazelcastInstanceFactory factory;
 
-    ClientSerializationTest serializationTest;
-    serializationTest.executeTests();
+        ClientSerializationTest serializationTest;
+        serializationTest.executeTests();
 
-    ClientMapTest mapTest(factory);
-    mapTest.executeTests();
+        ClientMapTest mapTest(factory);
+        mapTest.executeTests();
 
-    ClientMultiMapTest multiMapTest(factory);
-    multiMapTest.executeTests();
+        ClientMultiMapTest multiMapTest(factory);
+        multiMapTest.executeTests();
 
-    ClientQueueTest queueTest(factory);
-    queueTest.executeTests();
+        ClientQueueTest queueTest(factory);
+        queueTest.executeTests();
 
-    ClientListTest listTest(factory);
-    listTest.executeTests();
+        ClientListTest listTest(factory);
+        listTest.executeTests();
 
-    ClientSetTest setTest(factory);
-    setTest.executeTests();
+        ClientSetTest setTest(factory);
+        setTest.executeTests();
 
-    IAtomicLongTest atomTest(factory);
-    atomTest.executeTests();
+        IAtomicLongTest atomTest(factory);
+        atomTest.executeTests();
 
-    IdGeneratorTest generatorTest(factory);
-    generatorTest.executeTests();
+        IdGeneratorTest generatorTest(factory);
+        generatorTest.executeTests();
 
-    ICountDownLatchTest latchTest(factory);
-    latchTest.executeTests();
+        ICountDownLatchTest latchTest(factory);
+        latchTest.executeTests();
 
-    ClientLockTest lockTest(factory);
-    lockTest.executeTests();
+        ClientLockTest lockTest(factory);
+        lockTest.executeTests();
 
-    ClientSemaphoreTest semaphoreTest(factory);
-    semaphoreTest.executeTests();
+        ClientSemaphoreTest semaphoreTest(factory);
+        semaphoreTest.executeTests();
 
-    ClientTopicTest topicTest(factory);
-    topicTest.executeTests();
+        ClientTopicTest topicTest(factory);
+        topicTest.executeTests();
 
 
-    ClientTxnListTest clientTxnListTest(factory);
-    clientTxnListTest.executeTests();
+        ClientTxnListTest clientTxnListTest(factory);
+        clientTxnListTest.executeTests();
 
-    ClientTxnMapTest clientTxnMapTest(factory);
-    clientTxnMapTest.executeTests();
+        ClientTxnMapTest clientTxnMapTest(factory);
+        clientTxnMapTest.executeTests();
 
-    ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
-    clientTxnMultiMapTest.executeTests();
+        ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
+        clientTxnMultiMapTest.executeTests();
 
-    ClientTxnQueueTest clientTxnQueueTest(factory);
-    clientTxnQueueTest.executeTests();
+        ClientTxnQueueTest clientTxnQueueTest(factory);
+        clientTxnQueueTest.executeTests();
 
-    ClientTxnSetTest clientTxnSetTest(factory);
-    clientTxnSetTest.executeTests();
+        ClientTxnSetTest clientTxnSetTest(factory);
+        clientTxnSetTest.executeTests();
 
-    ClientTxnTest clientTxnTest(factory);
-    clientTxnTest.executeTests();
-
+        ClientTxnTest clientTxnTest(factory);
+        clientTxnTest.executeTests();
+    } catch(std::exception &e) {
+        std::cout << "unitTests " << e.what() << std::endl;
+    }
 }
 
 int main(int argc, char **argv) {
-	try{
     unitTests();
 //    testSpeed();
-
-	}catch(std::exception& e){
-		std::cout << "main " << e.what() << std::endl;
-	}
-
-
     return 0;
 };
 

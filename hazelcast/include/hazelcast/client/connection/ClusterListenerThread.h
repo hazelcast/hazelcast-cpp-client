@@ -7,6 +7,7 @@
 
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/Member.h"
+#include "hazelcast/util/CountDownLatch.h"
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 
@@ -39,7 +40,7 @@ namespace hazelcast {
 
                 void stop();
 
-                boost::atomic<bool> isReady;
+                util::CountDownLatch startLatch;
             private:
                 spi::ClientContext &clientContext;
 

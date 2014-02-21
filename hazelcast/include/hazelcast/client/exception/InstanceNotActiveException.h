@@ -25,12 +25,12 @@ namespace hazelcast {
                 /**
                  * Destructor
                  */
-                virtual ~InstanceNotActiveException() throw();
+                ~InstanceNotActiveException() throw();
 
                 /**
                  * return exception explanation string.
                  */
-                virtual char const *what() const throw();
+                char const *what() const throw();
             };
 
         }

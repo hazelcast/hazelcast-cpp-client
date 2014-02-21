@@ -5,8 +5,6 @@
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
-#include "hazelcast/client/exception/InterruptedException.h"
-
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +16,6 @@ namespace hazelcast {
         };
 
         bool ISemaphore::init(int permits) {
-            checkNegative(permits);
             semaphore::InitRequest *request = new semaphore::InitRequest(getName(), permits);
             return invoke<bool>(request, partitionId);
         };
@@ -28,9 +25,8 @@ namespace hazelcast {
         };
 
         void ISemaphore::acquire(int permits) {
-            checkNegative(permits);
             semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, -1);
-            invoke<bool>(request, partitionId);
+            invoke<serialization::Void>(request, partitionId);
         };
 
         int ISemaphore::availablePermits() {
@@ -46,9 +42,8 @@ namespace hazelcast {
         };
 
         void ISemaphore::reducePermits(int reduction) {
-            checkNegative(reduction);
             semaphore::ReduceRequest *request = new semaphore::ReduceRequest(getName(), reduction);
-            invoke<bool>(request, partitionId);
+            invoke<serialization::Void>(request, partitionId);
         };
 
         void ISemaphore::release() {
@@ -57,7 +52,7 @@ namespace hazelcast {
 
         void ISemaphore::release(int permits) {
             semaphore::ReleaseRequest *request = new semaphore::ReleaseRequest(getName(), permits);
-            invoke<bool>(request, partitionId);
+            invoke<serialization::Void>(request, partitionId);
         };
 
         bool ISemaphore::tryAcquire() {
@@ -65,12 +60,7 @@ namespace hazelcast {
         };
 
         bool ISemaphore::tryAcquire(int permits) {
-            checkNegative(permits);
-            try {
                 return tryAcquire(permits, 0);
-            } catch (exception::InterruptedException &e) {
-                return false;
-            }
         };
 
         bool ISemaphore::tryAcquire(long timeoutInMillis) {
@@ -78,15 +68,8 @@ namespace hazelcast {
         };
 
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
-            checkNegative(permits);
             semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, timeoutInMillis);
             return *(invoke<bool>(request, partitionId));
-        };
-
-        void ISemaphore::checkNegative(int permits) {
-            if (permits < 0) {
-                throw exception::IException("ISemaphore::checkNegative", "Permits cannot be negative!");
-            }
         };
 
         void ISemaphore::onDestroy() {

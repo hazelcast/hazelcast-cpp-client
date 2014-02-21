@@ -84,9 +84,6 @@ namespace hazelcast {
              * @param timeoutInMillis the maximum time to wait
              * @return true if the count reached zero and false
              *         if the waiting time elapsed before the count reached zero
-             * @throws MemberLeftException        if the countdown owner becomes disconnected while waiting
-             * @throws InterruptedException       if the current thread is interrupted
-             * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
             bool await(long timeoutInMillis);
 

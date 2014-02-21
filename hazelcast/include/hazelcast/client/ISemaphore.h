@@ -108,7 +108,6 @@ namespace hazelcast {
              *
              * @param permits the number of permits to acquire
              * @throws InterruptedException       if the current thread is interrupted
-             * @throws IllegalArgumentException   if permits is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
             void acquire(int permits);
@@ -164,7 +163,6 @@ namespace hazelcast {
              * in the application.
              *
              * @param permits the number of permits to release
-             * @throws IllegalArgumentException if permits is negative
              */
             void release(int permits);
 
@@ -193,7 +191,6 @@ namespace hazelcast {
              * @param permits the number of permits to acquire
              * @return true if the permits were acquired and
              *         false otherwise
-             * @throws IllegalArgumentException if permits is negative
              */
             bool tryAcquire(int permits);
 
@@ -279,13 +276,11 @@ namespace hazelcast {
              * @return true if all permits were acquired and false
              *         if the waiting time elapsed before all permits could be acquired
              * @throws InterruptedException       if the current thread is interrupted
-             * @throws IllegalArgumentException   if permits is negative
              * @throws IllegalStateException      if hazelcast instance is shutdown while waiting
              */
             bool tryAcquire(int permits, long timeoutInMillis);
 
         private:
-            void checkNegative(int permits);
 
             void onDestroy();
 

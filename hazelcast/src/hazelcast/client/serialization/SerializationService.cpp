@@ -6,8 +6,9 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/client/exception/ServerException.h"
 #include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/exception/IClassCastException.h"
+#include "hazelcast/util/ILogger.h"
 
 using namespace std;
 
@@ -36,6 +37,15 @@ namespace hazelcast {
             boost::shared_ptr<SerializerBase> SerializationService::serializerFor(int typeId) {
                 return getSerializerHolder().serializerFor(typeId);
             };
+
+            void SerializationService::checkClassType(int expectedType, int currentType){
+                if (expectedType != currentType){
+                    std::string source = "SerializationService:toObject<" + constants.typeIdToName(expectedType)+ "> ";
+                    std::string message = "recevied data of type " + constants.typeIdToName(currentType) ;
+                    util::ILogger::severe(source, message);
+                    throw exception::IClassCastException(source, message);
+                }
+            }
 
         }
     }

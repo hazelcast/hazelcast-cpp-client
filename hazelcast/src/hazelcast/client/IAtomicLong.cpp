@@ -57,7 +57,7 @@ namespace hazelcast {
 
         void IAtomicLong::set(long newValue) {
             atomiclong::SetRequest *request = new atomiclong::SetRequest(getName(), newValue);
-            invoke<bool>(request, partitionId);
+            invoke<serialization::Void>(request, partitionId);
         };
 
         void IAtomicLong::onDestroy() {

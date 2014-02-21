@@ -13,8 +13,6 @@
 #include "hazelcast/client/queue/TxnOfferRequest.h"
 #include "hazelcast/client/queue/TxnPollRequest.h"
 #include "hazelcast/client/queue/TxnSizeRequest.h"
-#include "hazelcast/client/exception/InterruptedException.h"
-#include "hazelcast/client/exception/ServerException.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,11 +33,7 @@ namespace hazelcast {
              * @see IQueue::offer(const E &e)
              */
             bool offer(const E &e) {
-                try {
-                    return offer(e, 0);
-                } catch (exception::InterruptedException &) {
-                    return false;
-                }
+                return offer(e, 0);
             };
 
             /**
@@ -50,13 +44,7 @@ namespace hazelcast {
             bool offer(const E &e, long timeoutInMillis) {
                 serialization::Data data = toData(e);
                 queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, data);
-                bool result;
-                try {
-                    result = invoke<bool>(request);
-                } catch(exception::ServerException &) {
-                    throw exception::InterruptedException("TransactionalQueue::offer", "timeout");
-                }
-                return result;
+                return *(invoke<bool>(request));
             };
 
             /**
@@ -65,11 +53,7 @@ namespace hazelcast {
              * @see IQueue::poll()
              */
             boost::shared_ptr<E> poll() {
-                try {
-                    return poll(0);
-                } catch (exception::InterruptedException &e) {
-                    return boost::shared_ptr<E>();
-                }
+                return poll(0);
             };
 
             /**
@@ -79,13 +63,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
                 queue::TxnPollRequest *request = new queue::TxnPollRequest(getName(), timeoutInMillis);
-                boost::shared_ptr<E> result;
-                try {
-                    result = invoke<E>(request);
-                } catch(exception::ServerException &e) {
-                    throw exception::InterruptedException("TransactionalQueue::poll", "timeout");
-                }
-                return result;
+                return invoke<E>(request);
             };
 
             /**

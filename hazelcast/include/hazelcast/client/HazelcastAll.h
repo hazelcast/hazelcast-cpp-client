@@ -46,7 +46,6 @@
 #include "hazelcast/client/TransactionalMultiMap.h"
 #include "hazelcast/client/TransactionalQueue.h"
 #include "hazelcast/client/TransactionalSet.h"
-#include "hazelcast/client/TransactionalTaskContext.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/TransactionOptions.h"
 

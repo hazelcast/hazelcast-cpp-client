@@ -99,7 +99,7 @@ namespace hazelcast {
                 serialization::Data keyData = toData(key);
                 serialization::Data valueData = toData(value);
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, keyData, valueData);
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             }
 
             /**
@@ -172,7 +172,7 @@ namespace hazelcast {
             void deleteEntry(const K &key) {
                 serialization::Data data = toData(key);
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, data);
-                invoke<bool>(request);
+                invoke<serialization::Void>(request);
             };
 
             /**

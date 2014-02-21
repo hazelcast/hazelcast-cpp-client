@@ -20,6 +20,7 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/DataInput.h"
+#include "hazelcast/client/serialization/Void.h"
 #include "hazelcast/client/serialization/SerializerHolder.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/SerializationConstants.h"
@@ -94,8 +95,8 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::shared_ptr<T> toObjectResolved(const Data &data, Portable *tag) {
-                    if (data.bufferSize() == 0)
-                        return boost::shared_ptr<T>();
+                    if (data.bufferSize() == 0) return boost::shared_ptr<T>();
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_PORTABLE, data.getType());
                     boost::shared_ptr<T> object(new T);
                     DataInput dataInput(*(data.buffer.get()));
 
@@ -109,8 +110,8 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::shared_ptr<T> toObjectResolved(const Data &data, IdentifiedDataSerializable *tag) {
-                    if (data.bufferSize() == 0)
-                        return boost::shared_ptr<T>();
+                    if (data.bufferSize() == 0) return boost::shared_ptr<T>();
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_DATA, data.getType());
                     boost::shared_ptr<T> object(new T);
                     DataInput dataInput(*(data.buffer.get()));
                     ObjectDataInput objectDataInput(dataInput, serializationContext);
@@ -120,9 +121,9 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::shared_ptr<T> toObjectResolved(const Data &data, void *tag) {
-                    if (data.bufferSize() == 0)
-                        return boost::shared_ptr<T>();
+                    if (data.bufferSize() == 0) return boost::shared_ptr<T>();
                     boost::shared_ptr<T> object(new T);
+                    checkClassType(object->getSerializerId(), data.getType());
                     DataInput dataInput(*(data.buffer.get()));
                     ObjectDataInput objectDataInput(dataInput, serializationContext);
                     boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getSerializerId());
@@ -131,7 +132,7 @@ namespace hazelcast {
                         s->read(objectDataInput, *object);
                         return object;
                     } else {
-                        throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(data.getType()) + ", typename :" + typeid(T).name());
+                        throw exception::IOException("SerializationService::toObject", "No serializer found for serializerId :" + util::to_string(object->getSerializerId()) + ", typename :" + typeid(T).name());
                     }
                 };
 
@@ -144,9 +145,13 @@ namespace hazelcast {
 
                 SerializationService(const SerializationService &);
 
-                SerializationService& operator =(const SerializationService&);
+                SerializationService &operator = (const SerializationService &);
 
                 SerializationContext serializationContext;
+
+                SerializationConstants constants;
+
+                void checkClassType(int expectedType, int currentType);
 
             };
 
@@ -331,8 +336,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<byte> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<byte>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, data.getType());
                 boost::shared_ptr<byte> object(new byte);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readByte();
@@ -341,8 +346,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<bool> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<bool>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN, data.getType());
                 boost::shared_ptr<bool> object(new bool);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readBoolean();
@@ -351,8 +356,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<char> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<char>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, data.getType());//:
                 boost::shared_ptr<char> object(new char);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readChar();
@@ -361,8 +366,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<short> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<short>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT, data.getType());
                 boost::shared_ptr<short> object(new short);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readShort();
@@ -371,8 +376,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<int> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<int>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER, data.getType());
                 boost::shared_ptr<int> object(new int);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readInt();
@@ -381,8 +386,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<long> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<long>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, data.getType());
                 boost::shared_ptr<long> object(new long);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readLong();
@@ -391,8 +396,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<float> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<float>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT, data.getType());
                 boost::shared_ptr<float> object(new float);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readFloat();
@@ -401,8 +406,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<double> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<double>();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE, data.getType());
                 boost::shared_ptr<double> object(new double);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readDouble();
@@ -411,8 +416,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<char> > SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<char> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<char> > object(new std::vector<char>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readCharArray();
@@ -421,8 +426,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<short> >  SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<short> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<short> > object(new std::vector<short>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readShortArray();
@@ -431,8 +436,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<int> > SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<int> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<int> > object(new std::vector<int>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readIntArray();
@@ -441,8 +446,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<long> > SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<long> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<long> > object(new std::vector<long>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readLongArray();
@@ -451,8 +456,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr< std::vector<float> >  SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<float> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<float> > object(new std::vector<float>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readFloatArray();
@@ -461,8 +466,8 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::vector<double> > SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<double> >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, data.getType());
                 boost::shared_ptr<std::vector<double> > object(new std::vector<double>);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readDoubleArray();
@@ -471,12 +476,17 @@ namespace hazelcast {
 
             template<>
             inline boost::shared_ptr<std::string> SerializationService::toObject(const Data &data) {
-                
                 if (data.bufferSize() == 0) return boost::shared_ptr<std::string >();
+                checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, data.getType());
                 boost::shared_ptr<std::string > object(new std::string);
                 DataInput dataInput(*(data.buffer.get()));
                 *object = dataInput.readUTF();
                 return object;
+            };
+
+            template<>
+            inline boost::shared_ptr<Void> SerializationService::toObject(const Data &data) {
+                return boost::shared_ptr<Void>();
             };
         }
     }

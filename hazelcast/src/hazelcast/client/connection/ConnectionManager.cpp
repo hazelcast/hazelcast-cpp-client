@@ -14,6 +14,9 @@
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/exception/IAuthenticationException.h"
+#include "hazelcast/client/impl/ServerException.h"
+#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,25 +34,27 @@ namespace hazelcast {
 
             };
 
-            ConnectionManager::~ConnectionManager() {
-                shutdown();
-            };
-
-
             void ConnectionManager::start() {
                 socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
+                iListener.start();
+                oListener.start();
                 iListenerThread.reset(new boost::thread(&InSelector::listen, &iListener));
                 oListenerThread.reset(new boost::thread(&OutSelector::listen, &oListener));
             }
 
-            void ConnectionManager::shutdown() {
+            void ConnectionManager::stop() {
                 live = false;
                 iListener.shutdown();
                 oListener.shutdown();
-                iListenerThread->interrupt();
-                iListenerThread->join();
-                oListenerThread->interrupt();
-                oListenerThread->join();
+                if (iListenerThread.get() != NULL) {
+                    iListenerThread->interrupt();
+                    iListenerThread->join();
+                }
+                if (oListenerThread.get() != NULL) {
+                    oListenerThread->interrupt();
+                    oListenerThread->join();
+
+                }
             }
 
             connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
@@ -140,14 +145,16 @@ namespace hazelcast {
                 boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
                 if (clientResponse->isException()) {
                     serialization::Data const &data = clientResponse->getData();
-                    boost::shared_ptr<exception::ServerException> ex = serializationService.toObject<exception::ServerException>(data);
-                    throw exception::IOException("ConnectionManager::authenticate", ex->what());
+                    boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
+                    throw exception::IAuthenticationException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
-                (std::cout << " --- authenticated by " << address->getHost() << ":"  << address->getPort() << " --- " << std::endl);
+                std::stringstream message;
+                (message << " --- authenticated by " << address->getHost() << ":" << address->getPort() << " --- " << std::endl);
+                util::ILogger::info("ConnectionManager::authenticate", message.str());
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };
@@ -179,24 +186,14 @@ namespace hazelcast {
             }
 
             connection::Connection *ConnectionManager::connectTo(const Address &address, bool reAuth) {
-                connection::Connection *conn = new Connection(address, clientContext, iListener, oListener);
+                std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
                 checkLive();
-
-                try {
-                    conn->connect();
-                    //MTODO socket options
-                    if (socketInterceptor.get() != NULL) {
-                        socketInterceptor.get()->onConnect(conn->getSocket());
-                    }
-                    authenticate(*conn, reAuth, reAuth);
-                } catch(exception::IOException &e) {
-                    delete conn;
-                    throw e;
-                } catch(...) {
-                    assert(0 && "No other exception can be here : ConnectionManager::connectTo");
+                conn->connect();
+                if (socketInterceptor.get() != NULL) {
+                    socketInterceptor.get()->onConnect(conn->getSocket());
                 }
-
-                return conn;
+                authenticate(*conn, reAuth, reAuth);
+                return conn.release();
             }
         }
     }

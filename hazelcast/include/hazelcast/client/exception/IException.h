@@ -17,18 +17,24 @@ namespace hazelcast {
     namespace client {
         namespace exception {
             /**
-             * Base class for all exceptions except ServerException.
+             * Base class for all exception originated from Hazelcast methods.
+             * If exception coming from hazelcast servers cannot be identified,
+             * it will be fired as IException.
              *
-             * @see IllegalStateException
+             *
              * @see InstanceNotActiveException
              * @see InterruptedException
-             * @see InterruptedException
              * @see IOException
-             * @see NoSuchElementException
-             * @see TargetDisconnectedException
+             * @see IClassCastException
+             * @see IllegalStateException
              */
             class HAZELCAST_API IException : public std::exception {
             public:
+                /**
+                 * Constructor
+                 */
+                IException();
+
                 /**
                  * Constructor
                  */

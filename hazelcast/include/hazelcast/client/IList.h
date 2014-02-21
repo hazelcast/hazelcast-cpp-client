@@ -105,7 +105,7 @@ namespace hazelcast {
              *
              * @param element
              * @returns true if list contains element
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool contains(const E &element) {
                 serialization::Data valueData = toData(element);
@@ -135,7 +135,7 @@ namespace hazelcast {
              *
              * @param element
              * @return true if element is added successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool add(const E &element) {
                 serialization::Data valueData = toData(element);
@@ -148,7 +148,7 @@ namespace hazelcast {
              *
              * @param element
              * @return true if element is removed successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool remove(const E &element) {
                 serialization::Data valueData = toData(element);
@@ -161,7 +161,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if this list contains all elements given in vector.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(elements);
@@ -174,7 +174,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements given in vector can be added to list.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool addAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(elements);
@@ -190,8 +190,8 @@ namespace hazelcast {
              *
              * @param int index
              * @param elements std::vector<E>
-             * @return true if list contains all elements given in vector
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @return true if list elements are added.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
              */
             bool addAll(int index, const std::vector<E> &elements) {
@@ -205,7 +205,7 @@ namespace hazelcast {
              *
              * @param elements std::vector<E>
              * @return true if all elements are removed successfully.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool removeAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(elements);
@@ -219,7 +219,7 @@ namespace hazelcast {
              * Removes the elements from this list that are not available in given "elements" vector
              * @param elements std::vector<E>
              * @return true if operation is successful.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool retainAll(const std::vector<E> &elements) {
                 std::vector<serialization::Data> dataCollection = toDataCollection(elements);
@@ -232,7 +232,7 @@ namespace hazelcast {
              */
             void clear() {
                 collection::CollectionClearRequest *request = new collection::CollectionClearRequest(getName(), getServiceName());
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -258,7 +258,7 @@ namespace hazelcast {
              * @param index insert position
              * @element E e element to be inserted.
              * @return oldElement in given index.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
              */
             boost::shared_ptr<E> set(int index, const E &e) {
@@ -272,13 +272,13 @@ namespace hazelcast {
              *
              * @param index insert position
              * @element E e element to be inserted.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
              */
             void add(int index, const E &e) {
                 serialization::Data valueData = toData(e);
                 list::ListAddRequest *request = new list::ListAddRequest(getName(), getServiceName(), valueData, index);
-                invoke<bool>(request, partitionId);
+                invoke<serialization::Void>(request, partitionId);
             };
 
             /**
@@ -298,7 +298,7 @@ namespace hazelcast {
              * @param element E
              * @return index of first occurrence of given element in the list.
              * Returns -1 if element is not in the list.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             int indexOf(const E &e) {
                 serialization::Data valueData = toData(e);
@@ -311,7 +311,7 @@ namespace hazelcast {
              * @param element E
              * @return index of last occurrence of given element in the list.
              * Returns -1 if element is not in the list.
-             * @throws ClassCastException if the type of the specified element is incompatible with the server side.
+             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             int lastIndexOf(const E &e) {
                 serialization::Data valueData = toData(e);
