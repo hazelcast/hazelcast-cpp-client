@@ -6,6 +6,7 @@
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
+#include "hazelcast/client/LogLevel.h"
 #include <vector>
 #include <set>
 #include <memory>
@@ -19,10 +20,6 @@ namespace hazelcast {
         class LifecycleListener;
 
         class SocketInterceptor;
-
-        enum LogLevel {
-            SEVERE = 100, WARNING = 90, INFO = 50
-        };
 
         /**
          * HazelcastClient configuration class.
@@ -256,7 +253,7 @@ namespace hazelcast {
              */
             void setLoadBalancer(LoadBalancer *loadBalancer);
              /**
-              *  enum LoggerLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
+              *  enum LogLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
               *  set INFO to see every log.
               *  set WARNING to see only possible warnings and serious errors.
               *  set SEVERE to see only serious errors
