@@ -70,6 +70,8 @@ namespace hazelcast {
 
                 void checkLive();
 
+                const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
+                std::vector<byte> const PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;
                 std::auto_ptr<SocketInterceptor> socketInterceptor;

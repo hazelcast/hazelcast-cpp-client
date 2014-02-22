@@ -26,15 +26,17 @@ namespace hazelcast {
             public:
                 TransactionalObject(const std::string &serviceName, const std::string &objectName, txn::TransactionProxy *context);
 
+                virtual ~TransactionalObject();
+
                 const std::string &getServiceName();
 
                 const std::string &getName();
 
                 void destroy();
 
+            protected:
                 virtual void onDestroy() = 0;
 
-            protected:
                 template<typename T>
                 serialization::Data toData(const T &object) {
                     return context->getSerializationService().template toData<T>(&object);

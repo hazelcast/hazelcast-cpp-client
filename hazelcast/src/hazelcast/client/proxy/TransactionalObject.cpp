@@ -15,6 +15,10 @@ namespace hazelcast {
 
             }
 
+            TransactionalObject::~TransactionalObject() {
+
+            }
+
             const std::string &TransactionalObject::getServiceName() {
                 return serviceName;
             }

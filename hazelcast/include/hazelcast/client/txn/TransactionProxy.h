@@ -52,9 +52,9 @@ namespace hazelcast {
 
                 TxnState(State value);
 
-                virtual operator int() const;
+                operator int() const;
 
-                virtual void operator = (int i);
+                void operator = (int i);
 
                 std::vector<State> values;
             };

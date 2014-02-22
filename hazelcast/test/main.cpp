@@ -28,6 +28,7 @@ void testSpeed() {
 
 void unitTests() {
     try {
+
         HazelcastInstanceFactory factory;
 
         ClientSerializationTest serializationTest;

@@ -37,8 +37,8 @@ namespace hazelcast {
                 int const MEMBERSHIP_EVENT = 8;
                 int const PING = 9;
 
-                const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
-                std::vector<byte> const PROTOCOL(protocol_bytes, protocol_bytes + 6);
+//                const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
+//                std::vector<byte> const PROTOCOL(protocol_bytes, protocol_bytes + 6);
             }
 
             namespace SpiConstants {

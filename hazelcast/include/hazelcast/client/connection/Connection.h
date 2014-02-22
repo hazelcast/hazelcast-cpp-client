@@ -42,7 +42,7 @@ namespace hazelcast {
 
                 ~Connection();
 
-                void init();
+                void init(const std::vector<byte>&  PROTOCOL);
 
                 void connect();
 

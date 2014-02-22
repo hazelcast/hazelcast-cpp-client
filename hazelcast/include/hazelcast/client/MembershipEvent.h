@@ -38,6 +38,11 @@ namespace hazelcast {
              * Constructor.
              */
             MembershipEvent(Cluster &cluster, MembershipEventType eventType, const Member &member);
+            
+            /**
+             * Destructor
+             */
+            virtual ~MembershipEvent();
 
             /**
              * Returns a consistent view of the the members exactly after this MembershipEvent has been processed. So if a

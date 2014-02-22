@@ -36,9 +36,6 @@ namespace hazelcast {
                 i = in.readInt();
                 s = reader.readLong("s");
             };
-            long l;
-            int i;
-            std::string s;
         }
     }
 }

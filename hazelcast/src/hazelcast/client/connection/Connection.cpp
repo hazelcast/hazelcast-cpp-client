@@ -43,9 +43,9 @@ namespace hazelcast {
                 }
             };
 
-            void Connection::init() {
+            void Connection::init(const std::vector<byte>&  PROTOCOL) {
                 serialization::OutputSocketStream outputSocketStream(socket);
-                outputSocketStream.write(protocol::ProtocolConstants::PROTOCOL);
+                outputSocketStream.write(PROTOCOL);
             }
 
             void Connection::close() {

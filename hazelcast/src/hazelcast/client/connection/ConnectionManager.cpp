@@ -22,7 +22,8 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
-            :clientContext(clientContext)
+            :PROTOCOL(protocol_bytes, protocol_bytes + 6)
+            ,clientContext(clientContext)
             , live(true)
             , callIdGenerator(10)
             , iListener(*this)
@@ -135,7 +136,7 @@ namespace hazelcast {
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
-                connection.init();
+                connection.init(PROTOCOL);
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 serialization::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.writeBlocking(authData);

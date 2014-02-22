@@ -31,7 +31,7 @@ namespace hazelcast {
                 void writePortable(serialization::PortableWriter& writer) const;
 
                 void readPortable(serialization::PortableReader& reader);
-
+            private:
                 long l;
                 int i;
                 std::string s;
