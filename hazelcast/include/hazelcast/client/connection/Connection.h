@@ -13,9 +13,6 @@
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
-    namespace util {
-        class CallPromise;
-    }
     namespace client {
 
         namespace spi {
@@ -30,6 +27,8 @@ namespace hazelcast {
         class Address;
 
         namespace connection {
+            class CallPromise;
+
             class ClientResponse;
 
             class OutSelector;
@@ -42,13 +41,13 @@ namespace hazelcast {
 
                 ~Connection();
 
-                void init(const std::vector<byte>&  PROTOCOL);
+                void init(const std::vector<byte> &PROTOCOL);
 
                 void connect();
 
                 void close();
 
-                void registerAndEnqueue(boost::shared_ptr<util::CallPromise> promise);
+                void registerAndEnqueue(boost::shared_ptr<CallPromise> promise);
 
                 void handlePacket(const serialization::Data &data);
 
@@ -66,7 +65,7 @@ namespace hazelcast {
 
                 WriteHandler &getWriteHandler();
 
-                boost::shared_ptr<util::CallPromise> deRegisterEventHandler(int callId);
+                boost::shared_ptr<CallPromise> deRegisterEventHandler(int callId);
 
                 void setAsOwnerConnection(bool isOwnerConnection);
 
@@ -76,29 +75,29 @@ namespace hazelcast {
             private:
                 spi::ClientContext &clientContext;
                 Socket socket;
-                util::SynchronizedMap<int, util::CallPromise > callPromises;
-                util::SynchronizedMap<int, util::CallPromise > eventHandlerPromises;
+                util::SynchronizedMap<int, CallPromise > callPromises;
+                util::SynchronizedMap<int, CallPromise > eventHandlerPromises;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
 
                 void removeConnectionCalls();
 
-                boost::shared_ptr<util::CallPromise> deRegisterCall(int callId);
+                boost::shared_ptr<CallPromise> deRegisterCall(int callId);
 
-                void registerEventHandler(boost::shared_ptr<util::CallPromise> promise);
+                void registerEventHandler(boost::shared_ptr<CallPromise> promise);
 
-                boost::shared_ptr<util::CallPromise> getEventHandlerPromise(int callId);
+                boost::shared_ptr<CallPromise> getEventHandlerPromise(int callId);
 
-                void resend(boost::shared_ptr<util::CallPromise> promise);
+                void resend(boost::shared_ptr<CallPromise> promise);
 
-                boost::shared_ptr<util::CallPromise> registerCall(boost::shared_ptr<util::CallPromise> promise);
+                boost::shared_ptr<CallPromise> registerCall(boost::shared_ptr<CallPromise> promise);
 
-                void targetNotActive(boost::shared_ptr<util::CallPromise> promise);
+                void targetNotActive(boost::shared_ptr<CallPromise> promise);
 
-                bool handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise);
+                bool handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise);
 
-                bool handleException(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise);
+                bool handleException(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise);
 
             };
 

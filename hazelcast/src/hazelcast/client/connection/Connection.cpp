@@ -8,6 +8,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/serialization/DataOutput.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/serialization/OutputSocketStream.h"
@@ -15,7 +16,6 @@
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/client/impl/ServerException.h"
@@ -56,14 +56,14 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::resend(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::resend(boost::shared_ptr<CallPromise> promise) {
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
                     exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     return;
                 }
 
-                boost::shared_ptr<connection::Connection> connection;
+                boost::shared_ptr<Connection> connection;
                 try {
                     ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
@@ -75,7 +75,7 @@ namespace hazelcast {
                 connection->registerAndEnqueue(promise);
             };
 
-            void Connection::registerAndEnqueue(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise) {
                 registerCall(promise); //Don't change the order with following line
                 serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
                 if (!live) {
@@ -89,15 +89,15 @@ namespace hazelcast {
 
             void Connection::handlePacket(const serialization::Data &data) {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
-                boost::shared_ptr<connection::ClientResponse> response = serializationService.toObject<connection::ClientResponse>(data);
+                boost::shared_ptr<ClientResponse> response = serializationService.toObject<ClientResponse>(data);
                 if (response->isEvent()) {
-                    boost::shared_ptr<util::CallPromise> promise = getEventHandlerPromise(response->getCallId());
+                    boost::shared_ptr<CallPromise> promise = getEventHandlerPromise(response->getCallId());
                     if (promise.get() != NULL) {
                         promise->getEventHandler()->handle(response->getData());
                     }
                     return;
                 }
-                boost::shared_ptr<util::CallPromise> promise = deRegisterCall(response->getCallId());
+                boost::shared_ptr<CallPromise> promise = deRegisterCall(response->getCallId());
                 if (!handleException(response, promise))
                     return;//if response is exception,then return
 
@@ -109,7 +109,7 @@ namespace hazelcast {
             }
 
             /* returns shouldSetResponse */
-            bool Connection::handleException(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise) {
+            bool Connection::handleException(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 if (response->isException()) {
                     serialization::Data const &data = response->getData();
@@ -131,7 +131,7 @@ namespace hazelcast {
             }
 
             /* returns shouldSetResponse */
-            bool Connection::handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<util::CallPromise> promise) {
+            bool Connection::handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
                 serialization::SerializationService &serializationService = clientContext.getSerializationService();
                 impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
@@ -172,7 +172,7 @@ namespace hazelcast {
             }
 
 
-            boost::shared_ptr<util::CallPromise> Connection::registerCall(boost::shared_ptr<util::CallPromise> promise) {
+            boost::shared_ptr<CallPromise> Connection::registerCall(boost::shared_ptr<CallPromise> promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
@@ -191,21 +191,21 @@ namespace hazelcast {
                 return writeHandler;
             }
 
-            boost::shared_ptr<util::CallPromise> Connection::deRegisterCall(int callId) {
+            boost::shared_ptr<CallPromise> Connection::deRegisterCall(int callId) {
                 return callPromises.remove(callId);
             }
 
 
-            void Connection::registerEventHandler(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::registerEventHandler(boost::shared_ptr<CallPromise> promise) {
                 eventHandlerPromises.put(promise->getRequest().callId, promise);
             }
 
 
-            boost::shared_ptr<util::CallPromise > Connection::getEventHandlerPromise(int callId) {
+            boost::shared_ptr<CallPromise > Connection::getEventHandlerPromise(int callId) {
                 return eventHandlerPromises.get(callId);
             }
 
-            boost::shared_ptr<util::CallPromise > Connection::deRegisterEventHandler(int callId) {
+            boost::shared_ptr<CallPromise > Connection::deRegisterEventHandler(int callId) {
                 return eventHandlerPromises.remove(callId);
             }
 
@@ -215,7 +215,7 @@ namespace hazelcast {
 
             void Connection::removeConnectionCalls() {
                 clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
-                typedef std::vector<std::pair<int, boost::shared_ptr<util::CallPromise> > > Entry_Set;
+                typedef std::vector<std::pair<int, boost::shared_ptr<CallPromise> > > Entry_Set;
                 Address const &address = getRemoteEndpoint();
                 {
                     Entry_Set entrySet = callPromises.clear();
@@ -233,7 +233,7 @@ namespace hazelcast {
                 }
             }
 
-            void Connection::targetNotActive(boost::shared_ptr<util::CallPromise> promise) {
+            void Connection::targetNotActive(boost::shared_ptr<CallPromise> promise) {
                 Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {

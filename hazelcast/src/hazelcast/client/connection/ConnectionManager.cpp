@@ -6,13 +6,13 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/serialization/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "hazelcast/util/CallPromise.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/exception/IAuthenticationException.h"
 #include "hazelcast/client/impl/ServerException.h"
@@ -179,7 +179,7 @@ namespace hazelcast {
                 std::vector<boost::shared_ptr<Connection> > v = connections.values();
                 std::vector<boost::shared_ptr<Connection> >::iterator it;
                 for (it = v.begin(); it != v.end(); ++it) {
-                    boost::shared_ptr<util::CallPromise> promise = (*it)->deRegisterEventHandler(callId);
+                    boost::shared_ptr<CallPromise> promise = (*it)->deRegisterEventHandler(callId);
                     if (promise != NULL) {
                         return;
                     }
