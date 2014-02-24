@@ -9,13 +9,15 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/client/serialization/DataAdapter.h"
+#include "hazelcast/client/serialization/pimpl/DataAdapter.h"
 #include <boost/atomic.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl {
+                class DataAdapter;
+            }
         }
         namespace connection {
             class Connection;
@@ -30,14 +32,14 @@ namespace hazelcast {
 
                 void handle();
 
-                void enqueueData(const serialization::Data &data);
+                void enqueueData(const serialization::pimpl::Data &data);
 
                 void run();
 
             private:
                 util::ByteBuffer buffer;
-                util::ConcurrentQueue<serialization::DataAdapter> writeQueue;
-                serialization::DataAdapter *lastData;
+                util::ConcurrentQueue<serialization::pimpl::DataAdapter> writeQueue;
+                serialization::pimpl::DataAdapter *lastData;
                 bool initialized;
                 bool ready;
                 boost::atomic<bool> informSelector;

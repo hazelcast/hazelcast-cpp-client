@@ -11,9 +11,9 @@
 
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/Serializer.h"
-#include "hazelcast/client/serialization/SerializerHolder.h"
-#include "hazelcast/client/serialization/ClassDefinition.h"
-#include "hazelcast/client/serialization/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
 #include "hazelcast/util/Util.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -27,19 +27,20 @@ namespace hazelcast {
 
         namespace serialization {
 
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
 
-            class SerializationContext;
+                class SerializationContext;
 
-            class DataInput;
-
+                class DataInput;
+            }
 
 
             class HAZELCAST_API ObjectDataInput {
             public:
-                ObjectDataInput(DataInput &, SerializationContext &);
+                ObjectDataInput(pimpl::DataInput &, pimpl::SerializationContext &);
 
-                SerializationContext *getSerializationContext();
+                pimpl::SerializationContext *getSerializationContext();
 
                 void readFully(std::vector<byte> &);
 
@@ -94,7 +95,7 @@ namespace hazelcast {
 
                     const int typeId = readInt();
 
-                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
+                    boost::shared_ptr<pimpl::ClassDefinition> classDefinition(new pimpl::ClassDefinition());
                     classDefinition->readData(dataInput);
                     int factoryId = classDefinition->getFactoryId();
                     int classId = classDefinition->getClassId();
@@ -142,9 +143,9 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-                DataInput &dataInput;
-                SerializationContext &serializationContext;
-                SerializerHolder &serializerHolder;
+                pimpl::DataInput &dataInput;
+                pimpl::SerializationContext &serializationContext;
+                pimpl::SerializerHolder &serializerHolder;
 
                 ObjectDataInput(const ObjectDataInput &);
 

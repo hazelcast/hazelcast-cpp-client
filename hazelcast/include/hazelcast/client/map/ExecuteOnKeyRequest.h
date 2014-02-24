@@ -11,7 +11,7 @@
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -20,7 +20,7 @@ namespace hazelcast {
             template<typename EntryProcessor>
             class HAZELCAST_API ExecuteOnKeyRequest : public impl::PortableRequest {
             public:
-                ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::Data &key)
+                ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::pimpl::Data &key)
                 :name(name)
                 , entryProcessor(entryProcessor)
                 , key(key) {
@@ -45,7 +45,7 @@ namespace hazelcast {
             private:
                 std::string name;
                 EntryProcessor entryProcessor;
-                serialization::Data key;
+                serialization::pimpl::Data key;
             };
         }
     }

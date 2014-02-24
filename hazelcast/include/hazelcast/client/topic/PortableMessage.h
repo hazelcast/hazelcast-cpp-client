@@ -8,7 +8,7 @@
 #define HAZELCAST_PortableMessage
 
 #include "hazelcast/client/impl/PortableResponse.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace topic {
             class HAZELCAST_API PortableMessage : public impl::PortableResponse {
             public:
-                const serialization::Data& getMessage() const;
+                const serialization::pimpl::Data& getMessage() const;
 
                 std::string getUuid() const;
 
@@ -29,7 +29,7 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader& reader);
 
             private:
-                serialization::Data message;
+                serialization::pimpl::Data message;
                 std::string uuid;
                 long publishTime;
             };

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_TransactionalObject
 #define HAZELCAST_TransactionalObject
 
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"
@@ -38,12 +38,12 @@ namespace hazelcast {
                 virtual void onDestroy() = 0;
 
                 template<typename T>
-                serialization::Data toData(const T &object) {
+                serialization::pimpl::Data toData(const T &object) {
                     return context->getSerializationService().template toData<T>(&object);
                 };
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(const serialization::Data &data) {
+                boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
                     return context->getSerializationService().template toObject<T>(data);
                 };
 
@@ -52,8 +52,8 @@ namespace hazelcast {
                     request->setTxnId(context->getTxnId());
                     request->setThreadId(util::getThreadId());
                     spi::InvocationService &invocationService = context->getInvocationService();
-                    serialization::SerializationService &ss = context->getSerializationService();
-                    boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, context->getConnection());
+                    serialization::pimpl::SerializationService &ss = context->getSerializationService();
+                    boost::shared_future<serialization::pimpl::Data> future = invocationService.invokeOnConnection(request, context->getConnection());
                     return ss.toObject<Response>(future.get());
                 };
             private:

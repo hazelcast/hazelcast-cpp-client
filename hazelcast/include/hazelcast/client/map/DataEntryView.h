@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_DataEntryView
 #define HAZELCAST_DataEntryView
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 namespace hazelcast {
@@ -21,8 +21,8 @@ namespace hazelcast {
 
                 void readData(serialization::ObjectDataInput &in);
 
-                serialization::Data key;
-                serialization::Data value;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
                 long cost;
                 long creationTime;
                 long expirationTime;

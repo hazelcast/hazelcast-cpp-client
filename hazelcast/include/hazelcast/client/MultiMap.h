@@ -52,9 +52,9 @@ namespace hazelcast {
              *         already contains the key-value pair.
              */
             bool put(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 multimap::PutRequest *request = new multimap::PutRequest(getName(), keyData, valueData, -1, util::getThreadId());
                 bool success = *(invoke<bool>(request, partitionId));
                 return success;
@@ -67,7 +67,7 @@ namespace hazelcast {
              * @return the multimap of the values associated with the key.
              */
             std::vector<V> get(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::GetAllRequest *request = new multimap::GetAllRequest(getName(), keyData);
                 return toObjectCollection(invoke < impl::PortableCollection >(request, partitionId));
@@ -81,9 +81,9 @@ namespace hazelcast {
              * @return true if the size of the multimap changed after the remove operation, false otherwise.
              */
             bool remove(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 multimap::RemoveRequest *request = new multimap::RemoveRequest(getName(), keyData, valueData, util::getThreadId());
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -97,7 +97,7 @@ namespace hazelcast {
              *         might be modifiable but it has no effect on the multimap
              */
             std::vector<V> remove(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::RemoveAllRequest *request = new multimap::RemoveAllRequest(getName(), keyData, util::getThreadId());
                 return toObjectCollection(invoke < impl::PortableCollection >(request, partitionId));
@@ -134,7 +134,7 @@ namespace hazelcast {
             std::vector<std::pair<K, V> > entrySet() {
                 multimap::EntrySetRequest *request = new multimap::EntrySetRequest(getName());
                 boost::shared_ptr<multimap::PortableEntrySetResponse> result = invoke < multimap::PortableEntrySetResponse >(request);
-                std::vector < std::pair<serialization::Data, serialization::Data> > const &dataEntrySet = result->getEntrySet();
+                std::vector < std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > const &dataEntrySet = result->getEntrySet();
                 std::vector<std::pair<K, V> > entrySet(dataEntrySet.size());
                 for (int i = 0; i < dataEntrySet.size(); i++) {
                     boost::shared_ptr<K> key = toObject<K>(dataEntrySet[i].first);
@@ -152,7 +152,7 @@ namespace hazelcast {
              * @return true if the multimap contains an entry with the key, false otherwise.
              */
             bool containsKey(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (keyData, getName());
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -166,7 +166,7 @@ namespace hazelcast {
              * @return true if the multimap contains an entry with the value, false otherwise.
              */
             bool containsValue(const V &value) {
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (getName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
@@ -180,9 +180,9 @@ namespace hazelcast {
              * @return true if the multimap contains the key-value pair, false otherwise.
              */
             bool containsEntry(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (keyData, getName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -204,7 +204,7 @@ namespace hazelcast {
              */
             void clear() {
                 multimap::ClearRequest *request = new multimap::ClearRequest(getName());
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             };
 
             /**
@@ -215,7 +215,7 @@ namespace hazelcast {
              * @return number of values matching to given key in the multimap.
              */
             int valueCount(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::CountRequest *request = new multimap::CountRequest(getName(), keyData);
                 boost::shared_ptr<int> count = invoke<int>(request, partitionId);
@@ -235,7 +235,7 @@ namespace hazelcast {
             std::string addEntryListener(L &listener, bool includeValue) {
                 multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), includeValue);
                 spi::ClusterService &clusterService = getContext().getClusterService();
-                serialization::SerializationService &ss = getContext().getSerializationService();
+                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
                 impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), clusterService, ss, listener, includeValue);
                 return listen(request, entryEventHandler);
             };
@@ -254,7 +254,7 @@ namespace hazelcast {
              */
             template < typename L>
             std::string addEntryListener(L &listener, const K &key, bool includeValue) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), keyData, includeValue);
                 impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
@@ -290,10 +290,10 @@ namespace hazelcast {
              * @param key key to lock.
              */
             void lock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId());
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -313,10 +313,10 @@ namespace hazelcast {
             * @param leaseTimeInMillis time in milliseconds to wait before releasing the lock.
             */
             void lock(const K &key, long leaseTimeInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), leaseTimeInMillis, -1);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             }
 
             /**
@@ -327,7 +327,7 @@ namespace hazelcast {
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
              */
             bool isLocked(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapIsLockedRequest *request = new multimap::MultiMapIsLockedRequest(getName(), keyData);
                 boost::shared_ptr<bool> res = invoke<bool>(request, partitionId);
@@ -344,7 +344,7 @@ namespace hazelcast {
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
              */
             bool tryLock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), -1, 0);
                 boost::shared_ptr<bool> res = invoke<bool>(request, partitionId);
@@ -368,7 +368,7 @@ namespace hazelcast {
              *         if the waiting time elapsed before the lock was acquired.
              */
             bool tryLock(const K &key, long timeoutInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapLockRequest *request = new multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), -1, timeoutInMillis);
                 boost::shared_ptr<bool> res = invoke<bool>(request, partitionId);
@@ -383,10 +383,10 @@ namespace hazelcast {
              * @param key key to lock.
              */
             void unlock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapUnlockRequest *request = new multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId());
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -396,10 +396,10 @@ namespace hazelcast {
             * @param key key to lock.
             */
             void forceUnlock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::MultiMapUnlockRequest *request = new multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId(), true);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             }
 
 
@@ -408,7 +408,7 @@ namespace hazelcast {
             };
 
             std::vector<V> toObjectCollection(boost::shared_ptr<impl::PortableCollection> result) {
-                std::vector<serialization::Data> const &dataCollection = result->getCollection();
+                std::vector<serialization::pimpl::Data> const &dataCollection = result->getCollection();
                 std::vector<V> multimap(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
@@ -419,12 +419,12 @@ namespace hazelcast {
 
 
             template<typename T>
-            serialization::Data toData(const T &object) {
+            serialization::pimpl::Data toData(const T &object) {
                 return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::Data &data) {
+            boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
             };
 

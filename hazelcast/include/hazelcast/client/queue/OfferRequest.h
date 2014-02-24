@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_OFFER_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace queue {
             class HAZELCAST_API OfferRequest : public impl::PortableRequest {
             public:
-                OfferRequest(const std::string &name, serialization::Data &data, long timeout);
+                OfferRequest(const std::string &name, serialization::pimpl::Data &data, long timeout);
 
                 int getFactoryId() const;
 
@@ -22,7 +22,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data data;
+                serialization::pimpl::Data data;
                 std::string name;
                 long timeoutInMillis;
             };

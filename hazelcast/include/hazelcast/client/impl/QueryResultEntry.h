@@ -9,7 +9,7 @@
 #define HAZELCAST_QueryResultEntry
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,9 +22,9 @@ namespace hazelcast {
 
                 void readData(serialization::ObjectDataInput& reader);
 
-                serialization::Data keyIndex;
-                serialization::Data key;
-                serialization::Data value;
+                serialization::pimpl::Data keyIndex;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
             };
         }
     }

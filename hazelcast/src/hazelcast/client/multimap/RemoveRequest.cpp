@@ -5,13 +5,13 @@
 
 #include "hazelcast/client/multimap/RemoveRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            RemoveRequest::RemoveRequest(const std::string &name, const serialization::Data &key, const serialization::Data &value, long threadId)
+            RemoveRequest::RemoveRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId)
             : KeyBasedRequest(name, key)
             , value(value)
             , threadId(threadId) {

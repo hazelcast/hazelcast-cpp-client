@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            const serialization::Data& PortableItemEvent::getItem() const {
+            const serialization::pimpl::Data& PortableItemEvent::getItem() const {
                 return item;
             };
 

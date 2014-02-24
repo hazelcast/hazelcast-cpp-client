@@ -8,8 +8,8 @@
 #ifndef HAZELCAST_PortableWriter
 #define HAZELCAST_PortableWriter
 
-#include "hazelcast/client/serialization/DefaultPortableWriter.h"
-#include "hazelcast/client/serialization/ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,9 +17,9 @@ namespace hazelcast {
 
             class HAZELCAST_API PortableWriter {
             public:
-                PortableWriter(DefaultPortableWriter *defaultPortableWriter);
+                PortableWriter(pimpl::DefaultPortableWriter *defaultPortableWriter);
 
-                PortableWriter(ClassDefinitionWriter *classDefinitionWriter);
+                PortableWriter(pimpl::ClassDefinitionWriter *classDefinitionWriter);
 
                 void writeInt(const char *fieldName, int value);
 
@@ -37,7 +37,7 @@ namespace hazelcast {
 
                 void writeShort(const char *fieldName, short value);
 
-                void writeUTF(const char *fieldName, const string& str);
+                void writeUTF(const char *fieldName, const std::string& str);
 
                 void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
@@ -76,8 +76,8 @@ namespace hazelcast {
 
             private:
                 bool isDefaultWriter;
-                DefaultPortableWriter *defaultPortableWriter;
-                ClassDefinitionWriter *classDefinitionWriter;
+                pimpl::DefaultPortableWriter *defaultPortableWriter;
+                pimpl::ClassDefinitionWriter *classDefinitionWriter;
             };
         }
     }

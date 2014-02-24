@@ -6,12 +6,12 @@
 #include "hazelcast/client/map/ContainsValueRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            ContainsValueRequest::ContainsValueRequest(const std::string &name, const serialization::Data &value)
+            ContainsValueRequest::ContainsValueRequest(const std::string &name, const serialization::pimpl::Data &value)
             :name(name)
             , value(value) {
             };

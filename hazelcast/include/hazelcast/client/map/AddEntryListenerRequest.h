@@ -8,7 +8,7 @@
 #define HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -19,24 +19,24 @@ namespace hazelcast {
             public:
                 AddEntryListenerRequest(const std::string &name, bool includeValue);
 
-                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key, const std::string &sql);
+                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key, const std::string &sql);
 
                 AddEntryListenerRequest(const std::string &name, bool includeValue, const std::string &sql);
 
-                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key);
+                AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                const serialization::Data *getKey() const;
+                const serialization::pimpl::Data *getKey() const;
 
                 void write(serialization::PortableWriter &writer) const;
 
             private:
                 std::string name;
                 std::string sql;
-                serialization::Data key;
+                serialization::pimpl::Data key;
                 bool includeValue;
                 bool hasKey;
                 bool hasPredicate;

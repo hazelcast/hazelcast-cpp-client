@@ -11,7 +11,7 @@ namespace hazelcast {
 
         ISemaphore::ISemaphore(const std::string &name, spi::ClientContext *context)
         :DistributedObject("hz:impl:semaphoreService", name, context) {
-            serialization::Data keyData = context->getSerializationService().toData<std::string>(&name);
+            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&name);
             partitionId = getPartitionId(keyData);
         };
 
@@ -26,7 +26,7 @@ namespace hazelcast {
 
         void ISemaphore::acquire(int permits) {
             semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, -1);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         int ISemaphore::availablePermits() {
@@ -43,7 +43,7 @@ namespace hazelcast {
 
         void ISemaphore::reducePermits(int reduction) {
             semaphore::ReduceRequest *request = new semaphore::ReduceRequest(getName(), reduction);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         void ISemaphore::release() {
@@ -52,7 +52,7 @@ namespace hazelcast {
 
         void ISemaphore::release(int permits) {
             semaphore::ReleaseRequest *request = new semaphore::ReleaseRequest(getName(), permits);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         bool ISemaphore::tryAcquire() {

@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            RemoveRequest::RemoveRequest(const std::string &name, serialization::Data &key, long threadId)
+            RemoveRequest::RemoveRequest(const std::string &name, serialization::pimpl::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {

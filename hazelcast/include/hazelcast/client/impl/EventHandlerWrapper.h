@@ -12,7 +12,10 @@
 //namespace hazelcast {
 //    namespace client {
 //        namespace serialization {
-//            class Data;
+//                        namespace pimpl{
+//class Data;
+//}
+
 //        }
 //        namespace impl {
 //            class HAZELCAST_API EventHandlerWrapper {
@@ -22,7 +25,7 @@
 //
 //                    }
 //
-//                    virtual void handle(const client::serialization::Data &data) const = 0;
+//                    virtual void handle(const client::serialization::pimpl::Data &data) const = 0;
 //                };
 //                template<typename EventHandler> struct Model : Concept {
 //                public:
@@ -31,7 +34,7 @@
 //
 //                    }
 //
-//                    virtual void handle(const client::serialization::Data &data) {
+//                    virtual void handle(const client::serialization::pimpl::Data &data) {
 //                        eventHandler->handle(data);
 //                    }
 //
@@ -45,7 +48,7 @@
 //
 //                };
 //
-//                void handle(const client::serialization::Data &data);
+//                void handle(const client::serialization::pimpl::Data &data);
 //
 //            private:
 //                std::auto_ptr<Concept> eventHandler;

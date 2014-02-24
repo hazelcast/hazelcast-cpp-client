@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
@@ -22,7 +22,7 @@ namespace hazelcast {
             };
 
             std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
-                boost::shared_future<serialization::Data> future;
+                boost::shared_future<serialization::pimpl::Data> future;
                 future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, partitionId);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
                 handler->registrationId = *registrationId;
@@ -32,7 +32,7 @@ namespace hazelcast {
             }
 
             std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
-                boost::shared_future<serialization::Data> future;
+                boost::shared_future<serialization::pimpl::Data> future;
                 future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
                 handler->registrationId = *registrationId;
@@ -49,7 +49,7 @@ namespace hazelcast {
                     return false;
                 }
                 request->setRegistrationId(resolvedRegistrationId);
-                boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
+                boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                 bool result = clientContext.getSerializationService().toObject<bool>(future.get());
                 return result;
             }

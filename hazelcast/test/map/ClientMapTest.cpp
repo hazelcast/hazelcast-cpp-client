@@ -429,11 +429,11 @@ namespace hazelcast {
             void ClientMapTest::testValues() {
 
                 fillMap();
-                vector<std::string> tempVector;
+                std::vector<std::string> tempVector;
                 tempVector = imap->values("this == value1");
                 assertEqual(1, tempVector.size());
 
-                vector<std::string>::iterator it = tempVector.begin();
+                std::vector<std::string>::iterator it = tempVector.begin();
                 assertEqual("value1", *it);
             }
 
@@ -535,15 +535,15 @@ namespace hazelcast {
             void ClientMapTest::testBasicPredicate() {
 
                 fillMap();
-                vector<std::string> tempVector;
+                std::vector<std::string> tempVector;
                 tempVector = imap->values("this = 'value1'");
 
                 assertEqual("value1", tempVector[0]);
 
-                vector<std::string> tempVector2;
+                std::vector<std::string> tempVector2;
                 tempVector2 = imap->keySet("this = 'value1'");
 
-                vector<std::string>::iterator it2 = tempVector2.begin();
+                std::vector<std::string>::iterator it2 = tempVector2.begin();
                 assertEqual("key1", *it2);
 
 

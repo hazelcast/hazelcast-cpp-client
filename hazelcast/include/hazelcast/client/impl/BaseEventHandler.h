@@ -12,7 +12,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
         }
         namespace impl {
             class HAZELCAST_API BaseEventHandler {
@@ -21,7 +23,7 @@ namespace hazelcast {
 
                 };
                 
-                virtual void handle(const client::serialization::Data &data) = 0;
+                virtual void handle(const client::serialization::pimpl::Data &data) = 0;
 
                 std::string registrationId;
             };

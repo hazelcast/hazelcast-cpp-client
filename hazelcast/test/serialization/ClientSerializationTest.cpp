@@ -11,9 +11,7 @@
 #include "serialization/TestInvalidReadPortable.h"
 #include "serialization/TestInvalidWritePortable.h"
 #include "serialization/testUtil.h"
-#include "hazelcast/client/serialization/InputSocketStream.h"
-#include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/ClientSerializationTest.h"
@@ -54,7 +52,7 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testCustomSerialization() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
 
                 boost::shared_ptr<serialization::SerializerBase> serializer1(new TestCustomSerializerX<TestCustomXSerializable>());
                 boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
@@ -64,20 +62,20 @@ namespace hazelcast {
 
                 TestCustomXSerializable a;
                 a.id = 131321;
-                serialization::Data data = serializationService.toData<TestCustomXSerializable>(&a);
+                serialization::pimpl::Data data = serializationService.toData<TestCustomXSerializable>(&a);
                 boost::shared_ptr<TestCustomXSerializable> a2 = serializationService.toObject<TestCustomXSerializable>(data);
                 iTest::assertEqual(a.id, a2->id);
 
                 TestCustomPerson b;
                 b.setName("TestCustomPerson");
-                serialization::Data data1 = serializationService.toData<TestCustomPerson>(&b);
+                serialization::pimpl::Data data1 = serializationService.toData<TestCustomPerson>(&b);
                 boost::shared_ptr<TestCustomPerson> b2 = serializationService.toObject<TestCustomPerson>(data1);
                 iTest::assertEqual(std::string("TestCustomPerson"), b2->getName());
             };
 
 
             void ClientSerializationTest::testRawData() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
                 char charA[] = "test chars";
                 std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
@@ -85,20 +83,20 @@ namespace hazelcast {
                 TestDataSerializable ds(123, 's');
                 TestNamedPortable np("named portable", 34567);
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
-                serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
+                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
-                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
                 serializationService.getSerializationContext().registerClassDefinition(cd);
 
-                serialization::Data data = serializationService.toData<TestRawDataPortable>(&p);
+                serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 iTest::assertEqual(p, *x);
             };
 
 
             void ClientSerializationTest::testIdentifiedDataSerializable() {
-                serialization::SerializationService serializationService(1);
-                serialization::Data data;
+                serialization::pimpl::SerializationService serializationService(1);
+                serialization::pimpl::Data data;
                 TestDataSerializable np(4, 'k');
                 data = serializationService.toData<TestDataSerializable>(&np);
 
@@ -108,12 +106,13 @@ namespace hazelcast {
                 iTest::assertEqual(np, *tnp1);
                 int x = 4;
                 data = serializationService.toData<int>(&x);
-                int y = *(serializationService.toObject<int>(data));
+                boost::shared_ptr<int> ptr = serializationService.toObject<int>(data);
+                int y = *ptr;
                 iTest::assertEqual(x, y);
             };
 
             void ClientSerializationTest::testRawDataWithoutRegistering() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
                 char charA[] = "test chars";
                 std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
@@ -122,7 +121,7 @@ namespace hazelcast {
                 TestDataSerializable ds(123, 's');
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
-                serialization::Data data = serializationService.toData<TestRawDataPortable>(&p);
+                serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 iTest::assertEqual(p, *x);
 
@@ -130,37 +129,37 @@ namespace hazelcast {
 
 
             void ClientSerializationTest::testInvalidWrite() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidWritePortable p(2131, 123, "q4edfd");
-                serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
+                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
                 serializationService.getSerializationContext().registerClassDefinition(cd);
-                serialization::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
+                serialization::pimpl::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
                 boost::shared_ptr<TestInvalidWritePortable> o = serializationService.toObject<TestInvalidWritePortable>(data);
             };
 
             void ClientSerializationTest::testInvalidRead() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidReadPortable p(2131, 123, "q4edfd");
-                serialization::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
+                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
                 builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::ClassDefinition> cd(builder.build());
+                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
                 serializationService.getSerializationContext().registerClassDefinition(cd);
-                serialization::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
+                serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
                 serializationService.toObject<TestInvalidReadPortable>(data);
             }
 
             void ClientSerializationTest::testDifferentVersions() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
 
-                serialization::SerializationService serializationService2(2);
+                serialization::pimpl::SerializationService serializationService2(2);
 
                 TestNamedPortable p1("portable-v1", 111);
-                serialization::Data data = serializationService.toData<TestNamedPortable>(&p1);
+                serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(&p1);
 
                 TestNamedPortableV2 p2("portable-v2", 123);
-                serialization::Data data2 = serializationService2.toData<TestNamedPortableV2>(&p2);
+                serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV2>(&p2);
 
                 boost::shared_ptr<TestNamedPortableV2> t2 = serializationService2.toObject<TestNamedPortableV2>(data);
                 iTest::assertEqual(std::string("portable-v1"), t2->name);
@@ -174,22 +173,22 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testCompression() {
-                serialization::SerializationService serializationService1(1);
+                serialization::pimpl::SerializationService serializationService1(1);
                 TestMainPortable mainPortable = getTestMainPortable();
 
-                serialization::Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
+                serialization::pimpl::Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
-                serialization::DataOutput dataOutput;
+                serialization::pimpl::DataOutput dataOutput;
                 serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService1.getSerializationContext());
                 data.writeData(objectDataOutput);
 
-                std::auto_ptr< vector < byte> > xxx = objectDataOutput.toByteArray();
+                std::auto_ptr< std::vector < byte> > xxx = objectDataOutput.toByteArray();
 
-                serialization::SerializationService serializationService2(1);
+                serialization::pimpl::SerializationService serializationService2(1);
 
-                serialization::DataInput dataInput(*(xxx.get()));
+                serialization::pimpl::DataInput dataInput(*(xxx.get()));
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
-                serialization::Data newData;
+                serialization::pimpl::Data newData;
                 newData.readData(objectDataInput);
                 boost::shared_ptr<TestMainPortable> returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
                 iTest::assertEqual(mainPortable, *returnedPortable);
@@ -197,15 +196,15 @@ namespace hazelcast {
 
 
             int ClientSerializationTest::write() {
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
                 TestMainPortable mainPortable = getTestMainPortable();
-                serialization::Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-                serialization::DataOutput dataOutput;
+                serialization::pimpl::Data data = serializationService.toData<TestMainPortable>(&mainPortable);
+                serialization::pimpl::DataOutput dataOutput;
                 serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getSerializationContext());
                 data.writeData(objectDataOutput);
-                auto_ptr<vector<byte> > output = objectDataOutput.toByteArray();
+                std::auto_ptr<std::vector<byte> > output = objectDataOutput.toByteArray();
                 int size = output->size();
-                ofstream outfile;
+                std::ofstream outfile;
                 outfile.open("./text.txt", std::ios_base::out);
                 for (int i = 0; i < size; i++)
                     outfile.put((*output)[i]);
@@ -217,7 +216,7 @@ namespace hazelcast {
 
             void ClientSerializationTest::read(int size) {
 
-                serialization::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService(1);
 
                 std::ifstream is;
                 is.open("./text.txt", std::ios::binary);
@@ -228,10 +227,10 @@ namespace hazelcast {
                 byte *tempPtr = (byte *) bytes;
                 std::vector<byte> buffer(tempPtr, tempPtr + size);
                 delete [] bytes;
-                serialization::DataInput dataInput(buffer);
+                serialization::pimpl::DataInput dataInput(buffer);
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
 
-                serialization::Data data;
+                serialization::pimpl::Data data;
 
                 data.readData(objectDataInput);
 
@@ -248,9 +247,9 @@ namespace hazelcast {
 
 
             void ClientSerializationTest::testBasicFunctionality() {
-                serialization::SerializationService serializationService(1);
-                serialization::SerializationService serializationService2(2);
-                serialization::Data data;
+                serialization::pimpl::SerializationService serializationService(1);
+                serialization::pimpl::SerializationService serializationService2(2);
+                serialization::pimpl::Data data;
 
                 int x = 3;
                 data = serializationService.toData<int>(&x);

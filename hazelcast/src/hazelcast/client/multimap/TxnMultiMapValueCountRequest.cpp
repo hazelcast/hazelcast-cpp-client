@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapValueCountRequest::TxnMultiMapValueCountRequest(const std::string &name, const serialization::Data &data)
+            TxnMultiMapValueCountRequest::TxnMultiMapValueCountRequest(const std::string &name, const serialization::pimpl::Data &data)
             : TxnMultiMapRequest(name)
             , data(data) {
 

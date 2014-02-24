@@ -3,16 +3,16 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/serialization/ClassDefinitionWriter.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/SerializationContext.h"
-#include "hazelcast/client/Portable.h"
-#include "hazelcast/client/serialization/DataOutput.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(DataOutput& dataOutput, SerializationContext& serializationContext)
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::SerializationContext& serializationContext)
             : context(&serializationContext)
             , serializerHolder(&serializationContext.getSerializerHolder())
             , isEmpty(false)
@@ -138,9 +138,9 @@ namespace hazelcast {
             void ObjectDataOutput::writePortable(const Portable *portable) {
                 writeBoolean(false);
                 writeInt(portable->getSerializerId());
-                boost::shared_ptr<ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
+                boost::shared_ptr<pimpl::ClassDefinition> cd = context->lookup(portable->getFactoryId(), portable->getClassId());
                 if (cd == NULL) {
-                    ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context->getVersion(), *context);
+                    pimpl::ClassDefinitionWriter classDefinitionWriter(portable->getFactoryId(), portable->getClassId(), context->getVersion(), *context);
                     cd = classDefinitionWriter.getOrBuildClassDefinition(*portable);
                     cd->writeData(*dataOutput);
                 }

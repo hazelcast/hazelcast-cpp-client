@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TransactionalQueue
 #define HAZELCAST_TransactionalQueue
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/queue/TxnOfferRequest.h"
 #include "hazelcast/client/queue/TxnPollRequest.h"
@@ -42,7 +42,7 @@ namespace hazelcast {
              * @see IQueue::offer(const E &e, long timeoutInMillis)
              */
             bool offer(const E &e, long timeoutInMillis) {
-                serialization::Data data = toData(e);
+                serialization::pimpl::Data data = toData(e);
                 queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, data);
                 return *(invoke<bool>(request));
             };

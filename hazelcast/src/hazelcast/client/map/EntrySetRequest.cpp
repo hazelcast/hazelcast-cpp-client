@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/map/EntrySetRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 

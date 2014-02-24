@@ -9,7 +9,7 @@ namespace hazelcast {
 
         ICountDownLatch::ICountDownLatch(const std::string &instanceName, spi::ClientContext *context)
         :DistributedObject("hz:impl:atomicLongService", instanceName, context) {
-            serialization::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+            serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
             partitionId = getPartitionId(keyData);
         };
 
@@ -20,7 +20,7 @@ namespace hazelcast {
 
         void ICountDownLatch::countDown() {
             countdownlatch::CountDownRequest *request = new countdownlatch::CountDownRequest(getName());
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         int ICountDownLatch::getCount() {

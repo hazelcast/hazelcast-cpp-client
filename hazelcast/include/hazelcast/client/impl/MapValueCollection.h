@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MAP_VALUE_COLLECTION
 #define HAZELCAST_MAP_VALUE_COLLECTION
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include <vector>
 
@@ -24,11 +24,11 @@ namespace hazelcast {
 
                 void readData(serialization::ObjectDataInput &reader);
 
-                const std::vector<serialization::Data> &getValues() const;
+                const std::vector<serialization::pimpl::Data> &getValues() const;
 
 
             private:
-                std::vector<serialization::Data> values;
+                std::vector<serialization::pimpl::Data> values;
             };
         }
     }

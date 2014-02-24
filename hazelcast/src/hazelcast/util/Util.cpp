@@ -9,7 +9,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <boost/thread.hpp>
 
 namespace hazelcast {
@@ -24,7 +24,7 @@ namespace hazelcast {
             return hash_value(boost::this_thread::get_id());
         };
 
-        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data) {
+        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {
             if (data != NULL) {
                 out.writeBoolean(true);
                 data->writeData(out);
@@ -34,7 +34,7 @@ namespace hazelcast {
             }
         };
 
-        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data) {
+        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data) {
             bool isNotNull = in.readBoolean();
             if (isNotNull)
                 data->readData(in);

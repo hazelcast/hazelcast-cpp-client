@@ -26,17 +26,17 @@ namespace hazelcast {
 
         void ILock::lock(long leaseTimeInMillis) {
             lock::LockRequest *request = new lock::LockRequest(key, util::getThreadId(), leaseTimeInMillis, -1);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         void ILock::unlock() {
             lock::UnlockRequest *request = new lock::UnlockRequest(key, util::getThreadId(), false);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         void ILock::forceUnlock() {
             lock::UnlockRequest *request = new lock::UnlockRequest(key, util::getThreadId(), true);
-            invoke<serialization::Void>(request, partitionId);
+            invoke<serialization::pimpl::Void>(request, partitionId);
         };
 
         bool ILock::isLocked() {

@@ -9,13 +9,13 @@
 #define HAZELCAST_Response
 
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API PortableResponse : public Portable {
+            class HAZELCAST_API PortableResponse : public serialization::Portable {
             public:
 
                 ~PortableResponse();

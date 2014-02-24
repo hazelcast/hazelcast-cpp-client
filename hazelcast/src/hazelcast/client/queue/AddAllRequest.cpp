@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            AddAllRequest::AddAllRequest(const std::string& name, std::vector<serialization::Data>& dataList)
+            AddAllRequest::AddAllRequest(const std::string& name, std::vector<serialization::pimpl::Data>& dataList)
             :name(name)
             , dataList(dataList) {
 

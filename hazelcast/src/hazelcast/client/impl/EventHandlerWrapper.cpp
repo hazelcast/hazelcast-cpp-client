@@ -7,7 +7,7 @@
 //namespace hazelcast {
 //    namespace client {
 //        namespace impl {
-//            void EventHandlerWrapper::handle(const client::serialization::Data &data) {
+//            void EventHandlerWrapper::handle(const client::serialization::pimpl::Data &data) {
 //                eventHandler->handle(data);
 //            }
 //        }

@@ -117,7 +117,7 @@ namespace hazelcast {
                 assertEqual("item1", ar[2]);
                 assertEqual("item4", ar[3]);
 
-                std::vector<string> arr2 = list->subList(1, 3);
+                std::vector<std::string> arr2 = list->subList(1, 3);
 
                 assertEqual(2, arr2.size());
                 assertEqual("item2", arr2[0]);

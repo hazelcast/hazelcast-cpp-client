@@ -21,7 +21,10 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
+
         }
         namespace spi {
             class ClientContext;

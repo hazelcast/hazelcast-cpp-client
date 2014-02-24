@@ -9,25 +9,27 @@
 #define HAZELCAST_CollectionContainsRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
         }
         namespace collection {
             class HAZELCAST_API CollectionContainsRequest : public CollectionRequest {
             public:
-                CollectionContainsRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueSet);
+                CollectionContainsRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueSet);
 
                 void write(serialization::PortableWriter &writer) const;
 
                 int getClassId() const;
 
             private:
-                std::vector<serialization::Data> valueSet;
+                std::vector<serialization::pimpl::Data> valueSet;
 
             };
         }

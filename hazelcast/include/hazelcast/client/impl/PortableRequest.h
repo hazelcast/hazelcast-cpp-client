@@ -8,13 +8,13 @@
 #ifndef HAZELCAST_Request
 #define HAZELCAST_Request
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API PortableRequest : public Portable {
+            class HAZELCAST_API PortableRequest : public serialization::Portable {
             public:
                 PortableRequest();
 

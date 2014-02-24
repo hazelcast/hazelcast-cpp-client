@@ -8,7 +8,7 @@
 #define HAZELCAST_KeyBasedRequest
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HAZELCAST_API KeyBasedRequest : public impl::PortableRequest {
             public:
-                KeyBasedRequest(const std::string &name, const serialization::Data &key);
+                KeyBasedRequest(const std::string &name, const serialization::pimpl::Data &key);
 
                 virtual int getFactoryId() const;
 
@@ -25,7 +25,7 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                serialization::Data key;
+                serialization::pimpl::Data key;
 
             };
         }

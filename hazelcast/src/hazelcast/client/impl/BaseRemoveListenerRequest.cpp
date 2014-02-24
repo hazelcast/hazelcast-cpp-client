@@ -19,7 +19,7 @@ namespace hazelcast {
 
             }
 
-            void BaseRemoveListenerRequest::setRegistrationId(const string &registrationId) {
+            void BaseRemoveListenerRequest::setRegistrationId(const std::string &registrationId) {
                 this->registrationId = registrationId;
             }
 

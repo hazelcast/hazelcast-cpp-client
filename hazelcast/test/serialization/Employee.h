@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_Employee
 #define HAZELCAST_Employee
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API Employee : public Portable {
+            class HAZELCAST_API Employee : public serialization::Portable {
             public:
                 Employee();
 

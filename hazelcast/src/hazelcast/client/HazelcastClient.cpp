@@ -35,7 +35,7 @@ namespace hazelcast {
             ClientConfig clientConfig;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
-            serialization::SerializationService serializationService;
+            serialization::pimpl::SerializationService serializationService;
             connection::ConnectionManager connectionManager;
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
@@ -54,7 +54,7 @@ namespace hazelcast {
             impl->lifecycleService.shutdown();
         };
 
-        serialization::SerializationService &HazelcastClient::getSerializationService() {
+        serialization::pimpl::SerializationService &HazelcastClient::getSerializationService() {
             return impl->serializationService;
         };
 

@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/lock/LockRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/lock/LockPortableHook.h"
 
 
@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace lock {
 
-            LockRequest::LockRequest(serialization::Data &key, long threadId, long ttl, long timeout)
+            LockRequest::LockRequest(serialization::pimpl::Data &key, long threadId, long ttl, long timeout)
             :key(key)
             , threadId(threadId)
             , ttl(ttl)

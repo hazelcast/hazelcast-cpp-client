@@ -5,17 +5,17 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/LockPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace lock {
-            IsLockedRequest::IsLockedRequest(serialization::Data &key)
+            IsLockedRequest::IsLockedRequest(serialization::pimpl::Data &key)
             :key(key)
             , threadId(0) {
             };
 
-            IsLockedRequest::IsLockedRequest(serialization::Data &key, long threadId)
+            IsLockedRequest::IsLockedRequest(serialization::pimpl::Data &key, long threadId)
             :key(key)
             , threadId(threadId) {
             };

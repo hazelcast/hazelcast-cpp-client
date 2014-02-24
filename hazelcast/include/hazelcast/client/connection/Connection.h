@@ -19,9 +19,13 @@ namespace hazelcast {
             class ClientContext;
         }
         namespace serialization {
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
 
-            class Data;
+                class Data;
+            }
+
+
         }
 
         class Address;
@@ -49,7 +53,7 @@ namespace hazelcast {
 
                 void registerAndEnqueue(boost::shared_ptr<CallPromise> promise);
 
-                void handlePacket(const serialization::Data &data);
+                void handlePacket(const serialization::pimpl::Data &data);
 
                 const Address &getRemoteEndpoint() const;
 
@@ -57,9 +61,9 @@ namespace hazelcast {
 
                 const Socket &getSocket() const;
 
-                void writeBlocking(serialization::Data const &data);
+                void writeBlocking(serialization::pimpl::Data const &data);
 
-                serialization::Data readBlocking();
+                serialization::pimpl::Data readBlocking();
 
                 ReadHandler &getReadHandler();
 

@@ -29,7 +29,7 @@ namespace hazelcast {
                 return protocol::SpiConstants::DS_COLLECTION;
             }
 
-            const std::vector<serialization::Data *>&  SerializableCollection::getCollection() const {
+            const std::vector<serialization::pimpl::Data *>&  SerializableCollection::getCollection() const {
                 return dataCollection;
             };
 
@@ -46,7 +46,7 @@ namespace hazelcast {
                 if (size == -1)
                     return;
                 for (int i = 0; i < size; i++) {
-                    serialization::Data *data = new serialization::Data();
+                    serialization::pimpl::Data *data = new serialization::pimpl::Data();
                     data->readData(reader);
                     dataCollection.push_back(data);
                 }

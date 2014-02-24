@@ -8,7 +8,7 @@
 #define HAZELCAST_PORTABLE_ITEM_EVENT
 
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/PortableResponse.h"
 #include "hazelcast/client/ItemEvent.h"
 #include <string>
@@ -19,7 +19,7 @@ namespace hazelcast {
             class HAZELCAST_API PortableItemEvent : public impl::PortableResponse {
             public:
 
-                const serialization::Data&  getItem() const;
+                const serialization::pimpl::Data&  getItem() const;
 
                 std::string getUuid() const;
 
@@ -32,7 +32,7 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader& reader);
 
             private:
-                serialization::Data item;
+                serialization::pimpl::Data item;
                 ItemEventType eventType;
                 std::string uuid;
 

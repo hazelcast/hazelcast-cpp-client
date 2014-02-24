@@ -5,18 +5,18 @@
 #include "hazelcast/client/lock/UnlockRequest.h"
 #include "hazelcast/client/lock/LockPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace lock {
-            UnlockRequest::UnlockRequest(serialization::Data &key, long threadId)
+            UnlockRequest::UnlockRequest(serialization::pimpl::Data &key, long threadId)
             :key(key)
             , threadId(threadId)
             , force(false) {
             };
 
-            UnlockRequest::UnlockRequest(serialization::Data &key, long threadId, bool force)
+            UnlockRequest::UnlockRequest(serialization::pimpl::Data &key, long threadId, bool force)
             :key(key)
             , threadId(threadId)
             , force(force) {

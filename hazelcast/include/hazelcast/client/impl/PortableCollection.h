@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_PORTABLE_COLLECTION
 #define HAZELCAST_PORTABLE_COLLECTION
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/PortableResponse.h"
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace hazelcast {
             class HAZELCAST_API PortableCollection : public impl::PortableResponse {
             public:
 
-                const std::vector<serialization::Data>& getCollection() const;
+                const std::vector<serialization::pimpl::Data>& getCollection() const;
 
                 int getFactoryId() const;
 
@@ -24,7 +24,7 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader& reader);
 
             private:
-                std::vector<serialization::Data> collection;
+                std::vector<serialization::pimpl::Data> collection;
             };
         }
     }

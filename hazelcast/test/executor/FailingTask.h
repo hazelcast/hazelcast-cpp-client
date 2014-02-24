@@ -6,11 +6,11 @@
 //#ifndef HAZELCAST_FailingTask
 //#define HAZELCAST_FailingTask
 //
-//#include "hazelcast/client/IdentifiedDataSerializable.h"
+//#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 //
 //using namespace hazelcast::client;
 //
-//class HAZELCAST_API FailingTask : public IdentifiedDataSerializable {
+//class HAZELCAST_API FailingTask : public serialization::IdentifiedDataSerializable {
 //public:
 //    FailingTask();
 //

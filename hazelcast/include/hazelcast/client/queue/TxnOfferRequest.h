@@ -8,7 +8,7 @@
 #define HAZELCAST_TxnOfferRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace queue {
             class HAZELCAST_API TxnOfferRequest : public txn::BaseTxnRequest {
             public:
-                TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::Data &);
+                TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::pimpl::Data &);
 
                 int getFactoryId() const;
 
@@ -27,7 +27,7 @@ namespace hazelcast {
             private:
                 std::string name;
                 long timeoutInMillis;
-                serialization::Data data;
+                serialization::pimpl::Data data;
             };
         }
     }

@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 while (buffer.hasRemaining()) {
                     if (lastData == NULL) {
-                        lastData = new serialization::DataAdapter();
+                        lastData = new serialization::pimpl::DataAdapter();
                     }
                     bool complete = lastData->readFrom(buffer);
                     if (complete) {

@@ -5,7 +5,7 @@
 #define HAZELCAST_UNLOCK_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -14,7 +14,7 @@ namespace hazelcast {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
 
-                UnlockRequest(const std::string &name, serialization::Data &key, long threadId, bool force);
+                UnlockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId, bool force);
 
                 int getFactoryId() const;
 
@@ -24,7 +24,7 @@ namespace hazelcast {
 
 
             private:
-                serialization::Data key;
+                serialization::pimpl::Data key;
                 std::string name;
                 long threadId;
                 bool force;

@@ -8,7 +8,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -137,20 +137,20 @@ namespace hazelcast {
                 auth.setFirstConnection(firstConnection);
 
                 connection.init(PROTOCOL);
-                serialization::SerializationService &serializationService = clientContext.getSerializationService();
-                serialization::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
+                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
+                serialization::pimpl::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
                 connection.writeBlocking(authData);
 
-                serialization::Data result = connection.readBlocking();
+                serialization::pimpl::Data result = connection.readBlocking();
 
                 boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
                 if (clientResponse->isException()) {
-                    serialization::Data const &data = clientResponse->getData();
+                    serialization::pimpl::Data const &data = clientResponse->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
                     throw exception::IAuthenticationException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
-                std::vector<serialization::Data *> const &getCollection = collection->getCollection();
+                std::vector<serialization::pimpl::Data *> const &getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;

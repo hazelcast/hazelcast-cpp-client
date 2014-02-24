@@ -9,13 +9,13 @@
 #ifndef Server_TestNamedPortable_h
 #define Server_TestNamedPortable_h
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API TestNamedPortable : public Portable {
+            class HAZELCAST_API TestNamedPortable : public serialization::Portable {
             public:
                 TestNamedPortable();
 

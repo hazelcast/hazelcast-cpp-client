@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListAddAllRequest::ListAddAllRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueList, int index)
+            ListAddAllRequest::ListAddAllRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueList, int index)
             : CollectionAddAllRequest(name, serviceName, valueList)
             , index(index) {
 

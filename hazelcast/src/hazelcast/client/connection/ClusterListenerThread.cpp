@@ -6,7 +6,7 @@
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/impl/ClientMemberShipEvent.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -89,9 +89,9 @@ namespace hazelcast {
 
             void ClusterListenerThread::loadInitialMemberList() {
                 protocol::AddMembershipListenerRequest requestObject;
-                serialization::Data request = clientContext.getSerializationService().toData<protocol::AddMembershipListenerRequest>(&requestObject);
+                serialization::pimpl::Data request = clientContext.getSerializationService().toData<protocol::AddMembershipListenerRequest>(&requestObject);
                 conn->writeBlocking(request);
-                serialization::Data data = conn->readBlocking();
+                serialization::pimpl::Data data = conn->readBlocking();
                 boost::shared_ptr<ClientResponse> response = clientContext.getSerializationService().toObject<ClientResponse >(data);
                 if (response->isException()) {
                     std::cerr << "ClusterListenerThread::loadInitialMemberList" << std::endl;
@@ -108,8 +108,8 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                const std::vector<serialization::Data *> &collection = coll->getCollection();
-                for (std::vector<serialization::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
+                const std::vector<serialization::pimpl::Data *> &collection = coll->getCollection();
+                for (std::vector<serialization::pimpl::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
                     boost::shared_ptr<Member> member = clientContext.getSerializationService().toObject<Member>(**it);
                     members.push_back(*member);
                 }
@@ -136,7 +136,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::listenMembershipEvents() {
                 while (clientContext.getLifecycleService().isRunning()) {
-                    serialization::Data data = conn->readBlocking();
+                    serialization::pimpl::Data data = conn->readBlocking();
                     if (!clientContext.getLifecycleService().isRunning())
                         break;
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);

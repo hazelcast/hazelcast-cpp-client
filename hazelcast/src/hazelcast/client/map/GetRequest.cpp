@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest(const std::string &name, serialization::Data &key)
+            GetRequest::GetRequest(const std::string &name, serialization::pimpl::Data &key)
             :name(name)
             , key(key) {
 

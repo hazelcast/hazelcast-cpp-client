@@ -8,18 +8,21 @@
 
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <memory>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
+
         }
         namespace connection {
             class HAZELCAST_API ClientResponse : public impl::IdentifiedDataSerializableResponse {
             public:
-                const serialization::Data &getData() const;
+                const serialization::pimpl::Data &getData() const;
 
                 bool isEvent() const;
 
@@ -35,7 +38,7 @@ namespace hazelcast {
 
             private:
                 int callId;
-                serialization::Data data;
+                serialization::pimpl::Data data;
                 bool event;
                 bool exception;
             };

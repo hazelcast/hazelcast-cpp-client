@@ -7,8 +7,8 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/connection/OutputSocketStream.h"
+#include "hazelcast/client/connection/InputSocketStream.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,8 +39,8 @@ namespace hazelcast {
             private:
                 Address address;
                 Socket socket;
-                serialization::OutputSocketStream outputSocketStream;
-                serialization::InputSocketStream inputSocketStream;
+                connection::OutputSocketStream outputSocketStream;
+                connection::InputSocketStream inputSocketStream;
 
                 void shutdownInstance(int id);
             };

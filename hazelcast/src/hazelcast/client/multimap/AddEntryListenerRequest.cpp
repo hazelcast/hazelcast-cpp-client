@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, const serialization::Data &key, bool includeValue)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, const serialization::pimpl::Data &key, bool includeValue)
             :name(name)
             , key(key)
             , hasKey(true)

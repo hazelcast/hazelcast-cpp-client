@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_TransactionalMultiMap
 #define HAZELCAST_TransactionalMultiMap
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/multimap/TxnMultiMapPutRequest.h"
 #include "hazelcast/client/multimap/TxnMultiMapGetRequest.h"
 #include "hazelcast/client/impl/PortableCollection.h"
@@ -35,8 +35,8 @@ namespace hazelcast {
              * @see Multimap#put(key , value)
              */
             bool put(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data keyData = toData(key);
+                serialization::pimpl::Data valueData = toData(value);
                 multimap::TxnMultiMapPutRequest *request = new multimap::TxnMultiMapPutRequest(getName(), keyData, valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
@@ -48,11 +48,11 @@ namespace hazelcast {
              * @see Multimap#get(key)
              */
             std::vector<V> get(const K &key) {
-                serialization::Data data = toData(key);
+                serialization::pimpl::Data data = toData(key);
                 multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
-                std::vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
-                std::vector<serialization::Data>::iterator it;
+                std::vector<serialization::pimpl::Data> const &dataCollection = portableCollection->getCollection();
+                std::vector<serialization::pimpl::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
@@ -68,8 +68,8 @@ namespace hazelcast {
              * @see Multimap#remove(key , value)
              */
             bool remove(const K &key, const V &value) {
-                serialization::Data dataKey = toData(key);
-                serialization::Data dataValue = toData(value);
+                serialization::pimpl::Data dataKey = toData(key);
+                serialization::pimpl::Data dataValue = toData(value);
                 multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), dataKey, dataValue);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
@@ -81,11 +81,11 @@ namespace hazelcast {
              * @see Multimap#remove(key)
              */
             std::vector<V> remove(const K &key) {
-                serialization::Data data = toData(key);
+                serialization::pimpl::Data data = toData(key);
                 multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), &data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
-                std::vector<serialization::Data> const &dataCollection = portableCollection->getCollection();
-                std::vector<serialization::Data>::iterator it;
+                std::vector<serialization::pimpl::Data> const &dataCollection = portableCollection->getCollection();
+                std::vector<serialization::pimpl::Data>::iterator it;
                 std::vector<V> result;
                 result.resize(dataCollection.size());
                 for (int i = 0; i < dataCollection.size(); i++) {
@@ -101,7 +101,7 @@ namespace hazelcast {
              * @see Multimap#valueCount(key)
              */
             int valueCount(const K &key) {
-                serialization::Data data = toData(key);
+                serialization::pimpl::Data data = toData(key);
                 multimap::TxnMultiMapValueCountRequest *request = new multimap::TxnMultiMapValueCountRequest(getName(), data);
                 boost::shared_ptr<int> cnt = invoke<int>(request);
                 return *cnt;

@@ -266,7 +266,7 @@ namespace hazelcast {
  *
  * Then, implement the corresponding classes in C++ with same factory and class Id as follows:
  *
-        class Foo : public Portable {
+        class Foo : public serialization::Portable {
         public:
             int getFactoryId() const{
                 return 666;
@@ -291,7 +291,7 @@ namespace hazelcast {
             std::string name;
         };
 
-        class Bar : public IdentifiedDataSerializable {
+        class Bar : public serialization::IdentifiedDataSerializable {
             public:
                 int getFactoryId() const{
                     return 4;
@@ -326,7 +326,9 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
+            }
         }
         namespace spi {
             class ClientContext;
@@ -560,6 +562,7 @@ namespace hazelcast {
              * @return cluster
              */
             Cluster &getCluster();
+
         private:
 
             class HazelcastClientImpl;
@@ -570,7 +573,7 @@ namespace hazelcast {
 
             connection::ConnectionManager &getConnectionManager();
 
-            serialization::SerializationService &getSerializationService();
+            serialization::pimpl::SerializationService &getSerializationService();
 
             spi::InvocationService &getInvocationService();
 

@@ -7,21 +7,21 @@
 #ifndef HAZELCAST_SERIALIZABLE_CONNECTION
 #define HAZELCAST_SERIALIZABLE_CONNECTION
 
-#include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API SerializableCollection : public IdentifiedDataSerializable {
+            class HAZELCAST_API SerializableCollection : public serialization::IdentifiedDataSerializable {
             public:
                 SerializableCollection();
 
                 ~SerializableCollection();
 
-                const std::vector<serialization::Data *> &getCollection() const;
+                const std::vector<serialization::pimpl::Data *> &getCollection() const;
 
                 int getFactoryId() const;
 
@@ -32,7 +32,7 @@ namespace hazelcast {
                 void readData(serialization::ObjectDataInput &reader);
 
             private:
-                std::vector <serialization::Data * > dataCollection;
+                std::vector <serialization::pimpl::Data * > dataCollection;
             };
         }
     }

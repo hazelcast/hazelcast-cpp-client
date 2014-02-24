@@ -17,7 +17,7 @@ namespace hazelcast {
                 return exception;
             }
 
-            serialization::Data const &ClientResponse::getData() const {
+            serialization::pimpl::Data const &ClientResponse::getData() const {
                 return data;
             }
 

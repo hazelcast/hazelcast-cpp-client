@@ -5,7 +5,7 @@
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/CallPromise.h"
 
@@ -17,7 +17,7 @@ namespace hazelcast {
             , resendCount(0) {
             }
 
-            void CallPromise::setResponse(const serialization::Data &data) {
+            void CallPromise::setResponse(const serialization::pimpl::Data &data) {
                 this->promise.set_value(data);
             }
 
@@ -29,8 +29,8 @@ namespace hazelcast {
                 return *request;
             }
 
-            boost::shared_future<serialization::Data> CallPromise::getFuture() {
-                return (boost::shared_future<serialization::Data>) promise.get_future();
+            boost::shared_future<serialization::pimpl::Data> CallPromise::getFuture() {
+                return (boost::shared_future<serialization::pimpl::Data>) promise.get_future();
             }
 
             void CallPromise::setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler) {

@@ -5,7 +5,7 @@
 #define HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API GetEntryViewRequest : public impl::PortableRequest {
             public:
-                GetEntryViewRequest(const std::string &name, const serialization::Data &key);
+                GetEntryViewRequest(const std::string &name, const serialization::pimpl::Data &key);
 
                 int getFactoryId() const;
 
@@ -24,7 +24,7 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                serialization::Data key;
+                serialization::pimpl::Data key;
                 std::string name;
             };
         }

@@ -9,7 +9,7 @@
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/GetPartitionsRequest.h"
 #include "hazelcast/client/impl/PartitionsResponse.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "IllegalStateException.h"
 #include "ILogger.h"
@@ -40,7 +40,7 @@ namespace hazelcast {
                 return partitions.get(partitionId);
             }
 
-            int PartitionService::getPartitionId(const serialization::Data &key) {
+            int PartitionService::getPartitionId(const serialization::pimpl::Data &key) {
                 const int pc = partitionCount;
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
@@ -89,7 +89,7 @@ namespace hazelcast {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnTarget(request, address);
+                    boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnTarget(request, address);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
                     std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
@@ -102,7 +102,7 @@ namespace hazelcast {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_future<serialization::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
+                    boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
                     std::cerr << e.what() << std::endl;

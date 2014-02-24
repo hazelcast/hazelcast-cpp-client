@@ -81,7 +81,7 @@ namespace hazelcast {
              */
             template <typename AttributeType>
             bool lookupAttribute(const std::string &key) const {
-                AttributeType *tag;
+                AttributeType *tag = NULL;
                 return lookupAttributeResolved(key, tag);
             };
 
@@ -93,7 +93,7 @@ namespace hazelcast {
 
             template <typename AttributeType>
             bool removeAttribute(const std::string &key) {
-                AttributeType *tag;
+                AttributeType *tag = NULL;
                 return removeAttributeResolved(key, tag);
             };
 

@@ -5,13 +5,13 @@
 
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/LockPortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace lock {
-            GetLockCountRequest::GetLockCountRequest(serialization::Data& key)
+            GetLockCountRequest::GetLockCountRequest(serialization::pimpl::Data& key)
             :key(key) {
             };
 

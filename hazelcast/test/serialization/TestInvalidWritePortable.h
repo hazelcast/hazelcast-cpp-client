@@ -11,13 +11,13 @@
 #ifndef __TestInvalidWritePortable_H_
 #define __TestInvalidWritePortable_H_
 
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API TestInvalidWritePortable : public Portable {
+            class HAZELCAST_API TestInvalidWritePortable : public serialization::Portable {
             public:
                 TestInvalidWritePortable();
 

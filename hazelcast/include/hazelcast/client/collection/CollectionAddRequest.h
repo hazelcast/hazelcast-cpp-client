@@ -8,24 +8,26 @@
 #define HAZELCAST_CollectionAddRequest
 
 #include "hazelcast/client/collection/CollectionRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
         }
         namespace collection {
             class HAZELCAST_API CollectionAddRequest : public CollectionRequest {
             public:
-                CollectionAddRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data);
+                CollectionAddRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data);
 
                 int getClassId() const;
 
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data data;
+                serialization::pimpl::Data data;
 
             };
         }

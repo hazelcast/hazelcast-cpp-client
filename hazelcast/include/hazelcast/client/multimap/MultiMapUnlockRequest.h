@@ -14,9 +14,9 @@ namespace hazelcast {
         namespace multimap {
             class HAZELCAST_API MultiMapUnlockRequest : public KeyBasedRequest {
             public:
-                MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId);
+                MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId);
 
-                MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId, bool force);
+                MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, bool force);
 
                 int getFactoryId() const;
 

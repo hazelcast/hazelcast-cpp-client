@@ -23,7 +23,9 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
-            class Data;
+            namespace pimpl {
+                class Data;
+            }
         }
     }
     namespace util {
@@ -32,9 +34,9 @@ namespace hazelcast {
 
         HAZELCAST_API long getThreadId();
 
-        HAZELCAST_API void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::Data *data);
+        HAZELCAST_API void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data);
 
-        HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::Data *data);
+        HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data);
 
         HAZELCAST_API long getCurrentTimeMillis();
 

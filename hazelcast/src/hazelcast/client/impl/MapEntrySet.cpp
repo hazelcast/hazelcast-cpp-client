@@ -23,7 +23,7 @@ namespace hazelcast {
                 return DataSerializableHook::ENTRY_SET;
             }
 
-            std::vector< std::pair< serialization::Data, serialization::Data> >  & MapEntrySet::getEntrySet() {
+            std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> >  & MapEntrySet::getEntrySet() {
                 return entrySet;
             }
 
@@ -39,10 +39,10 @@ namespace hazelcast {
                 int size = reader.readInt();
                 entrySet.resize(size);
                 for (int i = 0; i < size; i++) {
-                    serialization::Data data;
+                    serialization::pimpl::Data data;
                     data.readData(reader);
                     entrySet[i].first = data;
-                    serialization::Data data2;
+                    serialization::pimpl::Data data2;
                     data2.readData(reader);
                     entrySet[i].second = data2;
                 }

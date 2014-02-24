@@ -6,21 +6,21 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/SerializationContext.h"
-#include "hazelcast/client/serialization/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(DataInput & dataInput, SerializationContext & context)
+            ObjectDataInput::ObjectDataInput(pimpl::DataInput & dataInput, pimpl::SerializationContext & context)
             : dataInput(dataInput)
             , serializationContext(context)
             , serializerHolder(context.getSerializerHolder()) {
 
             }
 
-            SerializationContext *ObjectDataInput::getSerializationContext() {
+            pimpl::SerializationContext *ObjectDataInput::getSerializationContext() {
                 return &serializationContext;
             };
 

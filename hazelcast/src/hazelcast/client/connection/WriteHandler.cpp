@@ -33,8 +33,8 @@ namespace hazelcast {
                 ready = false;
             }
 
-            void WriteHandler::enqueueData(const serialization::Data &data) {
-                serialization::DataAdapter *socketWritable = new serialization::DataAdapter(data);
+            void WriteHandler::enqueueData(const serialization::pimpl::Data &data) {
+                serialization::pimpl::DataAdapter *socketWritable = new serialization::pimpl::DataAdapter(data);
                 writeQueue.offer(socketWritable);
                 bool expected = true;
                 if (informSelector.compare_exchange_strong(expected, false)) {

@@ -6,12 +6,12 @@
 #include "hazelcast/client/multimap/TxnMultiMapPutRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapPutRequest::TxnMultiMapPutRequest(const std::string &name, const serialization::Data &key, const serialization::Data &value)
+            TxnMultiMapPutRequest::TxnMultiMapPutRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value)
             : TxnMultiMapRequest(name)
             , key(key)
             , value(value) {

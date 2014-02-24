@@ -5,7 +5,7 @@
 #define HAZELCAST_MAP_SET_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API SetRequest : public impl::PortableRequest {
             public:
-                SetRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long ttl);
+                SetRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl);
 
                 int getFactoryId() const;
 
@@ -23,8 +23,8 @@ namespace hazelcast {
 
 
             private:
-                serialization::Data key;
-                serialization::Data value;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
                 std::string name;
                 long threadId;
                 long ttl;

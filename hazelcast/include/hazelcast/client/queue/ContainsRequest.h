@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_CONTAINS_REQUEST
 #define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include <vector>
 #include <string>
@@ -15,7 +15,7 @@ namespace hazelcast {
             class HAZELCAST_API ContainsRequest : public impl::PortableRequest {
             public:
 
-                ContainsRequest(const std::string &name, std::vector<serialization::Data> &dataList);
+                ContainsRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList);
 
                 int getFactoryId() const;
 
@@ -26,7 +26,7 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                std::vector<serialization::Data> dataList;
+                std::vector<serialization::pimpl::Data> dataList;
                 const std::string &name;
             };
         }

@@ -9,7 +9,7 @@
 //#define HAZELCAST_ExecutorDefaultResultImpl
 //
 //#include "hazelcast/client/spi/ClientContext.h"
-//#include "hazelcast/client/serialization/Data.h"
+//#include "hazelcast/client/serialization/pimpl/Data.h"
 //#include "hazelcast/client/Address.h"
 //#include "hazelcast/client/spi/InvocationService.h"
 //#include "hazelcast/client/Future.h"
@@ -41,7 +41,7 @@
 //                }
 //
 //                template<typename Result, typename Callable >
-//                Future<Result> submit(Callable &task, const serialization::Data &partitionKey, const Result &result) {
+//                Future<Result> submit(Callable &task, const serialization::pimpl::Data &partitionKey, const Result &result) {
 //                    spi::PartitionService &partitionService = context->getPartitionService();
 //                    int partitionId = partitionService.getPartitionId(partitionKey);
 //                    Address *pointer = partitionService.getPartitionOwner(partitionId);
@@ -64,7 +64,7 @@
 //                void asyncInvokeToAddress(Callable &task, Address address, Future<Result> future, const Result &result) {
 //                    executor::TargetCallableRequest<Callable> request(instanceName, task, address);
 //                    try{
-//                        invoke<serialization::Void>(request, address);
+//                        invoke<serialization::pimpl::Void>(request, address);
 //                        future.accessInternal().setValue((new Result(result)));
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
@@ -77,7 +77,7 @@
 //                void asyncInvoke(Callable &callable, Future<Result> future, const Result &result) {
 //                    executor::LocalTargetCallableRequest<Callable > request(instanceName, callable);
 //                    try{
-//                        invoke<serialization::Void>(request);
+//                        invoke<serialization::pimpl::Void>(request);
 //                        future.accessInternal().setValue(new Result(result));
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
@@ -97,7 +97,7 @@
 //                }
 //
 //                template<typename T>
-//                serialization::Data toData(const T &o) {
+//                serialization::pimpl::Data toData(const T &o) {
 //                    return context->getSerializationService().toData<T>(&o);
 //                }
 //

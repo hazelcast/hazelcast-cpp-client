@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            const std::vector<serialization::Data>& MapKeySet::getKeySet() const {
+            const std::vector<serialization::pimpl::Data>& MapKeySet::getKeySet() const {
                 return keySet;
             };
 
@@ -26,7 +26,7 @@ namespace hazelcast {
             void MapKeySet::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
                 for (int i = 0; i < size; i++) {
-                    serialization::Data data;
+                    serialization::pimpl::Data data;
                     data.readData(reader);
                     keySet.push_back(data);
                 }

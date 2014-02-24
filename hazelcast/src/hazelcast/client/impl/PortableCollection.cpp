@@ -10,7 +10,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            const std::vector<serialization::Data>& PortableCollection::getCollection() const {
+            const std::vector<serialization::pimpl::Data>& PortableCollection::getCollection() const {
                 return collection;
             };
 
@@ -30,7 +30,7 @@ namespace hazelcast {
                 collection.resize(size);
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 for (int i = 0; i < size; ++i) {
-                    serialization::Data data;
+                    serialization::pimpl::Data data;
                     data.readData(in);
                     collection[i] = data;
                 }

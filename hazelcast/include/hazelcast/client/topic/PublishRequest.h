@@ -8,7 +8,7 @@
 #define HAZELCAST_PublishRequest
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace topic {
             class HAZELCAST_API PublishRequest : public impl::PortableRequest {
             public:
-                PublishRequest(const std::string& instanceName, const serialization::Data& message);
+                PublishRequest(const std::string& instanceName, const serialization::pimpl::Data& message);
 
                 int getFactoryId() const;
 
@@ -25,7 +25,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter& writer) const;
 
             private:
-                serialization::Data message;
+                serialization::pimpl::Data message;
                 std::string instanceName;
             };
         }

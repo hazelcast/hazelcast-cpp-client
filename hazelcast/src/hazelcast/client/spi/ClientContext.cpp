@@ -18,7 +18,7 @@ namespace hazelcast {
 
             };
 
-            serialization::SerializationService &ClientContext::getSerializationService() {
+            serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
                 return hazelcastClient.getSerializationService();
             };
 

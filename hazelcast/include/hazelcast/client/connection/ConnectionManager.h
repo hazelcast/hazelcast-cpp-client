@@ -17,7 +17,10 @@ namespace hazelcast {
     namespace client {
 
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
+
         }
 
         namespace protocol {

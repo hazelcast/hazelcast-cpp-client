@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            RemoveAllRequest::RemoveAllRequest(const std::string &name, const serialization::Data &key, long threadId)
+            RemoveAllRequest::RemoveAllRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId)
             : KeyBasedRequest(name, key)
             , threadId(threadId) {
 

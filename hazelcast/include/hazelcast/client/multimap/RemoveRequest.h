@@ -8,14 +8,14 @@
 #define HAZELCAST_RemoveRequest
 
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
             class HAZELCAST_API RemoveRequest : public KeyBasedRequest {
             public:
-                RemoveRequest(const std::string &name, const serialization::Data &key, const serialization::Data &value, long threadId);
+                RemoveRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId);
 
                 int getClassId() const;
 
@@ -23,7 +23,7 @@ namespace hazelcast {
 
             private:
                 long threadId;
-                serialization::Data value;
+                serialization::pimpl::Data value;
             };
         }
     }

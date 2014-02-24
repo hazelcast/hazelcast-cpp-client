@@ -7,12 +7,12 @@
 #ifndef HAZELCAST_IdentifiedDataSerializableResponse
 #define HAZELCAST_IdentifiedDataSerializableResponse
 
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API IdentifiedDataSerializableResponse : public IdentifiedDataSerializable {
+            class HAZELCAST_API IdentifiedDataSerializableResponse : public serialization::IdentifiedDataSerializable {
             public:
                 ~IdentifiedDataSerializableResponse();
 

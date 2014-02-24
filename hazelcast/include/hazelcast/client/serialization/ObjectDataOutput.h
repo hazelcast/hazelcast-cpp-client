@@ -9,20 +9,19 @@
 #define HAZELCAST_ObjectDataOutput
 
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/serialization/SerializerHolder.h"
+#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-
-
-            class DataOutput;
-
+            namespace pimpl {
+                class DataOutput;
+            }
             class HAZELCAST_API ObjectDataOutput {
             public:
-                ObjectDataOutput(DataOutput &dataOutput, SerializationContext &serializationContext);
+                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializationContext &serializationContext);
 
                 ObjectDataOutput();
 
@@ -99,9 +98,9 @@ namespace hazelcast {
                 };
 
             private:
-                DataOutput *dataOutput;
-                SerializationContext *context;
-                SerializerHolder *serializerHolder;
+                pimpl::DataOutput *dataOutput;
+                pimpl::SerializationContext *context;
+                pimpl::SerializerHolder *serializerHolder;
                 bool isEmpty;
 
                 int position();

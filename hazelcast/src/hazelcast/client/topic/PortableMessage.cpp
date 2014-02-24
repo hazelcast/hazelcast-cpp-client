@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
 
-            const serialization::Data& PortableMessage::getMessage() const {
+            const serialization::pimpl::Data& PortableMessage::getMessage() const {
                 return message;
             };
 

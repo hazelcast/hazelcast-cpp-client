@@ -8,7 +8,7 @@
 //#define HAZELCAST_ExecutorWithCallbackImpl
 //
 //#include "hazelcast/client/spi/ClientContext.h"
-//#include "hazelcast/client/serialization/Data.h"
+//#include "hazelcast/client/serialization/pimpl/Data.h"
 //#include "hazelcast/client/Address.h"
 //#include "hazelcast/client/spi/InvocationService.h"
 //#include "hazelcast/client/executor/LocalTargetCallableRequest.h"
@@ -31,7 +31,7 @@
 //                }
 //
 //                template<typename Result, typename Callable, typename ExecutionCallback>
-//                void submit(Callable &task, const serialization::Data &partitionKey, ExecutionCallback &callback) {
+//                void submit(Callable &task, const serialization::pimpl::Data &partitionKey, ExecutionCallback &callback) {
 //                    spi::PartitionService &partitionService = context->getPartitionService();
 //                    int partitionId = partitionService.getPartitionId(partitionKey);
 //                    Address *pointer = partitionService.getPartitionOwner(partitionId);
@@ -101,7 +101,7 @@
 //                }
 //
 //                template<typename T>
-//                serialization::Data toData(const T &o) {
+//                serialization::pimpl::Data toData(const T &o) {
 //                    return context->getSerializationService().toData<T>(&o);
 //                }
 //

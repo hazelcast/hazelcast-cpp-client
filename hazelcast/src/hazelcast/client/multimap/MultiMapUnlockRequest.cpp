@@ -6,20 +6,20 @@
 #include "hazelcast/client/multimap/MultiMapUnlockRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId)
+            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId)
             :KeyBasedRequest(name, key)
             , threadId(threadId)
             , force(false) {
 
             };
 
-            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::Data &key, long threadId, bool force)
+            MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, bool force)
             : KeyBasedRequest(name, key)
             , threadId(threadId)
             , force(force) {

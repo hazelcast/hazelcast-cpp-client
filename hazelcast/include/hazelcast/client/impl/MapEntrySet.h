@@ -7,15 +7,15 @@
 #ifndef HAZELCAST_MAP_ENTRY_SET
 #define HAZELCAST_MAP_ENTRY_SET
 
-#include "hazelcast/client/serialization/Data.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include <vector>
 
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API MapEntrySet : public IdentifiedDataSerializable {
+            class HAZELCAST_API MapEntrySet : public serialization::IdentifiedDataSerializable {
             public:
                 MapEntrySet();
 
@@ -23,14 +23,14 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                std::vector<std::pair<serialization::Data, serialization::Data > > &getEntrySet();
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > &getEntrySet();
 
                 void writeData(serialization::ObjectDataOutput &writer) const;
 
                 void readData(serialization::ObjectDataInput &reader);
 
             private:
-                std::vector<std::pair<serialization::Data, serialization::Data > > entrySet;
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > entrySet;
             };
         }
     }

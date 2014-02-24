@@ -8,17 +8,17 @@
 #ifndef HAZELCAST_PortableReader
 #define HAZELCAST_PortableReader
 
-#include "hazelcast/client/serialization/DefaultPortableReader.h"
-#include "hazelcast/client/serialization/MorphingPortableReader.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
+#include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             class HAZELCAST_API PortableReader {
             public:
-                PortableReader(DefaultPortableReader *defaultPortableReader);
+                PortableReader(pimpl::DefaultPortableReader *defaultPortableReader);
 
-                PortableReader(MorphingPortableReader *morphingPortableReader);
+                PortableReader(pimpl::MorphingPortableReader *morphingPortableReader);
 
                 int readInt(const char *fieldName);
 
@@ -36,7 +36,7 @@ namespace hazelcast {
 
                 short readShort(const char *fieldName);
 
-                string readUTF(const char *fieldName);
+                std::string readUTF(const char *fieldName);
 
                 std::vector<byte> readByteArray(const char *fieldName);
 
@@ -72,8 +72,8 @@ namespace hazelcast {
 
             private:
                 bool isDefaultReader;
-                DefaultPortableReader *defaultPortableReader;
-                MorphingPortableReader *morphingPortableReader;
+                pimpl::DefaultPortableReader *defaultPortableReader;
+                pimpl::MorphingPortableReader *morphingPortableReader;
 
             };
         }

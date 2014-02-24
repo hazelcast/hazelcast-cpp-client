@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            PublishRequest::PublishRequest(const std::string& instanceName, const serialization::Data& message)
+            PublishRequest::PublishRequest(const std::string& instanceName, const serialization::pimpl::Data& message)
             : instanceName(instanceName)
             , message(message) {
 

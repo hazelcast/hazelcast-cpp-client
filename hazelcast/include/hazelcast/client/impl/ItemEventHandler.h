@@ -12,7 +12,7 @@
 #include "hazelcast/client/impl/PortableItemEvent.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/ItemEvent.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
@@ -22,7 +22,7 @@ namespace hazelcast {
             template<typename E, typename L>
             class HAZELCAST_API ItemEventHandler : public impl::BaseEventHandler {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::SerializationService &serializationService, L &listener, bool includeValue)
+                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, L &listener, bool includeValue)
                 :instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
@@ -31,7 +31,7 @@ namespace hazelcast {
 
                 };
 
-                void handle(const client::serialization::Data &data) {
+                void handle(const client::serialization::pimpl::Data &data) {
                     boost::shared_ptr<PortableItemEvent> event = serializationService.toObject<PortableItemEvent>(data);
                     handle(*event);
                 }
@@ -53,7 +53,7 @@ namespace hazelcast {
                 };
             private:
                 const std::string &instanceName;
-                serialization::SerializationService &serializationService;
+                serialization::pimpl::SerializationService &serializationService;
                 spi::ClusterService &clusterService;
                 L &listener;
                 bool includeValue;

@@ -13,9 +13,11 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
 
-            class Data;
+                class Data;
+            }
         }
         namespace impl {
             class PartitionsResponse;
@@ -34,7 +36,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<Address> getPartitionOwner(int partitionId);
 
-                int getPartitionId(const serialization::Data &key);
+                int getPartitionId(const serialization::pimpl::Data &key);
 
             private:
 

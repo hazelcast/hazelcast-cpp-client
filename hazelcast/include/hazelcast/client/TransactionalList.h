@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_TransactionalList
 #define HAZELCAST_TransactionalList
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/collection/TxnListAddRequest.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/collection/TxnListRemoveRequest.h"
@@ -32,7 +32,7 @@ namespace hazelcast {
              * @return true if item is added successfully
              */
             bool add(const E &e) {
-                serialization::Data data = toData(e);
+                serialization::pimpl::Data data = toData(e);
                 collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return success;
@@ -44,7 +44,7 @@ namespace hazelcast {
              * @return true if item is remove successfully
              */
             bool remove(const E &e) {
-                serialization::Data data = toData(e);
+                serialization::pimpl::Data data = toData(e);
                 collection::TxnListRemoveRequest *request = new collection::TxnListRemoveRequest(getName(), data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;

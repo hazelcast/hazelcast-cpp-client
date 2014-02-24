@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_TransactionOptions
 #define HAZELCAST_TransactionOptions
 
-#include "hazelcast/client/serialization/DataSerializable.h"
+#include "hazelcast/client/serialization/pimpl/DataSerializable.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,7 +47,7 @@ namespace hazelcast {
         /**
          * Contains the configuration for a Hazelcast transaction.
          */
-        class HAZELCAST_API TransactionOptions : public DataSerializable {
+        class HAZELCAST_API TransactionOptions : public serialization::pimpl::DataSerializable {
         public:
             /**
              * Creates a new default configured TransactionsOptions.

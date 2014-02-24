@@ -13,12 +13,15 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
+
         }
         namespace multimap {
             class HAZELCAST_API MultiMapIsLockedRequest : public KeyBasedRequest{
             public:
-                MultiMapIsLockedRequest(const std::string& name, const serialization::Data& key);
+                MultiMapIsLockedRequest(const std::string& name, const serialization::pimpl::Data& key);
 
                 int getFactoryId() const;
 

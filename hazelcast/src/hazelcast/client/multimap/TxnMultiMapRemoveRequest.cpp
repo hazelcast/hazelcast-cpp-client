@@ -10,14 +10,14 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::Data &key)
+            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key)
             : TxnMultiMapRequest(name)
             , key(key)
             , hasValue(false) {
 
             }
 
-            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::Data &key, serialization::Data &value)
+            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value)
             : TxnMultiMapRequest(name)
             , key(key)
             , hasValue(true)

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_DistributedObject
 #define HAZELCAST_DistributedObject
 
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include <string>
@@ -95,7 +95,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
-                boost::shared_future<serialization::Data> future = invocationService.invokeOnKeyOwner(request, partitionId);
+                boost::shared_future<serialization::pimpl::Data> future = invocationService.invokeOnKeyOwner(request, partitionId);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
@@ -108,7 +108,7 @@ namespace hazelcast {
              */
             template<typename Response>
             boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
-                boost::shared_future<serialization::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
+                boost::shared_future<serialization::pimpl::Data> future = getContext().getInvocationService().invokeOnRandomTarget(request);
                 return context->getSerializationService().toObject<Response>(future.get());
             };
 
@@ -141,7 +141,7 @@ namespace hazelcast {
              * Internal API.
              * @param key
              */
-            int getPartitionId(const serialization::Data &key);
+            int getPartitionId(const serialization::pimpl::Data &key);
 
         private:
             const std::string serviceName;

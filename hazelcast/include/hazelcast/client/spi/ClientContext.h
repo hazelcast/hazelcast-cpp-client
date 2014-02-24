@@ -12,7 +12,9 @@ namespace hazelcast {
         class Cluster;
 
         namespace serialization {
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
+            }
         }
         class HazelcastClient;
 
@@ -38,7 +40,7 @@ namespace hazelcast {
 
                 ClientContext(HazelcastClient &hazelcastClient);
 
-                serialization::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService &getSerializationService();
 
                 ClusterService &getClusterService();
 

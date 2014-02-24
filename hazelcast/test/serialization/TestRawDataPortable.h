@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HAZELCAST_API TestRawDataPortable : public Portable {
+            class HAZELCAST_API TestRawDataPortable : public serialization::Portable {
             public:
                 TestRawDataPortable();
 

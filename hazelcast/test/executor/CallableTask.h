@@ -7,12 +7,12 @@
 //#ifndef HAZELCAST_CallableTask
 //#define HAZELCAST_CallableTask
 //
-//#include "hazelcast/client/IdentifiedDataSerializable.h"
+//#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 //#include <string>
 //
 //using namespace hazelcast::client;
 //
-//class HAZELCAST_API CallableTask : public IdentifiedDataSerializable {
+//class HAZELCAST_API CallableTask : public serialization::IdentifiedDataSerializable {
 //public:
 //    CallableTask();
 //

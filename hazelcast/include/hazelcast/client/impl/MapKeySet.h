@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_MAP_KEY_SET
 #define HAZELCAST_MAP_KEY_SET
 
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 #include <vector>
 
@@ -20,12 +20,12 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                const std::vector<serialization::Data>& getKeySet() const;
+                const std::vector<serialization::pimpl::Data>& getKeySet() const;
 
                 void readData(serialization::ObjectDataInput& reader);
 
             private:
-                std::vector<serialization::Data> keySet;
+                std::vector<serialization::pimpl::Data> keySet;
 
             };
         }

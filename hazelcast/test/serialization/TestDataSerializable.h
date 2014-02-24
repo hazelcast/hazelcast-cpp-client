@@ -7,12 +7,12 @@
 #ifndef __TestMobile_H_
 #define __TestMobile_H_
 
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API TestDataSerializable : public IdentifiedDataSerializable {
+            class HAZELCAST_API TestDataSerializable : public serialization::IdentifiedDataSerializable {
             public:
                 TestDataSerializable();
 

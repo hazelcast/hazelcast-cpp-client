@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/multimap/PortableEntrySetResponse.h"
 #include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 
@@ -16,7 +16,7 @@ namespace hazelcast {
 
             };
 
-            const std::vector<std::pair<serialization::Data, serialization::Data > >& PortableEntrySetResponse::getEntrySet() const {
+            const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& PortableEntrySetResponse::getEntrySet() const {
                 return entrySet;
             };
 
@@ -32,10 +32,10 @@ namespace hazelcast {
                 int size = reader.readInt("s");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 for (int i = 0; i < size; ++i) {
-                    serialization::Data keyData;
+                    serialization::pimpl::Data keyData;
                     keyData.readData(in);
 
-                    serialization::Data valueData;
+                    serialization::pimpl::Data valueData;
                     valueData.readData(in);
 
                     entrySet.push_back(std::make_pair(keyData, valueData));

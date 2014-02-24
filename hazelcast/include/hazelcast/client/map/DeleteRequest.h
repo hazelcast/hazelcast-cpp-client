@@ -5,7 +5,7 @@
 #define HAZELCAST_MAP_DELETE_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API DeleteRequest : public impl::PortableRequest {
             public:
-                DeleteRequest(const std::string &name, serialization::Data &key, long threadId);
+                DeleteRequest(const std::string &name, serialization::pimpl::Data &key, long threadId);
 
                 int getFactoryId() const;
 
@@ -22,7 +22,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data key;
+                serialization::pimpl::Data key;
                 std::string name;
                 long threadId;
             };

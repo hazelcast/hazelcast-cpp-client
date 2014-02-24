@@ -2,7 +2,7 @@
 #define HAZELCAST_IMAP
 
 #include "hazelcast/client/exception/IException.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
@@ -50,7 +50,7 @@
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryView.h"
 #include <string>
@@ -88,7 +88,7 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsKey(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::ContainsKeyRequest *request = new map::ContainsKeyRequest(getName(), keyData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -102,7 +102,7 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool containsValue(const V &value) {
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::ContainsValueRequest *request = new map::ContainsValueRequest(getName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
@@ -116,7 +116,7 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> get(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::GetRequest *request = new map::GetRequest(getName(), keyData);
                 return invoke<V>(request, partitionId);
@@ -131,9 +131,9 @@ namespace hazelcast {
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> put(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::PutRequest *request = new map::PutRequest(getName(), keyData, valueData, util::getThreadId(), 0);
                 return invoke<V>(request, partitionId);
             };
@@ -146,7 +146,7 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             boost::shared_ptr<V> remove(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::RemoveRequest *request = new map::RemoveRequest(getName(), keyData, util::getThreadId());
                 return invoke<V>(request, partitionId);
@@ -160,9 +160,9 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             bool remove(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::RemoveIfSameRequest *request = new map::RemoveIfSameRequest(getName(), keyData, valueData, util::getThreadId());
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -175,10 +175,10 @@ namespace hazelcast {
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
             void deleteEntry(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::DeleteRequest *request = new map::DeleteRequest(getName(), keyData, util::getThreadId());
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -187,7 +187,7 @@ namespace hazelcast {
              */
             void flush() {
                 map::FlushRequest *request = new map::FlushRequest(getName());
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             };
 
             /**
@@ -307,7 +307,7 @@ namespace hazelcast {
              *                 for the key
              */
             bool tryRemove(const K &key, long timeoutInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::TryRemoveRequest *request = new map::TryRemoveRequest(getName(), keyData, util::getThreadId(), timeoutInMillis);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -327,9 +327,9 @@ namespace hazelcast {
              *         otherwise.
              */
             bool tryPut(const K &key, const V &value, long timeoutInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::TryPutRequest *request = new map::TryPutRequest(getName(), keyData, valueData, util::getThreadId(), timeoutInMillis);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -348,9 +348,9 @@ namespace hazelcast {
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::PutRequest *request = new map::PutRequest(getName(), keyData, valueData, util::getThreadId(), ttlInMillis);
                 return invoke<V>(request, partitionId);
             };
@@ -366,11 +366,11 @@ namespace hazelcast {
              *                 0 means infinite.
              */
             void putTransient(const K &key, const V &value, long ttlInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::PutTransientRequest *request = new map::PutTransientRequest(getName(), keyData, valueData, util::getThreadId(), ttlInMillis);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -397,9 +397,9 @@ namespace hazelcast {
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::PutIfAbsentRequest *request = new map::PutIfAbsentRequest(getName(), keyData, valueData, util::getThreadId(), ttlInMillis);
                 return invoke<V>(request, partitionId);
             }
@@ -412,10 +412,10 @@ namespace hazelcast {
              * @return <tt>true</tt> if the value was replaced
              */
             bool replace(const K &key, const V &oldValue, const V &newValue) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(oldValue);
-                serialization::Data newValueData = toData(newValue);
+                serialization::pimpl::Data valueData = toData(oldValue);
+                serialization::pimpl::Data newValueData = toData(newValue);
                 map::ReplaceIfSameRequest *request = new map::ReplaceIfSameRequest(getName(), keyData, valueData, newValueData, util::getThreadId());
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -429,9 +429,9 @@ namespace hazelcast {
              * then returns NULL in shared_ptr.
              */
             boost::shared_ptr<V> replace(const K &key, const V &value) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::ReplaceRequest *request = new map::ReplaceRequest(getName(), keyData, valueData, util::getThreadId());
                 return invoke<V>(request, partitionId);
             };
@@ -446,11 +446,11 @@ namespace hazelcast {
                       0 means infinite.
              */
             void set(const K &key, const V &value, long ttl) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                serialization::Data valueData = toData(value);
+                serialization::pimpl::Data valueData = toData(value);
                 map::SetRequest *request = new map::SetRequest(getName(), keyData, valueData, util::getThreadId(), ttl);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -468,10 +468,10 @@ namespace hazelcast {
             * @param key key to lock.
             */
             void lock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::LockRequest *request = new map::LockRequest(getName(), keyData, util::getThreadId());
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -493,10 +493,10 @@ namespace hazelcast {
              * @param leaseTime time in milliseconds to wait before releasing the lock.
              */
             void lock(const K &key, long leaseTime) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::LockRequest *request = new map::LockRequest (getName(), keyData, util::getThreadId(), leaseTime, -1);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -508,7 +508,7 @@ namespace hazelcast {
              * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
              */
             bool isLocked(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::IsLockedRequest *request = new map::IsLockedRequest(getName(), keyData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -545,7 +545,7 @@ namespace hazelcast {
              *         if the waiting time elapsed before the lock was acquired.
              */
             bool tryLock(const K &key, long timeInMillis) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::LockRequest *request = new map::LockRequest(getName(), keyData, util::getThreadId(), LONG_MAX, timeInMillis);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -566,10 +566,10 @@ namespace hazelcast {
              * @throws IllegalMonitorStateException if the current thread does not hold this lock MTODO
              */
             void unlock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::UnlockRequest *request = new map::UnlockRequest(getName(), keyData, util::getThreadId(), false);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -581,10 +581,10 @@ namespace hazelcast {
              * @param key key to lock.
              */
             void forceUnlock(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::UnlockRequest *request = new map::UnlockRequest(getName(), keyData, util::getThreadId(), true);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             };
 
             /**
@@ -601,7 +601,7 @@ namespace hazelcast {
             template<typename MapInterceptor>
             std::string addInterceptor(MapInterceptor &interceptor) {
                 map::AddInterceptorRequest<MapInterceptor> *request = new map::AddInterceptorRequest<MapInterceptor>(getName(), interceptor);
-                boost::shared_ptr<string> response = invoke<std::string>(request);
+                boost::shared_ptr<std::string> response = invoke<std::string>(request);
                 return *response;
             }
 
@@ -613,7 +613,7 @@ namespace hazelcast {
              */
             void removeInterceptor(const std::string &id) {
                 map::RemoveInterceptorRequest *request = new map::RemoveInterceptorRequest(getName(), id);
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             }
 
             /**
@@ -706,7 +706,7 @@ namespace hazelcast {
              */
             template < typename L>
             std::string addEntryListener(L &listener, const K &key, bool includeValue) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue, keyData);
                 impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
@@ -746,7 +746,7 @@ namespace hazelcast {
              * @see EntryView
              */
             EntryView<K, V> getEntryView(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), keyData);
                 boost::shared_ptr< map::DataEntryView  > dataEntryView = invoke<map::DataEntryView >(request, partitionId);
@@ -766,7 +766,7 @@ namespace hazelcast {
              * @return <tt>true</tt> if the key is evicted, <tt>false</tt> otherwise.
              */
             bool evict(const K &key) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::EvictRequest *request = new map::EvictRequest(getName(), keyData, util::getThreadId());
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
@@ -784,7 +784,7 @@ namespace hazelcast {
                 map::KeySetRequest *request = new map::KeySetRequest(getName());
                 boost::shared_ptr<map::MapKeySet> dataKeySet = invoke<map::MapKeySet>(request);
 
-                std::vector<serialization::Data> const &dataResult = dataKeySet->getKeySet();
+                std::vector<serialization::pimpl::Data> const &dataResult = dataKeySet->getKeySet();
                 std::vector<K> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     boost::shared_ptr<K> k = toObject<K>(dataResult[i]);
@@ -800,7 +800,7 @@ namespace hazelcast {
              * @return map of entries
              */
             std::map< K, V > getAll(const std::set<K> &keys) {
-                std::vector<serialization::Data> keySet(keys.size());
+                std::vector<serialization::pimpl::Data> keySet(keys.size());
                 int i = 0;
                 for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
                     keySet[i++] = toData(*it);
@@ -808,8 +808,8 @@ namespace hazelcast {
                 map::GetAllRequest *request = new map::GetAllRequest(getName(), keySet);
                 boost::shared_ptr<map::MapEntrySet> mapEntrySet = invoke < map::MapEntrySet >(request);
                 std::map< K, V > result;
-                const std::vector< std::pair< serialization::Data, serialization::Data> > &entrySet = mapEntrySet->getEntrySet();
-                for (std::vector< std::pair< serialization::Data, serialization::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
+                const std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &entrySet = mapEntrySet->getEntrySet();
+                for (std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
                     boost::shared_ptr<K> key = toObject<K>(it->first);
                     boost::shared_ptr<V> value = toObject<V>(it->second);
                     result[*key] = *value;
@@ -827,7 +827,7 @@ namespace hazelcast {
             std::vector<V> values() {
                 map::ValuesRequest *request = new map::ValuesRequest(getName());
                 boost::shared_ptr<map::MapValueCollection> valueCollection = invoke < map::MapValueCollection >(request);
-                const vector<serialization::Data> &getValues = valueCollection->getValues();
+                const std::vector<serialization::pimpl::Data> &getValues = valueCollection->getValues();
                 std::vector<V> values(getValues.size());
                 for (int i = 0; i < getValues.size(); i++) {
                     boost::shared_ptr<V> value = toObject<V>(getValues[i]);
@@ -846,7 +846,7 @@ namespace hazelcast {
             std::vector< std::pair<K, V> > entrySet() {
                 map::EntrySetRequest *request = new map::EntrySetRequest(getName());
                 boost::shared_ptr<map::MapEntrySet> result = invoke < map::MapEntrySet >(request);
-                const std::vector< std::pair< serialization::Data, serialization::Data> > &returnedEntries = result->getEntrySet();
+                const std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &returnedEntries = result->getEntrySet();
                 std::vector< std::pair<K, V> > entrySet(returnedEntries.size());
                 for (int i = 0; i < entrySet.size(); ++i) {
                     boost::shared_ptr<K> key = toObject<K>(returnedEntries[i].first);
@@ -894,7 +894,7 @@ namespace hazelcast {
                 std::string iterationType = "ENTRY";
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
-                const vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
+                const std::vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
                 std::vector<std::pair<K, V> > keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
@@ -918,7 +918,7 @@ namespace hazelcast {
                 std::string iterationType = "VALUE";
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
-                const vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
+                const std::vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
                 std::vector<V> keySet(dataResult.size());
                 for (int i = 0; i < dataResult.size(); ++i) {
                     boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
@@ -933,7 +933,7 @@ namespace hazelcast {
              *
              * Let's say your map values are Employee objects.
              *
-             *   class Employee : public Portable {
+             *   class Employee : public serialization::Portable {
              *       //...
              *       private:
              *          bool active;
@@ -959,9 +959,9 @@ namespace hazelcast {
              * @param ordered   <tt>true</tt> if index should be ordered,
              *                  <tt>false</tt> otherwise.
              */
-            void addIndex(const string &attribute, bool ordered) {
+            void addIndex(const std::string &attribute, bool ordered) {
                 map::AddIndexRequest *request = new map::AddIndexRequest(getName(), attribute, ordered);
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             };
 
             /**
@@ -975,7 +975,7 @@ namespace hazelcast {
              */
             template<typename ResultType, typename EntryProcessor>
             ResultType executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                serialization::Data keyData = toData(key);
+                serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::ExecuteOnKeyRequest<EntryProcessor> *request = new map::ExecuteOnKeyRequest<EntryProcessor>(getName(), entryProcessor, keyData);
                 return invoke<ResultType>(request, partitionId);
@@ -1017,8 +1017,8 @@ namespace hazelcast {
                 map::ExecuteOnAllKeysRequest<EntryProcessor> *request = new map::ExecuteOnAllKeysRequest<EntryProcessor>(getName(), entryProcessor);
                 boost::shared_ptr<map::MapEntrySet> mapEntrySet = invoke< map::MapEntrySet>(request);
                 std::map<K, ResultType> result;
-                const std::vector< std::pair< serialization::Data, serialization::Data> > &entrySet = mapEntrySet->getEntrySet();
-                for (std::vector< std::pair< serialization::Data, serialization::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
+                const std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &entrySet = mapEntrySet->getEntrySet();
+                for (std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
                     K key = toObject<K>(it->first);
                     ResultType resultType = toObject<ResultType>(it->second);
                     result[key] = resultType;
@@ -1090,14 +1090,14 @@ namespace hazelcast {
             */
             void putAll(const std::map<K, V> &m) {
                 map::MapEntrySet entrySet;
-                std::vector< std::pair< serialization::Data, serialization::Data> > &entryDataSet = entrySet.getEntrySet();
+                std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &entryDataSet = entrySet.getEntrySet();
                 entryDataSet.resize(m.size());
                 int i = 0;
                 for (typename std::map<K, V>::const_iterator it = m.begin(); it != m.end(); ++it) {
                     entryDataSet[i++] = std::make_pair(toData(it->first), toData(it->second));
                 }
                 map::PutAllRequest *request = new map::PutAllRequest(getName(), entrySet);
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             };
 
             /**
@@ -1106,7 +1106,7 @@ namespace hazelcast {
              */
             void clear() {
                 map::ClearRequest *request = new map::ClearRequest(getName());
-                invoke<serialization::Void>(request);
+                invoke<serialization::pimpl::Void>(request);
             };
         private:
             IMap(const std::string &instanceName, spi::ClientContext *context)
@@ -1115,12 +1115,12 @@ namespace hazelcast {
             }
 
             template<typename T>
-            serialization::Data toData(const T &object) {
+            serialization::pimpl::Data toData(const T &object) {
                 return getContext().getSerializationService().template toData<T>(&object);
             };
 
             template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::Data &data) {
+            boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
             };
 

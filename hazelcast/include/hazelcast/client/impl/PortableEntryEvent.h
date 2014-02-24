@@ -6,7 +6,7 @@
 #define HAZELCAST_PORTABLE_ENTRY_EVENT
 
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/PortableResponse.h"
 #include <string>
 
@@ -15,11 +15,11 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API PortableEntryEvent : public impl::PortableResponse {
             public:
-                const serialization::Data &getKey() const;
+                const serialization::pimpl::Data &getKey() const;
 
-                const serialization::Data &getOldValue() const;
+                const serialization::pimpl::Data &getOldValue() const;
 
-                const serialization::Data &getValue() const;
+                const serialization::pimpl::Data &getValue() const;
 
                 std::string getUuid() const;
 
@@ -34,9 +34,9 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader &reader);
 
             private:
-                serialization::Data key;
-                serialization::Data value;
-                serialization::Data oldValue;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
+                serialization::pimpl::Data oldValue;
                 EntryEventType eventType;
                 std::string uuid;
                 std::string name;

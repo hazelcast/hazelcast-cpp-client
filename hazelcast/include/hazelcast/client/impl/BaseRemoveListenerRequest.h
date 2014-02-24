@@ -15,7 +15,7 @@ namespace hazelcast {
             class PortableWriter;
         }
         namespace impl {
-            class HAZELCAST_API BaseRemoveListenerRequest : public PortableRequest {
+            class HAZELCAST_API BaseRemoveListenerRequest : public impl::PortableRequest {
             public:
                 BaseRemoveListenerRequest(const std::string &name, const std::string registrationId);
 

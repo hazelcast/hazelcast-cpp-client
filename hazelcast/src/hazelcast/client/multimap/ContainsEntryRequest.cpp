@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ContainsEntryRequest::ContainsEntryRequest(serialization::Data &key, const std::string &name, serialization::Data &value)
+            ContainsEntryRequest::ContainsEntryRequest(serialization::pimpl::Data &key, const std::string &name, serialization::pimpl::Data &value)
             : AllPartitionsRequest(name)
             , hasKey(true)
             , hasValue(true)
@@ -19,7 +19,7 @@ namespace hazelcast {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(serialization::Data &key, const std::string &name)
+            ContainsEntryRequest::ContainsEntryRequest(serialization::pimpl::Data &key, const std::string &name)
             : AllPartitionsRequest(name)
             , hasKey(true)
             , hasValue(false)
@@ -27,7 +27,7 @@ namespace hazelcast {
 
             };
 
-            ContainsEntryRequest::ContainsEntryRequest(const std::string &name, serialization::Data &value)
+            ContainsEntryRequest::ContainsEntryRequest(const std::string &name, serialization::pimpl::Data &value)
             : AllPartitionsRequest(name)
             , hasKey(false)
             , hasValue(true)

@@ -5,7 +5,7 @@
 //
 //#include "hazelcast/client/connection/HeartBeatChecker.h"
 //#include "hazelcast/client/connection/Connection.h"
-//#include "hazelcast/client/serialization/SerializationService.h"
+//#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 //#include <boost/thread.hpp>
 //
 //namespace hazelcast {
@@ -13,7 +13,7 @@
 //        namespace connection {
 //
 //
-//            HeartBeatChecker::HeartBeatChecker(int timeout, serialization::SerializationService& serializationService)
+//            HeartBeatChecker::HeartBeatChecker(int timeout, serialization::pimpl::SerializationService& serializationService)
 //            :serializationService(serializationService)
 //            , timeout(timeout)
 //            , ping(serializationService.toData<protocol::PingRequest>(&pingRequest)) {

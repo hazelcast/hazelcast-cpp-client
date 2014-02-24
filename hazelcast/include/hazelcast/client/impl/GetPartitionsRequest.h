@@ -8,7 +8,7 @@
 #define HAZELCAST_GET_PARTITIONS_REQUEST
 
 #include "hazelcast/client/protocol/ProtocolConstants.h"
-#include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 
 namespace hazelcast {

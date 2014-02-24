@@ -22,14 +22,14 @@ namespace hazelcast {
                 return DataSerializableHook::VALUES;
             };
 
-            const std::vector<serialization::Data>  & MapValueCollection::getValues() const {
+            const std::vector<serialization::pimpl::Data>  & MapValueCollection::getValues() const {
                 return values;
             };
 
             void MapValueCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
                 for (int i = 0; i < size; ++i) {
-                    serialization::Data data;
+                    serialization::pimpl::Data data;
                     data.readData(reader);
                     values.push_back(data);
                 }

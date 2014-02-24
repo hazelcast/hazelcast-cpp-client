@@ -9,7 +9,7 @@
 #define HAZELCAST_TxnMapRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -17,7 +17,10 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
+
         }
         namespace map {
 
@@ -58,11 +61,11 @@ namespace hazelcast {
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value, serialization::Data &newValue);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue);
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate);
 
@@ -79,9 +82,9 @@ namespace hazelcast {
                 bool hasValue;
                 bool hasNewValue;
                 bool hasPredicate;
-                serialization::Data key;
-                serialization::Data value;
-                serialization::Data newValue;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
+                serialization::pimpl::Data newValue;
                 std::string predicate;
                 long ttl;
             };

@@ -5,7 +5,7 @@
 #ifndef HAZELCAST_MemberAttributeChange
 #define HAZELCAST_MemberAttributeChange
 
-#include "hazelcast/client/serialization/DataSerializable.h"
+#include "hazelcast/client/serialization/pimpl/DataSerializable.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/util/IOUtil.h"
 #include <string>
@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace impl {
 
 
-            class HAZELCAST_API MemberAttributeChange : public DataSerializable {
+            class HAZELCAST_API MemberAttributeChange : public serialization::pimpl::DataSerializable {
             public:
 
                 MemberAttributeChange();

@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_PRINCIPAL
 #define HAZELCAST_PRINCIPAL
 
-#include "hazelcast/client/serialization/SerializationConstants.h"
-#include "hazelcast/client/Portable.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API Principal : public Portable {
+            class HAZELCAST_API Principal : public serialization::Portable {
             public:
                 Principal();
 

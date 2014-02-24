@@ -16,8 +16,8 @@ namespace hazelcast {
                     return map::DataSerializableHook::ENTRY_VIEW;
                 };
                 void DataEntryView::readData(serialization::ObjectDataInput &in) {
-                    key = *(in.readObject<serialization::Data>());
-                    value = *(in.readObject<serialization::Data>());
+                    key = *(in.readObject<serialization::pimpl::Data>());
+                    value = *(in.readObject<serialization::pimpl::Data>());
                     cost = in.readLong();
                     creationTime = in.readLong();
                     expirationTime = in.readLong();

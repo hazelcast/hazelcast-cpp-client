@@ -199,7 +199,7 @@ namespace hazelcast {
                 assertTrue(q->offer("item4"));
                 assertTrue(q->offer("item5"));
 
-                std::vector<string> array = q->toArray();
+                std::vector<std::string> array = q->toArray();
                 for (int i = 0; i < array.size(); i++) {
                     assertEqual(std::string("item") + util::to_string(i + 1), array[i]);
                 }

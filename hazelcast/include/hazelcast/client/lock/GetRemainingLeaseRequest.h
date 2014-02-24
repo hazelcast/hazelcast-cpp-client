@@ -13,12 +13,14 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl {
+                class Data;
+            }
         }
         namespace lock {
             class HAZELCAST_API GetRemainingLeaseRequest : public impl::PortableRequest{
             public:
-                GetRemainingLeaseRequest(serialization::Data& key);
+                GetRemainingLeaseRequest(serialization::pimpl::Data& key);
 
                 int getClassId() const;
 
@@ -28,7 +30,7 @@ namespace hazelcast {
 
                 bool isRetryable() const;
             private:
-                serialization::Data& key;
+                serialization::pimpl::Data& key;
             };
         }
     }

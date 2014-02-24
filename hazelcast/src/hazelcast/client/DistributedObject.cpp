@@ -53,7 +53,7 @@ namespace hazelcast {
             return context->getServerListenerService().stopListening(request, registrationId);
         }
 
-        int DistributedObject::getPartitionId(const serialization::Data &key) {
+        int DistributedObject::getPartitionId(const serialization::pimpl::Data &key) {
             return context->getPartitionService().getPartitionId(key);
         }
     }

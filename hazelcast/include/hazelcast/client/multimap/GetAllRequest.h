@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace multimap {
             class HAZELCAST_API GetAllRequest : public KeyBasedRequest{
             public:
-                GetAllRequest(const std::string& name, const serialization::Data& key);
+                GetAllRequest(const std::string& name, const serialization::pimpl::Data& key);
 
                 int getClassId() const;
 

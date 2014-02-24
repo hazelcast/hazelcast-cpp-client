@@ -8,7 +8,7 @@
 #define HAZELCAST_TxnCollectionRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
             public:
                 TxnCollectionRequest(const std::string &name);
 
-                TxnCollectionRequest(const std::string &name, serialization::Data &);
+                TxnCollectionRequest(const std::string &name, serialization::pimpl::Data &);
 
                 int getFactoryId() const;
 
@@ -27,7 +27,7 @@ namespace hazelcast {
             private:
                 std::string name;
                 bool hasData;
-                serialization::Data data;
+                serialization::pimpl::Data data;
             };
         }
     }

@@ -8,14 +8,14 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            PortableWriter::PortableWriter(DefaultPortableWriter *defaultPortableWriter)
+            PortableWriter::PortableWriter(pimpl::DefaultPortableWriter *defaultPortableWriter)
             :defaultPortableWriter(defaultPortableWriter)
             , classDefinitionWriter(NULL)
             , isDefaultWriter(true) {
 
             }
 
-            PortableWriter::PortableWriter(ClassDefinitionWriter *classDefinitionWriter)
+            PortableWriter::PortableWriter(pimpl::ClassDefinitionWriter *classDefinitionWriter)
             :defaultPortableWriter(NULL)
             , classDefinitionWriter(classDefinitionWriter)
             , isDefaultWriter(false) {
@@ -70,7 +70,7 @@ namespace hazelcast {
                 return classDefinitionWriter->writeShort(fieldName, value);
             }
 
-            void PortableWriter::writeUTF(const char *fieldName, const string& str) {
+            void PortableWriter::writeUTF(const char *fieldName, const std::string& str) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeUTF(fieldName, str);
                 return classDefinitionWriter->writeUTF(fieldName, str);
@@ -136,10 +136,7 @@ namespace hazelcast {
                 return classDefinitionWriter->getRawDataOutput();
             }
 
-
         }
-
-
     }
 }
 

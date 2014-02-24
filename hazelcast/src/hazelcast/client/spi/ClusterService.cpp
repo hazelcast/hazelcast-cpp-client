@@ -7,8 +7,8 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -29,8 +29,8 @@ namespace hazelcast {
             }
 
             void ClusterService::start() {
-                serialization::ClassDefinitionBuilder cd(-3, 3);
-                boost::shared_ptr<serialization::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
+                serialization::pimpl::ClassDefinitionBuilder cd(-3, 3);
+                boost::shared_ptr<serialization::pimpl::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
                 ClientConfig &config = clientContext.getClientConfig();

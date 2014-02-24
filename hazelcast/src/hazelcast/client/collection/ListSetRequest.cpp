@@ -6,12 +6,12 @@
 #include "hazelcast/client/collection/ListSetRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace list {
-            ListSetRequest::ListSetRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data, int index)
+            ListSetRequest::ListSetRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data, int index)
             : CollectionRequest(name, serviceName)
             , data(data)
             , index(index) {

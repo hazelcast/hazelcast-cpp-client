@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetAllRequest::GetAllRequest(const std::string& name,const std::vector<serialization::Data>& keys)
+            GetAllRequest::GetAllRequest(const std::string& name,const std::vector<serialization::pimpl::Data>& keys)
             :name(name)
             , keys(keys) {
 

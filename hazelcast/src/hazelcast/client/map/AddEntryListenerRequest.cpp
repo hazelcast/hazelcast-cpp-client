@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/map/AddEntryListenerRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/SerializationConstants.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 
@@ -19,7 +19,7 @@ namespace hazelcast {
 
             }
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key, const std::string &sql)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key, const std::string &sql)
             :name(name), includeValue(includeValue), key(key), sql(sql), hasKey(true), hasPredicate(true) {
 
             };
@@ -29,7 +29,7 @@ namespace hazelcast {
 
             };
 
-            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::Data &key)
+            AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key)
             :name(name), includeValue(includeValue), key(key), hasKey(true), hasPredicate(false) {
 
             };
@@ -42,7 +42,7 @@ namespace hazelcast {
                 return PortableHook::ADD_ENTRY_LISTENER_SQL;
             }
 
-            const serialization::Data *AddEntryListenerRequest::getKey() const {
+            const serialization::pimpl::Data *AddEntryListenerRequest::getKey() const {
                 return &key;
             }
 

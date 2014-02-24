@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            MultiMapIsLockedRequest::MultiMapIsLockedRequest(const std::string &name, const serialization::Data &key)
+            MultiMapIsLockedRequest::MultiMapIsLockedRequest(const std::string &name, const serialization::pimpl::Data &key)
             :KeyBasedRequest(name, key) {
 
             };

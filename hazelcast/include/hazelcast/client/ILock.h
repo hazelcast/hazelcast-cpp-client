@@ -10,7 +10,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/DistributedObject.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -100,7 +100,7 @@ namespace hazelcast {
 
             void onDestroy();
 
-            serialization::Data key;
+            serialization::pimpl::Data key;
 
             int partitionId;
         };

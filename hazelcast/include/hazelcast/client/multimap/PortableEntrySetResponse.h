@@ -9,7 +9,7 @@
 #define HAZELCAST_PortableEntrySetResponse
 
 #include "hazelcast/client/impl/PortableResponse.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <vector>
 #include <utility>
 
@@ -20,7 +20,7 @@ namespace hazelcast {
             public:
                 PortableEntrySetResponse();
 
-                const std::vector<std::pair< serialization::Data, serialization::Data> > &getEntrySet() const;
+                const std::vector<std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &getEntrySet() const;
 
                 int getFactoryId() const;
 
@@ -29,7 +29,7 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader &reader);
 
             private:
-                std::vector<std::pair<serialization::Data, serialization::Data > > entrySet;
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > entrySet;
             };
         }
     }

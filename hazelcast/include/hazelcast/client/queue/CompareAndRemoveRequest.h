@@ -5,7 +5,7 @@
 #define HAZELCAST_QUEUE_COMPARE_AND_REMOVE_REQUEST
 
 #include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
@@ -14,7 +14,7 @@ namespace hazelcast {
             class HAZELCAST_API CompareAndRemoveRequest : public impl::PortableRequest {
             public:
 
-                CompareAndRemoveRequest(const std::string &name, std::vector<serialization::Data> &dataList, bool retain);
+                CompareAndRemoveRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList, bool retain);
 
                 int getFactoryId() const;
 
@@ -23,7 +23,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                std::vector<serialization::Data> dataList;
+                std::vector<serialization::pimpl::Data> dataList;
                 std::string name;
                 bool retain;
             };

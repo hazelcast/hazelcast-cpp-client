@@ -68,7 +68,7 @@ namespace hazelcast {
                     checkThread();
                     checkTimeout();
                     CommitTxnRequest *request = new CommitTxnRequest(true);
-                    invoke<serialization::Void>(request);
+                    invoke<serialization::pimpl::Void>(request);
                     state = TxnState::COMMITTED;
                 } catch (exception::IException &e) {
                     state = TxnState::ROLLING_BACK;
@@ -91,7 +91,7 @@ namespace hazelcast {
                     checkThread();
                     try {
                         RollbackTxnRequest *request = new RollbackTxnRequest();
-                        invoke<serialization::Void>(request);
+                        invoke<serialization::pimpl::Void>(request);
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
@@ -103,7 +103,7 @@ namespace hazelcast {
 
             }
 
-            serialization::SerializationService &TransactionProxy::getSerializationService() {
+            serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
                 return clientContext.getSerializationService();
             }
 

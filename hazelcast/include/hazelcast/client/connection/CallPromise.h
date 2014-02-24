@@ -24,7 +24,9 @@ namespace hazelcast {
             class BaseEventHandler;
         }
         namespace serialization {
-            class Data;
+            namespace pimpl{
+                class Data;
+            }
         }
 
         namespace spi {
@@ -36,7 +38,7 @@ namespace hazelcast {
             public:
                 CallPromise(spi::InvocationService &invocationService);
 
-                void setResponse(const serialization::Data &data);
+                void setResponse(const serialization::pimpl::Data &data);
 
                 template<typename E>
                 void setException(E const &e) {
@@ -47,7 +49,7 @@ namespace hazelcast {
 
                 const impl::PortableRequest &getRequest() const;
 
-                boost::shared_future<serialization::Data> getFuture();
+                boost::shared_future<serialization::pimpl::Data> getFuture();
 
                 void setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler);
 
@@ -57,7 +59,7 @@ namespace hazelcast {
 
             private:
                 spi::InvocationService &invocationService;
-                boost::promise<serialization::Data> promise;
+                boost::promise<serialization::pimpl::Data> promise;
                 std::auto_ptr<const impl::PortableRequest> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;
                 boost::atomic<int> resendCount;

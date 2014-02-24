@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            PortableReader::PortableReader(DefaultPortableReader *defaultPortableReader)
+            PortableReader::PortableReader(pimpl::DefaultPortableReader *defaultPortableReader)
             : defaultPortableReader(defaultPortableReader)
             , morphingPortableReader(NULL)
             , isDefaultReader(true) {
@@ -17,7 +17,7 @@ namespace hazelcast {
 
             };
 
-            PortableReader::PortableReader(MorphingPortableReader *morphingPortableReader)
+            PortableReader::PortableReader(pimpl::MorphingPortableReader *morphingPortableReader)
             : defaultPortableReader(NULL)
             , morphingPortableReader(morphingPortableReader)
             , isDefaultReader(false) {
@@ -72,7 +72,7 @@ namespace hazelcast {
                 return morphingPortableReader->readShort(fieldName);
             }
 
-            string PortableReader::readUTF(const char *fieldName) {
+            std::string PortableReader::readUTF(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readUTF(fieldName);
                 return morphingPortableReader->readUTF(fieldName);

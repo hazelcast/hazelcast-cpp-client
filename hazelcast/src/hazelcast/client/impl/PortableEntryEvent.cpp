@@ -11,15 +11,15 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            const serialization::Data& PortableEntryEvent::getKey() const {
+            const serialization::pimpl::Data& PortableEntryEvent::getKey() const {
                 return key;
             }
 
-            const serialization::Data& PortableEntryEvent::getOldValue() const {
+            const serialization::pimpl::Data& PortableEntryEvent::getOldValue() const {
                 return oldValue;
             }
 
-            const serialization::Data& PortableEntryEvent::getValue() const {
+            const serialization::pimpl::Data& PortableEntryEvent::getValue() const {
                 return value;
             }
 

@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/map/TryPutRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            TryPutRequest::TryPutRequest(const std::string &name, serialization::Data &key, serialization::Data &value, long threadId, long timeout)
+            TryPutRequest::TryPutRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long timeout)
             :name(name)
             , key(key)
             , value(value)

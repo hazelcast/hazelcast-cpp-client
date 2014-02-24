@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/topic/AddMessageListenerRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/topic/TopicPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 

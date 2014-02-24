@@ -13,14 +13,16 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            class Data;
+            namespace pimpl {
+                class Data;
+            }
         }
         namespace lock {
             class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
             public:
-                UnlockRequest(serialization::Data &key, long threadId);
+                UnlockRequest(serialization::pimpl::Data &key, long threadId);
 
-                UnlockRequest(serialization::Data &key, long threadId, bool force);
+                UnlockRequest(serialization::pimpl::Data &key, long threadId, bool force);
 
                 int getClassId() const;
 
@@ -29,7 +31,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                serialization::Data &key;
+                serialization::pimpl::Data &key;
                 long threadId;
                 bool force;
             };

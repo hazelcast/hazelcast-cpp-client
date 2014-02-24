@@ -3,7 +3,7 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include <string>
 #include <sstream>
 #include <iterator>
@@ -14,7 +14,7 @@ namespace hazelcast {
         /**
          * IP Address
          */
-        class HAZELCAST_API Address : public IdentifiedDataSerializable {
+        class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
         public:
             /**
              * Constructor

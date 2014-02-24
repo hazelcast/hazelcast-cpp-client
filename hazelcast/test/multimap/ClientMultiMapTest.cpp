@@ -65,7 +65,7 @@ namespace hazelcast {
                 assertEqual(2, mm->valueCount("key2"));
                 assertEqual(5, mm->size());
 
-                std::vector<string> coll = mm->get("key1");
+                std::vector<std::string> coll = mm->get("key1");
                 assertEqual(3, coll.size());
 
                 coll = mm->remove("key2");

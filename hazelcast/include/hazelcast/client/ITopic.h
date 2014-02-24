@@ -8,12 +8,12 @@
 #define HAZELCAST_TOPIC
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/topic/PublishRequest.h"
 #include "hazelcast/client/topic/AddMessageListenerRequest.h"
 #include "hazelcast/client/topic/RemoveMessageListenerRequest.h"
 #include "hazelcast/client/topic/TopicEventHandler.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/DistributedObject.h"
 #include <string>
@@ -45,9 +45,9 @@ namespace hazelcast {
              * @param message
              */
             void publish(const E &message) {
-                serialization::Data data = getContext().getSerializationService().template toData<E>(&message);
+                serialization::pimpl::Data data = getContext().getSerializationService().template toData<E>(&message);
                 topic::PublishRequest *request = new topic::PublishRequest(getName(), data);
-                invoke<serialization::Void>(request, partitionId);
+                invoke<serialization::pimpl::Void>(request, partitionId);
             }
 
             /**
@@ -92,7 +92,7 @@ namespace hazelcast {
         private:
             ITopic(const std::string &instanceName, spi::ClientContext *context)
             : DistributedObject("hz:impl:topicService", instanceName, context) {
-                serialization::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
+                serialization::pimpl::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
                 partitionId = getPartitionId(keyData);
             };
 

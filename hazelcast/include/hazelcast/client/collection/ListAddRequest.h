@@ -16,7 +16,7 @@ namespace hazelcast {
             class HAZELCAST_API ListAddRequest : public collection::CollectionAddRequest {
             public:
 
-                ListAddRequest(const std::string &name, const std::string &serviceName, const serialization::Data &data, int index);
+                ListAddRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data, int index);
 
                 int getClassId() const;
 

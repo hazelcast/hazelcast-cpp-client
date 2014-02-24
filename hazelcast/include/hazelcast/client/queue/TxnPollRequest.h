@@ -8,7 +8,7 @@
 #define HAZELCAST_TxnPollRequest
 
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {

@@ -5,13 +5,13 @@
 
 #include "hazelcast/client/collection/CollectionCompareAndRemoveRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/Data.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::Data> &valueSet, bool retain)
+            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueSet, bool retain)
             :CollectionRequest(name, serviceName)
             , valueSet(valueSet)
             , retain(retain) {

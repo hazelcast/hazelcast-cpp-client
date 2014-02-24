@@ -8,12 +8,12 @@
 //#ifndef HAZELCAST_RunnableTask
 //#define HAZELCAST_RunnableTask
 //
-//#include "hazelcast/client/Portable.h"
+//#include "hazelcast/client/serialization/Portable.h"
 //#include <string>
 //
 //using namespace hazelcast::client;
 //
-//class HAZELCAST_API RunnableTask : public Portable {
+//class HAZELCAST_API RunnableTask : public serialization::Portable {
 //public:
 //
 //    RunnableTask();

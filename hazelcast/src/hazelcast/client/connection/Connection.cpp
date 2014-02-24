@@ -9,10 +9,10 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/CallPromise.h"
-#include "hazelcast/client/serialization/DataOutput.h"
-#include "hazelcast/client/serialization/SerializationService.h"
-#include "hazelcast/client/serialization/OutputSocketStream.h"
-#include "hazelcast/client/serialization/InputSocketStream.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/connection/OutputSocketStream.h"
+#include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
@@ -44,7 +44,7 @@ namespace hazelcast {
             };
 
             void Connection::init(const std::vector<byte>&  PROTOCOL) {
-                serialization::OutputSocketStream outputSocketStream(socket);
+                connection::OutputSocketStream outputSocketStream(socket);
                 outputSocketStream.write(PROTOCOL);
             }
 
@@ -77,7 +77,7 @@ namespace hazelcast {
 
             void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise) {
                 registerCall(promise); //Don't change the order with following line
-                serialization::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
+                serialization::pimpl::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
                 if (!live) {
                     deRegisterCall(promise->getRequest().callId);
                     resend(promise);
@@ -87,8 +87,8 @@ namespace hazelcast {
             }
 
 
-            void Connection::handlePacket(const serialization::Data &data) {
-                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+            void Connection::handlePacket(const serialization::pimpl::Data &data) {
+                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
                 boost::shared_ptr<ClientResponse> response = serializationService.toObject<ClientResponse>(data);
                 if (response->isEvent()) {
                     boost::shared_ptr<CallPromise> promise = getEventHandlerPromise(response->getCallId());
@@ -110,9 +110,9 @@ namespace hazelcast {
 
             /* returns shouldSetResponse */
             bool Connection::handleException(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
-                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
                 if (response->isException()) {
-                    serialization::Data const &data = response->getData();
+                    serialization::pimpl::Data const &data = response->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
                     std::string exceptionClassName = ex->name;
                     if (exceptionClassName == "HazelcastInstanceNotActiveException") {
@@ -132,7 +132,7 @@ namespace hazelcast {
 
             /* returns shouldSetResponse */
             bool Connection::handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
-                serialization::SerializationService &serializationService = clientContext.getSerializationService();
+                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
                 impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
                     if (eventHandler->registrationId.size() == 0) //if uuid is not set, it means it is first time that we are getting uuid.
@@ -158,15 +158,15 @@ namespace hazelcast {
                 socket.setRemoteEndpoint(remoteEndpoint);
             };
 
-            void Connection::writeBlocking(serialization::Data const &data) {
-                serialization::OutputSocketStream outputSocketStream(socket);
+            void Connection::writeBlocking(serialization::pimpl::Data const &data) {
+                connection::OutputSocketStream outputSocketStream(socket);
                 data.writeToSocket(outputSocketStream);
             }
 
-            serialization::Data Connection::readBlocking() {
-                serialization::InputSocketStream inputSocketStream(socket);
+            serialization::pimpl::Data Connection::readBlocking() {
+                connection::InputSocketStream inputSocketStream(socket);
                 inputSocketStream.setSerializationContext(&(clientContext.getSerializationService().getSerializationContext()));
-                serialization::Data data;
+                serialization::pimpl::Data data;
                 data.readFromSocket(inputSocketStream);
                 return data;
             }

@@ -52,7 +52,7 @@ namespace hazelcast {
             , ttl(-1) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -63,7 +63,7 @@ namespace hazelcast {
             , ttl(-1) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -75,7 +75,7 @@ namespace hazelcast {
             , ttl(-1) {
             };
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::Data &key, serialization::Data &value, serialization::Data &newValue)
+            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue)
             : name(name)
             , requestType(requestType)
             , key(key)

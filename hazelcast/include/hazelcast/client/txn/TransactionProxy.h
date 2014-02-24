@@ -13,7 +13,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/serialization/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -31,7 +31,9 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            class SerializationService;
+            namespace pimpl {
+                class SerializationService;
+            }
         }
 
         namespace txn {
@@ -76,7 +78,7 @@ namespace hazelcast {
 
                 void rollback();
 
-                serialization::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService &getSerializationService();
 
                 spi::InvocationService &getInvocationService();
 
@@ -101,8 +103,8 @@ namespace hazelcast {
                     request->setTxnId(txnId);
                     request->setThreadId(threadId);
                     spi::InvocationService &invocationService = clientContext.getInvocationService();
-                    serialization::SerializationService &ss = clientContext.getSerializationService();
-                    boost::shared_future<serialization::Data> future = invocationService.invokeOnConnection(request, connection);
+                    serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
+                    boost::shared_future<serialization::pimpl::Data> future = invocationService.invokeOnConnection(request, connection);
                     return ss.toObject<Response>(future.get());
                 }
 
