@@ -5,6 +5,7 @@
 
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {

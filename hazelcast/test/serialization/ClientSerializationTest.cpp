@@ -12,8 +12,7 @@
 #include "serialization/TestInvalidWritePortable.h"
 #include "serialization/testUtil.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
 #include <fstream>
 

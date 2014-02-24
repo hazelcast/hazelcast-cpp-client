@@ -4,6 +4,7 @@
 
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {

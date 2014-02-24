@@ -12,18 +12,11 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/SerializationContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-
-            class OutputSocketStream;
-
-            class InputSocketStream;
-        }
         namespace serialization {
             namespace pimpl {
 
@@ -59,10 +52,6 @@ namespace hazelcast {
                     int getFactoryId() const;
 
                     int getClassId() const;
-
-                    void writeToSocket(connection::OutputSocketStream &outputSocketStream) const;
-
-                    void readFromSocket(connection::InputSocketStream &inputSocketStream);
 
                     boost::shared_ptr<ClassDefinition> cd;
                     mutable std::auto_ptr< std::vector<byte> > buffer;

@@ -6,6 +6,7 @@
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/serialization/pimpl/SerializationContext.h"
 #include "hazelcast/client/Socket.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,11 +19,6 @@ namespace hazelcast {
 
             void InputSocketStream::setSerializationContext(serialization::pimpl::SerializationContext *context) {
                 this->context = context;
-            };
-
-            serialization::pimpl::SerializationContext *InputSocketStream::getSerializationContext() {
-                assert(context != NULL);
-                return context;
             };
 
             void InputSocketStream::readFully(std::vector<byte> &bytes) {
@@ -44,6 +40,32 @@ namespace hazelcast {
                         (0x000000ff & s[3]);
             };
 
+
+            void InputSocketStream::readData(serialization::pimpl::Data &data) {
+                data.setType(readInt());
+                int classId = readInt();
+
+                if (classId != data.NO_CLASS_ID) {
+                    int factoryId = readInt();
+                    int version = readInt();
+
+                    int classDefSize = readInt();
+                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
+                        data.cd = context->lookup(factoryId, classId, version);
+                        skipBytes(classDefSize);
+                    } else {
+                        std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
+                        readFully(*(classDefBytes.get()));
+                        data.cd = context->createClassDefinition(factoryId, classDefBytes);
+                    }
+                }
+                int size = readInt();
+                if (size > 0) {
+                    data.buffer->resize(size);
+                    readFully(*(data.buffer.get()));
+                }
+                data.setPartitionHash(readInt());
+            }
         }
     }
 }

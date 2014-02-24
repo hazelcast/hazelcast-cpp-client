@@ -14,9 +14,11 @@
 namespace hazelcast {
     namespace client {
         class Socket;
-        namespace serialization{
-            namespace pimpl{
+        namespace serialization {
+            namespace pimpl {
                 class SerializationContext;
+
+                class Data;
             }
         }
         namespace connection {
@@ -27,17 +29,18 @@ namespace hazelcast {
 
                 void setSerializationContext(serialization::pimpl::SerializationContext *context);
 
-                serialization::pimpl::SerializationContext *getSerializationContext();
-
-                void readFully(std::vector<byte>&);
-
-                int skipBytes(int i);
-
                 int readInt();
+
+                void readData(serialization::pimpl::Data &data);
 
             private:
                 Socket &socket;
                 serialization::pimpl::SerializationContext *context;
+
+                void readFully(std::vector<byte> &);
+
+                int skipBytes(int i);
+
             };
 
         }
