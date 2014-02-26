@@ -13,10 +13,6 @@
 
 namespace hazelcast {
 
-    namespace util {
-        class CallPromise;
-    }
-
     namespace client {
         class MembershipListener;
 

@@ -11,8 +11,8 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "IllegalStateException.h"
-#include "ILogger.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 namespace hazelcast {
     namespace client {

@@ -21,7 +21,6 @@
 #include "hazelcast/client/impl/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/DistributedObject.h"
-#include "ServerException.h"
 #include <stdexcept>
 
 namespace hazelcast {

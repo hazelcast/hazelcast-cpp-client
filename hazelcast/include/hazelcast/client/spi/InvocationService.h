@@ -9,9 +9,6 @@
 #include <boost/thread/future.hpp>
 
 namespace hazelcast {
-    namespace util {
-        class CallPromise;
-    }
     namespace client {
         class Address;
 
@@ -31,6 +28,8 @@ namespace hazelcast {
 
         namespace connection {
             class Connection;
+
+            class CallPromise;
         }
         namespace spi {
 

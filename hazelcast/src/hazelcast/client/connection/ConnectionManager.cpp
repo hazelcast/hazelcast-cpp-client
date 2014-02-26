@@ -22,8 +22,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
-            :PROTOCOL(protocol_bytes, protocol_bytes + 6)
-            ,clientContext(clientContext)
+            :clientContext(clientContext)
             , live(true)
             , callIdGenerator(10)
             , iListener(*this)
@@ -31,8 +30,8 @@ namespace hazelcast {
             , iListenerThread(NULL)
             , oListenerThread(NULL)
             , smartRouting(smartRouting) {
-
-
+                const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
+                PROTOCOL.insert(PROTOCOL.begin(), protocol_bytes, protocol_bytes + 6);
             };
 
             void ConnectionManager::start() {
