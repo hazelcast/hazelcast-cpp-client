@@ -20,8 +20,8 @@ namespace hazelcast {
                 , objectDataInput(input, serializationContext)
                 , finalPosition(input.readInt())
                 , offset(input.position())
-                , cd(cd)
                 , raw(false)
+                , cd(cd)
                 , currentFieldType(0) {
 
                 };

@@ -17,7 +17,7 @@ namespace hazelcast {
                 return uuid;
             }
 
-            MemberAttributeEvent::MapOperationType MemberAttributeChange::getOperationType() const {
+            MemberAttributeEvent::MemberAttributeOperationType MemberAttributeChange::getOperationType() const {
                 return operationType;
             }
 
@@ -41,8 +41,8 @@ namespace hazelcast {
                 uuid = reader.readUTF();
                 key = reader.readUTF();
                 int operation = reader.readByte();
-                if (operation == MemberAttributeEvent:: DELTA_MEMBER_PROPERTIES_OP_PUT) {
-                    operationType = MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_PUT;
+                if (operation == MemberAttributeEvent:: PUT) {
+                    operationType = MemberAttributeEvent::PUT;
                     byte readByte = reader.readByte();
                     if (readByte == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
                         primitive_id = util::IOUtil::PRIMITIVE_TYPE_BOOLEAN;
@@ -69,9 +69,9 @@ namespace hazelcast {
                         primitive_id = util::IOUtil::PRIMITIVE_TYPE_UTF;
                         value = reader.readUTF();
                     }
-                } else if (operation == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_REMOVE) {
+                } else if (operation == MemberAttributeEvent::REMOVE) {
                     primitive_id = util::IOUtil::PRIMITIVE_TYPE_NULL;
-                    operationType = MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_REMOVE;
+                    operationType = MemberAttributeEvent::REMOVE;
                 }
 
             }

@@ -70,7 +70,7 @@ namespace hazelcast {
              */
             template <typename AttributeType>
             AttributeType getAttribute(const std::string &key) {
-                AttributeType *tag;
+                AttributeType *tag = NULL;
                 return getAttributeResolved(key, tag);
             }
 

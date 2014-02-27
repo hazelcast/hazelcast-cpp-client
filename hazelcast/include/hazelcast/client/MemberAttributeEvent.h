@@ -26,22 +26,22 @@ namespace hazelcast {
          */
         class MemberAttributeEvent : public MembershipEvent {
         public:
-            enum MapOperationType {
-                DELTA_MEMBER_PROPERTIES_OP_PUT = 2,
-                DELTA_MEMBER_PROPERTIES_OP_REMOVE = 3
+            enum MemberAttributeOperationType {
+                PUT = 1,
+                REMOVE = 2
             };
 
-            MemberAttributeEvent(Cluster &cluster, Member &member, MapOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id);
+            MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id);
 
             /*
              *
-             *  enum MapOperationType {
-             *   DELTA_MEMBER_PROPERTIES_OP_PUT = 2,
-             *   DELTA_MEMBER_PROPERTIES_OP_REMOVE = 3
+             *  enum MemberAttributeOperationType {
+             *   PUT = 2,
+             *   REMOVE = 3
              *   };
              * @return map operation type put or removed
              */
-            MapOperationType getOperationType() const;
+            MemberAttributeOperationType getOperationType() const;
 
             /**
              * @return key of changed attribute
@@ -51,21 +51,21 @@ namespace hazelcast {
             /**
              * Returns null if
              *  => given type T is not compatible with available type, or
-             *  => MapOperationType is remove(DELTA_MEMBER_PROPERTIES_OP_REMOVE).
+             *  => MemberAttributeOperationType is remove(REMOVE).
              * @return value of changed attribute.
              */
             template<typename T>
             boost::shared_ptr<T> getValue() const {
-                T *tag;
+                T *tag = NULL;
                 boost::shared_ptr<T> v(getValueResolved(tag));
-                return value;
+                return v;
             }
 
         private:
             std::string key;
             std::string value;
             util::IOUtil::PRIMITIVE_ID primitive_id;
-            MapOperationType operationType;
+            MemberAttributeOperationType operationType;
 
             int *getValueResolved(int *tag) const;
 

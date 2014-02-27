@@ -22,7 +22,7 @@ namespace hazelcast {
 
                 const std::string &getUuid() const;
 
-                MemberAttributeEvent::MapOperationType getOperationType() const;
+                MemberAttributeEvent::MemberAttributeOperationType getOperationType() const;
 
                 const std::string &getKey() const;
 
@@ -36,7 +36,7 @@ namespace hazelcast {
 
             private:
                 std::string uuid;
-                MemberAttributeEvent::MapOperationType operationType;
+                MemberAttributeEvent::MemberAttributeOperationType operationType;
                 std::string key;
                 std::string value;
                 util::IOUtil::PRIMITIVE_ID primitive_id;

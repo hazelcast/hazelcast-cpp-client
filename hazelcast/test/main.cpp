@@ -18,6 +18,8 @@
 #include "txn/ClientTxnMapTest.h"
 #include "txn/ClientTxnListTest.h"
 #include "txn/ClientTxnMultiMapTest.h"
+#include "cluster/ClusterTest.h"
+#include "cluster/MemberAttributeTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -30,6 +32,12 @@ void unitTests() {
     try {
 
         HazelcastInstanceFactory factory;
+
+        MemberAttributeTest memberAttributeTest(factory);
+        memberAttributeTest.executeTests();
+
+        ClusterTest clusterTest(factory);
+        clusterTest.executeTests();
 
         ClientSerializationTest serializationTest;
         serializationTest.executeTests();

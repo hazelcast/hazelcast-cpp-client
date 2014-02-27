@@ -171,11 +171,11 @@ namespace hazelcast {
 
 
             void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const &memberAttributeChange, Member &target) {
-                MemberAttributeEvent::MapOperationType operationType = memberAttributeChange.getOperationType();
+                MemberAttributeEvent::MemberAttributeOperationType operationType = memberAttributeChange.getOperationType();
                 const std::string &value = memberAttributeChange.getValue();
                 util::IOUtil::PRIMITIVE_ID primitive_id = memberAttributeChange.getTypeId();
                 const std::string &key = memberAttributeChange.getKey();
-                if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_PUT) {//PUT
+                if (operationType == MemberAttributeEvent::PUT) {//PUT
                     if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
                         target.setAttribute(key, util::IOUtil::to_value<bool>(value));
                     } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
@@ -193,7 +193,7 @@ namespace hazelcast {
                     } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
                         target.setAttribute(key, value);
                     }
-                } else if (operationType == MemberAttributeEvent::DELTA_MEMBER_PROPERTIES_OP_REMOVE) {//REMOVE
+                } else if (operationType == MemberAttributeEvent::REMOVE) {//REMOVE
                     if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
                         target.removeAttribute<bool>(key);
                     } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {

@@ -19,7 +19,7 @@ namespace hazelcast {
                     std::vector<long> l,
                     std::vector<float> f,
                     std::vector<double> d,
-                    std::vector<TestNamedPortable> n):bb(b), cc(c), ss(s), ii(i), ll(l), ff(f), dd(d), nn(n) {
+                    std::vector<TestNamedPortable> n):ii(i), bb(b), cc(c), ss(s), ll(l), ff(f), dd(d), nn(n) {
             };
 
             TestInnerPortable::~TestInnerPortable() {

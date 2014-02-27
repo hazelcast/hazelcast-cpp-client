@@ -8,7 +8,7 @@
 namespace hazelcast {
     namespace client {
 
-        MemberAttributeEvent::MemberAttributeEvent(Cluster &cluster, Member &member, MapOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id)
+        MemberAttributeEvent::MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id)
         :MembershipEvent(cluster, MembershipEvent::MEMBER_ATTRIBUTE_CHANGED, member)
         , operationType(operationType)
         , key(key)
@@ -17,7 +17,7 @@ namespace hazelcast {
 
         }
 
-        MemberAttributeEvent::MapOperationType MemberAttributeEvent::getOperationType() const {
+        MemberAttributeEvent::MemberAttributeOperationType MemberAttributeEvent::getOperationType() const {
             return operationType;
         }
 

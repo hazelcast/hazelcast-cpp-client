@@ -22,7 +22,7 @@ namespace iTest {
 
     public:
         iTestFixture(const std::string &fixtureName)
-        :id(0), fixtureName(fixtureName) {
+        :fixtureName(fixtureName), id(0) {
 
         };
 

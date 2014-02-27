@@ -47,10 +47,12 @@ namespace hazelcast {
             };
 
             void IdGeneratorTest::testGenerator() {
-
-                assertTrue(generator->init(3569));
+                int initValue = 3569;
+                assertTrue(generator->init(initValue));
                 assertFalse(generator->init(4569));
-                assertEqual(3570, generator->newId());
+                for(int i = 0 ; i < 2000 ; i++){
+                    assertEqual(++initValue, generator->newId());
+                }
             }
 
         }

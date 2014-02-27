@@ -93,7 +93,7 @@ namespace hazelcast {
                     }
                     object.reset(new T);
 
-                    const int typeId = readInt();
+                    readInt();
 
                     boost::shared_ptr<pimpl::ClassDefinition> classDefinition(new pimpl::ClassDefinition());
                     classDefinition->readData(dataInput);
@@ -113,7 +113,7 @@ namespace hazelcast {
                         return object;
                     }
                     object.reset(new T);
-                    const int typeId = readInt();
+                    readInt();
                     serializerHolder.getDataSerializer().read(*this, *object);
                     return object;
                 };
