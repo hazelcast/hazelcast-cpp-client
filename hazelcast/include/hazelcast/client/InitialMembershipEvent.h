@@ -20,7 +20,7 @@ namespace hazelcast {
          * @see MembershipListener
          * @see MembershipEvent
          */
-        class InitialMembershipEvent {
+        class HAZELCAST_API InitialMembershipEvent {
         public:
 
             /**

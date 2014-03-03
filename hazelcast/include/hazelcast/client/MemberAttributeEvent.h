@@ -24,7 +24,7 @@ namespace hazelcast {
          *
          * @see MembershipListener
          */
-        class MemberAttributeEvent : public MembershipEvent {
+        class HAZELCAST_API MemberAttributeEvent : public MembershipEvent {
         public:
             enum MemberAttributeOperationType {
                 PUT = 1,
