@@ -18,18 +18,18 @@
 
 using namespace hazelcast::client;
 
-class TestApp {
-public:
-    void run(){
-        ClientConfig clientConfig;
-        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
-        HazelcastClient client(clientConfig);
-        IMap<std::string, std::string> m = client.getMap<std::string, std::string>("default");
-        boost::shared_ptr<std::string> ptr = m.put("a", "b");
-    }
-    
-private:
-};
+//class TestApp {
+//public:
+//    void run(){
+//        ClientConfig clientConfig;
+//        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
+//        HazelcastClient client(clientConfig);
+//        IMap<std::string, std::string> m = client.getMap<std::string, std::string>("default");
+//        boost::shared_ptr<std::string> ptr = m.put("a", "b");
+//    }
+//
+//private:
+//};
 
 //int main(){
 //    TestApp testApp;
