@@ -59,20 +59,20 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories(${HZ_LIB_ROOT}/external/include/)
 	include_directories(${HZ_LIB_ROOT}/hazelcast/include/)
 	
-	add_executable(TestApp.exe ./TestApp.cpp)
-					
-	set(Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_atomic.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_system.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_chrono.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_thread.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_date_time.a)
-
-	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${Hz_Bit}/zlibstaticd.lib)
-	set(Hazelcast_LIBRARIES ${HZ_LIB_ROOT}/hazelcast/lib/libHazelcastClientStatic_${Hz_Bit}.a)	
-
+	add_executable(TestApp ./TestApp.cpp)
 	
-	set_target_properties(TestApp.exe PROPERTIES COMPILE_FLAGS " /EHsc ")
+	set(Hz_Boost_LIBRARIES_release ${HZ_LIB_ROOT}/external/lib/libboost_atomic-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${HZ_LIB_ROOT}/external/lib/libboost_system-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${HZ_LIB_ROOT}/external/lib/libboost_chrono-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${HZ_LIB_ROOT}/external/lib/libboost_thread-vc100-mt-1_55.lib)
+	LIST(APPEND Hz_Boost_LIBRARIES_release ${HZ_LIB_ROOT}/external/lib/libboost_date_time-vc100-mt-1_55.lib)
+	
 
-	target_link_libraries(TestApp.exe  ${Hazelcast_LIBRARIES} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )		
+	set(Hz_ZLIB_LIBRARIES ${HZ_LIB_ROOT}/external/lib/zlibstaticd.lib)
+	set(Hazelcast_LIBRARIES ${HZ_LIB_ROOT}/hazelcast/lib/HazelcastClientStatic_${Hz_Bit}.lib)	
+
+	set_target_properties(TestApp PROPERTIES COMPILE_FLAGS " /EHsc ")
+
+	target_link_libraries(TestApp  ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES}  ${Hazelcast_LIBRARIES})
 	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

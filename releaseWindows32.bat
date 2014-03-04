@@ -1,7 +1,7 @@
-mkdir .\cpp\hazelcast\lib
-mkdir .\cpp\hazelcast\include\hazelcast\
-mkdir .\cpp\external\lib
-mkdir .\cpp\external\include
+mkdir .\cpp\Windows_32\hazelcast\lib
+mkdir .\cpp\Windows_32\hazelcast\include\hazelcast\
+mkdir .\cpp\Windows_32\external\lib
+mkdir .\cpp\Windows_32\external\include
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
 
