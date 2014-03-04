@@ -44,7 +44,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(Hz_ZLIB_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libz.a)
 	set(Hazelcast_LIBRARIES ${HZ_LIB_ROOT}/hazelcast/lib/libHazelcastClientStatic_32.a)	
 
-	target_link_libraries(TestApp.exe  ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES} ${Hazelcast_LIBRARIES})	
+	target_link_libraries(TestApp.exe  pthread rt ${Hazelcast_LIBRARIES} ${Hz_Boost_LIBRARIES})
+	target_link_libraries(TestApp.exe  pthread rt ${Hz_ZLIB_LIBRARIES} )	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
