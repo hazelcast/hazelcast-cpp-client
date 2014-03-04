@@ -36,7 +36,7 @@ namespace hazelcast {
         namespace connection {
             class HAZELCAST_API CallPromise {
             public:
-                CallPromise(spi::InvocationService &invocationService);
+                CallPromise();
 
                 void setResponse(const serialization::pimpl::Data &data);
 
@@ -58,7 +58,6 @@ namespace hazelcast {
                 int incrementAndGetResendCount();
 
             private:
-                spi::InvocationService &invocationService;
                 boost::promise<serialization::pimpl::Data> promise;
                 std::auto_ptr<const impl::PortableRequest> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;

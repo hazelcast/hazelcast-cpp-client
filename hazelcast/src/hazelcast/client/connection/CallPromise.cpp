@@ -12,9 +12,8 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            CallPromise::CallPromise(spi::InvocationService &invocationService)
-            : invocationService(invocationService)
-            , resendCount(0) {
+            CallPromise::CallPromise()
+            : resendCount(0) {
             }
 
             void CallPromise::setResponse(const serialization::pimpl::Data &data) {

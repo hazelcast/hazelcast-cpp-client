@@ -76,7 +76,7 @@ namespace hazelcast {
             }
 
             boost::shared_future<serialization::pimpl::Data> InvocationService::doSend(std::auto_ptr<const impl::PortableRequest> request, std::auto_ptr<impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection> connection) {
-                boost::shared_ptr<connection::CallPromise> promise(new connection::CallPromise(*this));
+                boost::shared_ptr<connection::CallPromise> promise(new connection::CallPromise());
                 promise->setRequest(request);
                 promise->setEventHandler(eventHandler);
                 connection->registerAndEnqueue(promise);
