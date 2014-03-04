@@ -1158,7 +1158,7 @@ public:
 
     void handleQTake(const std::vector<std::string> &args) {
         try {
-            mout << getQueue().take() << "\n";
+            moutPtr << getQueue().take() << "\n";
         } catch (std::exception &e) {
             std::cout << e.what() << "\n";
         }
@@ -1170,7 +1170,7 @@ public:
             timeout = toValue<long>(args[1]);
         }
         try {
-            mout << getQueue().poll(timeout) << "\n";
+            moutPtr << getQueue().poll(timeout) << "\n";
         } catch (std::exception &e) {
             std::cout << e.what() << "\n";
         }
@@ -1389,10 +1389,10 @@ private:
         mout << "-- General commands" << "\n";
         mout << "echo true|false                      //turns on/off echo of commands (default false)" << "\n";
         mout << "silent true|false                    //turns on/off silent of command output (default false)" << "\n";
-        mout << "#<number> <command>                  //repeats <number> time <command>, replace $i in <command> with current iteration (0..<number-1>)" << "\n";
-        mout << "&<number> <command>                  //forks <number> threads to execute <command>, replace $t in <command> with current thread number (0..<number-1>" << "\n";
-        mout << "     When using #x or &x, is is advised to use silent true as well." << "\n";
-        mout << "     When using &x with m.putmany and m.removemany, each thread will get a different share of keys unless a start key index is specified" << "\n";
+//        mout << "#<number> <command>                  //repeats <number> time <command>, replace $i in <command> with current iteration (0..<number-1>)" << "\n";
+//        mout << "&<number> <command>                  //forks <number> threads to execute <command>, replace $t in <command> with current thread number (0..<number-1>" << "\n";
+//        mout << "     When using #x or &x, is is advised to use silent true as well." << "\n";
+//        mout << "     When using &x with m.putmany and m.removemany, each thread will get a different share of keys unless a start key index is specified" << "\n";
         mout << "who                                  //displays info about the cluster" << "\n";
         mout << "ns <string>                          //switch the namespace for using the distributed queue/map/set/list <string> (defaults to \"default\"" << "\n";
 //        mout << "@<file>                              //executes the given <file> script. Use '//' for comments in the script" << "\n";
