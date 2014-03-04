@@ -172,9 +172,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a7842fa1472d63193822acfb9ab4a1b34">stopListening</a> (impl::BaseRemoveListenerRequest *request, const std::string &amp;registrationId)</td></tr>
 <tr class="memdesc:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a7842fa1472d63193822acfb9ab4a1b34">More...</a><br/></td></tr>
 <tr class="separator:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a964007a9d8991c92275f823234422ea7">getPartitionId</a> (const serialization::Data &amp;key)</td></tr>
-<tr class="memdesc:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a964007a9d8991c92275f823234422ea7">More...</a><br/></td></tr>
-<tr class="separator:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a8efd57d3aeb21387878dd90436d7f499">getPartitionId</a> (const serialization::pimpl::Data &amp;key)</td></tr>
+<tr class="memdesc:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a8efd57d3aeb21387878dd90436d7f499">More...</a><br/></td></tr>
+<tr class="separator:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classhazelcast_1_1client_1_1_i_count_down_latch.html" title="ICountDownLatch is a backed-up distributed alternative to the java.util.concurrent.CountDownLatch java.util.concurrent.CountDownLatch. ">ICountDownLatch</a> is a backed-up distributed alternative to the java.util.concurrent.CountDownLatch java.util.concurrent.CountDownLatch. </p>
@@ -234,14 +234,6 @@ is interrupted while waiting, </li>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the count reached zero and false if the waiting time elapsed before the count reached zero </dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">MemberLeftException</td><td>if the countdown owner becomes disconnected while waiting </td></tr>
-    <tr><td class="paramname">InterruptedException</td><td>if the current thread is interrupted </td></tr>
-    <tr><td class="paramname">IllegalStateException</td><td>if hazelcast instance is shutdown while waiting </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -332,7 +324,7 @@ All awaiting threads will be thrown a MemberLeftException. </li>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

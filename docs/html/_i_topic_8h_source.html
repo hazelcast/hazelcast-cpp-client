@@ -96,12 +96,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_TOPIC</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/ClientContext.h&quot;</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Data.h&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/Data.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/topic/PublishRequest.h&quot;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/topic/AddMessageListenerRequest.h&quot;</span></div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/topic/RemoveMessageListenerRequest.h&quot;</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/topic/TopicEventHandler.h&quot;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/SerializationService.h&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/SerializationService.h&quot;</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/ServerListenerService.h&quot;</span></div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/DistributedObject.h&quot;</span></div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
@@ -116,9 +116,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
 <div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_i_topic.html#ac49829a47d4159ced4d4380430c6252f">   47</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_i_topic.html#ac49829a47d4159ced4d4380430c6252f">publish</a>(<span class="keyword">const</span> E &amp;message) {</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                serialization::Data data = getContext().getSerializationService().template toData&lt;E&gt;(&amp;message);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                serialization::pimpl::Data data = getContext().getSerializationService().template toData&lt;E&gt;(&amp;message);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                topic::PublishRequest *request = <span class="keyword">new</span> topic::PublishRequest(getName(), data);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                invoke&lt;bool&gt;(request, partitionId);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request, partitionId);</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            }</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> L&gt;</div>
@@ -136,7 +136,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_topic.html">ITopic</a>(<span class="keyword">const</span> std::string &amp;instanceName, spi::ClientContext *context)</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            : <a class="code" href="classhazelcast_1_1client_1_1_distributed_object.html">DistributedObject</a>(<span class="stringliteral">&quot;hz:impl:topicService&quot;</span>, instanceName, context) {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                serialization::Data keyData = getContext().getSerializationService().template toData&lt;std::string&gt;(&amp;instanceName);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                serialization::pimpl::Data keyData = getContext().getSerializationService().template toData&lt;std::string&gt;(&amp;instanceName);</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            };</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
@@ -154,11 +154,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classhazelcast_1_1client_1_1_distributed_object_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_distributed_object.html">hazelcast::client::DistributedObject</a></div><div class="ttdoc">Base class for all distributed objects. </div><div class="ttdef"><b>Definition:</b> DistributedObject.h:44</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_topic_html_a49d01c103dcf1239f623fe5cfbb42e84"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_topic.html#a49d01c103dcf1239f623fe5cfbb42e84">hazelcast::client::ITopic::removeMessageListener</a></div><div class="ttdeci">bool removeMessageListener(const std::string &amp;registrationId)</div><div class="ttdoc">Stops receiving messages for the given message listener. </div><div class="ttdef"><b>Definition:</b> ITopic.h:87</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_topic_html_af115f58815e7ab4a941ce9b1bd417c1d"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_topic.html#af115f58815e7ab4a941ce9b1bd417c1d">hazelcast::client::ITopic::addMessageListener</a></div><div class="ttdeci">std::string addMessageListener(L &amp;listener)</div><div class="ttdoc">Subscribes to this topic. </div><div class="ttdef"><b>Definition:</b> ITopic.h:73</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:372</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -96,7 +96,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#ifndef HAZELCAST_TransactionalMap</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_TransactionalMap</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/SerializationService.h&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/SerializationService.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/txn/TransactionProxy.h&quot;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/ClusterService.h&quot;</span></div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/map/TxnMapRequest.h&quot;</span></div>
@@ -113,13 +113,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a7eb369af8ed94cc23933afc5ba52b5bc">   39</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a7eb369af8ed94cc23933afc5ba52b5bc">containsKey</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::CONTAINS_KEY, data);</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                <span class="keywordflow">return</span> invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            }</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
 <div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#aee7df951c631d9b6ca20bdac66f08fea">   50</a></span>&#160;            boost::shared_ptr&lt;V&gt; <span class="keyword">get</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::GET, data);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                <span class="keywordflow">return</span> invoke&lt;V&gt;(request);</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
@@ -136,38 +136,38 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            }</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
 <div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a5090bdab4f0d31bd799102184840da16">   84</a></span>&#160;            boost::shared_ptr&lt;V&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a5090bdab4f0d31bd799102184840da16">put</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT, keyData, valueData);</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                <span class="keywordflow">return</span> invoke&lt;V&gt;(request);</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            };</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
 <div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a14cf5c5b3ef790af62e1dadd109f0aa3">   98</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a14cf5c5b3ef790af62e1dadd109f0aa3">set</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::SET, keyData, valueData);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                invoke&lt;bool&gt;(request);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request);</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            }</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
 <div class="line"><a name="l00112"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a448ac3071557de62107e09c0ef6d83d8">  112</a></span>&#160;            boost::shared_ptr&lt;V&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a448ac3071557de62107e09c0ef6d83d8">putIfAbsent</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::PUT_IF_ABSENT, keyData, valueData);</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                <span class="keywordflow">return</span> invoke&lt;V&gt;(request);</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            };</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
 <div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a769cc377ff603736ca962a1072f2451f">  126</a></span>&#160;            boost::shared_ptr&lt;V&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a769cc377ff603736ca962a1072f2451f">replace</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, keyData, valueData);</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                <span class="keywordflow">return</span> invoke&lt;V&gt;(request);</div>
 <div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;</div>
 <div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            };</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
 <div class="line"><a name="l00141"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#af38d787a34fd8f4c37ec82749cb9b709">  141</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#af38d787a34fd8f4c37ec82749cb9b709">replace</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;oldValue, <span class="keyword">const</span> V &amp;newValue) {</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                serialization::Data oldValueData = toData(oldValue);</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                serialization::Data newValueData = toData(newValue);</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                serialization::pimpl::Data oldValueData = toData(oldValue);</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                serialization::pimpl::Data newValueData = toData(newValue);</div>
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::REPLACE, keyData, oldValueData, newValueData);</div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                <span class="keywordflow">return</span> *success;</div>
@@ -175,20 +175,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;            };</div>
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;</div>
 <div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#af281ae7653e490c30cc5eacf3a10181a">  158</a></span>&#160;            boost::shared_ptr&lt;V&gt; <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, data);</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;                <span class="keywordflow">return</span> invoke&lt;V&gt;(request);</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;            };</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;</div>
 <div class="line"><a name="l00172"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a5bd785a255729b0abd1a465d5f259990">  172</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a5bd785a255729b0abd1a465d5f259990">deleteEntry</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::DELETE_R, data);</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                invoke&lt;bool&gt;(request);</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request);</div>
 <div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            };</div>
 <div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;</div>
 <div class="line"><a name="l00185"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a2074525b56d7f0139e1a18feda3eb6c5">  185</a></span>&#160;            <span class="keywordtype">bool</span> <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                serialization::Data data = toData(key);</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::REMOVE, data, valueData);</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;                <span class="keywordflow">return</span> *success;</div>
@@ -197,7 +197,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00199"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a2abfc529e56485d013734b1f30b11168">  199</a></span>&#160;            std::vector&lt;K&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a2abfc529e56485d013734b1f30b11168">keySet</a>() {</div>
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET);</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;                boost::shared_ptr&lt;map::MapKeySet&gt; result = invoke&lt;map::MapKeySet&gt;(request);</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                std::vector &lt;serialization::Data&gt; <span class="keyword">const</span> &amp;keyDataSet = result-&gt;getKeySet();</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                std::vector &lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;keyDataSet = result-&gt;getKeySet();</div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                std::vector&lt;K&gt; keys(keyDataSet.size());</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; keyDataSet.size(); i++) {</div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                    boost::shared_ptr&lt;K&gt; v = toObject&lt;K&gt;(keyDataSet[i]);</div>
@@ -209,7 +209,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a18e9a101cee6c13afc24ae3e8ae3a7f4">  217</a></span>&#160;            std::vector&lt;K&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a18e9a101cee6c13afc24ae3e8ae3a7f4">keySet</a>(<span class="keyword">const</span> std::string &amp;predicate) {</div>
 <div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);</div>
 <div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                boost::shared_ptr&lt;map::MapKeySet&gt; result = invoke&lt;map::MapKeySet&gt;(request);</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                std::vector &lt;serialization::Data&gt; <span class="keyword">const</span> &amp;keyDataSet = result-&gt;getKeySet();</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                std::vector &lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;keyDataSet = result-&gt;getKeySet();</div>
 <div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;                std::vector&lt;K&gt; keys(keyDataSet.size());</div>
 <div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; keyDataSet.size(); i++) {</div>
 <div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                    boost::shared_ptr&lt;K&gt; k = toObject&lt;K&gt;(keyDataSet[i]);</div>
@@ -221,7 +221,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00235"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a4100017e2b5d82c17ddf2a6118706463">  235</a></span>&#160;            std::vector&lt;V&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a4100017e2b5d82c17ddf2a6118706463">values</a>() {</div>
 <div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES);</div>
 <div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;                boost::shared_ptr&lt;map::MapValueCollection&gt; result = invoke&lt;map::MapValueCollection&gt;(request);</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                std::vector &lt;serialization::Data&gt; <span class="keyword">const</span> &amp;dataValues = result-&gt;getValues();</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                std::vector &lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;dataValues = result-&gt;getValues();</div>
 <div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                std::vector&lt;V&gt; values(dataValues.size());</div>
 <div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataValues.size(); i++) {</div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;                    boost::shared_ptr&lt;V&gt; v = toObject&lt;V&gt;(dataValues[i]);</div>
@@ -233,7 +233,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00252"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_map.html#a7229bf6ac747ee8c1bd2c4d17044d48f">  252</a></span>&#160;            std::vector&lt;V&gt; <a class="code" href="classhazelcast_1_1client_1_1_transactional_map.html#a7229bf6ac747ee8c1bd2c4d17044d48f">values</a>(<span class="keyword">const</span> std::string &amp;predicate) {</div>
 <div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;                map::TxnMapRequest *request = <span class="keyword">new</span> map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);</div>
 <div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                boost::shared_ptr&lt;map::MapValueCollection&gt; result = invoke&lt;map::MapValueCollection&gt;(request);</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;                std::vector &lt;serialization::Data&gt; <span class="keyword">const</span> &amp;dataValues = result-&gt;getValues();</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;                std::vector &lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;dataValues = result-&gt;getValues();</div>
 <div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;                std::vector&lt;V&gt; values(dataValues.size());</div>
 <div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataValues.size(); i++) {</div>
 <div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                    boost::shared_ptr&lt;V&gt; v = toObject&lt;V&gt;(dataValues[i]);</div>
@@ -274,7 +274,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

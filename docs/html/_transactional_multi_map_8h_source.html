@@ -93,7 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#ifndef HAZELCAST_TransactionalMultiMap</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_TransactionalMultiMap</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Data.h&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/Data.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/multimap/TxnMultiMapPutRequest.h&quot;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/multimap/TxnMultiMapGetRequest.h&quot;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/impl/PortableCollection.h&quot;</span></div>
@@ -110,19 +110,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classhazelcast_1_1client_1_1_transaction_context.html">TransactionContext</a>;</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#a4d341e06406dc88d01f040e710eb1d75">   37</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#a4d341e06406dc88d01f040e710eb1d75">put</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                serialization::Data keyData = toData(key);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                multimap::TxnMultiMapPutRequest *request = <span class="keyword">new</span> multimap::TxnMultiMapPutRequest(getName(), keyData, valueData);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                <span class="keywordflow">return</span> *success;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            };</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
 <div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#aa16a19095b3011b85a260b4ccf4d02e6">   50</a></span>&#160;            std::vector&lt;V&gt; <span class="keyword">get</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                multimap::TxnMultiMapGetRequest *request = <span class="keyword">new</span> multimap::TxnMultiMapGetRequest(getName(), data);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                boost::shared_ptr&lt;impl::PortableCollection&gt; portableCollection = invoke&lt;impl::PortableCollection&gt;(request);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                std::vector&lt;serialization::Data&gt; <span class="keyword">const</span> &amp;dataCollection = portableCollection-&gt;getCollection();</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                std::vector&lt;serialization::Data&gt;::iterator it;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;dataCollection = portableCollection-&gt;getCollection();</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt;::iterator it;</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                std::vector&lt;V&gt; result;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                result.resize(dataCollection.size());</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataCollection.size(); i++) {</div>
@@ -133,19 +133,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            };</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
 <div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#a3726b99a97673164d28f0a950629f69d">   70</a></span>&#160;            <span class="keywordtype">bool</span> <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                serialization::Data dataKey = toData(key);</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                serialization::Data dataValue = toData(value);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                serialization::pimpl::Data dataKey = toData(key);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                serialization::pimpl::Data dataValue = toData(value);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                multimap::TxnMultiMapRemoveRequest *request = <span class="keyword">new</span> multimap::TxnMultiMapRemoveRequest(getName(), dataKey, dataValue);</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                <span class="keywordflow">return</span> *success;</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            };</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
 <div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#ad6bdde6bd15225b058e314388d837013">   83</a></span>&#160;            std::vector&lt;V&gt; <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                multimap::TxnMultiMapRemoveRequest *request = <span class="keyword">new</span> multimap::TxnMultiMapRemoveRequest(getName(), &amp;data);</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                boost::shared_ptr&lt;impl::PortableCollection&gt; portableCollection = invoke&lt;impl::PortableCollection&gt;(request);</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                std::vector&lt;serialization::Data&gt; <span class="keyword">const</span> &amp;dataCollection = portableCollection-&gt;getCollection();</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                std::vector&lt;serialization::Data&gt;::iterator it;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;dataCollection = portableCollection-&gt;getCollection();</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt;::iterator it;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                std::vector&lt;V&gt; result;</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                result.resize(dataCollection.size());</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataCollection.size(); i++) {</div>
@@ -156,7 +156,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
 <div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#a2dbf4a7c18e0c5fe46a8c77c5a3d6f08">  103</a></span>&#160;            <span class="keywordtype">int</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_multi_map.html#a2dbf4a7c18e0c5fe46a8c77c5a3d6f08">valueCount</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                serialization::Data data = toData(key);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                serialization::pimpl::Data data = toData(key);</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                multimap::TxnMultiMapValueCountRequest *request = <span class="keyword">new</span> multimap::TxnMultiMapValueCountRequest(getName(), data);</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                boost::shared_ptr&lt;int&gt; cnt = invoke&lt;int&gt;(request);</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                <span class="keywordflow">return</span> *cnt;</div>
@@ -191,7 +191,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

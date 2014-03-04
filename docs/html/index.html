@@ -265,7 +265,7 @@ Serialization Example</h2>
      private float x;
      private float y;
  }
-</pre><p>First make them implement <a class="el" href="classhazelcast_1_1client_1_1_portable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">Portable</a> or <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">IdentifiedDataSerializable</a>.</p>
+</pre><p>First make them implement Portable or IdentifiedDataSerializable.</p>
 <pre class="fragment"> class Foo implements Portable {
      private int age;
      private String name;
@@ -312,7 +312,7 @@ Serialization Example</h2>
      }
  }
 </pre><p>Then, implement the corresponding classes in C++ with same factory and class Id as follows: </p>
-<pre class="fragment"> class Foo : public Portable {
+<pre class="fragment"> class Foo : public serialization::Portable {
  public:
      int getFactoryId() const{
          return 666;
@@ -337,7 +337,7 @@ Serialization Example</h2>
      std::string name;
  };
 
- class Bar : public IdentifiedDataSerializable {
+ class Bar : public serialization::IdentifiedDataSerializable {
      public:
          int getFactoryId() const{
              return 4;
@@ -364,7 +364,7 @@ Serialization Example</h2>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:21 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

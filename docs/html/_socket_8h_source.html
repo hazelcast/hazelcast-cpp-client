@@ -148,36 +148,38 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> &amp;rhs);</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_address.html">client::Address</a> remoteEndpoint;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> &amp;rhs);</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <span class="keyword">struct </span>addrinfo *serverInfo;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            <span class="keywordtype">int</span> socketId;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            boost::atomic&lt;bool&gt; isOpen;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="preprocessor">            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="preprocessor"></span>            WSADATA wsa_data;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="preprocessor">            #endif</span></div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        };</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="structhazelcast_1_1client_1_1socket_ptr_comp.html">  120</a></span>&#160;        <span class="keyword">struct </span>HAZELCAST_API <a class="code" href="structhazelcast_1_1client_1_1socket_ptr_comp.html">socketPtrComp</a> {</div>
-<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="structhazelcast_1_1client_1_1socket_ptr_comp.html#ad3aecb36f8ac94655166f1d0378a0608">  124</a></span>&#160;            <span class="keywordtype">bool</span> operator ()(<a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> <span class="keyword">const</span> *<span class="keyword">const</span> &amp;lhs, <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> <span class="keyword">const</span> *<span class="keyword">const</span> &amp;rhs)<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                <span class="keywordflow">return</span> lhs-&gt;<a class="code" href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">getSocketId</a>() &gt; rhs-&gt;<a class="code" href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">getSocketId</a>();</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            }</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        };</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    }</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;}</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_SOCKET */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="structhazelcast_1_1client_1_1socket_ptr_comp_html"><div class="ttname"><a href="structhazelcast_1_1client_1_1socket_ptr_comp.html">hazelcast::client::socketPtrComp</a></div><div class="ttdoc">Socket Ptr compare method. </div><div class="ttdef"><b>Definition:</b> Socket.h:120</div></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_address.html">client::Address</a> remoteEndpoint;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            <span class="keyword">struct </span>addrinfo *serverInfo;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            <span class="keywordtype">int</span> socketId;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            boost::atomic&lt;bool&gt; isOpen;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="preprocessor">            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="preprocessor"></span>            WSADATA wsa_data;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="preprocessor">            #endif</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        };</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
+<div class="line"><a name="l00122"></a><span class="lineno"><a class="line" href="structhazelcast_1_1client_1_1socket_ptr_comp.html">  122</a></span>&#160;        <span class="keyword">struct </span>HAZELCAST_API <a class="code" href="structhazelcast_1_1client_1_1socket_ptr_comp.html">socketPtrComp</a> {</div>
+<div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="structhazelcast_1_1client_1_1socket_ptr_comp.html#ad3aecb36f8ac94655166f1d0378a0608">  126</a></span>&#160;            <span class="keywordtype">bool</span> operator ()(<a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> <span class="keyword">const</span> *<span class="keyword">const</span> &amp;lhs, <a class="code" href="classhazelcast_1_1client_1_1_socket.html">Socket</a> <span class="keyword">const</span> *<span class="keyword">const</span> &amp;rhs)<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                <span class="keywordflow">return</span> lhs-&gt;<a class="code" href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">getSocketId</a>() &gt; rhs-&gt;<a class="code" href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">getSocketId</a>();</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            }</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        };</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    }</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_SOCKET */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="structhazelcast_1_1client_1_1socket_ptr_comp_html"><div class="ttname"><a href="structhazelcast_1_1client_1_1socket_ptr_comp.html">hazelcast::client::socketPtrComp</a></div><div class="ttdoc">Socket Ptr compare method. </div><div class="ttdef"><b>Definition:</b> Socket.h:122</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_address_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_address.html">hazelcast::client::Address</a></div><div class="ttdoc">IP Address. </div><div class="ttdef"><b>Definition:</b> Address.h:17</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_socket_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_socket.html">hazelcast::client::Socket</a></div><div class="ttdoc">c Sockets wrapper class. </div><div class="ttdef"><b>Definition:</b> Socket.h:42</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_socket_html_a55e823df323281fc59b010d6fedbfe4b"><div class="ttname"><a href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">hazelcast::client::Socket::getSocketId</a></div><div class="ttdeci">int getSocketId() const </div><div class="ttdoc">return socketId </div><div class="ttdef"><b>Definition:</b> Socket.cpp:86</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_socket_html_a55e823df323281fc59b010d6fedbfe4b"><div class="ttname"><a href="classhazelcast_1_1client_1_1_socket.html#a55e823df323281fc59b010d6fedbfe4b">hazelcast::client::Socket::getSocketId</a></div><div class="ttdeci">int getSocketId() const </div><div class="ttdoc">return socketId </div><div class="ttdef"><b>Definition:</b> Socket.cpp:82</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

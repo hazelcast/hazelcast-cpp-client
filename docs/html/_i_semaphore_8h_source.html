@@ -92,7 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/ClientContext.h&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/InvocationService.h&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/DistributedObject.h&quot;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Data.h&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/Data.h&quot;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/exception/IException.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
@@ -109,48 +109,47 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <span class="keywordtype">void</span> acquire();</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            <span class="keywordtype">void</span> acquire(<span class="keywordtype">int</span> permits);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            <span class="keywordtype">void</span> acquire(<span class="keywordtype">int</span> permits);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordtype">int</span> availablePermits();</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            <span class="keywordtype">int</span> availablePermits();</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;            <span class="keywordtype">int</span> drainPermits();</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            <span class="keywordtype">void</span> reducePermits(<span class="keywordtype">int</span> reduction);</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            <span class="keywordtype">void</span> release();</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            <span class="keywordtype">void</span> release(<span class="keywordtype">int</span> permits);</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            <span class="keywordtype">bool</span> tryAcquire();</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">int</span> permits);</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">long</span> timeoutInMillis);</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">int</span> permits, <span class="keywordtype">long</span> timeoutInMillis);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            <span class="keywordtype">int</span> drainPermits();</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            <span class="keywordtype">void</span> reducePermits(<span class="keywordtype">int</span> reduction);</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;            <span class="keywordtype">void</span> release();</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            <span class="keywordtype">void</span> release(<span class="keywordtype">int</span> permits);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            <span class="keywordtype">bool</span> tryAcquire();</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">int</span> permits);</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">long</span> timeoutInMillis);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            <span class="keywordtype">bool</span> tryAcquire(<span class="keywordtype">int</span> permits, <span class="keywordtype">long</span> timeoutInMillis);</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;            <span class="keywordtype">void</span> onDestroy();</div>
 <div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            <span class="keywordtype">void</span> checkNegative(<span class="keywordtype">int</span> permits);</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;            <span class="keywordtype">void</span> onDestroy();</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_semaphore.html">ISemaphore</a>(<span class="keyword">const</span> std::string &amp;instanceName, spi::ClientContext *context);</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_i_semaphore.html">ISemaphore</a>(<span class="keyword">const</span> std::string &amp;instanceName, spi::ClientContext *context);</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            <span class="keywordtype">int</span> partitionId;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        };</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    }</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;}</div>
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            <span class="keywordtype">int</span> partitionId;</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        };</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    }</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;}</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_ISEMAPHORE */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_ISEMAPHORE */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_distributed_object_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_distributed_object.html">hazelcast::client::DistributedObject</a></div><div class="ttdoc">Base class for all distributed objects. </div><div class="ttdef"><b>Definition:</b> DistributedObject.h:44</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_semaphore_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_semaphore.html">hazelcast::client::ISemaphore</a></div><div class="ttdoc">ISemaphore is a backed-up distributed alternative to the java.util.concurrent.Semaphore. </div><div class="ttdef"><b>Definition:</b> ISemaphore.h:43</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:372</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

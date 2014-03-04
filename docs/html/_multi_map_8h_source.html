@@ -126,32 +126,32 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a3db90da901af0dfa66b9569386142487">   54</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a3db90da901af0dfa66b9569386142487">put</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                multimap::PutRequest *request = <span class="keyword">new</span> multimap::PutRequest(getName(), keyData, valueData, -1, util::getThreadId());</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                <span class="keywordtype">bool</span> success = *(invoke&lt;bool&gt;(request, partitionId));</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                <span class="keywordflow">return</span> success;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            };</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
 <div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#aee0ea7f379b86223b83adc777bb01e3c">   69</a></span>&#160;            std::vector&lt;V&gt; <span class="keyword">get</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                multimap::GetAllRequest *request = <span class="keyword">new</span> multimap::GetAllRequest(getName(), keyData);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                <span class="keywordflow">return</span> toObjectCollection(invoke &lt; impl::PortableCollection &gt;(request, partitionId));</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            };</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
 <div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a74a8a6590868e81dcc9ad7eb1dd446bf">   83</a></span>&#160;            <span class="keywordtype">bool</span> <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                multimap::RemoveRequest *request = <span class="keyword">new</span> multimap::RemoveRequest(getName(), keyData, valueData, util::getThreadId());</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request, partitionId);</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                <span class="keywordflow">return</span> *success;</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            };</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
 <div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a875df241c0681bbbc41f94eb27fda191">   99</a></span>&#160;            std::vector&lt;V&gt; <span class="keyword">remove</span>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                multimap::RemoveAllRequest *request = <span class="keyword">new</span> multimap::RemoveAllRequest(getName(), keyData, util::getThreadId());</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                <span class="keywordflow">return</span> toObjectCollection(invoke &lt; impl::PortableCollection &gt;(request, partitionId));</div>
@@ -170,7 +170,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00134"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a3caf32bb58cad6873f23ac7fc31581be">  134</a></span>&#160;            std::vector&lt;std::pair&lt;K, V&gt; &gt; <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a3caf32bb58cad6873f23ac7fc31581be">entrySet</a>() {</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                multimap::EntrySetRequest *request = <span class="keyword">new</span> multimap::EntrySetRequest(getName());</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                boost::shared_ptr&lt;multimap::PortableEntrySetResponse&gt; result = invoke &lt; multimap::PortableEntrySetResponse &gt;(request);</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                std::vector &lt; std::pair&lt;serialization::Data, serialization::Data&gt; &gt; <span class="keyword">const</span> &amp;dataEntrySet = result-&gt;getEntrySet();</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                std::vector &lt; std::pair&lt;serialization::pimpl::Data, serialization::pimpl::Data&gt; &gt; <span class="keyword">const</span> &amp;dataEntrySet = result-&gt;getEntrySet();</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                std::vector&lt;std::pair&lt;K, V&gt; &gt; entrySet(dataEntrySet.size());</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataEntrySet.size(); i++) {</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                    boost::shared_ptr&lt;K&gt; key = toObject&lt;K&gt;(dataEntrySet[i].first);</div>
@@ -182,7 +182,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;            };</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;</div>
 <div class="line"><a name="l00154"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#ac49f58498402797b1973075359a8a631">  154</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#ac49f58498402797b1973075359a8a631">containsKey</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;                multimap::ContainsEntryRequest *request = <span class="keyword">new</span> multimap::ContainsEntryRequest (keyData, getName());</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request, partitionId);</div>
@@ -190,16 +190,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            };</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;</div>
 <div class="line"><a name="l00168"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a86cf0d454591af2f12abe68a2ad596ba">  168</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a86cf0d454591af2f12abe68a2ad596ba">containsValue</a>(<span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                multimap::ContainsEntryRequest *request = <span class="keyword">new</span> multimap::ContainsEntryRequest (getName(), valueData);</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                <span class="keywordflow">return</span> *success;</div>
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            };</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;</div>
 <div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a06f18a4a1f5b0529e0e151026e9c782b">  182</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a06f18a4a1f5b0529e0e151026e9c782b">containsEntry</a>(<span class="keyword">const</span> K &amp;key, <span class="keyword">const</span> V &amp;value) {</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                serialization::Data valueData = toData(value);</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                serialization::pimpl::Data valueData = toData(value);</div>
 <div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                multimap::ContainsEntryRequest *request = <span class="keyword">new</span> multimap::ContainsEntryRequest (keyData, getName(), valueData);</div>
 <div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request, partitionId);</div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                <span class="keywordflow">return</span> *success;</div>
@@ -213,11 +213,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;</div>
 <div class="line"><a name="l00205"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#ad310fb551d4de7cf2e1726ef896577da">  205</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#ad310fb551d4de7cf2e1726ef896577da">clear</a>() {</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                multimap::ClearRequest *request = <span class="keyword">new</span> multimap::ClearRequest(getName());</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                invoke&lt;bool&gt;(request);</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request);</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;            };</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;</div>
 <div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#ac38a78822bdf396ec3bbe34d0aacd329">  217</a></span>&#160;            <span class="keywordtype">int</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#ac38a78822bdf396ec3bbe34d0aacd329">valueCount</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                multimap::CountRequest *request = <span class="keyword">new</span> multimap::CountRequest(getName(), keyData);</div>
 <div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;                boost::shared_ptr&lt;int&gt; count = invoke&lt;int&gt;(request, partitionId);</div>
@@ -228,14 +228,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00235"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a36ed0d3daefe706c22df406e0cd4b095">  235</a></span>&#160;            std::string <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a36ed0d3daefe706c22df406e0cd4b095">addEntryListener</a>(L &amp;listener, <span class="keywordtype">bool</span> includeValue) {</div>
 <div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;                multimap::AddEntryListenerRequest *request = <span class="keyword">new</span> multimap::AddEntryListenerRequest(getName(), includeValue);</div>
 <div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;                spi::ClusterService &amp;clusterService = getContext().getClusterService();</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                serialization::SerializationService &amp;ss = getContext().getSerializationService();</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                serialization::pimpl::SerializationService &amp;ss = getContext().getSerializationService();</div>
 <div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                impl::EntryEventHandler&lt;K, V, L&gt; *entryEventHandler = <span class="keyword">new</span> impl::EntryEventHandler&lt;K, V, L&gt;(getName(), clusterService, ss, listener, includeValue);</div>
 <div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                <span class="keywordflow">return</span> listen(request, entryEventHandler);</div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            };</div>
 <div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            <span class="keyword">template</span> &lt; <span class="keyword">typename</span> L&gt;</div>
 <div class="line"><a name="l00256"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a4d913bcd72b22ae916605d1ff11bfcbc">  256</a></span>&#160;            std::string <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a4d913bcd72b22ae916605d1ff11bfcbc">addEntryListener</a>(L &amp;listener, <span class="keyword">const</span> K &amp;key, <span class="keywordtype">bool</span> includeValue) {</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;                multimap::AddEntryListenerRequest *request = <span class="keyword">new</span> multimap::AddEntryListenerRequest(getName(), keyData, includeValue);</div>
 <div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;                impl::EntryEventHandler&lt;K, V, L&gt; *entryEventHandler = <span class="keyword">new</span> impl::EntryEventHandler&lt;K, V, L&gt;(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);</div>
@@ -248,21 +248,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            };</div>
 <div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;</div>
 <div class="line"><a name="l00292"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#ade30e2469c2a74940bc5436e9a7c34a1">  292</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#ade30e2469c2a74940bc5436e9a7c34a1">lock</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;                multimap::MultiMapLockRequest *request = <span class="keyword">new</span> multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId());</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                invoke&lt;bool&gt;(request, partitionId);</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request, partitionId);</div>
 <div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;            };</div>
 <div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;</div>
 <div class="line"><a name="l00315"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a0f08fe8e7387fc45aef4a72b6c03db2c">  315</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a0f08fe8e7387fc45aef4a72b6c03db2c">lock</a>(<span class="keyword">const</span> K &amp;key, <span class="keywordtype">long</span> leaseTimeInMillis) {</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                multimap::MultiMapLockRequest *request = <span class="keyword">new</span> multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), leaseTimeInMillis, -1);</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                invoke&lt;bool&gt;(request, partitionId);</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request, partitionId);</div>
 <div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;            }</div>
 <div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;</div>
 <div class="line"><a name="l00329"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a29b35ab4aa12b5ad31f98818391b3743">  329</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a29b35ab4aa12b5ad31f98818391b3743">isLocked</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;                multimap::MultiMapIsLockedRequest *request = <span class="keyword">new</span> multimap::MultiMapIsLockedRequest(getName(), keyData);</div>
 <div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;                boost::shared_ptr&lt;bool&gt; res = invoke&lt;bool&gt;(request, partitionId);</div>
@@ -270,7 +270,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;            }</div>
 <div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;</div>
 <div class="line"><a name="l00346"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#ab6c6cba942f9933d9b706652f4abdad1">  346</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#ab6c6cba942f9933d9b706652f4abdad1">tryLock</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;                multimap::MultiMapLockRequest *request = <span class="keyword">new</span> multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), -1, 0);</div>
 <div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;                boost::shared_ptr&lt;bool&gt; res = invoke&lt;bool&gt;(request, partitionId);</div>
@@ -278,7 +278,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;            };</div>
 <div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;</div>
 <div class="line"><a name="l00370"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#abd9172ef4525a51572a8f8bf06325ca0">  370</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#abd9172ef4525a51572a8f8bf06325ca0">tryLock</a>(<span class="keyword">const</span> K &amp;key, <span class="keywordtype">long</span> timeoutInMillis) {</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                multimap::MultiMapLockRequest *request = <span class="keyword">new</span> multimap::MultiMapLockRequest(getName(), keyData, util::getThreadId(), -1, timeoutInMillis);</div>
 <div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                boost::shared_ptr&lt;bool&gt; res = invoke&lt;bool&gt;(request, partitionId);</div>
@@ -286,17 +286,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;            };</div>
 <div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;</div>
 <div class="line"><a name="l00385"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#acdf2a992f48fa610cbd24c7546c624e8">  385</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#acdf2a992f48fa610cbd24c7546c624e8">unlock</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                multimap::MultiMapUnlockRequest *request = <span class="keyword">new</span> multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId());</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                invoke&lt;bool&gt;(request, partitionId);</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request, partitionId);</div>
 <div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;            };</div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;</div>
 <div class="line"><a name="l00398"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_multi_map.html#a3116360f449a5e89980ae552b427dca7">  398</a></span>&#160;            <span class="keywordtype">void</span> <a class="code" href="classhazelcast_1_1client_1_1_multi_map.html#a3116360f449a5e89980ae552b427dca7">forceUnlock</a>(<span class="keyword">const</span> K &amp;key) {</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                serialization::Data keyData = toData(key);</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                serialization::pimpl::Data keyData = toData(key);</div>
 <div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;                <span class="keywordtype">int</span> partitionId = getPartitionId(keyData);</div>
 <div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;                multimap::MultiMapUnlockRequest *request = <span class="keyword">new</span> multimap::MultiMapUnlockRequest(getName(), keyData, util::getThreadId(), <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                invoke&lt;bool&gt;(request, partitionId);</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                invoke&lt;serialization::pimpl::Void&gt;(request, partitionId);</div>
 <div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;            }</div>
 <div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;</div>
 <div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;</div>
@@ -305,7 +305,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;            };</div>
 <div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;</div>
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;            std::vector&lt;V&gt; toObjectCollection(boost::shared_ptr&lt;impl::PortableCollection&gt; result) {</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;                std::vector&lt;serialization::Data&gt; <span class="keyword">const</span> &amp;dataCollection = result-&gt;getCollection();</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; <span class="keyword">const</span> &amp;dataCollection = result-&gt;getCollection();</div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;                std::vector&lt;V&gt; multimap(dataCollection.size());</div>
 <div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataCollection.size(); i++) {</div>
 <div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;                    boost::shared_ptr&lt;V&gt; v = toObject&lt;V&gt;(dataCollection[i]);</div>
@@ -316,12 +316,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;</div>
 <div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;</div>
 <div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;            serialization::Data toData(<span class="keyword">const</span> T &amp;<span class="keywordtype">object</span>) {</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;            serialization::pimpl::Data toData(<span class="keyword">const</span> T &amp;<span class="keywordtype">object</span>) {</div>
 <div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toData&lt;T&gt;(&amp;object);</div>
 <div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;            };</div>
 <div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;</div>
 <div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;            boost::shared_ptr&lt;T&gt; toObject(<span class="keyword">const</span> serialization::Data &amp;data) {</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;            boost::shared_ptr&lt;T&gt; toObject(<span class="keyword">const</span> serialization::pimpl::Data &amp;data) {</div>
 <div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toObject&lt;T&gt;(data);</div>
 <div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;            };</div>
 <div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;</div>
@@ -359,11 +359,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classhazelcast_1_1client_1_1_multi_map_html_af9899a8477e85c28762f44d70426fe2a"><div class="ttname"><a href="classhazelcast_1_1client_1_1_multi_map.html#af9899a8477e85c28762f44d70426fe2a">hazelcast::client::MultiMap::removeEntryListener</a></div><div class="ttdeci">bool removeEntryListener(const std::string &amp;registrationId)</div><div class="ttdoc">Removes the specified entry listener Returns silently if there is no such listener added before...</div><div class="ttdef"><b>Definition:</b> MultiMap.h:272</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_multi_map_html_a36ed0d3daefe706c22df406e0cd4b095"><div class="ttname"><a href="classhazelcast_1_1client_1_1_multi_map.html#a36ed0d3daefe706c22df406e0cd4b095">hazelcast::client::MultiMap::addEntryListener</a></div><div class="ttdeci">std::string addEntryListener(L &amp;listener, bool includeValue)</div><div class="ttdoc">Adds an entry listener for this multimap. </div><div class="ttdef"><b>Definition:</b> MultiMap.h:235</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_multi_map_html_a06f18a4a1f5b0529e0e151026e9c782b"><div class="ttname"><a href="classhazelcast_1_1client_1_1_multi_map.html#a06f18a4a1f5b0529e0e151026e9c782b">hazelcast::client::MultiMap::containsEntry</a></div><div class="ttdeci">bool containsEntry(const K &amp;key, const V &amp;value)</div><div class="ttdoc">Returns whether the multimap contains the given key-value pair. </div><div class="ttdef"><b>Definition:</b> MultiMap.h:182</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:372</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

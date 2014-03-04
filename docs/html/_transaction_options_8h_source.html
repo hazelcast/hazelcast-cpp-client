@@ -94,7 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#ifndef HAZELCAST_TransactionOptions</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_TransactionOptions</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/DataSerializable.h&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/DataSerializable.h&quot;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="keyword">namespace </span>client {</div>
@@ -114,7 +114,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        };</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transaction_options.html">   50</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> : <span class="keyword">public</span> DataSerializable {</div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transaction_options.html">   50</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> : <span class="keyword">public</span> serialization::pimpl::DataSerializable {</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a>();</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
@@ -130,9 +130,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;setDurability(<span class="keywordtype">int</span> durability);</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <span class="keywordtype">void</span> writeData(serialization::ObjectDataOutput &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <span class="keywordtype">void</span> writeData(<a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">serialization::ObjectDataOutput</a> &amp;out) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordtype">void</span> readData(serialization::ObjectDataInput &amp;in);</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordtype">void</span> readData(<a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">serialization::ObjectDataInput</a> &amp;in);</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keywordtype">long</span> timeoutMillis;</div>
@@ -148,12 +148,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="preprocessor">#endif //HAZELCAST_TransactionOptions</span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_options_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_options.html">hazelcast::client::TransactionOptions</a></div><div class="ttdoc">Contains the configuration for a Hazelcast transaction. </div><div class="ttdef"><b>Definition:</b> TransactionOptions.h:50</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_type_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_type.html">hazelcast::client::TransactionType</a></div><div class="ttdoc">Transaction type. </div><div class="ttdef"><b>Definition:</b> TransactionOptions.h:16</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_object_data_output_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">hazelcast::client::serialization::ObjectDataOutput</a></div><div class="ttdef"><b>Definition:</b> ObjectDataOutput.h:22</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_type_html_a9d164b62ed0359bdd5e27590bd78ea89"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_type.html#a9d164b62ed0359bdd5e27590bd78ea89">hazelcast::client::TransactionType::Type</a></div><div class="ttdeci">Type</div><div class="ttdoc">Type enum. </div><div class="ttdef"><b>Definition:</b> TransactionOptions.h:21</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_object_data_input_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">hazelcast::client::serialization::ObjectDataInput</a></div><div class="ttdef"><b>Definition:</b> ObjectDataInput.h:39</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_transaction_type_html_a49739353ac164db9feb5fbea379bb13b"><div class="ttname"><a href="classhazelcast_1_1client_1_1_transaction_type.html#a49739353ac164db9feb5fbea379bb13b">hazelcast::client::TransactionType::value</a></div><div class="ttdeci">Type value</div><div class="ttdoc">value. </div><div class="ttdef"><b>Definition:</b> TransactionOptions.h:28</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

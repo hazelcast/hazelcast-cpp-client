@@ -100,14 +100,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="keyword">namespace </span>client {</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;        <span class="keyword">class </span>Cluster;</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;</div>
-<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_initial_membership_event.html">   23</a></span>&#160;        <span class="keyword">class </span><a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html">InitialMembershipEvent</a> {</div>
+<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_initial_membership_event.html">   23</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html">InitialMembershipEvent</a> {</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html#a4f33ed1a5e1ad74d4cf44551429ca3dd">InitialMembershipEvent</a>(<a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;cluster, <span class="keyword">const</span> std::vector&lt;Member&gt; &amp;members);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html">InitialMembershipEvent</a>(<a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;cluster, <span class="keyword">const</span> std::vector&lt;Member&gt; &amp;members);</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            <span class="keyword">const</span> std::vector&lt;Member&gt; &amp;<a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html#a1ae7f6b2d907a7bf510aa07f8c3b5f87">getMembers</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            <span class="keyword">const</span> std::vector&lt;Member&gt; &amp;getMembers() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;<a class="code" href="classhazelcast_1_1client_1_1_initial_membership_event.html#a230021710aa05c7f3d9115a85ca64878">getCluster</a>();</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;getCluster();</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            std::vector&lt;Member&gt; members;</div>
@@ -119,15 +119,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#endif //HAZELCAST_InitialMembershipEvent</span></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_initial_membership_event_html_a230021710aa05c7f3d9115a85ca64878"><div class="ttname"><a href="classhazelcast_1_1client_1_1_initial_membership_event.html#a230021710aa05c7f3d9115a85ca64878">hazelcast::client::InitialMembershipEvent::getCluster</a></div><div class="ttdeci">Cluster &amp; getCluster()</div><div class="ttdoc">Returns the cluster of the event. </div><div class="ttdef"><b>Definition:</b> InitialMembershipEvent.cpp:22</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_cluster_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_cluster.html">hazelcast::client::Cluster</a></div><div class="ttdoc">Hazelcast cluster interface. </div><div class="ttdef"><b>Definition:</b> Cluster.h:25</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_initial_membership_event_html_a1ae7f6b2d907a7bf510aa07f8c3b5f87"><div class="ttname"><a href="classhazelcast_1_1client_1_1_initial_membership_event.html#a1ae7f6b2d907a7bf510aa07f8c3b5f87">hazelcast::client::InitialMembershipEvent::getMembers</a></div><div class="ttdeci">const std::vector&lt; Member &gt; &amp; getMembers() const </div><div class="ttdoc">Returns an immutable set of ordered members at the moment this InitialMembershipListener is registere...</div><div class="ttdef"><b>Definition:</b> InitialMembershipEvent.cpp:18</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_initial_membership_event_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_initial_membership_event.html">hazelcast::client::InitialMembershipEvent</a></div><div class="ttdoc">A event that is send when a InitialMembershipListener} registers itself on a Cluster. </div><div class="ttdef"><b>Definition:</b> InitialMembershipEvent.h:23</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_initial_membership_event_html_a4f33ed1a5e1ad74d4cf44551429ca3dd"><div class="ttname"><a href="classhazelcast_1_1client_1_1_initial_membership_event.html#a4f33ed1a5e1ad74d4cf44551429ca3dd">hazelcast::client::InitialMembershipEvent::InitialMembershipEvent</a></div><div class="ttdeci">InitialMembershipEvent(Cluster &amp;cluster, const std::vector&lt; Member &gt; &amp;members)</div><div class="ttdoc">Constructor. </div><div class="ttdef"><b>Definition:</b> InitialMembershipEvent.cpp:12</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

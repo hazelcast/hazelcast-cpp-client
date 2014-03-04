@@ -212,9 +212,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a7842fa1472d63193822acfb9ab4a1b34">stopListening</a> (impl::BaseRemoveListenerRequest *request, const std::string &amp;registrationId)</td></tr>
 <tr class="memdesc:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a7842fa1472d63193822acfb9ab4a1b34">More...</a><br/></td></tr>
 <tr class="separator:a7842fa1472d63193822acfb9ab4a1b34 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a964007a9d8991c92275f823234422ea7">getPartitionId</a> (const serialization::Data &amp;key)</td></tr>
-<tr class="memdesc:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a964007a9d8991c92275f823234422ea7">More...</a><br/></td></tr>
-<tr class="separator:a964007a9d8991c92275f823234422ea7 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_distributed_object.html#a8efd57d3aeb21387878dd90436d7f499">getPartitionId</a> (const serialization::pimpl::Data &amp;key)</td></tr>
+<tr class="memdesc:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API.  <a href="#a8efd57d3aeb21387878dd90436d7f499">More...</a><br/></td></tr>
+<tr class="separator:a8efd57d3aeb21387878dd90436d7f499 inherit pro_methods_classhazelcast_1_1client_1_1_distributed_object"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename E&gt;<br/>
@@ -260,7 +260,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if element is added successfully. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -311,7 +311,7 @@ template&lt;typename E &gt; </div>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
     <tr><td class="paramname">IndexOutOfBoundsException</td><td>if the index is out of range. </td></tr>
   </table>
   </dd>
@@ -351,7 +351,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if all elements given in vector can be added to list. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -401,10 +401,10 @@ template&lt;typename E &gt; </div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>true if list contains all elements given in vector </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true if list elements are added. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
     <tr><td class="paramname">IndexOutOfBoundsException</td><td>if the index is out of range. </td></tr>
   </table>
   </dd>
@@ -505,7 +505,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if list contains element </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -544,7 +544,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if this list contains all elements given in vector. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -627,7 +627,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>index of first occurrence of given element in the list. Returns -1 if element is not in the list. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -692,7 +692,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>index of last occurrence of given element in the list. Returns -1 if element is not in the list. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -731,7 +731,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if element is removed successfully. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -810,7 +810,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if all elements are removed successfully. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -887,7 +887,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if operation is successful. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
   </table>
   </dd>
 </dl>
@@ -939,7 +939,7 @@ template&lt;typename E &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>oldElement in given index. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">ClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
+    <tr><td class="paramname">IClassCastException</td><td>if the type of the specified element is incompatible with the server side. </td></tr>
     <tr><td class="paramname">IndexOutOfBoundsException</td><td>if the index is out of range. </td></tr>
   </table>
   </dd>
@@ -1048,7 +1048,7 @@ template&lt;typename E &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

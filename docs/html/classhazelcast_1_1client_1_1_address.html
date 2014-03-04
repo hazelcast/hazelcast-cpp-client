@@ -105,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  <div class="center">
   <img src="classhazelcast_1_1client_1_1_address.png" usemap="#hazelcast::client::Address_map" alt=""/>
   <map id="hazelcast::client::Address_map" name="hazelcast::client::Address_map">
-<area href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. " alt="hazelcast::client::IdentifiedDataSerializable" shape="rect" coords="0,0,250,24"/>
+<area href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. " alt="hazelcast::client::serialization::IdentifiedDataSerializable" shape="rect" coords="0,0,323,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -115,6 +115,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#aed9ef7fbe61e25af40cff9ab7ac51ea6">Address</a> ()</td></tr>
 <tr class="memdesc:aed9ef7fbe61e25af40cff9ab7ac51ea6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor. <br/></td></tr>
 <tr class="separator:aed9ef7fbe61e25af40cff9ab7ac51ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5452a38bb7418e3517c0d4c13e1bdfc5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5452a38bb7418e3517c0d4c13e1bdfc5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a5452a38bb7418e3517c0d4c13e1bdfc5">Address</a> (const <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &amp;)</td></tr>
+<tr class="memdesc:a5452a38bb7418e3517c0d4c13e1bdfc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy Constructor. <br/></td></tr>
+<tr class="separator:a5452a38bb7418e3517c0d4c13e1bdfc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa234f4b96d573081634cad47ee6c13c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa234f4b96d573081634cad47ee6c13c9"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#aa234f4b96d573081634cad47ee6c13c9">Address</a> (const std::string &amp;url, int port)</td></tr>
 <tr class="memdesc:aa234f4b96d573081634cad47ee6c13c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor. <br/></td></tr>
@@ -122,9 +126,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2089f2e9bd5b63b465f090729b75abc3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a2089f2e9bd5b63b465f090729b75abc3">operator==</a> (const <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &amp;address) const </td></tr>
 <tr class="memdesc:a2089f2e9bd5b63b465f090729b75abc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">comparison operator  <a href="#a2089f2e9bd5b63b465f090729b75abc3">More...</a><br/></td></tr>
 <tr class="separator:a2089f2e9bd5b63b465f090729b75abc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f009174e999bebfbc51b565dc0d1fa0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a0f009174e999bebfbc51b565dc0d1fa0">operator&lt;</a> (const <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &amp;address) const </td></tr>
-<tr class="memdesc:a0f009174e999bebfbc51b565dc0d1fa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">comparison operator  <a href="#a0f009174e999bebfbc51b565dc0d1fa0">More...</a><br/></td></tr>
-<tr class="separator:a0f009174e999bebfbc51b565dc0d1fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f3d943f8643417e2b5c9f48a1992301"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a5f3d943f8643417e2b5c9f48a1992301">getPort</a> () const </td></tr>
 <tr class="separator:a5f3d943f8643417e2b5c9f48a1992301"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84a2480b83d5e85e7b10b76c47bd8b13"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a84a2480b83d5e85e7b10b76c47bd8b13">getHost</a> () const </td></tr>
@@ -133,18 +134,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a03b806bb881d4772ae254c3eaae74c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79a09c5ae8e21596fcde96b373937dc8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a79a09c5ae8e21596fcde96b373937dc8">getClassId</a> () const </td></tr>
 <tr class="separator:a79a09c5ae8e21596fcde96b373937dc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16289073691ece6632e308034b380a92"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a16289073691ece6632e308034b380a92">writeData</a> (serialization::ObjectDataOutput &amp;writer) const </td></tr>
+<tr class="memitem:a16289073691ece6632e308034b380a92"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#a16289073691ece6632e308034b380a92">writeData</a> (<a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">serialization::ObjectDataOutput</a> &amp;writer) const </td></tr>
 <tr class="separator:a16289073691ece6632e308034b380a92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdbdf1d5eb7b746e4f6a551f3295db41"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#abdbdf1d5eb7b746e4f6a551f3295db41">readData</a> (serialization::ObjectDataInput &amp;reader)</td></tr>
+<tr class="memitem:abdbdf1d5eb7b746e4f6a551f3295db41"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_address.html#abdbdf1d5eb7b746e4f6a551f3295db41">readData</a> (<a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">serialization::ObjectDataInput</a> &amp;reader)</td></tr>
 <tr class="separator:abdbdf1d5eb7b746e4f6a551f3295db41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html">hazelcast::client::IdentifiedDataSerializable</a></td></tr>
-<tr class="memitem:a9bbf9a8ef580452247cc43a15dbb86a8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9bbf9a8ef580452247cc43a15dbb86a8"></a>
-virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#a9bbf9a8ef580452247cc43a15dbb86a8">~IdentifiedDataSerializable</a> ()</td></tr>
-<tr class="memdesc:a9bbf9a8ef580452247cc43a15dbb86a8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br/></td></tr>
-<tr class="separator:a9bbf9a8ef580452247cc43a15dbb86a8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad08ac5c012980f712076576de845bfc8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#ad08ac5c012980f712076576de845bfc8">getSerializerId</a> () const </td></tr>
-<tr class="memdesc:ad08ac5c012980f712076576de845bfc8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not public api.  <a href="#ad08ac5c012980f712076576de845bfc8">More...</a><br/></td></tr>
-<tr class="separator:ad08ac5c012980f712076576de845bfc8 inherit pub_methods_classhazelcast_1_1client_1_1_identified_data_serializable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">hazelcast::client::serialization::IdentifiedDataSerializable</a></td></tr>
+<tr class="memitem:ac1272a4ec94cd47887168f8d3ac04a6c inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac1272a4ec94cd47887168f8d3ac04a6c"></a>
+virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#ac1272a4ec94cd47887168f8d3ac04a6c">~IdentifiedDataSerializable</a> ()</td></tr>
+<tr class="memdesc:ac1272a4ec94cd47887168f8d3ac04a6c inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br/></td></tr>
+<tr class="separator:ac1272a4ec94cd47887168f8d3ac04a6c inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad89cf51b32c652924260dd5aa2a9eb6 inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#aad89cf51b32c652924260dd5aa2a9eb6">getSerializerId</a> () const </td></tr>
+<tr class="memdesc:aad89cf51b32c652924260dd5aa2a9eb6 inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not public api.  <a href="#aad89cf51b32c652924260dd5aa2a9eb6">More...</a><br/></td></tr>
+<tr class="separator:aad89cf51b32c652924260dd5aa2a9eb6 inherit pub_methods_classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>IP <a class="el" href="classhazelcast_1_1client_1_1_address.html" title="IP Address. ">Address</a>. </p>
@@ -169,9 +170,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">IdentifiedDataSerializable</a> </dd></dl>
+<dl class="section see"><dt>See Also</dt><dd>IdentifiedDataSerializable </dd></dl>
 
-<p>Implements <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#a58d6d28f33f48484ec197b4f64697bb0">hazelcast::client::IdentifiedDataSerializable</a>.</p>
+<p>Implements <a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#ab9e6af98f5ca4237c4f7badbd3a22f90">hazelcast::client::serialization::IdentifiedDataSerializable</a>.</p>
 
 </div>
 </div>
@@ -195,9 +196,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">IdentifiedDataSerializable</a> </dd></dl>
+<dl class="section see"><dt>See Also</dt><dd>IdentifiedDataSerializable </dd></dl>
 
-<p>Implements <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#a7064703bd83548933770bbba049fe5e8">hazelcast::client::IdentifiedDataSerializable</a>.</p>
+<p>Implements <a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#a84f1aba8b0d3d0e3e398438bd0cf2df9">hazelcast::client::serialization::IdentifiedDataSerializable</a>.</p>
 
 </div>
 </div>
@@ -230,30 +231,6 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
       </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>port number. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a0f009174e999bebfbc51b565dc0d1fa0"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool hazelcast::client::Address::operator&lt; </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &amp;&#160;</td>
-          <td class="paramname"><em>address</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>comparison operator </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">address</td><td>tob compared. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -291,7 +268,7 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="memname">void hazelcast::client::Address::readData </td>
           <td>(</td>
-          <td class="paramtype">serialization::ObjectDataInput &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">serialization::ObjectDataInput</a> &amp;&#160;</td>
           <td class="paramname"><em>reader</em></td><td>)</td>
           <td></td>
         </tr>
@@ -302,9 +279,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">IdentifiedDataSerializable</a> </dd></dl>
+<dl class="section see"><dt>See Also</dt><dd>IdentifiedDataSerializable </dd></dl>
 
-<p>Implements <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#aac76929d249c1a30c6c6412186fdef8b">hazelcast::client::IdentifiedDataSerializable</a>.</p>
+<p>Implements <a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#a1d4f092e0bd82e07a144559ddb3db69c">hazelcast::client::serialization::IdentifiedDataSerializable</a>.</p>
 
 </div>
 </div>
@@ -318,7 +295,7 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="memname">void hazelcast::client::Address::writeData </td>
           <td>(</td>
-          <td class="paramtype">serialization::ObjectDataOutput &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">serialization::ObjectDataOutput</a> &amp;&#160;</td>
           <td class="paramname"><em>writer</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -329,9 +306,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html" title="Classes that will be used with hazelcast data structures like IMap, IQueue etc. ">IdentifiedDataSerializable</a> </dd></dl>
+<dl class="section see"><dt>See Also</dt><dd>IdentifiedDataSerializable </dd></dl>
 
-<p>Implements <a class="el" href="classhazelcast_1_1client_1_1_identified_data_serializable.html#ad01c57d6efee4bb7d3485fc287a54b2b">hazelcast::client::IdentifiedDataSerializable</a>.</p>
+<p>Implements <a class="el" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#a1e494aa6eef0686f014e5399c28b4676">hazelcast::client::serialization::IdentifiedDataSerializable</a>.</p>
 
 </div>
 </div>
@@ -342,7 +319,7 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

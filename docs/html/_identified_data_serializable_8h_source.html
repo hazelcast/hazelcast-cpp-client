@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>Hazelcast C++ Client: hazelcast/include/hazelcast/client/IdentifiedDataSerializable.h Source File</title>
+<title>Hazelcast C++ Client: hazelcast/include/hazelcast/client/serialization/IdentifiedDataSerializable.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -78,7 +78,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_de5fdebaf0c4a409593b64f66c35cb7a.html">hazelcast</a></li><li class="navelem"><a class="el" href="dir_3dfbae8fddc7c8da9697b46adbebbf27.html">include</a></li><li class="navelem"><a class="el" href="dir_63d78f5a174897816f5c2faaaee14d29.html">hazelcast</a></li><li class="navelem"><a class="el" href="dir_b6cc82c03cd8546f7cb0d883249b5021.html">client</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_de5fdebaf0c4a409593b64f66c35cb7a.html">hazelcast</a></li><li class="navelem"><a class="el" href="dir_3dfbae8fddc7c8da9697b46adbebbf27.html">include</a></li><li class="navelem"><a class="el" href="dir_63d78f5a174897816f5c2faaaee14d29.html">hazelcast</a></li><li class="navelem"><a class="el" href="dir_b6cc82c03cd8546f7cb0d883249b5021.html">client</a></li><li class="navelem"><a class="el" href="dir_b4e6efcfe681d09a67ec05d67aa6e4c3.html">serialization</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -101,30 +101,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;            <span class="keyword">class </span>ObjectDataOutput;</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;            <span class="keyword">class </span>ObjectDataInput;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        }</div>
-<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_identified_data_serializable.html">   30</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a> {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;            <span class="keyword">virtual</span> ~<a class="code" href="classhazelcast_1_1client_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a>();</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">   30</a></span>&#160;            <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a> {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                <span class="keyword">virtual</span> ~<a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a>();</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">int</span> getFactoryId() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">int</span> getClassId() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeData(serialization::ObjectDataOutput&amp; writer) <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">void</span> readData(serialization::ObjectDataInput&amp; reader) = 0;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">int</span> getSerializerId() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        };</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;}</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                <span class="keyword">virtual</span> <span class="keywordtype">int</span> getFactoryId() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                <span class="keyword">virtual</span> <span class="keywordtype">int</span> getClassId() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeData(<a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a> &amp;writer) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                <span class="keyword">virtual</span> <span class="keywordtype">void</span> readData(<a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">ObjectDataInput</a> &amp;reader) = 0;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                <span class="keyword">virtual</span> <span class="keywordtype">int</span> getSerializerId() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            };</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        }</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#endif //HAZELCAST_DataSerializable</span></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_identified_data_serializable_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_identified_data_serializable.html">hazelcast::client::IdentifiedDataSerializable</a></div><div class="ttdoc">Classes that will be used with hazelcast data structures like IMap, IQueue etc. </div><div class="ttdef"><b>Definition:</b> IdentifiedDataSerializable.h:30</div></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor">#endif //HAZELCAST_DataSerializable</span></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_object_data_output_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">hazelcast::client::serialization::ObjectDataOutput</a></div><div class="ttdef"><b>Definition:</b> ObjectDataOutput.h:22</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">hazelcast::client::serialization::IdentifiedDataSerializable</a></div><div class="ttdoc">Classes that will be used with hazelcast data structures like IMap, IQueue etc. </div><div class="ttdef"><b>Definition:</b> IdentifiedDataSerializable.h:30</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_object_data_input_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_object_data_input.html">hazelcast::client::serialization::ObjectDataInput</a></div><div class="ttdef"><b>Definition:</b> ObjectDataInput.h:39</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

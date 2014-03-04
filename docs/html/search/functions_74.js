@@ -2,7 +2,6 @@ var searchData=
 [
   ['take',['take',['../classhazelcast_1_1client_1_1_i_queue.html#a85e5e20e4084ae735fc98e538710f2a0',1,'hazelcast::client::IQueue']]],
   ['toarray',['toArray',['../classhazelcast_1_1client_1_1_i_list.html#a91c5c811f7eb703da6a73d9151641199',1,'hazelcast::client::IList::toArray()'],['../classhazelcast_1_1client_1_1_i_queue.html#a2e05029967204f7bf22a6e0700716ddc',1,'hazelcast::client::IQueue::toArray()'],['../classhazelcast_1_1client_1_1_i_set.html#a93419f94199220905a73c282a67f0e8f',1,'hazelcast::client::ISet::toArray()']]],
-  ['transactionaltaskcontext',['TransactionalTaskContext',['../classhazelcast_1_1client_1_1_transactional_task_context.html#ab550967ef6f7ff1dcbff21f15394ca00',1,'hazelcast::client::TransactionalTaskContext']]],
   ['transactioncontext',['TransactionContext',['../classhazelcast_1_1client_1_1_transaction_context.html#adc328f845520488ac6dbb1c1f4cdc20a',1,'hazelcast::client::TransactionContext']]],
   ['transactionoptions',['TransactionOptions',['../classhazelcast_1_1client_1_1_transaction_options.html#a23d458689c443a67235e741db5917cfa',1,'hazelcast::client::TransactionOptions']]],
   ['transactiontype',['TransactionType',['../classhazelcast_1_1client_1_1_transaction_type.html#a431405ad3245bfd9159ea72e7362740a',1,'hazelcast::client::TransactionType']]],

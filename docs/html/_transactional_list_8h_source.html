@@ -96,7 +96,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#ifndef HAZELCAST_TransactionalList</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_TransactionalList</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Data.h&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/Data.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/collection/TxnListAddRequest.h&quot;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/txn/TransactionProxy.h&quot;</span></div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/collection/TxnListRemoveRequest.h&quot;</span></div>
@@ -112,14 +112,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_list.html#a5c90369b7d789253d0b17201e7b02483">   34</a></span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="classhazelcast_1_1client_1_1_transactional_list.html#a5c90369b7d789253d0b17201e7b02483">add</a>(<span class="keyword">const</span> E &amp;e) {</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                serialization::Data data = toData(e);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                serialization::pimpl::Data data = toData(e);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                collection::TxnListAddRequest *request = <span class="keyword">new</span> collection::TxnListAddRequest(getName(), data);</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                <span class="keywordflow">return</span> success;</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            }</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
 <div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_transactional_list.html#adda99b018212c2dc088947a2b1e20ffd">   46</a></span>&#160;            <span class="keywordtype">bool</span> <span class="keyword">remove</span>(<span class="keyword">const</span> E &amp;e) {</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                serialization::Data data = toData(e);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                serialization::pimpl::Data data = toData(e);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                collection::TxnListRemoveRequest *request = <span class="keyword">new</span> collection::TxnListRemoveRequest(getName(), data);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                boost::shared_ptr&lt;bool&gt; success = invoke&lt;bool&gt;(request);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                <span class="keywordflow">return</span> *success;</div>
@@ -153,7 +153,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

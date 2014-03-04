@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/ClientContext.h&quot;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/spi/InvocationService.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/DistributedObject.h&quot;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Data.h&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/Data.h&quot;</span></div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
@@ -135,7 +135,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            <span class="keywordtype">void</span> onDestroy();</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            serialization::Data key;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            serialization::pimpl::Data key;</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <span class="keywordtype">int</span> partitionId;</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        };</div>
@@ -145,11 +145,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="preprocessor">#endif //HAZELCAST_ILock</span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_lock_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_lock.html">hazelcast::client::ILock</a></div><div class="ttdoc">Re-entrant Lock, Distributed client implementation of Lock. </div><div class="ttdef"><b>Definition:</b> ILock.h:23</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_distributed_object_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_distributed_object.html">hazelcast::client::DistributedObject</a></div><div class="ttdoc">Base class for all distributed objects. </div><div class="ttdef"><b>Definition:</b> DistributedObject.h:44</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:372</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2014 17:29:20 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 4 2014 10:38:10 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
