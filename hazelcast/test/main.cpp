@@ -20,7 +20,6 @@
 #include "txn/ClientTxnMultiMapTest.h"
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
-//#include "TestApp.h"
 
 using namespace hazelcast::client::test;
 
@@ -100,10 +99,6 @@ void unitTests() {
 }
 
 int main(int argc, char **argv) {
-
-//    TestApp testApp;
-//    testApp.run();
-
 
     unitTests();
 //    testSpeed();

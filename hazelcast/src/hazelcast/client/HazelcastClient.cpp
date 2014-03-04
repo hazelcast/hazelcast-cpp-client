@@ -70,6 +70,10 @@ namespace hazelcast {
             return impl->cluster;
         }
 
+        void HazelcastClient::shutdown() {
+            impl->lifecycleService.shutdown();
+        }
+
         spi::InvocationService &HazelcastClient::getInvocationService() {
             return impl->invocationService;
         };

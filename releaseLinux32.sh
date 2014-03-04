@@ -1,17 +1,12 @@
-mkdir -p ./releaseBundle32/hazelcast/lib
-mkdir -p ./releaseBundle32/hazelcast/include/hazelcast/
-mkdir -p ./releaseBundle32/external/lib
-mkdir -p ./releaseBundle32/external/include
-mkdir -p ./releaseBundle32/docs/
+#STANDART PART
+mkdir -p ./cpp/Linux_32/hazelcast/include/hazelcast/
+mkdir -p ./cpp/Linux_32/hazelcast/lib
+mkdir -p ./cpp/Linux_32/external/include
+mkdir -p ./cpp/Linux_32/external/lib
 
-cp build/libHazelcastClientShared_32.so releaseBundle32/hazelcast/lib/libHazelcastClientShared_32.so
-cp build/libHazelcastClientStatic_32.a  releaseBundle32/hazelcast/lib/libHazelcastClientStatic_32.a
+cp -R hazelcast/include/hazelcast/* cpp/Linux_32/hazelcast/include/hazelcast/
+cp build/libHazelcastClientShared_32.so cpp/Linux_32/hazelcast/lib/libHazelcastClientShared_32.so
+cp build/libHazelcastClientStatic_32.a     cpp/Linux_32/hazelcast/lib/libHazelcastClientStatic_32.a
 
-cp -R docs/* releaseBundle32/docs/
-cp -R external/include/* releaseBundle32/external/include/
-cp -R hazelcast/include/hazelcast/* releaseBundle32/hazelcast/include/hazelcast/
-cp -R external/lib/linux/32/* releaseBundle32/external/lib/
-cp enterprise-license.txt releaseBundle32/enterprise-license.txt
-
-ln -s ./docs/html/index.html releaseBundle32/readme.html
-
+cp -R external/include/* cpp/Linux_32/external/include/
+cp -R external/lib/linux/32/* cpp/Linux_32/external/lib/

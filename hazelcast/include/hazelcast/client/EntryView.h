@@ -6,6 +6,7 @@
 
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
+#include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 

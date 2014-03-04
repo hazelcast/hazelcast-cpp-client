@@ -1,20 +1,28 @@
-mkdir -p ./releaseBundle/hazelcast/lib
-mkdir -p ./releaseBundle/hazelcast/include/hazelcast/
-mkdir -p ./releaseBundle/external/lib
-mkdir -p ./releaseBundle/external/include
-mkdir -p ./releaseBundle/docs/
+#STANDART PART
+mkdir -p ./cpp/Mac_64/hazelcast/include/hazelcast/
+mkdir -p ./cpp/Mac_64/hazelcast/lib
+mkdir -p ./cpp/Mac_64/external/include
+mkdir -p ./cpp/Mac_64/external/lib
 
-cp build/libHazelcastClientShared_64.dylib releaseBundle/hazelcast/lib/libHazelcastClientShared_64.dylib
-cp build/libHazelcastClientStatic_64.a     releaseBundle/hazelcast/lib/libHazelcastClientStatic_64.a
+cp -R hazelcast/include/hazelcast/ cpp/Mac_64/hazelcast/include/hazelcast/
+cp build/libHazelcastClientShared_64.dylib cpp/Mac_64/hazelcast/lib/libHazelcastClientShared_64.dylib
+cp build/libHazelcastClientStatic_64.a     cpp/Mac_64/hazelcast/lib/libHazelcastClientStatic_64.a
 
-cd releaseBundle/hazelcast/lib/
+cp -R external/include/ cpp/Mac_64/external/include/
+cp -R external/lib/darwin/64/ cpp/Mac_64/external/lib/
+
+#MAC SPECIFIC
+cd cpp/Mac_64/hazelcast/lib/
 install_name_tool -id libHazelcastClientShared_64.dylib libHazelcastClientShared_64.dylib
-cd ../../../
+cd ../../../../
 
-cp -R docs/ releaseBundle/docs/
-cp -R external/include/ releaseBundle/external/include/
-cp -R hazelcast/include/hazelcast/ releaseBundle/hazelcast/include/hazelcast/
-cp -R external/lib/darwin/64/ releaseBundle/external/lib/
-cp enterprise-license.txt releaseBundle/enterprise-license.txt
+#ONLY IN DEVELOPMENT MACHINE
+mkdir -p ./cpp/docs/
+mkdir -p ./cpp/examples/
 
-ln -s ./docs/html/index.html releaseBundle/readme.html
+cp -R docs/ cpp/docs/
+cp -R examples/ cpp/examples/
+
+cp enterprise-license.txt cpp/enterprise-license.txt
+
+

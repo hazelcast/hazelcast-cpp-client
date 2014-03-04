@@ -563,6 +563,11 @@ namespace hazelcast {
              */
             Cluster &getCluster();
 
+            /**
+             * Shuts down this HazelcastClient.
+             */
+            void shutdown();
+
         private:
 
             class HazelcastClientImpl;
