@@ -32,7 +32,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	include_directories(${HZ_LIB_ROOT}/hazelcast/include/)
 		
 	add_executable(TestApp.exe ./TestApp.cpp)
-					
+				
+	set_target_properties(TestApp.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+		
 	set(Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_atomic.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_system.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${HZ_LIB_ROOT}/external/lib/libboost_chrono.a)
