@@ -14,11 +14,11 @@ namespace hazelcast {
         namespace ILogger{
             static int HazelcastLogLevel;
 
-            void severe(const std::string &methodName, const std::string &message);
+            void severe(const std::string &message);
 
-            void warning(const std::string &methodName, const std::string &message);
+            void warning(const std::string &message);
 
-            void info(const std::string &methodName, const std::string &message);
+            void info(const std::string &message);
 
         };
     }

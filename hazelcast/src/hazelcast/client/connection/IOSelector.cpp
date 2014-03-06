@@ -29,8 +29,8 @@ namespace hazelcast {
                 int wakeUpSignal = 9;
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
-                } catch(std::exception &e) {
-                    std::cerr << e.what() << std::endl;
+                } catch(exception::IOException &e) {
+                    util::ILogger::warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw e;
                 }
             };
@@ -41,11 +41,11 @@ namespace hazelcast {
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException& e){
-                        hazelcast::util::ILogger::warning("IOSelector::listen ", e.what());
+                        util::ILogger::warning(std::string("Exception at IOSelector::listen() ") + e.what());
                     }catch(boost::thread_interrupted&){
                         break;
                     } catch(...){
-                        hazelcast::util::ILogger::severe("IOSelector::listen ", "unknown exception");
+                        hazelcast::util::ILogger::severe("IOSelector::listen unknown exception");
                     }
                 }
             }

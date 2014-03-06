@@ -69,7 +69,7 @@
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
 //                    } catch(...){
-//                        std::cerr << "Exception in IExecuterService::asyncInvokeWithDefaultResult" << std::endl;
+//                        logger << "Exception in IExecuterService::asyncInvokeWithDefaultResult" << std::endl;
 //                    }
 //                }
 //
@@ -82,7 +82,7 @@
 //                    } catch(exception::ServerException &ex){
 //                        future.accessInternal().setException(new exception::IException("ServerNode", ex.what()));
 //                    } catch(...){
-//                        std::cerr << "Exception in IExecuterService::asyncInvokeWithDefaultResult" << std::endl;
+//                        logger<< "Exception in IExecuterService::asyncInvokeWithDefaultResult" << std::endl;
 //                    }
 //                }
 //

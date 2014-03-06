@@ -24,7 +24,7 @@
 //                    connection->write(ping);
 //                    connection->read();
 //                }catch(...){
-//                    std::cerr << "Warning: HearBeatChecker ping failed " << std::endl;
+//                    logger "Warning: HearBeatChecker ping failed " << std::endl;
 //                    boost::this_thread::sleep(boost::posix_time::seconds(5));
 //                }
 //            };

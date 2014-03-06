@@ -150,7 +150,7 @@ namespace hazelcast {
                             lastError = e;
                             std::ostringstream errorStream;
                             errorStream << "IO error  during initial connection " << e.what();
-                            util::ILogger::warning("ClusterService::connectToOne", errorStream.str());
+                            util::ILogger::warning(errorStream.str());
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -161,7 +161,7 @@ namespace hazelcast {
                     std::ostringstream errorStream;
                     errorStream << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
                             << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
-                    util::ILogger::warning("ClusterService::connectToOne", errorStream.str());
+                    util::ILogger::warning(errorStream.str());
 
                     if (remainingTime > 0) {
                         boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));

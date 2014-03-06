@@ -32,7 +32,7 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    hazelcast::util::ILogger::warning("Olistener::listen ", std::string(strerror(errno)));
+                    hazelcast::util::ILogger::severe(std::string("Olistener::listen ") + strerror(errno));
                     return;
                 }
                 std::set<Socket const *, client::socketPtrComp>::iterator it;

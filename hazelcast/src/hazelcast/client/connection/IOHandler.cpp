@@ -5,6 +5,7 @@
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +36,11 @@ namespace hazelcast {
             void IOHandler::handleSocketException(const std::string &message) {
                 ioListener.removeSocket(connection.getSocket());
                 connection.close();
-                (std::cerr << " void IOHandler::handleSocketException " << message << std::endl);
+                std::stringstream warningStr;
+                Address const &address = connection.getRemoteEndpoint();
+                (warningStr << " Closing socket to endpoint " << address.getHost() << ":" << address.getPort()
+                        << ", Cause:" << message << std::endl);
+                util::ILogger::warning(warningStr.str());
             }
         }
     }

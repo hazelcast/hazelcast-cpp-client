@@ -59,22 +59,22 @@ namespace hazelcast {
                 boost::lock_guard<boost::mutex> lg(listenerLock);
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "STARTING");
+                        util::ILogger::info("LifecycleService::LifecycleEvent STARTING");
                         break;
                     case LifecycleEvent::STARTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "STARTED");
+                        util::ILogger::info("LifecycleService::LifecycleEvent STARTED");
                         break;
                     case LifecycleEvent::SHUTTING_DOWN :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "SHUTTING_DOWN");
+                        util::ILogger::info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
                         break;
                     case LifecycleEvent::SHUTDOWN :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "SHUTDOWN");
+                        util::ILogger::info("LifecycleService::LifecycleEvent SHUTDOWN");
                         break;
                     case LifecycleEvent::CLIENT_CONNECTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "CLIENT_CONNECTED");
+                        util::ILogger::info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
                         break;
                     case LifecycleEvent::CLIENT_DISCONNECTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent", "CLIENT_DISCONNECTED");
+                        util::ILogger::info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
                         break;
                 }
 

@@ -89,7 +89,6 @@ namespace hazelcast {
                     }
                     count++;
                 }
-                std::cerr << "Could not connect to any address after 20 try" << std::endl;
                 throw lastError;
             }
 
@@ -153,8 +152,8 @@ namespace hazelcast {
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;
-                (message << " --- authenticated by " << address->getHost() << ":" << address->getPort() << " --- " << std::endl);
-                util::ILogger::info("ConnectionManager::authenticate", message.str());
+                (message << "client authenticated by " << address->getHost() << ":" << address->getPort() << std::endl);
+                util::ILogger::info(message.str());
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };

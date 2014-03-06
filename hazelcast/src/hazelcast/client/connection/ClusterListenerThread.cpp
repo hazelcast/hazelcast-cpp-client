@@ -13,6 +13,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +37,7 @@ namespace hazelcast {
                             try {
                                 conn.reset(pickConnection());
                             } catch (std::exception &e) {
-                                std::cerr << "Error while connecting to cluster! " << e.what() << std::endl;
+                                util::ILogger::severe(std::string("Error while connecting to cluster!") + e.what());
                                 return;
                             }
                         }
@@ -47,7 +48,7 @@ namespace hazelcast {
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
-                            (std::cerr << "Error while listening cluster events! -> " << e.what() << std::endl);
+                            util::ILogger::warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
                         bool expected = false;
                         if (deletingConnection.compare_exchange_strong(expected, true)) {
@@ -59,7 +60,7 @@ namespace hazelcast {
                     } catch(boost::thread_interrupted &) {
                         break;
                     } catch(...) {
-                        std::cerr << "cluster Listener Thread unknown exception\n";
+                        util::ILogger::warning("ClusterListenerThread::run unknown exception");
                     }
 
                 }
@@ -95,12 +96,7 @@ namespace hazelcast {
                 conn->writeBlocking(request);
                 serialization::pimpl::Data data = conn->readBlocking();
                 boost::shared_ptr<ClientResponse> response = clientContext.getSerializationService().toObject<ClientResponse >(data);
-                if (response->isException()) {
-                    std::cerr << "ClusterListenerThread::loadInitialMemberList" << std::endl;
-                    throw exception::IOException("ClusterListenerThread::loadInitialMemberList", "error while waiting initial list");
-                }
                 boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection >(response->getData());
-
 
                 std::map<std::string, Member> prevMembers;
                 if (!members.empty()) {
@@ -220,12 +216,14 @@ namespace hazelcast {
 
             void ClusterListenerThread::updateMembersRef() {
                 std::map<Address, Member, addressComparator > map;
-                std::cerr << "Members [" << members.size() << "]  {" << std::endl;
+                std::stringstream memberInfo;
+                memberInfo << std::endl << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                    (std::cerr << "\t" << (*it) << std::endl);
+                    (memberInfo << "\t" << (*it) << std::endl);
                     map[(*it).getAddress()] = (*it);
                 }
-                std::cerr << "}" << std::endl;
+                memberInfo << "}" << std::endl;
+                util::ILogger::info(memberInfo.str());
                 clientContext.getClusterService().setMembers(map);
 
             };

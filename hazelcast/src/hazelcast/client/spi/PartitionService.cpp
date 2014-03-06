@@ -18,9 +18,9 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             PartitionService::PartitionService(spi::ClientContext &clientContext)
-            :partitionCount(0)
+            : clientContext(clientContext)
             , updating(false)
-            , clientContext(clientContext) {
+            ,partitionCount(0){
 
             };
 
@@ -55,11 +55,11 @@ namespace hazelcast {
                         }
                         runRefresher();
                     }catch(exception::IException& e){
-                        util::ILogger::warning("PartitionService::runListener", "unkown exception");
+                        util::ILogger::warning(std::string("PartitionService::runListener") + e.what());
                     } catch(boost::thread_interrupted &) {
                         break;
                     } catch(...) {
-                        util::ILogger::severe("PartitionService::runListener", "unkown exception");
+                        util::ILogger::severe("PartitionService::runListener unkown exception");
                     }
                 }
             };
@@ -92,11 +92,10 @@ namespace hazelcast {
                     boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnTarget(request, address);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
-                    std::cerr << "Error while fetching cluster partition table " << e.what() << std::endl;
+                    util::ILogger::severe(std::string("Error while fetching cluster partition table => ") + e.what() );
                 }
                 return partitionResponse;
             };
-
 
             boost::shared_ptr<impl::PartitionsResponse>PartitionService::getPartitionsFrom() {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
@@ -105,7 +104,7 @@ namespace hazelcast {
                     boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
-                    std::cerr << e.what() << std::endl;
+                    util::ILogger::warning(std::string("Error while fetching cluster partition table => ") + e.what() );
                 }
                 return partitionResponse;
             }

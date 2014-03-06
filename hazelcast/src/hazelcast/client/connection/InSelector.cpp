@@ -29,7 +29,7 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    hazelcast::util::ILogger::warning("InSelector::listen ", std::string(strerror(errno)));
+                    hazelcast::util::ILogger::severe(std::string("Exception InSelector::listen => ") + strerror(errno));
                     return;
                 }
 
