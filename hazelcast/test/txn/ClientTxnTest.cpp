@@ -4,7 +4,7 @@
 
 
 #include "ClientTxnTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnTest::ClientTxnTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientTxnTest::ClientTxnTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientTxnTest")
             , server(hazelcastInstanceFactory)
@@ -46,12 +46,12 @@ namespace hazelcast {
             };
 
             void ClientTxnTest::testTxnRollback() {
-                std::auto_ptr<HazelcastInstance> second;
+                std::auto_ptr<HazelcastServer> second;
                 TransactionContext context = client->newTransactionContext();
                 util::CountDownLatch latch(1);
                 try {
                     context.beginTransaction();
-                    second.reset(new HazelcastInstance(hazelcastInstanceFactory));
+                    second.reset(new HazelcastServer(hazelcastInstanceFactory));
                     std::string txnId = context.getTxnId();
                     assertTrue(txnId.compare("") != 0);
                     TransactionalQueue<std::string> queue = context.getQueue<std::string>("testTxnRollback");

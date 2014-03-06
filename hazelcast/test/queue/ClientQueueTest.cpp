@@ -5,7 +5,7 @@
 
 #include "queue/ClientQueueTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientQueueTest::ClientQueueTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientQueueTest::ClientQueueTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientQueueTest")
             , instance(hazelcastInstanceFactory)
@@ -73,15 +73,6 @@ namespace hazelcast {
                 util::CountDownLatch &latch;
             };
 
-
-            void testListenerThread(IQueue<std::string> *q) {
-                for (int i = 0; i < 5; i++) {
-                    if (!q->offer(std::string("event_item") + util::to_string(i))) {
-                        std::cerr << "error at testListenerThread" << std::endl;
-                    }
-                }
-            }
-
             void ClientQueueTest::testListener() {
                 assertEqual(0, q->size());
 
@@ -92,7 +83,9 @@ namespace hazelcast {
 
                 boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 
-                boost::thread t(boost::bind(testListenerThread, q.get()));
+                for (int i = 0; i < 5; i++) {
+                    assertTrue(q->offer(std::string("event_item") + util::to_string(i)));
+                }
 
                 assertTrue(latch.await(5 * 1000));
                 assertTrue(q->removeItemListener(id));

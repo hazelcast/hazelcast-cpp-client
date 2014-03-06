@@ -9,7 +9,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/ISet.h"
 
 namespace hazelcast {
@@ -19,11 +19,11 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ClientSetTest : public iTest::iTestFixture<ClientSetTest> {
             public:
-                ClientSetTest(HazelcastInstanceFactory&);
+                ClientSetTest(HazelcastServerFactory &);
 
                 ~ClientSetTest();
 
@@ -48,8 +48,8 @@ namespace hazelcast {
                 void testListener();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<ISet<std::string> > set;

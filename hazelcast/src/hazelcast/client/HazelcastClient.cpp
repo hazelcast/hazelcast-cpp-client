@@ -2,101 +2,51 @@
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/PartitionService.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
 
 namespace hazelcast {
     namespace client {
 
-        /**
-         * Private API.
-         */
-        class HazelcastClient::HazelcastClientImpl {
-        public:
-            HazelcastClientImpl(ClientConfig &clientConfig, HazelcastClient &hazelcastClient)
-            : clientConfig(clientConfig)
-            , clientContext(hazelcastClient)
-            , lifecycleService(clientContext, clientConfig)
-            , serializationService(0)
-            , connectionManager(clientContext, this->clientConfig.isSmart())
-            , clusterService(clientContext)
-            , partitionService(clientContext)
-            , invocationService(clientContext)
-            , serverListenerService(clientContext)
-            , cluster(clusterService) {
-                LoadBalancer *loadBalancer = this->clientConfig.getLoadBalancer();
-                loadBalancer->init(cluster);
-            };
-
-            ClientConfig clientConfig;
-            spi::ClientContext clientContext;
-            spi::LifecycleService lifecycleService;
-            serialization::pimpl::SerializationService serializationService;
-            connection::ConnectionManager connectionManager;
-            spi::ClusterService clusterService;
-            spi::PartitionService partitionService;
-            spi::InvocationService invocationService;
-            spi::ServerListenerService serverListenerService;
-            Cluster cluster;
-
-        };
-
         HazelcastClient::HazelcastClient(ClientConfig &config)
-        :impl(new HazelcastClientImpl(config, *this)) {
-            impl->lifecycleService.start();
+        : clientConfig(config)
+        , clientContext(*this)
+        , lifecycleService(clientContext, clientConfig)
+        , serializationService(0)
+        , connectionManager(clientContext, clientConfig.isSmart())
+        , clusterService(clientContext)
+        , partitionService(clientContext)
+        , invocationService(clientContext)
+        , serverListenerService(clientContext)
+        , cluster(clusterService) {
+            LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
+            loadBalancer->init(cluster);
+            lifecycleService.start();
         };
 
         HazelcastClient::~HazelcastClient() {
-            impl->lifecycleService.shutdown();
+            lifecycleService.shutdown();
         };
 
-        serialization::pimpl::SerializationService &HazelcastClient::getSerializationService() {
-            return impl->serializationService;
-        };
 
         ClientConfig &HazelcastClient::getClientConfig() {
-            return impl->clientConfig;
-        };
-
-        spi::ClientContext &HazelcastClient::getClientContext() {
-            return impl->clientContext;
+            return clientConfig;
         };
 
         Cluster &HazelcastClient::getCluster() {
-            return impl->cluster;
+            return cluster;
         }
+
+        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            lifecycleService.addLifecycleListener(lifecycleListener);
+        };
+
+        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
+            return lifecycleService.removeLifecycleListener(lifecycleListener);
+        };
 
         void HazelcastClient::shutdown() {
-            impl->lifecycleService.shutdown();
+            lifecycleService.shutdown();
         }
-
-        spi::InvocationService &HazelcastClient::getInvocationService() {
-            return impl->invocationService;
-        };
-
-        spi::ServerListenerService &HazelcastClient::getServerListenerService() {
-            return impl->serverListenerService;
-        };
-
-        spi::ClusterService &HazelcastClient::getClusterService() {
-            return impl->clusterService;
-        };
-
-        spi::PartitionService &HazelcastClient::getPartitionService() {
-            return impl->partitionService;
-        };
-
-        spi::LifecycleService &HazelcastClient::getLifecycleService() {
-            return impl->lifecycleService;
-        };
-
-        connection::ConnectionManager &HazelcastClient::getConnectionManager() {
-            return impl->connectionManager;
-        };
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
             return getDistributedObject< IdGenerator >(instanceName);
@@ -124,7 +74,7 @@ namespace hazelcast {
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
-            return TransactionContext(impl->clientContext, options);
+            return TransactionContext(clientContext, options);
         }
 
     }

@@ -5,7 +5,7 @@
 
 #include "ClientSetTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientSetTest::ClientSetTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientSetTest::ClientSetTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientSetTest")
             , instance(hazelcastInstanceFactory)
@@ -141,19 +141,18 @@ namespace hazelcast {
                 util::CountDownLatch &latch;
             };
 
-            void listenerTestThread(ISet<std::string> *set) {
-                for (int i = 0; i < 5; i++) {
-                    set->add(std::string("item") + util::to_string(i));
-                }
-                set->add("done");
-            }
 
             void ClientSetTest::testListener() {
                 util::CountDownLatch latch(6);
 
                 MySetItemListener listener(latch);
                 std::string registrationId = set->addItemListener(listener, true);
-                boost::thread t(listenerTestThread, set.get());
+
+                for (int i = 0; i < 5; i++) {
+                    set->add(std::string("item") + util::to_string(i));
+                }
+                set->add("done");
+
                 assertTrue(latch.await(20 * 1000));
 
                 assertTrue(set->removeItemListener(registrationId));

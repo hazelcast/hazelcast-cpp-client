@@ -95,7 +95,7 @@ namespace hazelcast {
 
                 void resend(boost::shared_ptr<CallPromise> promise);
 
-                boost::shared_ptr<CallPromise> registerCall(boost::shared_ptr<CallPromise> promise);
+                void registerCall(boost::shared_ptr<CallPromise> promise);
 
                 void targetNotActive(boost::shared_ptr<CallPromise> promise);
 

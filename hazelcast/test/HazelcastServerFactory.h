@@ -2,8 +2,8 @@
 // Created by sancar koyunlu on 8/26/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-#ifndef HAZELCAST_HazelcastInstanceFactory
-#define HAZELCAST_HazelcastInstanceFactory
+#ifndef HAZELCAST_HazelcastServerFactory
+#define HAZELCAST_HazelcastServerFactory
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Socket.h"
@@ -15,10 +15,10 @@ namespace hazelcast {
         namespace test {
 			#define HOST "192.168.2.201"
 
-            class HazelcastInstance;
+            class HazelcastServer;
 
-            class HAZELCAST_API HazelcastInstanceFactory {
-                friend class HazelcastInstance;
+            class HAZELCAST_API HazelcastServerFactory {
+                friend class HazelcastServer;
 
                 enum {
                     OK = 5678,
@@ -28,13 +28,13 @@ namespace hazelcast {
                     SHUTDOWN_ALL = 4
                 };
             public:
-                HazelcastInstanceFactory();
+                HazelcastServerFactory();
 
                 void shutdownAll();
 
                 int getInstanceId();
 
-                ~HazelcastInstanceFactory();
+                ~HazelcastServerFactory();
 
             private:
                 Address address;
@@ -48,4 +48,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_HazelcastInstanceFactory
+#endif //HAZELCAST_HazelcastServerFactory

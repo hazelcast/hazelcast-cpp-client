@@ -5,15 +5,14 @@
 
 #include "list/ClientListTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastInstanceFactory.h"
-#include "hazelcast/util/CountDownLatch.h"
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             using namespace iTest;
 
-            ClientListTest::ClientListTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientListTest::ClientListTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientListTest")
             , instance(hazelcastInstanceFactory)
@@ -187,26 +186,16 @@ namespace hazelcast {
                 util::CountDownLatch &latch;
             };
 
-            void listenerTestThread(IList<std::string> *list) {
-                try {
-                    for (int i = 0; i < 5; i++) {
-                        list->add(std::string("item") + util::to_string(i));
-                    }
-                    list->add("done");
-                } catch(std::exception &e) {
-                    std::cerr << e.what() << std::endl;
-                    std::cerr.flush();
-                } catch(...) {
-                    std::cerr << "unexpected error at ClientListTest::listenerTestThread" << std::endl;
-                }
-            }
-
             void ClientListTest::testListener() {
-                util::CountDownLatch latch(6);
+                util::CountDownLatch latch(5);
 
                 MyListItemListener listener(latch);
                 std::string registrationId = list->addItemListener(listener, true);
-                boost::thread t(listenerTestThread, list.get());
+
+                for (int i = 0; i < 5; i++) {
+                    list->add(std::string("item") + util::to_string(i));
+                }
+
                 assertTrue(latch.await(20 * 1000));
 
                 assertTrue(list->removeItemListener(registrationId));

@@ -12,7 +12,7 @@
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IMap.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/IAtomicLong.h"
 
 
@@ -23,13 +23,13 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
 
             public:
 
-                IAtomicLongTest(HazelcastInstanceFactory&);
+                IAtomicLongTest(HazelcastServerFactory &);
 
                 ~IAtomicLongTest();
 
@@ -46,8 +46,8 @@ namespace hazelcast {
                 void test();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<IAtomicLong > atom;

@@ -17,13 +17,13 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ClusterTest : public iTest::iTestFixture<ClusterTest> {
 
             public:
 
-                ClusterTest(HazelcastInstanceFactory&);
+                ClusterTest(HazelcastServerFactory &);
 
                 ~ClusterTest();
 
@@ -41,8 +41,10 @@ namespace hazelcast {
 
                 void testClusterListenersFromConfig();
 
+                void testListenersWhenClusterDown();
+
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
+                HazelcastServerFactory & hazelcastInstanceFactory;
             };
         }
     }

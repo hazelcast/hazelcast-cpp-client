@@ -64,6 +64,7 @@ namespace hazelcast {
 
                 boost::shared_future<serialization::pimpl::Data> doSend(std::auto_ptr<const impl::PortableRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>);
 
+
             };
         }
     }

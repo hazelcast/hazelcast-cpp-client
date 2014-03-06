@@ -5,7 +5,7 @@
 
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientMultiMapTest::ClientMultiMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientMultiMapTest::ClientMultiMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientMultiMapTest")
             , instance(hazelcastInstanceFactory)
@@ -226,8 +226,7 @@ namespace hazelcast {
                         latch->countDown();
                     }
                 } catch (...) {
-                    std::cerr << "Unexpected exception at ClientMultiMapTest tryLockThread" <<
-                            std::endl;
+                    std::cerr << "Unexpected exception at ClientMultiMapTest tryLockThread" << std::endl;
                 }
             }
 

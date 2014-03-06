@@ -1,5 +1,5 @@
 #include "ClientTopicTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -11,7 +11,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTopicTest::ClientTopicTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientTopicTest::ClientTopicTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientTopicTest")
             , instance(hazelcastInstanceFactory)

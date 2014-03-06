@@ -6,22 +6,22 @@
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#include "HazelcastInstance.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
 #include <iostream>
 
 namespace hazelcast {
     namespace client {
         namespace test {
 
-            HazelcastInstance::HazelcastInstance(HazelcastInstanceFactory& factory)
+            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
             :factory(factory)
             , id(factory.getInstanceId())
             , isShutDown(false) {
             };
 
 
-            void HazelcastInstance::shutdown() {
+            void HazelcastServer::shutdown() {
 				try{
 					if (!isShutDown) {
 						factory.shutdownInstance(id);
@@ -34,7 +34,7 @@ namespace hazelcast {
                 
             };
 
-            HazelcastInstance::~HazelcastInstance() {
+            HazelcastServer::~HazelcastServer() {
                 shutdown();
             };
         }

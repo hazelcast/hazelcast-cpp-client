@@ -4,14 +4,14 @@
 
 #include "MemberAttributeTest.h"
 
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,7 +21,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            MemberAttributeTest::MemberAttributeTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            MemberAttributeTest::MemberAttributeTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :iTestFixture("MemberAttributeTest")
             ,hazelcastInstanceFactory(hazelcastInstanceFactory){
             };
@@ -52,7 +52,7 @@ namespace hazelcast {
             };
 
             void MemberAttributeTest::testInitialValues() {
-                HazelcastInstance instance(hazelcastInstanceFactory);
+                HazelcastServer instance(hazelcastInstanceFactory);
                 ClientConfig clientConfig;
                 HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
                 Cluster cluster = hazelcastClient.getCluster();
@@ -150,10 +150,10 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 clientConfig.addListener(&sampleListener);
 
-                HazelcastInstance instance(hazelcastInstanceFactory);
+                HazelcastServer instance(hazelcastInstanceFactory);
                 HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
 
-                HazelcastInstance instance2(hazelcastInstanceFactory);
+                HazelcastServer instance2(hazelcastInstanceFactory);
 
                 assertTrue(attributeLatch.await(1000 * 30), "attributeLatch");
 

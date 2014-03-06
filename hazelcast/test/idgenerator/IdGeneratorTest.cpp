@@ -7,7 +7,7 @@
 //
 
 #include "idgenerator/IdGeneratorTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            IdGeneratorTest::IdGeneratorTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            IdGeneratorTest::IdGeneratorTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("IdGeneratorTest")
             , instance(hazelcastInstanceFactory)

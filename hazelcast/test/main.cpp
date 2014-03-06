@@ -1,5 +1,5 @@
 #include "SimpleMapTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "queue/ClientQueueTest.h"
 #include "multimap/ClientMultiMapTest.h"
 #include "map/ClientMapTest.h"
@@ -31,7 +31,7 @@ void testSpeed() {
 void unitTests() {
     try {
 
-        HazelcastInstanceFactory factory;
+        HazelcastServerFactory factory;
 
         MemberAttributeTest memberAttributeTest(factory);
         memberAttributeTest.executeTests();
@@ -74,7 +74,6 @@ void unitTests() {
 
         ClientTopicTest topicTest(factory);
         topicTest.executeTests();
-
 
         ClientTxnListTest clientTxnListTest(factory);
         clientTxnListTest.executeTests();

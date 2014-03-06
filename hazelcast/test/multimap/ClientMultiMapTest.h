@@ -12,7 +12,7 @@
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/MultiMap.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,11 +21,11 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ClientMultiMapTest : public iTest::iTestFixture<ClientMultiMapTest> {
             public:
-                ClientMultiMapTest(HazelcastInstanceFactory&);
+                ClientMultiMapTest(HazelcastServerFactory &);
 
                 ~ClientMultiMapTest();
 
@@ -56,8 +56,8 @@ namespace hazelcast {
                 void testForceUnlock();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<MultiMap<std::string, std::string> > mm;

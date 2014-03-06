@@ -5,7 +5,7 @@
 
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientMapTest::ClientMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientMapTest::ClientMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientMapTest")
             , instance(hazelcastInstanceFactory)

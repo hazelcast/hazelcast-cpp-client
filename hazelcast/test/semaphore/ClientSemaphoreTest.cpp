@@ -4,7 +4,7 @@
 
 
 #include "ClientSemaphoreTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientSemaphoreTest::ClientSemaphoreTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientSemaphoreTest::ClientSemaphoreTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientSemaphoreTest")
             , instance(hazelcastInstanceFactory)

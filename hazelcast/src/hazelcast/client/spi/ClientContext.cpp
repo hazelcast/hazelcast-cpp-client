@@ -5,10 +5,6 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/Cluster.h"
-
-using namespace hazelcast::client;
 
 namespace hazelcast {
     namespace client {
@@ -19,40 +15,39 @@ namespace hazelcast {
             };
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
-                return hazelcastClient.getSerializationService();
+                return hazelcastClient.serializationService;
             };
 
-
             ClusterService &ClientContext::getClusterService() {
-                return hazelcastClient.getClusterService();
+                return hazelcastClient.clusterService;
             };
 
             InvocationService &ClientContext::getInvocationService() {
-                return hazelcastClient.getInvocationService();
+                return hazelcastClient.invocationService;
             };
 
             ClientConfig &ClientContext::getClientConfig() {
-                return hazelcastClient.getClientConfig();
+                return hazelcastClient.clientConfig;
             };
 
             PartitionService &ClientContext::getPartitionService() {
-                return hazelcastClient.getPartitionService();
+                return hazelcastClient.partitionService;
             };
 
             LifecycleService &ClientContext::getLifecycleService() {
-                return hazelcastClient.getLifecycleService();
+                return hazelcastClient.lifecycleService;
             };
 
             ServerListenerService &ClientContext::getServerListenerService() {
-                return hazelcastClient.getServerListenerService();
+                return hazelcastClient.serverListenerService;
             };
 
             connection::ConnectionManager &ClientContext::getConnectionManager() {
-                return hazelcastClient.getConnectionManager();
+                return hazelcastClient.connectionManager;
             };
 
             Cluster &ClientContext::getCluster() {
-                return hazelcastClient.getCluster();
+                return hazelcastClient.cluster;
             }
         }
 

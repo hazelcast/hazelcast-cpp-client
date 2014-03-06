@@ -7,7 +7,7 @@
 //
 
 #include "IAtomicLongTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            IAtomicLongTest::IAtomicLongTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            IAtomicLongTest::IAtomicLongTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("IAtomicLongTest")
             , instance(hazelcastInstanceFactory)

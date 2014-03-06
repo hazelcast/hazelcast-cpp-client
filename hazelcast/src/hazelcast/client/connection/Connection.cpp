@@ -43,7 +43,7 @@ namespace hazelcast {
                 }
             };
 
-            void Connection::init(const std::vector<byte>&  PROTOCOL) {
+            void Connection::init(const std::vector<byte> &PROTOCOL) {
                 connection::OutputSocketStream outputSocketStream(socket);
                 outputSocketStream.write(PROTOCOL);
             }
@@ -58,7 +58,7 @@ namespace hazelcast {
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
-                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
+                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException
                     return;
                 }
@@ -68,7 +68,7 @@ namespace hazelcast {
                     ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
                 } catch(exception::IOException &e) {
-                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
+                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
                     promise->setException(instanceNotActiveException);
                     return;
                 }
@@ -171,17 +171,14 @@ namespace hazelcast {
                 return data;
             }
 
-
-            boost::shared_ptr<CallPromise> Connection::registerCall(boost::shared_ptr<CallPromise> promise) {
+            void Connection::registerCall(boost::shared_ptr<CallPromise> promise) {
                 int callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest().callId = callId;
                 callPromises.put(callId, promise);
                 if (promise->getEventHandler() != NULL) {
                     registerEventHandler(promise);
                 }
-                return promise;
             }
-
 
             ReadHandler &Connection::getReadHandler() {
                 return readHandler;
@@ -228,19 +225,18 @@ namespace hazelcast {
                     Entry_Set entrySet = eventHandlerPromises.clear();
                     Entry_Set::iterator it;
                     for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                        targetNotActive(it->second);
+                        clientContext.getServerListenerService().retryFailedListener(it->second);
                     }
                 }
             }
 
             void Connection::targetNotActive(boost::shared_ptr<CallPromise> promise) {
-                Address const &address = getRemoteEndpoint();
                 spi::InvocationService &invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     resend(promise);
                     return;
                 }
-                exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint().getHost());
+                exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
                 promise->setException(instanceNotActiveException);
 
             }

@@ -43,7 +43,6 @@ namespace hazelcast {
 
             private:
 
-
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
                 boost::mutex listenerLock;

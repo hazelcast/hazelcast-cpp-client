@@ -1,5 +1,5 @@
 #include "lock/ClientLockTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -11,7 +11,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientLockTest::ClientLockTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientLockTest::ClientLockTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientLockTest")
             , instance(hazelcastInstanceFactory)

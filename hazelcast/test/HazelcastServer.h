@@ -15,19 +15,19 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
-            class HAZELCAST_API HazelcastInstance {
+            class HAZELCAST_API HazelcastServer {
             public:
-                HazelcastInstance(HazelcastInstanceFactory&);
+                HazelcastServer(HazelcastServerFactory &);
 
                 void shutdown();
 
-                ~HazelcastInstance();
+                ~HazelcastServer();
 
             private:
 
-                HazelcastInstanceFactory& factory;
+                HazelcastServerFactory & factory;
                 int id;
                 bool isShutDown;
 

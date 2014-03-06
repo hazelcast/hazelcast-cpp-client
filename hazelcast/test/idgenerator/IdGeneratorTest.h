@@ -12,7 +12,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/IdGenerator.h"
 
 namespace hazelcast {
@@ -22,12 +22,12 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API IdGeneratorTest : public iTest::iTestFixture<IdGeneratorTest> {
 
             public:
-                IdGeneratorTest(HazelcastInstanceFactory&);
+                IdGeneratorTest(HazelcastServerFactory &);
 
                 ~IdGeneratorTest();
 
@@ -44,8 +44,8 @@ namespace hazelcast {
                 void testGenerator();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<IdGenerator> generator;

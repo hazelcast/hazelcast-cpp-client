@@ -9,6 +9,13 @@
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -393,7 +400,7 @@ namespace hazelcast {
              */
             template <typename T>
             T getDistributedObject(const std::string &instanceName) {
-                T t(instanceName, &getClientContext());
+                T t(instanceName, &(clientContext));
                 return t;
             };
 
@@ -564,31 +571,34 @@ namespace hazelcast {
             Cluster &getCluster();
 
             /**
+             * Add listener to listen lifecycle events.
+             * @param lifecycleListener Listener object
+             */
+            void addLifecycleListener(LifecycleListener *lifecycleListener);
+
+            /**
+             * Remove lifecycle listener
+             * @param lifecycleListener
+             * @return true if removed successfully
+             */
+            bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+
+            /**
              * Shuts down this HazelcastClient.
              */
             void shutdown();
 
         private:
-
-            class HazelcastClientImpl;
-
-            std::auto_ptr<HazelcastClientImpl> impl;
-
-            spi::ClientContext &getClientContext();
-
-            connection::ConnectionManager &getConnectionManager();
-
-            serialization::pimpl::SerializationService &getSerializationService();
-
-            spi::InvocationService &getInvocationService();
-
-            spi::ClusterService &getClusterService();
-
-            spi::PartitionService &getPartitionService();
-
-            spi::LifecycleService &getLifecycleService();
-
-            spi::ServerListenerService &getServerListenerService();
+            ClientConfig clientConfig;
+            spi::ClientContext clientContext;
+            spi::LifecycleService lifecycleService;
+            serialization::pimpl::SerializationService serializationService;
+            connection::ConnectionManager connectionManager;
+            spi::ClusterService clusterService;
+            spi::PartitionService partitionService;
+            spi::InvocationService invocationService;
+            spi::ServerListenerService serverListenerService;
+            Cluster cluster;
 
             HazelcastClient(const HazelcastClient &rhs);
 

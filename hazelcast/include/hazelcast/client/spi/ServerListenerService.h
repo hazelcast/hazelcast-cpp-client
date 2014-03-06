@@ -20,8 +20,12 @@ namespace hazelcast {
             class BaseEventHandler;
         }
 
+        namespace connection{
+            class CallPromise;
+        }
+
         namespace serialization {
-            namespace pimpl{
+            namespace pimpl {
                 class Data;
             }
 
@@ -41,7 +45,15 @@ namespace hazelcast {
 
                 void reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId);
 
+                void retryFailedListener(boost::shared_ptr<connection::CallPromise> failedListener);
+
+                void triggerFailedListeners();
+
             private:
+
+                boost::mutex failedListenerLock;
+                std::vector< boost::shared_ptr<connection::CallPromise> > failedListeners;
+
                 util::SynchronizedMap<std::string, int > registrationIdMap;
                 util::SynchronizedMap<std::string, const std::string > registrationAliasMap;
                 spi::ClientContext &clientContext;

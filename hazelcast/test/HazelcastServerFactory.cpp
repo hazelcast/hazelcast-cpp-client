@@ -3,15 +3,15 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "HazelcastInstanceFactory.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServerFactory.h"
+#include "HazelcastServer.h"
 #include <boost/thread.hpp>
 
 namespace hazelcast {
     namespace client {
         namespace test {
 
-            HazelcastInstanceFactory::HazelcastInstanceFactory()
+            HazelcastServerFactory::HazelcastServerFactory()
             : address(HOST, 6543)
             , socket(address)
             , outputSocketStream(socket)
@@ -19,12 +19,12 @@ namespace hazelcast {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
                 boost::this_thread::sleep(boost::posix_time::seconds(3));
                 if (int error = socket.connect())
-                    std::cout << "HazelcastInstanceFactory " << strerror(error) << std::endl;
+                    std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 
             }
 
 
-            HazelcastInstanceFactory::~HazelcastInstanceFactory() {
+            HazelcastServerFactory::~HazelcastServerFactory() {
                 try {
 					outputSocketStream.writeInt(END);
                     inputSocketStream.readInt();
@@ -34,21 +34,21 @@ namespace hazelcast {
                 }
             }
 
-            void HazelcastInstanceFactory::shutdownInstance(int id) {
+            void HazelcastServerFactory::shutdownInstance(int id) {
                 outputSocketStream.writeInt(SHUTDOWN);
                 outputSocketStream.writeInt(id);
                 int i = inputSocketStream.readInt();
                 if (i != OK) {
-                    std::cout << "void HazelcastInstanceFactory::shutdownInstance(int id):" << i << std::endl;
+                    std::cout << "void HazelcastServerFactory::shutdownInstance(int id):" << i << std::endl;
                 }
             };
 
-            void HazelcastInstanceFactory::shutdownAll() {
+            void HazelcastServerFactory::shutdownAll() {
                 outputSocketStream.writeInt(SHUTDOWN_ALL);
                 try {
                     int i = inputSocketStream.readInt();
                     if (i != OK) {
-                        std::cout << "void HazelcastInstanceFactory::shutdownAll():" << i << std::endl;
+                        std::cout << "void HazelcastServerFactory::shutdownAll():" << i << std::endl;
                         std::cout.flush();
                     }
                 } catch(std::exception &e) {
@@ -57,7 +57,7 @@ namespace hazelcast {
 
             };
 
-            int HazelcastInstanceFactory::getInstanceId() {
+            int HazelcastServerFactory::getInstanceId() {
                 outputSocketStream.writeInt(START);
                 return inputSocketStream.readInt();
             }

@@ -9,10 +9,10 @@
 #define HAZELCAST_LIFECYCLE_LISTENER
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/LifecycleEvent.h"
 
 namespace hazelcast {
     namespace client {
-        class LifecycleEvent;
         /**
          * Listener object for listening lifecycle events of hazelcast instance
          *

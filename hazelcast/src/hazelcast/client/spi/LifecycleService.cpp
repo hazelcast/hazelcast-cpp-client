@@ -11,7 +11,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {

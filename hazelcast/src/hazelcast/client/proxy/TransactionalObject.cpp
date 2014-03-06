@@ -31,7 +31,6 @@ namespace hazelcast {
                 onDestroy();
                 impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
                 spi::InvocationService &invocationService = context->getInvocationService();
-                serialization::pimpl::SerializationService &ss = context->getSerializationService();
                 invocationService.invokeOnConnection(request, context->getConnection());
             }
         }

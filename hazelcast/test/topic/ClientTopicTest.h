@@ -11,7 +11,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/ITopic.h"
 
 namespace hazelcast {
@@ -21,13 +21,13 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ClientTopicTest : public iTest::iTestFixture<ClientTopicTest> {
 
             public:
 
-                ClientTopicTest(HazelcastInstanceFactory&);
+                ClientTopicTest(HazelcastServerFactory &);
 
                 void addTests();
 
@@ -42,8 +42,8 @@ namespace hazelcast {
                 void testTopicListeners();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr< ITopic<std::string> > topic;

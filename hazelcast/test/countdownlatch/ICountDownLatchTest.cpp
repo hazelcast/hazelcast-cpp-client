@@ -4,7 +4,7 @@
 
 
 #include "countdownlatch/ICountDownLatchTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ICountDownLatchTest::ICountDownLatchTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ICountDownLatchTest::ICountDownLatchTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ICountDownLatchTest")
             , instance(hazelcastInstanceFactory)

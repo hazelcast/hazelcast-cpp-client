@@ -15,13 +15,13 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API MemberAttributeTest : public iTest::iTestFixture<MemberAttributeTest> {
 
             public:
 
-            MemberAttributeTest(HazelcastInstanceFactory&);
+            MemberAttributeTest(HazelcastServerFactory &);
 
             ~MemberAttributeTest();
 
@@ -40,7 +40,7 @@ namespace hazelcast {
             void testChangeWithListeners();
 
             private:
-            HazelcastInstanceFactory& hazelcastInstanceFactory;
+            HazelcastServerFactory & hazelcastInstanceFactory;
         };
     }
 }

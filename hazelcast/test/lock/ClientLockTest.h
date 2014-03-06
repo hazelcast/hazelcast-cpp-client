@@ -11,7 +11,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
@@ -21,13 +21,13 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ClientLockTest : public iTest::iTestFixture<ClientLockTest> {
 
             public:
 
-                ClientLockTest(HazelcastInstanceFactory&);
+                ClientLockTest(HazelcastServerFactory &);
 
                 ~ClientLockTest();
 
@@ -52,8 +52,8 @@ namespace hazelcast {
                 void testStats();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<ILock> l;

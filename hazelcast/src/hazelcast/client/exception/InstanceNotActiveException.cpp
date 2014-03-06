@@ -4,10 +4,17 @@
 
 
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/Address.h"
 
 namespace hazelcast {
     namespace client {
         namespace exception {
+
+            InstanceNotActiveException::InstanceNotActiveException(const Address &address)
+            :IException(address.getHost() + ":" + util::to_string(address.getPort()), "HazelcastInstanceNotActiveException") {
+
+            }
 
             InstanceNotActiveException::InstanceNotActiveException(const std::string &source)
             :IException(source, "HazelcastInstanceNotActiveException") {

@@ -12,6 +12,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/spi/ServerListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,6 +40,7 @@ namespace hazelcast {
                                 return;
                             }
                         }
+                        clientContext.getServerListenerService().triggerFailedListeners();
                         loadInitialMemberList();
                         startLatch.countDown();
                         listenMembershipEvents();

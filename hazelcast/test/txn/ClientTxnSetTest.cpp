@@ -4,7 +4,7 @@
 
 
 #include "ClientTxnSetTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnSetTest::ClientTxnSetTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientTxnSetTest::ClientTxnSetTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientTxnSetTest")
             , instance(hazelcastInstanceFactory)

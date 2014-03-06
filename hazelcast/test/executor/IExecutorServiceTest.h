@@ -10,7 +10,7 @@
 //
 //#include "iTest/iTest.h"
 //#include "hazelcast/client/ClientConfig.h"
-//#include "HazelcastInstance.h"
+//#include "HazelcastServer.h"
 //#include "hazelcast/client/IExecutorService.h"
 //
 //namespace hazelcast {
@@ -20,12 +20,12 @@
 //
 //        namespace test {
 //
-//            class HazelcastInstanceFactory;
+//            class HazelcastServerFactory;
 //
 //            class IExecutorServiceTest : public iTest::iTestFixture<IExecutorServiceTest> {
 //            public:
 //
-//                IExecutorServiceTest(HazelcastInstanceFactory&);
+//                IExecutorServiceTest(HazelcastServerFactory&);
 //
 //                ~IExecutorServiceTest();
 //
@@ -52,10 +52,10 @@
 //                void submitFailingCallable();
 //
 //            private:
-//                HazelcastInstanceFactory& hazelcastInstanceFactory;
-//                HazelcastInstance instance;
-//                HazelcastInstance second;
-//                HazelcastInstance third;
+//                HazelcastServerFactory& hazelcastInstanceFactory;
+//                HazelcastServer instance;
+//                HazelcastServer second;
+//                HazelcastServer third;
 //                ClientConfig clientConfig;
 //                std::auto_ptr<HazelcastClient> client;
 //                std::auto_ptr<IExecutorService > service;

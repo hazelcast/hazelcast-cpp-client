@@ -11,12 +11,19 @@
 
 namespace hazelcast {
     namespace client {
+        class Address;
+
         namespace exception {
             /**
              * Thrown when HazelcastInstance is not active during an invocation.
              */
             class HAZELCAST_API InstanceNotActiveException : public IException {
             public:
+                /**
+                 * Constructor
+                 */
+                InstanceNotActiveException(const Address &address);
+
                 /**
                  * Constructor
                  */

@@ -93,6 +93,9 @@ namespace hazelcast {
                         return toObjectResolved<T>(data, tag);
                     };
 
+                    SerializationContext &getSerializationContext();
+
+                private:
                     template<typename T>
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, Portable *tag) {
                         if (data.bufferSize() == 0) return boost::shared_ptr<T>();
@@ -136,11 +139,8 @@ namespace hazelcast {
                         }
                     };
 
-                    SerializationContext &getSerializationContext();
-
                     SerializerHolder &getSerializerHolder();
 
-                private:
                     boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
                     SerializationService(const SerializationService &);

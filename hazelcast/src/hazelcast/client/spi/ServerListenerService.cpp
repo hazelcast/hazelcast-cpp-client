@@ -9,6 +9,7 @@
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseRemoveListenerRequest.h"
 
@@ -44,7 +45,7 @@ namespace hazelcast {
             bool ServerListenerService::stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId) {
                 std::string resolvedRegistrationId = registrationId;
                 bool isValidId = deRegisterListener(resolvedRegistrationId);
-                if(!isValidId){
+                if (!isValidId) {
                     delete request;
                     return false;
                 }
@@ -76,6 +77,38 @@ namespace hazelcast {
                     return true;
                 }
                 return false;
+            }
+
+            void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> failedListener) {
+                boost::shared_ptr<connection::Connection> connection;
+                try {
+                    connection::ConnectionManager &cm = clientContext.getConnectionManager();
+                    connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
+                } catch(exception::IOException &e) {
+                    boost::lock_guard<boost::mutex> lockGuard(failedListenerLock);
+                    failedListeners.push_back(failedListener);
+                    return;
+                }
+                connection->registerAndEnqueue(failedListener);
+            }
+
+            void ServerListenerService::triggerFailedListeners() {
+                std::vector< boost::shared_ptr<connection::CallPromise> >::iterator it;
+                std::vector< boost::shared_ptr<connection::CallPromise> > newFailedListeners;
+
+                boost::lock_guard<boost::mutex> lockGuard(failedListenerLock);
+                for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
+                    boost::shared_ptr<connection::Connection> connection;
+                    try {
+                        connection::ConnectionManager &cm = clientContext.getConnectionManager();
+                        connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
+                    } catch(exception::IOException &e) {
+                        newFailedListeners.push_back(*it);
+                        continue;
+                    }
+                    connection->registerAndEnqueue(*it);
+                }
+                failedListeners = newFailedListeners;
             }
         }
     }

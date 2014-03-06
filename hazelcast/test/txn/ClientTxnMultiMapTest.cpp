@@ -4,7 +4,7 @@
 
 
 #include "ClientTxnMultiMapTest.h"
-#include "HazelcastInstanceFactory.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnMultiMapTest::ClientTxnMultiMapTest(HazelcastInstanceFactory &hazelcastInstanceFactory)
+            ClientTxnMultiMapTest::ClientTxnMultiMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :hazelcastInstanceFactory(hazelcastInstanceFactory)
             , iTestFixture("ClientTxnMultiMapTest")
             , instance(hazelcastInstanceFactory)

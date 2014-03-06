@@ -4,7 +4,7 @@
 //
 //
 //#include "executor/IExecutorServiceTest.h"
-//#include "HazelcastInstanceFactory.h"
+//#include "HazelcastServerFactory.h"
 //#include "hazelcast/client/HazelcastClient.h"
 //#include "executor/RunnableTask.h"
 //#include "executor/CallableTask.h"
@@ -18,7 +18,7 @@
 //        namespace test {
 //            using namespace iTest;
 //
-//            IExecutorServiceTest::IExecutorServiceTest(HazelcastInstanceFactory& hazelcastInstanceFactory)
+//            IExecutorServiceTest::IExecutorServiceTest(HazelcastServerFactory& hazelcastInstanceFactory)
 //            :hazelcastInstanceFactory(hazelcastInstanceFactory)
 //            , instance(hazelcastInstanceFactory)
 //            , second(hazelcastInstanceFactory)

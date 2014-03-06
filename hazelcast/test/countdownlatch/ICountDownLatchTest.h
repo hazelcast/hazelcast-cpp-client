@@ -9,7 +9,7 @@
 
 #include "iTest/iTest.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "HazelcastInstance.h"
+#include "HazelcastServer.h"
 #include "hazelcast/client/ICountDownLatch.h"
 
 namespace hazelcast {
@@ -19,12 +19,12 @@ namespace hazelcast {
 
         namespace test {
 
-            class HazelcastInstanceFactory;
+            class HazelcastServerFactory;
 
             class HAZELCAST_API ICountDownLatchTest : public iTest::iTestFixture<ICountDownLatchTest> {
             public:
 
-                ICountDownLatchTest(HazelcastInstanceFactory&);
+                ICountDownLatchTest(HazelcastServerFactory &);
 
                 ~ICountDownLatchTest();
 
@@ -41,8 +41,8 @@ namespace hazelcast {
                 void testLatch();
 
             private:
-                HazelcastInstanceFactory& hazelcastInstanceFactory;
-                HazelcastInstance instance;
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<ICountDownLatch > l;
