@@ -14,8 +14,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 MorphingPortableReader::MorphingPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
-                : context(serializationContext)
-                , serializerHolder(serializationContext.getSerializerHolder())
+                : serializerHolder(serializationContext.getSerializerHolder())
                 , dataInput(input)
                 , objectDataInput(input, serializationContext)
                 , finalPosition(input.readInt())

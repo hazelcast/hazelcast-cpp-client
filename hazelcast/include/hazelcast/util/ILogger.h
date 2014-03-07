@@ -10,16 +10,35 @@
 #include <string>
 
 namespace hazelcast {
+    namespace client{
+        enum LogLevel {
+            SEVERE = 100, WARNING = 90, INFO = 50
+        };
+    }
+
     namespace util {
-        namespace ILogger{
-            static int HazelcastLogLevel;
+        class ILogger{
+        public:
+            static ILogger& getLogger()
+            {
+                static ILogger singleton;
+                return singleton;
+            }
+
+            void setLogLevel(int logLevel);
 
             void severe(const std::string &message);
 
             void warning(const std::string &message);
 
             void info(const std::string &message);
+        private:
+            int HazelcastLogLevel;
 
+            ILogger() :HazelcastLogLevel(client::INFO){}
+            ~ILogger() {}
+            ILogger(const ILogger&);
+            ILogger& operator=(const ILogger&);
         };
     }
 }

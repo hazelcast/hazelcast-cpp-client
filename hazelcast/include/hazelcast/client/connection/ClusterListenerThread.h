@@ -41,6 +41,7 @@ namespace hazelcast {
                 void stop();
 
                 util::CountDownLatch startLatch;
+                bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
 

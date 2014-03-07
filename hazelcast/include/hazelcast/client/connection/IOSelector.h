@@ -26,9 +26,9 @@ namespace hazelcast {
 
                 virtual ~IOSelector();
 
-                virtual void start() = 0;
+                virtual bool start() = 0;
 
-                void initListenSocket(util::SocketSet &wakeUpSocketSet);
+                bool initListenSocket(util::SocketSet &wakeUpSocketSet);
 
                 void listen();
 

@@ -3,7 +3,7 @@
 //
 
 
-#include "hazelcast/test/cluster/ClusterTest.h"
+#include "cluster/ClusterTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -32,6 +32,7 @@ namespace hazelcast {
                 addTest(&ClusterTest::testClusterListeners, "testClusterListeners");
                 addTest(&ClusterTest::testClusterListenersFromConfig, "testClusterListenersFromConfig");
                 addTest(&ClusterTest::testListenersWhenClusterDown, "testListenersWhenClusterDown");
+                addTest(&ClusterTest::testBehaviourWhenClusterNotFound, "testBehaviourWhenClusterNotFound");
             };
 
             void ClusterTest::beforeClass() {
@@ -210,7 +211,7 @@ namespace hazelcast {
 
                 }
 
-                void stateChanged(const LifecycleEvent& event) {
+                void stateChanged(const LifecycleEvent &event) {
                     if (event.getState() == LifecycleEvent::CLIENT_CONNECTED) {
                         latch.countDown();
                     }
@@ -245,6 +246,16 @@ namespace hazelcast {
                 assertTrue(countDownLatch.await(10 * 1000));
 
                 hazelcastClient.removeLifecycleListener(&lifecycleListener);
+            }
+
+            void ClusterTest::testBehaviourWhenClusterNotFound() {
+                ClientConfig clientConfig;
+                try{
+                    HazelcastClient hazelcastClient(clientConfig);
+                    assertTrue(false);
+                }catch(exception::IllegalStateException& e){
+
+                }
             }
         }
     }

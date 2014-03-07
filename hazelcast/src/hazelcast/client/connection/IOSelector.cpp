@@ -30,7 +30,7 @@ namespace hazelcast {
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
                 } catch(exception::IOException &e) {
-                    util::ILogger::warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
+                    util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw e;
                 }
             };
@@ -41,16 +41,16 @@ namespace hazelcast {
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException& e){
-                        util::ILogger::warning(std::string("Exception at IOSelector::listen() ") + e.what());
+                        util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
                     }catch(boost::thread_interrupted&){
                         break;
                     } catch(...){
-                        hazelcast::util::ILogger::severe("IOSelector::listen unknown exception");
+                        hazelcast::util::ILogger::getLogger().severe("IOSelector::listen unknown exception");
                     }
                 }
             }
 
-            void IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
+            bool IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
 				int p = serverSocket.getPort();
 				std::string localAddress;
@@ -65,8 +65,10 @@ namespace hazelcast {
 					sleepingSocket.reset(serverSocket.accept());
 					wakeUpSocketSet.sockets.insert(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
+                    return true;
                 } else {
-                    throw exception::IOException("OListener::init", std::string(strerror(errno)));
+                    util::ILogger::getLogger().severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
+                    return false;
                 }
             }
 

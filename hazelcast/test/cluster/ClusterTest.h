@@ -43,6 +43,8 @@ namespace hazelcast {
 
                 void testListenersWhenClusterDown();
 
+                void testBehaviourWhenClusterNotFound();
+
             private:
                 HazelcastServerFactory & hazelcastInstanceFactory;
             };

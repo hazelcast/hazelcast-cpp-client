@@ -14,14 +14,13 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 DefaultPortableReader::DefaultPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
-                : context(serializationContext)
-                , serializerHolder(serializationContext.getSerializerHolder())
+                : serializerHolder(serializationContext.getSerializerHolder())
                 , dataInput(input)
                 , objectDataInput(input, serializationContext)
                 , finalPosition(input.readInt())
                 , offset(input.position())
-                , cd(cd)
-                , raw(false) {
+                , raw(false)
+                , cd(cd) {
 
                 };
 

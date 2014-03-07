@@ -11,7 +11,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
 	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
 
-	#set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
+	set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
 		
 	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
     target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})

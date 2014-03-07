@@ -16,17 +16,17 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 Data::Data()
-                : partitionHash(0)
-                , type(SerializationConstants::CONSTANT_TYPE_DATA)
-                , buffer(new std::vector<byte>) {
+                : buffer(new std::vector<byte>)
+                , partitionHash(0)
+                , type(SerializationConstants::CONSTANT_TYPE_DATA){
 
                 };
 
                 Data::Data(const Data &rhs)
-                : partitionHash(rhs.partitionHash)
-                , type(rhs.type)
-                , cd(rhs.cd)
-                , buffer(rhs.buffer.release()) {
+                : cd(rhs.cd)
+                , buffer(rhs.buffer.release())
+                , partitionHash(rhs.partitionHash)
+                , type(rhs.type){
 
                 };
 

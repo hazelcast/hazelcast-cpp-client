@@ -11,8 +11,8 @@ namespace hazelcast {
     namespace client {
         namespace atomiclong {
             AtomicLongRequest::AtomicLongRequest(const std::string& instanceName, long delta)
-            :instanceName(instanceName)
-            , delta(delta) {
+            : delta(delta)
+            ,instanceName(instanceName){
 
             };
 

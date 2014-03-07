@@ -5,6 +5,7 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
+#include "InstanceNotActiveException.h"
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 #include <iostream>
@@ -17,8 +18,8 @@ int THREAD_COUNT = 4;
 int ENTRY_COUNT = 10 * 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
-int GET_PERCENTAGE = 0;
-int PUT_PERCENTAGE = 100;
+int GET_PERCENTAGE = 30;
+int PUT_PERCENTAGE = 30;
 
 
 class HAZELCAST_API Stats {
@@ -45,7 +46,7 @@ public:
     boost::atomic<int> removeCount;
 
     void print() {
-        std::cout << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = " << removeCount << std::endl;
+        std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = " << removeCount << std::endl;
     };
 
     int total() {
@@ -59,9 +60,9 @@ void printStats() {
             boost::this_thread::sleep(boost::posix_time::seconds(STATS_SECONDS));
             Stats statsNow = stats.getAndReset();
             statsNow.print();
-            std::cout << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
+            std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
         } catch (std::exception &e) {
-            std::cout << e.what() << std::endl;
+            std::cerr << e.what() << std::endl;
         }
     }
 };
@@ -77,12 +78,13 @@ public:
     };
 
     void op(HazelcastClient *a) {
-        IMap<int, std::vector<char> > map = a->getMap<int, std::vector<char > >("default");
+        IMap<int, std::vector<char> > map = a->getMap<int, std::vector<char > >("cppDefault");
 
         std::vector<char> value(VALUE_SIZE);
-        while (true) {
+        bool running = true;
+        while (running) {
             int key = rand() % ENTRY_COUNT;
-            int operation = ((int) (rand() % 100));
+            int operation = (rand() % 100);
             try {
                 if (operation < GET_PERCENTAGE) {
                     map.get(key);
@@ -94,15 +96,13 @@ public:
                     map.remove(key);
                     ++stats.removeCount;
                 }
-            } catch(hazelcast::client::exception::IException &e) {
-                std::cout << ">hz " << e.what() << std::endl;
-//                boost::this_thread::sleep(boost::posix_time::seconds(10));
-            } catch(std::exception &e) {
-                std::cout << ">std " << e.what() << std::endl;
-//                boost::this_thread::sleep(boost::posix_time::seconds(10));
+            } catch(hazelcast::client::exception::IOException &e) {
+                std::cerr << ">hz " << e.what() << std::endl;
+            } catch(hazelcast::client::exception::InstanceNotActiveException &e) {
+                std::cerr << ">std " << e.what() << std::endl;
             } catch(...) {
-                std::cout << "unkown exception" << std::endl;
-//                boost::this_thread::sleep(boost::posix_time::seconds(10));
+                std::cerr << ">unkown exception" << std::endl;
+                running = false;
             }
 
         }
@@ -110,37 +110,25 @@ public:
 
     void run() {
         srand(time(NULL));
-        std::cout << "Starting Test with  " << std::endl;
-        std::cout << "      Thread Count: " << THREAD_COUNT << std::endl;
-        std::cout << "       Entry Count: " << ENTRY_COUNT << std::endl;
-        std::cout << "        Value Size: " << VALUE_SIZE << std::endl;
-        std::cout << "    Get Percentage: " << GET_PERCENTAGE << std::endl;
-        std::cout << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
-        std::cout << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
+        std::cerr << "Starting Test with  " << std::endl;
+        std::cerr << "      Thread Count: " << THREAD_COUNT << std::endl;
+        std::cerr << "       Entry Count: " << ENTRY_COUNT << std::endl;
+        std::cerr << "        Value Size: " << VALUE_SIZE << std::endl;
+        std::cerr << "    Get Percentage: " << GET_PERCENTAGE << std::endl;
+        std::cerr << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
+        std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
-//        clientConfig.setSmart(false);
 
-        try {
-            boost::thread monitor(printStats);
-            HazelcastClient hazelcastClient(clientConfig);
+        boost::thread monitor(printStats);
+        HazelcastClient hazelcastClient(clientConfig);
 
-            for (int i = 0; i < THREAD_COUNT; i++) {
-                boost::thread t(boost::bind(&SimpleMapTest::op, this, &hazelcastClient));
-            }
-
-
-            monitor.join();
-        } catch (std::exception &e) {
-            std::cout << e.what() << std::endl;
-        } catch(...) {
-            std::cout << "unkown exception simpleMapTest " << std::endl;
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            boost::thread t(boost::bind(&SimpleMapTest::op, this, &hazelcastClient));
         }
+        monitor.join();
     }
-
-
 };
-
 
 #endif

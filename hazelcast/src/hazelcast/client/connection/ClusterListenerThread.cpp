@@ -13,16 +13,16 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "ILogger.h"
+#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
-            : clientContext(clientContext)
+            : startLatch(1)
+            , clientContext(clientContext)
             , conn(NULL)
-            , startLatch(1)
-            , deletingConnection(false) {
+            , deletingConnection(false){
 
             };
 
@@ -37,18 +37,21 @@ namespace hazelcast {
                             try {
                                 conn.reset(pickConnection());
                             } catch (std::exception &e) {
-                                util::ILogger::severe(std::string("Error while connecting to cluster!") + e.what());
+                                util::ILogger::getLogger().severe(std::string("Error while connecting to cluster! =>") + e.what());
+                                isStartedSuccessfully = false;
+                                startLatch.countDown();
                                 return;
                             }
                         }
                         clientContext.getServerListenerService().triggerFailedListeners();
                         loadInitialMemberList();
+                        isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
                         boost::this_thread::sleep(boost::posix_time::seconds(1));
                     } catch(std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
-                            util::ILogger::warning(std::string("Error while listening cluster events! -> ") + e.what());
+                            util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
                         bool expected = false;
                         if (deletingConnection.compare_exchange_strong(expected, true)) {
@@ -60,7 +63,7 @@ namespace hazelcast {
                     } catch(boost::thread_interrupted &) {
                         break;
                     } catch(...) {
-                        util::ILogger::warning("ClusterListenerThread::run unknown exception");
+                        util::ILogger::getLogger().warning("ClusterListenerThread::run unknown exception");
                     }
 
                 }
@@ -223,7 +226,7 @@ namespace hazelcast {
                     map[(*it).getAddress()] = (*it);
                 }
                 memberInfo << "}" << std::endl;
-                util::ILogger::info(memberInfo.str());
+                util::ILogger::getLogger().info(memberInfo.str());
                 clientContext.getClusterService().setMembers(map);
 
             };
@@ -238,11 +241,17 @@ namespace hazelcast {
 
             std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
-                std::vector<Address> &configAddresses = clientContext.getClientConfig().getAddresses();
+                std::set<Address, addressComparator> &configAddresses = clientContext.getClientConfig().getAddresses();
+                std::set<Address, addressComparator>::iterator it;
 
-                for (std::vector<Address>::iterator it = configAddresses.begin(); it != configAddresses.end(); ++it) {
+                for (it = configAddresses.begin(); it != configAddresses.end(); ++it) {
                     socketAddresses.push_back((*it));
                 }
+
+                if(socketAddresses.size() == 0){
+                    socketAddresses.push_back(Address("127.0.0.1",5701));
+                }
+                std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
             };
         }

@@ -75,9 +75,9 @@ namespace hazelcast {
                 ObjectDataOutput& getRawDataOutput();
 
             private:
-                bool isDefaultWriter;
                 pimpl::DefaultPortableWriter *defaultPortableWriter;
                 pimpl::ClassDefinitionWriter *classDefinitionWriter;
+                bool isDefaultWriter;
             };
         }
     }

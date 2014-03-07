@@ -17,8 +17,8 @@ namespace hazelcast {
             }
 
 
-            void OutSelector::start() {
-                initListenSocket(wakeUpSocketSet);
+            bool OutSelector::start() {
+                return initListenSocket(wakeUpSocketSet);
             }
 
             void OutSelector::listenInternal() {
@@ -32,7 +32,7 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    hazelcast::util::ILogger::severe(std::string("Olistener::listen ") + strerror(errno));
+                    util::ILogger::getLogger().severe(std::string("exception in OutSelector::listen =>") + strerror(errno));
                     return;
                 }
                 std::set<Socket const *, client::socketPtrComp>::iterator it;

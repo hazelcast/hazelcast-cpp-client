@@ -7,7 +7,6 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 
 namespace hazelcast {
@@ -50,6 +49,7 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
                 addTest(&ClientMapTest::testIssue537, "testIssue537");
+                addTest(&ClientMapTest::testMultipleThreadPut, "testMultipleThreadPut");
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
             };
@@ -165,6 +165,35 @@ namespace hazelcast {
 
                 imap->put("key2", "value2");
                 assertEqual(1, imap->size());
+            }
+
+            void putThread(int start, IMap<int, int> *map, util::CountDownLatch *latch) {
+                for (int i = 0; i < 100; i++) {
+                    map->put(start * 100 + i, start * 100 + i);
+                }
+                latch->countDown();
+            }
+
+            void ClientMapTest::testMultipleThreadPut() {
+                int THREAD_COUNT = 20;
+                util::CountDownLatch latch(THREAD_COUNT);
+                IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
+                for (int i = 0; i < THREAD_COUNT; i++) {
+                    boost::thread t(putThread, i, &iMap, &latch);
+                    t.detach();
+                }
+
+                assertTrue(latch.await(1000 * 10), "put not finished");
+
+                for (int i = 0; i < 100 * THREAD_COUNT; i++) {
+                    boost::shared_ptr<int> actual = iMap.get(i);
+                    assertNotNull(actual.get());
+                    assertEqual(i, *(actual.get()));
+                }
+
+                iMap.clear();
+                iMap.destroy();
+
             }
 
             void ClientMapTest::testContains() {

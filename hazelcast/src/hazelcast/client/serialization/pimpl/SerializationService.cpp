@@ -41,7 +41,7 @@ namespace hazelcast {
                     if (expectedType != currentType) {
                         std::string source = "SerializationService:toObject<" + constants.typeIdToName(expectedType) + "> ";
                         std::string message = "recevied data of type " + constants.typeIdToName(currentType);
-                        util::ILogger::severe(source + message);
+                        util::ILogger::getLogger().severe(source + message);
                         throw exception::IClassCastException(source, message);
                     }
                 }

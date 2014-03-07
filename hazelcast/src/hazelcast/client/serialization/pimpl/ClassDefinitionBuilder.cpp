@@ -16,9 +16,9 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId)
-                : done(false)
+                : cd(new ClassDefinition(factoryId, classId, -1))
                 , index(0)
-                , cd(new ClassDefinition(factoryId, classId, -1)) {
+                , done(false) {
                 }
 
                 ClassDefinitionBuilder &ClassDefinitionBuilder::addIntField(const std::string &fieldName) {

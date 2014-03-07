@@ -96,8 +96,6 @@ namespace hazelcast {
                         cd->add(nestedCd);
                     };
 
-                    int factoryId;
-                    int classId;
                     int index;
                     bool raw;
                     ObjectDataOutput emptyDataOutput;

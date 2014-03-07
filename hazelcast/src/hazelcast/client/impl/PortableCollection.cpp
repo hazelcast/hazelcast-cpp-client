@@ -24,7 +24,7 @@ namespace hazelcast {
             };
 
             void PortableCollection::readPortable(serialization::PortableReader& reader) {
-                bool isList = reader.readBoolean("l");
+                reader.readBoolean("l");
                 int size = reader.readInt("s");
                 if (size < 0)
                     return;

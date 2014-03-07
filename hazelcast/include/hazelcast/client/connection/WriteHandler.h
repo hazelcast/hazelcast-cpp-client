@@ -40,7 +40,6 @@ namespace hazelcast {
                 util::ByteBuffer buffer;
                 util::ConcurrentQueue<serialization::pimpl::DataAdapter> writeQueue;
                 serialization::pimpl::DataAdapter *lastData;
-                bool initialized;
                 bool ready;
                 boost::atomic<bool> informSelector;
 

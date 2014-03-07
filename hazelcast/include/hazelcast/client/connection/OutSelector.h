@@ -28,7 +28,7 @@ namespace hazelcast {
 
                 void listenInternal();
 
-                void start();
+                bool start();
 
             private:
                 util::SocketSet wakeUpSocketSet;

@@ -25,19 +25,27 @@ namespace hazelcast {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
             };
 
-            void LifecycleService::start() {
+            bool LifecycleService::start() {
                 active = true;
                 fireLifecycleEvent(LifecycleEvent::STARTED);
-                clientContext.getConnectionManager().start();
+                if (!clientContext.getConnectionManager().start()) {
+                    return false;
+                }
+                if (!clientContext.getClusterService().start()) {
+                    return false;
+                }
                 clientContext.getInvocationService().start();
-                clientContext.getClusterService().start();
-                clientContext.getPartitionService().start();
-            };
-
+                if (!clientContext.getPartitionService().start()) {
+                    return false;
+                }
+                return true;
+            }
 
             void LifecycleService::shutdown() {
-                active = false;
                 boost::lock_guard<boost::mutex> lg(lifecycleLock);
+                if(!active)
+                    return;
+                active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().stop();
                 clientContext.getClusterService().stop();
@@ -57,24 +65,25 @@ namespace hazelcast {
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 boost::lock_guard<boost::mutex> lg(listenerLock);
+                util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :
-                        util::ILogger::info("LifecycleService::LifecycleEvent STARTING");
+                        logger.info("LifecycleService::LifecycleEvent STARTING");
                         break;
                     case LifecycleEvent::STARTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent STARTED");
+                        logger.info("LifecycleService::LifecycleEvent STARTED");
                         break;
                     case LifecycleEvent::SHUTTING_DOWN :
-                        util::ILogger::info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
+                        logger.info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
                         break;
                     case LifecycleEvent::SHUTDOWN :
-                        util::ILogger::info("LifecycleService::LifecycleEvent SHUTDOWN");
+                        logger.info("LifecycleService::LifecycleEvent SHUTDOWN");
                         break;
                     case LifecycleEvent::CLIENT_CONNECTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
+                        logger.info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
                         break;
                     case LifecycleEvent::CLIENT_DISCONNECTED :
-                        util::ILogger::info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
+                        logger.info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
                         break;
                 }
 

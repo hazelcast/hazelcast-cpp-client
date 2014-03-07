@@ -23,23 +23,28 @@ namespace hazelcast {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
             :clientContext(clientContext)
-            , live(true)
-            , callIdGenerator(10)
             , iListener(*this)
             , oListener(*this)
             , iListenerThread(NULL)
             , oListenerThread(NULL)
+            , live(true)
+            , callIdGenerator(10)
             , smartRouting(smartRouting) {
                 const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
                 PROTOCOL.insert(PROTOCOL.begin(), protocol_bytes, protocol_bytes + 6);
             };
 
-            void ConnectionManager::start() {
+            bool ConnectionManager::start() {
                 socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
-                iListener.start();
-                oListener.start();
+                if (!iListener.start()) {
+                    return false;
+                }
+                if (!oListener.start()) {
+                    return false;
+                }
                 iListenerThread.reset(new boost::thread(&InSelector::listen, &iListener));
                 oListenerThread.reset(new boost::thread(&OutSelector::listen, &oListener));
+                return true;
             }
 
             void ConnectionManager::stop() {
@@ -152,8 +157,8 @@ namespace hazelcast {
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;
-                (message << "client authenticated by " << address->getHost() << ":" << address->getPort() << std::endl);
-                util::ILogger::info(message.str());
+                (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
+                util::ILogger::getLogger().info(message.str());
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             };

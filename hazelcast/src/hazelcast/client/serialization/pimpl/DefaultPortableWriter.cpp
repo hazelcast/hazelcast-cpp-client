@@ -15,15 +15,15 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 DefaultPortableWriter::DefaultPortableWriter(SerializationContext &serializationContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &dataOutput)
-                : context(serializationContext)
+                : index (0)
+                , raw(false)
+                , context(serializationContext)
                 , serializerHolder(serializationContext.getSerializerHolder())
                 , dataOutput(dataOutput)
-                , objectDataOutput(dataOutput, serializationContext)
-                , index (0)
                 , cd(cd)
-                , raw(false)
                 , begin(dataOutput.position())
-                , offset(dataOutput.position() + sizeof(int)) {
+                , offset(dataOutput.position() + sizeof(int))
+                , objectDataOutput(dataOutput, serializationContext){
                     int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof (int);
                     this->dataOutput.position(offset + fieldIndexesLength);
                 };

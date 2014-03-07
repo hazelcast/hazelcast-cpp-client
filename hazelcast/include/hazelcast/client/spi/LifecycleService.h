@@ -29,7 +29,7 @@ namespace hazelcast {
 
                 LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig);
 
-                void start();
+                bool start();
 
                 void fireLifecycleEvent(const LifecycleEvent &lifecycleEvent);
 

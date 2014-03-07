@@ -19,7 +19,7 @@ namespace hazelcast {
 
                 void listenInternal();
 
-                void start();
+                bool start();
             };
         }
     }

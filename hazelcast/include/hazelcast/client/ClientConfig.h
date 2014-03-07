@@ -6,7 +6,7 @@
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/LogLevel.h"
+#include "hazelcast/util/ILogger.h"
 #include <vector>
 #include <set>
 #include <memory>
@@ -62,13 +62,13 @@ namespace hazelcast {
             ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
             /**
-             * Returns vector of the initial addresses.
+             * Returns set of the initial addresses.
              * Client will use this vector to find a running Member, connect to it.
              *
              * @param address
              * @return vector of addresses
              */
-            std::vector<Address> &getAddresses();
+            std::set<Address, addressComparator> &getAddresses();
 
             /**
              * The Group Configuration properties like:
@@ -266,7 +266,7 @@ namespace hazelcast {
 
             GroupConfig groupConfig;
 
-            std::vector<Address> addressList;
+            std::set<Address, addressComparator> addressList;
 
             LoadBalancer *loadBalancer;
 

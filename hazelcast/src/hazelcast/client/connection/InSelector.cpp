@@ -16,9 +16,8 @@ namespace hazelcast {
 
             }
 
-
-            void InSelector::start() {
-                initListenSocket(socketSet);
+            bool InSelector::start() {
+                return initListenSocket(socketSet);
             }
 
             void InSelector::listenInternal() {
@@ -29,7 +28,7 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    hazelcast::util::ILogger::severe(std::string("Exception InSelector::listen => ") + strerror(errno));
+                    util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
                     return;
                 }
 

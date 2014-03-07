@@ -19,18 +19,18 @@ namespace hazelcast {
                 };
 
                 FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type)
-                :classId(-1)
-                , type(type)
+                : index(index)
                 , fieldName(fieldName)
-                , index(index)
+                , type(type)
+                , classId(-1)
                 , factoryId(0) {
                 };
 
                 FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type, int factoryId, int classId)
-                :classId(classId)
-                , type(type)
+                : index(index)
                 , fieldName(fieldName)
-                , index(index)
+                , type(type)
+                , classId(classId)
                 , factoryId(factoryId) {
                 };
 

@@ -106,7 +106,6 @@ namespace hazelcast {
 
                     void read(DataInput &dataInput, Portable &object, int factoryId, int classId);
 
-                    SerializationContext &context;
                     SerializerHolder &serializerHolder;
                     DataInput &dataInput;
                     ObjectDataInput objectDataInput;

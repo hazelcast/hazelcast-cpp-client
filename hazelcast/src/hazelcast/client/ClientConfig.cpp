@@ -2,7 +2,6 @@
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +16,6 @@ namespace hazelcast {
         , loadBalancer(NULL)
         , socketInterceptor(NULL)
         , defaultLoadBalancer(new impl::RoundRobinLB) {
-            util::ILogger::HazelcastLogLevel = (int)INFO;
         };
 
 
@@ -27,17 +25,17 @@ namespace hazelcast {
         };
 
         ClientConfig &ClientConfig::addAddress(const Address &address) {
-            addressList.push_back(address);
+            addressList.insert(address);
             return (*this);
         };
 
         ClientConfig &ClientConfig::addAddresses(const std::vector<Address> &addresses) {
-            addressList.insert(addressList.end(), addresses.begin(), addresses.end());
+            addressList.insert(addresses.begin(), addresses.end());
             return (*this);
         };
 
 
-        std::vector<Address> &ClientConfig::getAddresses() {
+        std::set<Address, addressComparator> &ClientConfig::getAddresses() {
             return addressList;
         };
 
@@ -98,8 +96,8 @@ namespace hazelcast {
             this->loadBalancer = loadBalancer;
         };
 
-        ClientConfig& ClientConfig::setLogLevel(LogLevel loggerLevel) {
-            util::ILogger::HazelcastLogLevel = (int)loggerLevel;
+        ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
+            util::ILogger::getLogger().setLogLevel(loggerLevel);
             return *this;
         }
 

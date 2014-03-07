@@ -13,17 +13,17 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::SerializationContext& serializationContext)
-            : context(&serializationContext)
+            : dataOutput(&dataOutput)
+            , context(&serializationContext)
             , serializerHolder(&serializationContext.getSerializerHolder())
-            , isEmpty(false)
-            , dataOutput(&dataOutput) {
+            , isEmpty(false){
 
             };
 
             ObjectDataOutput::ObjectDataOutput()
-            : serializerHolder(NULL)
+            : dataOutput(NULL)
             , context(NULL)
-            , dataOutput(NULL)
+            , serializerHolder(NULL)
             , isEmpty(true) {
 
             };

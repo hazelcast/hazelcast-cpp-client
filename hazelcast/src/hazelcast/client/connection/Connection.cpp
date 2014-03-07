@@ -24,9 +24,9 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &oListener)
-            : clientContext(clientContext)
-            , socket(address)
-            , live(true)
+            : live(true)
+            , clientContext(clientContext)
+        , socket(address)
             , readHandler(*this, iListener, 16 << 10)
             , writeHandler(*this, oListener, 16 << 10) {
 

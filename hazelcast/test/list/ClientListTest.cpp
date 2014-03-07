@@ -13,8 +13,8 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientListTest::ClientListTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientListTest")
+            : iTestFixture("ClientListTest")
+            , hazelcastInstanceFactory(hazelcastInstanceFactory)
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , list(new IList<std::string>(client->getList< std::string >("ClientListTest"))) {

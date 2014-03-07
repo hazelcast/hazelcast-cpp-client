@@ -71,9 +71,9 @@ namespace hazelcast {
                 void end();
 
             private:
-                bool isDefaultReader;
-                pimpl::MorphingPortableReader *morphingPortableReader;
                 pimpl::DefaultPortableReader *defaultPortableReader;
+                pimpl::MorphingPortableReader *morphingPortableReader;
+                bool isDefaultReader;
 
             };
         }

@@ -11,13 +11,13 @@ namespace hazelcast {
     namespace client {
         namespace lock {
             IsLockedRequest::IsLockedRequest(serialization::pimpl::Data &key)
-            :key(key)
-            , threadId(0) {
+            : threadId(0)
+            , key(key) {
             };
 
             IsLockedRequest::IsLockedRequest(serialization::pimpl::Data &key, long threadId)
-            :key(key)
-            , threadId(threadId) {
+            : threadId(threadId)
+            , key(key) {
             };
 
             int IsLockedRequest::getClassId() const {

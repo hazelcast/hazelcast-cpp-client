@@ -15,12 +15,10 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext &serializationContext)
-                : factoryId(factoryId)
-                , classId(classId)
-                , raw(false)
-                , context(serializationContext)
+                : raw(false)
                 , index(0)
-                , cd(new ClassDefinition(factoryId, classId, version)) {
+                , cd(new ClassDefinition(factoryId, classId, version))
+                , context(serializationContext) {
                 };
 
 

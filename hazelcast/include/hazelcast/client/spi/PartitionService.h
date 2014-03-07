@@ -30,7 +30,7 @@ namespace hazelcast {
             public:
                 PartitionService(spi::ClientContext &clientContext);
 
-                void start();
+                bool start();
 
                 void stop();
 
@@ -50,6 +50,8 @@ namespace hazelcast {
 
                 util::SynchronizedMap<int, Address> partitions;
 
+                boost::mutex startLock;
+
                 void runListener();
 
                 void runRefresher();
@@ -60,7 +62,7 @@ namespace hazelcast {
 
                 void processPartitionResponse(impl::PartitionsResponse &response);
 
-                void getInitialPartitions();
+                bool getInitialPartitions();
             };
         }
     }

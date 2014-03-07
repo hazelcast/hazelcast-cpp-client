@@ -17,7 +17,7 @@ namespace hazelcast {
     namespace client {
 
         namespace serialization {
-            namespace pimpl{
+            namespace pimpl {
                 class Data;
             }
 
@@ -42,7 +42,7 @@ namespace hazelcast {
             public:
                 ConnectionManager(spi::ClientContext &clientContext, bool smartRouting);
 
-                void start();
+                bool start();
 
                 connection::Connection *ownerConnection(const Address &address);
 

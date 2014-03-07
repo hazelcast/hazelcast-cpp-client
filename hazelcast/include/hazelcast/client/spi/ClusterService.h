@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 ClusterService(ClientContext &clientContext);
 
-                void start();
+                bool start();
 
                 void stop();
 

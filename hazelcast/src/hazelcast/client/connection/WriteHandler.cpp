@@ -15,13 +15,12 @@ namespace hazelcast {
             WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize)
             : IOHandler(connection, oListener)
             , buffer(bufferSize)
-            , initialized(false)
-            , informSelector(true)
+            , lastData(NULL)
             , ready(false)
-            , lastData(NULL) {
+            , informSelector(true)
+            {
 
             };
-
 
             void WriteHandler::run() {
                 informSelector = true;

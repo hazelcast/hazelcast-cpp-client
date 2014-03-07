@@ -15,14 +15,14 @@ namespace hazelcast {
             template <typename E>
             class HAZELCAST_API Message {
             public:
-                Message(std::string topicName, const E& messageObject, long publishTime, const Member& publishingMember)
-                : name(topicName)
-                , messageObject(messageObject)
+                Message(std::string topicName, const E &messageObject, long publishTime, const Member &publishingMember)
+                : messageObject(messageObject)
                 , publishTime(publishTime)
-                , publishingMember(publishingMember) {
+                , publishingMember(publishingMember)
+                , name(topicName) {
                 };
 
-                E& getMessageObject() {
+                E &getMessageObject() {
                     return messageObject;
                 };
 
@@ -30,11 +30,11 @@ namespace hazelcast {
                     return publishTime;
                 };
 
-                Member& getPublishingMember() {
+                Member &getPublishingMember() {
                     return publishingMember;
                 };
 
-                std::string getName(){
+                std::string getName() {
                     return name;
                 }
 

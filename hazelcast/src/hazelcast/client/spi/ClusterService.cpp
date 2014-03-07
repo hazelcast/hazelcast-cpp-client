@@ -28,7 +28,7 @@ namespace hazelcast {
 
             }
 
-            void ClusterService::start() {
+            bool ClusterService::start() {
                 serialization::pimpl::ClassDefinitionBuilder cd(-3, 3);
                 boost::shared_ptr<serialization::pimpl::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
                 clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
@@ -41,11 +41,13 @@ namespace hazelcast {
 
                 boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
                 clusterThread.setThread(t);
-                if (!clusterThread.startLatch.await(10000)) {
-                    throw  exception::IllegalStateException("ClusterService::start", "ClusterService can not be started in 10 seconds");
+                clusterThread.startLatch.await();
+                if(!clusterThread.isStartedSuccessfully){
+                    return false;
                 }
                 initMembershipListeners();
                 active = true;
+                return true;
             }
 
             void ClusterService::initMembershipListeners() {
@@ -149,8 +151,8 @@ namespace hazelcast {
                         } catch (exception::IException &e) {
                             lastError = e;
                             std::ostringstream errorStream;
-                            errorStream << "IO error  during initial connection " << e.what();
-                            util::ILogger::warning(errorStream.str());
+                            errorStream << "IO error  during initial connection =>" << e.what();
+                            util::ILogger::getLogger().warning(errorStream.str());
                         }
                     }
                     if (attempt++ >= connectionAttemptLimit) {
@@ -160,14 +162,14 @@ namespace hazelcast {
                     using namespace std;
                     std::ostringstream errorStream;
                     errorStream << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
-                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." << std::endl;
-                    util::ILogger::warning(errorStream.str());
+                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." ;
+                    util::ILogger::getLogger().warning(errorStream.str());
 
                     if (remainingTime > 0) {
                         boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
                     }
                 }
-                throw  exception::IllegalStateException("ClusterService", "Unable to connect to any address in the config!" + std::string(lastError.what()));
+                throw  exception::IllegalStateException("ClusterService", "Unable to connect to any address in the config! =>" + std::string(lastError.what()));
             };
 
 

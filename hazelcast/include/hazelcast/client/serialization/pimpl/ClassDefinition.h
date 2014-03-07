@@ -64,9 +64,9 @@ namespace hazelcast {
                     void readData(DataInput &dataInput);
 
                 private:
+                    int factoryId;
                     int classId;
                     int version;
-                    int factoryId;
 
                     ClassDefinition(const ClassDefinition &);
 

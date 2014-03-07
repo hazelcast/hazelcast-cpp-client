@@ -107,7 +107,6 @@ namespace hazelcast {
 
                     bool setPosition(const char *);
 
-                    SerializationContext &context;
                     SerializerHolder &serializerHolder;
                     DataInput &dataInput;
                     ObjectDataInput objectDataInput;

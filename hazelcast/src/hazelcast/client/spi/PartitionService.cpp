@@ -20,20 +20,26 @@ namespace hazelcast {
             PartitionService::PartitionService(spi::ClientContext &clientContext)
             : clientContext(clientContext)
             , updating(false)
-            ,partitionCount(0){
+            , partitionCount(0) {
 
             };
 
-            void PartitionService::start() {
-                getInitialPartitions();
+            bool PartitionService::start() {
+                boost::lock_guard<boost::mutex> lg(startLock);
+                if(!getInitialPartitions()){
+                    return false;
+                }
                 boost::thread *partitionListener = new boost::thread(boost::bind(&PartitionService::runListener, this));
                 partitionListenerThread.reset(partitionListener);
-            };
-
+                return true;
+            }
 
             void PartitionService::stop() {
-                partitionListenerThread->interrupt();
-                partitionListenerThread->join();
+                boost::lock_guard<boost::mutex> lg(startLock);
+                if (partitionListenerThread.get() != NULL) {
+                    partitionListenerThread->interrupt();
+                    partitionListenerThread->join();
+                }
             }
 
             boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
@@ -54,12 +60,12 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
-                    }catch(exception::IException& e){
-                        util::ILogger::warning(std::string("PartitionService::runListener") + e.what());
+                    } catch(exception::IException &e) {
+                        util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     } catch(boost::thread_interrupted &) {
                         break;
                     } catch(...) {
-                        util::ILogger::severe("PartitionService::runListener unkown exception");
+                        util::ILogger::getLogger().severe("PartitionService::runListener unkown exception");
                     }
                 }
             };
@@ -92,7 +98,7 @@ namespace hazelcast {
                     boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnTarget(request, address);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
-                    util::ILogger::severe(std::string("Error while fetching cluster partition table => ") + e.what() );
+                    util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
                 }
                 return partitionResponse;
             };
@@ -104,7 +110,7 @@ namespace hazelcast {
                     boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
                 } catch(exception::IOException &e) {
-                    util::ILogger::warning(std::string("Error while fetching cluster partition table => ") + e.what() );
+                    util::ILogger::getLogger().warning(std::string("Error while fetching cluster partition table => ") + e.what());
                 }
                 return partitionResponse;
             }
@@ -124,17 +130,18 @@ namespace hazelcast {
                 }
             };
 
-            void PartitionService::getInitialPartitions() {
+            bool PartitionService::getInitialPartitions() {
                 std::vector<Member> memberList = clientContext.getClusterService().getMemberList();
                 for (std::vector<Member>::iterator it = memberList.begin(); it < memberList.end(); ++it) {
                     Address target = (*it).getAddress();
                     boost::shared_ptr<impl::PartitionsResponse> response = getPartitionsFrom(target);
                     if (response != NULL) {
                         processPartitionResponse(*response);
-                        return;
+                        return true;
                     }
                 }
-                throw exception::IllegalStateException("PartitionService::getInitialPartitions", " Cannot get initial partitions!");
+                util::ILogger::getLogger().severe("PartitionService::getInitialPartitions Cannot get initial partitions!");
+                return false;
             };
 
 
