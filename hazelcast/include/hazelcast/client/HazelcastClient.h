@@ -88,11 +88,11 @@ namespace hazelcast {
  *
  * Sample script to build with static library:
  *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/darwin/libz.a ./external/lib/darwin/libboost_thread.a ./external/lib/darwin/libboost_system.a ./external/lib/darwin/libboost_exception.a ./external/lib/darwin/libboost_date_time.a ./external/lib/darwin/libboost_chrono.a ./external/lib/darwin/libboost_atomic.a
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_exception.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a
  *
  * Sample script to build with shared library:
  *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/darwin/libz.a ./external/lib/darwin/libboost_thread.a ./external/lib/darwin/libboost_system.a ./external/lib/darwin/libboost_exception.a ./external/lib/darwin/libboost_date_time.a ./external/lib/darwin/libboost_chrono.a ./external/lib/darwin/libboost_atomic.a
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_exception.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a
  *
  * \subsection Windows
  *
