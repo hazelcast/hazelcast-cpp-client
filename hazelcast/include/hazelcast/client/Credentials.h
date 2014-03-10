@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_Credentials
 #define HAZELCAST_Credentials
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,7 +17,7 @@ namespace hazelcast {
          *
          * It is used on authentication process by LoginModule.
          */
-        class HAZELCAST_API Credentials : public impl::PortableRequest {
+        class HAZELCAST_API Credentials : public serialization::Portable {
         public:
             /**
              * Returns IP address of endpoint.

@@ -27,7 +27,9 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void writePortable(serialization::PortableWriter &writer) const;
+
+                void readPortable(serialization::PortableReader &reader);
 
                 const std::string &getEndpoint() const;
 
