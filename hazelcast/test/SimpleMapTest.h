@@ -5,7 +5,7 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
-#include "InstanceNotActiveException.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 #include <iostream>
