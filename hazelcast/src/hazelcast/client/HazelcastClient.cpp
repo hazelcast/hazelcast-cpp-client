@@ -19,11 +19,11 @@ namespace hazelcast {
         , serverListenerService(clientContext)
         , cluster(clusterService) {
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
-            loadBalancer->init(cluster);
             if (!lifecycleService.start()) {
                 lifecycleService.shutdown();
                 throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not started!");
             }
+            loadBalancer->init(cluster);
         };
 
         HazelcastClient::~HazelcastClient() {
