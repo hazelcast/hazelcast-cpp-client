@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/map/LockRequest.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 

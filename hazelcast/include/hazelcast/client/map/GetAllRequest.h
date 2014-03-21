@@ -25,8 +25,8 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                std::vector<serialization::pimpl::Data> keys;
                 std::string name;
+                std::vector<serialization::pimpl::Data> keys;
             };
         }
     }

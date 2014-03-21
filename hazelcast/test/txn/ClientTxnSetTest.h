@@ -21,7 +21,6 @@ namespace hazelcast {
             class HazelcastServerFactory;
 
             class HAZELCAST_API ClientTxnSetTest : public iTest::iTestFixture<ClientTxnSetTest> {
-
             public:
 
                 ClientTxnSetTest(HazelcastServerFactory &);
@@ -41,7 +40,6 @@ namespace hazelcast {
                 void testAddRemove();
 
             private:
-                HazelcastServerFactory & hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

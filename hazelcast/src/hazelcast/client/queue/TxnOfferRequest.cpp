@@ -6,7 +6,6 @@
 #include "hazelcast/client/queue/TxnOfferRequest.h"
 #include "hazelcast/client/queue/QueuePortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {

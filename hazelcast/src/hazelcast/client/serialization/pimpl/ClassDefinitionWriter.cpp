@@ -15,8 +15,8 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext &serializationContext)
-                : raw(false)
-                , index(0)
+                : index(0)
+                , raw(false)
                 , cd(new ClassDefinition(factoryId, classId, version))
                 , context(serializationContext) {
                 };

@@ -1,7 +1,6 @@
 #include "lock/ClientLockTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -12,8 +11,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientLockTest::ClientLockTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientLockTest")
+            : iTestFixture("ClientLockTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , l(new ILock(client->getILock("ClientLockTest"))) {
@@ -123,10 +121,10 @@ namespace hazelcast {
 
             void testStatsThread(ILock *l, util::CountDownLatch *latch) {
                 try {
-                    assertTrue(l->isLocked(),"l->isLocked()");
-                    assertFalse(l->isLockedByCurrentThread(),"isLockedByCurrentThread");
-                    assertEqual(1, l->getLockCount(),"getLockCount");
-                    assertTrue(l->getRemainingLeaseTime() > 1000 * 30,"getRemainingLeaseTime");
+                    assertTrue(l->isLocked(), "l->isLocked()");
+                    assertFalse(l->isLockedByCurrentThread(), "isLockedByCurrentThread");
+                    assertEqual(1, l->getLockCount(), "getLockCount");
+                    assertTrue(l->getRemainingLeaseTime() > 1000 * 30, "getRemainingLeaseTime");
                     latch->countDown();
                 } catch(iTest::iTestException &e) {
                     (std::cout << e.message << std::endl);

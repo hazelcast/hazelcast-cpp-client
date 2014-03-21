@@ -21,7 +21,6 @@ namespace hazelcast {
             class HazelcastServerFactory;
 
             class HAZELCAST_API ClientTxnMapTest : public iTest::iTestFixture<ClientTxnMapTest> {
-
             public:
 
                 ClientTxnMapTest(HazelcastServerFactory &);
@@ -45,7 +44,6 @@ namespace hazelcast {
                 void testKeySetValues();
 
             private:
-                HazelcastServerFactory &hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

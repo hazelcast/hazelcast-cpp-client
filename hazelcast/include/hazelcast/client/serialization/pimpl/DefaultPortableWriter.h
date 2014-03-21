@@ -97,9 +97,7 @@ namespace hazelcast {
 
                     void write(const Portable &p);
 
-                    int index;
                     bool raw;
-                    SerializationContext &context;
                     SerializerHolder &serializerHolder;
                     DataOutput &dataOutput;
                     ObjectDataOutput objectDataOutput;

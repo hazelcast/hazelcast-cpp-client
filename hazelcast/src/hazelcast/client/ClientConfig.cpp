@@ -7,15 +7,15 @@ namespace hazelcast {
     namespace client {
 
         ClientConfig::ClientConfig()
-        : smart(true)
+        : loadBalancer(NULL)
+        , defaultLoadBalancer(new impl::RoundRobinLB)
+        , smart(true)
         , redoOperation(false)
         , connectionTimeout(60000)
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
-        , credentials(NULL)
-        , loadBalancer(NULL)
         , socketInterceptor(NULL)
-        , defaultLoadBalancer(new impl::RoundRobinLB) {
+        , credentials(NULL) {
         };
 
 

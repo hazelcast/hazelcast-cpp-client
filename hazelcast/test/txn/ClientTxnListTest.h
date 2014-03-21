@@ -22,7 +22,6 @@ namespace hazelcast {
             class HazelcastServerFactory;
 
             class HAZELCAST_API ClientTxnListTest : public iTest::iTestFixture<ClientTxnListTest> {
-
             public:
 
                 ClientTxnListTest(HazelcastServerFactory &);
@@ -43,7 +42,6 @@ namespace hazelcast {
 
 
             private:
-                HazelcastServerFactory & hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

@@ -4,14 +4,13 @@
 
 #include "hazelcast/client/map/ContainsKeyRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            ContainsKeyRequest::ContainsKeyRequest(const std::string& name, serialization::pimpl::Data& key)
+            ContainsKeyRequest::ContainsKeyRequest(const std::string &name, serialization::pimpl::Data &key)
             :name(name)
             , key(key) {
             };
@@ -29,9 +28,9 @@ namespace hazelcast {
                 return true;
             }
 
-            void ContainsKeyRequest::write(serialization::PortableWriter& writer) const {
+            void ContainsKeyRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             };
 

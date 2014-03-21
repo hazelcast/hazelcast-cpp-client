@@ -86,8 +86,8 @@ namespace hazelcast {
 
             private:
 
-                spi::ClientContext &clientContext;
                 TransactionOptions &options;
+                spi::ClientContext &clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
                 long threadId;

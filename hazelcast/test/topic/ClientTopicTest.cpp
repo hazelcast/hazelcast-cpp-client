@@ -1,7 +1,6 @@
 #include "ClientTopicTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -12,8 +11,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTopicTest::ClientTopicTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientTopicTest")
+            : iTestFixture("ClientTopicTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {

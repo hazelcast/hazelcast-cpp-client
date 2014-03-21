@@ -60,8 +60,8 @@ namespace hazelcast {
                 };
             private:
                 const std::string &instanceName;
-                serialization::pimpl::SerializationService &serializationService;
                 spi::ClusterService &clusterService;
+                serialization::pimpl::SerializationService &serializationService;
                 L &listener;
                 bool includeValue;
             };

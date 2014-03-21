@@ -92,7 +92,6 @@ namespace hazelcast {
                 void testMapStoreRelatedRequests();
 
             private:
-                HazelcastServerFactory &hazelcastInstanceFactory;
                 HazelcastServer instance;
                 HazelcastServer instance2;
                 ClientConfig clientConfig;

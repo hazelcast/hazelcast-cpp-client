@@ -144,8 +144,8 @@ namespace hazelcast {
             int getPartitionId(const serialization::pimpl::Data &key);
 
         private:
-            const std::string serviceName;
             const std::string name;
+            const std::string serviceName;
             spi::ClientContext *context;
         };
     }

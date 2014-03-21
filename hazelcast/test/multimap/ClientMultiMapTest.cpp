@@ -6,7 +6,6 @@
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -14,8 +13,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMultiMapTest::ClientMultiMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientMultiMapTest")
+            : iTestFixture("ClientMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , mm(new MultiMap<std::string, std::string>(client->getMultiMap< std::string, std::string >("ClientMultiMapTest"))) {

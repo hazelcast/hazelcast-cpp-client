@@ -48,7 +48,6 @@ namespace hazelcast {
                 void testListener();
 
             private:
-                HazelcastServerFactory & hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

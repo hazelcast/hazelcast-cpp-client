@@ -22,8 +22,8 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                long threadId;
                 serialization::pimpl::Data value;
+                long threadId;
             };
         }
     }

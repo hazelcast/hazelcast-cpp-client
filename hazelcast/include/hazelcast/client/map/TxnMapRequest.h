@@ -78,13 +78,13 @@ namespace hazelcast {
             private:
                 std::string name;
                 TxnMapRequestType requestType;
+                serialization::pimpl::Data key;
+                serialization::pimpl::Data value;
+                serialization::pimpl::Data newValue;
                 bool hasKey;
                 bool hasValue;
                 bool hasNewValue;
                 bool hasPredicate;
-                serialization::pimpl::Data key;
-                serialization::pimpl::Data value;
-                serialization::pimpl::Data newValue;
                 std::string predicate;
                 long ttl;
             };

@@ -11,8 +11,8 @@ namespace hazelcast {
     namespace client {
         namespace map {
             IsLockedRequest::IsLockedRequest(const std::string &name, serialization::pimpl::Data &key)
-            :key(key),
-            name(name) {
+            :name(name)
+            , key(key){
 
             };
 

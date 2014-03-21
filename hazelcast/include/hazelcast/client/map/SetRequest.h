@@ -23,9 +23,9 @@ namespace hazelcast {
 
 
             private:
+                std::string name;
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
-                std::string name;
                 long threadId;
                 long ttl;
             };

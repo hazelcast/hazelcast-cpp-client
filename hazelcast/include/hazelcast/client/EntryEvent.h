@@ -161,12 +161,12 @@ namespace hazelcast {
             };
 
         private:
+            std::string name;
+            Member member;
+            EntryEventType eventType;
             boost::shared_ptr<K> key;
             boost::shared_ptr<V> value;
             boost::shared_ptr<V> oldValue;
-            EntryEventType eventType;
-            Member member;
-            std::string name;
 
         };
     }

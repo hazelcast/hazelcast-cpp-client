@@ -190,8 +190,8 @@ namespace hazelcast {
                     for (int i = 0; i < stringLen; i++) {
                         if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
                             utfLength++;
-                        } else if (str[i] > 0x07FF) {
-                            utfLength += 3;
+//                        } else if (str[i] > 0x07FF) { //MTODO think using wchar
+//                            utfLength += 3;
                         } else {
                             utfLength += 2;
                         }
@@ -209,10 +209,10 @@ namespace hazelcast {
                     for (; i < stringLen; i++) {
                         if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
                             byteArray[count++] = (byte) str[i];
-                        } else if (str[i] > 0x07FF) {
-                            byteArray[count++] = (byte) (0xE0 | ((str[i] >> 12) & 0x0F));
-                            byteArray[count++] = (byte) (0x80 | ((str[i] >> 6) & 0x3F));
-                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
+//                        } else if (str[i] > 0x07FF) {  //MTODO think using wchar
+//                            byteArray[count++] = (byte) (0xE0 | ((str[i] >> 12) & 0x0F));
+//                            byteArray[count++] = (byte) (0x80 | ((str[i] >> 6) & 0x3F));
+//                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
                         } else {
                             byteArray[count++] = (byte) (0xC0 | ((str[i] >> 6) & 0x1F));
                             byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));

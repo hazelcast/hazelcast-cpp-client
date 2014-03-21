@@ -15,8 +15,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMapTest::ClientMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientMapTest")
+            : iTestFixture("ClientMapTest")
             , instance(hazelcastInstanceFactory)
             , instance2(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
@@ -115,7 +114,8 @@ namespace hazelcast {
 
             class MyListener {
             public:
-                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch) :latch(latch), nullLatch(nullLatch) {
+                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
+                :latch(latch), nullLatch(nullLatch) {
                 };
 
                 void entryAdded(EntryEvent<string, string> &event) {
@@ -145,8 +145,8 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch &nullLatch;
                 util::CountDownLatch &latch;
+                util::CountDownLatch &nullLatch;
             };
 
 

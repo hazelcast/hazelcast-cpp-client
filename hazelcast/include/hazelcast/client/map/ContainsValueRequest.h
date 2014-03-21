@@ -23,8 +23,8 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
-                const serialization::pimpl::Data value;
                 const std::string name;
+                const serialization::pimpl::Data value;
             };
         }
     }

@@ -22,7 +22,6 @@ namespace hazelcast {
             class HazelcastServerFactory;
 
             class HAZELCAST_API ClientSemaphoreTest : public iTest::iTestFixture<ClientSemaphoreTest> {
-
             public:
 
                 ClientSemaphoreTest(HazelcastServerFactory &);
@@ -44,7 +43,6 @@ namespace hazelcast {
                 void testTryAcquire();
 
             private:
-                HazelcastServerFactory & hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

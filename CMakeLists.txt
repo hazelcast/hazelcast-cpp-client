@@ -7,6 +7,10 @@ message(STATUS "Preparing hazelcast client ..... ")
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
+
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")

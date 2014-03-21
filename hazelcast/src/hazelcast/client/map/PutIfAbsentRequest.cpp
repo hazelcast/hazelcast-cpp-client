@@ -10,8 +10,8 @@ namespace hazelcast {
         namespace map {
 
             PutIfAbsentRequest::PutIfAbsentRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl)
-            : key(key)
-            , name(name)
+            : name(name)
+            , key(key)
             , value(value)
             , threadId(threadId)
             , ttl(ttl) {

@@ -213,7 +213,6 @@ namespace hazelcast {
             void Connection::removeConnectionCalls() {
                 clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
                 typedef std::vector<std::pair<int, boost::shared_ptr<CallPromise> > > Entry_Set;
-                Address const &address = getRemoteEndpoint();
                 {
                     Entry_Set entrySet = callPromises.clear();
                     Entry_Set::iterator it;

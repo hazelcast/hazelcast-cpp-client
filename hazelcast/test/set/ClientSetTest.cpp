@@ -6,7 +6,6 @@
 #include "ClientSetTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -14,8 +13,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientSetTest::ClientSetTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientSetTest")
+            : iTestFixture("ClientSetTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , set(new ISet<std::string >(client->getSet< std::string >("ClientSetTest"))) {

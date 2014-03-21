@@ -6,7 +6,6 @@
 #include "ClientTxnQueueTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,8 +16,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTxnQueueTest::ClientTxnQueueTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , iTestFixture("ClientTxnQueueTest")
+            : iTestFixture("ClientTxnQueueTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
             };

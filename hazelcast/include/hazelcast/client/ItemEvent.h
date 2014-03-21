@@ -122,10 +122,10 @@ namespace hazelcast {
             };
 
         private:
-            E item;
-            ItemEventType eventType;
-            Member member;
             std::string name;
+            Member member;
+            ItemEventType eventType;
+            E item;
 
         };
     }

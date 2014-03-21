@@ -56,7 +56,6 @@ namespace hazelcast {
                 void testForceUnlock();
 
             private:
-                HazelcastServerFactory & hazelcastInstanceFactory;
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;

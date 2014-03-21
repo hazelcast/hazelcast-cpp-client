@@ -22,9 +22,9 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
+                std::string name;
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
-                std::string name;
                 long threadId;
                 long ttl;
                 long timeout;

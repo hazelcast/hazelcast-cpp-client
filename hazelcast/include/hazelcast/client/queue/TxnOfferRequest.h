@@ -26,8 +26,8 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                long timeoutInMillis;
                 serialization::pimpl::Data data;
+                long timeoutInMillis;
             };
         }
     }

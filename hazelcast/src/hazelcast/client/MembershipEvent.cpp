@@ -17,7 +17,7 @@ namespace hazelcast {
             
         }
 
-        const std::vector<Member> &MembershipEvent::getMembers() const {
+        std::vector<Member> MembershipEvent::getMembers() const {
             return cluster->getMembers();
         }
 

@@ -62,10 +62,10 @@ namespace hazelcast {
             }
 
         private:
+            MemberAttributeOperationType operationType;
             std::string key;
             std::string value;
             util::IOUtil::PRIMITIVE_ID primitive_id;
-            MemberAttributeOperationType operationType;
 
             int *getValueResolved(int *tag) const;
 

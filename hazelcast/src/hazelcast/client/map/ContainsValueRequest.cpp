@@ -6,7 +6,6 @@
 #include "hazelcast/client/map/ContainsValueRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {

@@ -35,9 +35,9 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                std::string sql;
-                serialization::pimpl::Data key;
                 bool includeValue;
+                serialization::pimpl::Data key;
+                std::string sql;
                 bool hasKey;
                 bool hasPredicate;
             };
