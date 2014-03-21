@@ -57,7 +57,7 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
                 Cluster cluster = hazelcastClient.getCluster();
                 std::vector<Member> members = cluster.getMembers();
-                assertEqual(1,members.size());
+                assertEqual(1U,members.size());
                 Member &member = members[0];
                 assertTrue(member.lookupAttribute<int>("intAttr"));
                 assertEqual(211,member.getAttribute<int>("intAttr"));

@@ -135,8 +135,9 @@ namespace hazelcast {
                 multimap::EntrySetRequest *request = new multimap::EntrySetRequest(getName());
                 boost::shared_ptr<multimap::PortableEntrySetResponse> result = invoke < multimap::PortableEntrySetResponse >(request);
                 std::vector < std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > const &dataEntrySet = result->getEntrySet();
-                std::vector<std::pair<K, V> > entrySet(dataEntrySet.size());
-                for (int i = 0; i < dataEntrySet.size(); i++) {
+                int size = dataEntrySet.size();
+                std::vector<std::pair<K, V> > entrySet(size);
+                for (int i = 0; i < size ; i++) {
                     boost::shared_ptr<K> key = toObject<K>(dataEntrySet[i].first);
                     entrySet[i].first = *key;
                     boost::shared_ptr<V> value = toObject<V>(dataEntrySet[i].second);
@@ -409,8 +410,9 @@ namespace hazelcast {
 
             std::vector<V> toObjectCollection(boost::shared_ptr<impl::PortableCollection> result) {
                 std::vector<serialization::pimpl::Data> const &dataCollection = result->getCollection();
-                std::vector<V> multimap(dataCollection.size());
-                for (int i = 0; i < dataCollection.size(); i++) {
+                int size = dataCollection.size();
+                std::vector<V> multimap(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
                     multimap[i] = *v;
                 }

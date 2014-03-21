@@ -17,8 +17,9 @@ namespace hazelcast {
             };
 
             SerializableCollection::~SerializableCollection() {
-                for (int i = 0; i < dataCollection.size(); i++) {
-                    delete dataCollection[i];
+		std::vector <serialization::pimpl::Data * >::iterator it;
+                for (it = dataCollection.begin() ; it != dataCollection.end(); ++it) {
+                    delete (*it);
                 }
             };
 
@@ -36,8 +37,9 @@ namespace hazelcast {
 
 
             void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) const {
-                writer.writeInt(dataCollection.size());
-                for (int i = 0; i < dataCollection.size(); ++i) {
+		int size = dataCollection.size();
+                writer.writeInt(size);
+                for (int i = 0; i < size; ++i) {
                     dataCollection[i]->writeData(writer);
                 }
             };

@@ -307,16 +307,18 @@ namespace hazelcast {
 
 
             std::vector<serialization::pimpl::Data> getDataList(const std::vector<E> &objects) {
-                std::vector<serialization::pimpl::Data> dataList(objects.size());
-                for (int i = 0; i < objects.size(); i++) {
+                int size = objects.size();
+                std::vector<serialization::pimpl::Data> dataList(size);
+                for (int i = 0; i < size; i++) {
                     dataList[i] = toData(objects[i]);
                 }
                 return dataList;
             };
 
             std::vector<E> getObjectList(const std::vector<serialization::pimpl::Data> &dataList) {
-                std::vector<E> objects(dataList.size());
-                for (int i = 0; i < dataList.size(); i++) {
+                int size = dataList.size();
+                std::vector<E> objects(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<E> object = getContext().getSerializationService(). template toObject<E>(dataList[i]);
                     objects[i] = *object;
                 }

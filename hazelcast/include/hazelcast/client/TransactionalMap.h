@@ -200,8 +200,9 @@ namespace hazelcast {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET);
                 boost::shared_ptr<map::MapKeySet> result = invoke<map::MapKeySet>(request);
                 std::vector <serialization::pimpl::Data> const &keyDataSet = result->getKeySet();
-                std::vector<K> keys(keyDataSet.size());
-                for (int i = 0; i < keyDataSet.size(); i++) {
+                int size = keyDataSet.size();
+                std::vector<K> keys(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<K> v = toObject<K>(keyDataSet[i]);
                     keys[i] = *v;
                 }
@@ -218,8 +219,9 @@ namespace hazelcast {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::KEYSET_BY_PREDICATE, predicate);
                 boost::shared_ptr<map::MapKeySet> result = invoke<map::MapKeySet>(request);
                 std::vector <serialization::pimpl::Data> const &keyDataSet = result->getKeySet();
-                std::vector<K> keys(keyDataSet.size());
-                for (int i = 0; i < keyDataSet.size(); i++) {
+                int size = keyDataSet.size();
+                std::vector<K> keys(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<K> k = toObject<K>(keyDataSet[i]);
                     keys[i] = *k;
                 }
@@ -236,8 +238,9 @@ namespace hazelcast {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES);
                 boost::shared_ptr<map::MapValueCollection> result = invoke<map::MapValueCollection>(request);
                 std::vector <serialization::pimpl::Data> const &dataValues = result->getValues();
-                std::vector<V> values(dataValues.size());
-                for (int i = 0; i < dataValues.size(); i++) {
+                int size = dataValues.size();
+                std::vector<V> values(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataValues[i]);
                     values[i] = *v;
                 }
@@ -253,8 +256,9 @@ namespace hazelcast {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
                 boost::shared_ptr<map::MapValueCollection> result = invoke<map::MapValueCollection>(request);
                 std::vector <serialization::pimpl::Data> const &dataValues = result->getValues();
-                std::vector<V> values(dataValues.size());
-                for (int i = 0; i < dataValues.size(); i++) {
+                int size = dataValues.size();
+                std::vector<V> values(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataValues[i]);
                     values[i] = *v;
                 }

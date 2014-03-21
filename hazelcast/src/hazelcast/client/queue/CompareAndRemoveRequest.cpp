@@ -30,9 +30,10 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
                 writer.writeBoolean("r", retain);
-                writer.writeInt("s", dataList.size());
+                int size = dataList.size();
+                writer.writeInt("s", size);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                for (int i = 0; i < dataList.size(); ++i) {
+                for (int i = 0; i < size; ++i) {
                     dataList[i].writeData(out);
                 }
             };

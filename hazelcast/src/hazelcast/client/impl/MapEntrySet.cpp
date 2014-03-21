@@ -28,8 +28,9 @@ namespace hazelcast {
             }
 
             void MapEntrySet::writeData(serialization::ObjectDataOutput& writer) const {
-                writer.writeInt(entrySet.size());
-                for (int i = 0; i < entrySet.size(); ++i) {
+                int size = entrySet.size();
+		writer.writeInt(size);
+                for (int i = 0; i < size; ++i) {
                     entrySet[i].first.writeData(writer);
                     entrySet[i].second.writeData(writer);
                 }

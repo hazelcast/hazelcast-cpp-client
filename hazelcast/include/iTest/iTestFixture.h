@@ -49,7 +49,7 @@ namespace iTest {
             (std::cout << "<<<<<<< " << fixtureName << " >>>>>>" << std::endl);
             beforeClass();
             T *t = static_cast<T *>(this);
-            for (int i = 0; i < tests.size(); i++) {
+            for (unsigned int i = 0; i < tests.size(); i++) {
                 TestFunction test = tests[i];
                 (std::cout << "======= " << testNames[i] << " ======= " << std::endl);
                 beforeTest();

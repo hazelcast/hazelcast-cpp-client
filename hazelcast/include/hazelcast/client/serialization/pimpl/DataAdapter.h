@@ -44,10 +44,10 @@ namespace hazelcast {
                     int factoryId;
                     int classId;
                     int version;
-                    int classDefSize;
+                    size_t classDefSize;
                     bool skipClassDef;
-                    int bytesRead;
-                    int bytesWritten;
+                    size_t bytesRead;
+                    size_t bytesWritten;
                     Data data;
                     SerializationContext *context;
 

@@ -27,9 +27,10 @@ namespace hazelcast {
 
             void GetAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-                writer.writeInt("size", keys.size());
+                int size = keys.size();
+                writer.writeInt("size", size);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                for (int i = 0; i < keys.size(); i++) {
+                for (int i = 0; i < size; i++) {
                     keys[i].writeData(out);
                 }
             };

@@ -117,7 +117,7 @@ namespace hazelcast {
 
                 std::vector<std::string> arr2 = list->subList(1, 3);
 
-                assertEqual(2, arr2.size());
+                assertEqual(2, (int)arr2.size());
                 assertEqual("item2", arr2[0]);
                 assertEqual("item1", arr2[1]);
             }
@@ -151,19 +151,19 @@ namespace hazelcast {
                 l.push_back("item3");
 
                 assertTrue(list->removeAll(l));
-                assertEqual(3, list->size());
+                assertEqual(3, (int)list->size());
                 assertFalse(list->removeAll(l));
-                assertEqual(3, list->size());
+                assertEqual(3, (int)list->size());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
                 assertFalse(list->retainAll(l));
-                assertEqual(3, list->size());
+                assertEqual(3, (int)list->size());
 
                 l.clear();
                 assertTrue(list->retainAll(l));
-                assertEqual(0, list->size());
+                assertEqual(0, (int)list->size());
 
             }
 

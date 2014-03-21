@@ -92,13 +92,15 @@ namespace hazelcast {
                     dataOutput.writeInt(classId);
                     dataOutput.writeInt(version);
                     dataOutput.writeInt(fieldDefinitions.size());
-                    for (int i = 0; i < fieldDefinitions.size(); i++) {
-                        fieldDefinitions[i].writeData(dataOutput);
+		    std::vector<FieldDefinition>::iterator it;
+                    for (it = fieldDefinitions.begin() ; it != fieldDefinitions.end(); ++it) {
+                        it->writeData(dataOutput);
                     }
 
-                    dataOutput .writeInt(int(nestedClassDefinitions.size()));
-                    for (int i = 0; i < nestedClassDefinitions.size(); i++) {
-                        nestedClassDefinitions[i]->writeData(dataOutput);
+                    dataOutput.writeInt(nestedClassDefinitions.size());
+		    std::vector<boost::shared_ptr<ClassDefinition>  >::iterator cdIt;
+                    for (cdIt = nestedClassDefinitions.begin(); cdIt != nestedClassDefinitions.end(); ++cdIt) {
+                        (*cdIt)->writeData(dataOutput);
                     }
                 };
 

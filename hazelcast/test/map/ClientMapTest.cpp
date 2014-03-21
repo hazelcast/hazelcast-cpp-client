@@ -270,7 +270,7 @@ namespace hazelcast {
 
                 std::map<std::string, std::string> m2 = imap->getAll(tempSet);
 
-                assertEqual(m2.size(), 2);
+                assertEqual(2U, m2.size());
                 assertEqual(m2[util::to_string(1)], "1");
                 assertEqual(m2[util::to_string(3)], "3");
 
@@ -460,7 +460,7 @@ namespace hazelcast {
                 fillMap();
                 std::vector<std::string> tempVector;
                 tempVector = imap->values("this == value1");
-                assertEqual(1, tempVector.size());
+                assertEqual(1U, tempVector.size());
 
                 std::vector<std::string>::iterator it = tempVector.begin();
                 assertEqual("value1", *it);

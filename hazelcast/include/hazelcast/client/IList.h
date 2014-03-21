@@ -123,8 +123,9 @@ namespace hazelcast {
                 collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
                 boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
                 const std::vector<serialization::pimpl::Data *> &collection = result->getCollection();
-                std::vector<E> set(collection.size());
-                for (int i = 0; i < collection.size(); ++i) {
+                int size = collection.size();
+                std::vector<E> set(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<E> e = toObject<E>(*((collection[i])));
                     set[i] = *e;
                 }
@@ -329,8 +330,9 @@ namespace hazelcast {
                 list::ListSubRequest *request = new list::ListSubRequest(getName(), getServiceName(), fromIndex, toIndex);
                 boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
                 const std::vector<serialization::pimpl::Data *> &collection = result->getCollection();
+                int size = collection.size();
                 std::vector<E> set(toIndex - fromIndex);
-                for (int i = 0; i < collection.size(); ++i) {
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<E> e = toObject<E>(*(collection[i]));
                     set[i] = *e;
                 }
@@ -340,8 +342,9 @@ namespace hazelcast {
         private:
             template<typename T>
             const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T> &elements) {
-                std::vector<serialization::pimpl::Data> dataCollection(elements.size());
-                for (int i = 0; i < elements.size(); ++i) {
+                int size = elements.size();
+                std::vector<serialization::pimpl::Data> dataCollection(size);
+                for (int i = 0; i < size; ++i) {
                     dataCollection[i] = toData(elements[i]);
                 }
                 return dataCollection;

@@ -40,7 +40,7 @@ namespace hazelcast {
             return *this;
         }
 
-        int ByteBuffer::remaining() const {
+        size_t ByteBuffer::remaining() const {
             return limit - pos;
         }
 

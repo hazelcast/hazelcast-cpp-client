@@ -53,7 +53,8 @@ namespace hazelcast {
                 if (ll != m.ll) return false;
                 if (ff != m.ff) return false;
                 if (dd != m.dd) return false;
-                for (int i = 0; i < nn.size(); i++)
+                int size = nn.size();
+                for (int i = 0; i < size; i++)
                     if (nn[i] != m.nn[i])
                         return false;
                 return true;

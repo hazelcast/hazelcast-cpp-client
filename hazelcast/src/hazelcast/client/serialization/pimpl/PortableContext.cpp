@@ -79,9 +79,7 @@ namespace hazelcast {
                 void PortableContext::compress(std::vector<byte> &binary) {
                     uLong ucompSize = binary.size();
                     uLong compSize = compressBound(ucompSize);
-                    std::vector<byte> uncompressedTemp(binary.size());
-                    for (int i = 0; i < binary.size(); i++)
-                        uncompressedTemp[i] = binary[i];
+                    std::vector<byte> uncompressedTemp(binary.begin(), binary.end());
 
                     byte *compressedTemp = new byte[compSize];
 
@@ -107,9 +105,8 @@ namespace hazelcast {
 
                     uLong ucompSize = 512;
                     byte *temp = NULL;
-                    std::vector<byte> compressedTemp(binary.size());
-                    for (int i = 0; i < binary.size(); i++)
-                        compressedTemp[i] = binary[i];
+                    std::vector<byte> compressedTemp(binary.begin(), binary.end());
+
                     int err = Z_OK;
                     do {
                         ucompSize *= 2;

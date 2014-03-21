@@ -114,14 +114,14 @@ namespace hazelcast {
                 assertNull(txMap.put("key3", "value3").get());
 
 
-                assertEqual(3, txMap.size());
-                assertEqual(3, txMap.keySet().size());
-                assertEqual(3, txMap.values().size());
+                assertEqual(3, (int)txMap.size());
+                assertEqual(3, (int)txMap.keySet().size());
+                assertEqual(3, (int)txMap.values().size());
                 context.commitTransaction();
 
-                assertEqual(3, map.size());
-                assertEqual(3, map.keySet().size());
-                assertEqual(3, map.values().size());
+                assertEqual(3, (int)map.size());
+                assertEqual(3, (int)map.keySet().size());
+                assertEqual(3, (int)map.values().size());
 
             }
 
@@ -140,17 +140,17 @@ namespace hazelcast {
                 TransactionalMap<Employee, Employee> txMap = context.getMap<Employee, Employee>(name);
                 assertNull(txMap.put(emp2, emp2).get());
 
-                assertEqual(2, txMap.size());
-                assertEqual(2, txMap.keySet().size());
-                assertEqual(0, txMap.keySet("age = 10").size());
-                assertEqual(0, txMap.values("age = 10").size());
-                assertEqual(2, txMap.keySet("age >= 10").size());
-                assertEqual(2, txMap.values("age >= 10").size());
+                assertEqual(2, (int)txMap.size());
+                assertEqual(2, (int)txMap.keySet().size());
+                assertEqual(0, (int)txMap.keySet("age = 10").size());
+                assertEqual(0, (int)txMap.values("age = 10").size());
+                assertEqual(2, (int)txMap.keySet("age >= 10").size());
+                assertEqual(2, (int)txMap.values("age >= 10").size());
 
                 context.commitTransaction();
 
-                assertEqual(2, map.size());
-                assertEqual(2, map.values().size());
+                assertEqual(2, (int)map.size());
+                assertEqual(2, (int)map.values().size());
 
 
             }

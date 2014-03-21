@@ -64,12 +64,12 @@ namespace hazelcast {
                 assertEqual(5, mm->size());
 
                 std::vector<std::string> coll = mm->get("key1");
-                assertEqual(3, coll.size());
+                assertEqual(3, (int)coll.size());
 
                 coll = mm->remove("key2");
-                assertEqual(2, coll.size());
+                assertEqual(2, (int)coll.size());
                 assertEqual(0, mm->valueCount("key2"));
-                assertEqual(0, mm->get("key2").size());
+                assertEqual(0, (int)mm->get("key2").size());
 
                 assertFalse(mm->remove("key1", "value4"));
                 assertEqual(3, mm->size());
@@ -92,9 +92,9 @@ namespace hazelcast {
                 assertTrue(mm->put("key2", "value5"));
 
 
-                assertEqual(2, mm->keySet().size());
-                assertEqual(5, mm->values().size());
-                assertEqual(5, mm->entrySet().size());
+                assertEqual(2, (int)mm->keySet().size());
+                assertEqual(5, (int)mm->values().size());
+                assertEqual(5, (int)mm->entrySet().size());
             }
 
 

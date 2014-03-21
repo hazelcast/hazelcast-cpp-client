@@ -783,10 +783,10 @@ namespace hazelcast {
             std::vector<K> keySet() {
                 map::KeySetRequest *request = new map::KeySetRequest(getName());
                 boost::shared_ptr<map::MapKeySet> dataKeySet = invoke<map::MapKeySet>(request);
-
                 std::vector<serialization::pimpl::Data> const &dataResult = dataKeySet->getKeySet();
-                std::vector<K> keySet(dataResult.size());
-                for (int i = 0; i < dataResult.size(); ++i) {
+                int size = dataResult.size();
+                std::vector<K> keySet(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> k = toObject<K>(dataResult[i]);
                     keySet[i] = *k;
                 }
@@ -828,8 +828,9 @@ namespace hazelcast {
                 map::ValuesRequest *request = new map::ValuesRequest(getName());
                 boost::shared_ptr<map::MapValueCollection> valueCollection = invoke < map::MapValueCollection >(request);
                 const std::vector<serialization::pimpl::Data> &getValues = valueCollection->getValues();
-                std::vector<V> values(getValues.size());
-                for (int i = 0; i < getValues.size(); i++) {
+                int size = getValues.size();
+                std::vector<V> values(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> value = toObject<V>(getValues[i]);
                     values[i] = *value;
                 }
@@ -847,8 +848,9 @@ namespace hazelcast {
                 map::EntrySetRequest *request = new map::EntrySetRequest(getName());
                 boost::shared_ptr<map::MapEntrySet> result = invoke < map::MapEntrySet >(request);
                 const std::vector< std::pair< serialization::pimpl::Data, serialization::pimpl::Data> > &returnedEntries = result->getEntrySet();
-                std::vector< std::pair<K, V> > entrySet(returnedEntries.size());
-                for (int i = 0; i < entrySet.size(); ++i) {
+                int size = returnedEntries.size();
+                std::vector< std::pair<K, V> > entrySet(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> key = toObject<K>(returnedEntries[i].first);
                     boost::shared_ptr<V> value = toObject<V>(returnedEntries[i].second);
                     entrySet[i] = std::make_pair<K, V>(*key, *value);
@@ -872,8 +874,9 @@ namespace hazelcast {
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const std::vector<impl::QueryResultEntry> &dataResult = queryDataResultStream->getResultData();
-                std::vector<K> keySet(dataResult.size());
-                for (int i = 0; i < dataResult.size(); ++i) {
+                int size = dataResult.size();
+                std::vector<K> keySet(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
                     keySet[i] = *key;
                 }
@@ -895,8 +898,9 @@ namespace hazelcast {
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const std::vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
-                std::vector<std::pair<K, V> > keySet(dataResult.size());
-                for (int i = 0; i < dataResult.size(); ++i) {
+                int size = dataResult.size();
+                std::vector<std::pair<K, V> > keySet(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
                     boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
                     keySet[i] = std::make_pair<K, V>(*key, *value);
@@ -919,8 +923,9 @@ namespace hazelcast {
                 map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
                 boost::shared_ptr<impl::QueryResultSet> queryDataResultStream = invoke<impl::QueryResultSet>(request);
                 const std::vector< impl::QueryResultEntry > &dataResult = queryDataResultStream->getResultData();
-                std::vector<V> keySet(dataResult.size());
-                for (int i = 0; i < dataResult.size(); ++i) {
+                int size = dataResult.size();
+                std::vector<V> keySet(size);
+                for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
                     keySet[i] = *value;
                 }
@@ -1107,7 +1112,7 @@ namespace hazelcast {
             void clear() {
                 map::ClearRequest *request = new map::ClearRequest(getName());
                 invoke<serialization::pimpl::Void>(request);
-            };
+            }
         private:
             IMap(const std::string &instanceName, spi::ClientContext *context)
             : DistributedObject("hz:impl:mapService", instanceName, context) {
@@ -1117,16 +1122,16 @@ namespace hazelcast {
             template<typename T>
             serialization::pimpl::Data toData(const T &object) {
                 return getContext().getSerializationService().template toData<T>(&object);
-            };
+            }
 
             template<typename T>
             boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
                 return getContext().getSerializationService().template toObject<T>(data);
-            };
+            }
 
 
             void onDestroy() {
-            };
+            }
 
 
         };

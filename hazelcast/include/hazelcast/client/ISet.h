@@ -216,8 +216,9 @@ namespace hazelcast {
         private:
             template<typename T>
             const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T> &objects) {
-                std::vector<serialization::pimpl::Data> dataCollection(objects.size());
-                for (int i = 0; i < objects.size(); ++i) {
+                int size = objects.size();
+                std::vector<serialization::pimpl::Data> dataCollection(size);
+                for (int i = 0; i < size; ++i) {
                     dataCollection[i] = toData(objects[i]);
                 }
                 return dataCollection;

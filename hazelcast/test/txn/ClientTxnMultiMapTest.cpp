@@ -54,10 +54,10 @@ namespace hazelcast {
                     assertFalse(multiMap.put(key, "value"));
                     assertTrue(multiMap.put(key, "value1"));
                     assertTrue(multiMap.put(key, "value2"));
-                    assertEqual(3, multiMap.get(key).size());
+                    assertEqual(3, (int)multiMap.get(key).size());
                     context.commitTransaction();
 
-                    assertEqual(3, mm->get(key).size());
+                    assertEqual(3, (int)mm->get(key).size());
 
                     latch->countDown();
                 } catch (std::exception &e) {

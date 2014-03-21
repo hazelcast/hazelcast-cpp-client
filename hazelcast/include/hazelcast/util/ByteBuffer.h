@@ -8,6 +8,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <vector>
+#include <cstdlib>
 
 namespace hazelcast {
     namespace client {
@@ -26,7 +27,7 @@ namespace hazelcast {
 
             ByteBuffer &clear();
 
-            int remaining() const;
+            size_t remaining() const;
 
             bool hasRemaining() const;
 

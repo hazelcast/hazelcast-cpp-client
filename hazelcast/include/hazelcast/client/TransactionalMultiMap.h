@@ -52,10 +52,10 @@ namespace hazelcast {
                 multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
                 std::vector<serialization::pimpl::Data> const &dataCollection = portableCollection->getCollection();
-                std::vector<serialization::pimpl::Data>::iterator it;
+                int size = dataCollection.size();
                 std::vector<V> result;
-                result.resize(dataCollection.size());
-                for (int i = 0; i < dataCollection.size(); i++) {
+                result.resize(size);
+                for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
                     result[i] = *v;
                 }
@@ -85,10 +85,10 @@ namespace hazelcast {
                 multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), &data);
                 boost::shared_ptr<impl::PortableCollection> portableCollection = invoke<impl::PortableCollection>(request);
                 std::vector<serialization::pimpl::Data> const &dataCollection = portableCollection->getCollection();
-                std::vector<serialization::pimpl::Data>::iterator it;
                 std::vector<V> result;
-                result.resize(dataCollection.size());
-                for (int i = 0; i < dataCollection.size(); i++) {
+                int size = dataCollection.size();
+                result.resize(size);
+                for (int i = 0; i < size; i++) {
                     result[i] = toData(dataCollection[i]);
                 }
                 return result;

@@ -12,11 +12,11 @@ namespace hazelcast {
             GetAllRequest::GetAllRequest(const std::string& name, const serialization::pimpl::Data& key)
             : KeyBasedRequest(name, key) {
 
-            };
+            }
 
             int GetAllRequest::getClassId() const {
                 return MultiMapPortableHook::GET_ALL;
-            };
+            }
 
             bool GetAllRequest::isRetryable() const{
                 return true;

@@ -191,7 +191,8 @@ namespace hazelcast {
                 assertTrue(q->offer("item5"));
 
                 std::vector<std::string> array = q->toArray();
-                for (int i = 0; i < array.size(); i++) {
+                int size = array.size();
+                for (int i = 0; i < size; i++) {
                     assertEqual(std::string("item") + util::to_string(i + 1), array[i]);
                 }
 
@@ -206,7 +207,7 @@ namespace hazelcast {
 
                 assertTrue(q->addAll(coll));
                 int size = q->size();
-                assertEqual(size, coll.size());
+                assertEqual(size, (int)coll.size());
 
             }
 

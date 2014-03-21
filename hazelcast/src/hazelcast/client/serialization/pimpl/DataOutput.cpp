@@ -125,8 +125,9 @@ namespace hazelcast {
                 };
 
                 void DataOutput::writeCharArray(const std::vector<char> &data) {
-                    writeInt(data.size());
-                    for (int i = 0; i < data.size(); ++i) {
+                    int size = data.size();
+                    writeInt(size);
+                    for (int i = 0; i < size; ++i) {
                         writeChar(data[i]);
                     }
                 };
@@ -175,7 +176,7 @@ namespace hazelcast {
                     return outputStream->size();
                 };
 
-                void DataOutput::position(int newPos) {
+                void DataOutput::position(size_t newPos) {
                     if (outputStream->size() < newPos)
                         outputStream->resize(newPos, 0);
                 };

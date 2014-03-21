@@ -20,8 +20,9 @@ namespace hazelcast {
             void CollectionContainsRequest::write(serialization::PortableWriter &writer) const {
                 CollectionRequest::write(writer);
                 serialization::ObjectDataOutput &output = writer.getRawDataOutput();
-                output.writeInt(valueSet.size());
-                for (int i = 0; i < valueSet.size(); i++) {
+                int size = valueSet.size();
+                output.writeInt(size);
+                for (int i = 0; i < size; i++) {
                     valueSet[i].writeData(output);
                 }
             }
