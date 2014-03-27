@@ -43,4 +43,9 @@ echo "Moving examples to target"
 cp -R examples/ cpp/examples/
 
 cp enterprise-license.txt cpp/enterprise-license.txt
-echo "Do not forget to install_name_tool -id libHazelcastClientShared_64.dylib libHazelcastClientShared_64.dylib"
+
+echo "Removing temporary files"
+rm -rf ./ReleaseShared
+rm -rf ./ReleaseStatic
+
+echo "WARNING!!!!!  Do not forget to install_name_tool -id libHazelcastClient.*.dylib libHazelcastClient.*.dylib"
