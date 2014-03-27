@@ -65,39 +65,6 @@ namespace hazelcast {
  *      + lib/     Contains compiled static libraries of dependencies.
  *      + include/ Contains headers of dependencies
  *
- *
- * \section guides Platform Specific Installation Guides
- *
- * C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.
- *
- * \subsection Linux
- *
- * For linux, there are two distributions one is 32bit the other is 64bit.
- *
- * Sample script to build with static library:
- *
- *  * ﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/libboost_atomic.a
- *
- * Sample script to build with shared library:
- *
- *  * g++ main.cpp -lpthread -Wl,--no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a
- *
- * \subsection Mac
- *
- * For Mac, there is only one  distribution which is 64 bit.
- *
- * Sample script to build with static library:
- *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_exception.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a
- *
- * Sample script to build with shared library:
- *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_exception.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a
- *
- * \subsection Windows
- *
- * For Windows, there are two distributions one is 32bit the other is 64bit.
- * 
  * 
  * 
  * \section code_samples Code Samples

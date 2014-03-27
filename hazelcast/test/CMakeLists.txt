@@ -7,46 +7,39 @@ include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/ha
 
 #set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/java/)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
-	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
+SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT}.exe)
 
-	set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
-		
-	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
-    target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES})
+
+IF(${HZ_CODE_COVERAGE} MATCHES "ON")
+	message(STATUS "Code coverage is on")
+	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
+ENDIF(${HZ_CODE_COVERAGE} MATCHES "ON")
+
+IF(${HZ_VALGRIND} MATCHES "ON")
+	message(STATUS "Valgrind is on")
+	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
+ENDIF(${HZ_VALGRIND} MATCHES "ON")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	add_executable(clientTestStatic_32.exe ${HZ_TEST_SOURCES})
-	add_executable(clientTestShared_32.exe ${HZ_TEST_SOURCES})
+	IF(${HZ_BIT} MATCHES "32")
+		set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+	ENDIF(${HZ_BIT} MATCHES "32")
 
-	add_executable(clientTestStatic_64.exe ${HZ_TEST_SOURCES})
-	add_executable(clientTestShared_64.exe ${HZ_TEST_SOURCES})
-	
-	#set_target_properties(clientTestStatic_64.exe PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
-	set_target_properties(clientTestStatic_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-	set_target_properties(clientTestShared_32.exe PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-		
-	target_link_libraries(clientTestStatic_32.exe HazelcastClientStatic_32 ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})
-	target_link_libraries(clientTestShared_32.exe HazelcastClientShared_32 ${Hz_Boost_LIBRARIES_32} ${Hz_ZLIB_LIBRARIES_32})
-	target_link_libraries(clientTestStatic_64.exe HazelcastClientStatic_64 ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
-	target_link_libraries(clientTestShared_64.exe HazelcastClientShared_64 ${Hz_Boost_LIBRARIES_64} ${Hz_ZLIB_LIBRARIES_64})
-
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	
-	add_executable(clientTestShared${Hz_Bit} ${HZ_TEST_SOURCES})
-	add_executable(clientTestStatic${Hz_Bit} ${HZ_TEST_SOURCES})
-	
-	set_target_properties(clientTestShared${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
-	set_target_properties(clientTestStatic${Hz_Bit} PROPERTIES COMPILE_FLAGS " /EHsc ")
-		
-	target_link_libraries(clientTestShared${Hz_Bit} HazelcastClientShared optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
-	target_link_libraries(clientTestStatic${Hz_Bit} HazelcastClientStatic optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
+
+	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
+
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} optimized ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
