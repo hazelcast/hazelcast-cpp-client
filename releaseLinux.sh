@@ -27,7 +27,7 @@ echo "Moving 32bit external libraries to target"
 cp -R external/include/* cpp/Linux_32/external/include/
 cp -R external/lib/linux/32/* cpp/Linux_32/external/lib/
 
-echo "Clearing tempraroy 32bit librares"
+echo "Clearing temporary 32bit libraries"
 rm -rf ./ReleaseShared32
 rm -rf ./ReleaseStatic32
 
@@ -60,7 +60,7 @@ echo "Moving 64bit external libraries to target"
 cp -R external/include/* cpp/Linux_64/external/include/
 cp -R external/lib/linux/64/* cpp/Linux_64/external/lib/
 
-echo "Clearing tempraroy 64bit librares"
+echo "Clearing temporary 64bit libraries"
 rm -rf ./ReleaseShared64
 rm -rf ./ReleaseStatic64
 

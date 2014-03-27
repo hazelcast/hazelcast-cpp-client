@@ -18,10 +18,6 @@ include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
-
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
-
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( FATAL_ERROR "Build needs HZ_BIT. set -DHZ_BIT=32 or -DHZ_BIT=64" )
 ENDIF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
@@ -52,6 +48,9 @@ ENDIF(${HZ_VALGRIND} MATCHES "ON")
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
+	
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_atomic.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_system.a)
@@ -61,12 +60,15 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libz.a)
 
-  target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	message(STATUS "LINUX ENVIRONMENT DETECTED")
+	
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_atomic.a)
 	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_system.a)
@@ -84,7 +86,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR}")
+    message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
 	add_definitions(-DWIN32 -D_WIN32 -D__WIN32__ -DHAZELCAST_EXPORTS)
 
 	set(Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_atomic-vc100-mt-gd-1_55.lib)
@@ -103,8 +105,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS " /EHsc " )
 
-	target_link_libraries(${HZ_LIB_NAME} optimized  ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES})
-	target_link_libraries(${HZ_LIB_NAME} debug ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES})
+	IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+		target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
+	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+	
+	IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+		target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} )
+	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
