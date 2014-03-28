@@ -33,6 +33,10 @@ namespace hazelcast {
             bool PortableRequest::isRetryable() const {
                 return false;
             }
+
+            bool PortableRequest::isBindToSingleConnection() const {
+                return false;
+            }
         }
     }
 }

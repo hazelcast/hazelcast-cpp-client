@@ -19,6 +19,8 @@ namespace hazelcast {
 
                 void setThreadId(long threadId);
 
+                bool isBindToSingleConnection() const;
+
             private:
                 std::string txnId;
                 long threadId;

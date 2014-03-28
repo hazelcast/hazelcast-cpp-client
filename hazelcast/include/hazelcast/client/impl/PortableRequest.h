@@ -28,6 +28,8 @@ namespace hazelcast {
 
                 virtual bool isRetryable() const;
 
+                virtual bool isBindToSingleConnection() const;
+
                 mutable int callId;
             };
         }

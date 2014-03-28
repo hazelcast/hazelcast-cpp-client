@@ -57,6 +57,11 @@ namespace hazelcast {
             }
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
+                if(promise->getRequest().isBindToSingleConnection()){
+                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
+                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                    return;
+                }
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
                     exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
                     promise->setException(instanceNotActiveException);  // TargetNotMemberException

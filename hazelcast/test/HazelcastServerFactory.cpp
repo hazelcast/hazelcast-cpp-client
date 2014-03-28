@@ -17,7 +17,7 @@ namespace hazelcast {
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
-                boost::this_thread::sleep(boost::posix_time::seconds(3));
+//                boost::this_thread::sleep(boost::posix_time::seconds(3));
                 if (int error = socket.connect())
                     std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 

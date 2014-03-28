@@ -21,6 +21,10 @@ namespace hazelcast {
             void BaseTxnRequest::setThreadId(long threadId) {
                 this->threadId = threadId;
             }
+
+            bool BaseTxnRequest::isBindToSingleConnection() const{
+                return true;
+            }
         }
     }
 }

@@ -6,6 +6,7 @@
 #include "ClientTxnTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,9 +18,7 @@ namespace hazelcast {
 
             ClientTxnTest::ClientTxnTest(HazelcastServerFactory &hazelcastInstanceFactory)
             : iTestFixture("ClientTxnTest")
-            , hazelcastInstanceFactory(hazelcastInstanceFactory)
-            , server(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
+            , hazelcastInstanceFactory(hazelcastInstanceFactory) {
             };
 
 
@@ -28,26 +27,58 @@ namespace hazelcast {
 
             void ClientTxnTest::addTests() {
                 addTest(&ClientTxnTest::testTxnRollback, "testTxnRollback");
+                addTest(&ClientTxnTest::testTxnWithMultipleNodes, "testTxnWithMultipleNodes");
             };
 
             void ClientTxnTest::beforeClass() {
             };
 
             void ClientTxnTest::afterClass() {
-                client.reset();
-                server.shutdown();
             };
 
             void ClientTxnTest::beforeTest() {
             };
 
             void ClientTxnTest::afterTest() {
+                hazelcastInstanceFactory.shutdownAll();
             };
 
+
+            void ClientTxnTest::testTxnWithMultipleNodes() {
+                HazelcastServer server(hazelcastInstanceFactory);
+                ClientConfig clientConfig;
+                HazelcastClient client(clientConfig.addAddress(Address(HOST, 5701)));
+
+                TransactionContext context = client.newTransactionContext();
+                HazelcastServer secondServer(hazelcastInstanceFactory);
+
+                bool rollbackSuccessful = false;
+                try {
+                    context.beginTransaction();
+                    TransactionalQueue<std::string> queue = context.getQueue<std::string>("testTxnRollback");
+
+                    server.shutdown();
+                    queue.offer("item");
+                    assertTrue(false, "queue offer should throw InstanceNotActiveException");
+
+                    context.commitTransaction();
+                } catch (exception::InstanceNotActiveException &) {
+                    context.rollbackTransaction();
+                    rollbackSuccessful = true;
+                }
+
+                assertTrue(rollbackSuccessful);
+
+            }
+
             void ClientTxnTest::testTxnRollback() {
+                HazelcastServer server(hazelcastInstanceFactory);
+                ClientConfig clientConfig;
+                HazelcastClient client(clientConfig.addAddress(Address(HOST, 5701)));
+
                 std::auto_ptr<HazelcastServer> second;
-                TransactionContext context = client->newTransactionContext();
-                util::CountDownLatch latch(1);
+                TransactionContext context = client.newTransactionContext();
+                bool rollbackSuccessful = false;
                 try {
                     context.beginTransaction();
                     second.reset(new HazelcastServer(hazelcastInstanceFactory));
@@ -60,12 +91,12 @@ namespace hazelcast {
                     assertTrue(false, "commit should throw exception!!!");
                 } catch (std::exception &) {
                     context.rollbackTransaction();
-                    latch.countDown();
+                    rollbackSuccessful = true;
                 }
 
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(rollbackSuccessful);
 
-                IQueue<std::string> q = client->getQueue<std::string>("testTxnRollback");
+                IQueue<std::string> q = client.getQueue<std::string>("testTxnRollback");
                 assertNull(q.poll().get());
                 assertEqual(0, q.size());
             }
