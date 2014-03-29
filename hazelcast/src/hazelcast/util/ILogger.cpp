@@ -16,20 +16,24 @@ namespace hazelcast {
 
         void ILogger::severe(const std::string &message) {
             if (client::SEVERE >= HazelcastLogLevel) {
-                (std::cout << "SEVERE:: " << message << std::endl);
+                (std::cout << "SEVERE: "  << prefix << " " <<  message << std::endl);
             }
         }
 
         void ILogger::warning(const std::string &message) {
             if (client::WARNING >= HazelcastLogLevel) {
-                (std::cout << "WARNING:: " << message << std::endl);
+                (std::cout << "WARNING: "  << prefix << " " << message << std::endl);
             }
         }
 
         void ILogger::info(const std::string &message) {
             if (client::WARNING >= HazelcastLogLevel) {
-                (std::cout << "INFO:: " << message << std::endl);
+                (std::cout << "INFO: " << prefix << " " << message << std::endl);
             }
+        }
+
+        void ILogger::setPrefix(const std::string &prefix) {
+            this->prefix = prefix;
         }
     }
 }

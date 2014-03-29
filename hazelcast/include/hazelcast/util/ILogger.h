@@ -32,8 +32,12 @@ namespace hazelcast {
             void warning(const std::string &message);
 
             void info(const std::string &message);
+
+            void setPrefix(const std::string& prefix);
+
         private:
             int HazelcastLogLevel;
+            std::string prefix;
 
             ILogger() :HazelcastLogLevel(client::INFO){}
             ~ILogger() {}
