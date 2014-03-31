@@ -15,7 +15,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMapTest::ClientMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            : iTestFixture("ClientMapTest")
+            : iTestFixture<ClientMapTest>("ClientMapTest")
             , instance(hazelcastInstanceFactory)
             , instance2(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))

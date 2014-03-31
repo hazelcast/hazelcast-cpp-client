@@ -16,7 +16,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientSemaphoreTest::ClientSemaphoreTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            : iTestFixture("ClientSemaphoreTest")
+            : iTestFixture<ClientSemaphoreTest>("ClientSemaphoreTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , s(new ISemaphore(client->getISemaphore("ClientSemaphoreTest"))) {

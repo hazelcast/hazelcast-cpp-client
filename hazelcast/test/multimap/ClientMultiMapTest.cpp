@@ -13,7 +13,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMultiMapTest::ClientMultiMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            : iTestFixture("ClientMultiMapTest")
+            : iTestFixture<ClientMultiMapTest>("ClientMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , mm(new MultiMap<std::string, std::string>(client->getMultiMap< std::string, std::string >("ClientMultiMapTest"))) {

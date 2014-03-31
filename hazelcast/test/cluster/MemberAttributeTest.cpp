@@ -22,7 +22,7 @@ namespace hazelcast {
             using namespace iTest;
 
             MemberAttributeTest::MemberAttributeTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :iTestFixture("MemberAttributeTest")
+            :iTestFixture<MemberAttributeTest>("MemberAttributeTest")
             ,hazelcastInstanceFactory(hazelcastInstanceFactory){
             };
 
