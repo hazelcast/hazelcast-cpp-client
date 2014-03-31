@@ -119,7 +119,7 @@ void testSleep(){
 
 int main(int argc, char **argv) {
 //    testSleep();
-//    unitTests();
+    unitTests();
 //    testSpeed();
     return 0;
 };
