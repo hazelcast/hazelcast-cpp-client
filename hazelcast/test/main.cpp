@@ -20,6 +20,7 @@
 #include "txn/ClientTxnMultiMapTest.h"
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
+#include "hazelcast/util/Thread.h"
 
 using namespace hazelcast::client::test;
 
@@ -97,9 +98,28 @@ void unitTests() {
     }
 }
 
-int main(int argc, char **argv) {
+void* s(void * value){
+    struct hazelcast::util::ThreadArgs* threadArgs = (struct hazelcast::util::ThreadArgs*)value;
+    int* v = (int*)threadArgs->args;
+    std::cout << "Sleep" << std::endl;
+    ::sleep(5);
+    std::cout << "DONE " << *v << std::endl;
+    return NULL;
+}
 
-    unitTests();
+void testSleep(){
+    int a = 5;
+    hazelcast::util::Thread d(s, NULL, &a);
+    long t = hazelcast::util::getCurrentTimeMillis();
+    d.interrupt();
+    d.join();
+    t = hazelcast::util::getCurrentTimeMillis() - t;
+    std::cout << "Last " << t << " millis" << std::endl;
+}
+
+int main(int argc, char **argv) {
+//    testSleep();
+//    unitTests();
 //    testSpeed();
     return 0;
 };

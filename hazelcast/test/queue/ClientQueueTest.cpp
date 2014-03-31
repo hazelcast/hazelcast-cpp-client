@@ -112,7 +112,7 @@ namespace hazelcast {
                 boost::thread t2(boost::bind(testOfferPollThread2, q.get()));
 
                 assertEqual("item1", *(q->poll(5 * 1000)));
-                t2.try_join_for(boost::chrono::seconds(10));
+                t2.join();
             }
 
             void ClientQueueTest::testRemainingCapacity() {
