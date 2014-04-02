@@ -42,27 +42,6 @@ namespace hazelcast {
                 pthread_cond_destroy(&condition);
             };
 
-            ConditionVariable::status wait_for(Mutex &mutex, long timeoutInMillis) {
-                struct timespec time;
-                time.tv_nsec = timeoutInMillis * 1000;
-                time.tv_sec = 0;
-                int err = pthread_cond_timedwait(&condition, &(mutex.mutex), &time);
-                if (EPERM == err) {
-                    return ConditionVariable::notOwner;
-                }
-
-                if (EINVAL == err) {
-                    return ConditionVariable::invalidInput;
-                }
-
-                if (ETIMEDOUT == err) {
-                    return ConditionVariable::timeout;
-                }
-
-                return ConditionVariable::ok;
-
-            };
-
             ConditionVariable::status wait(Mutex &mutex) {
                 int err = pthread_cond_wait(&condition,  &(mutex.mutex));
                 if (EPERM == err) {

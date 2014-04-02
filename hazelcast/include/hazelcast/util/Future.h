@@ -24,7 +24,7 @@ namespace hazelcast {
 
             void set_value(const T &value) {
                 LockGuard guard(mutex);
-                assert( (exceptionReady || resultReady) && "Value can not be set twice");
+                assert( !(exceptionReady || resultReady) && "Value can not be set twice");
                 sharedObject = value;
                 resultReady = true;
                 conditionVariable.notify();
@@ -32,7 +32,7 @@ namespace hazelcast {
 
             void set_exception(const client::exception::IException &e) {
                 LockGuard guard(mutex);
-                assert( (exceptionReady || resultReady) && "Exception can not be set twice");
+                assert( !(exceptionReady || resultReady) && "Exception can not be set twice");
                 exception = e;
                 exceptionReady = true;
                 conditionVariable.notify();

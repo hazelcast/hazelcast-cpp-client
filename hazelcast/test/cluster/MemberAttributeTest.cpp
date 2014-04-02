@@ -155,7 +155,8 @@ namespace hazelcast {
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
-                assertTrue(attributeLatch.await(1000 * 30), "attributeLatch");
+                bool a = attributeLatch.await(1000 * 30);
+                assertTrue(a, "attributeLatch");
 
                 instance2.shutdown();
 

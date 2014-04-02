@@ -34,62 +34,62 @@ void unitTests() {
 
         HazelcastServerFactory factory;
 
-        MemberAttributeTest memberAttributeTest(factory);
-        memberAttributeTest.executeTests();
-
-        ClusterTest clusterTest(factory);
-        clusterTest.executeTests();
-
-        ClientSerializationTest serializationTest;
-        serializationTest.executeTests();
-
-        ClientMapTest mapTest(factory);
-        mapTest.executeTests();
-
-        ClientMultiMapTest multiMapTest(factory);
-        multiMapTest.executeTests();
-
-        ClientQueueTest queueTest(factory);
-        queueTest.executeTests();
-
-        ClientListTest listTest(factory);
-        listTest.executeTests();
-
-        ClientSetTest setTest(factory);
-        setTest.executeTests();
-
-        IAtomicLongTest atomTest(factory);
-        atomTest.executeTests();
-
-        IdGeneratorTest generatorTest(factory);
-        generatorTest.executeTests();
-
-        ICountDownLatchTest latchTest(factory);
-        latchTest.executeTests();
-
-        ClientLockTest lockTest(factory);
-        lockTest.executeTests();
-
-        ClientSemaphoreTest semaphoreTest(factory);
-        semaphoreTest.executeTests();
-
-        ClientTopicTest topicTest(factory);
-        topicTest.executeTests();
-
-        ClientTxnListTest clientTxnListTest(factory);
-        clientTxnListTest.executeTests();
-
-        ClientTxnMapTest clientTxnMapTest(factory);
-        clientTxnMapTest.executeTests();
-
-        ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
-        clientTxnMultiMapTest.executeTests();
-
-        ClientTxnQueueTest clientTxnQueueTest(factory);
-        clientTxnQueueTest.executeTests();
-
-        ClientTxnSetTest clientTxnSetTest(factory);
-        clientTxnSetTest.executeTests();
+//        MemberAttributeTest memberAttributeTest(factory);
+//        memberAttributeTest.executeTests();
+//
+//        ClusterTest clusterTest(factory);
+//        clusterTest.executeTests();
+//
+//        ClientSerializationTest serializationTest;
+//        serializationTest.executeTests();
+//
+//        ClientMapTest mapTest(factory);
+//        mapTest.executeTests();
+//
+//        ClientMultiMapTest multiMapTest(factory);
+//        multiMapTest.executeTests();
+//
+//        ClientQueueTest queueTest(factory);
+//        queueTest.executeTests();
+//
+//        ClientListTest listTest(factory);
+//        listTest.executeTests();
+//
+//        ClientSetTest setTest(factory);
+//        setTest.executeTests();
+//
+//        IAtomicLongTest atomTest(factory);
+//        atomTest.executeTests();
+//
+//        IdGeneratorTest generatorTest(factory);
+//        generatorTest.executeTests();
+//
+//        ICountDownLatchTest latchTest(factory);
+//        latchTest.executeTests();
+//
+//        ClientLockTest lockTest(factory);
+//        lockTest.executeTests();
+//
+//        ClientSemaphoreTest semaphoreTest(factory);
+//        semaphoreTest.executeTests();
+//
+//        ClientTopicTest topicTest(factory);
+//        topicTest.executeTests();
+//
+//        ClientTxnListTest clientTxnListTest(factory);
+//        clientTxnListTest.executeTests();
+//
+//        ClientTxnMapTest clientTxnMapTest(factory);
+//        clientTxnMapTest.executeTests();
+//
+//        ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
+//        clientTxnMultiMapTest.executeTests();
+//
+//        ClientTxnQueueTest clientTxnQueueTest(factory);
+//        clientTxnQueueTest.executeTests();
+//
+//        ClientTxnSetTest clientTxnSetTest(factory);
+//        clientTxnSetTest.executeTests();
 
         ClientTxnTest clientTxnTest(factory);
         clientTxnTest.executeTests();
@@ -115,7 +115,28 @@ void testSleep(){
     std::cout << "Last " << t << " millis" << std::endl;
 }
 
+
+void testLatchThreadMain(hazelcast::util::ThreadArgs& args){
+    hazelcast::util::CountDownLatch* latch = (hazelcast::util::CountDownLatch*)args.arg0;
+    std::cout << "SLEEP" << std::endl;
+    sleep(10);
+    std::cout << "WAKEUP" << std::endl;
+    latch->countDown();
+}
+
+void testLatch(){
+    hazelcast::util::CountDownLatch latch(1);
+    hazelcast::util::Thread thread(testLatchThreadMain,&latch);
+
+    std::cout << "START AWAIT" << std::endl;
+    bool b = latch.await(30 * 1000);
+    std::cout << b << std::endl;
+    thread.join();
+    
+}
+
 int main(int argc, char **argv) {
+//    testLatch();
 //    testSleep();
     unitTests();
 //    testSpeed();

@@ -3,8 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/util/CountDownLatch.h"
-
+#include <unistd.h>
 
 namespace hazelcast {
     namespace util {
@@ -20,23 +21,26 @@ namespace hazelcast {
         }
 
         bool CountDownLatch::await(long timeInMillis) {
-            util::LockGuard lock(mutex);
+            long endTime = util::getCurrentTimeMillis() + timeInMillis;
+            while (endTime > util::getCurrentTimeMillis()) {
+                if (count == 0) {
+                    return true;
+                }
+                ::sleep(1);
+            }
             if (count == 0) {
                 return true;
             }
-            util::ConditionVariable::status status = conditionVariable.wait_for(mutex, timeInMillis);
-            if (status == util::ConditionVariable::timeout) {
-                return false;
-            }
-            return true;
+            return false;
         }
 
         void CountDownLatch::await() {
-            util::LockGuard lock(mutex);
-            if (count == 0) {
-                return;
-            }
-            conditionVariable.wait(mutex);
+            while (true) {
+                if (count == 0) {
+                    break;
+                }
+                ::sleep(1);
+            };
         }
     }
 }
