@@ -3,8 +3,8 @@
 
 
 #include "hazelcast/client/Address.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include <string>
-#include <boost/atomic.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma comment(lib, "Ws2_32.lib")
@@ -108,7 +108,7 @@ namespace hazelcast {
 
             struct addrinfo *serverInfo;
             int socketId;
-			boost::atomic<bool> isOpen;
+			util::AtomicBoolean isOpen;
 
 			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			WSADATA wsa_data;

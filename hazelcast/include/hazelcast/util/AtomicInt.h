@@ -13,23 +13,52 @@ namespace hazelcast {
     namespace util {
         class AtomicInt {
         public:
+            AtomicInt():v(0) {
+
+            }
+
             AtomicInt(int v):v(v) {
 
             }
 
-            int increment() {
+            int operator--(int ){
+                LockGuard lockGuard(mutex);
+                return v--;
+            }
+
+            int operator++(int ){
+                LockGuard lockGuard(mutex);
+                return v++;
+            }
+
+            int operator++(){
                 LockGuard lockGuard(mutex);
                 return ++v;
             }
 
-            int decrement() {
+            void operator =(int i){
+                LockGuard lockGuard(mutex);
+                v = i;
+            }
+
+            operator int(){
+                LockGuard lockGuard(mutex);
+                return v;
+            }
+
+            int operator--(){
                 LockGuard lockGuard(mutex);
                 return --v;
             }
 
-            bool isEqualto(int i) {
+            bool operator ==(int i) {
                 LockGuard lockGuard(mutex);
                 return i == v;
+            }
+
+            bool operator !=(int i) {
+                LockGuard lockGuard(mutex);
+                return i != v;
             }
 
         private:
@@ -38,7 +67,7 @@ namespace hazelcast {
 
             AtomicInt(const AtomicInt &rhs);
 
-            void operator = (const AtomicInt &rhs);
+            void operator =(const AtomicInt &rhs);
         };
     }
 }

@@ -98,18 +98,16 @@ void unitTests() {
     }
 }
 
-void* s(void * value){
-    struct hazelcast::util::ThreadArgs* threadArgs = (struct hazelcast::util::ThreadArgs*)value;
-    int* v = (int*)threadArgs->args;
+void s(hazelcast::util::ThreadArgs& args){
+    int* v = (int*)args.arg0;
     std::cout << "Sleep" << std::endl;
     ::sleep(5);
     std::cout << "DONE " << *v << std::endl;
-    return NULL;
 }
 
 void testSleep(){
     int a = 5;
-    hazelcast::util::Thread d(s, NULL, &a);
+    hazelcast::util::Thread d(s, &a);
     long t = hazelcast::util::getCurrentTimeMillis();
     d.interrupt();
     d.join();

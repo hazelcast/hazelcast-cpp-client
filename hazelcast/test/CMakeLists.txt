@@ -23,7 +23,7 @@ ENDIF(${HZ_VALGRIND} MATCHES "ON")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -32,7 +32,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	ENDIF(${HZ_BIT} MATCHES "32")
 
-	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
@@ -41,11 +41,11 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
 	message(STATUS "ddddddd ${CMAKE_BUILD_TYPE} ")
 	IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
+		target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
 	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-	
+
 	IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-		target_link_libraries(${HZ_EXE_NAME}  ${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} )
+		target_link_libraries(${HZ_EXE_NAME}  ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
 	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-	
+
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

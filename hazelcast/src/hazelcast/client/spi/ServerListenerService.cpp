@@ -23,9 +23,9 @@ namespace hazelcast {
             };
 
             std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
-                boost::shared_future<serialization::pimpl::Data> future;
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future;
                 future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, partitionId);
-                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
+                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future->get());
                 handler->registrationId = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
 
@@ -33,9 +33,9 @@ namespace hazelcast {
             }
 
             std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
-                boost::shared_future<serialization::pimpl::Data> future;
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future;
                 future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
-                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
+                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future->get());
                 handler->registrationId = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
 
@@ -50,8 +50,8 @@ namespace hazelcast {
                     return false;
                 }
                 request->setRegistrationId(resolvedRegistrationId);
-                boost::shared_future<serialization::pimpl::Data> future = clientContext.getInvocationService().invokeOnRandomTarget(request);
-                bool result = clientContext.getSerializationService().toObject<bool>(future.get());
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = clientContext.getInvocationService().invokeOnRandomTarget(request);
+                bool result = clientContext.getSerializationService().toObject<bool>(future->get());
                 return result;
             }
 
@@ -85,7 +85,7 @@ namespace hazelcast {
                     connection::ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
                 } catch(exception::IOException &e) {
-                    boost::lock_guard<boost::mutex> lockGuard(failedListenerLock);
+                    util::LockGuard lockGuard(failedListenerLock);
                     failedListeners.push_back(failedListener);
                     return;
                 }
@@ -96,7 +96,7 @@ namespace hazelcast {
                 std::vector< boost::shared_ptr<connection::CallPromise> >::iterator it;
                 std::vector< boost::shared_ptr<connection::CallPromise> > newFailedListeners;
 
-                boost::lock_guard<boost::mutex> lockGuard(failedListenerLock);
+                util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
                     boost::shared_ptr<connection::Connection> connection;
                     try {

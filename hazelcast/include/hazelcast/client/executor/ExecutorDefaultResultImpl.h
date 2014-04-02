@@ -29,14 +29,14 @@
 //                template<typename Result, typename Callable >
 //                Future<Result> submit(Callable &task, const Result &result) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvoke<Result, Callable>, this, boost::ref(task), future, boost::cref(result)));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultResultImpl::asyncInvoke<Result, Callable>, this, (task), future, (result)));
 //                    return future;
 //                }
 //
 //                template<typename Result, typename Runnable >
 //                Future<Result> submit(executor::RunnableAdapter<Runnable> task, const Result &result) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvoke<Result, executor::RunnableAdapter<Runnable> >, this, task, future, boost::cref(result)));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultResultImpl::asyncInvoke<Result, executor::RunnableAdapter<Runnable> >, this, task, future, (result)));
 //                    return future;
 //                }
 //
@@ -54,7 +54,7 @@
 //                template<typename Result, typename Callable >
 //                Future<Result> submit(Callable &task, const Address &address, const Result &result) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultResultImpl::asyncInvokeToAddress, this, boost::ref(task), address, future, boost::cref(result)));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultResultImpl::asyncInvokeToAddress, this, (task), address, future, (result)));
 //                    return future;
 //                }
 //

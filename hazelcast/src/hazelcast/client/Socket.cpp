@@ -101,8 +101,7 @@ namespace hazelcast {
         }
 
         void Socket::close() {
-            bool expected = true;
-            if (isOpen.compare_exchange_strong(expected, false)) {
+            if (isOpen.compareAndSet(true, false)) {
 				if (serverInfo != NULL)
 					::freeaddrinfo(serverInfo);
 

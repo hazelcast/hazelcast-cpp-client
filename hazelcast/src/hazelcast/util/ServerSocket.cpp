@@ -48,8 +48,7 @@ namespace hazelcast {
 		}
 
         void ServerSocket::close() {
-            bool expected = true;
-            if (isOpen.compare_exchange_strong(expected, false)) {
+            if (isOpen.compareAndSet(true, false)) {
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 				::shutdown(socketId, SD_RECEIVE);
 				char buffer[1];

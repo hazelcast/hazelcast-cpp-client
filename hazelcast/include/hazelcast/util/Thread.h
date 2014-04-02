@@ -5,55 +5,51 @@
 #ifndef HAZELCAST_Thread
 #define HAZELCAST_Thread
 
-#include "Mutex.h"
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/ThreadArgs.h"
 #include <cstdlib>
 
 namespace hazelcast {
     namespace util {
 
-        struct ThreadArgs {
-            void *clazz;
-            void *args;
-        };
-
         class Thread {
         public:
-            Thread(void *(func)(void *), void *clazz, void *args) {
-                ThreadArgs threadArgs;
-                threadArgs.clazz = clazz;
-                threadArgs.args = args;
-                pthread_create(&thread, NULL, func, args);
+            Thread(void (func)(ThreadArgs &), void *arg0 = NULL, void *arg1 = NULL, void *arg2 = NULL, void *arg3 = NULL) {
+                ThreadArgs *threadArgs = new ThreadArgs;
+                threadArgs->arg0 = arg0;
+                threadArgs->arg1 = arg1;
+                threadArgs->arg2 = arg2;
+                threadArgs->arg3 = arg3;
+                threadArgs->func = func;
+                pthread_create(&thread, NULL, controlledThread, threadArgs);
             };
 
-            static Thread this_thread(){
+            static void *controlledThread(void *args) {
+                ThreadArgs *threadArgs = (ThreadArgs *) args;
+                threadArgs->func(*threadArgs);
+                delete threadArgs;
+                return NULL;
+            };
+
+            static Thread this_thread() {
                 return Thread(pthread_self());
             };
 
-            long getThreadID(){
+            long getThreadID() {
                 return long(pthread_self());
             }
 
-            Thread(void *(func)(void *), void *args) {
-                ThreadArgs threadArgs;
-                threadArgs.clazz = NULL;
-                threadArgs.args = args;
-                pthread_create(&thread, NULL, func, args);
-            };
 
-            ~Thread(){
+            ~Thread() {
             }
 
-            void interrupt(){
+            void interrupt() {
                 pthread_cancel(thread);
             };
 
-//            void sleep(int seconds){
-//                ::sleep(seconds);
-//            };
-
-            bool join(){
+            bool join() {
                 int err = pthread_join(thread, NULL);
-                if(EINVAL == err || ESRCH == err || EDEADLK == err){
+                if (EINVAL == err || ESRCH == err || EDEADLK == err) {
                     return false;
                 }
                 return true;
@@ -61,10 +57,10 @@ namespace hazelcast {
 
         private:
 
-            Thread(pthread_t thread):thread(thread){
+            Thread(pthread_t thread):thread(thread) {
 
             }
-//            Mutex sleepMutex;
+
             pthread_t thread;
         };
     }

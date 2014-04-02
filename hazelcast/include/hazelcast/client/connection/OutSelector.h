@@ -8,9 +8,7 @@
 
 #include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/util/SocketSet.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/atomic.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include "hazelcast/util/Mutex.h"
 #include <map>
 
 namespace hazelcast {

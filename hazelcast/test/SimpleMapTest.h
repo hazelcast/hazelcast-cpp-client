@@ -6,8 +6,8 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -29,9 +29,9 @@ public:
 
     Stats(const Stats &rhs) {
         Stats newOne;
-        getCount.exchange(rhs.getCount);
-        putCount.exchange(rhs.putCount);
-        removeCount.exchange(rhs.removeCount);
+        getCount = (int)rhs.getCount;
+        putCount = (int)rhs.putCount;
+        removeCount = (int)rhs.removeCount;
     };
 
     Stats getAndReset() {
@@ -41,24 +41,24 @@ public:
         removeCount = 0;
         return newOne;
     };
-    boost::atomic<int> getCount;
-    boost::atomic<int> putCount;
-    boost::atomic<int> removeCount;
+    mutable hazelcast::util::AtomicInt getCount;
+    mutable hazelcast::util::AtomicInt putCount;
+    mutable hazelcast::util::AtomicInt removeCount;
 
-    void print() {
+    void print() const{
         std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = " << removeCount << std::endl;
     };
 
-    int total() {
-        return getCount + putCount + removeCount;
+    int total() const{
+        return (int) getCount + (int) putCount + (int) removeCount;
     };
 } stats;
 
-void printStats() {
+void printStats(hazelcast::util::ThreadArgs &args) {
     while (true) {
         try {
-            boost::this_thread::sleep(boost::posix_time::seconds(STATS_SECONDS));
-            Stats statsNow = stats.getAndReset();
+            sleep((unsigned int)STATS_SECONDS);
+            const Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
         } catch (std::exception &e) {
@@ -76,6 +76,12 @@ public:
         server_address = address;
         server_port = port;
     };
+
+    static void staticOp(hazelcast::util::ThreadArgs &args) {
+        SimpleMapTest *simpleMapTest = (SimpleMapTest *) args.arg0;
+        HazelcastClient *hazelcastClient = (HazelcastClient *) args.arg1;
+        simpleMapTest->op(hazelcastClient);
+    }
 
     void op(HazelcastClient *a) {
         IMap<int, std::vector<char> > map = a->getMap<int, std::vector<char > >("cppDefault");
@@ -109,7 +115,6 @@ public:
     }
 
     void run() {
-        srand(time(NULL));
         std::cerr << "Starting Test with  " << std::endl;
         std::cerr << "      Thread Count: " << THREAD_COUNT << std::endl;
         std::cerr << "       Entry Count: " << ENTRY_COUNT << std::endl;
@@ -121,11 +126,11 @@ public:
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
 
-        boost::thread monitor(printStats);
+        hazelcast::util::Thread monitor(printStats);
         HazelcastClient hazelcastClient(clientConfig);
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            boost::thread t(boost::bind(&SimpleMapTest::op, this, &hazelcastClient));
+            hazelcast::util::Thread t(&SimpleMapTest::staticOp, this, &hazelcastClient);
         }
         monitor.join();
     }

@@ -8,6 +8,7 @@
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -20,6 +21,10 @@ namespace hazelcast {
                 isAlive = true;
             };
 
+            void IOSelector::staticListen(util::ThreadArgs& args){
+                IOSelector* inSelector = (IOSelector*)args.arg0;
+                inSelector->listen();
+            }
 
             IOSelector::~IOSelector() {
                 shutdown();
@@ -42,8 +47,6 @@ namespace hazelcast {
                         listenInternal();
                     }catch(exception::IException& e){
                         util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
-                    }catch(boost::thread_interrupted&){
-                        break;
                     } catch(...){
                         hazelcast::util::ILogger::getLogger().severe("IOSelector::listen unknown exception");
                     }

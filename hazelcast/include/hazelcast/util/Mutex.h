@@ -77,7 +77,7 @@ namespace hazelcast {
             }
 
             pthread_mutex_t mutex;
-
+        private:
             Mutex(const Mutex &rhs);
 
             void operator = (const Mutex &rhs);

@@ -16,6 +16,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/exception/IAuthenticationException.h"
 #include "hazelcast/client/impl/ServerException.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
@@ -42,8 +43,8 @@ namespace hazelcast {
                 if (!oListener.start()) {
                     return false;
                 }
-                iListenerThread.reset(new boost::thread(&InSelector::listen, &iListener));
-                oListenerThread.reset(new boost::thread(&OutSelector::listen, &oListener));
+                iListenerThread.reset(new util::Thread(InSelector::staticListen, &iListener));
+                oListenerThread.reset(new util::Thread(OutSelector::staticListen, &oListener));
                 return true;
             }
 
@@ -115,7 +116,7 @@ namespace hazelcast {
             boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
-                    boost::lock_guard<boost::mutex> l(lockMutex);
+                    util::LockGuard l(lockMutex);
                     conn = connections.get(address);
                     if (conn.get() == NULL) {
                         boost::shared_ptr<Connection> newConnection(connectTo(address, false));

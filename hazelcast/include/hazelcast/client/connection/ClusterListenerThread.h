@@ -8,8 +8,8 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
-#include <boost/atomic.hpp>
-#include <boost/thread.hpp>
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,7 +34,9 @@ namespace hazelcast {
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
 
-                void setThread(boost::thread *);
+                void setThread(util::Thread *);
+
+                static void staticRun(util::ThreadArgs &args) ;
 
                 void run();
 
@@ -45,10 +47,10 @@ namespace hazelcast {
             private:
                 spi::ClientContext &clientContext;
 
-                std::auto_ptr<boost::thread> clusterListenerThread;
+                std::auto_ptr<util::Thread> clusterListenerThread;
 
                 std::auto_ptr<Connection> conn;
-                boost::atomic<bool> deletingConnection;
+                util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
 
                 connection::Connection *pickConnection();

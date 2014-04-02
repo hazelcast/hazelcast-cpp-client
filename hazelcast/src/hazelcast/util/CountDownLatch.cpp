@@ -20,23 +20,23 @@ namespace hazelcast {
         }
 
         bool CountDownLatch::await(long timeInMillis) {
-            boost::unique_lock<boost::mutex> lock(mutex);
+            util::LockGuard lock(mutex);
             if (count == 0) {
                 return true;
             }
-            boost::cv_status status = conditionVariable.wait_for(lock, boost::chrono::milliseconds(timeInMillis));
-            if (status == boost::cv_status::timeout) {
+            util::ConditionVariable::status status = conditionVariable.wait_for(mutex, timeInMillis);
+            if (status == util::ConditionVariable::timeout) {
                 return false;
             }
             return true;
         }
 
         void CountDownLatch::await() {
-            boost::unique_lock<boost::mutex> lock(mutex);
+            util::LockGuard lock(mutex);
             if (count == 0) {
                 return;
             }
-            conditionVariable.wait(lock);
+            conditionVariable.wait(mutex);
         }
     }
 }

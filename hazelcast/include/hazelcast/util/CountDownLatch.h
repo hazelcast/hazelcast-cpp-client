@@ -7,8 +7,9 @@
 #define HAZELCAST_CountDownLatch
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <boost/atomic/atomic.hpp>
-#include <boost/thread.hpp>
+#include "hazelcast/util/ConditionVariable.h"
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
     namespace util {
@@ -23,9 +24,9 @@ namespace hazelcast {
             void await();
 
         private:
-            boost::atomic<int> count;
-            boost::condition_variable conditionVariable;
-            boost::mutex mutex;
+            util::AtomicInt count;
+            util::ConditionVariable conditionVariable;
+            util::Mutex mutex;
 
         };
     }

@@ -104,8 +104,8 @@ namespace hazelcast {
                     request->setThreadId(threadId);
                     spi::InvocationService &invocationService = clientContext.getInvocationService();
                     serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
-                    boost::shared_future<serialization::pimpl::Data> future = invocationService.invokeOnConnection(request, connection);
-                    return ss.toObject<Response>(future.get());
+                    boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnConnection(request, connection);
+                    return ss.toObject<Response>(future->get());
                 }
 
                 void checkThread();

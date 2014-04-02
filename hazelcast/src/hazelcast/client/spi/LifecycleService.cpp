@@ -42,7 +42,7 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                boost::lock_guard<boost::mutex> lg(lifecycleLock);
+                util::LockGuard lg(lifecycleLock);
                 if(!active)
                     return;
                 active = false;
@@ -54,17 +54,17 @@ namespace hazelcast {
             };
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
-                boost::lock_guard<boost::mutex> lg(listenerLock);
+                util::LockGuard lg(listenerLock);
                 listeners.insert(lifecycleListener);
             };
 
             bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                boost::lock_guard<boost::mutex> lg(listenerLock);
+                util::LockGuard lg(listenerLock);
                 return listeners.erase(lifecycleListener) == 1;
             };
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
-                boost::lock_guard<boost::mutex> lg(listenerLock);
+                util::LockGuard lg(listenerLock);
                 util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :

@@ -8,8 +8,8 @@
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
-#include <boost/thread/future.hpp>
 #include <memory>
+#include <cassert>
 
 namespace hazelcast {
     namespace util {
@@ -17,12 +17,12 @@ namespace hazelcast {
         class Future {
         public:
             Future()
-            :resultReady(false)
+            : resultReady(false)
             , exceptionReady(false) {
 
             };
 
-            void set_value(T &value) {
+            void set_value(const T &value) {
                 LockGuard guard(mutex);
                 assert( (exceptionReady || resultReady) && "Value can not be set twice");
                 sharedObject = value;
@@ -30,7 +30,7 @@ namespace hazelcast {
                 conditionVariable.notify();
             };
 
-            void set_exception(client::exception::IException &e) {
+            void set_exception(const client::exception::IException &e) {
                 LockGuard guard(mutex);
                 assert( (exceptionReady || resultReady) && "Exception can not be set twice");
                 exception = e;
@@ -52,8 +52,8 @@ namespace hazelcast {
             };
 
         private:
-            bool exceptionReady;
             bool resultReady;
+            bool exceptionReady;
             ConditionVariable conditionVariable;
             Mutex mutex;
             T sharedObject;

@@ -7,8 +7,8 @@
 #define HAZELCAST_CLUSTER_SERVICE
 
 #include "hazelcast/client/connection/ClusterListenerThread.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_guard.hpp>
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/LockGuard.h"
 #include <set>
 
 namespace hazelcast {
@@ -69,10 +69,10 @@ namespace hazelcast {
                 std::map<Address, Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;
                 std::set< InitialMembershipListener *> initialListeners;
-                boost::mutex listenerLock;
-                boost::mutex membersLock;
+                util::Mutex listenerLock;
+                util::Mutex membersLock;
 
-                boost::atomic<bool> active;
+                util::AtomicBoolean active;
 
                 void initMembershipListeners();
 

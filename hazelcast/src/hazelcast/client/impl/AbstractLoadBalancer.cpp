@@ -4,7 +4,7 @@
 
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include "hazelcast/client/Cluster.h"
-#include <boost/thread/lock_guard.hpp>
+#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,7 @@ namespace hazelcast {
             };
 
             void AbstractLoadBalancer::setMembersRef() {
-                boost::lock_guard<boost::mutex> lg(membersLock);
+                util::LockGuard lg(membersLock);
                 membersRef = cluster->getMembers();
             };
 
@@ -35,7 +35,7 @@ namespace hazelcast {
             }
 
             std::vector<Member>  AbstractLoadBalancer::getMembers() {
-                boost::lock_guard<boost::mutex> lg(membersLock);
+                util::LockGuard lg(membersLock);
                 return membersRef;
             };
 

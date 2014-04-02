@@ -6,6 +6,7 @@
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -182,7 +183,9 @@ namespace hazelcast {
 
             }
 
-            void lockThread(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
+            void lockThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
                 }
@@ -191,12 +194,15 @@ namespace hazelcast {
             void ClientMultiMapTest::testLock() {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                boost::thread t(boost::bind(lockThread, mm.get(), &latch));
+                util::Thread t(lockThread, mm.get(), &latch);
                 assertTrue(latch.await(5 * 1000));
                 mm->forceUnlock("key1");
             }
 
-            void lockTtlThread(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
+            void lockTtlThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
+
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
                 }
@@ -212,13 +218,15 @@ namespace hazelcast {
             void ClientMultiMapTest::testLockTtl() {
                 mm->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                boost::thread t(lockTtlThread, mm.get(), &latch);
+                util::Thread t(lockTtlThread, mm.get(), &latch);
                 assertTrue(latch.await(10 * 1000));
                 mm->forceUnlock("key1");
             }
 
 
-            void tryLockThread(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
+            void tryLockThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 try {
                     if (!mm->tryLock("key1", 2 * 1000)) {
                         latch->countDown();
@@ -228,7 +236,9 @@ namespace hazelcast {
                 }
             }
 
-            void tryLockThread2(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
+            void tryLockThread2(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 try {
                     if (mm->tryLock("key1", 20 * 1000)) {
                         latch->countDown();
@@ -241,21 +251,23 @@ namespace hazelcast {
             void ClientMultiMapTest::testTryLock() {
                 assertTrue(mm->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                boost::thread t(boost::bind(tryLockThread, mm.get(), &latch));
+                util::Thread t(tryLockThread, mm.get(), &latch);
                 assertTrue(latch.await(100 * 1000));
                 assertTrue(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                boost::thread t2(boost::bind(tryLockThread2, mm.get(), &latch2));
+                util::Thread t2(tryLockThread2, mm.get(), &latch2);
 
-                boost::this_thread::sleep(boost::posix_time::seconds(1));
+                sleep(1);
                 mm->unlock("key1");
                 assertTrue(latch2.await(100 * 1000));
                 assertTrue(mm->isLocked("key1"));
                 mm->forceUnlock("key1");
             }
 
-            void forceUnlockThread(MultiMap<std::string, std::string> *mm, util::CountDownLatch *latch) {
+            void forceUnlockThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 mm->forceUnlock("key1");
                 latch->countDown();
             }
@@ -263,7 +275,7 @@ namespace hazelcast {
             void ClientMultiMapTest::testForceUnlock() {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                boost::thread t(boost::bind(forceUnlockThread, mm.get(), &latch));
+                util::Thread t(forceUnlockThread, mm.get(), &latch);
                 assertTrue(latch.await(100 * 1000));
                 assertFalse(mm->isLocked("key1"));
             }

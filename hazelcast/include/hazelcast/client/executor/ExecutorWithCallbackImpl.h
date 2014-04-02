@@ -27,7 +27,7 @@
 //
 //                template<typename Result, typename Callable, typename ExecutionCallback>
 //                void submit(Callable &task, ExecutionCallback &callback) {
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvoke<Result, Callable, ExecutionCallback>, this, boost::ref(task), boost::ref(callback)));
+//                    util::Thread asyncInvokeThread(&ExecutorWithCallbackImpl::asyncInvoke<Result, Callable, ExecutionCallback>, this, (task), (callback)));
 //                }
 //
 //                template<typename Result, typename Callable, typename ExecutionCallback>
@@ -43,14 +43,14 @@
 //
 //                template<typename Result, typename Callable, typename ExecutionCallback>
 //                void submit(Callable &task, const Address &address, ExecutionCallback &callback) {
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeToAddress<Result, Callable, ExecutionCallback>, this, boost::ref(task), address, boost::ref(callback)));
+//                    util::Thread asyncInvokeThread(&ExecutorWithCallbackImpl::asyncInvokeToAddress<Result, Callable, ExecutionCallback>, this, (task), address, (callback)));
 //                }
 //
 //                template<typename Result, typename Callable, typename MultiExecutionCallback>
 //                void submitMulti(Callable &task, const Member &member, util::AtomicPointer<impl::MultiExecutionCallbackWrapper<Result, MultiExecutionCallback > > callback) {
 //                    Address const &address = member.getAddress();
 //                    if (context->getClusterService().isMemberExists(address)) {
-//                        boost::thread asyncInvokeThread(boost::bind(&ExecutorWithCallbackImpl::asyncInvokeWithMultiCallback<Result, Callable, MultiExecutionCallback >, this, boost::ref(task), member, callback));
+//                        util::Thread asyncInvokeThread(&ExecutorWithCallbackImpl::asyncInvokeWithMultiCallback<Result, Callable, MultiExecutionCallback >, this, (task), member, callback));
 //                    } else {
 //                        throw exception::IException("IExecuterService::executeOnMember()", "Member is not available!!!");
 //                    }

@@ -15,7 +15,6 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/LifecycleEvent.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 
 namespace hazelcast {
@@ -39,10 +38,10 @@ namespace hazelcast {
                 std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
                 initialListeners.insert(initialMembershipListeners.begin(), initialMembershipListeners.end());
 
-                boost::thread *t = new boost::thread(boost::bind(&connection::ClusterListenerThread::run, &clusterThread));
+                util::Thread *t = new util::Thread(connection::ClusterListenerThread::staticRun, &clusterThread);
                 clusterThread.setThread(t);
                 clusterThread.startLatch.await();
-                if(!clusterThread.isStartedSuccessfully){
+                if (!clusterThread.isStartedSuccessfully) {
                     return false;
                 }
                 initMembershipListeners();
@@ -51,7 +50,7 @@ namespace hazelcast {
             }
 
             void ClusterService::initMembershipListeners() {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 std::set< InitialMembershipListener *>::iterator it;
                 Cluster &cluster = clientContext.getCluster();
                 InitialMembershipEvent event(cluster, cluster.getMembers());
@@ -74,13 +73,13 @@ namespace hazelcast {
             }
 
             void ClusterService::addMembershipListener(MembershipListener *listener) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 listeners.insert(listener);
             };
 
 
             void ClusterService::addMembershipListener(InitialMembershipListener *listener) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 Cluster &cluster = clientContext.getCluster();
                 InitialMembershipEvent event(cluster, cluster.getMembers());
                 listener->init(event);
@@ -88,25 +87,25 @@ namespace hazelcast {
             }
 
             bool ClusterService::removeMembershipListener(MembershipListener *listener) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 bool b = listeners.erase(listener) == 1;
                 return b;
             };
 
             bool ClusterService::removeMembershipListener(InitialMembershipListener *listener) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 bool b = initialListeners.erase(listener) == 1;
                 return b;
             }
 
 
             bool ClusterService::isMemberExists(Address const &address) {
-                boost::lock_guard<boost::mutex> guard(membersLock);
+                util::LockGuard guard(membersLock);
                 return members.count(address) > 0;
             };
 
             Member ClusterService::getMember(Address &address) {
-                boost::lock_guard<boost::mutex> guard(membersLock);
+                util::LockGuard guard(membersLock);
                 return members[address];
             }
 
@@ -123,7 +122,7 @@ namespace hazelcast {
             std::vector<Member>  ClusterService::getMemberList() {
                 typedef std::map<Address, Member, addressComparator> MemberMap;
                 std::vector<Member> v;
-                boost::lock_guard<boost::mutex> guard(membersLock);
+                util::LockGuard guard(membersLock);
                 MemberMap::const_iterator it;
                 for (it = members.begin(); it != members.end(); it++) {
                     v.push_back(it->second);
@@ -162,11 +161,11 @@ namespace hazelcast {
                     using namespace std;
                     std::ostringstream errorStream;
                     errorStream << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
-                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << "." ;
+                            << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << ".";
                     util::ILogger::getLogger().warning(errorStream.str());
 
                     if (remainingTime > 0) {
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(remainingTime));
+                        sleep((unsigned) remainingTime / 1000);//MTODO
                     }
                 }
                 throw  exception::IllegalStateException("ClusterService", "Unable to connect to any address in the config! =>" + std::string(lastError.what()));
@@ -174,7 +173,7 @@ namespace hazelcast {
 
 
             void ClusterService::fireMembershipEvent(MembershipEvent &event) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                         (*it)->memberAdded(event);
@@ -194,7 +193,7 @@ namespace hazelcast {
 
 
             void ClusterService::fireMemberAttributeEvent(MemberAttributeEvent &event) {
-                boost::lock_guard<boost::mutex> guard(listenerLock);
+                util::LockGuard guard(listenerLock);
                 for (std::set<MembershipListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
                     (*it)->memberAttributeChanged(event);
                 }
@@ -205,7 +204,7 @@ namespace hazelcast {
             }
 
             void ClusterService::setMembers(const std::map<Address, Member, addressComparator > &map) {
-                boost::lock_guard<boost::mutex> guard(membersLock);
+                util::LockGuard guard(membersLock);
                 members = map;
             }
         }

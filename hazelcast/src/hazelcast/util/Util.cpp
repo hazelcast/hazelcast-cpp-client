@@ -10,7 +10,9 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include <boost/thread.hpp>
+#include "hazelcast/util/Thread.h"
+#include <sstream>
+#include <sys/time.h>
 
 namespace hazelcast {
     namespace util {
@@ -21,7 +23,7 @@ namespace hazelcast {
         };
 
         long getThreadId() {
-            return hash_value(boost::this_thread::get_id());
+            return util::Thread::this_thread().getThreadID();
         };
 
         void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {
@@ -43,7 +45,7 @@ namespace hazelcast {
 
         long getCurrentTimeMillis() {
                 timeval time;
-                gettimeofday(&time, NULL);
+                ::gettimeofday(&time, NULL);
                 return long(time.tv_sec) * 1000  +  long(time.tv_usec / 1000);
 
 //                    if (UseFakeTimers) {

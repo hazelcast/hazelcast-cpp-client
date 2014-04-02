@@ -83,7 +83,7 @@ bool equals(const std::string &rhs, const std::string &lhs) {
 }
 
 long currentTimeMillis() {
-    return boost::posix_time::microsec_clock::local_time().time_of_day().total_milliseconds();
+    return util::getCurrentTimeMillis();
 }
 
 std::vector<std::string> split(std::string input, char anchor) {

@@ -17,7 +17,7 @@ namespace hazelcast {
             }
 
             void CallPromise::setResponse(const serialization::pimpl::Data &data) {
-                this->promise.set_value(data);
+                this->promise.getFuture()->set_value(data);
             }
 
             void CallPromise::setRequest(std::auto_ptr<const impl::PortableRequest> request) {
@@ -28,8 +28,8 @@ namespace hazelcast {
                 return *request;
             }
 
-            boost::shared_future<serialization::pimpl::Data> CallPromise::getFuture() {
-                return (boost::shared_future<serialization::pimpl::Data>) promise.get_future();
+            boost::shared_ptr< util::Future<serialization::pimpl::Data> >  CallPromise::getFuture() {
+                return promise.getFuture();
             }
 
             void CallPromise::setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler) {

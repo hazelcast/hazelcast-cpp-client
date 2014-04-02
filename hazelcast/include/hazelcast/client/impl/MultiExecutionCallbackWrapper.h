@@ -9,7 +9,7 @@
 //#define HAZELCAST_MultiExecutionCallbackWrapper
 //
 //#include "hazelcast/client/Member.h"
-//#include <boost/atomic.hpp>
+//#include "hazelcast/util/AtomicInt.h"
 //
 //namespace hazelcast {
 //    namespace client {
@@ -34,7 +34,7 @@
 //
 //            private:
 //                std::map <Member, Result> values;
-//                boost::atomic<int> memberCount;
+//                util::AtomicInt memberCount;
 //                MultiExecutionCallback& multiExecutionCallback;
 //
 //            };

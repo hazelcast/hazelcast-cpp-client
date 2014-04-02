@@ -10,9 +10,10 @@
 
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Future.h"
+#include "hazelcast/util/Promise.h"
+#include "hazelcast/util/AtomicInt.h"
 #include <memory>
-#include <boost/thread/future.hpp>
-#include <boost/atomic.hpp>
 
 namespace hazelcast {
 
@@ -42,14 +43,14 @@ namespace hazelcast {
 
                 template<typename E>
                 void setException(E const &e) {
-                    promise.set_exception(boost::copy_exception(e));
+                    promise.getFuture()->set_exception(e);
                 }
 
                 void setRequest(std::auto_ptr<const impl::PortableRequest> request);
 
                 const impl::PortableRequest &getRequest() const;
 
-                boost::shared_future<serialization::pimpl::Data> getFuture();
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  getFuture();
 
                 void setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler);
 
@@ -58,10 +59,10 @@ namespace hazelcast {
                 int incrementAndGetResendCount();
 
             private:
-                boost::promise<serialization::pimpl::Data> promise;
+                util::Promise<serialization::pimpl::Data> promise;
                 std::auto_ptr<const impl::PortableRequest> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;
-                boost::atomic<int> resendCount;
+                util::AtomicInt resendCount;
             };
         }
     }

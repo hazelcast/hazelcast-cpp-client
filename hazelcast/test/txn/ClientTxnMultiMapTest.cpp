@@ -44,8 +44,12 @@ namespace hazelcast {
             void ClientTxnMultiMapTest::afterTest() {
             };
 
-            void putGetRemoveTestThread(MultiMap<std::string, std::string > *mm, int id, HazelcastClient *client, util::CountDownLatch *latch, boost::atomic<int> *error) {
-                std::string key = util::to_string(id) + std::string("key");
+            void putGetRemoveTestThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string > *mm = (MultiMap<std::string, std::string > *)args.arg0;
+                HazelcastClient *client = (HazelcastClient *)args.arg1;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
+                util::AtomicInt *error = (util::AtomicInt *)args.arg3;
+                std::string key = util::to_string(util::Thread::this_thread().getThreadID());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 try {
@@ -61,7 +65,7 @@ namespace hazelcast {
 
                     latch->countDown();
                 } catch (std::exception &e) {
-                    error->fetch_add(1);
+                    ++(*error);
                     latch->countDown();
                 }
             }
@@ -71,12 +75,12 @@ namespace hazelcast {
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
                 int threads = 10;
                 util::CountDownLatch latch(threads);
-                boost::atomic<int> error(0);
+                util::AtomicInt error(0);
                 for (int i = 0; i < threads; i++) {
-                    boost::thread t(putGetRemoveTestThread, &mm, i, client.get(), &latch, &error);
+                    util::Thread t(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
                 }
                 assertTrue(latch.await(1000));
-                assertEqual(0, error);
+                assertEqual(0, (int)error);
             }
 
 

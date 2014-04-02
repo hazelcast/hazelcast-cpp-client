@@ -10,7 +10,7 @@
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/serialization/pimpl/DataAdapter.h"
-#include <boost/atomic.hpp>
+#include "hazelcast/util/AtomicBoolean.h"
 
 namespace hazelcast {
     namespace client {
@@ -41,7 +41,7 @@ namespace hazelcast {
                 util::ConcurrentQueue<serialization::pimpl::DataAdapter> writeQueue;
                 serialization::pimpl::DataAdapter *lastData;
                 bool ready;
-                boost::atomic<bool> informSelector;
+                util::AtomicBoolean informSelector;
 
 
             };
