@@ -20,7 +20,7 @@ namespace hazelcast {
             : iTestFixture<ClientTxnMapTest>("ClientTxnMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
-            };
+            }
 
 
             ClientTxnMapTest::~ClientTxnMapTest() {
@@ -31,21 +31,21 @@ namespace hazelcast {
                 addTest(&ClientTxnMapTest::testKeySetValues, "testKeySetValues");
                 addTest(&ClientTxnMapTest::testKeySetAndValuesWithPredicates, "testKeysetAndValuesWithPredicates");
 
-            };
+            }
 
             void ClientTxnMapTest::beforeClass() {
-            };
+            }
 
             void ClientTxnMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTxnMapTest::beforeTest() {
-            };
+            }
 
             void ClientTxnMapTest::afterTest() {
-            };
+            }
 
             void ClientTxnMapTest::testPutGet() {
                 std::string name = "defMap";
@@ -83,7 +83,7 @@ namespace hazelcast {
 //                    } catch (Exception e) {
 //                    }
 //                }
-//            };
+//            }
 //            new Thread(incrementor).start();
 //            boolean b = hz.executeTransaction(new TransactionalTask<Boolean>() {
 //                public Boolean execute(TransactionalTaskContext context) throws TransactionException {

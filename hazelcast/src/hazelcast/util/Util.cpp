@@ -20,11 +20,11 @@ namespace hazelcast {
             std::stringstream s;
             s << value;
             return s.str();
-        };
+        }
 
         long getThreadId() {
             return util::Thread::getThreadID();
-        };
+        }
 
         void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {
             if (data != NULL) {
@@ -34,13 +34,13 @@ namespace hazelcast {
                 // null
                 out.writeBoolean(false);
             }
-        };
+        }
 
         void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data) {
             bool isNotNull = in.readBoolean();
             if (isNotNull)
                 data->readData(in);
-        };
+        }
 
 
         long getCurrentTimeMillis() {

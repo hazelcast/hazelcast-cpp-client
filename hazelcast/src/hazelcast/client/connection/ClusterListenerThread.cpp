@@ -23,12 +23,12 @@ namespace hazelcast {
             , conn(NULL)
             , deletingConnection(false) {
 
-            };
+            }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
                 clusterListenerThread->run();
-            };
+            }
 
             void ClusterListenerThread::setThread(util::Thread *thread) {
                 clusterListenerThread.reset(thread);
@@ -70,7 +70,7 @@ namespace hazelcast {
 
                 }
 
-            };
+            }
 
 
             void ClusterListenerThread::stop() {

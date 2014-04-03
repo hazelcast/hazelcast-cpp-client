@@ -20,7 +20,7 @@ namespace hazelcast {
             : iTestFixture<ClientTxnMultiMapTest>("ClientTxnMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
-            };
+            }
 
 
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() {
@@ -28,21 +28,21 @@ namespace hazelcast {
 
             void ClientTxnMultiMapTest::addTests() {
                 addTest(&ClientTxnMultiMapTest::testPutGetRemove, "testPutGetRemove");
-            };
+            }
 
             void ClientTxnMultiMapTest::beforeClass() {
-            };
+            }
 
             void ClientTxnMultiMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTxnMultiMapTest::beforeTest() {
-            };
+            }
 
             void ClientTxnMultiMapTest::afterTest() {
-            };
+            }
 
             void putGetRemoveTestThread(util::ThreadArgs& args) {
                 MultiMap<std::string, std::string > *mm = (MultiMap<std::string, std::string > *)args.arg0;
@@ -67,20 +67,27 @@ namespace hazelcast {
                 } catch (std::exception &e) {
                     ++(*error);
                     latch->countDown();
+                } catch(iTest::iTestException& e){
+                    ++(*error);
+                    latch->countDown();
                 }
             }
 
             void ClientTxnMultiMapTest::testPutGetRemove() {
 
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
-                int threads = 10;
-                util::CountDownLatch latch(threads);
+                int n = 10;
+                util::CountDownLatch latch(n);
                 util::AtomicInt error(0);
-                for (int i = 0; i < threads; i++) {
-                    util::Thread t(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
+                std::vector<util::Thread*> threads(n);
+                for (int i = 0; i < n; i++) {
+                    threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
                 }
                 assertTrue(latch.await(1000));
                 assertEqual(0, (int)error);
+                for (int i = 0; i < n; i++) {
+                    delete threads[i] ;
+                }
             }
 
 

@@ -57,7 +57,6 @@ namespace hazelcast {
                 util::Thread t(testLockLockThread, l.get(), &latch);
 
                 assertTrue(latch.await(5 * 1000));
-                t.join();
                 l->forceUnlock();
             }
 
@@ -78,7 +77,6 @@ namespace hazelcast {
                 util::Thread t(testLockTtlThread, l.get(), &latch);
                 assertTrue(latch.await(10 * 1000));
                 l->forceUnlock();
-                t.join();
             }
 
             void testLockTryLockThread1(util::ThreadArgs &args) {
@@ -101,20 +99,18 @@ namespace hazelcast {
 
                 assertTrue(l->tryLock(2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread thread1(testLockTryLockThread1, l.get(), &latch);
+                util::Thread t1(testLockTryLockThread1, l.get(), &latch);
                 assertTrue(latch.await(100 * 1000));
 
                 assertTrue(l->isLocked());
 
                 util::CountDownLatch latch2(1);
-                util::Thread thread2(testLockTryLockThread2, l.get(), &latch2);
+                util::Thread t2(testLockTryLockThread2, l.get(), &latch2);
                 sleep(1);
                 l->unlock();
                 assertTrue(latch2.await(100 * 1000));
                 assertTrue(l->isLocked());
                 l->forceUnlock();
-                thread1.join();
-                thread2.join();
             }
 
             void testLockForceUnlockThread(util::ThreadArgs &args) {

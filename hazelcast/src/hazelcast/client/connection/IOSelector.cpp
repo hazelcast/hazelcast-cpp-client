@@ -48,7 +48,7 @@ namespace hazelcast {
                     }catch(exception::IException& e){
                         util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
                     } catch(...){
-                        hazelcast::util::ILogger::getLogger().severe("IOSelector::listen cancelled");
+                        hazelcast::util::ILogger::getLogger().warning("IOSelector::listen cancelled");
                         throw;
                     }
                 }

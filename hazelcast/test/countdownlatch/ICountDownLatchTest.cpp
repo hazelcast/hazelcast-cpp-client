@@ -62,8 +62,6 @@ namespace hazelcast {
                 util::Thread t(testLatchThread, l.get());
 
                 assertTrue(l->await(10 * 1000));
-
-                t.join();
             }
 
         }

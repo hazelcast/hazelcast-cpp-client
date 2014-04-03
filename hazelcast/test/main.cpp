@@ -134,9 +134,33 @@ void testLatch(){
     
 }
 
+void testJoinThread(hazelcast::util::ThreadArgs& args){
+    long i = 0;
+    try{
+        while(i < 1000000000000L){
+            ++i;
+            //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<i++ << std::endl;
+            //sleep(1);
+        }
+        hazelcast::client::exception::IException a("1","2");
+        throw a;
+    }catch(hazelcast::client::exception::IException& e){
+        std::cout << "skdsjdsjkjdksj" << e.what() << std::endl;
+    }
+}
+void testJoin(){
+    hazelcast::util::Thread* thread = new hazelcast::util::Thread(testJoinThread);
+    //thread.interrupt();
+    thread->join();
+    delete thread;
+    std::cout << "Joined" << std::endl;
+}
+
 int main() {
+//    testJoin();
 //    testLatch();
 //    testSleep();
+
     unitTests();
 //    testSpeed();
     return 0;

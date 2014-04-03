@@ -70,7 +70,7 @@ namespace hazelcast {
                     } catch(exception::IException &e) {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     } catch(...) {
-                        util::ILogger::getLogger().severe("PartitionService listener cancelled");
+                        util::ILogger::getLogger().warning("PartitionService listener cancelled");
                         throw;
                     }
                 }
@@ -95,7 +95,7 @@ namespace hazelcast {
                     updating = false;
                 }
 
-            };
+            }
 
             boost::shared_ptr<impl::PartitionsResponse> PartitionService::getPartitionsFrom(const Address &address) {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();

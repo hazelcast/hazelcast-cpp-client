@@ -9,8 +9,11 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include <sstream>
+#include <string>
 
 namespace iTest {
+    static int assertNumber;
 
     struct HAZELCAST_API iTestException {
         std::string message;
@@ -24,10 +27,10 @@ namespace iTest {
         iTestFixture(const std::string &fixtureName)
         :fixtureName(fixtureName), id(0) {
 
-        };
+        }
 
         virtual ~iTestFixture() {
-        };
+        }
 
         virtual void addTests() = 0;
 
@@ -42,7 +45,7 @@ namespace iTest {
         void addTest(TestFunction test, const std::string &name) {
             tests.push_back(test);
             testNames[id++] = name;
-        };
+        }
 
         void executeTests() {
             addTests();
@@ -55,6 +58,7 @@ namespace iTest {
                 beforeTest();
                 bool isOk = true;
                 try {
+                    assertNumber = 0;
                     ((*t) .* (test))();
                 } catch(iTestException &e) {
                     (std::cout << e.message << std::endl);
@@ -71,7 +75,7 @@ namespace iTest {
                     std::cout << "============FAILED============== " << std::endl;
             }
             afterClass();
-        };
+        }
 
 
     private:
@@ -80,7 +84,7 @@ namespace iTest {
         std::string fixtureName;
         int id;
     };
-};
+}
 
 
 #endif //HAZELCAST_iTestFixture
