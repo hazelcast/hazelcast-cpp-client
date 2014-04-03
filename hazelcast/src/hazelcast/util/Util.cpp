@@ -23,7 +23,7 @@ namespace hazelcast {
         };
 
         long getThreadId() {
-            return util::Thread::this_thread().getThreadID();
+            return util::Thread::getThreadID();
         };
 
         void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {

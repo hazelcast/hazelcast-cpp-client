@@ -16,6 +16,8 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include <cstdlib>
+#include <ctime>
 
 namespace hazelcast {
     namespace client {

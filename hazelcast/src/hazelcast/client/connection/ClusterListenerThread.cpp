@@ -64,7 +64,8 @@ namespace hazelcast {
                         }
                         sleep(1);
                     } catch(...) {
-                        util::ILogger::getLogger().warning("ClusterListenerThread::run unknown exception");
+                        util::ILogger::getLogger().warning("ClusterListenerThread::cancelled");
+                        throw;
                     }
 
                 }

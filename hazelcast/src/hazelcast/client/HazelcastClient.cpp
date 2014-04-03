@@ -27,16 +27,16 @@ namespace hazelcast {
                 throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not started!");
             }
             loadBalancer->init(cluster);
-        };
+        }
 
         HazelcastClient::~HazelcastClient() {
             lifecycleService.shutdown();
-        };
+        }
 
 
         ClientConfig &HazelcastClient::getClientConfig() {
             return clientConfig;
-        };
+        }
 
         Cluster &HazelcastClient::getCluster() {
             return cluster;
@@ -44,11 +44,11 @@ namespace hazelcast {
 
         void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
             lifecycleService.addLifecycleListener(lifecycleListener);
-        };
+        }
 
         bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
             return lifecycleService.removeLifecycleListener(lifecycleListener);
-        };
+        }
 
         void HazelcastClient::shutdown() {
             lifecycleService.shutdown();

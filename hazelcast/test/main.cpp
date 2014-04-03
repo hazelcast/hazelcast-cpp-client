@@ -26,7 +26,7 @@ using namespace hazelcast::client::test;
 void testSpeed() {
     SimpleMapTest s(HOST, 5701);
     s.run();
-};
+}
 
 void unitTests() {
     try {
@@ -134,11 +134,11 @@ void testLatch(){
     
 }
 
-int main(int argc, char **argv) {
+int main() {
 //    testLatch();
 //    testSleep();
     unitTests();
 //    testSpeed();
     return 0;
-};
+}
 

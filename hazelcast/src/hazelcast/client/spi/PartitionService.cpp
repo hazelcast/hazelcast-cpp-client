@@ -14,6 +14,7 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/LockGuard.h"
+#include <climits>
 
 namespace hazelcast {
     namespace client {
@@ -51,7 +52,7 @@ namespace hazelcast {
                 const int pc = partitionCount;
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
-            };
+            }
 
             void PartitionService::staticRunListener(util::ThreadArgs& args){
                 PartitionService* partitionService = (PartitionService*)args.arg0;
@@ -69,10 +70,11 @@ namespace hazelcast {
                     } catch(exception::IException &e) {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     } catch(...) {
-                        util::ILogger::getLogger().severe("PartitionService::runListener unkown exception");
+                        util::ILogger::getLogger().severe("PartitionService listener cancelled");
+                        throw;
                     }
                 }
-            };
+            }
 
             void PartitionService::runRefresher() {
 

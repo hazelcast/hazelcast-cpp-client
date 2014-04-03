@@ -10,6 +10,7 @@
 #include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/ThreadArgs.h"
+#include <memory>
 
 namespace hazelcast {
     namespace client {

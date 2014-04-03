@@ -2,6 +2,7 @@
 #include "hazelcast/client/exception/IOException.h"
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
 
 namespace hazelcast {
     namespace client {
