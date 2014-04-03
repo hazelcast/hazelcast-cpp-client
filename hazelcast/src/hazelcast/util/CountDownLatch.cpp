@@ -15,9 +15,7 @@ namespace hazelcast {
         }
 
         void CountDownLatch::countDown() {
-            if (count-- == 1) {
-                conditionVariable.notify_all();
-            }
+            count--;
         }
 
         bool CountDownLatch::await(long timeInMillis) {

@@ -106,7 +106,6 @@ namespace hazelcast {
                     serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
                     boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnConnection(request, connection);
                     serialization::pimpl::Data data = future->get();
-                    std::cout << "invoke(BaseTxnRequest *request)" << std::endl;
                     return ss.toObject<Response>(data);
                 }
 

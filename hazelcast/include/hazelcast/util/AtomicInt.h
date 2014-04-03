@@ -51,6 +51,11 @@ namespace hazelcast {
                 return --v;
             }
 
+            bool operator <=(int i){
+                LockGuard lockGuard(mutex);
+                return v <= i;
+            }
+
             bool operator ==(int i) {
                 LockGuard lockGuard(mutex);
                 return i == v;

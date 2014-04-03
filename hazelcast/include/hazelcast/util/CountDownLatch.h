@@ -25,8 +25,6 @@ namespace hazelcast {
 
         private:
             util::AtomicInt count;
-            util::ConditionVariable conditionVariable;
-            util::Mutex mutex;
 
         };
     }

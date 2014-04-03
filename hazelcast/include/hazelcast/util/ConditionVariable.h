@@ -24,44 +24,41 @@ namespace hazelcast {
 #include "hazelcast/util/Mutex.h"
 #include <pthread.h>
 #include <sys/errno.h>
-
+#include <cassert>
 
 namespace hazelcast {
     namespace util {
         class ConditionVariable {
         public:
-            enum status {
-                timeout, invalidInput, notOwner, ok
-            };
-
             ConditionVariable() {
-                pthread_cond_init(&condition, NULL);
+                int error = pthread_cond_init(&condition, NULL);
+                assert(EAGAIN != error);
+                assert(ENOMEM != error);
+                assert(EBUSY != error);
+                assert(EINVAL != error);
             };
 
             ~ConditionVariable() {
-                pthread_cond_destroy(&condition);
+                int error = pthread_cond_destroy(&condition);
+                assert(EBUSY != error);
+                assert(EINVAL != error);
             };
 
-            ConditionVariable::status wait(Mutex &mutex) {
+            void wait(Mutex &mutex) {
                 int err = pthread_cond_wait(&condition,  &(mutex.mutex));
-                if (EPERM == err) {
-                    return ConditionVariable::notOwner;
-                }
-
-                if (EINVAL == err) {
-                    return ConditionVariable::invalidInput;
-                }
-
-                return ConditionVariable::ok;
+                assert (EPERM != err);
+                assert (EINVAL != err);
             };
 
 
             void notify() {
-                pthread_cond_signal(&condition);
+                int err = pthread_cond_signal(&condition);
+                assert(EINVAL != err);
             };
 
             void notify_all() {
-                pthread_cond_broadcast(&condition);
+                int err = pthread_cond_broadcast(&condition);
+                assert(EINVAL != err);
             };
 
 

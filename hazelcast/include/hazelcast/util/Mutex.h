@@ -24,6 +24,7 @@ namespace hazelcast {
 
 #include <pthread.h>
 #include <sys/errno.h>
+#include <cassert>
 
 
 namespace hazelcast {
@@ -32,7 +33,7 @@ namespace hazelcast {
         class Mutex {
         public:
             enum status {
-                alreadyLocked, notOwner, invalidState, ok
+                alreadyLocked, ok
             };
             
             Mutex() {
@@ -43,37 +44,25 @@ namespace hazelcast {
                 pthread_mutex_destroy(&mutex);
             }
 
-            Mutex::status lock() {
+            void lock() {
                 int err = pthread_mutex_lock(&mutex);
-                if (err == EINVAL && err == EAGAIN) {
-                    return Mutex::invalidState;
-                }
-                if (err == EDEADLK) {
-                    return Mutex::alreadyLocked;
-                }
-                return Mutex::ok;
+                assert (!(err == EINVAL || err == EAGAIN));
+                assert (err != EDEADLK);
             }
 
             Mutex::status tryLock() {
                 int err = pthread_mutex_trylock(&mutex);
-                if (err == EINVAL && err == EAGAIN) {
-                    return Mutex::invalidState;
-                }
+                assert (!(err == EINVAL || err == EAGAIN));
                 if (err == EBUSY) {
                     return Mutex::alreadyLocked;
                 }
                 return Mutex::ok;
             }
 
-            Mutex::status unlock() {
+            void unlock() {
                 int err = pthread_mutex_unlock(&mutex);
-                if (err == EINVAL && err == EAGAIN) {
-                    return Mutex::invalidState;
-                }
-                if (err == EPERM) {
-                    return Mutex::notOwner;
-                }
-                return Mutex::ok;
+                assert (!(err == EINVAL || err == EAGAIN));
+                assert (err != EPERM);
             }
 
             pthread_mutex_t mutex;
