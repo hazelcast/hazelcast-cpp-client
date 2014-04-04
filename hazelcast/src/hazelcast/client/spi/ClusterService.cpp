@@ -40,7 +40,7 @@ namespace hazelcast {
                 std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
                 initialListeners.insert(initialMembershipListeners.begin(), initialMembershipListeners.end());
 
-                util::Thread *t = new util::Thread(connection::ClusterListenerThread::staticRun, &clusterThread);
+                util::Thread *t = new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun, &clusterThread);
                 clusterThread.setThread(t);
                 clusterThread.startLatch.await();
                 if (!clusterThread.isStartedSuccessfully) {

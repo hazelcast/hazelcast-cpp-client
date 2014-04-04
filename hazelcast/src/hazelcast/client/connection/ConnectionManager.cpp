@@ -16,8 +16,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/exception/IAuthenticationException.h"
 #include "hazelcast/client/impl/ServerException.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -43,8 +41,8 @@ namespace hazelcast {
                 if (!oListener.start()) {
                     return false;
                 }
-                iListenerThread.reset(new util::Thread(InSelector::staticListen, &iListener));
-                oListenerThread.reset(new util::Thread(OutSelector::staticListen, &oListener));
+                iListenerThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &iListener));
+                oListenerThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &oListener));
                 return true;
             }
 

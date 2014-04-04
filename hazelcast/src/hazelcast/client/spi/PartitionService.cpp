@@ -11,10 +11,7 @@
 #include "hazelcast/client/impl/PartitionsResponse.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/util/LockGuard.h"
-#include <climits>
 
 namespace hazelcast {
     namespace client {
@@ -28,10 +25,10 @@ namespace hazelcast {
 
             bool PartitionService::start() {
                 util::LockGuard lg(startLock);
-                if(!getInitialPartitions()){
+                if (!getInitialPartitions()) {
                     return false;
                 }
-                util::Thread *partitionListener = new util::Thread(PartitionService::staticRunListener, this);
+                util::Thread *partitionListener = new util::Thread("hz.partitionListener", PartitionService::staticRunListener, this);
                 partitionListenerThread.reset(partitionListener);
                 return true;
             }
@@ -54,8 +51,8 @@ namespace hazelcast {
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             }
 
-            void PartitionService::staticRunListener(util::ThreadArgs& args){
-                PartitionService* partitionService = (PartitionService*)args.arg0;
+            void PartitionService::staticRunListener(util::ThreadArgs &args) {
+                PartitionService *partitionService = (PartitionService *) args.arg0;
                 partitionService->runListener();
             }
 
@@ -69,9 +66,6 @@ namespace hazelcast {
                         runRefresher();
                     } catch(exception::IException &e) {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
-                    } catch(...) {
-                        util::ILogger::getLogger().warning("PartitionService listener cancelled");
-                        throw;
                     }
                 }
             }
@@ -101,7 +95,7 @@ namespace hazelcast {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = clientContext.getInvocationService().invokeOnTarget(request, address);
+                    boost::shared_ptr< util::Future<serialization::pimpl::Data> > future = clientContext.getInvocationService().invokeOnTarget(request, address);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future->get());
                 } catch(exception::IOException &e) {
                     util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
@@ -113,7 +107,7 @@ namespace hazelcast {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
-                    boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = clientContext.getInvocationService().invokeOnRandomTarget(request);
+                    boost::shared_ptr< util::Future<serialization::pimpl::Data> > future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future->get());
                 } catch(exception::IOException &e) {
                     util::ILogger::getLogger().warning(std::string("Error while fetching cluster partition table => ") + e.what());
@@ -127,7 +121,7 @@ namespace hazelcast {
                 if (partitionCount == 0) {
                     partitionCount = ownerIndexes.size();
                 }
-                for (int partitionId = 0; partitionId < (int)partitionCount; ++partitionId) {
+                for (int partitionId = 0; partitionId < (int) partitionCount; ++partitionId) {
                     int ownerIndex = ownerIndexes[partitionId];
                     if (ownerIndex > -1) {
                         boost::shared_ptr<Address> address(new Address(members[ownerIndex]));

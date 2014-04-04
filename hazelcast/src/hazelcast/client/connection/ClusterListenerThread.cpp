@@ -63,9 +63,6 @@ namespace hazelcast {
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                         sleep(1);
-                    } catch(...) {
-                        util::ILogger::getLogger().warning("ClusterListenerThread::cancelled");
-                        throw;
                     }
 
                 }

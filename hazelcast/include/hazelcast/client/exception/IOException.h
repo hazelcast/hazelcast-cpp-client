@@ -21,11 +21,13 @@ namespace hazelcast {
                 /**
                  * Constructor
                  */
-                IOException(const std::string& source, const std::string& message);
+                IOException(const std::string &source, const std::string &message);
+
                 /**
                  * Destructor
                  */
                 ~IOException() throw();
+
                 /**
                  * return exception explanation string.
                  */

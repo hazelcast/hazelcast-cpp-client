@@ -6,7 +6,6 @@
 #include "countdownlatch/ICountDownLatchTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,8 +46,8 @@ namespace hazelcast {
             void ICountDownLatchTest::afterTest() {
             };
 
-            void testLatchThread(util::ThreadArgs& args) {
-                ICountDownLatch *l = (ICountDownLatch *)args.arg0;
+            void testLatchThread(util::ThreadArgs &args) {
+                ICountDownLatch *l = (ICountDownLatch *) args.arg0;
                 for (int i = 0; i < 20; i++) {
                     l->countDown();
                 }

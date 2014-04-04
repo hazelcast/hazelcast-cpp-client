@@ -20,7 +20,8 @@ namespace hazelcast {
                 /**
                  * Constructor
                  */
-                InterruptedException(const std::string& source, const std::string& message);
+                InterruptedException(const std::string &source, const std::string &message);
+
                 /**
                  * Destructor
                  */

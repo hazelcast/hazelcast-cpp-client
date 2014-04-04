@@ -6,6 +6,7 @@
 #ifndef HAZELCAST_ThreadArgs
 #define HAZELCAST_ThreadArgs
 
+#include <string>
 
 namespace hazelcast {
     namespace util {
@@ -16,7 +17,7 @@ namespace hazelcast {
             void *arg1;
             void *arg2;
             void *arg3;
-
+            std::string threadName;
             void (*func)(ThreadArgs &);
         } ;
 

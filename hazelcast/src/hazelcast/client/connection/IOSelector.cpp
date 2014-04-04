@@ -21,8 +21,8 @@ namespace hazelcast {
                 isAlive = true;
             };
 
-            void IOSelector::staticListen(util::ThreadArgs& args){
-                IOSelector* inSelector = (IOSelector*)args.arg0;
+            void IOSelector::staticListen(util::ThreadArgs &args) {
+                IOSelector *inSelector = (IOSelector *) args.arg0;
                 inSelector->listen();
             }
 
@@ -45,29 +45,26 @@ namespace hazelcast {
                     try{
                         processListenerQueue();
                         listenInternal();
-                    }catch(exception::IException& e){
+                    }catch(exception::IException &e){
                         util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
-                    } catch(...){
-                        hazelcast::util::ILogger::getLogger().warning("IOSelector::listen cancelled");
-                        throw;
                     }
                 }
             }
 
             bool IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
-				int p = serverSocket.getPort();
-				std::string localAddress;
-				if(serverSocket.isIpv4())
-					localAddress = "127.0.0.1";
-				else 
-					localAddress = "::1";
+                int p = serverSocket.getPort();
+                std::string localAddress;
+                if (serverSocket.isIpv4())
+                    localAddress = "127.0.0.1";
+                else
+                    localAddress = "::1";
 
-				wakeUpSocket.reset(new Socket(Address(localAddress, p)));
+                wakeUpSocket.reset(new Socket(Address(localAddress, p)));
                 int error = wakeUpSocket->connect();
                 if (error == 0) {
-					sleepingSocket.reset(serverSocket.accept());
-					wakeUpSocketSet.sockets.insert(sleepingSocket.get());
+                    sleepingSocket.reset(serverSocket.accept());
+                    wakeUpSocketSet.sockets.insert(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
                     return true;
                 } else {
