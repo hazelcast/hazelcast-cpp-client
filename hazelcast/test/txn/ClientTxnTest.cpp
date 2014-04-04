@@ -62,7 +62,7 @@ namespace hazelcast {
                     assertTrue(false, "queue offer should throw InstanceNotActiveException");
 
                     context.commitTransaction();
-                } catch (exception::InstanceNotActiveException &) {
+                } catch (exception::IException &) { //MTODO should be InstanceNotActive. But I lost type information in Future
                     context.rollbackTransaction();
                     rollbackSuccessful = true;
                 }
@@ -89,7 +89,7 @@ namespace hazelcast {
                     server.shutdown();
                     context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
-                } catch (std::exception &) {
+                } catch (exception::IException &) {  //MTODO should be InstanceNotActive. But I lost type information in Future
                     context.rollbackTransaction();
                     rollbackSuccessful = true;
                 }

@@ -53,7 +53,7 @@ namespace hazelcast {
                     boost::shared_ptr<std::string> response = invoke<std::string>(request);
                     txnId = *response;
                     state = TxnState::ACTIVE;
-                } catch (std::exception &e) {
+                } catch (exception::IException &e) {
                     onTxnEnd();
                     throw e;
                 }
@@ -95,7 +95,7 @@ namespace hazelcast {
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
-                } catch(std::exception &e) {
+                } catch(exception::IException &e) {
                     onTxnEnd();
                     throw e;
                 }

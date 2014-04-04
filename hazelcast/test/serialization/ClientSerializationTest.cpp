@@ -136,8 +136,8 @@ namespace hazelcast {
                 serializationService.getSerializationContext().registerClassDefinition(cd);
                 try{
                     serializationService.toData<TestInvalidWritePortable>(&p);
-                    iTest::assertTrue(false && "toData should trow exception");
-                }catch(exception::IOException&){
+                    iTest::assertTrue(false, "toData should trow exception");
+                }catch(exception::IOException &){
 
                 }
             };
@@ -152,8 +152,8 @@ namespace hazelcast {
                 serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
                 try{
                     serializationService.toObject<TestInvalidReadPortable>(data);
-                    iTest::assertTrue(false && "toObject should trow exception");
-                }catch(exception::IOException&){
+                    iTest::assertTrue(false, "toObject should trow exception");
+                }catch(exception::IOException &){
 
                 }
             }
