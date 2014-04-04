@@ -134,8 +134,12 @@ namespace hazelcast {
                 builder.addLongField("l").addIntField("i").addUTFField("s");
                 boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
                 serializationService.getSerializationContext().registerClassDefinition(cd);
-                serialization::pimpl::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
-                boost::shared_ptr<TestInvalidWritePortable> o = serializationService.toObject<TestInvalidWritePortable>(data);
+                try{
+                    serializationService.toData<TestInvalidWritePortable>(&p);
+                    iTest::assertTrue(false && "toData should trow exception");
+                }catch(exception::IOException&){
+
+                }
             };
 
             void ClientSerializationTest::testInvalidRead() {
@@ -146,7 +150,12 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
                 serializationService.getSerializationContext().registerClassDefinition(cd);
                 serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
-                serializationService.toObject<TestInvalidReadPortable>(data);
+                try{
+                    serializationService.toObject<TestInvalidReadPortable>(data);
+                    iTest::assertTrue(false && "toObject should trow exception");
+                }catch(exception::IOException&){
+
+                }
             }
 
             void ClientSerializationTest::testDifferentVersions() {

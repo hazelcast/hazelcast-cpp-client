@@ -63,10 +63,6 @@ namespace iTest {
                 } catch(iTestException &e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
-                } catch(std::exception &e) {
-                    std::cout << "? " << e.what() << std::endl;
-                } catch(...) {
-                    std::cout << "unknown exception at iTest " << std::endl;
                 }
                 afterTest();
                 if (isOk)
