@@ -147,7 +147,7 @@ namespace hazelcast {
                 std::string registrationId = set->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
-                    set->add(std::string("item") + util::to_string(i));
+                    set->add(std::string("item") + util::IOUtil::to_string(i));
                 }
                 set->add("done");
 

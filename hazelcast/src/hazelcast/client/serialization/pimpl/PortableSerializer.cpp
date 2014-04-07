@@ -55,7 +55,7 @@ namespace hazelcast {
                         cd = context.lookup(factoryId, classId); // using serializationContext.version
                         if (cd == NULL) {
                             throw exception::IOException("PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion)",
-                                    "Could not find class-definition for factory-id: " + util::to_string(factoryId) + ", class-id: " + util::to_string(classId) + ", version: " + util::to_string(dataVersion));
+                                    "Could not find class-definition for factory-id: " + util::IOUtil::to_string(factoryId) + ", class-id: " + util::IOUtil::to_string(classId) + ", version: " + util::IOUtil::to_string(dataVersion));
                         }
                         DefaultPortableReader defaultPortableReader(context, dataInput, cd);
                         PortableReader reader(&defaultPortableReader);
@@ -65,7 +65,7 @@ namespace hazelcast {
                         cd = context.lookup(factoryId, classId, dataVersion); // registered during read
                         if (cd == NULL) {
                             throw exception::IOException("PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion)",
-                                    "Could not find class-definition for factory-id: " + util::to_string(factoryId) + ", class-id: " + util::to_string(classId) + ", version: " + util::to_string(dataVersion));
+                                    "Could not find class-definition for factory-id: " + util::IOUtil::to_string(factoryId) + ", class-id: " + util::IOUtil::to_string(classId) + ", version: " + util::IOUtil::to_string(dataVersion));
                         }
                         MorphingPortableReader morphingPortableReader(context, dataInput, cd);
                         PortableReader reader(&morphingPortableReader);

@@ -83,7 +83,7 @@ namespace hazelcast {
                 sleep(1);
 
                 for (int i = 0; i < 5; i++) {
-                    assertTrue(q->offer(std::string("event_item") + util::to_string(i)));
+                    assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
                 }
 
                 assertTrue(latch.await(5 * 1000));
@@ -195,7 +195,7 @@ namespace hazelcast {
                 std::vector<std::string> array = q->toArray();
                 int size = array.size();
                 for (int i = 0; i < size; i++) {
-                    assertEqual(std::string("item") + util::to_string(i + 1), array[i]);
+                    assertEqual(std::string("item") + util::IOUtil::to_string(i + 1), array[i]);
                 }
 
             }

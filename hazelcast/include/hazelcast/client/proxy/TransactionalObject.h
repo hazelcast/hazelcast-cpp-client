@@ -12,6 +12,7 @@
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Util.h"
 #include <string>
 
 namespace hazelcast {

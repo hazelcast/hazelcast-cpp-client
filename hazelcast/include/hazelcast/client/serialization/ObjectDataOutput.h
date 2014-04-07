@@ -11,7 +11,7 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -93,7 +93,10 @@ namespace hazelcast {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->write(*this, *object);
                     } else {
-                        throw exception::IOException("ObjectDataOutput::writeObject", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
+                        const std::string &message = "No serializer found for serializerId :"
+                                + util::IOUtil::to_string(type)
+                                + ", typename :" + typeid(T).name();
+                        throw exception::IOException("ObjectDataOutput::writeObject", message);
                     }
                 };
 

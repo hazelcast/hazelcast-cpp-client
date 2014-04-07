@@ -9,7 +9,7 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -160,7 +160,8 @@ namespace hazelcast {
 
                 void ClassDefinitionBuilder::check() {
                     if (done) {
-                        throw exception::IOException("ClassDefinitionBuilder::check", "ClassDefinition is already built for " + hazelcast::util::to_string(cd->getClassId()));
+                        std::string message = "ClassDefinition is already built for " + util::IOUtil::to_string(cd->getClassId());
+                        throw exception::IOException("ClassDefinitionBuilder::check", message);
                     }
 
                 }

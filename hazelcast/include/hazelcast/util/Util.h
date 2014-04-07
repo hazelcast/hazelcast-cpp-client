@@ -30,8 +30,6 @@ namespace hazelcast {
     }
     namespace util {
 
-        HAZELCAST_API std::string to_string(int);
-
         HAZELCAST_API long getThreadId();
 
         HAZELCAST_API void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data);

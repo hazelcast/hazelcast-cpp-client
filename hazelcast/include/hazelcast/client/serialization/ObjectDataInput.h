@@ -14,7 +14,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/SerializationContext.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -133,7 +133,9 @@ namespace hazelcast {
                         s->read(*this, *object);
                         return object;
                     } else {
-                        throw exception::IOException("ObjectDataInput::readObjectResolved(ObjectDataInput& input, void *tag)", "No serializer found for serializerId :" + util::to_string(typeId) + ", typename :" + typeid(T).name());
+                        const std::string &message = "No serializer found for serializerId :"
+                                + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
+                        throw exception::IOException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 
                 };

@@ -118,10 +118,10 @@ namespace hazelcast {
                         error += "HazelcastSerializationException( Invalid field name: '";
                         error += fieldName;
                         error += "' for ClassDefinition {id: ";
-                        error += ", factoryId:" + util::to_string(cd->getFactoryId());
-                        error += util::to_string(cd->getClassId());
+                        error += ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
+                        error += util::IOUtil::to_string(cd->getClassId());
                         error += ", version: ";
-                        error += util::to_string(cd->getVersion());
+                        error += util::IOUtil::to_string(cd->getVersion());
                         error += "}";
 
                         throw exception::IOException("PortableWriter::setPosition", error);

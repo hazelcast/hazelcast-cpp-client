@@ -16,8 +16,6 @@
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/impl/PortableRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/client/impl/ServerException.h"
 
 namespace hazelcast {
@@ -57,14 +55,14 @@ namespace hazelcast {
             }
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
-                if(promise->getRequest().isBindToSingleConnection()){
-                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
-                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                if (promise->getRequest().isBindToSingleConnection()) {
+                    std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
+                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
-                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
-                    promise->setException(instanceNotActiveException);  // TargetNotMemberException
+                    std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
+                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
 
@@ -73,8 +71,8 @@ namespace hazelcast {
                     ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
                 } catch(exception::IOException &e) {
-                    exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
-                    promise->setException(instanceNotActiveException);
+                    std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
+                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
                 connection->registerAndEnqueue(promise);
@@ -119,15 +117,12 @@ namespace hazelcast {
                 if (response->isException()) {
                     serialization::pimpl::Data const &data = response->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
+
                     std::string exceptionClassName = ex->name;
                     if (exceptionClassName == "HazelcastInstanceNotActiveException") {
                         targetNotActive(promise);
-                    } else if (exceptionClassName == "InterruptedException") {
-                        exception::InterruptedException exception("Server:" + ex->name, ex->message + "\n" + ex->details);
-                        promise->setException(exception);
                     } else {
-                        exception::IException exception("Server:" + ex->name, ex->message + "\n" + ex->details);
-                        promise->setException(exception);
+                        exception::ExceptionHandler::rethrow(ex->name, ex->message + ":" + ex->details + "\n");
                     }
                     return false;
                 }
@@ -240,8 +235,8 @@ namespace hazelcast {
                     resend(promise);
                     return;
                 }
-                exception::InstanceNotActiveException instanceNotActiveException(socket.getRemoteEndpoint());
-                promise->setException(instanceNotActiveException);
+                std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
+                promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
 
             }
         }

@@ -73,9 +73,9 @@ namespace hazelcast {
             void ClientMapTest::fillMap() {
                 for (int i = 0; i < 10; i++) {
                     string key = "key";
-                    key += util::to_string(i);
+                    key += util::IOUtil::to_string(i);
                     string value = "value";
-                    value += util::to_string(i);
+                    value += util::IOUtil::to_string(i);
                     imap->put(key, value);
                 }
             }
@@ -214,11 +214,11 @@ namespace hazelcast {
                 fillMap();
                 for (int i = 0; i < 10; i++) {
                     string key = "key";
-                    key += util::to_string(i);
+                    key += util::IOUtil::to_string(i);
                     boost::shared_ptr<string> temp = imap->get(key);
 
                     string value = "value";
-                    value += util::to_string(i);
+                    value += util::IOUtil::to_string(i);
                     assertEqual(*temp, value);
                 }
             }
@@ -231,10 +231,10 @@ namespace hazelcast {
                 assertEqual(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
                     string key = "key";
-                    key += util::to_string(i);
+                    key += util::IOUtil::to_string(i);
                     boost::shared_ptr<string> temp2 = imap->remove(key);
                     string value = "value";
-                    value += util::to_string(i);
+                    value += util::IOUtil::to_string(i);
                     assertEqual(*temp2, value);
                 }
                 assertEqual(imap->size(), 0);
@@ -256,26 +256,26 @@ namespace hazelcast {
                 std::map<std::string, std::string> mapTemp;
 
                 for (int i = 0; i < 100; i++) {
-                    mapTemp[util::to_string(i)] = util::to_string(i);
+                    mapTemp[util::IOUtil::to_string(i)] = util::IOUtil::to_string(i);
                 }
                 imap->putAll(mapTemp);
                 assertEqual(imap->size(), 100);
 
                 for (int i = 0; i < 100; i++) {
-                    string expected = util::to_string(i);
-                    boost::shared_ptr<string> actual = imap->get(util::to_string(i));
+                    string expected = util::IOUtil::to_string(i);
+                    boost::shared_ptr<string> actual = imap->get(util::IOUtil::to_string(i));
                     assertEqual(expected, *actual);
                 }
 
                 std::set<std::string> tempSet;
-                tempSet.insert(util::to_string(1));
-                tempSet.insert(util::to_string(3));
+                tempSet.insert(util::IOUtil::to_string(1));
+                tempSet.insert(util::IOUtil::to_string(3));
 
                 std::map<std::string, std::string> m2 = imap->getAll(tempSet);
 
                 assertEqual(2U, m2.size());
-                assertEqual(m2[util::to_string(1)], "1");
-                assertEqual(m2[util::to_string(3)], "3");
+                assertEqual(m2[util::IOUtil::to_string(1)], "1");
+                assertEqual(m2[util::IOUtil::to_string(3)], "3");
 
             }
 

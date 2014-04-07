@@ -13,11 +13,16 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             CallPromise::CallPromise()
-            : resendCount(0) {
+            : future(new util::Future<serialization::pimpl::Data>)
+            , resendCount(0) {
             }
 
             void CallPromise::setResponse(const serialization::pimpl::Data &data) {
-                this->promise.getFuture()->set_value(data);
+                this->future->set_value(data);
+            }
+
+            void CallPromise::setException(const std::string &exceptionName, const std::string &exceptionDetails) {
+                future->set_exception(exceptionName, exceptionDetails);
             }
 
             void CallPromise::setRequest(std::auto_ptr<const impl::PortableRequest> request) {
@@ -29,7 +34,7 @@ namespace hazelcast {
             }
 
             boost::shared_ptr< util::Future<serialization::pimpl::Data> >  CallPromise::getFuture() {
-                return promise.getFuture();
+                return future;
             }
 
             void CallPromise::setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler) {

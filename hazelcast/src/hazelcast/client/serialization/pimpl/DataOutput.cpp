@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -198,7 +198,9 @@ namespace hazelcast {
                         }
                     }
                     if (utfLength > 65535) {
-                        throw exception::IOException("BufferedDataOutput::writeShortUTF", "encoded string too long:" + util::to_string(utfLength) + " bytes");
+                        const std::string &message = "encoded string too long:" +
+                                util::IOUtil::to_string(utfLength) + " bytes";
+                        throw exception::IOException("BufferedDataOutput::writeShortUTF", message);
                     }
                     std::vector<byte> byteArray(utfLength);
                     int i;

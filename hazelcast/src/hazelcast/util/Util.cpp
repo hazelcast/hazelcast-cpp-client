@@ -11,16 +11,10 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/Thread.h"
-#include <sstream>
 #include <sys/time.h>
 
 namespace hazelcast {
     namespace util {
-        std::string to_string(int value) {
-            std::stringstream s;
-            s << value;
-            return s.str();
-        }
 
         long getThreadId() {
             return util::Thread::getThreadID();
@@ -44,9 +38,9 @@ namespace hazelcast {
 
 
         long getCurrentTimeMillis() {
-                timeval time;
-                ::gettimeofday(&time, NULL);
-                return long(time.tv_sec) * 1000  +  long(time.tv_usec / 1000);
+            timeval time;
+            ::gettimeofday(&time, NULL);
+            return long(time.tv_sec) * 1000 + long(time.tv_usec / 1000);
 
 //                    if (UseFakeTimers) {
 //                        return fake_time++;

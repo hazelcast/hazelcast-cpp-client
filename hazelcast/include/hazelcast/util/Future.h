@@ -8,6 +8,7 @@
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
+#include "hazelcast/client/exception/ExceptionHandler.h"
 #include <memory>
 #include <cassert>
 
@@ -30,10 +31,11 @@ namespace hazelcast {
                 conditionVariable.notify_all();
             };
 
-            void set_exception(const client::exception::IException &e) {
+            void set_exception(const std::string &exceptionName, const std::string &exceptionDetails) {
                 LockGuard guard(mutex);
                 assert( !(exceptionReady || resultReady) && "Exception can not be set twice");
-                exception = e;
+                this->exceptionName = exceptionName;
+                this->exceptionDetails = exceptionDetails;
                 exceptionReady = true;
                 conditionVariable.notify_all();
             };
@@ -44,14 +46,14 @@ namespace hazelcast {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    throw exception;
+                    client::exception::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
                 }
                 conditionVariable.wait(mutex);
                 if (resultReady) {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    throw exception;
+                    client::exception::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
                 }
                 assert(false && "InvalidState");
                 return sharedObject;
@@ -63,7 +65,8 @@ namespace hazelcast {
             ConditionVariable conditionVariable;
             Mutex mutex;
             T sharedObject;
-            client::exception::IException exception;
+            std::string exceptionName;
+            std::string exceptionDetails;
 
             Future(const Future &rhs);
 

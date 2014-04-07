@@ -49,7 +49,7 @@ namespace hazelcast {
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
                 util::AtomicInt *error = (util::AtomicInt *)args.arg3;
-                std::string key = util::to_string(util::Thread::getThreadID());
+                std::string key = util::IOUtil::to_string(util::Thread::getThreadID());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 try {

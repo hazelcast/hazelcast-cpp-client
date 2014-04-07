@@ -22,11 +22,6 @@ namespace hazelcast {
                 /**
                  * Constructor
                  */
-                InstanceNotActiveException(const Address &address);
-
-                /**
-                 * Constructor
-                 */
                 InstanceNotActiveException(const std::string &source);
 
                 /**

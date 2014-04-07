@@ -295,7 +295,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + util::to_string(i);
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);

@@ -4,6 +4,7 @@
 
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/IOUtil.h"
 #include <iostream>
 
 namespace hazelcast {
@@ -22,7 +23,7 @@ namespace hazelcast {
             hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-            ::getaddrinfo(NULL, hazelcast::util::to_string(port).c_str(), &hints, &serverInfo);
+            ::getaddrinfo(NULL, IOUtil::to_string(port).c_str(), &hints, &serverInfo);
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
 			if(serverInfo->ai_family == AF_INET){

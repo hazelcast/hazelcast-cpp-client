@@ -70,10 +70,10 @@ namespace hazelcast {
                     CommitTxnRequest *request = new CommitTxnRequest(true);
                     invoke<serialization::pimpl::Void>(request);
                     state = TxnState::COMMITTED;
-                } catch (exception::IException &e) {
+                } catch (...) {
                     state = TxnState::ROLLING_BACK;
                     onTxnEnd();
-                    throw e;
+                    throw;
                 }
                 onTxnEnd();
 

@@ -3,6 +3,7 @@
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/Version.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +20,7 @@ namespace hazelcast {
         , serverListenerService(clientContext)
         , cluster(clusterService) {
             std::stringstream prefix;
-            (prefix << "[HazelcastCppClient" << HZ_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
+            (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
             if (!lifecycleService.start()) {

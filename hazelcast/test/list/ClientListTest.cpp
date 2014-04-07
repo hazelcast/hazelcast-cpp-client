@@ -192,7 +192,7 @@ namespace hazelcast {
                 std::string registrationId = list->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
-                    list->add(std::string("item") + util::to_string(i));
+                    list->add(std::string("item") + util::IOUtil::to_string(i));
                 }
 
                 assertTrue(latch.await(20 * 1000));

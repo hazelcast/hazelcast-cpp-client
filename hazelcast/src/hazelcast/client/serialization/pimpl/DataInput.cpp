@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -150,7 +150,7 @@ namespace hazelcast {
                                     throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
                                 char2 = bytearr[count - 1];
                                 if ((char2 & 0xC0) != 0x80) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
                                 }
                                 chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                                 break;
@@ -162,14 +162,14 @@ namespace hazelcast {
                                 char2 = bytearr[count - 2];
                                 char3 = bytearr[count - 1];
                                 if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count - 1));
+                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count - 1));
                                 }
                                 chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                                 break;
                             default:
                                 /* 10xx xxxx, 1111 xxxx */
 
-                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
 
                         }
                     }

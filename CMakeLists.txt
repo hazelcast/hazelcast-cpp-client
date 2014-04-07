@@ -8,7 +8,6 @@ project (HazelcastClient)
 #  -DHZ_VALGRIND=ON
 
 SET(HZ_VERSION 3.2.1-SNAPSHOT)
-add_definitions(-DHZ_VERSION="${HZ_VERSION}")
 
 message(STATUS "Preparing hazelcast client ..... ")
 
