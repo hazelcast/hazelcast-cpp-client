@@ -41,3 +41,4 @@ namespace hazelcast {
     }
 }
 #endif //HAZELCAST_MEMBERSHIP_EVENT
+

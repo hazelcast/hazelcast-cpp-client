@@ -50,3 +50,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_Message
+

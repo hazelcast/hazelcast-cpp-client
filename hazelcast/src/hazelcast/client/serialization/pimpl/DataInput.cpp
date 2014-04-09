@@ -174,7 +174,7 @@ namespace hazelcast {
                         }
                     }
                     chararr[chararr_count] = '\0';
-                    return std::string(chararr.data());
+                    return std::string(&chararr[0]);
                 };
 
                 std::vector <byte> DataInput::readByteArray() {

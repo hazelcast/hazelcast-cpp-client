@@ -47,8 +47,11 @@ namespace hazelcast {
                     return;
                 active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+		util::ILogger::getLogger().severe("ConnMan stop");
                 clientContext.getConnectionManager().stop();
+		util::ILogger::getLogger().severe("ClusterService stop");
                 clientContext.getClusterService().stop();
+		util::ILogger::getLogger().severe("PartitionService Stop");
                 clientContext.getPartitionService().stop();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             };
@@ -87,9 +90,12 @@ namespace hazelcast {
                         break;
                 }
 
-                for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    (*it)->stateChanged(lifecycleEvent);
-                };
+		for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+                    util::ILogger::getLogger().severe("calling registered listeners");
+		    (*it)->stateChanged(lifecycleEvent);
+		    util::ILogger::getLogger().severe("end calling registered listeners");	                
+		}
+		
             };
 
             bool LifecycleService::isRunning() {

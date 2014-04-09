@@ -65,3 +65,4 @@ public:\
     typedef result type; \
 }; \
 /**/
+

@@ -10,6 +10,7 @@
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/LifecycleListener.h"
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -222,7 +223,8 @@ namespace hazelcast {
             };
 
             void ClusterTest::testListenersWhenClusterDown() {
-                HazelcastServer instance(hazelcastInstanceFactory);
+		std::cout << "???? testListenersWhenClusterDown" << std::endl;                
+		HazelcastServer instance(hazelcastInstanceFactory);
 
                 ClientConfig clientConfig;
                 HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
@@ -231,21 +233,25 @@ namespace hazelcast {
                 DummyListenerClusterTest listener(countDownLatch);
                 IMap <std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>("testListenersWhenClusterDown");
                 m.addEntryListener(listener, true);
-
+		std::cout << "???? instance.shutdown" << std::endl; 
                 instance.shutdown();
 
                 util::CountDownLatch lifecycleLatch(1);
-                LclForClusterTest lifecycleListener(lifecycleLatch);
-                hazelcastClient.addLifecycleListener(&lifecycleListener);
+                LclForClusterTest* lifecycleListener = new LclForClusterTest(lifecycleLatch);
+                hazelcastClient.addLifecycleListener(lifecycleListener);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
-
+		std::cout << "???? ClusterTest Instance2 opened" << std::endl;
                 lifecycleLatch.await(5000);
-
+		std::cout << "??? ClusterTest Instance2 opened" << std::endl;
+                
                 m.put("sample", "entry");
-                assertTrue(countDownLatch.await(10 * 1000));
-
-                hazelcastClient.removeLifecycleListener(&lifecycleListener);
+		std::cout << "??? ClusterTest END 0" << std::endl;
+                                
+		assertTrue(countDownLatch.await(10 * 1000));
+		std::cout << "??? ClusterTest END 1" << std::endl;
+                assertTrue( hazelcastClient.removeLifecycleListener(lifecycleListener), "Listener could not removed");
+		std::cout << "??? ClusterTest END 2" << std::endl;
             }
 
             void ClusterTest::testBehaviourWhenClusterNotFound() {
@@ -260,4 +266,5 @@ namespace hazelcast {
         }
     }
 }
+
 

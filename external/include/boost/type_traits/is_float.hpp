@@ -25,3 +25,4 @@ BOOST_TT_AUX_BOOL_TRAIT_CV_SPEC1(is_float,long double,true)
 #include <boost/type_traits/detail/bool_trait_undef.hpp>
 
 #endif // BOOST_TYPE_TRAITS_IS_FLOAT_HPP_INCLUDED
+

@@ -106,3 +106,4 @@ public:
 } // namespace boost
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_LWM_WIN32_CS_HPP_INCLUDED
+

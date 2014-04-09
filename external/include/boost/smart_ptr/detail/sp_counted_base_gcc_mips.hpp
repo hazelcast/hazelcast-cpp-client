@@ -180,3 +180,4 @@ public:
 } // namespace boost
 
 #endif  // #ifndef BOOST_DETAIL_SP_COUNTED_BASE_GCC_MIPS_HPP_INCLUDED
+

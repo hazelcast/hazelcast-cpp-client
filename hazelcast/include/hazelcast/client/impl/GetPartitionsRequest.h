@@ -30,3 +30,4 @@ namespace hazelcast {
     }
 }
 #endif //HAZELCAST_GET_PARTITIONS_REQUEST
+

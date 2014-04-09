@@ -31,3 +31,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_OFFER_REQUEST
+

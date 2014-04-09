@@ -100,3 +100,4 @@ const T (*addressof(const T (&t)[N]))[N]
 } // namespace boost
 
 #endif // BOOST_UTILITY_ADDRESSOF_HPP
+

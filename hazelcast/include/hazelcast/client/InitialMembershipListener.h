@@ -65,3 +65,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_InitialMembershipListener
+

@@ -48,3 +48,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ILogger
+

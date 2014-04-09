@@ -30,3 +30,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_REMAINING_CAPACITY_REQUEST
+

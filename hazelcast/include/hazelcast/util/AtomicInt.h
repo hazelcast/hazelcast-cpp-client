@@ -78,3 +78,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_AtomicInt
+

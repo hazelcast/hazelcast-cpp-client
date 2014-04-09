@@ -32,3 +32,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_REMOVE_IF_SAME_REQUEST
+

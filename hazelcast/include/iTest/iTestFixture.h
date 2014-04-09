@@ -63,7 +63,11 @@ namespace iTest {
                 } catch(iTestException &e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
-                }
+                } catch(...){
+		    isOk = false;
+		    std::cout << "========== EXCEPTION ======== " << std::endl;
+		    throw;		
+		}
                 afterTest();
                 if (isOk)
                     std::cout << "============OK============== " << std::endl;
@@ -84,3 +88,4 @@ namespace iTest {
 
 
 #endif //HAZELCAST_iTestFixture
+

@@ -58,3 +58,4 @@ template< param > struct trait<spec> \
 { \
 }; \
 /**/
+

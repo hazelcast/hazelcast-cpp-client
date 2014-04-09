@@ -52,3 +52,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ClientTxnListTest
+

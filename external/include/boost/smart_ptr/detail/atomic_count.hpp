@@ -117,3 +117,4 @@ typedef long atomic_count;
 #endif
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_ATOMIC_COUNT_HPP_INCLUDED
+

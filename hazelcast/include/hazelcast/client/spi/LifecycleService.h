@@ -57,3 +57,4 @@ namespace hazelcast {
 
 
 #endif //__LifecycleService_H_
+

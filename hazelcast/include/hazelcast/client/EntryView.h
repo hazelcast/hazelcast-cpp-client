@@ -83,3 +83,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
+

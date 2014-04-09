@@ -51,3 +51,4 @@ enum memory_order
 } // namespace boost
 
 #endif // #ifndef BOOST_MEMORY_ORDER_HPP_INCLUDED
+

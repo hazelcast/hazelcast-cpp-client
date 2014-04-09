@@ -55,3 +55,4 @@ namespace hazelcast {
     }
 }
 #endif /* HAZELCAST_FIELD_DEFINITION */
+

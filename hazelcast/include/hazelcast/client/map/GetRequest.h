@@ -40,3 +40,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_GET_REQUEST
+

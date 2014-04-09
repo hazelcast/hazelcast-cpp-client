@@ -279,3 +279,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_TransactionalMap
+

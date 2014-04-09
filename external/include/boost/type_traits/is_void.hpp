@@ -36,3 +36,4 @@ BOOST_TT_AUX_BOOL_TRAIT_SPEC1(is_void,void const volatile,true)
 #include <boost/type_traits/detail/bool_trait_undef.hpp>
 
 #endif // BOOST_TT_IS_VOID_HPP_INCLUDED
+

@@ -31,3 +31,4 @@ namespace hazelcast {
 }
 
 #endif //__PortableCollection_H_
+

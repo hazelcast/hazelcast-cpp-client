@@ -208,3 +208,4 @@ extern "C" BOOST_INTERLOCKED_IMPORT void* __stdcall InterlockedExchangePointer( 
 #endif
 
 #endif // #ifndef BOOST_DETAIL_INTERLOCKED_HPP_INCLUDED
+

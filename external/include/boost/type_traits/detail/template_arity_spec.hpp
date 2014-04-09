@@ -29,3 +29,4 @@ struct template_arity< \
 #else
 #   define BOOST_TT_AUX_TEMPLATE_ARITY_SPEC(i, name) /**/
 #endif
+

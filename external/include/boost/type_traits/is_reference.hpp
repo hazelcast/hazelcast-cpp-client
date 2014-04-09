@@ -43,3 +43,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_reference,T,::boost::detail::is_reference_impl<T
 
 #endif // BOOST_TT_IS_REFERENCE_HPP_INCLUDED
 
+

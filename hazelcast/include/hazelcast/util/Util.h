@@ -43,3 +43,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_UTIL_FUNCTIONS
+

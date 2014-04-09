@@ -46,3 +46,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MemberAttributeChange
+

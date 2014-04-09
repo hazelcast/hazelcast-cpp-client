@@ -126,3 +126,4 @@ BOOST_TT_AUX_SIZE_T_TRAIT_SPEC1(alignment_of,void const volatile,0)
 
 #endif // BOOST_TT_ALIGNMENT_OF_HPP_INCLUDED
 
+

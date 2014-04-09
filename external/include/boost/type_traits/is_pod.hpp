@@ -143,3 +143,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_POD,T,::boost::is_pod<T>::value)
 #undef BOOST_INTERNAL_IS_POD
 
 #endif // BOOST_TT_IS_POD_HPP_INCLUDED
+

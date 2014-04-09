@@ -652,3 +652,4 @@ yes_type is_function_ptr_tester(R (__cdecl*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_COUNT
 
 #undef BOOST_PP_COUNTER
 #endif // BOOST_PP_IS_ITERATING
+

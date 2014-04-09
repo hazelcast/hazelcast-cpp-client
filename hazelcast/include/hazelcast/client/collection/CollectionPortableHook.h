@@ -48,3 +48,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_COLLECTION_PORTABLE_HOOK
+

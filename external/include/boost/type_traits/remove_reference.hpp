@@ -68,3 +68,4 @@ BOOST_TT_AUX_TYPE_TRAIT_DEF1(remove_reference,T,typename boost::detail::remove_r
 #include <boost/type_traits/detail/type_trait_undef.hpp>
 
 #endif // BOOST_TT_REMOVE_REFERENCE_HPP_INCLUDED
+

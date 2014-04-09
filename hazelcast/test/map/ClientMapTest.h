@@ -103,3 +103,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ClientMapTest
+

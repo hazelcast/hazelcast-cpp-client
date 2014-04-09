@@ -33,3 +33,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_GET_ALL_REQUEST
+

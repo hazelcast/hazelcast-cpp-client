@@ -29,3 +29,4 @@ struct ice_not<true>
 } // namespace boost
 
 #endif // BOOST_TT_DETAIL_ICE_NOT_HPP_INCLUDED
+

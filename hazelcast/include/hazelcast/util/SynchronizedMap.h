@@ -135,3 +135,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_SYNCHRONIZED_MAP
+

@@ -120,3 +120,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_TransactionProxy
+

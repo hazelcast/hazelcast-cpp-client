@@ -20,3 +20,4 @@
 #include <boost/smart_ptr/detail/lightweight_mutex.hpp>
 
 #endif // #ifndef BOOST_DETAIL_LIGHTWEIGHT_MUTEX_HPP_INCLUDED
+

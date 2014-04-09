@@ -32,3 +32,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
+

@@ -112,3 +112,4 @@ namespace hazelcast {
     }
 }
 #endif /* HAZELCAST_PORTABLE_WRITER */
+

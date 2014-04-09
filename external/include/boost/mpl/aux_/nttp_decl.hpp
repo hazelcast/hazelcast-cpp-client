@@ -33,3 +33,4 @@ typedef long        _mpl_nttp_long;
 #endif
 
 #endif // BOOST_MPL_AUX_NTTP_DECL_HPP_INCLUDED
+

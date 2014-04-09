@@ -185,18 +185,19 @@ namespace hazelcast {
 
                 void DataOutput::writeShortUTF(const std::string &str) {
                     int stringLen = (int) str.length();
-                    int utfLength = 0;
+//                    int utfLength = 0;
+		    int utfLength = stringLen;
                     int count = 0;
                     /* use charAt instead of copying String to char std::vector */
-                    for (int i = 0; i < stringLen; i++) {
-                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
-                            utfLength++;
+//                    for (int i = 0; i < stringLen; i++) {
+//                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
+//                            utfLength++;
 //                        } else if (str[i] > 0x07FF) { //MTODO think using wchar
 //                            utfLength += 3;
-                        } else {
-                            utfLength += 2;
-                        }
-                    }
+//                        } else {
+//                            utfLength += 2;
+//                        }
+ //                   }
                     if (utfLength > 65535) {
                         const std::string &message = "encoded string too long:" +
                                 util::IOUtil::to_string(utfLength) + " bytes";
@@ -205,22 +206,22 @@ namespace hazelcast {
                     std::vector<byte> byteArray(utfLength);
                     int i;
                     for (i = 0; i < stringLen; i++) {
-                        if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
-                            break;
+//                        if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
+//                            break;
                         byteArray[count++] = (byte) str[i];
                     }
-                    for (; i < stringLen; i++) {
-                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
-                            byteArray[count++] = (byte) str[i];
+//                    for (; i < stringLen; i++) {
+//                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
+//                            byteArray[count++] = (byte) str[i];
 //                        } else if (str[i] > 0x07FF) {  //MTODO think using wchar
 //                            byteArray[count++] = (byte) (0xE0 | ((str[i] >> 12) & 0x0F));
 //                            byteArray[count++] = (byte) (0x80 | ((str[i] >> 6) & 0x3F));
 //                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
-                        } else {
-                            byteArray[count++] = (byte) (0xC0 | ((str[i] >> 6) & 0x1F));
-                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
-                        }
-                    }
+//                        } else {
+//                            byteArray[count++] = (byte) (0xC0 | ((str[i] >> 6) & 0x1F));
+//                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
+//                        }
+//                    }
                     writeShort(utfLength);
                     write(byteArray);
                 };
@@ -229,3 +230,4 @@ namespace hazelcast {
         }
     }
 }
+

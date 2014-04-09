@@ -76,3 +76,4 @@ namespace hazelcast {
 }
 
 #endif //HAZElCAST_CLUSTER
+

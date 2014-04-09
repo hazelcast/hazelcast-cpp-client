@@ -815,3 +815,4 @@ struct is_mem_fun_pointer_impl<R (T::*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_COUNTER,T)
 #undef BOOST_PP_COUNTER
 #endif // BOOST_PP_IS_ITERATING
 
+

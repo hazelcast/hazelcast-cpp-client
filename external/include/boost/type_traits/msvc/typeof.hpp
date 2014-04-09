@@ -48,3 +48,4 @@ namespace boost { namespace detail {
 }}
 
 #endif //BOOST_TYPETRAITS_MSVC_TYPEOF_IMPL_HPP
+

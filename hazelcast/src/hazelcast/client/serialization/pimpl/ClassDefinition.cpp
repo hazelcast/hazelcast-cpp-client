@@ -51,7 +51,7 @@ namespace hazelcast {
 
                 FieldType ClassDefinition::getFieldType(const char *fieldName) const {
                     if (hasField(fieldName)) {
-                        return fieldDefinitionsMap.at(fieldName).getType();
+                        return fieldDefinitionsMap.find(fieldName)->second.getType();
                     } else {
                         throw exception::IOException("ClassDefinition::getFieldType", "field does not exist");
                     }
@@ -125,3 +125,4 @@ namespace hazelcast {
         }
     }
 }
+

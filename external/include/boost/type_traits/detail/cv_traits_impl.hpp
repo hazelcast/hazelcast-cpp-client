@@ -95,3 +95,4 @@ template <typename T> struct cv_traits_imp<T*,1>
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 #endif // BOOST_TT_DETAIL_CV_TRAITS_IMPL_HPP_INCLUDED
+

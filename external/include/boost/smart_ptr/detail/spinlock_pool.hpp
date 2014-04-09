@@ -89,3 +89,4 @@ template< int I > spinlock spinlock_pool< I >::pool_[ 41 ] =
 } // namespace boost
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_POOL_HPP_INCLUDED
+

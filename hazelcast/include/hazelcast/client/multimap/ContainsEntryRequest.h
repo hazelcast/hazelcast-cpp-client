@@ -38,3 +38,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ContainsEntryRequest
+

@@ -39,3 +39,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_LIFECYCLE_LISTENER
+

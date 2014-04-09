@@ -87,3 +87,4 @@ public:
 #define BOOST_DETAIL_SPINLOCK_INIT { false }
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_NT_HPP_INCLUDED
+

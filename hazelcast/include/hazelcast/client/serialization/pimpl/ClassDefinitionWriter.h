@@ -108,3 +108,4 @@ namespace hazelcast {
     }
 }
 #endif /* HAZELCAST_CLASS_DEFINITION_WRITER */
+

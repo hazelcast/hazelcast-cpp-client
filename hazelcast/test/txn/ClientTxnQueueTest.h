@@ -54,3 +54,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_ClientTxnQueueTest
+

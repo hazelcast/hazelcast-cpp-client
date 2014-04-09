@@ -95,3 +95,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_CONNECTION_MANAGER
+
