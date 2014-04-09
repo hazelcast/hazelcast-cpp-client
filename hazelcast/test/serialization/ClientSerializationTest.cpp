@@ -11,7 +11,6 @@
 #include "serialization/TestInvalidReadPortable.h"
 #include "serialization/TestInvalidWritePortable.h"
 #include "serialization/testUtil.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
 #include <fstream>
@@ -82,10 +81,6 @@ namespace hazelcast {
                 TestDataSerializable ds(123, 's');
                 TestNamedPortable np("named portable", 34567);
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
 
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
@@ -130,10 +125,6 @@ namespace hazelcast {
             void ClientSerializationTest::testInvalidWrite() {
                 serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidWritePortable p(2131, 123, "q4edfd");
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
                 try{
                     serializationService.toData<TestInvalidWritePortable>(&p);
                     iTest::assertTrue(false, "toData should trow exception");
@@ -145,10 +136,6 @@ namespace hazelcast {
             void ClientSerializationTest::testInvalidRead() {
                 serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidReadPortable p(2131, 123, "q4edfd");
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
                 serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
                 try{
                     serializationService.toObject<TestInvalidReadPortable>(data);

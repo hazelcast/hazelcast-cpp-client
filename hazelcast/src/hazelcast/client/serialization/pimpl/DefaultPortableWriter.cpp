@@ -71,11 +71,6 @@ namespace hazelcast {
                     dataOutput.writeUTF(value);
                 };
 
-                void DefaultPortableWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
-                    setPosition(fieldName);
-                    dataOutput.writeBoolean(true);
-                };
-
                 void DefaultPortableWriter::writeByteArray(const char *fieldName, const std::vector<byte> &bytes) {
                     setPosition(fieldName);
                     dataOutput.writeByteArray(bytes);

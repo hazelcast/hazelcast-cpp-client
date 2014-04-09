@@ -7,7 +7,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
@@ -16,8 +15,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-#include <cstdlib>
-#include <ctime>
 
 namespace hazelcast {
     namespace client {
@@ -30,9 +27,6 @@ namespace hazelcast {
             }
 
             bool ClusterService::start() {
-                serialization::pimpl::ClassDefinitionBuilder cd(-3, 3);
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> ptr(cd.addUTFField("uuid").addUTFField("ownerUuid").build());
-                clientContext.getSerializationService().getSerializationContext().registerClassDefinition(ptr);
 
                 ClientConfig &config = clientContext.getClientConfig();
                 std::set<MembershipListener *> const &membershipListeners = config.getMembershipListeners();

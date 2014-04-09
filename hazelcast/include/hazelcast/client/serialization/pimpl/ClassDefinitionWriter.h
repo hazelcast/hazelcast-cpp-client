@@ -65,13 +65,30 @@ namespace hazelcast {
                     void writeDoubleArray(const char *fieldName, const std::vector<double > &data);
 
                     template <typename T>
+                    void writeNullPortable(const char *fieldName) {
+                        if (raw) {
+                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
+                        }
+                        T temp;
+                        FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, temp.getFactoryId(), temp.getClassId());
+                        addNestedField(temp, fd);
+
+                    };
+
+                    template <typename T>
                     void writePortable(const char *fieldName, const T &portable) {
+                        if (raw) {
+                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
+                        }
                         FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, portable.getFactoryId(), portable.getClassId());
                         addNestedField(portable, fd);
                     };
 
                     template <typename T>
                     void writePortableArray(const char *fieldName, const std::vector<T> &portables) {
+                        if (raw) {
+                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
+                        }
                         int classId = portables[0].getClassId();
                         int factoryId = portables[0].getFactoryId();
                         FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
@@ -89,12 +106,7 @@ namespace hazelcast {
                 private:
                     void addField(const char *fieldName, FieldType const &);
 
-                    template <typename T>
-                    void addNestedField(T &p, FieldDefinition &fd) {
-                        cd->add(fd);
-                        boost::shared_ptr<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
-                        cd->add(nestedCd);
-                    };
+                    void addNestedField(const Portable &p, FieldDefinition &fd);
 
                     int index;
                     bool raw;

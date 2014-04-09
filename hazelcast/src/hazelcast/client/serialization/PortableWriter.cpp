@@ -76,12 +76,6 @@ namespace hazelcast {
                 return classDefinitionWriter->writeUTF(fieldName, str);
             }
 
-            void PortableWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
-                if (isDefaultWriter)
-                    return defaultPortableWriter->writeNullPortable(fieldName, factoryId, classId);
-                return classDefinitionWriter->writeNullPortable(fieldName, factoryId, classId);
-            }
-
             void PortableWriter::writeByteArray(const char *fieldName, const std::vector<byte>& data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeByteArray(fieldName, data);

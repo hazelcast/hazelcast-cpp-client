@@ -14,7 +14,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/exception/IAuthenticationException.h"
 #include "hazelcast/client/impl/ServerException.h"
 
 namespace hazelcast {
@@ -149,7 +148,7 @@ namespace hazelcast {
                 if (clientResponse->isException()) {
                     serialization::pimpl::Data const &data = clientResponse->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
-                    throw exception::IAuthenticationException("ConnectionManager::authenticate", ex->what());
+                    throw exception::IException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::pimpl::Data *> const &getCollection = collection->getCollection();

@@ -42,7 +42,7 @@ namespace hazelcast {
             void AuthenticationRequest::write(serialization::PortableWriter &writer) const {
                 writer.writePortable("credentials", credentials);
                 if (principal == NULL) {
-                    writer.writeNullPortable("principal", -3, 3);
+                    writer.writeNullPortable<Principal>("principal");
                 } else {
                     writer.writePortable("principal", *principal);
                 }
