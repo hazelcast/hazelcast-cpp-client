@@ -36,7 +36,6 @@ namespace hazelcast {
 
             void ClusterListenerThread::run() {
                 while (clientContext.getLifecycleService().isRunning()) {
-			util::ILogger::getLogger().severe("!!! continıe");
                     try {
                         if (conn.get() == NULL) {
                             try {
@@ -63,7 +62,6 @@ namespace hazelcast {
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
-			util::ILogger::getLogger().severe("!!! while");
                         sleep(1);
                     }
 
@@ -73,13 +71,10 @@ namespace hazelcast {
 
 
             void ClusterListenerThread::stop() {
-		util::ILogger::getLogger().severe("!!!! ClusterListenerThread stop");
                 if (deletingConnection.compareAndSet(false, true)) {
-		    util::ILogger::getLogger().severe("!!!! compareAndSet");
                     conn.reset();
                     deletingConnection = false;
                 }
-                util::ILogger::getLogger().severe("!!!! Stop end");
                 clusterListenerThread->interrupt();
                 clusterListenerThread->join();
             }

@@ -26,7 +26,8 @@ namespace hazelcast {
             , clientContext(clientContext)
             , socket(address)
             , readHandler(*this, iListener, 16 << 10)
-            , writeHandler(*this, oListener, 16 << 10) {
+            , writeHandler(*this, oListener, 16 << 10)
+            , _isOwnerConnection(false) {
 
             };
 

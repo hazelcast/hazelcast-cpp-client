@@ -11,7 +11,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -43,15 +42,12 @@ namespace hazelcast {
 
             void LifecycleService::shutdown() {
                 util::LockGuard lg(lifecycleLock);
-                if(!active)
+                if (!active)
                     return;
                 active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-		util::ILogger::getLogger().severe("ConnMan stop");
                 clientContext.getConnectionManager().stop();
-		util::ILogger::getLogger().severe("ClusterService stop");
                 clientContext.getClusterService().stop();
-		util::ILogger::getLogger().severe("PartitionService Stop");
                 clientContext.getPartitionService().stop();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             };
@@ -90,12 +86,10 @@ namespace hazelcast {
                         break;
                 }
 
-		for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    util::ILogger::getLogger().severe("calling registered listeners");
-		    (*it)->stateChanged(lifecycleEvent);
-		    util::ILogger::getLogger().severe("end calling registered listeners");	                
-		}
-		
+                for (std::set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+                    (*it)->stateChanged(lifecycleEvent);
+                }
+
             };
 
             bool LifecycleService::isRunning() {

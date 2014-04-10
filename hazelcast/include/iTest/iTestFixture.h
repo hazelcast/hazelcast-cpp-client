@@ -54,7 +54,7 @@ namespace iTest {
             T *t = static_cast<T *>(this);
             for (unsigned int i = 0; i < tests.size(); i++) {
                 TestFunction test = tests[i];
-                (std::cout << "======= " << testNames[i] << " ======= " << std::endl);
+                (std::cout << "======= " << i << ". " << testNames[i] << " ======= " << std::endl);
                 beforeTest();
                 bool isOk = true;
                 try {
