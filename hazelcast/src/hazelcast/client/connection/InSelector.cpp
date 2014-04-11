@@ -6,6 +6,7 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {

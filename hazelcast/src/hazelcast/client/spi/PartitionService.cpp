@@ -12,6 +12,8 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -53,13 +55,13 @@ namespace hazelcast {
 
             void PartitionService::staticRunListener(util::ThreadArgs &args) {
                 PartitionService *partitionService = (PartitionService *) args.arg0;
-                partitionService->runListener();
+                partitionService->runListener(args.currentThread);
             }
 
-            void PartitionService::runListener() {
+            void PartitionService::runListener(util::Thread* currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
-                        sleep(10);
+                        currentThread->interruptibleSleep(10);
                         if (!clientContext.getLifecycleService().isRunning()) {
                             break;
                         }

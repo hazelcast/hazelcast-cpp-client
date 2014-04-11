@@ -70,7 +70,7 @@ namespace hazelcast {
             /**
              * @param buffer
              * @param len  length of the buffer to be received.
-             * @param flag bsd socktes options flag.
+             * @param flag bsd sockets options flag.
              * @return number of bytes received.
              * @throw IOException in failure.
              */

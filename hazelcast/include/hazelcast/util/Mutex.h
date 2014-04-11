@@ -10,7 +10,6 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
 #include <Windows.h>
-#include <cassert>
 
 namespace hazelcast {
     namespace util {
@@ -20,29 +19,15 @@ namespace hazelcast {
                 alreadyLocked, ok
             };
             
-            Mutex() {
-                InitializeCriticalSection(&mutex);
-            }
+            Mutex();
 
-            ~Mutex() {
-                DeleteCriticalSection(&mutex);
-            }
+            ~Mutex() ;
 
-            void lock() {
-                EnterCriticalSection(&mutex);
-            }
+            void lock();
 
-            Mutex::status tryLock() {
-                bool success = TryEnterCriticalSection(&mutex);
-                if (!success) {
-                    return Mutex::alreadyLocked;
-                }
-                return Mutex::ok;
-            }
+            Mutex::status tryLock();
 
-            void unlock() {
-                DeleteCriticalSection(&mutex);
-            }
+            void unlock();
 
             CRITICAL_SECTION mutex;
         private:
@@ -57,9 +42,6 @@ namespace hazelcast {
 #else
 
 #include <pthread.h>
-#include <sys/errno.h>
-#include <cassert>
-
 
 namespace hazelcast {
     namespace util {
@@ -69,35 +51,16 @@ namespace hazelcast {
             enum status {
                 alreadyLocked, ok
             };
-            
-            Mutex() {
-                pthread_mutex_init(&mutex, NULL);
-            }
 
-            ~Mutex() {
-                pthread_mutex_destroy(&mutex);
-            }
+            Mutex();
 
-            void lock() {
-                int err = pthread_mutex_lock(&mutex);
-                assert (!(err == EINVAL || err == EAGAIN));
-                assert (err != EDEADLK);
-            }
+            ~Mutex();
 
-            Mutex::status tryLock() {
-                int err = pthread_mutex_trylock(&mutex);
-                assert (!(err == EINVAL || err == EAGAIN));
-                if (err == EBUSY) {
-                    return Mutex::alreadyLocked;
-                }
-                return Mutex::ok;
-            }
+            void lock();
 
-            void unlock() {
-                int err = pthread_mutex_unlock(&mutex);
-                assert (!(err == EINVAL || err == EAGAIN));
-                assert (err != EPERM);
-            }
+            Mutex::status tryLock();
+
+            void unlock();
 
             pthread_mutex_t mutex;
         private:

@@ -9,9 +9,13 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
+    namespace util {
+        class Thread;
+
+        class ThreadArgs;
+    }
     namespace client {
 
         class Member;
@@ -38,7 +42,7 @@ namespace hazelcast {
 
                 static void staticRun(util::ThreadArgs &args) ;
 
-                void run();
+                void run(util::Thread *currentThread);
 
                 void stop();
 

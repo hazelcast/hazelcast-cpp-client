@@ -13,6 +13,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,14 +28,14 @@ namespace hazelcast {
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                clusterListenerThread->run();
+                clusterListenerThread->run((util::Thread *) args.arg0);
             }
 
             void ClusterListenerThread::setThread(util::Thread *thread) {
                 clusterListenerThread.reset(thread);
             }
 
-            void ClusterListenerThread::run() {
+            void ClusterListenerThread::run(util::Thread *currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         if (conn.get() == NULL) {
@@ -52,7 +53,7 @@ namespace hazelcast {
                         isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
-                        sleep(1);
+                        currentThread->interruptibleSleep(1);
                     } catch(std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
                             util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
@@ -62,7 +63,7 @@ namespace hazelcast {
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
-                        sleep(1);
+                        currentThread->interruptibleSleep(1);
                     }
 
                 }

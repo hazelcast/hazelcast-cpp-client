@@ -10,9 +10,14 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
+    namespace util{
+        class Thread;
+
+        class ThreadArgs;
+    }
+
     namespace client {
         namespace serialization {
             namespace pimpl {
@@ -56,7 +61,7 @@ namespace hazelcast {
 
                 static void staticRunListener(util::ThreadArgs& args);
 
-                void runListener();
+                void runListener(util::Thread* currentThread);
 
                 void runRefresher();
 

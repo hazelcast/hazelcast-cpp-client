@@ -11,13 +11,15 @@
 namespace hazelcast {
     namespace util {
 
+        class Thread;
+
         class ThreadArgs {
         public:
             void *arg0;
             void *arg1;
             void *arg2;
             void *arg3;
-            std::string threadName;
+            Thread* currentThread;
             void (*func)(ThreadArgs &);
         } ;
 
