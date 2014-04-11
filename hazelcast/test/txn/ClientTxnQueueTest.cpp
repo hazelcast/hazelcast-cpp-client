@@ -7,6 +7,7 @@
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/Thread.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -62,7 +63,7 @@ namespace hazelcast {
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 try {
                     latch->await(5 * 1000);
-                    sleep(3);
+                    util::sleep(3);
                     client->getQueue<std::string>("defQueue0").offer("item0");
                 } catch (...) {
                 }

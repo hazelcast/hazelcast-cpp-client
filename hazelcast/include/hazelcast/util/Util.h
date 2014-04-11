@@ -38,6 +38,8 @@ namespace hazelcast {
 
         HAZELCAST_API long getCurrentTimeMillis();
 
+		HAZELCAST_API void sleep(int seconds);
+
     }
 }
 

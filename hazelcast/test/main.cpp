@@ -20,6 +20,7 @@
 #include "txn/ClientTxnMultiMapTest.h"
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
+#include <cstdlib>
 
 using namespace hazelcast::client::test;
 
@@ -100,7 +101,7 @@ void unitTests() {
 void s(hazelcast::util::ThreadArgs& args){
     int* v = (int*)args.arg0;
     std::cout << "Sleep" << std::endl;
-    ::sleep(5);
+	hazelcast::util::sleep(5);
     std::cout << "DONE " << *v << std::endl;
 }
 
@@ -118,7 +119,7 @@ void testSleep(){
 void testLatchThreadMain(hazelcast::util::ThreadArgs& args){
     hazelcast::util::CountDownLatch* latch = (hazelcast::util::CountDownLatch*)args.arg0;
     std::cout << "SLEEP" << std::endl;
-    sleep(10);
+	hazelcast::util::sleep(10);
     std::cout << "WAKEUP" << std::endl;
     latch->countDown();
 }

@@ -80,7 +80,7 @@ namespace hazelcast {
                 ItemListener listener(latch);
                 std::string id = q->addItemListener(listener, true);
 
-                sleep(1);
+                util::sleep(1);
 
                 for (int i = 0; i < 5; i++) {
                     assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
@@ -92,7 +92,7 @@ namespace hazelcast {
 
             void testOfferPollThread2(util::ThreadArgs& args) {
                 IQueue<std::string> *q = (IQueue<std::string> *)args.arg0;
-                sleep(2);
+                util::sleep(2);
                 q->offer("item1");
             }
 

@@ -13,7 +13,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {

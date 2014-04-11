@@ -13,6 +13,7 @@
 
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 namespace hazelcast {
@@ -30,7 +31,11 @@ namespace hazelcast {
                     void *arg2 = NULL,
                     void *arg3 = NULL);
 
-            Thread(void (func)(ThreadArgs &);
+            Thread(void (func)(ThreadArgs &),
+					void *arg0 = NULL,
+                    void *arg1 = NULL,
+                    void *arg2 = NULL,
+                    void *arg3 = NULL);
 
             static long getThreadID();
 

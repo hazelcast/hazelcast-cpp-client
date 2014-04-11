@@ -79,7 +79,7 @@ namespace hazelcast {
                         boost::shared_ptr<Connection> connection = getOrConnect(target);
                         return connection;
                     }
-                } catch (exception::IOException &ignored) {
+                } catch (exception::IOException &) {
                 }
 
                 int count = 0;

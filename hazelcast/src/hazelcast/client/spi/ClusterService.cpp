@@ -15,6 +15,7 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include <ctime>
 
 namespace hazelcast {
     namespace client {
@@ -161,7 +162,7 @@ namespace hazelcast {
                     util::ILogger::getLogger().warning(errorStream.str());
 
                     if (remainingTime > 0) {
-                        sleep((unsigned) remainingTime / 1000);//MTODO
+                        util::sleep((unsigned) remainingTime / 1000);//MTODO
                     }
                 }
                 throw  exception::IllegalStateException("ClusterService", "Unable to connect to any address in the config! =>" + std::string(lastError.what()));

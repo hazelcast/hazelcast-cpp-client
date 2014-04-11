@@ -11,7 +11,13 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/Thread.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#else
 #include <sys/time.h>
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -38,11 +44,8 @@ namespace hazelcast {
 
 
         long getCurrentTimeMillis() {
-            timeval time;
-            ::gettimeofday(&time, NULL);
-            return long(time.tv_sec) * 1000 + long(time.tv_usec / 1000);
-
-//                    if (UseFakeTimers) {
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+			//                    if (UseFakeTimers) {
 //                        return fake_time++;
 //                    } else {
 //                        FILETIME wt;
@@ -53,8 +56,22 @@ namespace hazelcast {
 //            windows_to_java_time
 //            jlong a = jlong_from(wt.dwHighDateTime, wt.dwLowDateTime);
 //            return (a - offset()) / 10000;
+			return 1L;
+#else
+			timeval time;
+            ::gettimeofday(&time, NULL);
+            return long(time.tv_sec) * 1000 + long(time.tv_usec / 1000);
+#endif
 
         }
+
+		void sleep(int seconds){
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+			Sleep(seconds * 1000);
+#else
+			::sleep(seconds);
+#endif
+		}
     }
 }
 

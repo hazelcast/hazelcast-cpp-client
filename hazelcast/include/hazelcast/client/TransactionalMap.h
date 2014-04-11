@@ -256,7 +256,7 @@ namespace hazelcast {
                 map::TxnMapRequest *request = new map::TxnMapRequest(getName(), map::TxnMapRequestType::VALUES_BY_PREDICATE, predicate);
                 boost::shared_ptr<map::MapValueCollection> result = invoke<map::MapValueCollection>(request);
                 std::vector <serialization::pimpl::Data> const &dataValues = result->getValues();
-                int size = dataValues.size();
+                int size = (int)dataValues.size();
                 std::vector<V> values(size);
                 for (int i = 0; i < size; i++) {
                     boost::shared_ptr<V> v = toObject<V>(dataValues[i]);
