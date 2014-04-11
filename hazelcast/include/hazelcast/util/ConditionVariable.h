@@ -8,12 +8,50 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
+#include "hazelcast/util/Mutex.h"
+#include <cassert>
+
 namespace hazelcast {
     namespace util {
         class ConditionVariable {
         public:
+            ConditionVariable() {
+                InitializeConditionVariable(&condition);
+            };
+
+            ~ConditionVariable() {
+
+            };
+
+            void wait(Mutex &mutex) {
+                bool success = SleepConditionVariableCS(&condition,  &(mutex.mutex), INFINITE);
+				assert(success && "SleepConditionVariable");
+            };
+
+			bool waitFor(Mutex &mutex, long timeInMillis) {
+                bool success = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeInMillis);
+				if(success){
+					return true;
+				}
+				assert(ERROR_TIMEOUT != GetLastError());
+				return false;
+            };
+
+            void notify() {
+                WakeConditionVariable(&condition);
+            };
+
+            void notify_all() {
+                WakeAllConditionVariable(&condition);
+            };
+
 
         private:
+            CONDITION_VARIABLE condition;
+
+            ConditionVariable(const ConditionVariable &rhs);
+
+            void operator = (const ConditionVariable &rhs);
         };
     }
 }

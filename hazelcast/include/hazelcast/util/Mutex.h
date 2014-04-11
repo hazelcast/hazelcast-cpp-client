@@ -9,12 +9,46 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
+#include <Windows.h>
+#include <cassert>
+
 namespace hazelcast {
     namespace util {
         class Mutex {
         public:
+			enum status {
+                alreadyLocked, ok
+            };
+            
+            Mutex() {
+                InitializeCriticalSection(&mutex);
+            }
 
+            ~Mutex() {
+                DeleteCriticalSection(&mutex);
+            }
+
+            void lock() {
+                EnterCriticalSection(&mutex);
+            }
+
+            Mutex::status tryLock() {
+                bool success = TryEnterCriticalSection(&mutex);
+                if (!success) {
+                    return Mutex::alreadyLocked;
+                }
+                return Mutex::ok;
+            }
+
+            void unlock() {
+                DeleteCriticalSection(&mutex);
+            }
+
+            CRITICAL_SECTION mutex;
         private:
+            Mutex(const Mutex &rhs);
+
+            void operator = (const Mutex &rhs);
         };
     }
 }
@@ -79,4 +113,5 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_Mutex
+
 
