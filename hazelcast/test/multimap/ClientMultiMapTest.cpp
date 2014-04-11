@@ -258,7 +258,7 @@ namespace hazelcast {
                 util::CountDownLatch latch2(1);
                 util::Thread t2(tryLockThread2, mm.get(), &latch2);
 
-                sleep(1);
+                util::sleep(1);
                 mm->unlock("key1");
                 assertTrue(latch2.await(100 * 1000));
                 assertTrue(mm->isLocked("key1"));

@@ -5,6 +5,7 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
@@ -33,7 +34,7 @@ namespace hazelcast {
             init(func, arg0, arg1, arg2, arg3);
         }
 
-        static long Thread::getThreadID() {
+        long Thread::getThreadID() {
             return GetCurrentThreadId();
         }
 
@@ -46,7 +47,7 @@ namespace hazelcast {
             LockGuard lock(mutex);
             bool ok = condition.waitFor(mutex, seconds * 1000);
             if(!ok){
-                throw thread_interrupted;
+                throw thread_interrupted();
             }
 
         }
@@ -71,7 +72,7 @@ namespace hazelcast {
             return threadName;
         };
 
-        static DWORD WINAPI Thread::controlledThread(LPVOID args) {
+        DWORD WINAPI Thread::controlledThread(LPVOID args) {
             std::auto_ptr<ThreadArgs> threadArgs((ThreadArgs *) args);
             try {
                 threadArgs->func(*threadArgs);

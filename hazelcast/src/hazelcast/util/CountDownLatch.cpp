@@ -23,7 +23,7 @@ namespace hazelcast {
                 if (count == 0) {
                     return true;
                 }
-                ::sleep(1);
+                sleep(1);
             }
             if (count == 0) {
                 return true;
@@ -36,7 +36,7 @@ namespace hazelcast {
                 if (count == 0) {
                     break;
                 }
-                ::sleep(1);
+                util::sleep(1);
             };
         }
     }

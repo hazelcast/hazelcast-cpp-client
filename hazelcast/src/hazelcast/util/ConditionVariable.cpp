@@ -20,12 +20,12 @@ namespace hazelcast {
         }
 
         void ConditionVariable::wait(Mutex &mutex) {
-            bool success = SleepConditionVariableCS(&condition,  &(mutex.mutex), INFINITE);
+            BOOL success = SleepConditionVariableCS(&condition,  &(mutex.mutex), INFINITE);
             assert(success && "SleepConditionVariable");
         }
 
         bool ConditionVariable::waitFor(Mutex &mutex, long timeInMillis) {
-            bool success = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeInMillis);
+            BOOL success = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeInMillis);
             if(success){
                 return true;
             }

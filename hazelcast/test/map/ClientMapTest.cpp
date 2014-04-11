@@ -341,10 +341,10 @@ namespace hazelcast {
             void ClientMapTest::testPutIfAbsentTtl() {
                 assertNull(imap->putIfAbsent("key1", "value1", 1000).get());
                 assertEqual("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
-                sleep(2);
+                util::sleep(2);
                 assertNull(imap->putIfAbsent("key1", "value3", 1000).get());
                 assertEqual("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
-                sleep(2);
+                util::sleep(2);
             }
 
             void ClientMapTest::testSet() {
@@ -357,7 +357,7 @@ namespace hazelcast {
                 imap->set("key1", "value3", 1000);
                 assertEqual("value3", *(imap->get("key1")));
 
-                sleep(2);
+                util::sleep(2);
                 assertNull(imap->get("key1").get());
 
             }
@@ -450,7 +450,7 @@ namespace hazelcast {
                 util::CountDownLatch latch2(1);
                 util::Thread t2(testMapTryLockThread2, &latch2, imap.get());
 
-                sleep(1);
+                util::sleep(1);
                 imap->unlock("key1");
                 assertTrue(latch2.await(100 * 1000), "4");
                 assertTrue(imap->isLocked("key1"), "5");
@@ -560,7 +560,7 @@ namespace hazelcast {
                 std::string listener1ID = imap->addEntryListener(listener1, false);
                 std::string listener2ID = imap->addEntryListener(listener2, "key3", true);
 
-                sleep(2);
+                util::sleep(2);
 
                 imap->put("key1", "value1");
                 imap->put("key2", "value2");

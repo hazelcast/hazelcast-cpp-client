@@ -84,7 +84,7 @@ namespace hazelcast {
                 try {
                     connection::ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
-                } catch(exception::IOException &e) {
+                } catch(exception::IOException &) {
                     util::LockGuard lockGuard(failedListenerLock);
                     failedListeners.push_back(failedListener);
                     return;
@@ -102,7 +102,7 @@ namespace hazelcast {
                     try {
                         connection::ConnectionManager &cm = clientContext.getConnectionManager();
                         connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
-                    } catch(exception::IOException &e) {
+                    } catch(exception::IOException &) {
                         newFailedListeners.push_back(*it);
                         continue;
                     }

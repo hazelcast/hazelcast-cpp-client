@@ -57,7 +57,7 @@ public:
 void printStats(hazelcast::util::ThreadArgs &args) {
     while (true) {
         try {
-            sleep((unsigned int)STATS_SECONDS);
+            hazelcast::util::sleep((unsigned int)STATS_SECONDS);
             const Stats statsNow = stats.getAndReset();
             statsNow.print();
             std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;

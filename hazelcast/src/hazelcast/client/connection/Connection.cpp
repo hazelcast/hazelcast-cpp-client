@@ -71,7 +71,7 @@ namespace hazelcast {
                 try {
                     ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
-                } catch(exception::IOException &e) {
+                } catch(exception::IOException &) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;

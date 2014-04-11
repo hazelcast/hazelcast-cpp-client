@@ -63,7 +63,7 @@ namespace hazelcast {
                 util::CountDownLatch latch(1);
                 util::Thread t(testAcquireThread, s.get(), &latch);
 
-                sleep(1);
+                util::sleep(1);
 
                 s->release(2);
                 assertTrue(latch.await(10 ));

@@ -6,7 +6,6 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
-#include <Windows.h>
 #include <cassert>
 
 namespace hazelcast {
@@ -25,7 +24,7 @@ namespace hazelcast {
         }
 
         Mutex::status Mutex::tryLock() {
-            bool success = TryEnterCriticalSection(&mutex);
+            BOOL success = TryEnterCriticalSection(&mutex);
             if (!success) {
                 return Mutex::alreadyLocked;
             }

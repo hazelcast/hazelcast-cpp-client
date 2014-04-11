@@ -64,10 +64,10 @@ namespace hazelcast {
                     assertEqual(3, (int)mm->get(key).size());
 
                     latch->countDown();
-                } catch (std::exception &e) {
+                } catch (std::exception &) {
                     ++(*error);
                     latch->countDown();
-                } catch(iTest::iTestException& e){
+                } catch(iTest::iTestException&){
                     ++(*error);
                     latch->countDown();
                 }

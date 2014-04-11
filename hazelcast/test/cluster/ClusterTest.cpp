@@ -251,7 +251,7 @@ namespace hazelcast {
                 try{
                     HazelcastClient hazelcastClient(clientConfig);
                     assertTrue(false);
-                }catch(exception::IllegalStateException &e){
+                }catch(exception::IllegalStateException &){
 
                 }
             }
