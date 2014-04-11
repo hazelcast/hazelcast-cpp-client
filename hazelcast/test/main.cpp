@@ -162,11 +162,7 @@ int main() {
 //    testJoin();
 //    testLatch();
 //    testSleep();
-    time_t a = time(NULL);
-    sleep(10);
-    double s = difftime(a, time(NULL));
-    std::cout << s << std::endl;
-//    unitTests();
+    unitTests();
 //    testSpeed();
     return 0;
 }

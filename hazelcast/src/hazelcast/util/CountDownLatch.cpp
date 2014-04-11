@@ -5,7 +5,7 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/CountDownLatch.h"
-
+#include <ctime> 
 namespace hazelcast {
     namespace util {
         CountDownLatch::CountDownLatch(int count)
