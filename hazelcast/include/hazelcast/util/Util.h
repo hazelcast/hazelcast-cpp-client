@@ -36,8 +36,6 @@ namespace hazelcast {
 
         HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data);
 
-        HAZELCAST_API long getCurrentTimeMillis();
-
     }
 }
 

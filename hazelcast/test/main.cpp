@@ -97,59 +97,60 @@ void unitTests() {
     }
 }
 
-void s(hazelcast::util::ThreadArgs& args){
-    int* v = (int*)args.arg0;
+void s(hazelcast::util::ThreadArgs &args) {
+    int *v = (int *) args.arg0;
     std::cout << "Sleep" << std::endl;
     ::sleep(5);
     std::cout << "DONE " << *v << std::endl;
 }
 
-void testSleep(){
+void testSleep() {
     int a = 5;
     hazelcast::util::Thread d(s, &a);
-    long t = hazelcast::util::getCurrentTimeMillis();
+    time_t t = time(NULL);
     d.interrupt();
     d.join();
-    t = hazelcast::util::getCurrentTimeMillis() - t;
-    std::cout << "Last " << t << " millis" << std::endl;
+    double diff = difftime(time(NULL), t);
+    std::cout << "Last " << diff << " seconcs" << std::endl;
 }
 
 
-void testLatchThreadMain(hazelcast::util::ThreadArgs& args){
-    hazelcast::util::CountDownLatch* latch = (hazelcast::util::CountDownLatch*)args.arg0;
+void testLatchThreadMain(hazelcast::util::ThreadArgs &args) {
+    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg0;
     std::cout << "SLEEP" << std::endl;
     sleep(10);
     std::cout << "WAKEUP" << std::endl;
     latch->countDown();
 }
 
-void testLatch(){
+void testLatch() {
     hazelcast::util::CountDownLatch latch(1);
-    hazelcast::util::Thread thread(testLatchThreadMain,&latch);
+    hazelcast::util::Thread thread(testLatchThreadMain, &latch);
 
     std::cout << "START AWAIT" << std::endl;
-    bool b = latch.await(30 * 1000);
+    bool b = latch.await(30);
     std::cout << b << std::endl;
     thread.join();
 
 }
 
-void testJoinThread(hazelcast::util::ThreadArgs& args){
+void testJoinThread(hazelcast::util::ThreadArgs &args) {
     long i = 0;
     try{
-        while(i < 1000000000000L){
+        while (i < 1000000000000L) {
             ++i;
             //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<i++ << std::endl;
             //sleep(1);
         }
-        hazelcast::client::exception::IException a("1","2");
+        hazelcast::client::exception::IException a("1", "2");
         throw a;
-    }catch(hazelcast::client::exception::IException& e){
+    }catch(hazelcast::client::exception::IException &e){
         std::cout << "skdsjdsjkjdksj" << e.what() << std::endl;
     }
 }
-void testJoin(){
-    hazelcast::util::Thread* thread = new hazelcast::util::Thread(testJoinThread);
+
+void testJoin() {
+    hazelcast::util::Thread *thread = new hazelcast::util::Thread(testJoinThread);
     //thread.interrupt();
     thread->join();
     delete thread;
@@ -160,8 +161,11 @@ int main() {
 //    testJoin();
 //    testLatch();
 //    testSleep();
-
-    unitTests();
+    time_t a = time(NULL);
+    sleep(10);
+    double s = difftime(a, time(NULL));
+    std::cout << s << std::endl;
+//    unitTests();
 //    testSpeed();
     return 0;
 }

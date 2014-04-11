@@ -11,7 +11,6 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/Thread.h"
-#include <sys/time.h>
 
 namespace hazelcast {
     namespace util {
@@ -37,24 +36,6 @@ namespace hazelcast {
         }
 
 
-        long getCurrentTimeMillis() {
-            timeval time;
-            ::gettimeofday(&time, NULL);
-            return long(time.tv_sec) * 1000 + long(time.tv_usec / 1000);
-
-//                    if (UseFakeTimers) {
-//                        return fake_time++;
-//                    } else {
-//                        FILETIME wt;
-//                        GetSystemTimeAsFileTime(&wt);
-//                        return windows_to_java_time(wt);
-//                    }
-
-//            windows_to_java_time
-//            jlong a = jlong_from(wt.dwHighDateTime, wt.dwLowDateTime);
-//            return (a - offset()) / 10000;
-
-        }
     }
 }
 

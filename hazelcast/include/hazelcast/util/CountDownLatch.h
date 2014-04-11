@@ -19,7 +19,7 @@ namespace hazelcast {
 
             void countDown();
 
-            bool await(long timeInMillis);
+            bool await(int seconds);
 
             void await();
 

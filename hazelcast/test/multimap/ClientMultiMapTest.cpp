@@ -195,7 +195,7 @@ namespace hazelcast {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t(lockThread, mm.get(), &latch);
-                assertTrue(latch.await(5 * 1000));
+                assertTrue(latch.await(5 ));
                 mm->forceUnlock("key1");
             }
 
@@ -219,7 +219,7 @@ namespace hazelcast {
                 mm->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
                 util::Thread t(lockTtlThread, mm.get(), &latch);
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(latch.await(10 ));
                 mm->forceUnlock("key1");
             }
 
@@ -252,7 +252,7 @@ namespace hazelcast {
                 assertTrue(mm->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
                 util::Thread t(tryLockThread, mm.get(), &latch);
-                assertTrue(latch.await(100 * 1000));
+                assertTrue(latch.await(100 ));
                 assertTrue(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
@@ -276,7 +276,7 @@ namespace hazelcast {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t(forceUnlockThread, mm.get(), &latch);
-                assertTrue(latch.await(100 * 1000));
+                assertTrue(latch.await(100 ));
                 assertFalse(mm->isLocked("key1"));
             }
         }

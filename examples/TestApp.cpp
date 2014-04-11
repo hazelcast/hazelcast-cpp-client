@@ -2,8 +2,6 @@
 // Created by sancar koyunlu on 03/03/14.
 //
 
-#include <hazelcast/client/HazelcastAll.h>
-
 using namespace hazelcast::client;
 
 //utilites
@@ -80,10 +78,6 @@ bool contains(const std::string &str, const std::string &item) {
 
 bool equals(const std::string &rhs, const std::string &lhs) {
     return rhs.compare(lhs) == 0;
-}
-
-long currentTimeMillis() {
-    return util::getCurrentTimeMillis();
 }
 
 std::vector<std::string> split(std::string input, char anchor) {
@@ -226,11 +220,11 @@ public:
             handleHelp(args);
 //        } else if (first.startsWith("#") && first.length() > 1) {
 //            int repeat = toValue<int>(first.substring(1));
-//            long t0 = currentTimeMillis();
+//            long t0 = time(NULL);
 //            for (int i = 0; i < repeat; i++) {
 //                handleCommand(command.substring(first.length()).replaceAll("\\$i", "" + i));
 //            }
-//            mout << "ops/s = " << repeat * ONE_THOUSAND / (currentTimeMillis() - t0) << "\n";
+//            mout << "ops/s = " << repeat * ONE_THOUSAND / (time(NULL) - t0) << "\n";
 //        } else if (first.startsWith("&") && first.length() > 1) {
 //            const int fork = toValue<int>(first.substring(1));
 //            ExecutorService pool = Executors.newFixedThreadPool(fork);
@@ -267,14 +261,14 @@ public:
 //            handleColon(command);
         } else if (equals(first, "silent")) {
             silent = toValue<bool>(args[1]);
-        } else if( equals(first, "shutdown")) {
+        } else if (equals(first, "shutdown")) {
             hazelcast.shutdown();
         } else if (equals(first, "echo")) {
             echo = toValue<bool>(args[1]);
             mout << "echo: " << echo << "\n";
         } else if (equals(first, "ns")) {
             handleNamespace(args);
-        } else if( equals(first, "who")) {
+        } else if (equals(first, "who")) {
             handleWho();
 //        } else if (first.contains("ock") && !first.contains(".")) {
 //            handleLock(args);
@@ -435,7 +429,7 @@ public:
 //int taskCount = toValue<int>(args[1]);
 //int durationSec = toValue<int>(args[2]);
 //
-//long startMs = System.currentTimeMillis();
+//long startMs = System.time(NULL);
 //
 //IExecutorService executor = hazelcast.getExecutorService("e" + threadCount);
 //List<Future> futures = new LinkedList<Future>();
@@ -465,7 +459,7 @@ public:
 //}
 //}
 //
-//long durationMs = System.currentTimeMillis() - startMs;
+//long durationMs = System.time(NULL) - startMs;
 //mout << format("Executed %s tasks in %s ms", taskCount, durationMs) << "\n";
 //}
 
@@ -648,14 +642,14 @@ public:
 //            count = toValue<int>(args[1]);
 //        }
 //        int successCount = 0;
-//        long t0 = currentTimeMillis();
+//        long t0 = time(NULL);
 //        for (int i = 0; i < count; i++) {
 //            bool success = getList().add("obj" + i);
 //            if (success) {
 //                successCount++;
 //            }
 //        }
-//        long t1 = currentTimeMillis();
+//        long t1 = time(NULL);
 //        mout << "Added " << successCount << " objects." << "\n";
 //        println("size = " + list.size() + ", " + successCount * ONE_THOUSAND / (t1 - t0)
 //                + " evt/s");
@@ -731,11 +725,11 @@ public:
         for (int i = 0; i < count; i++) {
             theMap[std::string("key") + toString((start + i))] = value;
         }
-        long t0 = currentTimeMillis();
+        time_t t0 = time(NULL);
         getMap().putAll(theMap);
-        long t1 = currentTimeMillis();
+        time_t t1 = time(NULL);
         if (t1 - t0 > 1) {
-            mout << "size = " << getMap().size() << ", " << (count * ONE_THOUSAND / (t1 - t0))
+            mout << "size = " << getMap().size() << ", " << (count * ONE_THOUSAND / difftime(t1, t0))
                     << " evt/s, " << ((count * ONE_THOUSAND / (t1 - t0)) * (b * 8) / ONE_KB) << " Kbit/s, "
                     << count * b / ONE_KB << " KB added" << "\n";
         }
@@ -760,12 +754,12 @@ public:
         if (args.size() > 2) {
             start = toValue<int>(args[2]);
         }
-        long t0 = currentTimeMillis();
+        time_t t0 = time(NULL);
         for (int i = 0; i < count; i++) {
             getMap().remove(std::string("key") + toString(start + i));
         }
-        long t1 = currentTimeMillis();
-        mout << "size = " << getMap().size() << ", " << count * ONE_THOUSAND / (t1 - t0) << " evt/s" << "\n";
+        time_t t1 = time(NULL);
+        mout << "size = " << getMap().size() << ", " << count * ONE_THOUSAND / difftime(t1, t0) << " evt/s" << "\n";
     }
 
     void handleMapLock(const std::vector<std::string> &args) {
@@ -1001,14 +995,14 @@ public:
 //            count = toValue<int>(args[1]);
 //        }
 //        int successCount = 0;
-//        long t0 = currentTimeMillis();
+//        long t0 = time(NULL);
 //        for (int i = 0; i < count; i++) {
 //            bool success = getSet().add("obj" + i);
 //            if (success) {
 //                successCount++;
 //            }
 //        }
-//        long t1 = currentTimeMillis();
+//        long t1 = time(NULL);
 //        mout << "Added " << successCount << " objects." << "\n";
 //        println("size = " + getSet().size() + ", " + successCount * ONE_THOUSAND / (t1 - t0)
 //                + " evt/s");
@@ -1020,14 +1014,14 @@ public:
 //            count = toValue<int>(args[1]);
 //        }
 //        int successCount = 0;
-//        long t0 = currentTimeMillis();
+//        long t0 = time(NULL);
 //        for (int i = 0; i < count; i++) {
 //            bool success = getSet().remove("obj" + i);
 //            if (success) {
 //                successCount++;
 //            }
 //        }
-//        long t1 = currentTimeMillis();
+//        long t1 = time(NULL);
 //        mout << "Removed " << successCount << " objects." << "\n";
 //        println("size = " + getSet().size() + ", " + successCount * ONE_THOUSAND / (t1 - t0)
 //                + " evt/s");
@@ -1183,12 +1177,12 @@ public:
         }
 
 
-        long t0 = currentTimeMillis();
+        time_t t0 = time(NULL);
         for (int i = 0; i < count; i++) {
             getQueue().offer("obj");
         }
-        long t1 = currentTimeMillis();
-        mout << "size = " << getQueue().size() << ", " << (count * ONE_THOUSAND / (t1 - t0)) << " evt/s" << "\n";
+        time_t t1 = time(NULL);
+        mout << "size = " << getQueue().size() << ", " << (count * ONE_THOUSAND / difftime(t1, t0)) << " evt/s" << "\n";
     }
 
     void handleQPollMany(const std::vector<std::string> &args) {

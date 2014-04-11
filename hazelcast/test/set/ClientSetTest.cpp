@@ -151,7 +151,7 @@ namespace hazelcast {
                 }
                 set->add("done");
 
-                assertTrue(latch.await(20 * 1000));
+                assertTrue(latch.await(20 ));
 
                 assertTrue(set->removeItemListener(registrationId));
             }

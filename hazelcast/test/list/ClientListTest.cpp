@@ -195,7 +195,7 @@ namespace hazelcast {
                     list->add(std::string("item") + util::IOUtil::to_string(i));
                 }
 
-                assertTrue(latch.await(20 * 1000));
+                assertTrue(latch.await(20 ));
 
                 assertTrue(list->removeItemListener(registrationId));
             }

@@ -86,7 +86,7 @@ namespace hazelcast {
                     assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
                 }
 
-                assertTrue(latch.await(5 * 1000));
+                assertTrue(latch.await(5 ));
                 assertTrue(q->removeItemListener(id));
             }
 

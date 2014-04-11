@@ -78,9 +78,9 @@ namespace hazelcast {
 
             /**
              *
-             * @return the timeout in milliseconds.
+             * @return the timeout in seconds.
              */
-            long getTimeoutMillis() const;
+            int getTimeout() const;
 
             /**
              *
@@ -92,7 +92,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if timeout smaller or equal than 0, or timeUnit is null.
              * @see #getTimeoutMillis()
              */
-            TransactionOptions &setTimeout(long timeoutInMillis);
+            TransactionOptions &setTimeout(int seconds);
 
             /**
              *
@@ -126,7 +126,7 @@ namespace hazelcast {
             void readData(serialization::ObjectDataInput &in);
 
         private:
-            long timeoutMillis;
+            int timeoutSeconds;
 
             int durability;
 

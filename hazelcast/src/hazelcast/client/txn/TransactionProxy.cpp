@@ -10,7 +10,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 
-
 namespace hazelcast {
     namespace client {
         namespace txn {
@@ -32,8 +31,8 @@ namespace hazelcast {
                 return state;
             };
 
-            long TransactionProxy::getTimeoutMillis() const {
-                return options.getTimeoutMillis();
+            int TransactionProxy::getTimeoutSeconds() const {
+                return options.getTimeout();
             };
 
 
@@ -47,7 +46,7 @@ namespace hazelcast {
 //                        throw new IllegalStateException("Nested transactions are not allowed!");
 //                    }
 //                    threadFlag.set(Boolean.TRUE);
-                    startTime = util::getCurrentTimeMillis();
+                    startTime = time(NULL);
 
                     CreateTxnRequest *request = new CreateTxnRequest(options);
                     boost::shared_ptr<std::string> response = invoke<std::string>(request);
@@ -126,7 +125,7 @@ namespace hazelcast {
             }
 
             void TransactionProxy::checkTimeout() {
-                if (startTime + options.getTimeoutMillis() < util::getCurrentTimeMillis()) {
+                if (difftime(time(NULL), startTime + options.getTimeout()) < 0) {
                     throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
                 }
             }

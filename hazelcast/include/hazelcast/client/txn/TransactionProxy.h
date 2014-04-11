@@ -70,7 +70,7 @@ namespace hazelcast {
 
                 TxnState getState() const;
 
-                long getTimeoutMillis() const;
+                int getTimeoutSeconds() const;
 
                 void begin();
 
@@ -94,7 +94,7 @@ namespace hazelcast {
                 std::string txnId;
 
                 TxnState state;
-                long startTime;
+                time_t startTime;
 
                 void onTxnEnd();
 

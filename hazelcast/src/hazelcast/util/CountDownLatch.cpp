@@ -5,7 +5,6 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/CountDownLatch.h"
-#include <unistd.h>
 
 namespace hazelcast {
     namespace util {
@@ -18,9 +17,9 @@ namespace hazelcast {
             count--;
         }
 
-        bool CountDownLatch::await(long timeInMillis) {
-            long endTime = util::getCurrentTimeMillis() + timeInMillis;
-            while (endTime > util::getCurrentTimeMillis()) {
+        bool CountDownLatch::await(int seconds) {
+            time_t endTime = time(NULL) + seconds;
+            while (endTime > time(NULL)) {
                 if (count == 0) {
                     return true;
                 }

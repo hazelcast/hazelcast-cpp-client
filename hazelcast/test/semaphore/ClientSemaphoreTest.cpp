@@ -66,7 +66,7 @@ namespace hazelcast {
                 sleep(1);
 
                 s->release(2);
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(latch.await(10 ));
                 assertEqual(1, s->availablePermits());
 
             }
@@ -91,7 +91,7 @@ namespace hazelcast {
                 util::Thread t(testTryAcquireThread, s.get(), &latch);
 
                 s->release(2);
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(latch.await(10 ));
                 assertEqual(0, s->availablePermits());
 
             }
