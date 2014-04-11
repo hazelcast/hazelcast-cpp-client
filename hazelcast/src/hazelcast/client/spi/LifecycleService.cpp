@@ -21,12 +21,12 @@ namespace hazelcast {
             , active(false) {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
-                fireLifecycleEvent(LifecycleEvent::STARTING);
+
             };
 
             bool LifecycleService::start() {
+                fireLifecycleEvent(LifecycleEvent::STARTING);
                 active = true;
-                fireLifecycleEvent(LifecycleEvent::STARTED);
                 if (!clientContext.getConnectionManager().start()) {
                     return false;
                 }
@@ -37,6 +37,7 @@ namespace hazelcast {
                 if (!clientContext.getPartitionService().start()) {
                     return false;
                 }
+                fireLifecycleEvent(LifecycleEvent::STARTED);
                 return true;
             }
 
