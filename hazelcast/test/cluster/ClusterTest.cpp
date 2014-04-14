@@ -238,7 +238,7 @@ namespace hazelcast {
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
-                lifecycleLatch.await(5000);
+                lifecycleLatch.await(5);
 
                 m.put("sample", "entry");
 

@@ -56,6 +56,7 @@ namespace hazelcast {
 
             std::string threadName;
             bool isJoined;
+			bool isInterrupted;
             HANDLE thread;
 			DWORD id;
 			ConditionVariable condition;

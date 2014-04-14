@@ -158,13 +158,29 @@ void testJoin() {
     std::cout << "Joined" << std::endl;
 }
 
+void testMutexThread(hazelcast::util::ThreadArgs &args) {
+	hazelcast::util::Mutex* m = (hazelcast::util::Mutex*)args.arg0;
+	hazelcast::util::LockGuard g(*m);
+	std::cout << "2nd thread in ciritical section" << std::endl;
+	hazelcast::util::sleep(1);
+}
+
+void testMutex(){
+	hazelcast::util::Mutex m;
+	hazelcast::util::LockGuard g(m);
+	hazelcast::util::Thread t(testMutexThread, &m);
+	std::cout << "1st in critical section "<< std::endl;
+	hazelcast::util::sleep(5);
+}
+
 int main() {
 //    testJoin();
 //    testLatch();
 //    testSleep();
     unitTests();
 //    testSpeed();
-    return 0;
+//    testMutex();
+	return 0;
 }
 
 

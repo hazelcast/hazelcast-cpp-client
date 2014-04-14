@@ -45,7 +45,7 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testInvalidRead, "testInvalidRead");
                 addTest(&ClientSerializationTest::testDifferentVersions, "testDifferentVersions");
                 addTest(&ClientSerializationTest::testCompression, "testCompression");
-                addTest(&ClientSerializationTest::testSerializationViaFile, "testSerializationViaFile");
+                //addTest(&ClientSerializationTest::testSerializationViaFile, "testSerializationViaFile");
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
             };
 

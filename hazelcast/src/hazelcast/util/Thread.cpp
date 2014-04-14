@@ -20,7 +20,8 @@ namespace hazelcast {
                 void *arg2,
                 void *arg3)
         : threadName(name)
-        , isJoined(false) {
+        , isJoined(false)
+		, isInterrupted(false){
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -30,7 +31,8 @@ namespace hazelcast {
                 void *arg2,
                 void *arg3)
         : threadName("hz.unnamed")
-        , isJoined(false) {
+        , isJoined(false)
+		, isInterrupted(false){
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -45,6 +47,8 @@ namespace hazelcast {
 
         void Thread::interruptibleSleep(int seconds){
             LockGuard lock(mutex);
+			if(isInterrupted)
+				throw thread_interrupted();
             bool ok = condition.waitFor(mutex, seconds * 1000);
             if(!ok){
                 throw thread_interrupted();
@@ -53,6 +57,8 @@ namespace hazelcast {
         }
 
         void Thread::interrupt() {
+			LockGuard lock(mutex);
+			isInterrupted = true;
             condition.notify_all();
         }
 
@@ -80,7 +86,7 @@ namespace hazelcast {
                 ILogger::getLogger().warning(threadArgs->currentThread->getThreadName()
                     + " is cancelled with exception " + e.what());
             } catch(thread_interrupted& ){
-                ILogger::getLogger().warning(threadArgs->currentThread->getThreadName() + " is cancelled ");
+                ILogger::getLogger().warning(threadArgs->currentThread->getThreadName() + " is cancelled");
             }
             return 1L;
         }

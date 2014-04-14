@@ -9,6 +9,7 @@
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/util/ILogger.h"
 #include <ctime> 
 namespace hazelcast {
     namespace client {
@@ -125,8 +126,10 @@ namespace hazelcast {
             }
 
             void TransactionProxy::checkTimeout() {
-                if (difftime(time(NULL), startTime + options.getTimeout()) < 0) {
-                    throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
+                time_t current = time(NULL);
+				time_t timeoutPoint = startTime + options.getTimeout();
+				if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
+					throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
                 }
             }
 

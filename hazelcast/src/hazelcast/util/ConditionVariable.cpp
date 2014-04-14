@@ -29,7 +29,7 @@ namespace hazelcast {
             if(success){
                 return true;
             }
-            assert(ERROR_TIMEOUT != GetLastError());
+            assert(ERROR_TIMEOUT == GetLastError());
             return false;
         }
 

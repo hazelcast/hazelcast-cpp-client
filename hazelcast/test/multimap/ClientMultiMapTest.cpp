@@ -195,7 +195,7 @@ namespace hazelcast {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t(lockThread, mm.get(), &latch);
-                assertTrue(latch.await(5 ));
+                assertTrue(latch.await(5));
                 mm->forceUnlock("key1");
             }
 
@@ -206,20 +206,17 @@ namespace hazelcast {
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
                 }
-                try {
-                    if (mm->tryLock("key1", 5)) {
-                        latch->countDown();
-                    }
-                } catch (...) {
-                    std::cerr << "Unexpected exception at ClientMultiMapTest lockThread2" << std::endl;
+               
+                if (mm->tryLock("key1", 5 * 1000)) {
+                    latch->countDown();
                 }
             }
 
             void ClientMultiMapTest::testLockTtl() {
-                mm->lock("key1", 3);
+                mm->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
                 util::Thread t(lockTtlThread, mm.get(), &latch);
-                assertTrue(latch.await(10 ));
+                assertTrue(latch.await(10));
                 mm->forceUnlock("key1");
             }
 

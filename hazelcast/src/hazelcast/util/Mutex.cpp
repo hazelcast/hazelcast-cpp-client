@@ -32,7 +32,7 @@ namespace hazelcast {
         }
 
         void Mutex::unlock() {
-            DeleteCriticalSection(&mutex);
+            LeaveCriticalSection(&mutex);
         }
     }
 }

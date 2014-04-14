@@ -51,13 +51,13 @@ namespace hazelcast {
         };
 
         void TransactionOptions::writeData(serialization::ObjectDataOutput &out) const {
-            out.writeLong(timeoutSeconds);
+            out.writeLong(1000L * timeoutSeconds);
             out.writeInt(durability);
             out.writeInt(transactionType);
         };
 
         void TransactionOptions::readData(serialization::ObjectDataInput &in) {
-            timeoutSeconds = in.readLong();
+            timeoutSeconds = (int)in.readLong()/1000;
             durability = in.readInt();
             transactionType = in.readInt();
         };
