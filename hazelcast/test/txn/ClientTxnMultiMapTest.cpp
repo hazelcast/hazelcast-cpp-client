@@ -83,7 +83,7 @@ namespace hazelcast {
                 for (int i = 0; i < n; i++) {
                     threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
                 }
-                assertTrue(latch.await(1000));
+                assertTrue(latch.await(1));
                 assertEqual(0, (int)error);
                 for (int i = 0; i < n; i++) {
                     delete threads[i] ;

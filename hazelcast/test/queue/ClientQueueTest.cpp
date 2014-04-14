@@ -6,7 +6,6 @@
 #include "queue/ClientQueueTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -86,12 +85,12 @@ namespace hazelcast {
                     assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
                 }
 
-                assertTrue(latch.await(5 ));
+                assertTrue(latch.await(5));
                 assertTrue(q->removeItemListener(id));
             }
 
-            void testOfferPollThread2(util::ThreadArgs& args) {
-                IQueue<std::string> *q = (IQueue<std::string> *)args.arg0;
+            void testOfferPollThread2(util::ThreadArgs &args) {
+                IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
             }
@@ -103,7 +102,7 @@ namespace hazelcast {
                 }
                 assertEqual(10, q->size());
                 q->poll();
-                bool result = q->offer("item", 5 * 1000);
+                bool result = q->offer("item", 5);
                 assertTrue(result);
 
                 for (int i = 0; i < 10; i++) {
@@ -209,7 +208,7 @@ namespace hazelcast {
 
                 assertTrue(q->addAll(coll));
                 int size = q->size();
-                assertEqual(size, (int)coll.size());
+                assertEqual(size, (int) coll.size());
 
             }
 

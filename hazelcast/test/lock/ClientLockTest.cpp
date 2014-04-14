@@ -108,7 +108,7 @@ namespace hazelcast {
                 util::Thread t2(testLockTryLockThread2, l.get(), &latch2);
                 util::sleep(1);
                 l->unlock();
-                assertTrue(latch2.await(100 * 1000));
+                assertTrue(latch2.await(100));
                 assertTrue(l->isLocked());
                 l->forceUnlock();
             }
@@ -162,7 +162,7 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(1);
                 util::Thread t(testStatsThread, l.get(), &latch);
-                assertTrue(latch.await(1 * 1000 * 60));
+                assertTrue(latch.await(60));
             }
         }
     }

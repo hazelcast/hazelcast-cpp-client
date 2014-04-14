@@ -62,7 +62,7 @@ namespace hazelcast {
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 try {
-                    latch->await(5 * 1000);
+                    latch->await(5);
                     util::sleep(3);
                     client->getQueue<std::string>("defQueue0").offer("item0");
                 } catch (...) {
@@ -79,7 +79,7 @@ namespace hazelcast {
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
                 boost::shared_ptr<std::string> s;
                 latch.countDown();
-                s = q0.poll(10 * 1000);
+                s = q0.poll(10);
                 assertEqual("item0", *s);
                 q1.offer(*s);
 

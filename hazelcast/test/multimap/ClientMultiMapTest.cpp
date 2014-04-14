@@ -172,11 +172,11 @@ namespace hazelcast {
 
                 mm->remove("key3");
 
-                assertTrue(latch1Add.await(20 * 1000), "a");
-                assertTrue(latch1Remove.await(20 * 1000), "b");
+                assertTrue(latch1Add.await(20), "a");
+                assertTrue(latch1Remove.await(20), "b");
 
-                assertTrue(latch2Add.await(20 * 1000), "c");
-                assertTrue(latch2Remove.await(20 * 1000), "d");
+                assertTrue(latch2Add.await(20), "c");
+                assertTrue(latch2Remove.await(20), "d");
 
                 assertTrue(mm->removeEntryListener(id1));
                 assertTrue(mm->removeEntryListener(id2));
@@ -207,7 +207,7 @@ namespace hazelcast {
                     latch->countDown();
                 }
                 try {
-                    if (mm->tryLock("key1", 5 * 1000)) {
+                    if (mm->tryLock("key1", 5)) {
                         latch->countDown();
                     }
                 } catch (...) {
@@ -216,7 +216,7 @@ namespace hazelcast {
             }
 
             void ClientMultiMapTest::testLockTtl() {
-                mm->lock("key1", 3 * 1000);
+                mm->lock("key1", 3);
                 util::CountDownLatch latch(2);
                 util::Thread t(lockTtlThread, mm.get(), &latch);
                 assertTrue(latch.await(10 ));
@@ -228,7 +228,7 @@ namespace hazelcast {
                 MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 try {
-                    if (!mm->tryLock("key1", 2 * 1000)) {
+                    if (!mm->tryLock("key1", 2)) {
                         latch->countDown();
                     }
                 } catch (...) {
@@ -260,7 +260,7 @@ namespace hazelcast {
 
                 util::sleep(1);
                 mm->unlock("key1");
-                assertTrue(latch2.await(100 * 1000));
+                assertTrue(latch2.await(100));
                 assertTrue(mm->isLocked("key1"));
                 mm->forceUnlock("key1");
             }

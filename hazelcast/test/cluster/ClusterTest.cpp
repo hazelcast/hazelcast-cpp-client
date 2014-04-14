@@ -133,15 +133,15 @@ namespace hazelcast {
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
-                assertTrue(attributeLatchInit.await(1000 * 30), "attributeLatchInit");
-                assertTrue(attributeLatch.await(1000 * 30), "attributeLatch");
-                assertTrue(memberAdded.await(1000 * 30), "memberAdded");
-                assertTrue(memberAddedInit.await(1000 * 30), "memberAddedInit");
+                assertTrue(attributeLatchInit.await(30), "attributeLatchInit");
+                assertTrue(attributeLatch.await(30), "attributeLatch");
+                assertTrue(memberAdded.await(30), "memberAdded");
+                assertTrue(memberAddedInit.await(30), "memberAddedInit");
 
                 instance2.shutdown();
 
-                assertTrue(memberRemoved.await(1000 * 30), "memberRemoved");
-                assertTrue(memberRemovedInit.await(1000 * 30), "memberRemovedInit");
+                assertTrue(memberRemoved.await(30), "memberRemoved");
+                assertTrue(memberRemovedInit.await(30), "memberRemovedInit");
 
                 instance.shutdown();
 
@@ -168,15 +168,15 @@ namespace hazelcast {
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
-                assertTrue(attributeLatchInit.await(1000 * 30), "attributeLatchInit");
-                assertTrue(attributeLatch.await(1000 * 30), "attributeLatch");
-                assertTrue(memberAdded.await(1000 * 30), "memberAdded");
-                assertTrue(memberAddedInit.await(1000 * 30), "memberAddedInit");
+                assertTrue(attributeLatchInit.await(30), "attributeLatchInit");
+                assertTrue(attributeLatch.await(30), "attributeLatch");
+                assertTrue(memberAdded.await(30), "memberAdded");
+                assertTrue(memberAddedInit.await(30), "memberAddedInit");
 
                 instance2.shutdown();
 
-                assertTrue(memberRemoved.await(1000 * 30), "memberRemoved");
-                assertTrue(memberRemovedInit.await(1000 * 30), "memberRemovedInit");
+                assertTrue(memberRemoved.await(30), "memberRemoved");
+                assertTrue(memberRemovedInit.await(30), "memberRemovedInit");
 
                 instance.shutdown();
             }
@@ -242,7 +242,7 @@ namespace hazelcast {
 
                 m.put("sample", "entry");
 
-                assertTrue(countDownLatch.await(10 * 1000));
+                assertTrue(countDownLatch.await(10));
                 assertTrue(hazelcastClient.removeLifecycleListener(&lifecycleListener), "Listener could not removed");
             }
 

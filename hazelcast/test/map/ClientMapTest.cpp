@@ -158,8 +158,8 @@ namespace hazelcast {
 
                 imap->put("key1", "value1", 2 * 1000);
 
-                assertTrue(latch.await(10 ));
-                assertTrue(nullLatch.await(1000));
+                assertTrue(latch.await(10));
+                assertTrue(nullLatch.await(1));
 
                 assertTrue(imap->removeEntryListener(id));
 
@@ -186,7 +186,7 @@ namespace hazelcast {
 //                    t.detach();
 //                }
 //
-//                assertTrue(latch.await(1000 * 10), "put not finished");
+//                assertTrue(latch.await(10), "put not finished");
 //
 //                for (int i = 0; i < 100 * THREAD_COUNT; i++) {
 //                    boost::shared_ptr<int> actual = iMap.get(i);
@@ -309,7 +309,7 @@ namespace hazelcast {
                 util::Thread t1(tryPutThread, &latch, imap.get());
                 util::Thread t2(tryRemoveThread, &latch, imap.get());
 
-                assertTrue(latch.await(20 ));
+                assertTrue(latch.await(20));
                 assertEqual("value1", *(imap->get("key1")));
                 assertEqual("value2", *(imap->get("key2")));
                 imap->forceUnlock("key1");
@@ -365,7 +365,7 @@ namespace hazelcast {
             void testLockThread(util::ThreadArgs &args) {
                 util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
                 IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->tryPut("key1", "value2", 1 * 1000);
+                imap->tryPut("key1", "value2", 1);
                 latch->countDown();
             }
 
@@ -375,7 +375,7 @@ namespace hazelcast {
                 imap->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t1(testLockThread, &latch, imap.get());
-                assertTrue(latch.await(5 ));
+                assertTrue(latch.await(5));
                 assertEqual("value1", *(imap->get("key1")));
                 imap->forceUnlock("key1");
 
@@ -394,7 +394,7 @@ namespace hazelcast {
                 imap->lock("key1", 2 * 1000);
                 util::CountDownLatch latch(1);
                 util::Thread t1(testLockTTLThread, &latch, imap.get());
-                assertTrue(latch.await(10 ));
+                assertTrue(latch.await(10));
                 assertFalse(imap->isLocked("key1"));
                 assertEqual("value2", *(imap->get("key1")));
                 imap->forceUnlock("key1");
@@ -416,7 +416,7 @@ namespace hazelcast {
                 imap->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
                 util::Thread t1(testLockTTL2Thread, &latch, imap.get());
-                assertTrue(latch.await(10 ));
+                assertTrue(latch.await(10));
                 imap->forceUnlock("key1");
 
             }
@@ -424,7 +424,7 @@ namespace hazelcast {
             void testMapTryLockThread1(util::ThreadArgs &args) {
                 util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
                 IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (!imap->tryLock("key1", 2 * 1000)) {
+                if (!imap->tryLock("key1", 2)) {
                     latch->countDown();
                 }
             }
@@ -443,7 +443,7 @@ namespace hazelcast {
                 util::CountDownLatch latch(1);
                 util::Thread t1(testMapTryLockThread1, &latch, imap.get());
 
-                assertTrue(latch.await(100 ), "2");
+                assertTrue(latch.await(100), "2");
 
                 assertTrue(imap->isLocked("key1"), "3");
 
@@ -452,7 +452,7 @@ namespace hazelcast {
 
                 util::sleep(1);
                 imap->unlock("key1");
-                assertTrue(latch2.await(100 * 1000), "4");
+                assertTrue(latch2.await(100), "4");
                 assertTrue(imap->isLocked("key1"), "5");
                 imap->forceUnlock("key1");
 
@@ -469,7 +469,7 @@ namespace hazelcast {
                 imap->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t2(testMapForceUnlockThread, &latch, imap.get());
-                assertTrue(latch.await(100 ));
+                assertTrue(latch.await(100));
                 t2.join();
                 assertFalse(imap->isLocked("key1"));
 
@@ -541,7 +541,7 @@ namespace hazelcast {
                 Employee key2("a", 2);
                 tradeMap.put(key2, 1);
                 tradeMap.put(key, 3);
-                assertTrue(countDownLatch.await(5 * 1000));
+                assertTrue(countDownLatch.await(5));
                 assertEqual(1, (int) atomicInteger);
 
                 assertTrue(tradeMap.removeEntryListener(id));
@@ -571,10 +571,10 @@ namespace hazelcast {
                 imap->remove("key1");
                 imap->remove("key3");
 
-                assertTrue(latch1Add.await(10 * 1000));
-                assertTrue(latch1Remove.await(10 * 1000));
-                assertTrue(latch2Add.await(5 * 1000));
-                assertTrue(latch2Remove.await(5 * 1000));
+                assertTrue(latch1Add.await(10));
+                assertTrue(latch1Remove.await(10));
+                assertTrue(latch2Add.await(5));
+                assertTrue(latch2Remove.await(5));
 
                 assertTrue(imap->removeEntryListener(listener1ID));
                 assertTrue(imap->removeEntryListener(listener2ID));
