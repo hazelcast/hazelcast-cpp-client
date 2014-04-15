@@ -33,6 +33,7 @@ namespace hazelcast {
 
             Connection::~Connection() {
                 live = false;
+                socket.close();
             }
 
             void Connection::connect() {

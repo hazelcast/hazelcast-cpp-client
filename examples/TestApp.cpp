@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 03/03/14.
 //
 
+#include "hazelcast/client/HazelcastAll.h"
 using namespace hazelcast::client;
 
 //utilites
