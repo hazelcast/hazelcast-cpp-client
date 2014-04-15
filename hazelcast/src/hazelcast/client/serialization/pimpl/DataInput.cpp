@@ -67,14 +67,14 @@ namespace hazelcast {
                     byte f = readByte();
                     byte g = readByte();
                     byte h = readByte();
-                    return (0xff00000000000000 & ((long long) (a) << 56)) |
-                            (0x00ff000000000000 & ((long long) (b) << 48)) |
-                            (0x0000ff0000000000 & ((long long) (c) << 40)) |
-                            (0x000000ff00000000 & ((long long) (d) << 32)) |
-                            (0x00000000ff000000 & (e << 24)) |
-                            (0x0000000000ff0000 & (f << 16)) |
-                            (0x000000000000ff00 & (g << 8)) |
-                            (0x00000000000000ff & h);
+                    return (0xff00000000000000LL & ((long long) (a) << 56)) |
+                            (0x00ff000000000000LL & ((long long) (b) << 48)) |
+                            (0x0000ff0000000000LL & ((long long) (c) << 40)) |
+                            (0x000000ff00000000LL & ((long long) (d) << 32)) |
+                            (0x00000000ff000000LL & (e << 24)) |
+                            (0x0000000000ff0000LL & (f << 16)) |
+                            (0x000000000000ff00LL & (g << 8)) |
+                            (0x00000000000000ffLL & h);
                 };
 
                 float DataInput::readFloat() {
