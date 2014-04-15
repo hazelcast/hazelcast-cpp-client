@@ -138,7 +138,7 @@ void testLatch() {
 void testJoinThread(hazelcast::util::ThreadArgs &args) {
     long i = 0;
     try{
-        while (i < 1000000000000L) {
+        while (i < 1000000000000LL) {
             ++i;
             //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<i++ << std::endl;
             //sleep(1);
