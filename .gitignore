@@ -10,7 +10,6 @@
 *.pdb
 *~
 build*/*
-java/*
 cpp/*
 
 # Compiled Dynamic libraries
