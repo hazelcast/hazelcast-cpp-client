@@ -17,6 +17,7 @@ mkdir -p ./cpp/Mac_64/hazelcast/include/hazelcast/
 mkdir -p ./cpp/Mac_64/hazelcast/lib
 mkdir -p ./cpp/Mac_64/external/include
 mkdir -p ./cpp/Mac_64/external/lib
+mkdir -p ./cpp/Mac_64/examples/
 
 echo "Moving headers to target"
 cp -R hazelcast/include/hazelcast/ cpp/Mac_64/hazelcast/include/hazelcast/
@@ -28,6 +29,10 @@ echo "Moving dependencies to target"
 cp -R external/include/ cpp/Mac_64/external/include/
 cp -R external/lib/darwin/64/ cpp/Mac_64/external/lib/
 
+echo "Moving examples to target"
+cp examples/*cpp cpp/Mac_64/examples/
+cp ReleaseStatic/examples/*exe cpp/Mac_64/examples/
+
 #MAC SPECIFIC
 #cd cpp/Mac_64/hazelcast/lib/
 #install_name_tool -id libHazelcastClientShared_64.dylib libHazelcastClientShared_64.dylib
@@ -35,12 +40,9 @@ cp -R external/lib/darwin/64/ cpp/Mac_64/external/lib/
 
 #ONLY IN DEVELOPMENT MACHINE
 mkdir -p ./cpp/docs/
-mkdir -p ./cpp/examples/
 
 echo "Moving docs to target"
 cp -R docs/ cpp/docs/
-echo "Moving examples to target"
-cp -R examples/ cpp/examples/
 
 cp enterprise-license.txt cpp/enterprise-license.txt
 

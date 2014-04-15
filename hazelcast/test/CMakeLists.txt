@@ -39,7 +39,7 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
-	message(STATUS "ddddddd ${CMAKE_BUILD_TYPE} ")
+	message(STATUS "${CMAKE_BUILD_TYPE} ")
 	IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
 	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
