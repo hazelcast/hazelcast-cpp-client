@@ -77,7 +77,7 @@ namespace hazelcast {
          * @param <V> value
          */
         template<typename K, typename V>
-        class HAZELCAST_API IMap : public DistributedObject {
+        class IMap : public DistributedObject {
             friend class HazelcastClient;
 
         public:

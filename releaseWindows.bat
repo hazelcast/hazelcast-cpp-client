@@ -32,7 +32,7 @@ xcopy /S /Q external\lib\windows\32\* cpp\Windows_32\external\lib\
 
 echo "Moving 32bit examples to target"
 copy examples\*cpp  cpp\Windows_32\examples
-copy ReleaseStatic32\examples\*exe  cpp\Windows_32\examples
+copy ReleaseStatic32\examples\Release\*exe  cpp\Windows_32\examples
 
 echo "Clearing tempraroy 32bit librares"
 rm -rf .\ReleaseShared32
@@ -72,7 +72,7 @@ xcopy /S /Q external\lib\windows\64\* cpp\Windows_64\external\lib\
 
 echo "Moving 64bit examples to target"
 copy examples\*cpp  cpp\Windows_64\examples
-copy ReleaseStatic64\examples\*exe  cpp\Windows_64\examples
+copy ReleaseStatic64\examples\Release\*exe  cpp\Windows_64\examples
 
 echo "Clearing tempraroy 64bit librares"
 rm -rf ./ReleaseShared64

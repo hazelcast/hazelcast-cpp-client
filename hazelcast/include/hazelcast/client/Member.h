@@ -173,7 +173,7 @@ namespace hazelcast {
             std::map< std::string, double > doubleAttributes;
         };
 
-        std::ostream &operator <<(std::ostream &stream, const Member &member);
+        std::ostream HAZELCAST_API &operator <<(std::ostream &stream, const Member &member);
     }
 }
 
