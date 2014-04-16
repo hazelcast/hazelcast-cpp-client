@@ -186,5 +186,10 @@ namespace hazelcast {
         bool Member::lookupAttributeResolved(const std::string &key, double *tag) const {
             return doubleAttributes.count(key) == 1;
         }
+
+        std::ostream &operator <<(std::ostream &stream, const Member &member) {
+            return stream << "Member[" << member.getAddress() << "]";
+        };
     }
 }
+

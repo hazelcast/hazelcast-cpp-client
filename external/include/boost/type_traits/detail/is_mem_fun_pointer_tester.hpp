@@ -2757,3 +2757,4 @@ yes_type is_mem_fun_pointer_tester(R (__cdecl T::*const volatile*)(BOOST_PP_ENUM
 
 #undef BOOST_PP_COUNTER
 #endif // BOOST_PP_IS_ITERATING
+

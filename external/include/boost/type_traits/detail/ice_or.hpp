@@ -32,3 +32,4 @@ struct ice_or<false, false, false, false, false, false, false>
 } // namespace boost
 
 #endif // BOOST_TT_DETAIL_ICE_OR_HPP_INCLUDED
+

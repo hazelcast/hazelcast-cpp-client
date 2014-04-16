@@ -93,3 +93,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_TransactionalQueue
+

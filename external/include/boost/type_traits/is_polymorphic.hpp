@@ -112,3 +112,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_polymorphic,T,BOOST_IS_POLYMORPHIC(T))
 #include <boost/type_traits/detail/bool_trait_undef.hpp>
 
 #endif
+

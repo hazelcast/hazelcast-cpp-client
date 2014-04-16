@@ -70,3 +70,4 @@ namespace hazelcast {
 }
 
 #endif //__EntryEventHandler_H_
+

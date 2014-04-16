@@ -94,3 +94,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_TxnMapRequest
+

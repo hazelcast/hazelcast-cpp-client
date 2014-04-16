@@ -20,7 +20,7 @@ namespace hazelcast {
             : iTestFixture<ClientTxnMultiMapTest>("ClientTxnMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
-            };
+            }
 
 
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() {
@@ -28,24 +28,28 @@ namespace hazelcast {
 
             void ClientTxnMultiMapTest::addTests() {
                 addTest(&ClientTxnMultiMapTest::testPutGetRemove, "testPutGetRemove");
-            };
+            }
 
             void ClientTxnMultiMapTest::beforeClass() {
-            };
+            }
 
             void ClientTxnMultiMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTxnMultiMapTest::beforeTest() {
-            };
+            }
 
             void ClientTxnMultiMapTest::afterTest() {
-            };
+            }
 
-            void putGetRemoveTestThread(MultiMap<std::string, std::string > *mm, int id, HazelcastClient *client, util::CountDownLatch *latch, boost::atomic<int> *error) {
-                std::string key = util::to_string(id) + std::string("key");
+            void putGetRemoveTestThread(util::ThreadArgs& args) {
+                MultiMap<std::string, std::string > *mm = (MultiMap<std::string, std::string > *)args.arg0;
+                HazelcastClient *client = (HazelcastClient *)args.arg1;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
+                util::AtomicInt *error = (util::AtomicInt *)args.arg3;
+                std::string key = util::IOUtil::to_string(util::Thread::getThreadID());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 try {
@@ -60,8 +64,11 @@ namespace hazelcast {
                     assertEqual(3, (int)mm->get(key).size());
 
                     latch->countDown();
-                } catch (std::exception &e) {
-                    error->fetch_add(1);
+                } catch (std::exception &) {
+                    ++(*error);
+                    latch->countDown();
+                } catch(iTest::iTestException&){
+                    ++(*error);
                     latch->countDown();
                 }
             }
@@ -69,17 +76,22 @@ namespace hazelcast {
             void ClientTxnMultiMapTest::testPutGetRemove() {
 
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
-                int threads = 10;
-                util::CountDownLatch latch(threads);
-                boost::atomic<int> error(0);
-                for (int i = 0; i < threads; i++) {
-                    boost::thread t(putGetRemoveTestThread, &mm, i, client.get(), &latch, &error);
+                int n = 10;
+                util::CountDownLatch latch(n);
+                util::AtomicInt error(0);
+                std::vector<util::Thread*> threads(n);
+                for (int i = 0; i < n; i++) {
+                    threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
                 }
-                assertTrue(latch.await(1000));
-                assertEqual(0, error);
+                assertTrue(latch.await(1));
+                assertEqual(0, (int)error);
+                for (int i = 0; i < n; i++) {
+                    delete threads[i] ;
+                }
             }
 
 
         }
     }
 }
+

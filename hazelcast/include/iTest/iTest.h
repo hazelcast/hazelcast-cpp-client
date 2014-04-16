@@ -6,8 +6,7 @@
 #define HAZELCAST_iTest
 
 #include "iTest/iTestFixture.h"
-#include <string>
-#include <iostream>
+
 
 namespace iTest {
     HAZELCAST_API void assertFalse(bool isFalse, const char *message);
@@ -24,23 +23,29 @@ namespace iTest {
 
     template<typename  Expected, typename Actual >
     HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual, const char *message) {
+        assertNumber++;
         if (expected != actual) {
             iTestException e;
-            e.message.assign(">> Assert failed. message : ");
-            e.message += message;
+            std::stringstream s;
+            s << "Assert[ "<< assertNumber << " ] is failed. Message : " << message << std::endl;
+            e.message = s.str();
             throw e;
         }
-    };
+    }
 
     template<typename  Expected, typename Actual >
     HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual) {
+        assertNumber++;
         if (actual != expected) {
             iTestException e;
-            e.message.assign(">> Assert failed");
+            std::stringstream s;
+            s << "Assert[ "<< assertNumber << " ] is failed." << std::endl;
+            e.message = s.str();
             throw e;
         }
-    };
+    }
 }
 
 
 #endif //HAZELCAST_iTest
+

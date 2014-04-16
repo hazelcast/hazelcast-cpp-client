@@ -37,3 +37,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MAP_ENTRY_SET
+

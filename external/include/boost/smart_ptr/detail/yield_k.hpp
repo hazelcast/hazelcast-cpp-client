@@ -146,3 +146,4 @@ inline void yield( unsigned )
 #endif
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_YIELD_K_HPP_INCLUDED
+

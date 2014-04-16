@@ -42,3 +42,4 @@ namespace hazelcast {
     }
 }
 #endif //HAZELCAST_AUTHENTICATION_REQUEST
+

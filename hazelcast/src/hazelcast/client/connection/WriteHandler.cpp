@@ -7,6 +7,7 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"
+#include <ctime>
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
@@ -35,8 +36,7 @@ namespace hazelcast {
             void WriteHandler::enqueueData(const serialization::pimpl::Data &data) {
                 serialization::pimpl::DataAdapter *socketWritable = new serialization::pimpl::DataAdapter(data);
                 writeQueue.offer(socketWritable);
-                bool expected = true;
-                if (informSelector.compare_exchange_strong(expected, false)) {
+                if (informSelector.compareAndSet(true, false)) {
                     ioListener.addTask(this);
                     ioListener.wakeUp();
                 }
@@ -89,3 +89,4 @@ namespace hazelcast {
         }
     }
 }
+

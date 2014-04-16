@@ -218,3 +218,4 @@ struct is_function_ptr_helper<R (*)(BOOST_PP_ENUM_PARAMS(BOOST_PP_COUNTER,T) ...
 @#endif
 #undef BOOST_PP_COUNTER
 #endif // BOOST_PP_IS_ITERATING
+

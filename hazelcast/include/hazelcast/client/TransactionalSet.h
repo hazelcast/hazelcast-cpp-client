@@ -74,3 +74,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_TransactionalSet
+

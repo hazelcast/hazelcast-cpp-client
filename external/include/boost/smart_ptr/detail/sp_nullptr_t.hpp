@@ -43,3 +43,4 @@ namespace detail
 #endif // !defined( BOOST_NO_CXX11_NULLPTR )
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_SP_NULLPTR_T_HPP_INCLUDED
+

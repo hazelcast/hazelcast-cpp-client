@@ -6,6 +6,7 @@
 #include "ClientSemaphoreTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -49,7 +50,9 @@ namespace hazelcast {
                 s->release(10);
             };
 
-            void testAcquireThread(ISemaphore *s, util::CountDownLatch *latch) {
+            void testAcquireThread(util::ThreadArgs& args) {
+                ISemaphore *s = (ISemaphore *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 s->acquire();
                 latch->countDown();
             }
@@ -58,17 +61,19 @@ namespace hazelcast {
                 assertEqual(10, s->drainPermits());
 
                 util::CountDownLatch latch(1);
-                boost::thread t(boost::bind(testAcquireThread, s.get(), &latch));
+                util::Thread t(testAcquireThread, s.get(), &latch);
 
-                boost::this_thread::sleep(boost::posix_time::seconds(1));
+                util::sleep(1);
 
                 s->release(2);
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(latch.await(10 ));
                 assertEqual(1, s->availablePermits());
 
             }
 
-            void testTryAcquireThread(ISemaphore *s, util::CountDownLatch *latch) {
+            void testTryAcquireThread(util::ThreadArgs& args) {
+                ISemaphore *s = (ISemaphore *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 if (s->tryAcquire(2, 5 * 1000)) {
                     latch->countDown();
                 }
@@ -83,13 +88,14 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(1);
 
-                boost::thread t(boost::bind(testTryAcquireThread, s.get(), &latch));
+                util::Thread t(testTryAcquireThread, s.get(), &latch);
 
                 s->release(2);
-                assertTrue(latch.await(10 * 1000));
+                assertTrue(latch.await(10 ));
                 assertEqual(0, s->availablePermits());
 
             }
         }
     }
 }
+

@@ -58,12 +58,13 @@ namespace hazelcast {
                 std::string id = topic->addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
-                    topic->publish(std::string("naber") + util::to_string(i));
+                    topic->publish(std::string("naber") + util::IOUtil::to_string(i));
                 }
-                assertTrue(latch.await(20 * 1000));
+                assertTrue(latch.await(20 ));
                 topic->removeMessageListener(id);
 
             }
         }
     }
 }
+

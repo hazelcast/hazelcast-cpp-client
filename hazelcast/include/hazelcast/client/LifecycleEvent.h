@@ -58,3 +58,4 @@ namespace hazelcast {
 
 
 #endif //__LifecycleEvent_H_
+

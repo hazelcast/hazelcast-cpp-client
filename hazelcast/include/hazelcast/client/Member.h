@@ -173,10 +173,9 @@ namespace hazelcast {
             std::map< std::string, double > doubleAttributes;
         };
 
-        inline std::ostream &operator <<(std::ostream &strm, const Member &a) {
-            return strm << "Member[" << a.getAddress().getHost() << "]:" << util::to_string(a.getAddress().getPort());
-        };
+        std::ostream &operator <<(std::ostream &stream, const Member &member);
     }
 }
 
 #endif //HAZELCAST_MEMBER
+

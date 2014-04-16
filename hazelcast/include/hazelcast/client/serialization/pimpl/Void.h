@@ -21,3 +21,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_EmptyData
+

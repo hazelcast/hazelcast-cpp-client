@@ -10,19 +10,21 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include <boost/thread.hpp>
+#include "hazelcast/util/Thread.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#else
+#include <sys/time.h>
+#endif
 
 namespace hazelcast {
     namespace util {
-        std::string to_string(int value) {
-            std::stringstream s;
-            s << value;
-            return s.str();
-        };
 
         long getThreadId() {
-            return hash_value(boost::this_thread::get_id());
-        };
+            return util::Thread::getThreadID();
+        }
 
         void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {
             if (data != NULL) {
@@ -32,18 +34,22 @@ namespace hazelcast {
                 // null
                 out.writeBoolean(false);
             }
-        };
+        }
 
         void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data) {
             bool isNotNull = in.readBoolean();
             if (isNotNull)
                 data->readData(in);
-        };
-
-
-        long getCurrentTimeMillis() {
-            return boost::posix_time::microsec_clock::local_time().time_of_day().total_milliseconds();
         }
+
+		void sleep(int seconds){
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+			Sleep(seconds * 1000);
+#else
+			::sleep((unsigned int)seconds);
+#endif
+		}
     }
 }
+
 

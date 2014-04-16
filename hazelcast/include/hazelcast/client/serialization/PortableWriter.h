@@ -39,8 +39,6 @@ namespace hazelcast {
 
                 void writeUTF(const char *fieldName, const std::string& str);
 
-                void writeNullPortable(const char *fieldName, int factoryId, int classId);
-
                 void writeByteArray(const char *fieldName, const std::vector<byte>& x);
 
                 void writeCharArray(const char *fieldName, const std::vector<char >&  data);
@@ -56,6 +54,13 @@ namespace hazelcast {
                 void writeDoubleArray(const char *fieldName, const std::vector<double >&  data);
 
                 void end();
+
+                template<typename T>
+                void writeNullPortable(const char *fieldName){
+                    if (isDefaultWriter)
+                        return defaultPortableWriter->writeNullPortable<T>(fieldName);
+                    return classDefinitionWriter->writeNullPortable<T>(fieldName);
+                }
 
                 template <typename T>
                 void writePortable(const char *fieldName, const T& portable) {
@@ -84,3 +89,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_PortableWriter
+

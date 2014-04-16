@@ -7,10 +7,17 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/Mutex.h"
 
 namespace hazelcast {
+    namespace util{
+        class Thread;
+
+        class ThreadArgs;
+    }
+
     namespace client {
         namespace serialization {
             namespace pimpl {
@@ -42,17 +49,19 @@ namespace hazelcast {
 
                 spi::ClientContext &clientContext;
 
-                boost::atomic<bool> updating;
+                util::AtomicBoolean updating;
 
-                std::auto_ptr<boost::thread> partitionListenerThread;
+                std::auto_ptr<util::Thread> partitionListenerThread;
 
-                boost::atomic<int> partitionCount;
+                util::AtomicInt partitionCount;
 
                 util::SynchronizedMap<int, Address> partitions;
 
-                boost::mutex startLock;
+                util::Mutex startLock;
 
-                void runListener();
+                static void staticRunListener(util::ThreadArgs& args);
+
+                void runListener(util::Thread* currentThread);
 
                 void runRefresher();
 
@@ -69,3 +78,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_PARTITION_SERVICE
+

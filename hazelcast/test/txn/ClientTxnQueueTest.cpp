@@ -6,6 +6,8 @@
 #include "ClientTxnQueueTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -56,19 +58,17 @@ namespace hazelcast {
                 assertEqual(0, client->getQueue<std::string>(name).size());
             }
 
-            void testTransactionalOfferPoll2Thread(util::CountDownLatch *latch, HazelcastClient *client) {
-                try {
-                    latch->await(5 * 1000);
-                    boost::this_thread::sleep(boost::posix_time::seconds(3));
-                    client->getQueue<std::string>("defQueue0").offer("item0");
-                } catch (...) {
-                }
+            void testTransactionalOfferPoll2Thread(util::ThreadArgs& args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
+                HazelcastClient *client = (HazelcastClient *)args.arg1;                
+                latch->await();
+                client->getQueue<std::string>("defQueue0").offer("item0");
             }
 
             void ClientTxnQueueTest::testTransactionalOfferPoll2() {
 
                 util::CountDownLatch latch(1);
-                boost::thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
+                util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
@@ -93,3 +93,4 @@ namespace hazelcast {
         }
     }
 }
+

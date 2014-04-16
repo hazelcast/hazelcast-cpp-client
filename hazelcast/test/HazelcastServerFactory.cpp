@@ -5,7 +5,7 @@
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
-#include <boost/thread.hpp>
+#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,6 @@ namespace hazelcast {
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
-//                boost::this_thread::sleep(boost::posix_time::seconds(3));
                 if (int error = socket.connect())
                     std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 
@@ -66,3 +65,4 @@ namespace hazelcast {
         }
     }
 }
+

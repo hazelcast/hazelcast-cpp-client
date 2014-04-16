@@ -21,3 +21,4 @@ template< typename F > struct template_arity;
 }}}
 
 #endif // BOOST_MPL_AUX_TEMPLATE_ARITY_FWD_HPP_INCLUDED
+

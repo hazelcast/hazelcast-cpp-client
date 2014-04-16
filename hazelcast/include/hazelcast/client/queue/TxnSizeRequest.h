@@ -32,3 +32,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_TxnSizeRequest
+

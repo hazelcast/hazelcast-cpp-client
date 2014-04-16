@@ -40,3 +40,4 @@ namespace boost {
 } //namespace boost
 
 #endif //BOOST_TYPE_TRAITS_MSVC_REMOVE_REFERENCE_HOLT_2004_0827
+

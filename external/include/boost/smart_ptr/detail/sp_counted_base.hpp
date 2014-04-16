@@ -77,3 +77,4 @@
 #endif
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_SP_COUNTED_BASE_HPP_INCLUDED
+

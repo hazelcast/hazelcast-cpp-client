@@ -5,7 +5,7 @@
 
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -67,14 +67,14 @@ namespace hazelcast {
                     byte f = readByte();
                     byte g = readByte();
                     byte h = readByte();
-                    return (0xff00000000000000 & ((long long) (a) << 56)) |
-                            (0x00ff000000000000 & ((long long) (b) << 48)) |
-                            (0x0000ff0000000000 & ((long long) (c) << 40)) |
-                            (0x000000ff00000000 & ((long long) (d) << 32)) |
-                            (0x00000000ff000000 & (e << 24)) |
-                            (0x0000000000ff0000 & (f << 16)) |
-                            (0x000000000000ff00 & (g << 8)) |
-                            (0x00000000000000ff & h);
+                    return (0xff00000000000000LL & ((long long) (a) << 56)) |
+                            (0x00ff000000000000LL & ((long long) (b) << 48)) |
+                            (0x0000ff0000000000LL & ((long long) (c) << 40)) |
+                            (0x000000ff00000000LL & ((long long) (d) << 32)) |
+                            (0x00000000ff000000LL & (e << 24)) |
+                            (0x0000000000ff0000LL & (f << 16)) |
+                            (0x000000000000ff00LL & (g << 8)) |
+                            (0x00000000000000ffLL & h);
                 };
 
                 float DataInput::readFloat() {
@@ -150,7 +150,7 @@ namespace hazelcast {
                                     throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
                                 char2 = bytearr[count - 1];
                                 if ((char2 & 0xC0) != 0x80) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
                                 }
                                 chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
                                 break;
@@ -162,19 +162,19 @@ namespace hazelcast {
                                 char2 = bytearr[count - 2];
                                 char3 = bytearr[count - 1];
                                 if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count - 1));
+                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count - 1));
                                 }
                                 chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
                                 break;
                             default:
                                 /* 10xx xxxx, 1111 xxxx */
 
-                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::to_string(count));
+                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
 
                         }
                     }
                     chararr[chararr_count] = '\0';
-                    return std::string(chararr.data());
+                    return std::string(&chararr[0]);
                 };
 
                 std::vector <byte> DataInput::readByteArray() {

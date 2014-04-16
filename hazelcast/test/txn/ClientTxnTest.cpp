@@ -89,7 +89,7 @@ namespace hazelcast {
                     server.shutdown();
                     context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
-                } catch (std::exception &) {
+                } catch (exception::InstanceNotActiveException &) {
                     context.rollbackTransaction();
                     rollbackSuccessful = true;
                 }
@@ -105,3 +105,4 @@ namespace hazelcast {
         }
     }
 }
+

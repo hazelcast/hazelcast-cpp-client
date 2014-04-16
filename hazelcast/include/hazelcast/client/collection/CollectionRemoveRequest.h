@@ -36,3 +36,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_CollectionRemoveRequest
+

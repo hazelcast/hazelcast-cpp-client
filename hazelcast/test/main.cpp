@@ -20,13 +20,14 @@
 #include "txn/ClientTxnMultiMapTest.h"
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
+#include <cstdlib>
 
 using namespace hazelcast::client::test;
 
 void testSpeed() {
     SimpleMapTest s(HOST, 5701);
     s.run();
-};
+}
 
 void unitTests() {
     try {
@@ -97,10 +98,89 @@ void unitTests() {
     }
 }
 
-int main(int argc, char **argv) {
+void s(hazelcast::util::ThreadArgs &args) {
+    int *v = (int *) args.arg0;
+    std::cout << "Sleep" << std::endl;
+	hazelcast::util::sleep(5);
+    std::cout << "DONE " << *v << std::endl;
+}
 
+void testSleep() {
+    int a = 5;
+    hazelcast::util::Thread d(s, &a);
+    time_t t = time(NULL);
+    d.interrupt();
+    d.join();
+    double diff = difftime(time(NULL), t);
+    std::cout << "Last " << diff << " seconcs" << std::endl;
+}
+
+
+void testLatchThreadMain(hazelcast::util::ThreadArgs &args) {
+    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg0;
+    std::cout << "SLEEP" << std::endl;
+	hazelcast::util::sleep(10);
+    std::cout << "WAKEUP" << std::endl;
+    latch->countDown();
+}
+
+void testLatch() {
+    hazelcast::util::CountDownLatch latch(1);
+    hazelcast::util::Thread thread(testLatchThreadMain, &latch);
+
+    std::cout << "START AWAIT" << std::endl;
+    bool b = latch.await(30);
+    std::cout << b << std::endl;
+    thread.join();
+
+}
+
+void testJoinThread(hazelcast::util::ThreadArgs &args) {
+    long i = 0;
+    try{
+        while (i < 1000000000000LL) {
+            ++i;
+            //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<i++ << std::endl;
+            //sleep(1);
+        }
+        hazelcast::client::exception::IException a("1", "2");
+        throw a;
+    }catch(hazelcast::client::exception::IException &e){
+        std::cout << "skdsjdsjkjdksj" << e.what() << std::endl;
+    }
+}
+
+void testJoin() {
+    hazelcast::util::Thread *thread = new hazelcast::util::Thread(testJoinThread);
+    //thread.interrupt();
+    thread->join();
+    delete thread;
+    std::cout << "Joined" << std::endl;
+}
+
+void testMutexThread(hazelcast::util::ThreadArgs &args) {
+	hazelcast::util::Mutex* m = (hazelcast::util::Mutex*)args.arg0;
+	hazelcast::util::LockGuard g(*m);
+	std::cout << "2nd thread in ciritical section" << std::endl;
+	hazelcast::util::sleep(1);
+}
+
+void testMutex(){
+	hazelcast::util::Mutex m;
+	hazelcast::util::LockGuard g(m);
+	hazelcast::util::Thread t(testMutexThread, &m);
+	std::cout << "1st in critical section "<< std::endl;
+	hazelcast::util::sleep(5);
+}
+
+int main() {
+//    testJoin();
+//    testLatch();
+//    testSleep();
     unitTests();
 //    testSpeed();
-    return 0;
-};
+//    testMutex();
+	return 0;
+}
+
 

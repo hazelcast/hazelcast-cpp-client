@@ -88,3 +88,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_MemberAttributeEvent
+

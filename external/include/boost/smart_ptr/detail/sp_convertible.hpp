@@ -89,3 +89,4 @@ template< class Y, class T > struct sp_enable_if_convertible: public sp_enable_i
 #endif // !defined( BOOST_SP_NO_SP_CONVERTIBLE )
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_SP_CONVERTIBLE_HPP_INCLUDED
+

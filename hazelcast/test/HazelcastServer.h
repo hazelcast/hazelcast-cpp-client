@@ -37,3 +37,4 @@ namespace hazelcast {
 }
 
 #endif /* defined(__hazelcast__hazelcastInstance__) */
+

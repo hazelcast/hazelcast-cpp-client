@@ -35,3 +35,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_QUERY_REQUEST
+

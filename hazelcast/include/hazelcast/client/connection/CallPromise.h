@@ -10,9 +10,10 @@
 
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Future.h"
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 #include <memory>
-#include <boost/thread/future.hpp>
-#include <boost/atomic.hpp>
 
 namespace hazelcast {
 
@@ -21,7 +22,7 @@ namespace hazelcast {
         namespace impl {
             class PortableRequest;
 
-            class BaseEventHandler;
+            class ServerException;
         }
         namespace serialization {
             namespace pimpl{
@@ -40,16 +41,13 @@ namespace hazelcast {
 
                 void setResponse(const serialization::pimpl::Data &data);
 
-                template<typename E>
-                void setException(E const &e) {
-                    promise.set_exception(boost::copy_exception(e));
-                }
+                void setException(const std::string& exceptionName, const std::string& exceptionDetails);
 
                 void setRequest(std::auto_ptr<const impl::PortableRequest> request);
 
                 const impl::PortableRequest &getRequest() const;
 
-                boost::shared_future<serialization::pimpl::Data> getFuture();
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  getFuture();
 
                 void setEventHandler(std::auto_ptr<impl::BaseEventHandler> eventHandler);
 
@@ -58,10 +56,10 @@ namespace hazelcast {
                 int incrementAndGetResendCount();
 
             private:
-                boost::promise<serialization::pimpl::Data> promise;
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > future;
                 std::auto_ptr<const impl::PortableRequest> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;
-                boost::atomic<int> resendCount;
+                util::AtomicInt resendCount;
             };
         }
     }
@@ -69,3 +67,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ClientCallPromise
+

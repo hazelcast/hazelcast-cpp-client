@@ -8,8 +8,9 @@
 #define HAZELCAST_SYNCHRONIZED_MAP
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_guard.hpp>
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/LockGuard.h"
+#include <boost/shared_ptr.hpp>
 #include <map>
 #include <vector>
 
@@ -23,12 +24,12 @@ namespace hazelcast {
             };
 
             ~SynchronizedMap() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 internalMap.clear();
             };
 
             bool containsKey(const K &key) const {
-                boost::lock_guard<boost::mutex> guard (mapLock);
+                util::LockGuard guard (mapLock);
                 return internalMap.count(key) > 0;
             };
 
@@ -38,7 +39,7 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             boost::shared_ptr<V> putIfAbsent(const K &key, boost::shared_ptr<V> value) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     return internalMap[key];
                 } else {
@@ -53,7 +54,7 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             boost::shared_ptr<V> put(const K &key, boost::shared_ptr<V> value) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 boost::shared_ptr<V> returnValue;
                 if (internalMap.count(key) > 0) {
                     returnValue = internalMap[key];
@@ -68,7 +69,7 @@ namespace hazelcast {
              *
              */
             boost::shared_ptr<V> get(const K &key) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
                 else
@@ -82,7 +83,7 @@ namespace hazelcast {
             *
             */
             boost::shared_ptr<V> remove(const K &key) {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     boost::shared_ptr<V> v = internalMap[key];
                     internalMap.erase(key);
@@ -93,7 +94,7 @@ namespace hazelcast {
             };
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > entrySet() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
                 int i = 0;
@@ -104,7 +105,7 @@ namespace hazelcast {
             }
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > clear() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
                 int i = 0;
@@ -116,7 +117,7 @@ namespace hazelcast {
             }
 
             std::vector<boost::shared_ptr<V> > values() {
-                boost::lock_guard<boost::mutex> lg(mapLock);
+                util::LockGuard lg(mapLock);
                 std::vector<boost::shared_ptr<V> > valueArray(internalMap.size());
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
                 int i = 0;
@@ -128,9 +129,10 @@ namespace hazelcast {
 
         private:
             std::map<K, boost::shared_ptr<V>, Comparator> internalMap;
-            mutable boost::mutex mapLock;
+            mutable util::Mutex mapLock;
         };
     }
 }
 
 #endif //HAZELCAST_SYNCHRONIZED_MAP
+

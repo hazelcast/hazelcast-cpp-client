@@ -10,7 +10,7 @@
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
-#include <boost/thread/mutex.hpp>
+#include "hazelcast/util/Mutex.h"
 #include <vector>
 
 namespace hazelcast {
@@ -39,7 +39,7 @@ namespace hazelcast {
                 virtual ~AbstractLoadBalancer();
 
             private:
-                boost::mutex membersLock;
+                util::Mutex membersLock;
                 std::vector<Member> membersRef;
                 Cluster *cluster;
             };
@@ -48,3 +48,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_LOAD_BALANCER
+

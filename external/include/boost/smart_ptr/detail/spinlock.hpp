@@ -54,3 +54,4 @@
 #endif
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_HPP_INCLUDED
+

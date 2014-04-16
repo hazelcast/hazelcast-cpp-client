@@ -28,3 +28,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_QUEUE_CLEAR_REQUEST
+

@@ -22,7 +22,7 @@ namespace hazelcast {
             };
 
             void InputSocketStream::readFully(std::vector<byte> &bytes) {
-                socket.receive(bytes.data(), bytes.size(), MSG_WAITALL);
+                socket.receive(&(bytes[0]), bytes.size(), MSG_WAITALL);
             };
 
             int InputSocketStream::skipBytes(int i) {
@@ -69,3 +69,4 @@ namespace hazelcast {
         }
     }
 }
+

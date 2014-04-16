@@ -8,7 +8,6 @@ project (HazelcastClient)
 #  -DHZ_VALGRIND=ON
 
 SET(HZ_VERSION 3.2.1-SNAPSHOT)
-add_definitions(-DHZ_VERSION="${HZ_VERSION}")
 
 message(STATUS "Preparing hazelcast client ..... ")
 
@@ -52,15 +51,10 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
-	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_atomic.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_system.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_chrono.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_thread.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libboost_date_time.a)
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libz.a)
 
-	target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -70,49 +64,32 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
-	set(Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_atomic.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_system.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_chrono.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_thread.a)
-	LIST(APPEND Hz_Boost_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libboost_date_time.a)
-
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libz.a)
 
 	IF(${HZ_BIT} MATCHES "32")
 		set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	ENDIF(${HZ_BIT} MATCHES "32")
 
-	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_Boost_LIBRARIES} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_ZLIB_LIBRARIES})
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
-	add_definitions(-DWIN32 -D_WIN32 -D__WIN32__ -DHAZELCAST_EXPORTS)
-
-	set(Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_atomic-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_system-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_chrono-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_thread-vc100-mt-gd-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_debug ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_date_time-vc100-mt-gd-1_55.lib)
-
-	set(Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_atomic-vc100-mt-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_system-vc100-mt-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_chrono-vc100-mt-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_thread-vc100-mt-1_55.lib)
-	LIST(APPEND Hz_Boost_LIBRARIES_release ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/libboost_date_time-vc100-mt-1_55.lib)
+	add_definitions(-DWIN64 -D_WIN64 -D__WIN64__ -DWIN32 -D_WIN32 -D__WIN32__ -DHAZELCAST_EXPORTS)
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/zlibstaticd.lib)
 
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS " /EHsc " )
 
 	IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_debug} ${Hz_ZLIB_LIBRARIES} )
+		target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
 	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
 	IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-		target_link_libraries(${HZ_LIB_NAME} ${Hz_Boost_LIBRARIES_release} ${Hz_ZLIB_LIBRARIES} )
+		target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
 	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ADD_SUBDIRECTORY(hazelcast/test)
+ADD_SUBDIRECTORY(examples)

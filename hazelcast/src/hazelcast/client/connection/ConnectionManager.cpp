@@ -14,9 +14,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/exception/IAuthenticationException.h"
 #include "hazelcast/client/impl/ServerException.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,8 +40,8 @@ namespace hazelcast {
                 if (!oListener.start()) {
                     return false;
                 }
-                iListenerThread.reset(new boost::thread(&InSelector::listen, &iListener));
-                oListenerThread.reset(new boost::thread(&OutSelector::listen, &oListener));
+                iListenerThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &iListener));
+                oListenerThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &oListener));
                 return true;
             }
 
@@ -81,7 +79,7 @@ namespace hazelcast {
                         boost::shared_ptr<Connection> connection = getOrConnect(target);
                         return connection;
                     }
-                } catch (exception::IOException &ignored) {
+                } catch (exception::IOException &) {
                 }
 
                 int count = 0;
@@ -115,7 +113,7 @@ namespace hazelcast {
             boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
-                    boost::lock_guard<boost::mutex> l(lockMutex);
+                    util::LockGuard l(lockMutex);
                     conn = connections.get(address);
                     if (conn.get() == NULL) {
                         boost::shared_ptr<Connection> newConnection(connectTo(address, false));
@@ -150,7 +148,7 @@ namespace hazelcast {
                 if (clientResponse->isException()) {
                     serialization::pimpl::Data const &data = clientResponse->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
-                    throw exception::IAuthenticationException("ConnectionManager::authenticate", ex->what());
+                    throw exception::IException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
                 std::vector<serialization::pimpl::Data *> const &getCollection = collection->getCollection();

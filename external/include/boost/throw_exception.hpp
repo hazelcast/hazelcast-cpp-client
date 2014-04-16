@@ -101,3 +101,4 @@ template<class E> BOOST_ATTRIBUTE_NORETURN inline void throw_exception( E const 
 #pragma warning(pop)
 #endif
 #endif
+

@@ -27,3 +27,4 @@ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_rvalue_reference,T&&,true)
 
 #endif // BOOST_TT_IS_REFERENCE_HPP_INCLUDED
 
+

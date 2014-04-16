@@ -10,8 +10,9 @@
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/OutSelector.h"
-#include <boost/atomic.hpp>
-#include <boost/thread/future.hpp>
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/Future.h"
 
 namespace hazelcast {
     namespace client {
@@ -79,12 +80,12 @@ namespace hazelcast {
                 std::auto_ptr<SocketInterceptor> socketInterceptor;
                 InSelector iListener;
                 OutSelector oListener;
-                std::auto_ptr<boost::thread> iListenerThread;
-                std::auto_ptr<boost::thread> oListenerThread;
-                boost::atomic<bool> live;
-                boost::mutex lockMutex;
+                std::auto_ptr<util::Thread> iListenerThread;
+                std::auto_ptr<util::Thread> oListenerThread;
+                util::AtomicBoolean live;
+                util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
-                boost::atomic<int> callIdGenerator;
+                util::AtomicInt callIdGenerator;
                 bool smartRouting;
                 Address ownerConnectionAddress;
 
@@ -94,3 +95,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_CONNECTION_MANAGER
+

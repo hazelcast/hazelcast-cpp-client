@@ -81,7 +81,7 @@ namespace hazelcast {
 
             void ObjectDataOutput::writeDouble(double v) {
                 if (isEmpty) return;
-                dataOutput->writeLong(v);
+                dataOutput->writeLong((long)v);
             };
 
             void ObjectDataOutput::writeUTF(const std::string& str) {
@@ -166,3 +166,4 @@ namespace hazelcast {
         }
     }
 }
+

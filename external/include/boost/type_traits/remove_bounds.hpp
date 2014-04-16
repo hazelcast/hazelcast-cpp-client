@@ -46,3 +46,4 @@ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_bounds,T const volatil
 #include <boost/type_traits/detail/type_trait_undef.hpp>
 
 #endif // BOOST_TT_REMOVE_BOUNDS_HPP_INCLUDED
+

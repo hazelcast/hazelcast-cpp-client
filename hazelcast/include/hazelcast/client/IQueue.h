@@ -334,3 +334,4 @@ namespace hazelcast {
 }
 
 #endif /* HAZELCAST_IQUEUE */
+

@@ -58,6 +58,7 @@
 #include <set>
 #include <vector>
 #include <stdexcept>
+#include <climits>
 
 namespace hazelcast {
     namespace client {
@@ -1139,3 +1140,4 @@ namespace hazelcast {
 }
 
 #endif /* HAZELCAST_IMAP */
+

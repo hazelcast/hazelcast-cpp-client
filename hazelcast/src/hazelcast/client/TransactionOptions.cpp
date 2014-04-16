@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         TransactionOptions::TransactionOptions()
-        : timeoutMillis(2 * 1000 * 60)//2 minutes
+        : timeoutSeconds(2 * 60)//2 minutes
         , durability(1)
         , transactionType(TransactionType::TWO_PHASE) {
 
@@ -21,20 +21,20 @@ namespace hazelcast {
             return transactionType;
         };
 
-        TransactionOptions& TransactionOptions::setTransactionType(TransactionType transactionType) {
+        TransactionOptions &TransactionOptions::setTransactionType(TransactionType transactionType) {
             this->transactionType = transactionType;
             return *this;
         };
 
-        long TransactionOptions::getTimeoutMillis() const {
-            return timeoutMillis;
+        int TransactionOptions::getTimeout() const {
+            return timeoutSeconds;
         };
 
-        TransactionOptions& TransactionOptions::setTimeout(long timeoutInMillis) {
-            if (timeoutInMillis <= 0) {
+        TransactionOptions &TransactionOptions::setTimeout(int timeoutInSeconds) {
+            if (timeoutInSeconds <= 0) {
                 throw exception::IllegalStateException("TransactionOptions::setTimeout", "Timeout must be positive!");
             }
-            this->timeoutMillis = timeoutInMillis;
+            this->timeoutSeconds = timeoutInSeconds;
             return *this;
         };
 
@@ -42,7 +42,7 @@ namespace hazelcast {
             return durability;
         };
 
-        TransactionOptions& TransactionOptions::setDurability(int durability) {
+        TransactionOptions &TransactionOptions::setDurability(int durability) {
             if (durability < 0) {
                 throw exception::IllegalStateException("TransactionOptions::setDurability", "Durability cannot be negative!");
             }
@@ -50,14 +50,14 @@ namespace hazelcast {
             return *this;
         };
 
-        void TransactionOptions::writeData(serialization::ObjectDataOutput& out) const {
-            out.writeLong(timeoutMillis);
+        void TransactionOptions::writeData(serialization::ObjectDataOutput &out) const {
+            out.writeLong(1000L * timeoutSeconds);
             out.writeInt(durability);
             out.writeInt(transactionType);
         };
 
-        void TransactionOptions::readData(serialization::ObjectDataInput& in) {
-            timeoutMillis = in.readLong();
+        void TransactionOptions::readData(serialization::ObjectDataInput &in) {
+            timeoutSeconds = (int)in.readLong()/1000;
             durability = in.readInt();
             transactionType = in.readInt();
         };

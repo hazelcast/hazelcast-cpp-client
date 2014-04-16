@@ -6,6 +6,7 @@
 #include "hazelcast/client/multimap/AddEntryListenerRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -52,4 +53,5 @@ namespace hazelcast {
         }
     }
 }
+
 

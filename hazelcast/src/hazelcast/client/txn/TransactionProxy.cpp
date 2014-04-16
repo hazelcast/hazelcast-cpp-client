@@ -9,8 +9,8 @@
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-
-
+#include "hazelcast/util/ILogger.h"
+#include <ctime> 
 namespace hazelcast {
     namespace client {
         namespace txn {
@@ -32,8 +32,8 @@ namespace hazelcast {
                 return state;
             };
 
-            long TransactionProxy::getTimeoutMillis() const {
-                return options.getTimeoutMillis();
+            int TransactionProxy::getTimeoutSeconds() const {
+                return options.getTimeout();
             };
 
 
@@ -47,13 +47,13 @@ namespace hazelcast {
 //                        throw new IllegalStateException("Nested transactions are not allowed!");
 //                    }
 //                    threadFlag.set(Boolean.TRUE);
-                    startTime = util::getCurrentTimeMillis();
+                    startTime = time(NULL);
 
                     CreateTxnRequest *request = new CreateTxnRequest(options);
                     boost::shared_ptr<std::string> response = invoke<std::string>(request);
                     txnId = *response;
                     state = TxnState::ACTIVE;
-                } catch (std::exception &e) {
+                } catch (exception::IException &e) {
                     onTxnEnd();
                     throw e;
                 }
@@ -70,10 +70,10 @@ namespace hazelcast {
                     CommitTxnRequest *request = new CommitTxnRequest(true);
                     invoke<serialization::pimpl::Void>(request);
                     state = TxnState::COMMITTED;
-                } catch (exception::IException &e) {
+                } catch (...) {
                     state = TxnState::ROLLING_BACK;
                     onTxnEnd();
-                    throw e;
+                    throw;
                 }
                 onTxnEnd();
 
@@ -95,7 +95,7 @@ namespace hazelcast {
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
-                } catch(std::exception &e) {
+                } catch(exception::IException &e) {
                     onTxnEnd();
                     throw e;
                 }
@@ -126,8 +126,10 @@ namespace hazelcast {
             }
 
             void TransactionProxy::checkTimeout() {
-                if (startTime + options.getTimeoutMillis() < util::getCurrentTimeMillis()) {
-                    throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
+                time_t current = time(NULL);
+				time_t timeoutPoint = startTime + options.getTimeout();
+				if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
+					throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
                 }
             }
 

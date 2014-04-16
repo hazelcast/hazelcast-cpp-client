@@ -80,3 +80,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_DataInput
+

@@ -11,6 +11,7 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,7 +25,6 @@ namespace hazelcast {
 
                 class Data;
             }
-
 
         }
 
@@ -73,9 +73,9 @@ namespace hazelcast {
 
                 void setAsOwnerConnection(bool isOwnerConnection);
 
-                boost::atomic<clock_t> lastRead;
-                boost::atomic<clock_t> lastWrite;
-                boost::atomic<bool> live;
+                util::AtomicInt lastRead;
+                util::AtomicInt lastWrite;
+                util::AtomicBoolean live;
             private:
                 spi::ClientContext &clientContext;
                 Socket socket;
@@ -111,3 +111,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_CONNECTION
+

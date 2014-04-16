@@ -78,19 +78,6 @@ namespace hazelcast {
 
                 };
 
-                void ClassDefinitionWriter::writeNullPortable(const char *fieldName, int factoryId, int classId) {
-                    if (!raw) {
-                        FieldDefinition fd = FieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, factoryId, classId);
-                        if (!context.isClassDefinitionExists(factoryId, classId)) {
-                            throw exception::IOException("ClassDefinitionWriter::writeNullPortable", "Cannot write null portable without explicitly registering class definition!");
-                        } else {
-                            cd->add(fd);
-                            cd->add(context.lookup(factoryId, classId));
-                        }
-                    }
-
-                };
-
                 void ClassDefinitionWriter::writeByteArray(const char *fieldName, const std::vector<byte> &values) {
                     addField(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
 
@@ -136,6 +123,12 @@ namespace hazelcast {
 
                 boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::getOrBuildClassDefinition(const Portable &p) {
                     return context.getSerializerHolder().getPortableSerializer().getClassDefinition(p);
+                };
+
+                void ClassDefinitionWriter::addNestedField(const Portable &p, FieldDefinition &fd) {
+                    cd->add(fd);
+                    boost::shared_ptr<ClassDefinition> nestedCd = getOrBuildClassDefinition(p);
+                    cd->add(nestedCd);
                 };
 
 

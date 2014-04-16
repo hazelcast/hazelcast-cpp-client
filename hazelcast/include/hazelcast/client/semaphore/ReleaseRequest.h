@@ -25,3 +25,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ReleaseRequest
+

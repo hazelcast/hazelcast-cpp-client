@@ -70,7 +70,7 @@ namespace hazelcast {
 
                 TxnState getState() const;
 
-                long getTimeoutMillis() const;
+                int getTimeoutSeconds() const;
 
                 void begin();
 
@@ -94,7 +94,7 @@ namespace hazelcast {
                 std::string txnId;
 
                 TxnState state;
-                long startTime;
+                time_t startTime;
 
                 void onTxnEnd();
 
@@ -104,8 +104,9 @@ namespace hazelcast {
                     request->setThreadId(threadId);
                     spi::InvocationService &invocationService = clientContext.getInvocationService();
                     serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
-                    boost::shared_future<serialization::pimpl::Data> future = invocationService.invokeOnConnection(request, connection);
-                    return ss.toObject<Response>(future.get());
+                    boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnConnection(request, connection);
+                    serialization::pimpl::Data data = future->get();
+                    return ss.toObject<Response>(data);
                 }
 
                 void checkThread();
@@ -119,3 +120,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_TransactionProxy
+

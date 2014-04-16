@@ -101,3 +101,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF2(is_same,T,U,(::boost::detail::is_same_impl<T,U>::va
 
 #endif  // BOOST_TT_IS_SAME_HPP_INCLUDED
 
+

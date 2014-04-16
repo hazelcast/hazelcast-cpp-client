@@ -34,3 +34,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_QUEUE_CONTAINS_REQUEST
+

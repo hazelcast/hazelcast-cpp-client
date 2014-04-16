@@ -37,3 +37,4 @@ bool const bool_<C_>::value;
 BOOST_MPL_AUX_ADL_BARRIER_NAMESPACE_CLOSE
 
 #endif // BOOST_MPL_BOOL_HPP_INCLUDED
+

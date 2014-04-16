@@ -114,10 +114,10 @@ namespace hazelcast {
 
                 int DefaultPortableReader::getPosition(const char *fieldName) {
                     if (raw) {
-                        throw exception::IException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
+                        throw exception::IOException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
                     }
                     if (!cd->isFieldDefinitionExists(fieldName))
-                        throw exception::IException("PortableReader::getPosition ", " unknownField " + std::string(fieldName));
+                        throw exception::IOException("PortableReader::getPosition ", " unknownField " + std::string(fieldName));
                     dataInput.position(offset + cd->get(fieldName).getIndex() * sizeof (int));
                     return dataInput.readInt();
                 };
@@ -143,3 +143,4 @@ namespace hazelcast {
         }
     }
 }
+

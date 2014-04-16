@@ -33,3 +33,4 @@ struct ice_and<true, true, true, true, true, true, true>
 } // namespace boost
 
 #endif // BOOST_TT_DETAIL_ICE_AND_HPP_INCLUDED
+

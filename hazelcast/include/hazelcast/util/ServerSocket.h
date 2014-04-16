@@ -29,7 +29,7 @@ namespace hazelcast {
         private:
             int socketId;
 			bool ipv4;
-            boost::atomic<bool> isOpen;
+            util::AtomicBoolean isOpen;
 
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			WSADATA wsa_data;
@@ -41,3 +41,4 @@ namespace hazelcast {
 
 
 #endif //HAZELCAST_ServerSocket
+

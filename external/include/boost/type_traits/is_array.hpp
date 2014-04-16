@@ -89,3 +89,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_array,T,::boost::detail::is_array_impl<T>::value
 #include <boost/type_traits/detail/bool_trait_undef.hpp>
 
 #endif // BOOST_TT_IS_ARRAY_HPP_INCLUDED
+

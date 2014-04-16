@@ -87,3 +87,4 @@ template<> struct value_type_wknd<int>
 }}}
 
 #endif // BOOST_MPL_AUX_VALUE_WKND_HPP_INCLUDED
+

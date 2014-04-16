@@ -367,3 +367,4 @@ namespace std {
 
 // vxWorks lies about XSI conformance, there is no nl_types.h:
 #undef BOOST_HAS_NL_TYPES_H
+

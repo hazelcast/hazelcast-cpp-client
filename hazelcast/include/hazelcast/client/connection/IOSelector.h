@@ -8,6 +8,9 @@
 
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/SocketSet.h"
+#include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/ThreadArgs.h"
+#include <memory>
 
 namespace hazelcast {
     namespace client {
@@ -29,6 +32,8 @@ namespace hazelcast {
                 virtual bool start() = 0;
 
                 bool initListenSocket(util::SocketSet &wakeUpSocketSet);
+
+                static void staticListen(util::ThreadArgs& args);
 
                 void listen();
 
@@ -56,10 +61,11 @@ namespace hazelcast {
                 std::auto_ptr<Socket> wakeUpSocket;
                 std::auto_ptr<Socket> sleepingSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
-                boost::atomic<bool> isAlive;
+                util::AtomicBoolean isAlive;
             };
         }
     }
 }
 
 #endif //HAZELCAST_NIOListener
+

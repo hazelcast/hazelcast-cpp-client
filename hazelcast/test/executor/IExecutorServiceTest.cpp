@@ -106,7 +106,7 @@
 //                std::string key("key");
 //                CallableTask callableTask(name);
 //                service->submitToKeyOwner<std::string>(callableTask, key, executionCallback);
-//                assertTrue(latch.await(5 * 1000));
+//                assertTrue(latch.await((.*)));
 //            }
 //
 //
@@ -154,7 +154,7 @@
 //                CallableTask callableTask(name);
 //                SampleMultiExecutionCallback multiExecutionCallback(latch);
 //                service->submitToAllMembers<std::string>(callableTask, multiExecutionCallback);
-//                assertTrue(latch.await(5 * 1000));
+//                assertTrue(latch.await((.*)));
 //            }
 //
 //
@@ -172,3 +172,4 @@
 //        }
 //    }
 //}
+

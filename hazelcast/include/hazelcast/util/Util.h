@@ -30,18 +30,17 @@ namespace hazelcast {
     }
     namespace util {
 
-        HAZELCAST_API std::string to_string(int);
-
         HAZELCAST_API long getThreadId();
 
         HAZELCAST_API void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data);
 
         HAZELCAST_API void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data);
 
-        HAZELCAST_API long getCurrentTimeMillis();
+		HAZELCAST_API void sleep(int seconds);
 
     }
 }
 
 
 #endif //HAZELCAST_UTIL_FUNCTIONS
+

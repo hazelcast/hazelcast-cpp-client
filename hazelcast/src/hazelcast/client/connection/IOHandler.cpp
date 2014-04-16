@@ -35,13 +35,14 @@ namespace hazelcast {
 
             void IOHandler::handleSocketException(const std::string &message) {
                 ioListener.removeSocket(connection.getSocket());
-                connection.close();
                 std::stringstream warningStr;
                 Address const &address = connection.getRemoteEndpoint();
                 (warningStr << " Closing socket to endpoint " << address.getHost() << ":" << address.getPort()
                         << ", Cause:" << message);
                 util::ILogger::getLogger().getLogger().warning(warningStr.str());
+                connection.close();
             }
         }
     }
 }
+

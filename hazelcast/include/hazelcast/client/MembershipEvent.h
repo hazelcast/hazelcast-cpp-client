@@ -89,3 +89,4 @@ namespace hazelcast {
     }
 }
 #endif //HAZELCAST_MembershipEvent
+

@@ -79,18 +79,19 @@ namespace hazelcast {
                 ItemListener listener(latch);
                 std::string id = q->addItemListener(listener, true);
 
-                boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+                util::sleep(1);
 
                 for (int i = 0; i < 5; i++) {
-                    assertTrue(q->offer(std::string("event_item") + util::to_string(i)));
+                    assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
                 }
 
-                assertTrue(latch.await(5 * 1000));
+                assertTrue(latch.await(5));
                 assertTrue(q->removeItemListener(id));
             }
 
-            void testOfferPollThread2(IQueue<std::string> *q) {
-                boost::this_thread::sleep(boost::posix_time::seconds(2));
+            void testOfferPollThread2(util::ThreadArgs &args) {
+                IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
+                util::sleep(2);
                 q->offer("item1");
             }
 
@@ -101,7 +102,7 @@ namespace hazelcast {
                 }
                 assertEqual(10, q->size());
                 q->poll();
-                bool result = q->offer("item", 5 * 1000);
+                bool result = q->offer("item", 5);
                 assertTrue(result);
 
                 for (int i = 0; i < 10; i++) {
@@ -109,10 +110,10 @@ namespace hazelcast {
                 }
                 assertEqual(0, q->size());
 
-                boost::thread t2(boost::bind(testOfferPollThread2, q.get()));
+                util::Thread t2(testOfferPollThread2, q.get());
 
                 assertEqual("item1", *(q->poll(5 * 1000)));
-                t2.try_join_for(boost::chrono::seconds(10));
+                t2.join();
             }
 
             void ClientQueueTest::testRemainingCapacity() {
@@ -193,7 +194,7 @@ namespace hazelcast {
                 std::vector<std::string> array = q->toArray();
                 int size = array.size();
                 for (int i = 0; i < size; i++) {
-                    assertEqual(std::string("item") + util::to_string(i + 1), array[i]);
+                    assertEqual(std::string("item") + util::IOUtil::to_string(i + 1), array[i]);
                 }
 
             }
@@ -207,7 +208,7 @@ namespace hazelcast {
 
                 assertTrue(q->addAll(coll));
                 int size = q->size();
-                assertEqual(size, (int)coll.size());
+                assertEqual(size, (int) coll.size());
 
             }
 
@@ -257,3 +258,4 @@ namespace hazelcast {
         }
     }
 }
+

@@ -1,7 +1,9 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/IOUtil.h"
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
 
 namespace hazelcast {
     namespace client {
@@ -18,9 +20,11 @@ namespace hazelcast {
 
             int status;
 			serverInfo = NULL;
-            if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
-                throw client::exception::IOException("Socket::getInfo", address.getHost() + ":" + util::to_string(address.getPort()) + "getaddrinfo error: " + std::string(gai_strerror(status)));
+            if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::IOUtil::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
+                std::string message = util::IOUtil::to_string(address) + " getaddrinfo error: " + std::string(gai_strerror(status));
+                throw client::exception::IOException("Socket::getInfo", message);
             }
+
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen = true;
             int size = 32 * 1024;
@@ -101,8 +105,7 @@ namespace hazelcast {
         }
 
         void Socket::close() {
-            bool expected = true;
-            if (isOpen.compare_exchange_strong(expected, false)) {
+            if (isOpen.compareAndSet(true, false)) {
 				if (serverInfo != NULL)
 					::freeaddrinfo(serverInfo);
 
@@ -124,3 +127,4 @@ namespace hazelcast {
 
     }
 }
+

@@ -3,9 +3,9 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/util/CountDownLatch.h"
-
-
+#include <ctime> 
 namespace hazelcast {
     namespace util {
         CountDownLatch::CountDownLatch(int count)
@@ -14,29 +14,31 @@ namespace hazelcast {
         }
 
         void CountDownLatch::countDown() {
-            if (count-- == 1) {
-                conditionVariable.notify_all();
-            }
+            count--;
         }
 
-        bool CountDownLatch::await(long timeInMillis) {
-            boost::unique_lock<boost::mutex> lock(mutex);
+        bool CountDownLatch::await(int seconds) {
+            time_t endTime = time(NULL) + seconds;
+            while (endTime > time(NULL)) {
+                if (count == 0) {
+                    return true;
+                }
+                sleep(1);
+            }
             if (count == 0) {
                 return true;
             }
-            boost::cv_status status = conditionVariable.wait_for(lock, boost::chrono::milliseconds(timeInMillis));
-            if (status == boost::cv_status::timeout) {
-                return false;
-            }
-            return true;
+            return false;
         }
 
         void CountDownLatch::await() {
-            boost::unique_lock<boost::mutex> lock(mutex);
-            if (count == 0) {
-                return;
-            }
-            conditionVariable.wait(lock);
+            while (true) {
+                if (count == 0) {
+                    break;
+                }
+                util::sleep(1);
+            };
         }
     }
 }
+

@@ -47,3 +47,4 @@ namespace hazelcast {
 }
 
 #endif //__PortableEntryEvent_H_
+

@@ -59,7 +59,7 @@ namespace hazelcast {
 
                 void testIssue537();
 
-                void testMultipleThreadPut();
+//                void testMultipleThreadPut(); //MTODO
 
                 void testPredicateListenerWithPortableKey();
 
@@ -103,3 +103,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_ClientMapTest
+

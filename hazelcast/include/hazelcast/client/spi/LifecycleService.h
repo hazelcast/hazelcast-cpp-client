@@ -8,8 +8,8 @@
 #define HAZELCAST_LIFECYCLE_SERVICE
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/atomic.hpp>
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include <set>
 
 namespace hazelcast {
@@ -45,9 +45,9 @@ namespace hazelcast {
 
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
-                boost::mutex listenerLock;
-                boost::mutex lifecycleLock;
-                boost::atomic<bool> active;
+                util::Mutex listenerLock;
+                util::Mutex lifecycleLock;
+                util::AtomicBoolean active;
 
             };
 
@@ -57,3 +57,4 @@ namespace hazelcast {
 
 
 #endif //__LifecycleService_H_
+

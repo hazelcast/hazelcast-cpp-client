@@ -24,3 +24,4 @@ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,add_lvalue_reference,T&&,T&)
 #include <boost/type_traits/detail/type_trait_undef.hpp>
 
 #endif  // BOOST_TYPE_TRAITS_EXT_ADD_LVALUE_REFERENCE__HPP
+

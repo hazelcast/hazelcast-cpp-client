@@ -68,6 +68,12 @@ namespace hazelcast {
                     void end();
 
                     template <typename T>
+                    void writeNullPortable(const char *fieldName) {
+                        setPosition(fieldName);
+                        dataOutput.writeBoolean(true);
+                    };
+
+                    template <typename T>
                     void writePortable(const char *fieldName, const T &portable) {
                         setPosition(fieldName);
                         dataOutput.writeBoolean(false);
@@ -112,3 +118,4 @@ namespace hazelcast {
     }
 }
 #endif /* HAZELCAST_PORTABLE_WRITER */
+

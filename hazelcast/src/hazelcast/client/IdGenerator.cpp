@@ -6,9 +6,9 @@ namespace hazelcast {
         IdGenerator::IdGenerator(const std::string &instanceName, spi::ClientContext *context)
         : DistributedObject("idGeneratorService", instanceName, context)
         , atomicLong("hz:atomic:idGenerator:" + instanceName, context)
-        , local(new boost::atomic<int>(-1))
-        , residue(new boost::atomic<int>(BLOCK_SIZE))
-        , localLock(new boost::mutex) {
+        , local(new util::AtomicInt(-1))
+        , residue(new util::AtomicInt(BLOCK_SIZE))
+        , localLock(new util::Mutex) {
 
         };
 
@@ -19,7 +19,7 @@ namespace hazelcast {
             }
             long step = (id / BLOCK_SIZE);
 
-            boost::lock_guard<boost::mutex> lg(*localLock);
+            util::LockGuard lg(*localLock);
             bool init = atomicLong.compareAndSet(0, step + 1);
             if (init) {
                 *local = step;
@@ -31,7 +31,7 @@ namespace hazelcast {
         long IdGenerator::newId() {
             int value = (*residue)++;
             if (value >= BLOCK_SIZE) {
-                boost::lock_guard<boost::mutex> lg(*localLock);
+                util::LockGuard lg(*localLock);
                 value = *residue;
                 if (value >= BLOCK_SIZE) {
                     *local = atomicLong.getAndIncrement();

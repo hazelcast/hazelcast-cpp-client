@@ -30,14 +30,14 @@
 //                template<typename Result, typename Callable >
 //                Future<Result> submit(Callable &task) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvoke<Result, Callable>, this, boost::ref(task), future));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultImpl::asyncInvoke<Result, Callable>, this, (task), future));
 //                    return future;
 //                }
 //
 //                template<typename Result, typename Runnable >
 //                Future<Result> submit(executor::RunnableAdapter<Runnable> task) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvoke<Result, executor::RunnableAdapter<Runnable> >, this, task, future));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultImpl::asyncInvoke<Result, executor::RunnableAdapter<Runnable> >, this, task, future));
 //                    return future;
 //                }
 //
@@ -58,14 +58,14 @@
 //                template<typename Result, typename Callable >
 //                Future<Result> submit(Callable &task, const Address &address) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, Callable>, this, boost::ref(task), address, future));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, Callable>, this, (task), address, future));
 //                    return future;
 //                }
 //
 //                template<typename Result, typename Runnable >
 //                Future<Result> submit(executor::RunnableAdapter<Runnable> task, const Address &address) {
 //                    Future<Result> future;
-//                    boost::thread asyncInvokeThread(boost::bind(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, executor::RunnableAdapter<Runnable> >, this, task, address, future));
+//                    util::Thread asyncInvokeThread(&ExecutorDefaultImpl::asyncInvokeToAddress<Result, executor::RunnableAdapter<Runnable> >, this, task, address, future));
 //                    return future;
 //                }
 //                //----//
@@ -123,3 +123,4 @@
 //}
 //
 //#endif //HAZELCAST_ExecutorDefaultImpl
+

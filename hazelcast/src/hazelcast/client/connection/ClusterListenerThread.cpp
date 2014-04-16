@@ -13,7 +13,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,15 +21,20 @@ namespace hazelcast {
             : startLatch(1)
             , clientContext(clientContext)
             , conn(NULL)
-            , deletingConnection(false){
+            , deletingConnection(false) {
 
-            };
+            }
 
-            void ClusterListenerThread::setThread(boost::thread *thread) {
+            void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
+                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
+                clusterListenerThread->run((util::Thread *) args.arg0);
+            }
+
+            void ClusterListenerThread::setThread(util::Thread *thread) {
                 clusterListenerThread.reset(thread);
             }
 
-            void ClusterListenerThread::run() {
+            void ClusterListenerThread::run(util::Thread *currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         if (conn.get() == NULL) {
@@ -48,36 +52,29 @@ namespace hazelcast {
                         isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
-                        boost::this_thread::sleep(boost::posix_time::seconds(1));
+                        currentThread->interruptibleSleep(1);
                     } catch(std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
                             util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
-                        bool expected = false;
-                        if (deletingConnection.compare_exchange_strong(expected, true)) {
+                        if (deletingConnection.compareAndSet(false, true)) {
                             conn.reset();
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
-                        boost::this_thread::sleep(boost::posix_time::seconds(1));
-                    } catch(boost::thread_interrupted &) {
-                        break;
-                    } catch(...) {
-                        util::ILogger::getLogger().warning("ClusterListenerThread::run unknown exception");
+                        currentThread->interruptibleSleep(1);
                     }
 
                 }
 
-            };
+            }
 
 
             void ClusterListenerThread::stop() {
-                bool expected = false;
-                if (deletingConnection.compare_exchange_strong(expected, true)) {
+                if (deletingConnection.compareAndSet(false, true)) {
                     conn.reset();
                     deletingConnection = false;
                 }
-
                 clusterListenerThread->interrupt();
                 clusterListenerThread->join();
             }
@@ -248,8 +245,8 @@ namespace hazelcast {
                     socketAddresses.push_back((*it));
                 }
 
-                if(socketAddresses.size() == 0){
-                    socketAddresses.push_back(Address("127.0.0.1",5701));
+                if (socketAddresses.size() == 0) {
+                    socketAddresses.push_back(Address("127.0.0.1", 5701));
                 }
                 std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
@@ -257,3 +254,4 @@ namespace hazelcast {
         }
     }
 }
+

@@ -51,7 +51,7 @@ namespace hazelcast {
 
             private:
 
-                boost::mutex failedListenerLock;
+                util::Mutex failedListenerLock;
                 std::vector< boost::shared_ptr<connection::CallPromise> > failedListeners;
 
                 util::SynchronizedMap<std::string, int > registrationIdMap;
@@ -67,3 +67,4 @@ namespace hazelcast {
 }
 
 #endif //__ServerListenerService_H_
+

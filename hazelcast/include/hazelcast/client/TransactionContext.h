@@ -161,3 +161,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_TransactionContext
+

@@ -3,6 +3,7 @@
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/Version.h"
 
 namespace hazelcast {
     namespace client {
@@ -19,7 +20,7 @@ namespace hazelcast {
         , serverListenerService(clientContext)
         , cluster(clusterService) {
             std::stringstream prefix;
-            (prefix << "[HazelcastCppClient" << HZ_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
+            (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
             if (!lifecycleService.start()) {
@@ -27,16 +28,16 @@ namespace hazelcast {
                 throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not started!");
             }
             loadBalancer->init(cluster);
-        };
+        }
 
         HazelcastClient::~HazelcastClient() {
             lifecycleService.shutdown();
-        };
+        }
 
 
         ClientConfig &HazelcastClient::getClientConfig() {
             return clientConfig;
-        };
+        }
 
         Cluster &HazelcastClient::getCluster() {
             return cluster;
@@ -44,11 +45,11 @@ namespace hazelcast {
 
         void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
             lifecycleService.addLifecycleListener(lifecycleListener);
-        };
+        }
 
         bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
             return lifecycleService.removeLifecycleListener(lifecycleListener);
-        };
+        }
 
         void HazelcastClient::shutdown() {
             lifecycleService.shutdown();
@@ -85,3 +86,4 @@ namespace hazelcast {
 
     }
 }
+

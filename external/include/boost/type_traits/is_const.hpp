@@ -163,3 +163,4 @@ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_const,T,::boost::detail::is_const_impl<T>::value
 
 #endif // BOOST_TT_IS_CONST_HPP_INCLUDED
 
+

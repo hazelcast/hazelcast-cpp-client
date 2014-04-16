@@ -22,8 +22,8 @@
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/Void.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/util/IOUtil.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
 
@@ -80,7 +80,9 @@ namespace hazelcast {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                             s->write(output, *object);
                         } else {
-                            throw exception::IOException("SerializationService::toData", "No serializer found for serializerId :" + util::to_string(type) + ", typename :" + typeid(T).name());
+                            const std::string &message = "No serializer found for serializerId :"
+                                    + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                            throw exception::IOException("SerializationService::toData", message);
                         }
                         data.setType(type);
                         data.setBuffer(output.toByteArray());
@@ -135,7 +137,9 @@ namespace hazelcast {
                             s->read(objectDataInput, *object);
                             return object;
                         } else {
-                            throw exception::IOException("SerializationService::toObject", "No serializer found for serializerId :" + util::to_string(object->getSerializerId()) + ", typename :" + typeid(T).name());
+                            const std::string &message = "No serializer found for serializerId :"
+                                    + util::IOUtil::to_string(object->getSerializerId()) + ", typename :" + typeid(T).name();
+                            throw exception::IOException("SerializationService::toObject", message);
                         }
                     };
 
@@ -493,3 +497,4 @@ namespace hazelcast {
     }
 }
 #endif /* HAZELCAST_SERIALIZATION_SERVICE */
+

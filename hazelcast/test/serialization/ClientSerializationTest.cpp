@@ -11,7 +11,6 @@
 #include "serialization/TestInvalidReadPortable.h"
 #include "serialization/TestInvalidWritePortable.h"
 #include "serialization/testUtil.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
 #include <fstream>
@@ -46,7 +45,7 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testInvalidRead, "testInvalidRead");
                 addTest(&ClientSerializationTest::testDifferentVersions, "testDifferentVersions");
                 addTest(&ClientSerializationTest::testCompression, "testCompression");
-                addTest(&ClientSerializationTest::testSerializationViaFile, "testSerializationViaFile");
+                //addTest(&ClientSerializationTest::testSerializationViaFile, "testSerializationViaFile");
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
             };
 
@@ -82,10 +81,6 @@ namespace hazelcast {
                 TestDataSerializable ds(123, 's');
                 TestNamedPortable np("named portable", 34567);
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addCharArrayField("c").addPortableField("p", 1, 3);
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
 
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
@@ -130,23 +125,24 @@ namespace hazelcast {
             void ClientSerializationTest::testInvalidWrite() {
                 serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidWritePortable p(2131, 123, "q4edfd");
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
-                serialization::pimpl::Data data = serializationService.toData<TestInvalidWritePortable>(&p);
-                boost::shared_ptr<TestInvalidWritePortable> o = serializationService.toObject<TestInvalidWritePortable>(data);
+                try{
+                    serializationService.toData<TestInvalidWritePortable>(&p);
+                    iTest::assertTrue(false, "toData should trow exception");
+                }catch(exception::IOException &){
+
+                }
             };
 
             void ClientSerializationTest::testInvalidRead() {
                 serialization::pimpl::SerializationService serializationService(1);
                 TestInvalidReadPortable p(2131, 123, "q4edfd");
-                serialization::pimpl::ClassDefinitionBuilder builder(p.getFactoryId(), p.getClassId());
-                builder.addLongField("l").addIntField("i").addUTFField("s");
-                boost::shared_ptr<serialization::pimpl::ClassDefinition> cd(builder.build());
-                serializationService.getSerializationContext().registerClassDefinition(cd);
                 serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
-                serializationService.toObject<TestInvalidReadPortable>(data);
+                try{
+                    serializationService.toObject<TestInvalidReadPortable>(data);
+                    iTest::assertTrue(false, "toObject should trow exception");
+                }catch(exception::IOException &){
+
+                }
             }
 
             void ClientSerializationTest::testDifferentVersions() {
@@ -286,7 +282,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + util::to_string(i);
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
@@ -315,3 +311,4 @@ namespace hazelcast {
         }
     }
 }
+

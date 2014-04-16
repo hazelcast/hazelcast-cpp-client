@@ -442,3 +442,4 @@ namespace hazelcast {
 }
 
 #endif /* HAZELCAST_MULTI_MAP */
+

@@ -61,3 +61,4 @@ namespace hazelcast {
 }
 
 #endif //HAZELCAST_DataAdapter
+

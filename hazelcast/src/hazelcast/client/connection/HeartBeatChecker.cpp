@@ -6,7 +6,7 @@
 //#include "hazelcast/client/connection/HeartBeatChecker.h"
 //#include "hazelcast/client/connection/Connection.h"
 //#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-//#include <boost/thread.hpp>
+//#include "hazelcast/util/Thread.h"
 //
 //namespace hazelcast {
 //    namespace client {
@@ -25,14 +25,14 @@
 //                    connection->read();
 //                }catch(...){
 //                    logger "Warning: HearBeatChecker ping failed " << std::endl;
-//                    boost::this_thread::sleep(boost::posix_time::seconds(5));
+//                    sleep(5)
 //                }
 //            };
 //
 //            bool HeartBeatChecker::checkHeartBeat(Connection& connection) {
 //                if ((clock() - connection.getLastReadTime()) > timeout * ((CLOCKS_PER_SEC / 1000) / 2)) {
-//                    boost::thread thread(boost::bind(&HeartBeatChecker::run, this, &connection));
-//                    return thread.try_join_for(boost::chrono::duration<int, boost::milli>(timeout));
+//                    util::Thread thread(&HeartBeatChecker::run, this, &connection));
+//                    return thread.try_join_for(timeout);
 //                } else {
 //                    return true;
 //                }
