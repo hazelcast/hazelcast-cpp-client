@@ -23,7 +23,7 @@ namespace hazelcast {
 
         } thread_interrupted;
 
-        class Thread {
+        class HAZELCAST_API Thread {
         public:
             Thread(const std::string &name, void (func)(ThreadArgs &),
                     void *arg0 = NULL,

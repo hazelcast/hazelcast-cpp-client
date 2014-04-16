@@ -3,6 +3,7 @@
 //
 
 #include "hazelcast/client/HazelcastAll.h"
+#include <ctime>
 using namespace hazelcast::client;
 
 //utilites

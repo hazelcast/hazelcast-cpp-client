@@ -10,12 +10,13 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
         class Mutex;
 
-        class ConditionVariable {
+        class HAZELCAST_API ConditionVariable {
         public:
             ConditionVariable();
 
