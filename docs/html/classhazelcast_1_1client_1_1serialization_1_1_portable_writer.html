@@ -128,9 +128,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>writeShort</b> (const
 <tr class="memitem:a92a4c593fb742b0e0e4c9c37ae4274eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92a4c593fb742b0e0e4c9c37ae4274eb"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>writeUTF</b> (const char *fieldName, const std::string &amp;str)</td></tr>
 <tr class="separator:a92a4c593fb742b0e0e4c9c37ae4274eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4fd1981093203836378b78cad09227a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4fd1981093203836378b78cad09227a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>writeNullPortable</b> (const char *fieldName, int factoryId, int classId)</td></tr>
-<tr class="separator:af4fd1981093203836378b78cad09227a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c7c71f30a6e438da165d3cec7596616"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8c7c71f30a6e438da165d3cec7596616"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>writeByteArray</b> (const char *fieldName, const std::vector&lt; byte &gt; &amp;x)</td></tr>
 <tr class="separator:a8c7c71f30a6e438da165d3cec7596616"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +152,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>writeDoubleArray</b> 
 <tr class="memitem:a91ef539438c9c44b8a29b65db8165e40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a91ef539438c9c44b8a29b65db8165e40"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> ()</td></tr>
 <tr class="separator:a91ef539438c9c44b8a29b65db8165e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ca45c056c057efdde499daa2bb75744"><td class="memTemplParams" colspan="2"><a class="anchor" id="a2ca45c056c057efdde499daa2bb75744"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a2ca45c056c057efdde499daa2bb75744"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeNullPortable</b> (const char *fieldName)</td></tr>
+<tr class="separator:a2ca45c056c057efdde499daa2bb75744"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca09ca7f7e5800b4a1ae4d90c47a3b50"><td class="memTemplParams" colspan="2"><a class="anchor" id="aca09ca7f7e5800b4a1ae4d90c47a3b50"></a>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:aca09ca7f7e5800b4a1ae4d90c47a3b50"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writePortable</b> (const char *fieldName, const T &amp;portable)</td></tr>
@@ -174,7 +175,7 @@ template&lt;typename T &gt; </td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

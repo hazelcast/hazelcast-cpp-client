@@ -210,40 +210,42 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;        <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;            <span class="keyword">const</span> std::vector&lt;serialization::pimpl::Data&gt; toDataCollection(<span class="keyword">const</span> std::vector&lt;T&gt; &amp;objects) {</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; dataCollection(objects.size());</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; objects.size(); ++i) {</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;                    dataCollection[i] = toData(objects[i]);</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;                }</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                <span class="keywordflow">return</span> dataCollection;</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;            };</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            serialization::pimpl::Data toData(<span class="keyword">const</span> T &amp;<span class="keywordtype">object</span>) {</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toData&lt;T&gt;(&amp;object);</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            };</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;            boost::shared_ptr&lt;T&gt; toObject(<span class="keyword">const</span> serialization::pimpl::Data &amp;data) {</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toObject&lt;T&gt;(data);</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;            };</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;            ISet(<span class="keyword">const</span> std::string &amp;instanceName, spi::ClientContext *clientContext)</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            : DistributedObject(<span class="stringliteral">&quot;hz:impl:setService&quot;</span>, instanceName, clientContext) {</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                serialization::pimpl::Data keyData = toData(instanceName);</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                partitionId = getPartitionId(keyData);</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;            };</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            <span class="keywordtype">void</span> onDestroy() {</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            };</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <span class="keywordtype">int</span> partitionId;</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;        };</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    }</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;}</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_ISET */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                <span class="keywordtype">int</span> size = objects.size();</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; dataCollection(size);</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; size; ++i) {</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;                    dataCollection[i] = toData(objects[i]);</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                }</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;                <span class="keywordflow">return</span> dataCollection;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;            };</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            serialization::pimpl::Data toData(<span class="keyword">const</span> T &amp;<span class="keywordtype">object</span>) {</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toData&lt;T&gt;(&amp;object);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            };</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;            boost::shared_ptr&lt;T&gt; toObject(<span class="keyword">const</span> serialization::pimpl::Data &amp;data) {</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;                <span class="keywordflow">return</span> getContext().getSerializationService().template toObject&lt;T&gt;(data);</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            };</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            ISet(<span class="keyword">const</span> std::string &amp;instanceName, spi::ClientContext *clientContext)</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;            : DistributedObject(<span class="stringliteral">&quot;hz:impl:setService&quot;</span>, instanceName, clientContext) {</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                serialization::pimpl::Data keyData = toData(instanceName);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                partitionId = getPartitionId(keyData);</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            };</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;            <span class="keywordtype">void</span> onDestroy() {</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;            };</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;            <span class="keywordtype">int</span> partitionId;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;        };</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    }</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;}</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_ISET */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a93419f94199220905a73c282a67f0e8f"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a93419f94199220905a73c282a67f0e8f">hazelcast::client::ISet::toArray</a></div><div class="ttdeci">std::vector&lt; E &gt; toArray()</div><div class="ttdef"><b>Definition:</b> ISet.h:115</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a40f3517078d8d5a8682b952f2319a0c8"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a40f3517078d8d5a8682b952f2319a0c8">hazelcast::client::ISet::size</a></div><div class="ttdeci">int size()</div><div class="ttdef"><b>Definition:</b> ISet.h:82</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a6919c92d0f34f06c79701ed3cf20d140"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a6919c92d0f34f06c79701ed3cf20d140">hazelcast::client::ISet::clear</a></div><div class="ttdeci">void clear()</div><div class="ttdoc">Removes all elements from set. </div><div class="ttdef"><b>Definition:</b> ISet.h:210</div></div>
@@ -257,12 +259,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_ae0558393fd9dfeaa543dd7b2f26f450a"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#ae0558393fd9dfeaa543dd7b2f26f450a">hazelcast::client::ISet::add</a></div><div class="ttdeci">bool add(const E &amp;e)</div><div class="ttdef"><b>Definition:</b> ISet.h:133</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a95dbba42b12f47f74c67cdc9950df745"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a95dbba42b12f47f74c67cdc9950df745">hazelcast::client::ISet::isEmpty</a></div><div class="ttdeci">bool isEmpty()</div><div class="ttdef"><b>Definition:</b> ISet.h:92</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a5c35457fca1d2d71f4c8231ed9a45ccc"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a5c35457fca1d2d71f4c8231ed9a45ccc">hazelcast::client::ISet::containsAll</a></div><div class="ttdeci">bool containsAll(const std::vector&lt; E &gt; &amp;objects)</div><div class="ttdef"><b>Definition:</b> ISet.h:159</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:389</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_set_html_a6d8e7e9608a9ee6c38544318ff5e09fb"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_set.html#a6d8e7e9608a9ee6c38544318ff5e09fb">hazelcast::client::ISet::addItemListener</a></div><div class="ttdeci">std::string addItemListener(L &amp;listener, bool includeValue)</div><div class="ttdoc">Listener should implement itemAdded and itemRemoved as follows. </div><div class="ttdef"><b>Definition:</b> ISet.h:59</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

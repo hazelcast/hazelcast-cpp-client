@@ -100,56 +100,62 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h1><a class="anchor" id="how_to_setup"></a>
 How to Setup</h1>
 <p>Hazelcast C++ client is shipped with 32 &amp; 64 bit, shared and static libraries. Compiled static libraries of dependencies are also available in the release.</p>
-<p>Dependencies are zlib and some of the boost libraries. Needed boost libraries are:</p>
-<ul>
-<li>libboost_atomic</li>
-<li>libboost_system,</li>
-<li>libboost_chrono,</li>
-<li>libboost_thread and</li>
-<li>libboost_date_time.</li>
-</ul>
+<p>Dependencies are zlib and shared_ptr from the boost library.</p>
 <p>Downloaded release folder consist of</p>
 <ul>
-<li>docs/ html doxygen documentations are here.</li>
+<li>Mac_64/</li>
+<li>Windows_32/</li>
+<li>Windows_64/</li>
+<li>Linux_32/</li>
+<li>Linux_64/</li>
+<li>docs/ =&gt; html doxygen documentations are here.</li>
+</ul>
+<p>And each of the folders above contains following</p>
+<ul>
+<li>examples/<ul>
+<li>testApp.exe =&gt; example command line client tool to connect hazelcast servers.</li>
+<li>TestApp.cpp =&gt; code of the example command line tool.</li>
+</ul>
+</li>
 <li>hazelcast/<ul>
-<li>lib/ Contains both shared and static library of hazelcast.</li>
-<li>include/ Contains headers of client</li>
+<li>lib/ =&gt; Contains both shared and static library of hazelcast.</li>
+<li>include/ =&gt; Contains headers of client</li>
 </ul>
 </li>
 <li>external/<ul>
-<li>lib/ Contains compiled static libraries of dependencies.</li>
-<li>include/ Contains headers of dependencies</li>
+<li>lib/ =&gt; Contains compiled static libraries of zlib.</li>
+<li>include/ =&gt; Contains headers of dependencies.(zlib and boost::shared_ptr)</li>
 </ul>
 </li>
 </ul>
 <h1><a class="anchor" id="guides"></a>
 Platform Specific Installation Guides</h1>
-<p>C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.</p>
+<p>C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines. For each of the headers above, it is assumed that you are in correct folder for your platform. Folders are Mac_64, Windows_32, Windows_64, Linux_32 or Linux_64.</p>
 <h2><a class="anchor" id="Linux"></a>
 Linux</h2>
 <p>For linux, there are two distributions one is 32bit the other is 64bit.</p>
 <p>Sample script to build with static library:</p>
 <ul>
-<li>﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/libboost_atomic.a</li>
+<li>﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a</li>
 </ul>
 <p>Sample script to build with shared library:</p>
 <ul>
-<li>g++ main.cpp -lpthread -Wl,&ndash;no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a ./external/lib/libboost_thread.a ./external/lib/libboost_system.a ./external/lib/libboost_date_time.a ./external/lib/libboost_chrono.a ./external/lib/libboost_atomic.a</li>
+<li>g++ main.cpp -lpthread -Wl,&ndash;no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a</li>
 </ul>
 <h2><a class="anchor" id="Mac"></a>
 Mac</h2>
 <p>For Mac, there is only one distribution which is 64 bit.</p>
 <p>Sample script to build with static library:</p>
 <ul>
-<li>g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/darwin/libz.a ./external/lib/darwin/libboost_thread.a ./external/lib/darwin/libboost_system.a ./external/lib/darwin/libboost_exception.a ./external/lib/darwin/libboost_date_time.a ./external/lib/darwin/libboost_chrono.a ./external/lib/darwin/libboost_atomic.a</li>
+<li>g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/darwin/libz.a</li>
 </ul>
 <p>Sample script to build with shared library:</p>
 <ul>
-<li>g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/darwin/libz.a ./external/lib/darwin/libboost_thread.a ./external/lib/darwin/libboost_system.a ./external/lib/darwin/libboost_exception.a ./external/lib/darwin/libboost_date_time.a ./external/lib/darwin/libboost_chrono.a ./external/lib/darwin/libboost_atomic.a</li>
+<li>g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/darwin/libz.a</li>
 </ul>
 <h2><a class="anchor" id="Windows"></a>
 Windows</h2>
-<p>For Windows, there are two distributions one is 32bit the other is 64bit.</p>
+<p>For Windows, there are two distributions one is 32bit the other is 64bit. Currently release have only Visual Studio 2010 compatible libraries. For others please contact with <a href="#" onclick="location.href='mai'+'lto:'+'sup'+'po'+'rt@'+'ha'+'zel'+'ca'+'st.'+'co'+'m'; return false;">suppo<span style="display: none;">.nosp@m.</span>rt@h<span style="display: none;">.nosp@m.</span>azelc<span style="display: none;">.nosp@m.</span>ast.<span style="display: none;">.nosp@m.</span>com</a></p>
 <h1><a class="anchor" id="code_samples"></a>
 Code Samples</h1>
 <p>Note that these codes to work, there should be a Hazelcast node is running.</p>
@@ -364,7 +370,7 @@ Serialization Example</h2>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

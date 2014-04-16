@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/exception/IOException.h&quot;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/pimpl/SerializerHolder.h&quot;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/serialization/Serializer.h&quot;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;hazelcast/util/Util.h&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;hazelcast/util/IOUtil.h&quot;</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keyword">namespace </span>client {</div>
@@ -181,34 +181,38 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                        <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_serializer.html">Serializer&lt;T&gt;</a> *s = <span class="keyword">static_cast&lt;</span><a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_serializer.html">Serializer&lt;T&gt;</a> * <span class="keyword">&gt;</span>(serializer);</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                        s-&gt;write(*<span class="keyword">this</span>, *<span class="keywordtype">object</span>);</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                        <span class="keywordflow">throw</span> <a class="code" href="classhazelcast_1_1client_1_1exception_1_1_i_o_exception.html">exception::IOException</a>(<span class="stringliteral">&quot;ObjectDataOutput::writeObject&quot;</span>, <span class="stringliteral">&quot;No serializer found for serializerId :&quot;</span> + util::to_string(type) + <span class="stringliteral">&quot;, typename :&quot;</span> + <span class="keyword">typeid</span>(T).name());</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                    }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                };</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                pimpl::DataOutput *dataOutput;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                pimpl::SerializationContext *context;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                pimpl::SerializerHolder *serializerHolder;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                <span class="keywordtype">bool</span> isEmpty;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                <span class="keywordtype">int</span> position();</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                <span class="keywordtype">void</span> position(<span class="keywordtype">int</span> newPos);</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                <span class="keywordtype">void</span> writePortable(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_portable.html">Portable</a> *portable);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                <span class="keywordtype">void</span> writeIdentifiedDataSerializable(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a> *dataSerializable);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a> &amp;);</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                <span class="keywordtype">void</span> operator = (<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a> &amp;);</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            };</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                        <span class="keyword">const</span> std::string &amp;message = <span class="stringliteral">&quot;No serializer found for serializerId :&quot;</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                                + util::IOUtil::to_string(type)</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                                + <span class="stringliteral">&quot;, typename :&quot;</span> + <span class="keyword">typeid</span>(T).name();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                        <span class="keywordflow">throw</span> <a class="code" href="classhazelcast_1_1client_1_1exception_1_1_i_o_exception.html">exception::IOException</a>(<span class="stringliteral">&quot;ObjectDataOutput::writeObject&quot;</span>, message);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                    }</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                };</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                pimpl::DataOutput *dataOutput;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                pimpl::SerializationContext *context;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                pimpl::SerializerHolder *serializerHolder;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                <span class="keywordtype">bool</span> isEmpty;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;                <span class="keywordtype">int</span> position();</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                <span class="keywordtype">void</span> position(<span class="keywordtype">int</span> newPos);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                <span class="keywordtype">void</span> writePortable(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_portable.html">Portable</a> *portable);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                <span class="keywordtype">void</span> writeIdentifiedDataSerializable(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">IdentifiedDataSerializable</a> *dataSerializable);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a>(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a> &amp;);</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        }</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    }</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;}</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor">#endif //HAZELCAST_ObjectDataOutput</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;                <span class="keywordtype">void</span> operator = (<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">ObjectDataOutput</a> &amp;);</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            };</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        }</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    }</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;}</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="preprocessor">#endif //HAZELCAST_ObjectDataOutput</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_serializer_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_serializer.html">hazelcast::client::serialization::Serializer</a></div><div class="ttdef"><b>Definition:</b> Serializer.h:28</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_object_data_output_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_object_data_output.html">hazelcast::client::serialization::ObjectDataOutput</a></div><div class="ttdef"><b>Definition:</b> ObjectDataOutput.h:22</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html">hazelcast::client::serialization::IdentifiedDataSerializable</a></div><div class="ttdoc">Classes that will be used with hazelcast data structures like IMap, IQueue etc. </div><div class="ttdef"><b>Definition:</b> IdentifiedDataSerializable.h:30</div></div>
@@ -217,7 +221,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

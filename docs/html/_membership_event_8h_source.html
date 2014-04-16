@@ -112,7 +112,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            </div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            <span class="keyword">virtual</span> ~<a class="code" href="classhazelcast_1_1client_1_1_membership_event.html">MembershipEvent</a>();</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            <span class="keyword">virtual</span> <span class="keyword">const</span> std::vector &lt;Member&gt; &amp;getMembers() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            <span class="keyword">virtual</span> std::vector &lt;Member&gt; getMembers() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            <span class="keyword">virtual</span> <span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;getCluster() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
@@ -121,13 +121,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            <span class="keyword">virtual</span> <span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_member.html">Member</a> &amp;getMember() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_member.html">Member</a> member;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            MembershipEventType eventType;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> *cluster;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> *cluster;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_member.html">Member</a> member;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            MembershipEventType eventType;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        };</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;}</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">#endif //HAZELCAST_MembershipEvent</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_membership_event_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_membership_event.html">hazelcast::client::MembershipEvent</a></div><div class="ttdoc">Membership event fired when a new member is added to the cluster and/or when a member leaves the clus...</div><div class="ttdef"><b>Definition:</b> MembershipEvent.h:21</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_membership_event_html_a003b69102645a0c6df2f20af806ef3a0"><div class="ttname"><a href="classhazelcast_1_1client_1_1_membership_event.html#a003b69102645a0c6df2f20af806ef3a0">hazelcast::client::MembershipEvent::MembershipEventType</a></div><div class="ttdeci">MembershipEventType</div><div class="ttdoc">MembershipEventType. </div><div class="ttdef"><b>Definition:</b> MembershipEvent.h:30</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_cluster_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_cluster.html">hazelcast::client::Cluster</a></div><div class="ttdoc">Hazelcast cluster interface. </div><div class="ttdef"><b>Definition:</b> Cluster.h:25</div></div>
@@ -135,7 +136,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

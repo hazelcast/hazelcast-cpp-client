@@ -49,21 +49,63 @@ namespace hazelcast {
  * Hazelcast C++ client is shipped with 32 & 64 bit, shared and static libraries. Compiled static libraries of dependencies
  * are also available in the release.
  *
- * Dependencies are zlib and some of the boost libraries. Needed boost libraries are:
- *  * libboost_atomic
- *  * libboost_system,
- *  * libboost_chrono,
- *  * libboost_thread and
- *  * libboost_date_time.
+ * Dependencies are zlib and shared_ptr from the boost library.
  *
  *  Downloaded release folder consist of
- *  *  docs/ html doxygen documentations are here.
+ *  * Mac_64/
+ *  * Windows_32/
+ *  * Windows_64/
+ *  * Linux_32/
+ *  * Linux_64/
+ *  * docs/            => html doxygen documentations are here.
+ *
+ *  And each of the folders above contains following
+ *  * examples/
+ *     + testApp.exe   => example command line client tool to connect hazelcast servers.
+ *     + TestApp.cpp   => code  of the example command line tool.
+ *
  *  *  hazelcast/
- *      +  lib/ Contains both shared and static library of hazelcast.
- *      +  include/ Contains headers of client
+ *      +  lib/        => Contains both shared and static library of hazelcast.
+ *      +  include/    => Contains headers of client
  *  * external/
- *      + lib/     Contains compiled static libraries of dependencies.
- *      + include/ Contains headers of dependencies
+ *      + lib/         => Contains compiled static libraries of zlib.
+ *      + include/     => Contains headers of dependencies.(zlib and boost::shared_ptr)
+ *
+ *
+ * \section guides Platform Specific Installation Guides
+ *
+ * C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.
+ * For each of the headers above, it is assumed that you are in correct folder for your platform.
+ * Folders are Mac_64, Windows_32, Windows_64, Linux_32 or Linux_64.
+ *
+ * \subsection Linux
+ *
+ * For linux, there are two distributions one is 32bit the other is 64bit.
+ *
+ * Sample script to build with static library:
+ *
+ *  * ﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a
+ *
+ * Sample script to build with shared library:
+ *
+ *  * g++ main.cpp -lpthread -Wl,--no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a
+ *
+ * \subsection Mac
+ *
+ * For Mac, there is only one  distribution which is 64 bit.
+ *
+ * Sample script to build with static library:
+ *
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/darwin/libz.a
+ *
+ * Sample script to build with shared library:
+ *
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/darwin/libz.a
+ *
+ * \subsection Windows
+ *
+ * For Windows, there are two distributions one is 32bit the other is 64bit.
+ * Currently release have only Visual Studio 2010 compatible libraries. For others please contact with support@hazelcast.com
  *
  * 
  * 

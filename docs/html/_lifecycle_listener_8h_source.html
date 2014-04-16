@@ -97,10 +97,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define HAZELCAST_LIFECYCLE_LISTENER</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;hazelcast/util/HazelcastDll.h&quot;</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keyword">namespace </span>client {</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <span class="keyword">class </span>LifecycleEvent;</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/LifecycleEvent.h&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">namespace </span>hazelcast {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keyword">namespace </span>client {</div>
 <div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">   24</a></span>&#160;        <span class="keyword">class </span>HAZELCAST_API <a class="code" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">LifecycleListener</a> {</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="keyword">virtual</span> <span class="keywordtype">void</span> stateChanged(<span class="keyword">const</span> <a class="code" href="classhazelcast_1_1client_1_1_lifecycle_event.html">LifecycleEvent</a> &amp;lifecycleEvent) = 0;</div>
@@ -114,12 +114,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#endif //HAZELCAST_LIFECYCLE_LISTENER</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_lifecycle_listener_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_lifecycle_listener.html">hazelcast::client::LifecycleListener</a></div><div class="ttdoc">Listener object for listening lifecycle events of hazelcast instance. </div><div class="ttdef"><b>Definition:</b> LifecycleListener.h:24</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_lifecycle_event_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_lifecycle_event.html">hazelcast::client::LifecycleEvent</a></div><div class="ttdoc">Event to be fired when lifecycle states are changed. </div><div class="ttdef"><b>Definition:</b> LifecycleEvent.h:29</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

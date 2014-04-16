@@ -113,9 +113,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a43d8df83ac31214a21bc4bcc5db657ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html#a43d8df83ac31214a21bc4bcc5db657ad">addAddresses</a> (const std::vector&lt; <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &gt; &amp;addresses)</td></tr>
 <tr class="memdesc:a43d8df83ac31214a21bc4bcc5db657ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds all address in given vector to list of the initial addresses.  <a href="#a43d8df83ac31214a21bc4bcc5db657ad">More...</a><br/></td></tr>
 <tr class="separator:a43d8df83ac31214a21bc4bcc5db657ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07be2f5442b4338871f97e33cb91ba3d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html#a07be2f5442b4338871f97e33cb91ba3d">getAddresses</a> ()</td></tr>
-<tr class="memdesc:a07be2f5442b4338871f97e33cb91ba3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns vector of the initial addresses.  <a href="#a07be2f5442b4338871f97e33cb91ba3d">More...</a><br/></td></tr>
-<tr class="separator:a07be2f5442b4338871f97e33cb91ba3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca3f95fff5918d0a0896b93522c59702"><td class="memItemLeft" align="right" valign="top">std::set&lt; <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a>, <br class="typebreak"/>
+<a class="el" href="structhazelcast_1_1client_1_1address_comparator.html">addressComparator</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html#aca3f95fff5918d0a0896b93522c59702">getAddresses</a> ()</td></tr>
+<tr class="memdesc:aca3f95fff5918d0a0896b93522c59702"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns set of the initial addresses.  <a href="#aca3f95fff5918d0a0896b93522c59702">More...</a><br/></td></tr>
+<tr class="separator:aca3f95fff5918d0a0896b93522c59702"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a555af352ca9b431bc21f201d6009a380"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_client_config.html#a555af352ca9b431bc21f201d6009a380">setGroupConfig</a> (<a class="el" href="classhazelcast_1_1client_1_1_group_config.html">GroupConfig</a> &amp;groupConfig)</td></tr>
 <tr class="memdesc:a555af352ca9b431bc21f201d6009a380"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Group Configuration properties like: Name and Password that is used to connect to the cluster.  <a href="#a555af352ca9b431bc21f201d6009a380">More...</a><br/></td></tr>
 <tr class="separator:a555af352ca9b431bc21f201d6009a380"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -346,12 +347,12 @@ std::auto_ptr&lt; <a class="el" href="classhazelcast_1_1client_1_1_socket_interc
 
 </div>
 </div>
-<a class="anchor" id="a07be2f5442b4338871f97e33cb91ba3d"></a>
+<a class="anchor" id="aca3f95fff5918d0a0896b93522c59702"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a> &gt; &amp; hazelcast::client::ClientConfig::getAddresses </td>
+          <td class="memname">std::set&lt; <a class="el" href="classhazelcast_1_1client_1_1_address.html">Address</a>, <a class="el" href="structhazelcast_1_1client_1_1address_comparator.html">addressComparator</a> &gt; &amp; hazelcast::client::ClientConfig::getAddresses </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -359,7 +360,7 @@ std::auto_ptr&lt; <a class="el" href="classhazelcast_1_1client_1_1_socket_interc
       </table>
 </div><div class="memdoc">
 
-<p>Returns vector of the initial addresses. </p>
+<p>Returns set of the initial addresses. </p>
 <p>Client will use this vector to find a running <a class="el" href="classhazelcast_1_1client_1_1_member.html" title="Cluster member class. ">Member</a>, connect to it.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -737,7 +738,7 @@ std::auto_ptr&lt; <a class="el" href="classhazelcast_1_1client_1_1_socket_interc
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -266,31 +266,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;</div>
 <div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;</div>
 <div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;            std::vector&lt;serialization::pimpl::Data&gt; getDataList(<span class="keyword">const</span> std::vector&lt;E&gt; &amp;objects) {</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; dataList(objects.size());</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; objects.size(); i++) {</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                    dataList[i] = toData(objects[i]);</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;                }</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;                <span class="keywordflow">return</span> dataList;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;            };</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;            std::vector&lt;E&gt; getObjectList(<span class="keyword">const</span> std::vector&lt;serialization::pimpl::Data&gt; &amp;dataList) {</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                std::vector&lt;E&gt; objects(dataList.size());</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; dataList.size(); i++) {</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                    boost::shared_ptr&lt;E&gt; <span class="keywordtype">object</span> = getContext().getSerializationService(). <span class="keyword">template</span> toObject&lt;E&gt;(dataList[i]);</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                    objects[i] = *object;</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                }</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;                <span class="keywordflow">return</span> objects;</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;            };</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            <span class="keywordtype">void</span> onDestroy() {</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;            };</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        };</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    }</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;}</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_IQUEUE */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;                <span class="keywordtype">int</span> size = objects.size();</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;                std::vector&lt;serialization::pimpl::Data&gt; dataList(size);</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; size; i++) {</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;                    dataList[i] = toData(objects[i]);</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;                }</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                <span class="keywordflow">return</span> dataList;</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;            };</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;            std::vector&lt;E&gt; getObjectList(<span class="keyword">const</span> std::vector&lt;serialization::pimpl::Data&gt; &amp;dataList) {</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                <span class="keywordtype">int</span> size = dataList.size();</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                std::vector&lt;E&gt; objects(size);</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; size; i++) {</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                    boost::shared_ptr&lt;E&gt; <span class="keywordtype">object</span> = getContext().getSerializationService(). <span class="keyword">template</span> toObject&lt;E&gt;(dataList[i]);</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;                    objects[i] = *object;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;                }</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;                <span class="keywordflow">return</span> objects;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            };</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;            <span class="keywordtype">void</span> onDestroy() {</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;            };</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        };</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    }</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;}</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* HAZELCAST_IQUEUE */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_aa08ffc92301b2e116919dd208ce00054"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#aa08ffc92301b2e116919dd208ce00054">hazelcast::client::IQueue::clear</a></div><div class="ttdeci">void clear()</div><div class="ttdoc">Removes all elements from queue. </div><div class="ttdef"><b>Definition:</b> IQueue.h:288</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html">hazelcast::client::IQueue</a></div><div class="ttdoc">Concurrent, blocking, distributed, observable, client queue. </div><div class="ttdef"><b>Definition:</b> IQueue.h:35</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_a2e05029967204f7bf22a6e0700716ddc"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#a2e05029967204f7bf22a6e0700716ddc">hazelcast::client::IQueue::toArray</a></div><div class="ttdeci">std::vector&lt; E &gt; toArray()</div><div class="ttdef"><b>Definition:</b> IQueue.h:225</div></div>
@@ -313,12 +316,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_a70f7bd0b6b3cc3816dc65a602fa19769"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#a70f7bd0b6b3cc3816dc65a602fa19769">hazelcast::client::IQueue::poll</a></div><div class="ttdeci">boost::shared_ptr&lt; E &gt; poll()</div><div class="ttdoc">Returns immediately without waiting. </div><div class="ttdef"><b>Definition:</b> IQueue.h:189</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_a85e5e20e4084ae735fc98e538710f2a0"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#a85e5e20e4084ae735fc98e538710f2a0">hazelcast::client::IQueue::take</a></div><div class="ttdeci">boost::shared_ptr&lt; E &gt; take()</div><div class="ttdef"><b>Definition:</b> IQueue.h:109</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_a25b0fa4cc561d5ad92e83031e89b4cde"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#a25b0fa4cc561d5ad92e83031e89b4cde">hazelcast::client::IQueue::retainAll</a></div><div class="ttdeci">bool retainAll(const std::vector&lt; E &gt; &amp;c)</div><div class="ttdoc">Removes the elements from this queue that are not available in given &amp;quot;elements&amp;quot; vector. </div><div class="ttdef"><b>Definition:</b> IQueue.h:278</div></div>
-<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:373</div></div>
+<div class="ttc" id="classhazelcast_1_1client_1_1_hazelcast_client_html"><div class="ttname"><a href="classhazelcast_1_1client_1_1_hazelcast_client.html">hazelcast::client::HazelcastClient</a></div><div class="ttdoc">Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...</div><div class="ttdef"><b>Definition:</b> HazelcastClient.h:389</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_i_queue_html_a6d0fb5c268ec3f1fe491b912795b02fe"><div class="ttname"><a href="classhazelcast_1_1client_1_1_i_queue.html#a6d0fb5c268ec3f1fe491b912795b02fe">hazelcast::client::IQueue::removeAll</a></div><div class="ttdeci">bool removeAll(const std::vector&lt; E &gt; &amp;c)</div><div class="ttdef"><b>Definition:</b> IQueue.h:264</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
