@@ -3,7 +3,8 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
+#include "hazelcast/client/Credentials.h"
+#include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/ILogger.h"
@@ -18,8 +19,6 @@ namespace hazelcast {
         class InitialMembershipListener;
 
         class LifecycleListener;
-
-        class SocketInterceptor;
 
         /**
          * HazelcastClient configuration class.

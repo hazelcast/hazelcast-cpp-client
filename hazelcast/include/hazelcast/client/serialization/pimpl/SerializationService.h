@@ -394,7 +394,7 @@ namespace hazelcast {
                     checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, data.getType());
                     boost::shared_ptr<long> object(new long);
                     DataInput dataInput(*(data.buffer.get()));
-                    *object = dataInput.readLong();
+                    *object = (long)dataInput.readLong();
                     return object;
                 };
 

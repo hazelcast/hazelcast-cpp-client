@@ -2,6 +2,7 @@
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 
 namespace hazelcast {
     namespace client {
