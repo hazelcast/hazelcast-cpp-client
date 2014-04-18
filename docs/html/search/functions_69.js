@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['iauthenticationexception',['IAuthenticationException',['../classhazelcast_1_1client_1_1exception_1_1_i_authentication_exception.html#a37804be2e6c2cdf5dc3ebd175cb8280b',1,'hazelcast::client::exception::IAuthenticationException']]],
   ['iclasscastexception',['IClassCastException',['../classhazelcast_1_1client_1_1exception_1_1_i_class_cast_exception.html#a61f693e42a80b8b0520d2919f81b8f35',1,'hazelcast::client::exception::IClassCastException']]],
   ['iexception',['IException',['../classhazelcast_1_1client_1_1exception_1_1_i_exception.html#a07545413e84f1d091ed5c47b5b35b390',1,'hazelcast::client::exception::IException::IException()'],['../classhazelcast_1_1client_1_1exception_1_1_i_exception.html#acb55e3646e62557c68242b67ed310b82',1,'hazelcast::client::exception::IException::IException(const std::string &amp;source, const std::string &amp;message)']]],
   ['illegalstateexception',['IllegalStateException',['../classhazelcast_1_1client_1_1exception_1_1_illegal_state_exception.html#a8055f9da8c007af936d0fe700db65ec1',1,'hazelcast::client::exception::IllegalStateException']]],

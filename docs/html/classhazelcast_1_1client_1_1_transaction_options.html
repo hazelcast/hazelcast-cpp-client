@@ -118,11 +118,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a135d0acc0c8e483a95b6be08bc3f4dc8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#a135d0acc0c8e483a95b6be08bc3f4dc8">setTransactionType</a> (<a class="el" href="classhazelcast_1_1client_1_1_transaction_type.html">TransactionType</a> transactionType)</td></tr>
 <tr class="memdesc:a135d0acc0c8e483a95b6be08bc3f4dc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the <a class="el" href="classhazelcast_1_1client_1_1_transaction_type.html" title="Transaction type. ">TransactionType</a>.  <a href="#a135d0acc0c8e483a95b6be08bc3f4dc8">More...</a><br/></td></tr>
 <tr class="separator:a135d0acc0c8e483a95b6be08bc3f4dc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad708ff6775a38841a27895a4c4632219"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#ad708ff6775a38841a27895a4c4632219">getTimeoutMillis</a> () const </td></tr>
-<tr class="separator:ad708ff6775a38841a27895a4c4632219"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f7ea335d3c75b3aecfd3ead2ca7a2cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#a8f7ea335d3c75b3aecfd3ead2ca7a2cb">setTimeout</a> (long timeoutInMillis)</td></tr>
-<tr class="memdesc:a8f7ea335d3c75b3aecfd3ead2ca7a2cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The timeout determines the maximum lifespan of a transaction.  <a href="#a8f7ea335d3c75b3aecfd3ead2ca7a2cb">More...</a><br/></td></tr>
-<tr class="separator:a8f7ea335d3c75b3aecfd3ead2ca7a2cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaeee537dd82525732c49e218c60eda45"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#aaeee537dd82525732c49e218c60eda45">getTimeout</a> () const </td></tr>
+<tr class="separator:aaeee537dd82525732c49e218c60eda45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34d292c9a7b4f962cd047752dbcd47c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#a34d292c9a7b4f962cd047752dbcd47c7">setTimeout</a> (int seconds)</td></tr>
+<tr class="memdesc:a34d292c9a7b4f962cd047752dbcd47c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The timeout determines the maximum lifespan of a transaction.  <a href="#a34d292c9a7b4f962cd047752dbcd47c7">More...</a><br/></td></tr>
+<tr class="separator:a34d292c9a7b4f962cd047752dbcd47c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd56f035e2fa38b5dffa1d9bf4f47720"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#abd56f035e2fa38b5dffa1d9bf4f47720">getDurability</a> () const </td></tr>
 <tr class="separator:abd56f035e2fa38b5dffa1d9bf4f47720"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfca59e39519f4cdc4e2366aff7179fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#adfca59e39519f4cdc4e2366aff7179fc">setDurability</a> (int durability)</td></tr>
@@ -172,19 +172,19 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ad708ff6775a38841a27895a4c4632219"></a>
+<a class="anchor" id="aaeee537dd82525732c49e218c60eda45"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">long hazelcast::client::TransactionOptions::getTimeoutMillis </td>
+          <td class="memname">int hazelcast::client::TransactionOptions::getTimeout </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>the timeout in milliseconds. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>the timeout in seconds. </dd></dl>
 
 </div>
 </div>
@@ -253,15 +253,15 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a8f7ea335d3c75b3aecfd3ead2ca7a2cb"></a>
+<a class="anchor" id="a34d292c9a7b4f962cd047752dbcd47c7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html">TransactionOptions</a> &amp; hazelcast::client::TransactionOptions::setTimeout </td>
           <td>(</td>
-          <td class="paramtype">long&#160;</td>
-          <td class="paramname"><em>timeoutInMillis</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>seconds</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -282,7 +282,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classhazelcast_1_1client_1_1_transaction_options.html#ad708ff6775a38841a27895a4c4632219">getTimeoutMillis()</a> </dd></dl>
+<dl class="section see"><dt>See Also</dt><dd>#getTimeoutMillis() </dd></dl>
 
 </div>
 </div>
@@ -339,7 +339,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

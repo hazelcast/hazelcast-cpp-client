@@ -94,7 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/protocol/UsernamePasswordCredentials.h&quot;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/LoadBalancer.h&quot;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/impl/RoundRobinLB.h&quot;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;hazelcast/client/LogLevel.h&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;hazelcast/util/ILogger.h&quot;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;set&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
@@ -120,7 +120,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;addAddresses(<span class="keyword">const</span> std::vector&lt;Address&gt; &amp;addresses);</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            std::vector&lt;Address&gt; &amp;getAddresses();</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            std::set&lt;Address, addressComparator&gt; &amp;getAddresses();</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;setGroupConfig(<a class="code" href="classhazelcast_1_1client_1_1_group_config.html">GroupConfig</a> &amp;groupConfig);</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
@@ -174,7 +174,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;</div>
 <div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_group_config.html">GroupConfig</a> groupConfig;</div>
 <div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;            std::vector&lt;Address&gt; addressList;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;            std::set&lt;Address, addressComparator&gt; addressList;</div>
 <div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;</div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_load_balancer.html">LoadBalancer</a> *loadBalancer;</div>
 <div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;</div>
@@ -217,7 +217,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:10 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

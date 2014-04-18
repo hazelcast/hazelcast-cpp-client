@@ -184,18 +184,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;            };</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;            boost::shared_ptr&lt;K&gt; key;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;            boost::shared_ptr&lt;V&gt; value;</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;            boost::shared_ptr&lt;V&gt; oldValue;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_entry_event_type.html">EntryEventType</a> eventType;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_member.html">Member</a> member;</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            std::string name;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;            std::string name;</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_member.html">Member</a> member;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;            <a class="code" href="classhazelcast_1_1client_1_1_entry_event_type.html">EntryEventType</a> eventType;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            boost::shared_ptr&lt;K&gt; key;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            boost::shared_ptr&lt;V&gt; value;</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            boost::shared_ptr&lt;V&gt; oldValue;</div>
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        };</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    }</div>
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;}</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;</div>
 <div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="preprocessor">#endif //__EntryEvent_H_</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_entry_event_html_a3d31827252aa5757d52a3c54fbe7ca90"><div class="ttname"><a href="classhazelcast_1_1client_1_1_entry_event.html#a3d31827252aa5757d52a3c54fbe7ca90">hazelcast::client::EntryEvent::EntryEvent</a></div><div class="ttdeci">EntryEvent(const std::string &amp;name, const Member &amp;member, EntryEventType eventType, boost::shared_ptr&lt; K &gt; key, boost::shared_ptr&lt; V &gt; value, boost::shared_ptr&lt; V &gt; oldValue)</div><div class="ttdoc">Constructor. </div><div class="ttdef"><b>Definition:</b> EntryEvent.h:99</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_entry_event_html_adf2e891c0bd14466e27c64d01123fd3b"><div class="ttname"><a href="classhazelcast_1_1client_1_1_entry_event.html#adf2e891c0bd14466e27c64d01123fd3b">hazelcast::client::EntryEvent::getKey</a></div><div class="ttdeci">const K &amp; getKey() const </div><div class="ttdoc">Returns the key of the entry event. </div><div class="ttdef"><b>Definition:</b> EntryEvent.h:114</div></div>
 <div class="ttc" id="classhazelcast_1_1client_1_1_entry_event_html_a9278b65dcdff5ac5358c8cf0be5179fa"><div class="ttname"><a href="classhazelcast_1_1client_1_1_entry_event.html#a9278b65dcdff5ac5358c8cf0be5179fa">hazelcast::client::EntryEvent::getOldValue</a></div><div class="ttdeci">const V &amp; getOldValue() const </div><div class="ttdoc">Returns the old value of the entry event. </div><div class="ttdef"><b>Definition:</b> EntryEvent.h:123</div></div>
@@ -214,7 +215,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:10 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

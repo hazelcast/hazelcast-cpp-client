@@ -86,7 +86,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classhazelcast_1_1client_1_1_hazelcast_client-members.html">List of all members</a>  </div>
@@ -100,12 +99,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p><code>#include &lt;<a class="el" href="_hazelcast_client_8h_source.html">HazelcastClient.h</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client_1_1_hazelcast_client_impl.html">HazelcastClientImpl</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private API.  <a href="classhazelcast_1_1client_1_1_hazelcast_client_1_1_hazelcast_client_impl.html#details">More...</a><br/></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a767a68883ce5b87ba6ecaa492e78633c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a767a68883ce5b87ba6ecaa492e78633c">HazelcastClient</a> (<a class="el" href="classhazelcast_1_1client_1_1_client_config.html">ClientConfig</a> &amp;)</td></tr>
@@ -168,6 +161,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af400b0a86cf20e770d39949608deba74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhazelcast_1_1client_1_1_cluster.html">Cluster</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#af400b0a86cf20e770d39949608deba74">getCluster</a> ()</td></tr>
 <tr class="memdesc:af400b0a86cf20e770d39949608deba74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <a class="el" href="classhazelcast_1_1client_1_1_cluster.html" title="Hazelcast cluster interface. ">Cluster</a> that connected Hazelcast instance is a part of.  <a href="#af400b0a86cf20e770d39949608deba74">More...</a><br/></td></tr>
 <tr class="separator:af400b0a86cf20e770d39949608deba74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf2edc5a2822b24cad44a579a8398591"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#abf2edc5a2822b24cad44a579a8398591">addLifecycleListener</a> (<a class="el" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">LifecycleListener</a> *lifecycleListener)</td></tr>
+<tr class="memdesc:abf2edc5a2822b24cad44a579a8398591"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add listener to listen lifecycle events.  <a href="#abf2edc5a2822b24cad44a579a8398591">More...</a><br/></td></tr>
+<tr class="separator:abf2edc5a2822b24cad44a579a8398591"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85e18b1ddaa6e8cba7331f7aa7c36fce"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a85e18b1ddaa6e8cba7331f7aa7c36fce">removeLifecycleListener</a> (<a class="el" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">LifecycleListener</a> *lifecycleListener)</td></tr>
+<tr class="memdesc:a85e18b1ddaa6e8cba7331f7aa7c36fce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove lifecycle listener.  <a href="#a85e18b1ddaa6e8cba7331f7aa7c36fce">More...</a><br/></td></tr>
+<tr class="separator:a85e18b1ddaa6e8cba7331f7aa7c36fce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b0e95907812b547b897021355399caf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4b0e95907812b547b897021355399caf"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html#a4b0e95907812b547b897021355399caf">shutdown</a> ()</td></tr>
 <tr class="memdesc:a4b0e95907812b547b897021355399caf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shuts down this <a class="el" href="classhazelcast_1_1client_1_1_hazelcast_client.html" title="Hazelcast Client enables you to do all Hazelcast operations without being a member of the cluster...">HazelcastClient</a>. <br/></td></tr>
@@ -203,6 +202,30 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>spi::ClientContext</
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="abf2edc5a2822b24cad44a579a8398591"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void hazelcast::client::HazelcastClient::addLifecycleListener </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">LifecycleListener</a> *&#160;</td>
+          <td class="paramname"><em>lifecycleListener</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add listener to listen lifecycle events. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lifecycleListener</td><td>Listener object </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="adf8c8be9c97cdd5651184e2f626bb1e2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -668,6 +691,31 @@ template&lt;typename E &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a85e18b1ddaa6e8cba7331f7aa7c36fce"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool hazelcast::client::HazelcastClient::removeLifecycleListener </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classhazelcast_1_1client_1_1_lifecycle_listener.html">LifecycleListener</a> *&#160;</td>
+          <td class="paramname"><em>lifecycleListener</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove lifecycle listener. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lifecycleListener</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if removed successfully </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>hazelcast/include/hazelcast/client/<a class="el" href="_hazelcast_client_8h_source.html">HazelcastClient.h</a></li>
 <li>hazelcast/src/hazelcast/client/HazelcastClient.cpp</li>
@@ -675,7 +723,7 @@ template&lt;typename E &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 4 2014 10:38:11 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 16 2014 17:40:15 for Hazelcast C++ Client by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

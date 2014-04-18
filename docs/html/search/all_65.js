@@ -8,6 +8,7 @@ var searchData=
   ['entryview',['EntryView',['../classhazelcast_1_1client_1_1_entry_view.html#a0b4a44ff61275ea1fb0d13b2eaee7e63',1,'hazelcast::client::EntryView']]],
   ['entryview',['EntryView',['../classhazelcast_1_1client_1_1_entry_view.html',1,'hazelcast::client']]],
   ['evict',['evict',['../classhazelcast_1_1client_1_1_i_map.html#a998d5cb825215da4452dcfba68a44693',1,'hazelcast::client::IMap']]],
+  ['exceptionhandler',['ExceptionHandler',['../classhazelcast_1_1client_1_1exception_1_1_exception_handler.html',1,'hazelcast::client::exception']]],
   ['executeonentries',['executeOnEntries',['../classhazelcast_1_1client_1_1_i_map.html#ad1825dd18743a360e3dbf5b491b65808',1,'hazelcast::client::IMap']]],
   ['executeonkey',['executeOnKey',['../classhazelcast_1_1client_1_1_i_map.html#a4f9de0e8c5b65dbc96410125a5167f15',1,'hazelcast::client::IMap']]],
   ['expirationtime',['expirationTime',['../classhazelcast_1_1client_1_1_entry_view.html#a4649b4b04ce525949db5a3f31fd37867',1,'hazelcast::client::EntryView']]]

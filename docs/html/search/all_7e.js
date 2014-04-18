@@ -4,7 +4,6 @@ var searchData=
   ['_7ecredentials',['~Credentials',['../classhazelcast_1_1client_1_1_credentials.html#ab68839008a5be49b52f26be01c339689',1,'hazelcast::client::Credentials']]],
   ['_7edistributedobject',['~DistributedObject',['../classhazelcast_1_1client_1_1_distributed_object.html#a3b4b8d43d7cebf43547758c9ae99339c',1,'hazelcast::client::DistributedObject']]],
   ['_7ehazelcastclient',['~HazelcastClient',['../classhazelcast_1_1client_1_1_hazelcast_client.html#a5a3b5d9b5cfafe06718b56b9290e2ea0',1,'hazelcast::client::HazelcastClient']]],
-  ['_7eiauthenticationexception',['~IAuthenticationException',['../classhazelcast_1_1client_1_1exception_1_1_i_authentication_exception.html#a74f83a003186a7e32f8a1e952618abc9',1,'hazelcast::client::exception::IAuthenticationException']]],
   ['_7eiclasscastexception',['~IClassCastException',['../classhazelcast_1_1client_1_1exception_1_1_i_class_cast_exception.html#a395a47dadafb9151c175f93f96daa160',1,'hazelcast::client::exception::IClassCastException']]],
   ['_7eidentifieddataserializable',['~IdentifiedDataSerializable',['../classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html#ac1272a4ec94cd47887168f8d3ac04a6c',1,'hazelcast::client::serialization::IdentifiedDataSerializable']]],
   ['_7eiexception',['~IException',['../classhazelcast_1_1client_1_1exception_1_1_i_exception.html#a85d114177e0d65756f578b8d15e2ed77',1,'hazelcast::client::exception::IException']]],

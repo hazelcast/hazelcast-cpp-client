@@ -1,7 +1,6 @@
 var searchData=
 [
   ['iatomiclong',['IAtomicLong',['../classhazelcast_1_1client_1_1_i_atomic_long.html',1,'hazelcast::client']]],
-  ['iauthenticationexception',['IAuthenticationException',['../classhazelcast_1_1client_1_1exception_1_1_i_authentication_exception.html',1,'hazelcast::client::exception']]],
   ['iclasscastexception',['IClassCastException',['../classhazelcast_1_1client_1_1exception_1_1_i_class_cast_exception.html',1,'hazelcast::client::exception']]],
   ['icountdownlatch',['ICountDownLatch',['../classhazelcast_1_1client_1_1_i_count_down_latch.html',1,'hazelcast::client']]],
   ['identifieddataserializable',['IdentifiedDataSerializable',['../classhazelcast_1_1client_1_1serialization_1_1_identified_data_serializable.html',1,'hazelcast::client::serialization']]],

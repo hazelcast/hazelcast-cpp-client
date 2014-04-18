@@ -1067,11 +1067,11 @@ public:
     void handleContains(const std::vector<std::string> &args) {
         std::string iteratorStr = args[0];
         bool key = false;
-        bool value = false;
+//        bool value = false;
         if (endsWith(iteratorStr, "key")) {
             key = true;
         } else if (endsWith(iteratorStr, "value")) {
-            value = true;
+//            value = true;
         }
         std::string data = args[1];
         bool result = false;

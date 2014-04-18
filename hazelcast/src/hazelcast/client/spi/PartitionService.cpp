@@ -14,6 +14,7 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
+#include <climits>
 
 namespace hazelcast {
     namespace client {
