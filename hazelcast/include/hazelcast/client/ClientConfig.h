@@ -116,7 +116,7 @@ namespace hazelcast {
             /**
              * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
              * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
-             * will be closed.
+             * will be considered dead until member respond to heartbeat messages again.
              *
              * @param int connectionTimeoutInMillis
              * @return itself ClientConfig
@@ -126,7 +126,7 @@ namespace hazelcast {
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
             * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
-            * will be closed.
+            * will be considered dead until member respond to heartbeat messages again.
             *
             * @return int connectionTimeoutInMillis
             */

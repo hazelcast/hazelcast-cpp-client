@@ -4,6 +4,7 @@
 
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/impl/ClientMemberShipEvent.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -57,6 +58,8 @@ namespace hazelcast {
                         if (clientContext.getLifecycleService().isRunning()) {
                             util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
+
+                        clientContext.getConnectionManager().markOwnerAddressAsClosed();
                         if (deletingConnection.compareAndSet(false, true)) {
                             conn.reset();
                             deletingConnection = false;

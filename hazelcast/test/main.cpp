@@ -20,6 +20,7 @@
 #include "txn/ClientTxnMultiMapTest.h"
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
+#include "issues/IssueTest.h"
 #include <cstdlib>
 
 using namespace hazelcast::client::test;
@@ -33,6 +34,9 @@ void unitTests() {
     try {
 
         HazelcastServerFactory factory;
+
+        IssueTest issueTest(factory);
+        issueTest.executeTests();
 
         MemberAttributeTest memberAttributeTest(factory);
         memberAttributeTest.executeTests();

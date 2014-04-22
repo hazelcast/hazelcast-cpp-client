@@ -60,10 +60,36 @@ namespace hazelcast {
                 }
             }
 
+            void ConnectionManager::markOwnerAddressAsClosed() {
+                util::LockGuard lockGuard(ownerConnectionLock);
+                ownerConnectionAddress.reset(NULL);
+            }
+
+            Address ConnectionManager::waitForOwnerConnection() {
+                util::LockGuard lockGuard(ownerConnectionLock);
+                if(ownerConnectionAddress.get() != NULL){
+                    return *ownerConnectionAddress;
+                }
+                ClientConfig &config = clientContext.getClientConfig();
+                int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
+                while (ownerConnectionAddress.get() == NULL) {
+                    ownerConnectionLock.unlock();
+                    util::sleep(1);
+                    ownerConnectionLock.lock();
+                    if (--tryCount == 0) {
+                        throw exception::IOException("ConnectionManager", "Wait for owner connection is timed out");
+                    }
+                }
+                return *ownerConnectionAddress;
+            };
+
             connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
                 Connection *clientConnection = connectTo(address, true);
                 clientConnection->setAsOwnerConnection(true);
-                ownerConnectionAddress = clientConnection->getRemoteEndpoint();
+                {
+                    util::LockGuard lockGuard(ownerConnectionLock);
+                    ownerConnectionAddress.reset(new Address(clientConnection->getRemoteEndpoint()));
+                }
                 return clientConnection;
             }
 
@@ -105,8 +131,9 @@ namespace hazelcast {
                 checkLive();
                 if (smartRouting)
                     return getOrConnectResolved(address);
-                else
-                    return getOrConnectResolved(ownerConnectionAddress);
+                else {
+                    return getOrConnectResolved(waitForOwnerConnection());
+                }
             };
 
 

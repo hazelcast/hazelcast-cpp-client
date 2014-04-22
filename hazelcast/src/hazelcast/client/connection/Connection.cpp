@@ -121,7 +121,7 @@ namespace hazelcast {
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
 
                     std::string exceptionClassName = ex->name;
-                    if (exceptionClassName == "HazelcastInstanceNotActiveException") {
+                    if (exceptionClassName == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
                         targetNotActive(promise);
                     } else {
                         exception::ExceptionHandler::rethrow(ex->name, ex->message + ":" + ex->details + "\n");

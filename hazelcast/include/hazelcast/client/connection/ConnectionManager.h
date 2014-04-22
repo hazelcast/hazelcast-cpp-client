@@ -61,6 +61,8 @@ namespace hazelcast {
 
                 void removeEventHandler(int callId);
 
+                void markOwnerAddressAsClosed();
+
             protected:
                 connection::Connection *connectTo(const Address &address, bool reAuth);
 
@@ -74,6 +76,8 @@ namespace hazelcast {
 
                 void checkLive();
 
+                Address waitForOwnerConnection();
+
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext &clientContext;
@@ -86,8 +90,11 @@ namespace hazelcast {
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 util::AtomicInt callIdGenerator;
+                /** Can be seperated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
-                Address ownerConnectionAddress;
+                util::Mutex ownerConnectionLock;
+                util::ConditionVariable ownerConnectionCV;
+                std::auto_ptr<Address> ownerConnectionAddress;
 
             };
         }
