@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
 
             IssueTest::IssueTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<IssueTest>("IssueTest")
+            : iTest::iTestFixture<IssueTest>("IssueTest")
             , serverFactory(serverFactory) {
 
             }
