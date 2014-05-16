@@ -44,8 +44,8 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testInvalidWrite, "testInvalidWrite");
                 addTest(&ClientSerializationTest::testInvalidRead, "testInvalidRead");
                 addTest(&ClientSerializationTest::testDifferentVersions, "testDifferentVersions");
+                addTest(&ClientSerializationTest::testDifferentVersionsUsingDataWriteAndRead, "testDifferentVersionsUsingDataWriteAndRead");
                 addTest(&ClientSerializationTest::testCompression, "testCompression");
-                //addTest(&ClientSerializationTest::testSerializationViaFile, "testSerializationViaFile");
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
             };
 
@@ -167,6 +167,35 @@ namespace hazelcast {
 
             };
 
+            void ClientSerializationTest::testDifferentVersionsUsingDataWriteAndRead(){
+                serialization::pimpl::SerializationService serializationService(1);
+
+                serialization::pimpl::SerializationService serializationService2(2);
+
+                TestNamedPortable p1("portable-v1", 111);
+                serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(&p1);
+
+                // emulate socket write by writing data to stream
+                serialization::pimpl::DataOutput dataOutput;
+                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getSerializationContext());
+                data.writeData(objectDataOutput);
+                std::auto_ptr<std::vector<byte> > bytes = objectDataOutput.toByteArray();
+
+                // emulate socket read by reading data from stream
+                serialization::pimpl::DataInput dataInput(*bytes);
+                serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
+                serialization::pimpl::Data data2;
+                data2.readData(objectDataInput);
+
+                // register class def and read data
+                serializationService2.toObject<TestNamedPortableV2>(data2);
+
+                // serialize new portable version
+                TestNamedPortableV2 p2("portable-v2", 123);
+                serializationService2.toData<TestNamedPortableV2>(&p2);
+
+            }
+
             void ClientSerializationTest::testCompression() {
                 serialization::pimpl::SerializationService serializationService1(1);
                 TestMainPortable mainPortable = getTestMainPortable();
@@ -188,58 +217,6 @@ namespace hazelcast {
                 boost::shared_ptr<TestMainPortable> returnedPortable = serializationService2.toObject<TestMainPortable >(newData);
                 iTest::assertEqual(mainPortable, *returnedPortable);
             };
-
-
-            int ClientSerializationTest::write() {
-                serialization::pimpl::SerializationService serializationService(1);
-                TestMainPortable mainPortable = getTestMainPortable();
-                serialization::pimpl::Data data = serializationService.toData<TestMainPortable>(&mainPortable);
-                serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getSerializationContext());
-                data.writeData(objectDataOutput);
-                std::auto_ptr<std::vector<byte> > output = objectDataOutput.toByteArray();
-                int size = output->size();
-                std::ofstream outfile;
-                outfile.open("./text.txt", std::ios_base::out);
-                for (int i = 0; i < size; i++)
-                    outfile.put((*output)[i]);
-
-                outfile.close();
-                return size;
-
-            }
-
-            void ClientSerializationTest::read(int size) {
-
-                serialization::pimpl::SerializationService serializationService(1);
-
-                std::ifstream is;
-                is.open("./text.txt", std::ios::binary);
-                char *bytes = new char [size];
-                is.read(bytes, size);
-                is.close();
-
-                byte *tempPtr = (byte *) bytes;
-                std::vector<byte> buffer(tempPtr, tempPtr + size);
-                delete [] bytes;
-                serialization::pimpl::DataInput dataInput(buffer);
-                serialization::ObjectDataInput objectDataInput(dataInput, serializationService.getSerializationContext());
-
-                serialization::pimpl::Data data;
-
-                data.readData(objectDataInput);
-
-                boost::shared_ptr<TestMainPortable> tmp1 = serializationService.toObject<TestMainPortable>(data);
-
-                TestMainPortable mainPortable = getTestMainPortable();
-                iTest::assertEqual(mainPortable, *tmp1);
-            };
-
-            void ClientSerializationTest::testSerializationViaFile() {
-                int size = write();
-                read(size);
-            }
-
 
             void ClientSerializationTest::testBasicFunctionality() {
                 serialization::pimpl::SerializationService serializationService(1);

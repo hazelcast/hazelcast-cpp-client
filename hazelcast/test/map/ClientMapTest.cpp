@@ -7,6 +7,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
+#include "TestHelperFunctions.h"
 
 
 namespace hazelcast {
@@ -341,10 +342,8 @@ namespace hazelcast {
             void ClientMapTest::testPutIfAbsentTtl() {
                 assertNull(imap->putIfAbsent("key1", "value1", 1000).get());
                 assertEqual("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
-                util::sleep(2);
-                assertNull(imap->putIfAbsent("key1", "value3", 1000).get());
+                ASSERT_EVENTUALLY(assertNull, imap->putIfAbsent("key1", "value3", 1000).get());
                 assertEqual("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
-                util::sleep(2);
             }
 
             void ClientMapTest::testSet() {
@@ -357,9 +356,7 @@ namespace hazelcast {
                 imap->set("key1", "value3", 1000);
                 assertEqual("value3", *(imap->get("key1")));
 
-                util::sleep(2);
-                assertNull(imap->get("key1").get());
-
+                ASSERT_EVENTUALLY(assertNull, imap->get("key1").get());
             }
 
             void testLockThread(util::ThreadArgs &args) {

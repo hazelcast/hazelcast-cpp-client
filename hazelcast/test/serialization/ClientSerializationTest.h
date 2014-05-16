@@ -39,13 +39,9 @@ namespace hazelcast {
 
                 void testDifferentVersions();
 
+                void testDifferentVersionsUsingDataWriteAndRead();
+
                 void testCompression();
-
-                int write();
-
-                void read(int size);
-
-                void testSerializationViaFile();
 
                 void testBasicFunctionality();
             };

@@ -42,15 +42,7 @@ namespace hazelcast {
                     cd->readData(dataInput);
                     cd->setBinary(compressedBinary);
 
-                    long long key = combineToLong(cd->getClassId(), serializationContext->getVersion());
-
-                    serializationContext->registerNestedDefinitions(cd);
-                    boost::shared_ptr<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(key, cd);
-                    if (currentCD == NULL) {
-                        return cd;
-                    } else {
-                        return currentCD;
-                    }
+                    return registerClassDefinition(cd);
                 };
 
                 boost::shared_ptr<ClassDefinition>  PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
