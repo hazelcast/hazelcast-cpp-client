@@ -61,6 +61,7 @@ namespace hazelcast {
                     dataOutput.writeByte(type.getId());
                     dataOutput.writeInt(factoryId);
                     dataOutput.writeInt(classId);
+                    dataOutput.writeInt(-1);
                 };
 
                 void FieldDefinition::readData(DataInput &dataInput) {
@@ -69,7 +70,7 @@ namespace hazelcast {
                     type.id = dataInput.readByte();
                     factoryId = dataInput.readInt();
                     classId = dataInput.readInt();
-
+                    dataInput.readInt();
                 };
 
             }
