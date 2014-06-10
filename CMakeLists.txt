@@ -7,7 +7,7 @@ project (HazelcastClient)
 #  -DHZ_CODE_COVERAGE=ON
 #  -DHZ_VALGRIND=ON
 
-SET(HZ_VERSION 3.2.2)
+SET(HZ_VERSION 3.3-EA2)
 
 message(STATUS "Preparing hazelcast client ..... ")
 
