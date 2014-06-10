@@ -25,7 +25,7 @@ namespace iTest {
 
     public:
         iTestFixture(const std::string &fixtureName)
-        :fixtureName(fixtureName), id(0) {
+                : fixtureName(fixtureName), id(0) {
 
         }
 
@@ -59,15 +59,15 @@ namespace iTest {
                 bool isOk = true;
                 try {
                     assertNumber = 0;
-                    ((*t) .* (test))();
-                } catch(iTestException &e) {
+                    ((*t).*(test))();
+                } catch (iTestException &e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
-                } catch(...){
-		    isOk = false;
-		    std::cout << "========== EXCEPTION ======== " << std::endl;
-		    throw;		
-		}
+                } catch (...) {
+                    isOk = false;
+                    std::cout << "========== EXCEPTION ======== " << std::endl;
+                    throw;
+                }
                 afterTest();
                 if (isOk)
                     std::cout << "============OK============== " << std::endl;
@@ -80,7 +80,7 @@ namespace iTest {
 
     private:
         std::vector<TestFunction> tests;
-        std::map<int, std::string > testNames;
+        std::map<int, std::string> testNames;
         std::string fixtureName;
         int id;
     };

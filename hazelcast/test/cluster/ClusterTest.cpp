@@ -20,8 +20,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClusterTest::ClusterTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :iTestFixture<ClusterTest>("ClusterTest")
-            , hazelcastInstanceFactory(hazelcastInstanceFactory) {
+                    : iTestFixture<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
             };
 
 
@@ -54,9 +53,7 @@ namespace hazelcast {
             class SampleInitialListener : public InitialMembershipListener {
             public:
                 SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
-                :_memberAdded(_memberAdded)
-                , _attributeLatch(_attributeLatch)
-                , _memberRemoved(_memberRemoved) {
+                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 };
 
@@ -89,9 +86,7 @@ namespace hazelcast {
             class SampleListenerInClusterTest : public MembershipListener {
             public:
                 SampleListenerInClusterTest(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
-                :_memberAdded(_memberAdded)
-                , _attributeLatch(_attributeLatch)
-                , _memberRemoved(_memberRemoved) {
+                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 };
 
@@ -184,7 +179,7 @@ namespace hazelcast {
             class DummyListenerClusterTest {
             public:
                 DummyListenerClusterTest(util::CountDownLatch &addLatch)
-                :addLatch(addLatch) {
+                        : addLatch(addLatch) {
                 };
 
                 void entryAdded(EntryEvent<std::string, std::string> &event) {
@@ -207,7 +202,7 @@ namespace hazelcast {
             class LclForClusterTest : public LifecycleListener {
             public:
                 LclForClusterTest(util::CountDownLatch &latch)
-                :latch(latch) {
+                        : latch(latch) {
 
                 }
 
@@ -225,11 +220,12 @@ namespace hazelcast {
                 HazelcastServer instance(hazelcastInstanceFactory);
 
                 ClientConfig clientConfig;
+                clientConfig.setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100);
                 HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
 
                 util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);
-                IMap <std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>("testListenersWhenClusterDown");
+                IMap<std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>("testListenersWhenClusterDown");
                 m.addEntryListener(listener, true);
                 instance.shutdown();
 
@@ -238,20 +234,20 @@ namespace hazelcast {
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
-                lifecycleLatch.await(5);
+                assertTrue(lifecycleLatch.await(5), "Lifecycle latch await timed out!");
 
                 m.put("sample", "entry");
 
-                assertTrue(countDownLatch.await(10));
+                assertTrue(countDownLatch.await(10), "Await timed out !");
                 assertTrue(hazelcastClient.removeLifecycleListener(&lifecycleListener), "Listener could not removed");
             }
 
             void ClusterTest::testBehaviourWhenClusterNotFound() {
                 ClientConfig clientConfig;
-                try{
+                try {
                     HazelcastClient hazelcastClient(clientConfig);
                     assertTrue(false);
-                }catch(exception::IllegalStateException &){
+                } catch (exception::IllegalStateException &) {
 
                 }
             }
