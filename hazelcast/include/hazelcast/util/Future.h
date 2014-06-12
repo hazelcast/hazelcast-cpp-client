@@ -9,6 +9,7 @@
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/client/exception/ExceptionHandler.h"
+#include "hazelcast/util/ILogger.h"
 #include <memory>
 #include <cassert>
 
@@ -25,7 +26,10 @@ namespace hazelcast {
 
             void set_value(const T &value) {
                 LockGuard guard(mutex);
-                assert( !(exceptionReady || resultReady) && "Value can not be set twice");
+                if( exceptionReady || resultReady ) {
+                    util::ILogger::getLogger().warning(std::string("Future.set_value should not be called twice" ) );
+                    return;
+                }
                 sharedObject = value;
                 resultReady = true;
                 conditionVariable.notify_all();
@@ -33,7 +37,10 @@ namespace hazelcast {
 
             void set_exception(const std::string &exceptionName, const std::string &exceptionDetails) {
                 LockGuard guard(mutex);
-                assert( !(exceptionReady || resultReady) && "Exception can not be set twice");
+                if( exceptionReady || resultReady ) {
+                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice" ));
+                    return;
+                }
                 this->exceptionName = exceptionName;
                 this->exceptionDetails = exceptionDetails;
                 exceptionReady = true;
