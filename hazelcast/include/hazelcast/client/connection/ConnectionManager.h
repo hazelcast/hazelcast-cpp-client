@@ -68,10 +68,6 @@ namespace hazelcast {
 
                 void markOwnerAddressAsClosed();
 
-                static void staticConnectionProcessor(util::ThreadArgs &args);
-
-                void connectionProcessor(connection::Connection &conn, bool reAuth, util::CountDownLatch&);
-
             protected:
                 connection::Connection *connectTo(const Address &address, bool reAuth);
 

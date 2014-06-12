@@ -5,6 +5,7 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
+#include <memory>
 #include <hazelcast/util/Util.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -41,6 +42,7 @@ namespace hazelcast {
         }
 
         Thread::~Thread() {
+            interrupt();
             join();
             CloseHandle(thread);
         }
@@ -66,11 +68,11 @@ namespace hazelcast {
             if (isJoined) {
                 return true;
             }
-            isJoined = true;
             DWORD err = WaitForSingleObject(thread, INFINITE);
             if (err != WAIT_OBJECT_0) {
                 return false;
             }
+            isJoined = true;
             return true;
         }
 
@@ -138,6 +140,7 @@ namespace hazelcast {
         }
 
         Thread::~Thread() {
+            interrupt();
             join();
             pthread_attr_destroy(&attr);
         }
@@ -158,11 +161,11 @@ namespace hazelcast {
             if (isJoined) {
                 return true;
             }
-            isJoined = true;
             int err = pthread_join(thread, NULL);
             if (EINVAL == err || ESRCH == err || EDEADLK == err) {
                 return false;
             }
+            isJoined = true;
             return true;
         }
 

@@ -21,7 +21,7 @@
 #include <sys/wait.h>
 #include <sys/errno.h>
 #include <sys/select.h>
-
+#include <fcntl.h>
 
 #endif
 
@@ -97,6 +97,8 @@ namespace hazelcast {
             void close();
 
         private:
+
+            void setBlocking(bool blocking);
 
             client::Address getAddress() const;
 

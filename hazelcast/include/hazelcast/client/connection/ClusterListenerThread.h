@@ -36,7 +36,7 @@ namespace hazelcast {
 
                 void setThread(util::Thread *);
 
-                static void staticRun(util::ThreadArgs &args) ;
+                static void staticRun(util::ThreadArgs &args);
 
                 void run(util::Thread *currentThread);
 
@@ -46,12 +46,10 @@ namespace hazelcast {
                 bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
-
-                std::auto_ptr<util::Thread> clusterListenerThread;
-
                 std::auto_ptr<Connection> conn;
                 util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
+                std::auto_ptr<util::Thread> clusterListenerThread;
 
                 connection::Connection *pickConnection();
 
