@@ -5,7 +5,7 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
-#include <memory>
+#include <hazelcast/util/Util.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
@@ -108,7 +108,6 @@ namespace hazelcast {
 
 #else
 
-#include <unistd.h>
 #include <sys/errno.h>
 
 namespace hazelcast {
@@ -144,7 +143,7 @@ namespace hazelcast {
         }
 
         void Thread::interruptibleSleep(int seconds) {
-            ::sleep((unsigned int) seconds);
+            util::sleep((unsigned int) seconds);
         }
 
         std::string Thread::getThreadName() const {

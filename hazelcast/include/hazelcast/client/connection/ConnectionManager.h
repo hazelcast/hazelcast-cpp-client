@@ -15,6 +15,11 @@
 #include "hazelcast/util/Future.h"
 
 namespace hazelcast {
+
+    namespace util{
+        class CountDownLatch;
+    }
+
     namespace client {
 
         namespace serialization {
@@ -63,6 +68,10 @@ namespace hazelcast {
 
                 void markOwnerAddressAsClosed();
 
+                static void staticConnectionProcessor(util::ThreadArgs &args);
+
+                void connectionProcessor(connection::Connection &conn, bool reAuth, util::CountDownLatch&);
+
             protected:
                 connection::Connection *connectTo(const Address &address, bool reAuth);
 
@@ -90,10 +99,9 @@ namespace hazelcast {
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 util::AtomicInt callIdGenerator;
-                /** Can be seperated via inheritance as Dumb ConnectionManager**/
+                /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 util::Mutex ownerConnectionLock;
-                util::ConditionVariable ownerConnectionCV;
                 std::auto_ptr<Address> ownerConnectionAddress;
 
             };
