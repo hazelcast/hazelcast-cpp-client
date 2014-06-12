@@ -8,7 +8,7 @@
 namespace hazelcast {
     namespace client {
         Socket::Socket(const client::Address &address) {
-			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)			
+			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
             if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
 			#endif
@@ -29,7 +29,7 @@ namespace hazelcast {
             isOpen = true;
             int size = 32 * 1024;
             ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
-            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));	
+            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
 			#if defined(SO_NOSIGPIPE)
             int on = 1;
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
@@ -42,27 +42,63 @@ namespace hazelcast {
         : serverInfo(NULL)
         , socketId(socketId)
         , isOpen(true) {
-			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)			
+			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
             if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
 			#endif
         }
 
         Socket::~Socket() {
-            close();           
+            close();
         };
 
         int Socket::connect() {
             assert(serverInfo != NULL && "Socket is already connected");
-            if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
-				#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                int error =   WSAGetLastError();
-                #else
-                int error = errno;
-				#endif
-                return error;
+            setBlocking(false);
+            ::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
+
+            struct timeval tv;
+            tv.tv_sec = 15;
+            tv.tv_usec = 0;
+            fd_set mySet, err;
+            FD_ZERO(&mySet);
+            FD_ZERO(&err);
+            FD_SET(socketId, &mySet);
+            FD_SET(socketId, &err);
+            if (select(socketId+1, NULL, &mySet, &err , &tv) > 0) {
+                setBlocking(true);
+                return 0;
             }
-            return 0;
+            setBlocking(true);
+
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            int error =   WSAGetLastError();
+            #else
+            int error = errno;
+            #endif
+            return error;
+
+        }
+
+        void Socket::setBlocking(bool blocking) {
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            unsigned long iMode;
+            if(blocking){
+                iMode = 0l;
+            } else {
+                iMode = 1l;
+            }
+            ioctlsocket(socketId, FIONBIO, &iMode);
+            #else
+            int arg = fcntl(socketId, F_GETFL, NULL);
+            if(blocking){
+                arg &= (~O_NONBLOCK);
+            } else {
+                arg |= O_NONBLOCK;
+            }
+            fcntl(socketId, F_SETFL, arg);
+            #endif
+
         }
 
         int Socket::send(const void *buffer, int len) const {
@@ -120,7 +156,7 @@ namespace hazelcast {
 				char buffer[1];
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
                 ::close(socketId);
-                #endif	
+                #endif
             }
         }
 

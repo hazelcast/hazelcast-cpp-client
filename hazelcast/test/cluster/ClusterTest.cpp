@@ -234,11 +234,11 @@ namespace hazelcast {
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
-                assertTrue(lifecycleLatch.await(5), "Lifecycle latch await timed out!");
+                assertTrue(lifecycleLatch.await(60), "Lifecycle latch await timed out!");
 
                 m.put("sample", "entry");
 
-                assertTrue(countDownLatch.await(10), "Await timed out !");
+                assertTrue(countDownLatch.await(60), "Await timed out !");
                 assertTrue(hazelcastClient.removeLifecycleListener(&lifecycleListener), "Listener could not removed");
             }
 
