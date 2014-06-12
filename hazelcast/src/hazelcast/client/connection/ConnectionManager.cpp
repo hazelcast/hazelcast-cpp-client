@@ -67,7 +67,7 @@ namespace hazelcast {
 
             Address ConnectionManager::waitForOwnerConnection() {
                 util::LockGuard lockGuard(ownerConnectionLock);
-                if(ownerConnectionAddress.get() != NULL){
+                if (ownerConnectionAddress.get() != NULL) {
                     return *ownerConnectionAddress;
                 }
                 ClientConfig &config = clientContext.getClientConfig();
@@ -216,13 +216,37 @@ namespace hazelcast {
 
             connection::Connection *ConnectionManager::connectTo(const Address &address, bool reAuth) {
                 std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
-                checkLive();
-                conn->connect();
-                if (socketInterceptor.get() != NULL) {
-                    socketInterceptor.get()->onConnect(conn->getSocket());
+
+                util::CountDownLatch authenticatedLatch(1);
+                util::Thread thread("connectionProcessor", staticConnectionProcessor, this, conn.get(), (void *) reAuth, &authenticatedLatch);
+                bool isAuthenticated = authenticatedLatch.await(5);
+                if (isAuthenticated) {
+                    thread.join();
+                    return conn.release();
+                } else {
+                    thread.interrupt();
+                    thread.join();
+                    throw exception::IOException("ConnectionManager::connectTo", "Connection auth timed out");
                 }
-                authenticate(*conn, reAuth, reAuth);
-                return conn.release();
+            }
+
+            void ConnectionManager::staticConnectionProcessor(util::ThreadArgs &args) {
+                ConnectionManager *cm = (ConnectionManager *) args.arg0;
+                connection::Connection *conn = (connection::Connection *) args.arg1;
+                bool reAuth = (bool) args.arg2;
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg3;
+                cm->connectionProcessor(*conn, reAuth, *latch);
+            }
+
+
+            void ConnectionManager::connectionProcessor(connection::Connection &conn, bool reAuth, util::CountDownLatch &authenticatedLatch) {
+                checkLive();
+                conn.connect();
+                if (socketInterceptor.get() != NULL) {
+                    socketInterceptor.get()->onConnect(conn.getSocket());
+                }
+                authenticate(conn, reAuth, reAuth);
+                authenticatedLatch.countDown();
             }
         }
     }
