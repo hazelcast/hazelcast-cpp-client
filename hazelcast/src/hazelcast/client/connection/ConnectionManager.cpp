@@ -56,8 +56,8 @@ namespace hazelcast {
                 if (oListenerThread.get() != NULL) {
                     oListenerThread->interrupt();
                     oListenerThread->join();
-
                 }
+				connections.clear();
             }
 
             void ConnectionManager::markOwnerAddressAsClosed() {

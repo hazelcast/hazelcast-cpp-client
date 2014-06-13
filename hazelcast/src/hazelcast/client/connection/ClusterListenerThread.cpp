@@ -28,7 +28,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                clusterListenerThread->run((util::Thread *) args.arg0);
+                clusterListenerThread->run( args.currentThread );
             }
 
             void ClusterListenerThread::setThread(util::Thread *thread) {
