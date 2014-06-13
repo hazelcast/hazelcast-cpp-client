@@ -124,7 +124,7 @@ namespace hazelcast {
                     if (exceptionClassName == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
                         targetNotActive(promise);
                     } else {
-                        exception::ExceptionHandler::rethrow(ex->name, ex->message + ":" + ex->details + "\n");
+                        promise->setException(ex->name, ex->message + ":" + ex->details + "\n");
                     }
                     return false;
                 }
