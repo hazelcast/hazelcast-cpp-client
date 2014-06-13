@@ -20,7 +20,7 @@ namespace hazelcast {
         }
 
         void Mutex::lock() {
-            EnterCriticalSection(&mutex);
+			EnterCriticalSection(&mutex);
         }
 
         Mutex::status Mutex::tryLock() {

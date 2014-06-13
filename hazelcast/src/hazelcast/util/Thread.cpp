@@ -49,8 +49,9 @@ namespace hazelcast {
 
         void Thread::interruptibleSleep(int seconds){
             LockGuard lock(mutex);
-			if(isInterrupted)
+			if(isInterrupted){
 				throw thread_interrupted();
+			}
             bool ok = condition.waitFor(mutex, seconds * 1000);
             if(!ok){
                 throw thread_interrupted();
