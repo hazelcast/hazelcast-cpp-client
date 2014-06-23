@@ -19,7 +19,7 @@ namespace hazelcast {
              * Type enum.
              */
             enum Type {
-                ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4
+                ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4 , EVICT_ALL = 5 , CLEAR_ALL = 6
             };
             /**
              * Type value

@@ -47,8 +47,9 @@ namespace hazelcast {
             void PortableEntryEvent::readPortable(serialization::PortableReader& reader) {
                 eventType = reader.readInt("e");
                 uuid = reader.readUTF("u");
+                numberOfAffectedEntries = reader.readInt("n");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
-                key.readData(in);
+                util::readNullableData(in, &key);
                 util::readNullableData(in, &value);
                 util::readNullableData(in, &oldValue);
             };
