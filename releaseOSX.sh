@@ -41,8 +41,11 @@ cp ReleaseStatic/examples/*exe cpp/Mac_64/examples/
 #ONLY IN DEVELOPMENT MACHINE
 mkdir -p ./cpp/docs/
 
+echo "Generating docs "
+doxygen docsConfig
+
 echo "Moving docs to target"
-cp -R docs/ cpp/docs/
+mv  docs/ cpp
 
 cp enterprise-license.txt cpp/enterprise-license.txt
 
