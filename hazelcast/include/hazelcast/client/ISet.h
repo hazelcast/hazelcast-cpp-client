@@ -26,7 +26,7 @@ namespace hazelcast {
         /**
          * Concurrent, distributed client implementation of std::unordered_set.
          *
-         * @param <E> item type
+         * @tparam E item type
          */
         template<typename E>
         class HAZELCAST_API ISet : public DistributedObject {
@@ -52,8 +52,9 @@ namespace hazelcast {
              *
              *  Note that E is std::string in the example
              *
-             *  @param L listener
-             *  @param bool includeValue should ItemEvent include value or not.
+             *  @param listener to be added
+             *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
+             *  @returns registariondId that can be used to remove item listener
              */
             template < typename L>
             std::string addItemListener(L &listener, bool includeValue) {
@@ -95,12 +96,12 @@ namespace hazelcast {
 
             /**
              *
-             * @param element
+             * @param element to be searched
              * @returns true if set contains element
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool contains(const E &o) {
-                serialization::pimpl::Data valueData = toData(o);
+            bool contains(const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 std::vector<serialization::pimpl::Data> valueSet;
                 valueSet.push_back(valueData);
                 collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest (getName(), getServiceName(), valueSet);
@@ -126,12 +127,12 @@ namespace hazelcast {
 
             /**
              *
-             * @param E e
+             * @param element to be added
              * @return true if element is added successfully. If elements was already there returns false.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool add(const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            bool add(const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 collection::CollectionAddRequest *request = new collection::CollectionAddRequest(getName(), getServiceName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -139,12 +140,12 @@ namespace hazelcast {
 
             /**
              *
-             * @param E e
+             * @param element to be removed
              * @return true if element is removed successfully.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool remove(const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            bool remove(const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 collection::CollectionRemoveRequest *request = new collection::CollectionRemoveRequest(getName(), getServiceName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -156,8 +157,8 @@ namespace hazelcast {
              * @return true if this set contains all elements given in vector.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool containsAll(const std::vector<E> &objects) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(objects);
+            bool containsAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
                 collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest(getName(), getServiceName(), dataCollection);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -169,8 +170,8 @@ namespace hazelcast {
              * @return true if all elements given in vector can be added to set.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool addAll(const std::vector<E> &objects) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(objects);
+            bool addAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
                 collection::CollectionAddAllRequest *request = new collection::CollectionAddAllRequest(getName(), getServiceName(), dataCollection);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -182,8 +183,8 @@ namespace hazelcast {
              * @return true if all elements are removed successfully.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool removeAll(const std::vector<E> &objects) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(objects);
+            bool removeAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, false);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -196,8 +197,8 @@ namespace hazelcast {
              * @return true if operation is successful.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool retainAll(const std::vector<E> &objects) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(objects);
+            bool retainAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
                 collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, true);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;

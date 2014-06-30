@@ -3,6 +3,7 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
+#include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/Credentials.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
@@ -64,7 +65,6 @@ namespace hazelcast {
              * Returns set of the initial addresses.
              * Client will use this vector to find a running Member, connect to it.
              *
-             * @param address
              * @return vector of addresses
              */
             std::set<Address, addressComparator> &getAddresses();
@@ -85,12 +85,14 @@ namespace hazelcast {
             GroupConfig &getGroupConfig();
 
             /**
-             * Can be used instead of GroupConfig in Hazelcast EE.
+             * Can be used instead of GroupConfig in Hazelcast Extensions.
+             *
+             *  @return itself ClientConfig
              */
-            void setCredentials(Credentials *credentials);
+            ClientConfig & setCredentials(Credentials *credentials);
 
             /**
-             * Can be used instead of GroupConfig in Hazelcast EE.
+             * Can be used instead of GroupConfig in Hazelcast Extensions.
              */
             Credentials &getCredentials();
 
@@ -118,24 +120,22 @@ namespace hazelcast {
              * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
              * will be considered dead until member respond to heartbeat messages again.
              *
-             * @param int connectionTimeoutInMillis
+             * @param connectionTimeoutInMillis
              * @return itself ClientConfig
              */
             ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
             /**
-            * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-            * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
-            * will be considered dead until member respond to heartbeat messages again.
-            *
-            * @return int connectionTimeoutInMillis
-            */
+             * Timeout value for nodes to accept client connection requests.
+             *
+             * @return int connectionTimeoutInMillis
+             */
             int getConnectionTimeout() const;
 
             /**
              * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
              *
-             * @param int attemptPeriodInMillis
+             * @param attemptPeriodInMillis
              * @return itself ClientConfig
              */
             ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
@@ -155,7 +155,7 @@ namespace hazelcast {
              *
              * If false, the operation will throw IOException.
              *
-             * @param bool redoOperation
+             * @param redoOperation
              * return itself ClientConfig
              */
             ClientConfig &setRedoOperation(bool redoOperation);
@@ -180,13 +180,17 @@ namespace hazelcast {
              * The cached table is updated every 10 seconds.
              *
              * @param smart
+             *
+             * @return itself ClientConfig
              */
-            void setSmart(bool smart);
+            ClientConfig & setSmart(bool smart);
 
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.
+             *
+             * @return itself ClientConfig
              */
-            void setSocketInterceptor(SocketInterceptor *socketInterceptor);
+            ClientConfig & setSocketInterceptor(SocketInterceptor *socketInterceptor);
 
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.
@@ -248,9 +252,11 @@ namespace hazelcast {
              * Used to distribute the operations to multiple Endpoints.
              * If not set, RoundRobin based load balancer is used
              *
-             * @param LoadBalancer
+             * @param loadBalancer
+             *
+             * @return itself ClientConfig
              */
-            void setLoadBalancer(LoadBalancer *loadBalancer);
+            ClientConfig & setLoadBalancer(LoadBalancer *loadBalancer);
              /**
               *  enum LogLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
               *  set INFO to see every log.
@@ -261,9 +267,30 @@ namespace hazelcast {
               * @return itself ClientConfig
               */
              ClientConfig & setLogLevel(LogLevel loggerLevel);
+
+
+            /**
+             *
+             *  @return serializationConfig
+             */
+            SerializationConfig const &getSerializationConfig() const;
+
+            /**
+             * SerializationConfig is used to
+             *   * set version of portable classes in this client (@see Portable)
+             *   * register custom serializers to be used (@see Serializer , @see SerializationConfig#registerSerializer)
+             *
+             *
+             * @param serializationConfig
+             * @return itself ClientConfig
+             */
+            ClientConfig & setSerializationConfig(SerializationConfig const &serializationConfig);
+
         private:
 
             GroupConfig groupConfig;
+
+            SerializationConfig serializationConfig;
 
             std::set<Address, addressComparator> addressList;
 

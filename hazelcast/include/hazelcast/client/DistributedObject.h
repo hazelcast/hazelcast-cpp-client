@@ -34,7 +34,6 @@ namespace hazelcast {
          * @see ICountDownLatch
          * @see IdGenerator
          * @see IAtomicLong
-         * @see IExecutorService
          * @see TransactionalMap
          * @see TransactionalQueue
          * @see TransactionalMultiMap
@@ -133,7 +132,7 @@ namespace hazelcast {
              * Internal API.
              *
              * @param request PortableRequest ptr.
-             * @param registrationId.
+             * @param registrationId
              */
             bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 

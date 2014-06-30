@@ -17,17 +17,17 @@ namespace hazelcast {
          * It is up to the implementation to use different load balancing policies. If Client is configured as smart,
          * only the operations that are not key based will be router to the endpoint returned by the Load Balancer.
          * If it is not smart, LoadBalancer will not be used.
-         * Note 1, Client is smart by default.
-         * Note 2, LoadBalancer should implement a constructor with following signature
-         *
-         *    XLoadBalancer(hazelcast::client::Cluster& cluster);
+         * Note Client is smart by default.
          *
          */
         class HAZELCAST_API LoadBalancer {
         public:
 
             /**
-             * Note that LoadBalancer should implement constructor with
+             * This method will be called when load balancer is initialized.
+             *
+             * @param cluster Cluster contains current membership information for initialization. And one can
+             * add membership through this class for future notifications.
              */
             virtual void init(Cluster &cluster) = 0;
 

@@ -218,7 +218,7 @@ namespace hazelcast {
                 std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
 
                 checkLive();
-                conn->connect();
+                conn->connect(clientContext.getClientConfig().getConnectionTimeout());
                 if (socketInterceptor.get() != NULL) {
                     socketInterceptor.get()->onConnect(conn->getSocket());
                 }

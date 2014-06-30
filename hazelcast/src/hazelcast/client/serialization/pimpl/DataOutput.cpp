@@ -31,7 +31,8 @@ namespace hazelcast {
                 };
 
                 std::auto_ptr< std::vector<byte> > DataOutput::toByteArray() {
-                    return outputStream;
+                    std::auto_ptr< std::vector<byte> > byteArrayPtr(new std::vector<byte> (*outputStream));
+                    return byteArrayPtr;
                 };
 
                 void DataOutput::write(const std::vector<byte> &bytes) {

@@ -44,11 +44,6 @@ namespace hazelcast {
                 dataOutput->writeBoolean(i);
             };
 
-            void ObjectDataOutput::writeByte(int index, int i) {
-                if (isEmpty) return;
-                dataOutput->writeByte(index, i);
-            }
-
             void ObjectDataOutput::writeByte(int i) {
                 if (isEmpty) return;
                 dataOutput->writeByte(i);
@@ -89,11 +84,6 @@ namespace hazelcast {
                 dataOutput->writeUTF(str);
             };
 
-            void ObjectDataOutput::writeInt(int index, int v) {
-                if (isEmpty) return;
-                dataOutput->writeInt(index, v);
-            };
-
             void ObjectDataOutput::writeByteArray(const std::vector<byte>&  data) {
                 if (isEmpty) return;
                 dataOutput->writeByteArray(data);
@@ -127,12 +117,6 @@ namespace hazelcast {
             void ObjectDataOutput::writeDoubleArray(const std::vector<double >&  data) {
                 if (isEmpty) return;
                 dataOutput->writeDoubleArray(data);
-            };
-
-
-            void ObjectDataOutput::writeNullObject() {
-                if (isEmpty) return;
-                writeBoolean(true);
             };
 
             void ObjectDataOutput::writePortable(const Portable *portable) {

@@ -60,8 +60,9 @@ namespace hazelcast {
              *
              *  Note that E is std::string in the example
              *
-             *  @param L listener
-             *  @param bool includeValue should ItemEvent include value or not.
+             *  @tparam L listener class type
+             *  @param listener that will be added
+             *  @param includeValue bool value representing value should be included in ItemEvent or not.
              */
             template < typename L>
             std::string addItemListener(L &listener, bool includeValue) {
@@ -189,8 +190,8 @@ namespace hazelcast {
              * Starts adding elements from given index,
              * and shifts others to the right.
              *
-             * @param int index
-             * @param elements std::vector<E>
+             * @param index start point of insterting given elements
+             * @param elements vector of elements that will be added to list
              * @return true if list elements are added.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
@@ -257,13 +258,13 @@ namespace hazelcast {
              * Replaced the element in the given index. And returns element if there were entry before inserting.
              *
              * @param index insert position
-             * @element E e element to be inserted.
+             * @param element to be inserted.
              * @return oldElement in given index.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
              */
-            boost::shared_ptr<E> set(int index, const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            boost::shared_ptr<E> set(int index, const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 list::ListSetRequest *request = new list::ListSetRequest(getName(), getServiceName(), valueData, index);
                 return invoke<E>(request, partitionId);
             };
@@ -272,12 +273,12 @@ namespace hazelcast {
              * Adds the element to the given index. Shifts others to the right.
              *
              * @param index insert position
-             * @element E e element to be inserted.
+             * @param element to be inserted.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              * @throws IndexOutOfBoundsException if the index is out of range.
              */
-            void add(int index, const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            void add(int index, const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 list::ListAddRequest *request = new list::ListAddRequest(getName(), getServiceName(), valueData, index);
                 invoke<serialization::pimpl::Void>(request, partitionId);
             };
@@ -296,26 +297,26 @@ namespace hazelcast {
 
             /**
              *
-             * @param element E
+             * @param element that will be searched
              * @return index of first occurrence of given element in the list.
              * Returns -1 if element is not in the list.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            int indexOf(const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            int indexOf(const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 list::ListIndexOfRequest *request = new list::ListIndexOfRequest(getName(), getServiceName(), valueData, false);
                 boost::shared_ptr<int> i = invoke<int>(request, partitionId);
                 return *i;
             };
 
             /**
-             * @param element E
+             * @param element that will be searched
              * @return index of last occurrence of given element in the list.
              * Returns -1 if element is not in the list.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            int lastIndexOf(const E &e) {
-                serialization::pimpl::Data valueData = toData(e);
+            int lastIndexOf(const E &element) {
+                serialization::pimpl::Data valueData = toData(element);
                 list::ListIndexOfRequest *request = new list::ListIndexOfRequest(getName(), getServiceName(), valueData, true);
                 boost::shared_ptr<int> i = invoke<int>(request, partitionId);
                 return *i;

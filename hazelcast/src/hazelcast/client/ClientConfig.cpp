@@ -12,7 +12,7 @@ namespace hazelcast {
         , defaultLoadBalancer(new impl::RoundRobinLB)
         , smart(true)
         , redoOperation(false)
-        , connectionTimeout(60000)
+        , connectionTimeout(5000)
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
@@ -93,8 +93,9 @@ namespace hazelcast {
             return loadBalancer;
         };
 
-        void ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
+        ClientConfig & ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
             this->loadBalancer = loadBalancer;
+            return *this;
         };
 
         ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
@@ -130,8 +131,9 @@ namespace hazelcast {
             return initialMembershipListeners;
         }
 
-        void ClientConfig::setCredentials(Credentials *credentials) {
+        ClientConfig & ClientConfig::setCredentials(Credentials *credentials) {
             this->credentials = credentials;
+            return *this;
         };
 
         Credentials &ClientConfig::getCredentials() {
@@ -141,22 +143,31 @@ namespace hazelcast {
             return *credentials;
         };
 
-        void ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
+        ClientConfig & ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
             this->socketInterceptor.reset(socketInterceptor);
+            return *this;
         }
 
         std::auto_ptr<SocketInterceptor> ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
         };
 
-        void ClientConfig::setSmart(bool smart) {
+        ClientConfig & ClientConfig::setSmart(bool smart) {
             this->smart = smart;
+            return *this;
         }
 
         bool ClientConfig::isSmart() const {
             return smart;
         }
 
+        SerializationConfig const &ClientConfig::getSerializationConfig() const {
+            return serializationConfig;
+        }
 
+        ClientConfig & ClientConfig::setSerializationConfig(SerializationConfig const &serializationConfig){
+            this->serializationConfig = serializationConfig;
+            return *this;
+        }
     }
 }

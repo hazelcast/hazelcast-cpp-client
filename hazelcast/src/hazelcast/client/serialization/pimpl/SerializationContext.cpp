@@ -16,10 +16,6 @@ namespace hazelcast {
                 SerializationContext::SerializationContext(int version)
                 : contextVersion(version)
                 , serializerHolder(*this) {
-//                portableContextMap[-1] = new PortableContext(this); //MTODO right now hardcoded : will changed as configurable (may be)
-//                portableContextMap[1] = new PortableContext(this);
-//                portableContextMap[-3] = new PortableContext(this);
-//                portableContextMap[0] = new PortableContext(this);
                 };
 
                 bool SerializationContext::isClassDefinitionExists(int factoryId, int classId) {
@@ -63,13 +59,6 @@ namespace hazelcast {
                 };
 
                 PortableContext &SerializationContext::getPortableContext(int factoryId) {
-//                int count = portableContextMap.count(factoryId);//MTODO look at the constructor
-//                if (count == 0) {
-//                    char message[70];
-//                    sprintf(message, "Could not find Portable factory for factoryId: %d", factoryId);
-//                    throw IException(message);
-//                }
-//                return portableContextMap.at(factoryId);
                     boost::shared_ptr<PortableContext> value = portableContextMap.get(factoryId);
                     if (value == NULL) {
                         value = boost::shared_ptr<PortableContext>(new PortableContext(this));
@@ -78,8 +67,6 @@ namespace hazelcast {
                             value = current;
                         }
                     }
-//                PortableContext* temp = portableContextMap.get(factoryId);
-//                temp->setSerializationContext(this);
                     return *value;
                 };
             }

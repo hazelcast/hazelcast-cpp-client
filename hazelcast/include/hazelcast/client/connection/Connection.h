@@ -47,7 +47,7 @@ namespace hazelcast {
 
                 void init(const std::vector<byte> &PROTOCOL);
 
-                void connect();
+                void connect(int timeoutInMillis);
 
                 void close();
 

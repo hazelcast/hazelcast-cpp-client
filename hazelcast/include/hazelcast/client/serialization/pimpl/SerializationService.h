@@ -29,12 +29,14 @@
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
             namespace pimpl {
                 class HAZELCAST_API SerializationService {
                 public:
 
-                    SerializationService(int version);
+                    SerializationService(const SerializationConfig& serializationConfig);
 
                     /**
                     *
@@ -74,7 +76,7 @@ namespace hazelcast {
                         Data data;
                         DataOutput dataOutput;
                         ObjectDataOutput output(dataOutput, serializationContext);
-                        int type = object->getSerializerId();
+                        int type = object->getTypeId();
                         boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
@@ -128,17 +130,17 @@ namespace hazelcast {
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, void *tag) {
                         if (data.bufferSize() == 0) return boost::shared_ptr<T>();
                         boost::shared_ptr<T> object(new T);
-                        checkClassType(object->getSerializerId(), data.getType());
+                        checkClassType(object->getTypeId(), data.getType());
                         DataInput dataInput(*(data.buffer.get()));
                         ObjectDataInput objectDataInput(dataInput, serializationContext);
-                        boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getSerializerId());
+                        boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getTypeId());
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                             s->read(objectDataInput, *object);
                             return object;
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + util::IOUtil::to_string(object->getSerializerId()) + ", typename :" + typeid(T).name();
+                                    + util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
                             throw exception::IOException("SerializationService::toObject", message);
                         }
                     };
@@ -154,6 +156,8 @@ namespace hazelcast {
                     SerializationContext serializationContext;
 
                     SerializationConstants constants;
+
+                    const SerializationConfig& serializationConfig;
 
                     void checkClassType(int expectedType, int currentType);
 

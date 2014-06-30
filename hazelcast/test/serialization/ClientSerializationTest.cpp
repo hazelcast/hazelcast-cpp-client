@@ -13,6 +13,7 @@
 #include "serialization/testUtil.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
+#include "hazelcast/client/SerializationConfig.h"
 #include <fstream>
 
 namespace hazelcast {
@@ -50,7 +51,9 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testCustomSerialization() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 boost::shared_ptr<serialization::SerializerBase> serializer1(new TestCustomSerializerX<TestCustomXSerializable>());
                 boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
@@ -73,7 +76,9 @@ namespace hazelcast {
 
 
             void ClientSerializationTest::testRawData() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
                 std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
@@ -89,7 +94,9 @@ namespace hazelcast {
 
 
             void ClientSerializationTest::testIdentifiedDataSerializable() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
                 serialization::pimpl::Data data;
                 TestDataSerializable np(4, 'k');
                 data = serializationService.toData<TestDataSerializable>(&np);
@@ -106,7 +113,9 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testRawDataWithoutRegistering() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
                 std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
@@ -123,7 +132,9 @@ namespace hazelcast {
 
 
             void ClientSerializationTest::testInvalidWrite() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidWritePortable p(2131, 123, "q4edfd");
                 try{
                     serializationService.toData<TestInvalidWritePortable>(&p);
@@ -134,7 +145,9 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testInvalidRead() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidReadPortable p(2131, 123, "q4edfd");
                 serialization::pimpl::Data data = serializationService.toData<TestInvalidReadPortable>(&p);
                 try{
@@ -146,9 +159,13 @@ namespace hazelcast {
             }
 
             void ClientSerializationTest::testDifferentVersions() {
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::pimpl::SerializationService serializationService2(2);
+                SerializationConfig serializationConfig2;
+                serializationConfig.setPortableVersion(2);
+                serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 TestNamedPortable p1("portable-v1", 111);
                 serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(&p1);
@@ -168,9 +185,13 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testDifferentVersionsUsingDataWriteAndRead(){
-                serialization::pimpl::SerializationService serializationService(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::pimpl::SerializationService serializationService2(2);
+                SerializationConfig serializationConfig2;
+                serializationConfig.setPortableVersion(2);
+                serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 TestNamedPortable p1("portable-v1", 111);
                 serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(&p1);
@@ -197,7 +218,9 @@ namespace hazelcast {
             }
 
             void ClientSerializationTest::testCompression() {
-                serialization::pimpl::SerializationService serializationService1(1);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService1(serializationConfig);
                 TestMainPortable mainPortable = getTestMainPortable();
 
                 serialization::pimpl::Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
@@ -208,7 +231,9 @@ namespace hazelcast {
 
                 std::auto_ptr< std::vector < byte> > xxx = objectDataOutput.toByteArray();
 
-                serialization::pimpl::SerializationService serializationService2(1);
+                SerializationConfig serializationConfig2;
+                serializationConfig.setPortableVersion(2);
+                serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 serialization::pimpl::DataInput dataInput(*(xxx.get()));
                 serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
@@ -219,8 +244,13 @@ namespace hazelcast {
             };
 
             void ClientSerializationTest::testBasicFunctionality() {
-                serialization::pimpl::SerializationService serializationService(1);
-                serialization::pimpl::SerializationService serializationService2(2);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                SerializationConfig serializationConfig2;
+                serializationConfig.setPortableVersion(2);
+                serialization::pimpl::SerializationService serializationService2(serializationConfig2);
                 serialization::pimpl::Data data;
 
                 int x = 3;

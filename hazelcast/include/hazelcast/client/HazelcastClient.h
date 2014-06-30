@@ -25,7 +25,8 @@ namespace hazelcast {
  * Different from nodes, clients do not hold data.
  *
  * Some of features of C++ Clients are:
- * * Access to distributed data structures like IMap, IQueue, MultiMap, ITopic etc... @see DistributedObject
+ * * Access to distributed data structures like IMap, IQueue, MultiMap, ITopic etc... For complete list see the classes
+ * extending DistributedObject
  * * Access to transactional distributed data structures like TransactionalMap, TransactionalQueue etc...
  * * Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.
  * @see MembershipListener, IMap#addEntryListener , IQueue#addItemListener etc .
@@ -163,11 +164,7 @@ namespace hazelcast {
  *
  * \subsection entry_listener Entry Listener Example
  *
- *      #include "hazelcast/client/ClientConfig.h"
- *      #include "hazelcast/client/EntryEvent.h"
- *      #include "hazelcast/client/IMap.h"
- *      #include "hazelcast/client/Address.h"
- *      #include "hazelcast/client/HazelcastClient.h"
+ *      #include <hazelcast/client/HazelcastAll.h>
  *      #include <iostream>
  *      #include <string>
  *
@@ -332,10 +329,8 @@ namespace hazelcast {
          };
  *
  *  Now, you can use class Foo and Bar in distributed structures. For example as Key or Value of IMap,
- *  or as an Item in IQueue
+ *  or as an Item in IQueue.
  *
- *
- * .
  */
         namespace connection {
             class ConnectionManager;
@@ -403,27 +398,27 @@ namespace hazelcast {
 
             /**
              *
-             * @param T type of the distributed object
-             * @param instanceName name of the distributed object.
+             * @tparam T type of the distributed object
+             * @param name name of the distributed object.
              * @returns distributed object
              */
             template <typename T>
-            T getDistributedObject(const std::string &instanceName) {
-                T t(instanceName, &(clientContext));
+            T getDistributedObject(const std::string &name) {
+                T t(name, &(clientContext));
                 return t;
             };
 
             /**
              * Returns the distributed map instance with the specified name.
              *
-             * @param K key type
-             * @param V value type
-             * @param instanceName name of the distributed map
+             * @tparam K key type
+             * @tparam V value type
+             * @param name name of the distributed map
              * @return distributed map instance with the specified name
              */
             template<typename K, typename V>
-            IMap<K, V> getMap(const std::string &instanceName) {
-                return getDistributedObject< IMap<K, V > >(instanceName);
+            IMap<K, V> getMap(const std::string &name) {
+                return getDistributedObject< IMap<K, V > >(name);
             };
 
             /**
@@ -433,8 +428,8 @@ namespace hazelcast {
              * @return distributed multimap instance with the specified name
              */
             template<typename K, typename V>
-            MultiMap<K, V> getMultiMap(const std::string &instanceName) {
-                return getDistributedObject< MultiMap<K, V > >(instanceName);
+            MultiMap<K, V> getMultiMap(const std::string &name) {
+                return getDistributedObject< MultiMap<K, V > >(name);
             };
 
             /**
@@ -444,8 +439,8 @@ namespace hazelcast {
              * @return distributed queue instance with the specified name
              */
             template<typename E>
-            IQueue<E> getQueue(const std::string &instanceName) {
-                return getDistributedObject< IQueue<E > >(instanceName);
+            IQueue<E> getQueue(const std::string &name) {
+                return getDistributedObject< IQueue<E > >(name);
             };
 
             /**
@@ -457,8 +452,8 @@ namespace hazelcast {
              */
 
             template<typename E>
-            ISet<E> getSet(const std::string &instanceName) {
-                return getDistributedObject< ISet<E > >(instanceName);
+            ISet<E> getSet(const std::string &name) {
+                return getDistributedObject< ISet<E > >(name);
             };
 
             /**
@@ -469,8 +464,8 @@ namespace hazelcast {
              * @return distributed list instance with the specified name
              */
             template<typename E>
-            IList<E> getList(const std::string &instanceName) {
-                return getDistributedObject< IList<E > >(instanceName);
+            IList<E> getList(const std::string &name) {
+                return getDistributedObject< IList<E > >(name);
             };
 
             /**
@@ -480,8 +475,8 @@ namespace hazelcast {
              * @return distributed topic instance with the specified name
              */
             template<typename E>
-            ITopic<E> getTopic(const std::string &instanceName) {
-                return getDistributedObject< ITopic<E> >(instanceName);
+            ITopic<E> getTopic(const std::string &name) {
+                return getDistributedObject< ITopic<E> >(name);
             };
 
             /**
@@ -492,7 +487,7 @@ namespace hazelcast {
             * @param name name of the IdGenerator
             * @return IdGenerator for the given name
             */
-            IdGenerator getIdGenerator(const std::string &instanceName);
+            IdGenerator getIdGenerator(const std::string &name);
 
             /**
             * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed
@@ -501,7 +496,7 @@ namespace hazelcast {
             * @param name name of the IAtomicLong proxy
             * @return IAtomicLong proxy for the given name
             */
-            IAtomicLong getIAtomicLong(const std::string &instanceName);
+            IAtomicLong getIAtomicLong(const std::string &name);
 
             /**
              * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
@@ -511,7 +506,7 @@ namespace hazelcast {
              * @return ICountDownLatch proxy for the given name
              */
 
-            ICountDownLatch getICountDownLatch(const std::string &instanceName);
+            ICountDownLatch getICountDownLatch(const std::string &name);
 
             /**
              * Returns the distributed lock instance for the specified key object.
@@ -519,26 +514,25 @@ namespace hazelcast {
              * So keys are considered equals cluster-wide as long as
              * they are serialized to the same byte array such as String, long,
              * Integer.
-             * <p/>
+             *
              * Locks are fail-safe. If a member holds a lock and some of the
              * members go down, cluster will keep your locks safe and available.
              * Moreover, when a member leaves the cluster, all the locks acquired
              * by this dead member will be removed so that these locks can be
              * available for live members immediately.
-             * <pre>
-             * Lock lock = hazelcastInstance.getLock("PROCESS_LOCK");
-             * lock.lock();
-             * try {
-             *   // process
-             * } finally {
-             *   lock.unlock();
-             * }
-             * </pre>
              *
-             * @param key key of the lock instance
-             * @return distributed lock instance for the specified key.
+             *      Lock lock = hazelcastInstance.getLock("PROCESS_LOCK");
+             *      lock.lock();
+             *      try {
+             *        // process
+             *      } finally {
+             *        lock.unlock();
+             *      }
+             *
+             * @param name name of the lock instance
+             * @return distributed lock instance for the specified name.
              */
-            ILock getILock(const std::string &instanceName);
+            ILock getILock(const std::string &name);
 
             /**
              * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
@@ -547,7 +541,7 @@ namespace hazelcast {
              * @param name name of the ISemaphore proxy
              * @return ISemaphore proxy for the given name
              */
-            ISemaphore getISemaphore(const std::string &instanceName);
+            ISemaphore getISemaphore(const std::string &name);
 
             /**
              *

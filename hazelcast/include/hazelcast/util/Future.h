@@ -8,7 +8,7 @@
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
-#include "hazelcast/client/exception/ExceptionHandler.h"
+#include "hazelcast/client/exception/pimpl/ExceptionHandler.h"
 #include "hazelcast/util/ILogger.h"
 #include <memory>
 #include <cassert>
@@ -53,14 +53,14 @@ namespace hazelcast {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
                 }
                 conditionVariable.wait(mutex);
                 if (resultReady) {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
                 }
                 assert(false && "InvalidState");
                 return sharedObject;

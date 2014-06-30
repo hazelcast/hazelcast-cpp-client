@@ -87,12 +87,12 @@ namespace hazelcast {
              * The timeout determines the maximum lifespan of a transaction. So if a transaction is configured with a
              * timeout of 2 minutes, then it will automatically rollback if it hasn't committed yet.
              *
-             * @param timeoutInMillis  the timeout.
+             * @param timeoutInSeconds  the timeout value in seconds.
              * @return the updated TransactionOptions
              * @throws IllegalArgumentException if timeout smaller or equal than 0, or timeUnit is null.
-             * @see #getTimeoutMillis()
+             * @see #getTimeout()
              */
-            TransactionOptions &setTimeout(int seconds);
+            TransactionOptions &setTimeout(int timeoutInSeconds);
 
             /**
              *

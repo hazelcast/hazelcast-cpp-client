@@ -36,8 +36,8 @@ namespace hazelcast {
                 socket.close();
             }
 
-            void Connection::connect() {
-                int error = socket.connect();
+            void Connection::connect(int timeoutInMillis) {
+                int error = socket.connect(timeoutInMillis);
                 if (error) {
                     throw exception::IOException("Socket::connect", strerror(error));
                 }
@@ -59,12 +59,12 @@ namespace hazelcast {
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
                 if (promise->getRequest().isBindToSingleConnection()) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
-                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
+                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
                 if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
-                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
+                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
 
@@ -74,7 +74,7 @@ namespace hazelcast {
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
                 } catch(exception::IOException &) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
-                    promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
+                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
                 connection->registerAndEnqueue(promise);
@@ -238,7 +238,7 @@ namespace hazelcast {
                     return;
                 }
                 std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
-                promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
+                promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
 
             }
         }

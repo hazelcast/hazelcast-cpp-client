@@ -12,7 +12,7 @@ namespace hazelcast {
         : clientConfig(config)
         , clientContext(*this)
         , lifecycleService(clientContext, clientConfig)
-        , serializationService(0)
+        , serializationService(config.getSerializationConfig())
         , connectionManager(clientContext, clientConfig.isSmart())
         , clusterService(clientContext)
         , partitionService(clientContext)

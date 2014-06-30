@@ -17,15 +17,14 @@ namespace hazelcast {
          * Listener object for listening lifecycle events of hazelcast instance
          *
          * @see LifecycleEvent
-         * @see HazelcastInstance#getLifecycleService()
-         * @see LifecycleService#addLifecycleListener(LifecycleListener *lifecycleListener)
+         * @see HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener)
          *
          */
         class HAZELCAST_API LifecycleListener {
         public:
             /**
              * Called when instance's state changes
-             * @param event Lifecycle event
+             * @param lifecycleEvent LifecycleEvent
              *
              */
             virtual void stateChanged(const LifecycleEvent &lifecycleEvent) = 0;

@@ -61,7 +61,7 @@ namespace hazelcast {
                     localAddress = "::1";
 
                 wakeUpSocket.reset(new Socket(Address(localAddress, p)));
-                int error = wakeUpSocket->connect();
+                int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
                     wakeUpSocketSet.sockets.insert(sleepingSocket.get());

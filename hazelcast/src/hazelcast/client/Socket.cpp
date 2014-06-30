@@ -52,14 +52,14 @@ namespace hazelcast {
             close();
         };
 
-        int Socket::connect() {
+        int Socket::connect(int timeoutInMillis) {
             assert(serverInfo != NULL && "Socket is already connected");
             setBlocking(false);
             ::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
 
             struct timeval tv;
-            tv.tv_sec = 15;
-            tv.tv_usec = 0;
+            tv.tv_sec = timeoutInMillis / 1000;
+            tv.tv_usec = (timeoutInMillis - tv.tv_sec) * 1000;
             fd_set mySet, err;
             FD_ZERO(&mySet);
             FD_ZERO(&err);

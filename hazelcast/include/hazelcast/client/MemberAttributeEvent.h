@@ -26,14 +26,21 @@ namespace hazelcast {
          */
         class HAZELCAST_API MemberAttributeEvent : public MembershipEvent {
         public:
+            /**
+            * PUT even type representing an addition of an attribute
+            * REMOVE event type representing a deletion of an attribute
+            */
             enum MemberAttributeOperationType {
                 PUT = 1,
                 REMOVE = 2
             };
 
+            /**
+            * InternalAPI. constructor
+            */
             MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id);
 
-            /*
+            /**
              *
              *  enum MemberAttributeOperationType {
              *   PUT = 2,

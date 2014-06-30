@@ -9,14 +9,21 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
 #include "hazelcast/util/ILogger.h"
-
+#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializationService::SerializationService(int version)
-                : serializationContext(version) {
+                SerializationService::SerializationService(const SerializationConfig& serializationConfig)
+                : serializationContext(serializationConfig.getPortableVersion())
+                , serializationConfig(serializationConfig) {
+                    std::vector<boost::shared_ptr<SerializerBase> > const &serializers = serializationConfig.getSerializers();
+                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
+                    SerializerHolder &serializerHolder = getSerializerHolder();
+                    for(it = serializers.begin() ; it < serializers.end() ; ++it){
+                        serializerHolder.registerSerializer(*it);
+                    }
                 };
 
 

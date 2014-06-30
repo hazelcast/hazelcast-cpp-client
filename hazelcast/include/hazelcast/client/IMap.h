@@ -192,119 +192,13 @@ namespace hazelcast {
             };
 
             /**
-             * Asynchronously gets the given key.
-             * <code>
-             * Future future = map.getAsync(key);
-             * // do some other stuff, when ready get the result
-             * Object value = future.get();
-             * </code>
-             * Future.get() will block until the actual map.get() completes.
-             * If the application requires timely response,
-             * then Future.get(timeout, timeunit) can be used.
-             * <code>
-             * try{
-             * Future future = map.getAsync(key);
-             * Object value = future.get(40, TimeUnit.MILLISECOND);
-             * }catch (TimeoutException t) {
-             * // time wasn't enough
-             * }
-             * </code>
-             * ExecutionException is never thrown.
-             *
-             *
-             * @param key the key of the map entry
-             * @return Future from which the value of the key can be retrieved.
-
-             * @see java.util.concurrent.Future
-             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
-             */
-            //MTODO Future<V> getAsync(K key);
-
-            /**
-             * Asynchronously puts the given key and value.
-             * <code>
-             * Future future = map.putAsync(key, value);
-             * // do some other stuff, when ready get the result
-             * Object oldValue = future.get();
-             * </code>
-             * Future.get() will block until the actual map.get() completes.
-             * If the application requires timely response,
-             * then Future.get(timeout, timeunit) can be used.
-             * <code>
-             * try{
-             * Future future = map.putAsync(key, newValue);
-             * Object oldValue = future.get(40, TimeUnit.MILLISECOND);
-             * }catch (TimeoutException t) {
-             * // time wasn't enough
-             * }
-             * </code>
-             * ExecutionException is never thrown.
-             *
-
-             *
-             * @param key   the key of the map entry
-             * @param value the new value of the map entry
-             * @return Future from which the old value of the key can be retrieved.
-             * @throws NullPointerException if the specified key or value is null
-             * @see java.util.concurrent.Future
-             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
-             */
-            //MTODO Future<V> putAsync(K key, V value);
-
-            /**
-             * Asynchronously puts the given key and value into this map with a given ttl (time to live) value.
-             * Entry will expire and get evicted after the ttl. If ttl is 0, then
-             * the entry lives forever.
-             * <code>
-             * Future future = map.putAsync(key, value, ttl, timeunit);
-             * // do some other stuff, when ready get the result
-             * Object oldValue = future.get();
-             * </code>
-             * Future.get() will block until the actual map.get() completes.
-             * If the application requires timely response,
-             * then Future.get(timeout, timeunit) can be used.
-             * <code>
-             * try{
-             * Future future = map.putAsync(key, newValue, ttl, timeunit);
-             * Object oldValue = future.get(40, TimeUnit.MILLISECOND);
-             * }catch (TimeoutException t) {
-             * // time wasn't enough
-             * }
-             * </code>
-             * ExecutionException is never thrown.
-             *
-
-             *
-             * @param key   the key of the map entry
-             * @param value the new value of the map entry
-             * @param ttl      maximum time for this entry to stay in the map
-             *                 0 means infinite.
-             * @param timeunit time unit for the ttl
-             * @return Future from which the old value of the key can be retrieved.
-             * @throws NullPointerException if the specified key or value is null
-             * @see java.util.concurrent.Future
-             */
-            //MTODO Future<V> putAsync(K key, V value, long ttl, TimeUnit timeunit);
-
-            /**
-             * Asynchronously removes the given key.
-             *
-
-             *
-             * @param key The key of the map entry to remove.
-             * @return A java.util.concurrent.Future from which the value
-             *         removed from the map can be retrieved.
-
-             */
-            //MTODO Future<V> removeAsync(K key);
-
-            /**
              * Tries to remove the entry with the given key from this map
              * within specified timeout value. If the key is already locked by another
              * thread and/or member, then this operation will wait timeout
              * amount for acquiring the lock.
+             *
              * @param key      key of the entry
-             * @param timeout  maximum time in milliseconds to wait for acquiring the lock
+             * @param timeoutInMillis  maximum time in milliseconds to wait for acquiring the lock
              *                 for the key
              */
             bool tryRemove(const K &key, long timeoutInMillis) {
@@ -323,7 +217,7 @@ namespace hazelcast {
              *
              * @param key      key of the entry
              * @param value    value of the entry
-             * @param timeout  maximum time to wait in milliseconds
+             * @param timeoutInMillis  maximum time to wait in milliseconds
              * @return <tt>true</tt> if the put is successful, <tt>false</tt>
              *         otherwise.
              */
@@ -341,10 +235,9 @@ namespace hazelcast {
              * Entry will expire and get evicted after the ttl. If ttl is 0, then
              * the entry lives forever.
              *
-             * @param key      key of the entry
-             * @param value    value of the entry
-             * @param ttl      maximum time for this entry to stay in the map in milliseconds,
-             *                 0 means infinite.
+             * @param key              key of the entry
+             * @param value            value of the entry
+             * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
              * @return the previous value in shared_ptr, if there is no mapping for key
              * then returns NULL in shared_ptr.
              */
@@ -361,10 +254,9 @@ namespace hazelcast {
              * will not be called to store/persist the entry.  If ttl is 0, then
              * the entry lives forever.
              *
-             * @param key      key of the entry
-             * @param value    value of the entry
-             * @param ttl      maximum time for this entry to stay in the map in milliseconds,
-             *                 0 means infinite.
+             * @param key          key of the entry
+             * @param value        value of the entry
+             * @param ttlInMillis  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
              */
             void putTransient(const K &key, const V &value, long ttlInMillis) {
                 serialization::pimpl::Data keyData = toData(key);
@@ -391,9 +283,9 @@ namespace hazelcast {
              * if the specified key is not already associated with a value.
              * Entry will expire and get evicted after the ttl.
              *
-             * @param key      key of the entry
-             * @param value    value of the entry
-             * @param ttl      maximum time in milliseconds for this entry to stay in the map
+             * @param key            key of the entry
+             * @param value          value of the entry
+             * @param ttlInMillis    maximum time in milliseconds for this entry to stay in the map
              * @return the previous value of the entry, if there is no mapping for key
              * then returns NULL in shared_ptr.
              */
@@ -541,7 +433,7 @@ namespace hazelcast {
              *
              *
              * @param key      key to lock in this map
-             * @param time     maximum time in milliseconds to wait for the lock
+             * @param timeInMillis     maximum time in milliseconds to wait for the lock
              * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
              *         if the waiting time elapsed before the lock was acquired.
              */
@@ -647,6 +539,8 @@ namespace hazelcast {
              * @param listener     entry listener
              * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
              *                     contain the value.
+             *
+             * @return registrationId of added listener that can be used to remove the entry listener.
              */
             template < typename L>
             std::string addEntryListener(L &listener, bool includeValue) {
@@ -660,7 +554,7 @@ namespace hazelcast {
              * Returns silently if there is no such listener added before.
              *
              *
-             * @param id id of registered listener
+             * @param registrationId id of registered listener
              *
              * @return true if registration is removed, false otherwise
              */
@@ -713,30 +607,6 @@ namespace hazelcast {
                 impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
                 return listen(request, partitionId, entryEventHandler);
             };
-
-
-            /**
-             * Adds an continuous entry listener for this map. Listener will get notified
-             * for map add/remove/update/evict events filtered by given predicate.
-             *
-             * @param listener  entry listener
-             * @param predicate predicate for filtering entries
-             * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
-             *                     contain the value.
-             */
-            //MTODO String addEntryListener(EntryListener<K, V> listener, Predicate<K, V> predicate, boolean includeValue);
-
-            /**
-             * Adds an continuous entry listener for this map. Listener will get notified
-             * for map add/remove/update/evict events filtered by given predicate.
-             *
-             * @param listener  entry listener
-             * @param predicate predicate for filtering entries
-             * @param key          key to listen
-             * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
-             *                     contain the value.
-             */
-            //MTODO String addEntryListener(EntryListener<K, V> listener, Predicate<K, V> predicate, K key, boolean includeValue);
 
             /**
              * Returns the <tt>EntryView</tt> for the specified key.
@@ -916,7 +786,7 @@ namespace hazelcast {
              * Specified predicate runs on all members in parallel.
              *
              *
-             * @param predicate query criteria
+             * @param sql predicate query string
              * @return result value vector of the query
             */
             std::vector<V> values(const std::string &sql) {
@@ -977,6 +847,11 @@ namespace hazelcast {
              * EntryProcessor should extend either Portable or IdentifiedSerializable.
              * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
              * with same classId and factoryId.
+             *
+             * @tparam EntryProcessor type of entry processor class
+             * @tparam ResultType that entry processor will return
+             * @param entryProcessor that will be applied
+             * @param key of entry that entryProcessor will be applied on
              * @return result of entry process.
              */
             template<typename ResultType, typename EntryProcessor>
@@ -988,28 +863,6 @@ namespace hazelcast {
             }
 
             /**
-             * Applies the user defined EntryProcessor to the entry mapped by the key with
-             * specified ExecutionCallback to listen event status and returns immediately.
-             *
-             * @param key   key to be processed
-             * @param entryProcessor processor to process the key
-             * @param callback to listen whether operation is finished or not
-             */
-            //MTODO  void submitToKey(K key, EntryProcessor entryProcessor, ExecutionCallback callback);
-
-            /**
-             * Applies the user defined EntryProcessor to the entry mapped by the key.
-             * Returns immediately with a Future representing that task.
-             *
-             *
-             * @param key   key to be processed
-             * @param entryProcessor processor to process the key
-             * @return Future from which the result of the operation can be retrieved.
-             * @see java.util.concurrent.Future
-             */
-            //MTODO  Future submitToKey(K key, EntryProcessor entryProcessor);
-
-            /**
              * Applies the user defined EntryProcessor to the all entries in the map.
              * Returns the results mapped by each key in the map.
              *
@@ -1017,6 +870,10 @@ namespace hazelcast {
              * EntryProcessor should extend either Portable or IdentifiedSerializable.
              * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
              * with same classId and factoryId.
+             *
+             * @tparam ResultType that entry processor will return
+             * @tparam EntryProcessor type of entry processor class
+             * @param entryProcessor that will be applied
              */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, ResultType> executeOnEntries(EntryProcessor &entryProcessor) {
@@ -1031,24 +888,6 @@ namespace hazelcast {
                 }
                 return result;
             }
-
-            /**
-             * Applies the user defined EntryProcessor to the entries in the map which satisfies provided predicate.
-             * Returns the results mapped by each key in the map.
-             *
-             *
-             */
-            //MTODO Map<K,Object> executeOnEntries(EntryProcessor entryProcessor, Predicate predicate);
-
-
-            /**
-             * Applies the user defined EntryProcessor to the entries mapped by the collection of keys.
-             * the results mapped by each key in the collection.
-             *
-             *
-             * @return result of entry process.
-             */
-            //MTODO Map<K,Object> executeOnKeys(Set<K> keys, EntryProcessor entryProcessor);
 
             /**
              * Puts an entry into this map.
@@ -1087,7 +926,7 @@ namespace hazelcast {
             /**
              * Copies all of the mappings from the specified map to this map
              * (optional operation).  The effect of this call is equivalent to that
-             * of calling #put(Object,Object) put(k, v) on this map once
+             * of calling put(k, v) on this map once
              * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
              * specified map.  The behavior of this operation is undefined if the
              * specified map is modified while the operation is in progress.

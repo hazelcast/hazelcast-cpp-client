@@ -17,7 +17,7 @@ namespace hazelcast {
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
-                if (int error = socket.connect())
+                if (int error = socket.connect(5000))
                     std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 
             }

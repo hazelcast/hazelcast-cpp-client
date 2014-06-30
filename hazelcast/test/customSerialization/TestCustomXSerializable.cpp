@@ -3,7 +3,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            int TestCustomXSerializable::getSerializerId() const {
+            int TestCustomXSerializable::getTypeId() const {
                 return 666;
             };
 
@@ -15,7 +15,7 @@ namespace hazelcast {
                 name = param;
             };
 
-            int TestCustomPerson::getSerializerId() const {
+            int TestCustomPerson::getTypeId() const {
                 return 999;
             };
 

@@ -15,7 +15,7 @@ namespace hazelcast {
             public:
                 int id;
 
-                int getSerializerId() const;
+                int getTypeId() const;
             };
 
             class HAZELCAST_API TestCustomPerson {
@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 void setName(const std::string & param);
 
-                int getSerializerId() const;
+                int getTypeId() const;
 
             private:
                 std::string name;
