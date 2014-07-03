@@ -31,7 +31,8 @@ namespace hazelcast {
             SerializationConfig();
 
             /**
-             * Portable version will be used to differentiate two binaries of same class that have changes on it.
+             * Portable version will be used to differentiate two same class that have changes on it
+             * , like adding/removing field or changing a type of a field.
              *
              *  @return version of portable classes that will be created by this client
              */
