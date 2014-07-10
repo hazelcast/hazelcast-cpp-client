@@ -107,9 +107,6 @@ namespace hazelcast {
 
                 void DefaultPortableReader::setPosition(char const *fieldName) {
                     dataInput.position(getPosition(fieldName));
-                    const FieldDefinition &fd = cd->get(fieldName);
-                    currentFactoryId = fd.getFactoryId();
-                    currentClassId = fd.getClassId();
                 };
 
                 int DefaultPortableReader::getPosition(const char *fieldName) {

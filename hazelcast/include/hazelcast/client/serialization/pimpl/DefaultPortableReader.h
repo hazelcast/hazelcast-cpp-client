@@ -67,12 +67,16 @@ namespace hazelcast {
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
                         boost::shared_ptr<T> portable;
                         setPosition(fieldName);
+
                         bool isNull = dataInput.readBoolean();
                         if (isNull) {
                             return portable;
                         }
                         portable.reset(new T);
-                        read(dataInput, *portable, currentFactoryId, currentClassId);
+                        const FieldDefinition &fd = cd->get(fieldName);
+                        int factoryId = fd.getFactoryId();
+                        int classId = fd.getClassId();
+                        read(dataInput, *portable, factoryId, classId);
                         return portable;
                     };
 
@@ -80,7 +84,12 @@ namespace hazelcast {
                     std::vector< T > readPortableArray(const char *fieldName) {
                         std::vector< T > portables;
                         setPosition(fieldName);
+
+                        const FieldDefinition &fd = cd->get(fieldName);
+                        int factoryId = fd.getFactoryId();
+                        int classId = fd.getClassId();
                         int len = dataInput.readInt();
+
                         portables.resize(len, T());
                         if (len > 0) {
                             int offset = dataInput.position();
@@ -89,7 +98,7 @@ namespace hazelcast {
                                 int start = dataInput.readInt();
                                 dataInput.position(start);
 
-                                read(dataInput, portables[i], currentFactoryId, currentClassId);
+                                read(dataInput, portables[i], factoryId, classId);
                             }
                         }
                         return portables;
@@ -113,8 +122,7 @@ namespace hazelcast {
                     int offset;
                     bool raw;
                     boost::shared_ptr<ClassDefinition> cd;
-                    int currentFactoryId;
-                    int currentClassId;
+
                 };
             }
 
