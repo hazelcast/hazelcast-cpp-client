@@ -4,6 +4,6 @@
 
 
 #ifndef HAZELCAST_VERSION
-#define HAZELCAST_VERSION "3.3-RC1"
+#define HAZELCAST_VERSION "3.3-RC2"
 #endif //HAZELCAST_Version
 
