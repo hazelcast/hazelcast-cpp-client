@@ -105,6 +105,7 @@ namespace hazelcast {
 
                     int length = (int) str.length();
                     writeInt(length);
+                    writeInt(length);
                     int chunkSize = length / STRING_CHUNK_SIZE + 1;
                     for (int i = 0; i < chunkSize; i++) {
                         int beginIndex = std::max(0, i * STRING_CHUNK_SIZE - 1);

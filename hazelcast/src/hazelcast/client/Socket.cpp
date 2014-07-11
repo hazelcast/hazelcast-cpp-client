@@ -59,7 +59,7 @@ namespace hazelcast {
 
             struct timeval tv;
             tv.tv_sec = timeoutInMillis / 1000;
-            tv.tv_usec = (timeoutInMillis - tv.tv_sec) * 1000;
+            tv.tv_usec = (timeoutInMillis - tv.tv_sec * 1000) * 1000;
             fd_set mySet, err;
             FD_ZERO(&mySet);
             FD_ZERO(&err);

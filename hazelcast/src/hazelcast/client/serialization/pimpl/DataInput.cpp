@@ -100,6 +100,10 @@ namespace hazelcast {
                     if (isNull)
                         return "";
                     int length = readInt();
+                    int lengthCheck = readInt();
+                    if (length != lengthCheck) {
+                        throw exception::IOException("DataInput::readShortUTF", "Length check failed, maybe broken bytestream or wrong stream position");
+                    }
                     std::string result = "";
                     int chunkSize = (length / STRING_CHUNK_SIZE) + 1;
                     while (chunkSize > 0) {
