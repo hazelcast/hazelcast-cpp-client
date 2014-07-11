@@ -65,7 +65,7 @@ namespace hazelcast {
             FD_ZERO(&err);
             FD_SET(socketId, &mySet);
             FD_SET(socketId, &err);
-            if (select(socketId+1, NULL, &mySet, &err , &tv) > 0) {
+            if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
                 setBlocking(true);
                 return 0;
             }
@@ -90,8 +90,8 @@ namespace hazelcast {
             }
             ioctlsocket(socketId, FIONBIO, &iMode);
             #else
-            int arg = fcntl(socketId, F_GETFL, NULL);
-            if(blocking){
+            long arg = fcntl(socketId, F_GETFL, NULL);
+            if (blocking) {
                 arg &= (~O_NONBLOCK);
             } else {
                 arg |= O_NONBLOCK;
