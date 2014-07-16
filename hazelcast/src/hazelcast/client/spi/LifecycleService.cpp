@@ -42,8 +42,7 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                util::LockGuard lg(lifecycleLock);
-                if (!active)
+                if (!active.compareAndSet(true, false))
                     return;
                 active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
