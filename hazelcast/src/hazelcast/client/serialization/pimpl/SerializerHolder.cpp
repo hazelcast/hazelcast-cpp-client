@@ -10,7 +10,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializerHolder::SerializerHolder(SerializationContext &context)
+                SerializerHolder::SerializerHolder(PortableContext&context)
                 :portableSerializer(context) {
 
                 }

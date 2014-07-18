@@ -198,13 +198,13 @@ namespace hazelcast {
 
                 // emulate socket write by writing data to stream
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getSerializationContext());
+                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService.getPortableContext());
                 data.writeData(objectDataOutput);
                 std::auto_ptr<std::vector<byte> > bytes = objectDataOutput.toByteArray();
 
                 // emulate socket read by reading data from stream
                 serialization::pimpl::DataInput dataInput(*bytes);
-                serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
+                serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getPortableContext());
                 serialization::pimpl::Data data2;
                 data2.readData(objectDataInput);
 
@@ -226,7 +226,7 @@ namespace hazelcast {
                 serialization::pimpl::Data data = serializationService1.toData<TestMainPortable>(&mainPortable);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService1.getSerializationContext());
+                serialization::ObjectDataOutput objectDataOutput(dataOutput, serializationService1.getPortableContext());
                 data.writeData(objectDataOutput);
 
                 std::auto_ptr< std::vector < byte> > xxx = objectDataOutput.toByteArray();
@@ -236,7 +236,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 serialization::pimpl::DataInput dataInput(*(xxx.get()));
-                serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getSerializationContext());
+                serialization::ObjectDataInput objectDataInput(dataInput, serializationService2.getPortableContext());
                 serialization::pimpl::Data newData;
                 newData.readData(objectDataInput);
                 boost::shared_ptr<TestMainPortable> returnedPortable = serializationService2.toObject<TestMainPortable >(newData);

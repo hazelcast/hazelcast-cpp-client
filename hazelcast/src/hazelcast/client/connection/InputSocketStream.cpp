@@ -4,7 +4,7 @@
 
 
 #include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
@@ -17,7 +17,7 @@ namespace hazelcast {
             , context(NULL) {
             };
 
-            void InputSocketStream::setSerializationContext(serialization::pimpl::SerializationContext *context) {
+            void InputSocketStream::setPortableContext(serialization::pimpl::PortableContext *context) {
                 this->context = context;
             };
 

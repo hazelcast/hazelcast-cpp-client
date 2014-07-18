@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API DataAdapter {
                     enum StatusBit {
@@ -49,7 +49,7 @@ namespace hazelcast {
                     size_t bytesRead;
                     size_t bytesWritten;
                     Data data;
-                    SerializationContext *context;
+                    PortableContext *context;
 
                     void setStatus(StatusBit bit);
 

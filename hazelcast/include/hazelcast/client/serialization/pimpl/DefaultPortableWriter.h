@@ -24,12 +24,12 @@ namespace hazelcast {
 
                 class SerializerHolder;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API DefaultPortableWriter {
                 public:
 
-                    DefaultPortableWriter(SerializationContext &serializationContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &output);
+                    DefaultPortableWriter(PortableContext &portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &output);
 
                     void writeInt(const char *fieldName, int value);
 

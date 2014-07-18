@@ -145,14 +145,14 @@ namespace hazelcast {
                         int version = objectDataInput.readInt();
 
                         int classDefSize = objectDataInput.readInt();
-                        SerializationContext *serializationContext = objectDataInput.getSerializationContext();
-                        if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = serializationContext->lookup(factoryId, classId, version);
+                        PortableContext *portableContext = objectDataInput.getPortableContext();
+                        if (portableContext->isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = portableContext->lookup(factoryId, classId, version);
                             objectDataInput.skipBytes(classDefSize);
                         } else {
                             std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                             objectDataInput.readFully(*(classDefBytes.get()));
-                            cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
+                            cd = portableContext->createClassDefinition(factoryId, classDefBytes);
                         }
                     }
                     int size = objectDataInput.readInt();

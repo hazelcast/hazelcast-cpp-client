@@ -5,17 +5,17 @@
 
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::SerializationContext& serializationContext)
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext)
             : dataOutput(&dataOutput)
-            , context(&serializationContext)
-            , serializerHolder(&serializationContext.getSerializerHolder())
+            , context(&portableContext)
+            , serializerHolder(&portableContext.getSerializerHolder())
             , isEmpty(false){
 
             };

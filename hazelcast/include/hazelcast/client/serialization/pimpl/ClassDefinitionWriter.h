@@ -23,12 +23,12 @@ namespace hazelcast {
             class Portable;
             namespace pimpl {
 
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API ClassDefinitionWriter {
                 public:
 
-                    ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext &serializationContext);
+                    ClassDefinitionWriter(int factoryId, int classId, int version, PortableContext &portableContext);
 
                     void writeInt(const char *fieldName, int value);
 
@@ -112,7 +112,7 @@ namespace hazelcast {
                     bool raw;
                     ObjectDataOutput emptyDataOutput;
                     boost::shared_ptr<ClassDefinition> cd;
-                    SerializationContext &context;
+                    PortableContext &context;
 
                 };
             }

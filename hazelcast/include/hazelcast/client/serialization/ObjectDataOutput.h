@@ -30,7 +30,7 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializationContext &serializationContext);
+                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::PortableContext &portableContext);
 
                 /**
                 * Internal API Constructor
@@ -190,7 +190,7 @@ namespace hazelcast {
 
             private:
                 pimpl::DataOutput *dataOutput;
-                pimpl::SerializationContext *context;
+                pimpl::PortableContext *context;
                 pimpl::SerializerHolder *serializerHolder;
                 bool isEmpty;
 

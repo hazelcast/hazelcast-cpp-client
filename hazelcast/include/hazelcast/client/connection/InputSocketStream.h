@@ -16,7 +16,7 @@ namespace hazelcast {
         class Socket;
         namespace serialization {
             namespace pimpl {
-                class SerializationContext;
+                class PortableContext;
 
                 class Data;
             }
@@ -27,7 +27,7 @@ namespace hazelcast {
 
                 InputSocketStream(Socket &socket);
 
-                void setSerializationContext(serialization::pimpl::SerializationContext *context);
+                void setPortableContext(serialization::pimpl::PortableContext *context);
 
                 int readInt();
 
@@ -35,7 +35,7 @@ namespace hazelcast {
 
             private:
                 Socket &socket;
-                serialization::pimpl::SerializationContext *context;
+                serialization::pimpl::PortableContext *context;
 
                 void readFully(std::vector<byte> &);
 

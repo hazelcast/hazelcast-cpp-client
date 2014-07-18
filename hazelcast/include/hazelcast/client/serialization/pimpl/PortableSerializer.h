@@ -26,14 +26,14 @@ namespace hazelcast {
 
                 class DataInput;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class ClassDefinition;
 
                 class HAZELCAST_API PortableSerializer {
                 public:
 
-                    PortableSerializer(SerializationContext &serializationContext);
+                    PortableSerializer(PortableContext &portableContext);
 
                     boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable &p);
 
@@ -42,7 +42,7 @@ namespace hazelcast {
                     void read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion);
 
                 private:
-                    SerializationContext &context;
+                    PortableContext &context;
 
                 };
 

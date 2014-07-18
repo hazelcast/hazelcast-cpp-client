@@ -18,11 +18,11 @@ namespace hazelcast {
             }
 
             int Principal::getFactoryId() const {
-                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
+                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
 
             int Principal::getClassId() const {
-                return ProtocolConstants::PRINCIPAL_ID;;
+                return ProtocolConstants::PRINCIPAL_ID;
             }
 
             void Principal::writePortable(serialization::PortableWriter &writer) const {

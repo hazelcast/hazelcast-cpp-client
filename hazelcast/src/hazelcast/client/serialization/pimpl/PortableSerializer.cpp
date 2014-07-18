@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
@@ -18,8 +18,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableSerializer::PortableSerializer(SerializationContext &serializationContext)
-                : context(serializationContext) {
+                PortableSerializer::PortableSerializer(PortableContext&portableContext)
+                : context(portableContext) {
 
                 };
 
@@ -52,7 +52,7 @@ namespace hazelcast {
                     boost::shared_ptr<ClassDefinition> cd;
 
                     if (context.getVersion() == dataVersion) {
-                        cd = context.lookup(factoryId, classId); // using serializationContext.version
+                        cd = context.lookup(factoryId, classId); // using portableContext.version
                         if (cd == NULL) {
                             throw exception::IOException("PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion)",
                                     "Could not find class-definition for factory-id: " + util::IOUtil::to_string(factoryId) + ", class-id: " + util::IOUtil::to_string(classId) + ", version: " + util::IOUtil::to_string(dataVersion));

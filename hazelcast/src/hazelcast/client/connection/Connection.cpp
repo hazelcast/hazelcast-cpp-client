@@ -167,7 +167,7 @@ namespace hazelcast {
 
             serialization::pimpl::Data Connection::readBlocking() {
                 connection::InputSocketStream inputSocketStream(socket);
-                inputSocketStream.setSerializationContext(&(clientContext.getSerializationService().getSerializationContext()));
+                inputSocketStream.setPortableContext(&(clientContext.getSerializationService().getPortableContext()));
                 serialization::pimpl::Data data;
                 inputSocketStream.readData(data);
                 return data;

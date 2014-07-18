@@ -7,18 +7,18 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, SerializationContext &serializationContext)
+                ClassDefinitionWriter::ClassDefinitionWriter(int factoryId, int classId, int version, PortableContext&portableContext)
                 : index(0)
                 , raw(false)
                 , cd(new ClassDefinition(factoryId, classId, version))
-                , context(serializationContext) {
+                , context(portableContext) {
                 };
 
 

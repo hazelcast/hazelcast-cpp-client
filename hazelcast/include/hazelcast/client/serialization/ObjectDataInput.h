@@ -13,7 +13,7 @@
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/util/IOUtil.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -30,7 +30,7 @@ namespace hazelcast {
             namespace pimpl {
                 class SerializationService;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class DataInput;
             }
@@ -44,13 +44,13 @@ namespace hazelcast {
                 /**
                 * Internal API. Constructor
                 */
-                ObjectDataInput(pimpl::DataInput &, pimpl::SerializationContext &);
+                ObjectDataInput(pimpl::DataInput &, pimpl::PortableContext &);
 
                 /**
                 * Internal API.
-                * @return serializationContext
+                * @return portableContext
                 */
-                pimpl::SerializationContext *getSerializationContext();
+                pimpl::PortableContext *getPortableContext();
 
                 /**
                 * fills all content to given byteArray
@@ -201,7 +201,7 @@ namespace hazelcast {
                     int factoryId = classDefinition->getFactoryId();
                     int classId = classDefinition->getClassId();
                     int version = classDefinition->getVersion();
-                    serializationContext.registerClassDefinition(classDefinition);
+                    portableContext.registerClassDefinition(classDefinition);
                     serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
                     return object;
                 };
@@ -242,7 +242,7 @@ namespace hazelcast {
                 };
 
                 pimpl::DataInput &dataInput;
-                pimpl::SerializationContext &serializationContext;
+                pimpl::PortableContext &portableContext;
                 pimpl::SerializerHolder &serializerHolder;
 
                 ObjectDataInput(const ObjectDataInput &);

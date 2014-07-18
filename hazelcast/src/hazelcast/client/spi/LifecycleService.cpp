@@ -44,7 +44,6 @@ namespace hazelcast {
             void LifecycleService::shutdown() {
                 if (!active.compareAndSet(true, false))
                     return;
-                active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().stop();
                 clientContext.getClusterService().stop();

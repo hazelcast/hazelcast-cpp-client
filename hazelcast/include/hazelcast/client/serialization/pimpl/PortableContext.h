@@ -1,18 +1,19 @@
 //
-// Created by sancar koyunlu on 5/2/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+//  PortableContext.h
+//  Server
 //
-// To change the template use AppCode | Preferences | File Templates.
+//  Created by sancar koyunlu on 1/10/13.
+//  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-
-
-#ifndef HAZELCAST_PORTABLE_CONTEXT
-#define HAZELCAST_PORTABLE_CONTEXT
+#ifndef HAZELCAST_SERIALIZATION_CONTEXT
+#define HAZELCAST_SERIALIZATION_CONTEXT
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include <vector>
+#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include <map>
+#include <vector>
+#include <memory>
 
 
 namespace hazelcast {
@@ -21,36 +22,47 @@ namespace hazelcast {
             namespace pimpl {
                 class ClassDefinition;
 
-                class SerializationContext;
+                class ClassDefinitionContext;
 
                 class HAZELCAST_API PortableContext {
                 public:
 
-                    PortableContext(SerializationContext *serializationContext);
+                    PortableContext(int);
 
-                    bool isClassDefinitionExists(int, int) const;
+                    bool isClassDefinitionExists(int, int);
 
                     boost::shared_ptr<ClassDefinition> lookup(int, int);
 
-                    boost::shared_ptr<ClassDefinition> createClassDefinition(std::auto_ptr< std::vector<byte> >);
+                    bool isClassDefinitionExists(int, int, int);
+
+                    boost::shared_ptr<ClassDefinition> lookup(int, int, int);
+
+                    boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+
+                    void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
 
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
+                    int getVersion();
+
+                    SerializerHolder &getSerializerHolder();
+
                 private:
-                    void compress(std::vector<byte> &);
 
-                    long long combineToLong(int x, int y) const;
+                    PortableContext(const PortableContext &);
 
-                    std::vector<byte> decompress(std::vector<byte> const &) const;
+                    ClassDefinitionContext &getClassDefinitionContext(int factoryId);
 
-                    util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
+                    void operator = (const PortableContext &);
 
-                    SerializationContext *serializationContext;
+                    int contextVersion;
+                    util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
+                    SerializerHolder serializerHolder;
+
                 };
             }
         }
     }
 }
-
-#endif //HAZELCAST_PORTABLE_CONTEXT
+#endif /* HAZELCAST_SERIALIZATION_CONTEXT */
 

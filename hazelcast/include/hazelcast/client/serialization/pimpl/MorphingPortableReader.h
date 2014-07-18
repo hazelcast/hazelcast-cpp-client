@@ -29,7 +29,7 @@ namespace hazelcast {
                 class HAZELCAST_API MorphingPortableReader {
                 public:
 
-                    MorphingPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
                     int readInt(const char *fieldName);
 

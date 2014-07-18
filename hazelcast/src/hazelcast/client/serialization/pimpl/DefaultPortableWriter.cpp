@@ -8,17 +8,17 @@
 
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(SerializationContext &serializationContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &dataOutput)
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext&portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &dataOutput)
                 : raw(false)
-                , serializerHolder(serializationContext.getSerializerHolder())
+                , serializerHolder(portableContext.getSerializerHolder())
                 , dataOutput(dataOutput)
-                , objectDataOutput(dataOutput, serializationContext)
+                , objectDataOutput(dataOutput, portableContext)
                 , begin(dataOutput.position())
                 , offset(dataOutput.position() + sizeof(int))
                 , cd(cd) {

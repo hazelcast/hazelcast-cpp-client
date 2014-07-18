@@ -13,10 +13,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                MorphingPortableReader::MorphingPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
-                : serializerHolder(serializationContext.getSerializerHolder())
+                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
+                : serializerHolder(portableContext.getSerializerHolder())
                 , dataInput(input)
-                , objectDataInput(input, serializationContext)
+                , objectDataInput(input, portableContext)
                 , finalPosition(input.readInt())
                 , offset(input.position())
                 , raw(false)
