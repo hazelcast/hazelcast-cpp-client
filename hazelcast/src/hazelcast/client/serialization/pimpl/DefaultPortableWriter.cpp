@@ -7,7 +7,7 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 
 namespace hazelcast {

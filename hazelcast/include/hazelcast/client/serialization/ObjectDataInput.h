@@ -12,7 +12,7 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/util/IOUtil.h"
 #include <vector>
@@ -196,7 +196,7 @@ namespace hazelcast {
 
                     readInt();
 
-                    boost::shared_ptr<pimpl::ClassDefinition> classDefinition(new pimpl::ClassDefinition());
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
                     classDefinition->readData(dataInput);
                     int factoryId = classDefinition->getFactoryId();
                     int classId = classDefinition->getClassId();

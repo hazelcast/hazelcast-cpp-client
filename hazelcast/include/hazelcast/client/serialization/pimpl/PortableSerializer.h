@@ -19,6 +19,9 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
+            class ClassDefinition;
+
             class Portable;
 
             namespace pimpl {
@@ -27,8 +30,6 @@ namespace hazelcast {
                 class DataInput;
 
                 class PortableContext;
-
-                class ClassDefinition;
 
                 class HAZELCAST_API PortableSerializer {
                 public:

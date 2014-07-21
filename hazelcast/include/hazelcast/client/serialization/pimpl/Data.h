@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_DATA
 #define HAZELCAST_DATA
 
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/util/HazelcastDll.h"

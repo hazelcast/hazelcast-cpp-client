@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_PORTABLE_READER
 #define HAZELCAST_PORTABLE_READER
 
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include <string>

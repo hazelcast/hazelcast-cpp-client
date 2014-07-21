@@ -10,17 +10,19 @@
 #define HAZELCAST_CLASS_DEFINITION_WRITER
 
 #include "hazelcast/client/exception/IException.h"
-#include "hazelcast/client/serialization/pimpl/FieldType.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/FieldType.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/pimpl/FieldDefinition.h"
+#include "hazelcast/client/serialization/FieldDefinition.h"
 #include <string>
 
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
             class Portable;
+
             namespace pimpl {
 
                 class PortableContext;

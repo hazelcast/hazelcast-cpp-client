@@ -18,9 +18,12 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
             class Portable;
+
+            class ClassDefinition;
+
             namespace pimpl {
-                class ClassDefinition;
 
                 class SerializerHolder;
 
