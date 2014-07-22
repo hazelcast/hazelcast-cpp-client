@@ -34,9 +34,10 @@ cp examples/*cpp cpp/Mac_64/examples/
 cp ReleaseStatic/examples/*exe cpp/Mac_64/examples/
 
 #MAC SPECIFIC
-#cd cpp/Mac_64/hazelcast/lib/
-#install_name_tool -id libHazelcastClientShared_64.dylib libHazelcastClientShared_64.dylib
-#cd ../../../../
+cd cpp/Mac_64/hazelcast/lib/
+export HAZELCAST_SHARED_LIB_NAME=$(echo *dylib)
+install_name_tool -id ${HAZELCAST_SHARED_LIB_NAME} ${HAZELCAST_SHARED_LIB_NAME}
+cd ../../../../
 
 #ONLY IN DEVELOPMENT MACHINE
 mkdir -p ./cpp/docs/
@@ -52,5 +53,3 @@ cp enterprise-license.txt cpp/enterprise-license.txt
 echo "Removing temporary files"
 rm -rf ./ReleaseShared
 rm -rf ./ReleaseStatic
-
-echo "WARNING!!!!! Do not forget to install_name_tool -id libHazelcastClient.*.dylib libHazelcastClient.*.dylib"
