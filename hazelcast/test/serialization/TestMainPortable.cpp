@@ -7,7 +7,7 @@ namespace hazelcast {
         namespace test {
             TestMainPortable::TestMainPortable()
             :null(true) {
-            };
+            }
 
             TestMainPortable::TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p) {
                 null = false;
@@ -21,7 +21,7 @@ namespace hazelcast {
                 this->d = d;
                 this->str = str;
                 this->p = p;
-            };
+            }
 
             bool TestMainPortable::operator ==(const TestMainPortable &m) const {
                 if (this == &m) return true;
@@ -38,11 +38,11 @@ namespace hazelcast {
                 if (str.compare(m.str)) return false;
                 if (p != m.p) return false;
                 return true;
-            };
+            }
 
             bool TestMainPortable::operator !=(const TestMainPortable &m) const {
                 return !(*this == m);
-            };
+            }
 
             int TestMainPortable::getFactoryId() const {
                 return 1;
@@ -63,7 +63,7 @@ namespace hazelcast {
                 writer.writeDouble("d", d);
                 writer.writeUTF("str", str);
                 writer.writePortable("p", p);
-            };
+            }
 
 
             void TestMainPortable::readPortable(serialization::PortableReader &reader) {
@@ -80,7 +80,7 @@ namespace hazelcast {
                 boost::shared_ptr<TestInnerPortable> ptr = reader.readPortable<TestInnerPortable>("p");
                 if (ptr != NULL)
                     p = *ptr;
-            };
+            }
 
         }
     }

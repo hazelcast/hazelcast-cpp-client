@@ -14,20 +14,20 @@ namespace hazelcast {
             : instanceName(instanceName)
             , count(count) {
 
-            };
+            }
 
             int SetCountRequest::getFactoryId() const {
                 return CountDownLatchPortableHook::F_ID;
-            };
+            }
 
             int SetCountRequest::getClassId() const {
                 return CountDownLatchPortableHook::SET_COUNT;
-            };
+            }
 
             void SetCountRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
                 writer.writeInt("count", count);
-            };
+            }
         }
     }
 }

@@ -28,12 +28,12 @@ namespace hazelcast {
             void Principal::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("uuid", uuid);
                 writer.writeUTF("ownerUuid", ownerUuid);
-            };
+            }
 
             void Principal::readPortable(serialization::PortableReader& reader) {
                 uuid = reader.readUTF("uuid");
                 ownerUuid = reader.readUTF("ownerUuid");
-            };
+            }
 
 
         }

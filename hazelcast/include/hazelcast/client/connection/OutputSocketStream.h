@@ -19,6 +19,8 @@ namespace hazelcast {
         class Socket;
         namespace serialization {
             namespace pimpl {
+                class Packet;
+
                 class Data;
             }
         }
@@ -28,17 +30,20 @@ namespace hazelcast {
             class HAZELCAST_API OutputSocketStream {
             public:
 
-                OutputSocketStream(Socket &socket);
+                OutputSocketStream(Socket& socket);
 
-                void write(const std::vector<byte> &bytes);
+                void write(const std::vector<byte>& bytes);
 
                 void writeInt(int i);
 
-                void writeData(const serialization::pimpl::Data &);
+                void writePacket(const serialization::pimpl::Packet&);
 
             private:
+                void writeData(const serialization::pimpl::Data&);
 
-                Socket &socket;
+                Socket& socket;
+
+                void writeShort(int v);
 
                 void writeByte(int i);
 

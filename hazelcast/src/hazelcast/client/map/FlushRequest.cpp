@@ -14,7 +14,7 @@ namespace hazelcast {
             FlushRequest::FlushRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int FlushRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void FlushRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
         }
     }
 }

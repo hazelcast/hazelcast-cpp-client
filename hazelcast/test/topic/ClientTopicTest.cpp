@@ -15,33 +15,33 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {
-            };
+            }
 
 
             void ClientTopicTest::addTests() {
                 addTest(&ClientTopicTest::testTopicListeners, "testTopicListeners");
-            };
+            }
 
             void ClientTopicTest::beforeClass() {
-            };
+            }
 
             void ClientTopicTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTopicTest::beforeTest() {
-            };
+            }
 
             void ClientTopicTest::afterTest() {
-            };
+            }
 
             class MyMessageListener {
             public:
                 MyMessageListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
-                };
+                }
 
                 void onMessage(topic::Message<std::string> message) {
                     latch.countDown();

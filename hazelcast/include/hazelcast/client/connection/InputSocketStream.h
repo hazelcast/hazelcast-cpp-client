@@ -19,6 +19,8 @@ namespace hazelcast {
                 class PortableContext;
 
                 class Data;
+
+                class Packet;
             }
         }
         namespace connection {
@@ -31,13 +33,20 @@ namespace hazelcast {
 
                 int readInt();
 
-                void readData(serialization::pimpl::Data &data);
+                void readPacket(serialization::pimpl::Packet &data);
 
             private:
+
                 Socket &socket;
                 serialization::pimpl::PortableContext *context;
 
+                void readData(serialization::pimpl::Data &data);
+
                 void readFully(std::vector<byte> &);
+
+                int readShort();
+
+                int readByte();
 
                 int skipBytes(int i);
 

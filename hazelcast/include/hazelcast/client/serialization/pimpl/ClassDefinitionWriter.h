@@ -14,6 +14,11 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/FieldDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include <string>
 
 
@@ -30,7 +35,7 @@ namespace hazelcast {
                 class HAZELCAST_API ClassDefinitionWriter {
                 public:
 
-                    ClassDefinitionWriter(int factoryId, int classId, int version, PortableContext &portableContext);
+                    ClassDefinitionWriter(PortableContext& portableContext, ClassDefinitionBuilder& builder);
 
                     void writeInt(const char *fieldName, int value);
 
@@ -48,73 +53,64 @@ namespace hazelcast {
 
                     void writeShort(const char *fieldName, short value);
 
-                    void writeUTF(const char *fieldName, const std::string &str);
+                    void writeUTF(const char *fieldName, const std::string& str);
 
-                    void writeNullPortable(const char *fieldName, int factoryId, int classId);
+                    void writeByteArray(const char *fieldName, const std::vector<byte>& values);
 
-                    void writeByteArray(const char *fieldName, const std::vector<byte> &values);
+                    void writeCharArray(const char *fieldName, const std::vector<char>& data);
 
-                    void writeCharArray(const char *fieldName, const std::vector<char > &data);
+                    void writeShortArray(const char *fieldName, const std::vector<short>& data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short > &data);
+                    void writeIntArray(const char *fieldName, const std::vector<int>& data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int> &data);
+                    void writeLongArray(const char *fieldName, const std::vector<long>& data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long > &data);
+                    void writeFloatArray(const char *fieldName, const std::vector<float>& data);
 
-                    void writeFloatArray(const char *fieldName, const std::vector<float > &data);
+                    void writeDoubleArray(const char *fieldName, const std::vector<double>& data);
 
-                    void writeDoubleArray(const char *fieldName, const std::vector<double > &data);
-
-                    template <typename T>
+                    template<typename T>
                     void writeNullPortable(const char *fieldName) {
-                        if (raw) {
-                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
+                        checkIfRaw();
+                        T portable;
+                        int factoryId = portable.getFactoryId();
+                        int classId = portable.getClassId();
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookup(factoryId, classId, context.getVersion());
+                        if (nestedClassDef == NULL) {
+                            throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable", "Cannot write null portable without explicitly registering class definition!");
                         }
-                        T temp;
-                        FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, temp.getFactoryId(), temp.getClassId());
-                        addNestedField(temp, fd);
+                        builder.addPortableField(fieldName, nestedClassDef);
+                    }
 
+                    template<typename T>
+                    void writePortable(const char *fieldName, const T& portable) {
+                        checkIfRaw();
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(portable);
+                        builder.addPortableField(fieldName, nestedClassDef);
                     };
 
-                    template <typename T>
-                    void writePortable(const char *fieldName, const T &portable) {
-                        if (raw) {
-                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
-                        }
-                        FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE, portable.getFactoryId(), portable.getClassId());
-                        addNestedField(portable, fd);
+                    template<typename T>
+                    void writePortableArray(const char *fieldName, const std::vector<T>& portables) {
+                        checkIfRaw();
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(portables[0]);
+                        builder.addPortableArrayField(fieldName, nestedClassDef);
                     };
 
-                    template <typename T>
-                    void writePortableArray(const char *fieldName, const std::vector<T> &portables) {
-                        if (raw) {
-                            throw exception::IOException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
-                        }
-                        int classId = portables[0].getClassId();
-                        int factoryId = portables[0].getFactoryId();
-                        FieldDefinition fd(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, factoryId, classId);
-                        addNestedField(portables[0], fd);
-                    };
+                    boost::shared_ptr<ClassDefinition> registerAndGet();
 
-                    boost::shared_ptr<ClassDefinition> getClassDefinition();
-
-                    ObjectDataOutput &getRawDataOutput();
-
-                    boost::shared_ptr<ClassDefinition> getOrBuildClassDefinition(const Portable &p);
+                    ObjectDataOutput& getRawDataOutput();
 
                     void end();
 
                 private:
-                    void addField(const char *fieldName, FieldType const &);
+                    void checkIfRaw();
 
-                    void addNestedField(const Portable &p, FieldDefinition &fd);
+                    boost::shared_ptr<ClassDefinition> createNestedClassDef(const Portable& portable);
 
-                    int index;
                     bool raw;
                     ObjectDataOutput emptyDataOutput;
-                    boost::shared_ptr<ClassDefinition> cd;
-                    PortableContext &context;
+                    ClassDefinitionBuilder& builder;
+                    PortableContext& context;
 
                 };
             }

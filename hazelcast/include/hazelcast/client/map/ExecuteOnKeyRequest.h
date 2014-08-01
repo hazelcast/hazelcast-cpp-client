@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_ExecuteOnKeyRequest
 #define HAZELCAST_ExecuteOnKeyRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -18,12 +18,13 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename EntryProcessor>
-            class HAZELCAST_API ExecuteOnKeyRequest : public impl::PortableRequest {
+            class HAZELCAST_API ExecuteOnKeyRequest : public impl::ClientRequest {
             public:
                 ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::pimpl::Data &key)
                 :name(name)
                 , entryProcessor(entryProcessor)
-                , key(key) {
+                , key(key)
+                , submitToKey(false){
 
                 };
 
@@ -37,6 +38,7 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter &writer) const {
                     writer.writeUTF("n", name);
+                    writer.writeBoolean("s", submitToKey);
                     serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     key.writeData(out);
                     out.writeObject(&entryProcessor);
@@ -45,6 +47,7 @@ namespace hazelcast {
             private:
                 std::string name;
                 EntryProcessor entryProcessor;
+                bool submitToKey; //MTODO implement submitToKey request on IMAP
                 serialization::pimpl::Data key;
             };
         }

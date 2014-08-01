@@ -5,13 +5,13 @@
 #ifndef HAZELCAST_BaseTxnRequest
 #define HAZELCAST_BaseTxnRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API BaseTxnRequest : public impl::PortableRequest {
+            class HAZELCAST_API BaseTxnRequest : public impl::ClientRequest {
             public:
                 void write(serialization::PortableWriter &writer) const;
 

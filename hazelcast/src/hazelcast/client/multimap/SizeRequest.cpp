@@ -13,11 +13,11 @@ namespace hazelcast {
             SizeRequest::SizeRequest(const std::string& name)
             : AllPartitionsRequest(name) {
 
-            };
+            }
 
             int SizeRequest::getClassId() const {
                 return MultiMapPortableHook::SIZE;
-            };
+            }
 
             bool SizeRequest::isRetryable() const{
                 return true;

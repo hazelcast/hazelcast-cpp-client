@@ -4,7 +4,7 @@
 
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/CallPromise.h"
@@ -25,11 +25,11 @@ namespace hazelcast {
                 future->set_exception(exceptionName, exceptionDetails);
             }
 
-            void CallPromise::setRequest(std::auto_ptr<const impl::PortableRequest> request) {
+            void CallPromise::setRequest(std::auto_ptr<const impl::ClientRequest> request) {
                 this->request = request;
             }
 
-            const impl::PortableRequest &CallPromise::getRequest() const {
+            const impl::ClientRequest&CallPromise::getRequest() const {
                 return *request;
             }
 

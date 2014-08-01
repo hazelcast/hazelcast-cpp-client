@@ -17,7 +17,7 @@ namespace hazelcast {
             , threadId(threadId)
             , force(false) {
 
-            };
+            }
 
             MultiMapUnlockRequest::MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, bool force)
             : KeyBasedRequest(name, key)
@@ -28,18 +28,18 @@ namespace hazelcast {
 
             int MultiMapUnlockRequest::getFactoryId() const {
                 return MultiMapPortableHook::F_ID;
-            };
+            }
 
             int MultiMapUnlockRequest::getClassId() const {
                 return MultiMapPortableHook::UNLOCK;
-            };
+            }
 
 
             void MultiMapUnlockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("tid", threadId);
                 writer.writeBoolean("force", force);
                 KeyBasedRequest::write(writer);
-            };
+            }
 
 
         }

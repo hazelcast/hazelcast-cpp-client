@@ -18,7 +18,7 @@ namespace hazelcast {
             :age(age)
             , name(name) {
 
-            };
+            }
 
             bool Employee::operator ==(const Employee &employee) const {
                 if (age != employee.age)
@@ -35,21 +35,21 @@ namespace hazelcast {
 
             int Employee::getFactoryId() const {
                 return 666;
-            };
+            }
 
             int Employee::getClassId() const {
                 return 2;
-            };
+            }
 
             void Employee::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeInt("a", age);
-            };
+            }
 
             void Employee::readPortable(serialization::PortableReader &reader) {
                 name = reader.readUTF("n");
                 age = reader.readInt("a");
-            };
+            }
 
         }
     }

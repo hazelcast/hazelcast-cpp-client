@@ -11,17 +11,17 @@
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/impl/PortableRequest.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/impl/ServerException.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &oListener)
+            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& oListener)
             : live(true)
             , clientContext(clientContext)
             , socket(address)
@@ -29,7 +29,7 @@ namespace hazelcast {
             , writeHandler(*this, oListener, 16 << 10)
             , _isOwnerConnection(false) {
 
-            };
+            }
 
             Connection::~Connection() {
                 live = false;
@@ -41,9 +41,9 @@ namespace hazelcast {
                 if (error) {
                     throw exception::IOException("Socket::connect", strerror(error));
                 }
-            };
+            }
 
-            void Connection::init(const std::vector<byte> &PROTOCOL) {
+            void Connection::init(const std::vector<byte>& PROTOCOL) {
                 connection::OutputSocketStream outputSocketStream(socket);
                 outputSocketStream.write(PROTOCOL);
             }
@@ -70,19 +70,19 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> connection;
                 try {
-                    ConnectionManager &cm = clientContext.getConnectionManager();
+                    ConnectionManager& cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
-                } catch(exception::IOException &) {
+                } catch (exception::IOException&) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
                 connection->registerAndEnqueue(promise);
-            };
+            }
 
             void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise) {
                 registerCall(promise); //Don't change the order with following line
-                serialization::pimpl::Data data = clientContext.getSerializationService().toData<impl::PortableRequest>(&(promise->getRequest()));
+                serialization::pimpl::Data data = clientContext.getSerializationService().toData<impl::ClientRequest>(&(promise->getRequest()));
                 if (!live) {
                     deRegisterCall(promise->getRequest().callId);
                     resend(promise);
@@ -92,16 +92,18 @@ namespace hazelcast {
             }
 
 
-            void Connection::handlePacket(const serialization::pimpl::Data &data) {
-                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
+            void Connection::handlePacket(const serialization::pimpl::Packet& packet) {
+                const serialization::pimpl::Data& data = packet.getData();
+                serialization::pimpl::SerializationService& serializationService = clientContext.getSerializationService();
                 boost::shared_ptr<ClientResponse> response = serializationService.toObject<ClientResponse>(data);
-                if (response->isEvent()) {
+                if (packet.isHeaderSet(serialization::pimpl::Packet::HEADER_EVENT)) {
                     boost::shared_ptr<CallPromise> promise = getEventHandlerPromise(response->getCallId());
                     if (promise.get() != NULL) {
                         promise->getEventHandler()->handle(response->getData());
                     }
                     return;
                 }
+
                 boost::shared_ptr<CallPromise> promise = deRegisterCall(response->getCallId());
                 if (!handleException(response, promise))
                     return;//if response is exception,then return
@@ -115,9 +117,9 @@ namespace hazelcast {
 
             /* returns shouldSetResponse */
             bool Connection::handleException(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
-                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
+                serialization::pimpl::SerializationService& serializationService = clientContext.getSerializationService();
                 if (response->isException()) {
-                    serialization::pimpl::Data const &data = response->getData();
+                    serialization::pimpl::Data const& data = response->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
 
                     std::string exceptionClassName = ex->name;
@@ -134,7 +136,7 @@ namespace hazelcast {
 
             /* returns shouldSetResponse */
             bool Connection::handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise) {
-                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
+                serialization::pimpl::SerializationService& serializationService = clientContext.getSerializationService();
                 impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
                     if (eventHandler->registrationId.size() == 0) //if uuid is not set, it means it is first time that we are getting uuid.
@@ -148,29 +150,39 @@ namespace hazelcast {
                 return true;
             }
 
-            Socket const &Connection::getSocket() const {
+            Socket const& Connection::getSocket() const {
                 return socket;
-            };
-
-            const Address &Connection::getRemoteEndpoint() const {
-                return socket.getRemoteEndpoint();
-            };
-
-            void Connection::setRemoteEndpoint(Address &remoteEndpoint) {
-                socket.setRemoteEndpoint(remoteEndpoint);
-            };
-
-            void Connection::writeBlocking(serialization::pimpl::Data const &data) {
-                connection::OutputSocketStream outputSocketStream(socket);
-                outputSocketStream.writeData(data);
             }
 
-            serialization::pimpl::Data Connection::readBlocking() {
+            const Address& Connection::getRemoteEndpoint() const {
+                return socket.getRemoteEndpoint();
+            }
+
+            void Connection::setRemoteEndpoint(Address& remoteEndpoint) {
+                socket.setRemoteEndpoint(remoteEndpoint);
+            }
+
+            boost::shared_ptr<connection::ClientResponse> Connection::sendAndReceive(const impl::ClientRequest& clientRequest) {
+                serialization::pimpl::SerializationService& service = clientContext.getSerializationService();
+                serialization::pimpl::Data request = service.toData<impl::ClientRequest>(&clientRequest);
+                serialization::pimpl::Packet packet(service.getPortableContext(), request);
+                writeBlocking(packet);
+                serialization::pimpl::Packet responsePacket = readBlocking();
+                return service.toObject<ClientResponse>(responsePacket.getData());
+            }
+
+            void Connection::writeBlocking(serialization::pimpl::Packet const& packet) {
+                connection::OutputSocketStream outputSocketStream(socket);
+                outputSocketStream.writePacket(packet);
+            }
+
+            serialization::pimpl::Packet Connection::readBlocking() {
                 connection::InputSocketStream inputSocketStream(socket);
-                inputSocketStream.setPortableContext(&(clientContext.getSerializationService().getPortableContext()));
-                serialization::pimpl::Data data;
-                inputSocketStream.readData(data);
-                return data;
+                serialization::pimpl::PortableContext& portableContext = clientContext.getSerializationService().getPortableContext();
+                inputSocketStream.setPortableContext(&portableContext);
+                serialization::pimpl::Packet packet(portableContext);
+                inputSocketStream.readPacket(packet);
+                return packet;
             }
 
             void Connection::registerCall(boost::shared_ptr<CallPromise> promise) {
@@ -182,11 +194,11 @@ namespace hazelcast {
                 }
             }
 
-            ReadHandler &Connection::getReadHandler() {
+            ReadHandler& Connection::getReadHandler() {
                 return readHandler;
             }
 
-            WriteHandler &Connection::getWriteHandler() {
+            WriteHandler& Connection::getWriteHandler() {
                 return writeHandler;
             }
 
@@ -200,16 +212,20 @@ namespace hazelcast {
             }
 
 
-            boost::shared_ptr<CallPromise > Connection::getEventHandlerPromise(int callId) {
+            boost::shared_ptr<CallPromise> Connection::getEventHandlerPromise(int callId) {
                 return eventHandlerPromises.get(callId);
             }
 
-            boost::shared_ptr<CallPromise > Connection::deRegisterEventHandler(int callId) {
+            boost::shared_ptr<CallPromise> Connection::deRegisterEventHandler(int callId) {
                 return eventHandlerPromises.remove(callId);
             }
 
             void Connection::setAsOwnerConnection(bool isOwnerConnection) {
                 _isOwnerConnection = isOwnerConnection;
+            }
+
+            serialization::pimpl::PortableContext& Connection::getPortableContext() {
+                return clientContext.getSerializationService().getPortableContext();
             }
 
             void Connection::removeConnectionCalls() {
@@ -232,7 +248,7 @@ namespace hazelcast {
             }
 
             void Connection::targetNotActive(boost::shared_ptr<CallPromise> promise) {
-                spi::InvocationService &invocationService = clientContext.getInvocationService();
+                spi::InvocationService& invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     resend(promise);
                     return;

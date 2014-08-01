@@ -19,8 +19,8 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
-            :clientContext(clientContext)
+            ConnectionManager::ConnectionManager(spi::ClientContext& clientContext, bool smartRouting)
+            : clientContext(clientContext)
             , iListener(*this)
             , oListener(*this)
             , iListenerThread(NULL)
@@ -30,7 +30,7 @@ namespace hazelcast {
             , smartRouting(smartRouting) {
                 const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
                 PROTOCOL.insert(PROTOCOL.begin(), protocol_bytes, protocol_bytes + 6);
-            };
+            }
 
             bool ConnectionManager::start() {
                 socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
@@ -57,7 +57,7 @@ namespace hazelcast {
                     oListenerThread->interrupt();
                     oListenerThread->join();
                 }
-				connections.clear();
+                connections.clear();
             }
 
             void ConnectionManager::markOwnerAddressAsClosed() {
@@ -70,7 +70,7 @@ namespace hazelcast {
                 if (ownerConnectionAddress.get() != NULL) {
                     return *ownerConnectionAddress;
                 }
-                ClientConfig &config = clientContext.getClientConfig();
+                ClientConfig& config = clientContext.getClientConfig();
                 int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
                 while (ownerConnectionAddress.get() == NULL) {
                     ownerConnectionLock.unlock();
@@ -81,9 +81,9 @@ namespace hazelcast {
                     }
                 }
                 return *ownerConnectionAddress;
-            };
+            }
 
-            connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
+            connection::Connection *ConnectionManager::ownerConnection(const Address& address) {
                 Connection *clientConnection = connectTo(address, true);
                 clientConnection->setAsOwnerConnection(true);
                 {
@@ -98,14 +98,14 @@ namespace hazelcast {
                 return getOrConnect(address, tryCount);
             }
 
-            boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address &target, int tryCount) {
+            boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address& target, int tryCount) {
                 checkLive();
                 try {
                     if (clientContext.getClusterService().isMemberExists(target)) {
                         boost::shared_ptr<Connection> connection = getOrConnect(target);
                         return connection;
                     }
-                } catch (exception::IOException &) {
+                } catch (exception::IOException&) {
                 }
 
                 int count = 0;
@@ -113,7 +113,7 @@ namespace hazelcast {
                 while (count < tryCount) {
                     try {
                         return getRandomConnection();
-                    } catch (exception::IOException &e) {
+                    } catch (exception::IOException& e) {
                         lastError = e;
                     }
                     count++;
@@ -121,23 +121,23 @@ namespace hazelcast {
                 throw lastError;
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(const Address &address) {
+            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(const Address& address) {
                 if (!live)
                     return boost::shared_ptr<Connection>();
                 return connections.get(address);
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
+            boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address& address) {
                 checkLive();
                 if (smartRouting)
                     return getOrConnectResolved(address);
                 else {
                     return getOrConnectResolved(waitForOwnerConnection());
                 }
-            };
+            }
 
 
-            boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
+            boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address& address) {
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
                     util::LockGuard l(lockMutex);
@@ -158,27 +158,23 @@ namespace hazelcast {
                 return getOrConnect(address);
             }
 
-            void ConnectionManager::authenticate(Connection &connection, bool reAuth, bool firstConnection) {
+            void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
                 protocol::AuthenticationRequest auth(clientContext.getClientConfig().getCredentials());
                 auth.setPrincipal(principal.get());
                 auth.setReAuth(reAuth);
                 auth.setFirstConnection(firstConnection);
 
                 connection.init(PROTOCOL);
-                serialization::pimpl::SerializationService &serializationService = clientContext.getSerializationService();
-                serialization::pimpl::Data authData = serializationService.toData<protocol::AuthenticationRequest>(&auth);
-                connection.writeBlocking(authData);
+                boost::shared_ptr<ClientResponse> clientResponse = connection.sendAndReceive(auth);
+                serialization::pimpl::SerializationService& serializationService = clientContext.getSerializationService();
 
-                serialization::pimpl::Data result = connection.readBlocking();
-
-                boost::shared_ptr<connection::ClientResponse> clientResponse = serializationService.toObject<connection::ClientResponse>(result);
                 if (clientResponse->isException()) {
-                    serialization::pimpl::Data const &data = clientResponse->getData();
+                    serialization::pimpl::Data const& data = clientResponse->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
                     throw exception::IException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
-                std::vector<serialization::pimpl::Data *> const &getCollection = collection->getCollection();
+                std::vector<serialization::pimpl::Data *> const& getCollection = collection->getCollection();
                 boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;
@@ -186,10 +182,10 @@ namespace hazelcast {
                 util::ILogger::getLogger().info(message.str());
                 if (firstConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
-            };
+            }
 
 
-            void ConnectionManager::removeConnection(const Address &address) {
+            void ConnectionManager::removeConnection(const Address& address) {
                 connections.remove(address);
             }
 
@@ -214,7 +210,7 @@ namespace hazelcast {
                 }
             }
 
-            connection::Connection *ConnectionManager::connectTo(const Address &address, bool reAuth) {
+            connection::Connection *ConnectionManager::connectTo(const Address& address, bool reAuth) {
                 std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
 
                 checkLive();

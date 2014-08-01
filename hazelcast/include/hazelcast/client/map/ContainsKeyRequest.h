@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_MAP_CONTAINS_KEY_R
 #define HAZELCAST_MAP_CONTAINS_KEY_R
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ContainsKeyRequest : public impl::PortableRequest {
+            class HAZELCAST_API ContainsKeyRequest : public impl::ClientRequest {
             public:
                 ContainsKeyRequest(const std::string &name, serialization::pimpl::Data &key);
 

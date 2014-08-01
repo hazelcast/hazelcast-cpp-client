@@ -15,7 +15,7 @@ namespace hazelcast {
             : principal(principal) {
                 char const *pasw = password.c_str();
                 this->password.insert(this->password.begin(), pasw, pasw + password.size());
-            };
+            }
 
             int UsernamePasswordCredentials::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
@@ -30,10 +30,10 @@ namespace hazelcast {
                 writer.writeUTF("principal", principal);//dev
                 writer.writeUTF("endpoint", endpoint);//"
                 writer.writeByteArray("pwd", password);//dev-pass
-            };
+            }
 
             void UsernamePasswordCredentials::readPortable(serialization::PortableReader &reader) {
-            };
+            }
 
             void UsernamePasswordCredentials::setEndpoint(const std::string &endpoint) {
                 this->endpoint = endpoint;

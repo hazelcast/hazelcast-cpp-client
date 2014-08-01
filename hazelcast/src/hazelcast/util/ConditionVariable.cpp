@@ -57,30 +57,30 @@ namespace hazelcast {
             assert(ENOMEM != error);
             assert(EBUSY != error);
             assert(EINVAL != error);
-        };
+        }
 
         ConditionVariable::~ConditionVariable() {
             int error = pthread_cond_destroy(&condition);
             assert(EBUSY != error);
             assert(EINVAL != error);
-        };
+        }
 
         void ConditionVariable::wait(Mutex &mutex) {
             int err = pthread_cond_wait(&condition, &(mutex.mutex));
             assert (EPERM != err);
             assert (EINVAL != err);
-        };
+        }
 
 
         void ConditionVariable::notify() {
             int err = pthread_cond_signal(&condition);
             assert(EINVAL != err);
-        };
+        }
 
         void ConditionVariable::notify_all() {
             int err = pthread_cond_broadcast(&condition);
             assert(EINVAL != err);
-        };
+        }
     }
 }
 

@@ -34,7 +34,7 @@ namespace hazelcast {
                 message = reader.readUTF("m");
                 details = reader.readUTF("d");
                 type = reader.readInt("t");
-            };
+            }
 
         }
     }

@@ -11,10 +11,10 @@ namespace hazelcast {
         LifecycleEvent::LifecycleEvent(LifeCycleState state)
         : state(state) {
 
-        };
+        }
 
         LifecycleEvent::LifeCycleState LifecycleEvent::getState() const {
             return state;
-        };
+        }
     }
 }

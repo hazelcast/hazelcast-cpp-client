@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_RemoveInterceptorRequest
 #define HAZELCAST_RemoveInterceptorRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API RemoveInterceptorRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemoveInterceptorRequest : public impl::ClientRequest {
             public:
                 RemoveInterceptorRequest(const std::string &, const std::string &);
 

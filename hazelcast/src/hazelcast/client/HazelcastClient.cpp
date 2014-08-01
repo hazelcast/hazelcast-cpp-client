@@ -57,23 +57,23 @@ namespace hazelcast {
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
             return getDistributedObject< IdGenerator >(instanceName);
-        };
+        }
 
         IAtomicLong HazelcastClient::getIAtomicLong(const std::string &instanceName) {
             return getDistributedObject< IAtomicLong >(instanceName);
-        };
+        }
 
         ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &instanceName) {
             return getDistributedObject< ICountDownLatch >(instanceName);
-        };
+        }
 
         ISemaphore HazelcastClient::getISemaphore(const std::string &instanceName) {
             return getDistributedObject< ISemaphore >(instanceName);
-        };
+        }
 
         ILock HazelcastClient::getILock(const std::string &instanceName) {
             return getDistributedObject< ILock >(instanceName);
-        };
+        }
 
         TransactionContext HazelcastClient::newTransactionContext() {
             TransactionOptions defaultOptions;

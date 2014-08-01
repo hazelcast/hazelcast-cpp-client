@@ -19,7 +19,7 @@ namespace hazelcast {
 
             int RemoveEntryListenerRequest::getClassId() const {
                 return MultiMapPortableHook::REMOVE_ENTRY_LISTENER;
-            };
+            }
 
             bool RemoveEntryListenerRequest::isRetryable() const {
                 return true;

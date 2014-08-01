@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableRequest;
+            class ClientRequest;
 
             class BaseRemoveListenerRequest;
 
@@ -37,9 +37,9 @@ namespace hazelcast {
             public:
                 ServerListenerService(spi::ClientContext &clientContext);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
+                std::string listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
+                std::string listen(const impl::ClientRequest *registrationRequest, impl::BaseEventHandler *handler);
 
                 bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 

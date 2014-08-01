@@ -20,7 +20,7 @@ namespace hazelcast {
     namespace client {
         class Address;
         namespace impl {
-            class PortableRequest;
+            class ClientRequest;
 
             class ServerException;
         }
@@ -43,9 +43,9 @@ namespace hazelcast {
 
                 void setException(const std::string& exceptionName, const std::string& exceptionDetails);
 
-                void setRequest(std::auto_ptr<const impl::PortableRequest> request);
+                void setRequest(std::auto_ptr<const impl::ClientRequest> request);
 
-                const impl::PortableRequest &getRequest() const;
+                const impl::ClientRequest &getRequest() const;
 
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> >  getFuture();
 
@@ -57,7 +57,7 @@ namespace hazelcast {
 
             private:
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> > future;
-                std::auto_ptr<const impl::PortableRequest> request;
+                std::auto_ptr<const impl::ClientRequest> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;
                 util::AtomicInt resendCount;
             };

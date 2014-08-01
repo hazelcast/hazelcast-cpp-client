@@ -9,12 +9,12 @@
 
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API GetPartitionsRequest : public impl::PortableRequest{
+            class HAZELCAST_API GetPartitionsRequest : public impl::ClientRequest{
             public:
                 GetPartitionsRequest();
 

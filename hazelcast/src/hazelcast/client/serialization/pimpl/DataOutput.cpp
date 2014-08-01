@@ -14,34 +14,34 @@ namespace hazelcast {
                 DataOutput::DataOutput()
                 : outputStream(new std::vector<byte>()) {
                     outputStream->reserve(DEFAULT_SIZE);
-                };
+                }
 
 
                 DataOutput::~DataOutput() {
 
-                };
+                }
 
                 DataOutput::DataOutput(DataOutput const &rhs) {
                     //private
-                };
+                }
 
                 DataOutput &DataOutput::operator = (DataOutput const &rhs) {
                     //private
                     return *this;
-                };
+                }
 
                 std::auto_ptr< std::vector<byte> > DataOutput::toByteArray() {
                     std::auto_ptr< std::vector<byte> > byteArrayPtr(new std::vector<byte> (*outputStream));
                     return byteArrayPtr;
-                };
+                }
 
                 void DataOutput::write(const std::vector<byte> &bytes) {
                     outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
-                };
+                }
 
                 void DataOutput::writeBoolean(bool i) {
                     writeByte(i);
-                };
+                }
 
                 void DataOutput::writeByte(int index, int i) {
                     (*outputStream)[index] = char(0xff & i);
@@ -49,24 +49,24 @@ namespace hazelcast {
 
                 void DataOutput::writeByte(byte i) {
                     outputStream->push_back(i);
-                };
+                }
 
                 void DataOutput::writeShort(int v) {
                     writeByte((v >> 8));
                     writeByte(v);
-                };
+                }
 
                 void DataOutput::writeChar(int i) {
                     writeByte((i >> 8));
                     writeByte(i);
-                };
+                }
 
                 void DataOutput::writeInt(int v) {
                     writeByte((v >> 24));
                     writeByte((v >> 16));
                     writeByte((v >> 8));
                     writeByte(v);
-                };
+                }
 
                 void DataOutput::writeLong(long long l) {
                     writeByte((l >> 56));
@@ -77,7 +77,7 @@ namespace hazelcast {
                     writeByte((l >> 16));
                     writeByte((l >> 8));
                     writeByte(l);
-                };
+                }
 
                 void DataOutput::writeFloat(float x) {
                     union {
@@ -86,7 +86,7 @@ namespace hazelcast {
                     } u;
                     u.f = x;
                     writeInt(u.i);
-                };
+                }
 
                 void DataOutput::writeDouble(double v) {
                     union {
@@ -95,7 +95,7 @@ namespace hazelcast {
                     } u;
                     u.d = v;
                     writeLong(u.l);
-                };
+                }
 
                 void DataOutput::writeUTF(const std::string &str) {
                     bool isNull = str.empty();
@@ -112,19 +112,19 @@ namespace hazelcast {
                         int endIndex = std::min((i + 1) * STRING_CHUNK_SIZE - 1, length);
                         writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
                     }
-                };
+                }
 
                 void DataOutput::writeInt(int index, int v) {
                     writeByte(index++, (v >> 24));
                     writeByte(index++, (v >> 16));
                     writeByte(index++, (v >> 8));
                     writeByte(index, v);
-                };
+                }
 
                 void DataOutput::writeByteArray(const std::vector<byte> &data) {
                     writeInt(data.size());
                     outputStream->insert(outputStream->end(), data.begin(), data.end());
-                };
+                }
 
                 void DataOutput::writeCharArray(const std::vector<char> &data) {
                     int size = data.size();
@@ -132,7 +132,7 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeChar(data[i]);
                     }
-                };
+                }
 
                 void DataOutput::writeShortArray(const std::vector<short > &data) {
                     int size = data.size();
@@ -140,7 +140,7 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeShort(data[i]);
                     }
-                };
+                }
 
                 void DataOutput::writeIntArray(const std::vector<int> &data) {
                     int size = data.size();
@@ -148,7 +148,7 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeInt(data[i]);
                     }
-                };
+                }
 
                 void DataOutput::writeLongArray(const std::vector<long > &data) {
                     int size = data.size();
@@ -156,7 +156,7 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeLong(data[i]);
                     }
-                };
+                }
 
                 void DataOutput::writeFloatArray(const std::vector<float > &data) {
                     int size = data.size();
@@ -164,7 +164,7 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeFloat(data[i]);
                     }
-                };
+                }
 
                 void DataOutput::writeDoubleArray(const std::vector<double > &data) {
                     int size = data.size();
@@ -172,16 +172,16 @@ namespace hazelcast {
                     for (int i = 0; i < size; ++i) {
                         writeDouble(data[i]);
                     }
-                };
+                }
 
                 int DataOutput::position() {
                     return outputStream->size();
-                };
+                }
 
                 void DataOutput::position(size_t newPos) {
                     if (outputStream->size() < newPos)
                         outputStream->resize(newPos, 0);
-                };
+                }
 
                 //private functions
 
@@ -226,7 +226,7 @@ namespace hazelcast {
 //                    }
                     writeShort(utfLength);
                     write(byteArray);
-                };
+                }
             }
 
         }

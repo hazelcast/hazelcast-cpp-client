@@ -36,7 +36,7 @@ namespace hazelcast {
                 out.writeBoolean(hasValue);
                 if (hasValue)
                     value.writeData(out);
-            };
+            }
 
         }
     }

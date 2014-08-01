@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace txn {
             CreateTxnRequest::CreateTxnRequest(TransactionOptions options):options(options) {
 
-            };
+            }
 
             int CreateTxnRequest::getFactoryId() const {
                 return TxnPortableHook::F_ID;
@@ -28,7 +28,7 @@ namespace hazelcast {
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 options.writeData(out);
                 out.writeBoolean(false);//SerializableXID null
-            };
+            }
 
         }
     }

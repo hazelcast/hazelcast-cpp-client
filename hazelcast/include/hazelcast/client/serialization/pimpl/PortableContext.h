@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <hazelcast/client/serialization/Portable.h>
 
 
 namespace hazelcast {
@@ -31,9 +32,9 @@ namespace hazelcast {
 
                     PortableContext(int);
 
-                    bool isClassDefinitionExists(int, int);
+                    int getClassVersion(int factoryId, int classId);
 
-                    boost::shared_ptr<ClassDefinition> lookup(int, int);
+                    void setClassVersion(int factoryId, int classId, int version);
 
                     bool isClassDefinitionExists(int, int, int);
 
@@ -41,9 +42,11 @@ namespace hazelcast {
 
                     boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
-                    void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
-
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+
+                    boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
+
+                    void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
 
                     int getVersion();
 

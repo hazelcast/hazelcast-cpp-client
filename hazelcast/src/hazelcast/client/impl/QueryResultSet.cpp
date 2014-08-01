@@ -18,11 +18,11 @@ namespace hazelcast {
 
             int QueryResultSet::getClassId() const {
                 return map::DataSerializableHook::QUERY_RESULT_SET;
-            };
+            }
 
             const std::vector<QueryResultEntry> &QueryResultSet::getResultData() const {
                 return q;
-            };
+            }
 
             void QueryResultSet::readData(serialization::ObjectDataInput &in) {
                 in.readBoolean(); //isData
@@ -33,7 +33,7 @@ namespace hazelcast {
                     q.push_back(*entry);
                 }
 
-            };
+            }
         }
     }
 }

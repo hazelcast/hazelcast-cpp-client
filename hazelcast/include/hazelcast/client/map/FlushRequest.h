@@ -6,13 +6,13 @@
 #ifndef HAZELCAST_MAP_FLUSH_REQUEST
 #define HAZELCAST_MAP_FLUSH_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API FlushRequest : public impl::PortableRequest {
+            class HAZELCAST_API FlushRequest : public impl::ClientRequest {
             public:
                 FlushRequest(const std::string &name);
 

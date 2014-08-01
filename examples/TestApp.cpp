@@ -14,7 +14,7 @@ std::string toString(const T &value) {
     std::stringstream s;
     s << value;
     return s.str();
-};
+}
 
 template<typename T>
 T toValue(const std::string &str) {
@@ -22,7 +22,7 @@ T toValue(const std::string &str) {
     T value;
     s >> value;
     return value;
-};
+}
 
 struct printer {
     template<typename T>
@@ -32,7 +32,7 @@ struct printer {
         }
         std::cout << obj;
         return *this;
-    };
+    }
 };
 
 struct printer mout;
@@ -49,7 +49,7 @@ struct printerSharedPtr {
             std::cout << *obj;
         }
         return mout;
-    };
+    }
 };
 
 static struct printerSharedPtr moutPtr;
@@ -1512,5 +1512,5 @@ int main() {
     TestApp testApp(client);
     testApp.start();
     return 0;
-};
+}
 

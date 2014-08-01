@@ -21,7 +21,7 @@ namespace hazelcast {
             : iTestFixture<ClientTxnQueueTest>("ClientTxnQueueTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
-            };
+            }
 
 
             ClientTxnQueueTest::~ClientTxnQueueTest() {
@@ -30,21 +30,21 @@ namespace hazelcast {
             void ClientTxnQueueTest::addTests() {
                 addTest(&ClientTxnQueueTest::testTransactionalOfferPoll1, "testTransactionalOfferPoll1");
                 addTest(&ClientTxnQueueTest::testTransactionalOfferPoll2, "testTransactionalOfferPoll2");
-            };
+            }
 
             void ClientTxnQueueTest::beforeClass() {
-            };
+            }
 
             void ClientTxnQueueTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTxnQueueTest::beforeTest() {
-            };
+            }
 
             void ClientTxnQueueTest::afterTest() {
-            };
+            }
 
             void ClientTxnQueueTest::testTransactionalOfferPoll1() {
                 std::string name = "defQueue";

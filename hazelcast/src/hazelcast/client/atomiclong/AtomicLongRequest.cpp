@@ -14,16 +14,16 @@ namespace hazelcast {
             : delta(delta)
             ,instanceName(instanceName){
 
-            };
+            }
 
             int AtomicLongRequest::getFactoryId() const {
                 return AtomicLongPortableHook::F_ID;
-            };
+            }
 
             void AtomicLongRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
                 writer.writeLong("d", delta);
-            };
+            }
 
         }
     }

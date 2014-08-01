@@ -15,20 +15,20 @@ namespace hazelcast {
         , durability(1)
         , transactionType(TransactionType::TWO_PHASE) {
 
-        };
+        }
 
         TransactionType TransactionOptions::getTransactionType() const {
             return transactionType;
-        };
+        }
 
         TransactionOptions &TransactionOptions::setTransactionType(TransactionType transactionType) {
             this->transactionType = transactionType;
             return *this;
-        };
+        }
 
         int TransactionOptions::getTimeout() const {
             return timeoutSeconds;
-        };
+        }
 
         TransactionOptions &TransactionOptions::setTimeout(int timeoutInSeconds) {
             if (timeoutInSeconds <= 0) {
@@ -36,11 +36,11 @@ namespace hazelcast {
             }
             this->timeoutSeconds = timeoutInSeconds;
             return *this;
-        };
+        }
 
         int TransactionOptions::getDurability() const {
             return durability;
-        };
+        }
 
         TransactionOptions &TransactionOptions::setDurability(int durability) {
             if (durability < 0) {
@@ -48,27 +48,27 @@ namespace hazelcast {
             }
             this->durability = durability;
             return *this;
-        };
+        }
 
         void TransactionOptions::writeData(serialization::ObjectDataOutput &out) const {
             out.writeLong(1000L * timeoutSeconds);
             out.writeInt(durability);
             out.writeInt(transactionType);
-        };
+        }
 
         void TransactionOptions::readData(serialization::ObjectDataInput &in) {
             timeoutSeconds = (int)in.readLong()/1000;
             durability = in.readInt();
             transactionType = in.readInt();
-        };
+        }
 
         TransactionType::TransactionType(Type value):value(value) {
 
-        };
+        }
 
         TransactionType::operator int() const {
             return value;
-        };
+        }
 
         void TransactionType::operator = (int i) {
             if (i == TWO_PHASE) {
@@ -76,7 +76,7 @@ namespace hazelcast {
             } else {
                 value = LOCAL;
             }
-        };
+        }
 
     }
 }

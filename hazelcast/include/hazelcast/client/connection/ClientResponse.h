@@ -24,8 +24,6 @@ namespace hazelcast {
             public:
                 const serialization::pimpl::Data &getData() const;
 
-                bool isEvent() const;
-
                 bool isException() const;
 
                 int getCallId() const;
@@ -39,7 +37,6 @@ namespace hazelcast {
             private:
                 int callId;
                 serialization::pimpl::Data data;
-                bool event;
                 bool exception;
             };
 

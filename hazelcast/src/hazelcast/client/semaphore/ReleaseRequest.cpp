@@ -12,11 +12,11 @@ namespace hazelcast {
             ReleaseRequest::ReleaseRequest(const std::string &instanceName, int permitCount)
             : SemaphoreRequest(instanceName, permitCount) {
 
-            };
+            }
 
             int ReleaseRequest::getClassId() const {
                 return SemaphorePortableHook::RELEASE;
-            };
+            }
         }
     }
 }

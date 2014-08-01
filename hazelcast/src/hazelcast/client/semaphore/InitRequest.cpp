@@ -12,11 +12,11 @@ namespace hazelcast {
             InitRequest::InitRequest(const std::string &instanceName, int permitCount)
             : SemaphoreRequest(instanceName, permitCount) {
 
-            };
+            }
 
             int InitRequest::getClassId() const {
                 return SemaphorePortableHook::INIT;
-            };
+            }
 
 
         }

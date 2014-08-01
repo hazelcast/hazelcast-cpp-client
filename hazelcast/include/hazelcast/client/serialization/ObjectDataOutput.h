@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
@@ -184,7 +184,7 @@ namespace hazelcast {
                         const std::string &message = "No serializer found for serializerId :"
                                 + util::IOUtil::to_string(type)
                                 + ", typename :" + typeid(T).name();
-                        throw exception::IOException("ObjectDataOutput::writeObject", message);
+                        throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
                     }
                 };
 

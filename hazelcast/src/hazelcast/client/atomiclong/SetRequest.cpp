@@ -13,11 +13,11 @@ namespace hazelcast {
             SetRequest::SetRequest(const std::string &instanceName, long value)
             : AtomicLongRequest(instanceName, value) {
 
-            };
+            }
 
             int SetRequest::getClassId() const {
                 return AtomicLongPortableHook::SET;
-            };
+            }
 
         }
     }

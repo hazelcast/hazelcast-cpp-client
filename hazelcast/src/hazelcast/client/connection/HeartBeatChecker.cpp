@@ -27,7 +27,7 @@
 //                    logger "Warning: HearBeatChecker ping failed " << std::endl;
 //                    sleep(5)
 //                }
-//            };
+//            }
 //
 //            bool HeartBeatChecker::checkHeartBeat(Connection& connection) {
 //                if ((clock() - connection.getLastReadTime()) > timeout * ((CLOCKS_PER_SEC / 1000) / 2)) {

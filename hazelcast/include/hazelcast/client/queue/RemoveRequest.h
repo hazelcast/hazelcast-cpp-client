@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_QUEUE_REMOVE_REQUEST
 #define HAZELCAST_QUEUE_REMOVE_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
@@ -16,7 +16,7 @@ namespace hazelcast {
             }
         }
         namespace queue {
-            class HAZELCAST_API RemoveRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemoveRequest : public impl::ClientRequest {
             public:
 
                 RemoveRequest(const std::string &name, serialization::pimpl::Data &data);

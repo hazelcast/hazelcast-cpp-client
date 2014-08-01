@@ -14,19 +14,19 @@ namespace hazelcast {
         namespace multimap {
             PortableEntrySetResponse::PortableEntrySetResponse() {
 
-            };
+            }
 
             const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& PortableEntrySetResponse::getEntrySet() const {
                 return entrySet;
-            };
+            }
 
             int PortableEntrySetResponse::getFactoryId() const {
                 return collection::CollectionPortableHook::F_ID;
-            };
+            }
 
             int PortableEntrySetResponse::getClassId() const {
                 return MultiMapPortableHook::ENTRY_SET_RESPONSE;
-            };
+            }
 
             void PortableEntrySetResponse::readPortable(serialization::PortableReader& reader) {
                 int size = reader.readInt("s");
@@ -40,8 +40,8 @@ namespace hazelcast {
 
                     entrySet.push_back(std::make_pair(keyData, valueData));
                 }
-            };
-        };
+            }
+        }
 
     }
 }

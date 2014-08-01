@@ -6,6 +6,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/serialization/pimpl/Packet.h"
 #include <ctime>
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
@@ -17,7 +18,7 @@ namespace hazelcast {
             , buffer(bufferSize)
             , lastData(NULL) {
 
-            };
+            }
 
 
             void ReadHandler::run() {
@@ -42,11 +43,11 @@ namespace hazelcast {
 
                 while (buffer.hasRemaining()) {
                     if (lastData == NULL) {
-                        lastData = new serialization::pimpl::DataAdapter();
+                        lastData = new serialization::pimpl::Packet(connection.getPortableContext());
                     }
                     bool complete = lastData->readFrom(buffer);
                     if (complete) {
-                        connection.handlePacket(lastData->getData());
+                        connection.handlePacket(*lastData);
                         delete lastData;
                         lastData = NULL;
                     } else {
@@ -59,7 +60,7 @@ namespace hazelcast {
                 } else {
                     buffer.clear();
                 }
-            };
+            }
         }
     }
 }

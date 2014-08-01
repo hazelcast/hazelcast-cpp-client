@@ -14,38 +14,38 @@ namespace hazelcast {
                 DataInput::DataInput(const std::vector<byte> &rhsBuffer)
                 :buffer(rhsBuffer)
                 , pos(0) {
-                };
+                }
 
                 void DataInput::readFully(std::vector<byte> &bytes) {
                     bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
                     pos += bytes.size();
-                };
+                }
 
                 int DataInput::skipBytes(int i) {
                     pos += i;
                     return i;
-                };
+                }
 
                 bool DataInput::readBoolean() {
                     return readByte();
-                };
+                }
 
                 byte DataInput::readByte() {
                     return buffer[pos++];
-                };
+                }
 
                 short DataInput::readShort() {
                     byte a = readByte();
                     byte b = readByte();
                     return (0xff00 & (a << 8)) |
                             (0x00ff & b);
-                };
+                }
 
                 char DataInput::readChar() {
                     readByte();
                     byte b = readByte();
                     return b;
-                };
+                }
 
                 int DataInput::readInt() {
                     byte a = readByte();
@@ -56,7 +56,7 @@ namespace hazelcast {
                             (0x00ff0000 & (b << 16)) |
                             (0x0000ff00 & (c << 8)) |
                             (0x000000ff & d);
-                };
+                }
 
                 long long DataInput::readLong() {
                     byte a = readByte();
@@ -75,7 +75,7 @@ namespace hazelcast {
                             (0x0000000000ff0000LL & (f << 16)) |
                             (0x000000000000ff00LL & (g << 8)) |
                             (0x00000000000000ffLL & h);
-                };
+                }
 
                 float DataInput::readFloat() {
                     union {
@@ -84,7 +84,7 @@ namespace hazelcast {
                     } u;
                     u.i = readInt();
                     return u.f;
-                };
+                }
 
                 double DataInput::readDouble() {
                     union {
@@ -93,7 +93,7 @@ namespace hazelcast {
                     } u;
                     u.l = readLong();
                     return u.d;
-                };
+                }
 
                 std::string DataInput::readUTF() {
                     bool isNull = readBoolean();
@@ -111,15 +111,15 @@ namespace hazelcast {
                         chunkSize--;
                     }
                     return result;
-                };
+                }
 
                 int DataInput::position() {
                     return pos;
-                };
+                }
 
                 void DataInput::position(int newPos) {
                     pos = newPos;
-                };
+                }
                 //private functions
 
                 std::string DataInput::readShortUTF() {
@@ -179,14 +179,14 @@ namespace hazelcast {
                     }
                     chararr[chararr_count] = '\0';
                     return std::string(&chararr[0]);
-                };
+                }
 
                 std::vector <byte> DataInput::readByteArray() {
                     int len = readInt();
                     std::vector <byte> values(buffer.begin() + pos, buffer.begin() + pos + len);
                     pos += len;
                     return values;
-                };
+                }
 
                 std::vector<char> DataInput::readCharArray() {
                     int len = readInt();
@@ -195,7 +195,7 @@ namespace hazelcast {
                         values[i] = readChar();
                     }
                     return values;
-                };
+                }
 
                 std::vector<int> DataInput::readIntArray() {
                     int len = readInt();
@@ -204,7 +204,7 @@ namespace hazelcast {
                         values[i] = readInt();
                     }
                     return values;
-                };
+                }
 
                 std::vector<long> DataInput::readLongArray() {
                     int len = readInt();
@@ -213,7 +213,7 @@ namespace hazelcast {
                         values[i] = readLong();
                     }
                     return values;
-                };
+                }
 
                 std::vector<double> DataInput::readDoubleArray() {
                     int len = readInt();
@@ -222,7 +222,7 @@ namespace hazelcast {
                         values[i] = readDouble();
                     }
                     return values;
-                };
+                }
 
                 std::vector<float> DataInput::readFloatArray() {
                     int len = readInt();
@@ -231,7 +231,7 @@ namespace hazelcast {
                         values[i] = readFloat();
                     }
                     return values;
-                };
+                }
 
                 std::vector<short> DataInput::readShortArray() {
                     int len = readInt();
@@ -240,7 +240,7 @@ namespace hazelcast {
                         values[i] = readShort();
                     }
                     return values;
-                };
+                }
             }
         }
     }

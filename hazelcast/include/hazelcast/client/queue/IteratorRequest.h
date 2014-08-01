@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_ITERATOR_REQUEST
 #define HAZELCAST_QUEUE_ITERATOR_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API IteratorRequest : public impl::PortableRequest {
+            class HAZELCAST_API IteratorRequest : public impl::ClientRequest {
             public:
                 IteratorRequest(const std::string &name);
 

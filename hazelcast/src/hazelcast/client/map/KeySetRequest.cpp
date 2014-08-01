@@ -14,7 +14,7 @@ namespace hazelcast {
             KeySetRequest::KeySetRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int KeySetRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void KeySetRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
         }
     }
 }

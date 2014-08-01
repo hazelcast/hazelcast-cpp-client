@@ -29,13 +29,13 @@ namespace hazelcast {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeInt(i);
                 writer.writeUTF("s", s);
-            };
+            }
 
             void TestInvalidWritePortable::readPortable(serialization::PortableReader& reader) {
                 l = reader.readLong("l");
                 i = reader.readInt("i");
                 s = reader.readLong("s");
-            };
+            }
         }
     }
 }

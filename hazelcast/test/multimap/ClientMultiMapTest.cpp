@@ -17,11 +17,11 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , mm(new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("ClientMultiMapTest"))) {
-            };
+            }
 
 
             ClientMultiMapTest::~ClientMultiMapTest() {
-            };
+            }
 
             void ClientMultiMapTest::addTests() {
                 addTest(&ClientMultiMapTest::testPutGetRemove, "testPutGetRemove");
@@ -33,23 +33,23 @@ namespace hazelcast {
                 addTest(&ClientMultiMapTest::testTryLock, "testTryLock");
                 addTest(&ClientMultiMapTest::testForceUnlock, "testForceUnlock");
 
-            };
+            }
 
             void ClientMultiMapTest::beforeClass() {
-            };
+            }
 
             void ClientMultiMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientMultiMapTest::beforeTest() {
                 mm->clear();
-            };
+            }
 
             void ClientMultiMapTest::afterTest() {
                 mm->clear();
-            };
+            }
 
             void ClientMultiMapTest::testPutGetRemove() {
                 assertTrue(mm->put("key1", "value1"));
@@ -122,11 +122,11 @@ namespace hazelcast {
             public:
                 MyMultiMapListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
                 : addedLatch(addedLatch), removedLatch(removedLatch) {
-                };
+                }
 
                 void entryAdded(EntryEvent<std::string, std::string>& event) {
                     addedLatch.countDown();
-                };
+                }
 
                 void entryRemoved(EntryEvent<std::string, std::string>& event) {
                     removedLatch.countDown();

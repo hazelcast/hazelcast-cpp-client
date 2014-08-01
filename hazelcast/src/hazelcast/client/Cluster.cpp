@@ -13,7 +13,7 @@ namespace hazelcast {
         Cluster::Cluster(spi::ClusterService &clusterService)
         :clusterService(clusterService) {
 
-        };
+        }
 
         void Cluster::addMembershipListener(InitialMembershipListener *listener) {
             clusterService.addMembershipListener(listener);
@@ -25,14 +25,14 @@ namespace hazelcast {
 
         void Cluster::addMembershipListener(MembershipListener *listener) {
             clusterService.addMembershipListener(listener);
-        };
+        }
 
         bool Cluster::removeMembershipListener(MembershipListener *listener) {
             return clusterService.removeMembershipListener(listener);
-        };
+        }
 
         std::vector<Member>  Cluster::getMembers() {
             return clusterService.getMemberList();
-        };
+        }
     }
 }

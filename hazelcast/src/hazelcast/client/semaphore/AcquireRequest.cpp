@@ -14,17 +14,17 @@ namespace hazelcast {
             : SemaphoreRequest(instanceName, permitCount)
             , timeout(timeout) {
 
-            };
+            }
 
             int AcquireRequest::getClassId() const {
                 return SemaphorePortableHook::ACQUIRE;
-            };
+            }
 
 
             void AcquireRequest::write(serialization::PortableWriter &writer) const {
                 SemaphoreRequest::write(writer);
                 writer.writeLong("t", timeout);
-            };
+            }
 
         }
     }

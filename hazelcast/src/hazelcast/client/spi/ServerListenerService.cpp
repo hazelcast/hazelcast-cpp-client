@@ -6,7 +6,7 @@
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -20,9 +20,9 @@ namespace hazelcast {
             ServerListenerService::ServerListenerService(spi::ClientContext &clientContext)
             :clientContext(clientContext) {
 
-            };
+            }
 
-            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
+            std::string ServerListenerService::listen(const impl::ClientRequest*registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future;
                 future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, partitionId);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future->get());
@@ -32,7 +32,7 @@ namespace hazelcast {
                 return *registrationId;
             }
 
-            std::string ServerListenerService::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
+            std::string ServerListenerService::listen(const impl::ClientRequest*registrationRequest, impl::BaseEventHandler *handler) {
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future;
                 future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future->get());

@@ -39,7 +39,11 @@ namespace hazelcast {
 
             int readInt();
 
+            int readShort();
+
             void writeInt(int v);
+
+            void writeShort(int v);
 
             int writeTo(std::vector<byte> &destination, int offset);
 
@@ -51,10 +55,10 @@ namespace hazelcast {
 
             void skip(int l);
 
-        private:
             char readByte();
 
             void writeByte(char c);
+        private:
 
             void *ix() const;
 

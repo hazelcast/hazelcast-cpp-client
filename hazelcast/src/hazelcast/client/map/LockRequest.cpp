@@ -17,7 +17,7 @@ namespace hazelcast {
             , threadId(threadId)
             , ttl(ttl)
             , timeout(timeout) {
-            };
+            }
 
             LockRequest::LockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId)
             :name(name)
@@ -25,15 +25,15 @@ namespace hazelcast {
             , threadId(threadId)
             , ttl(-1)
             , timeout(-1) {
-            };
+            }
 
             int LockRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int LockRequest::getClassId() const {
                 return PortableHook::LOCK;
-            };
+            }
 
             void LockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
@@ -42,7 +42,7 @@ namespace hazelcast {
                 writer.writeLong("timeout", timeout);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace hazelcast {
         , residue(new util::AtomicInt(BLOCK_SIZE))
         , localLock(new util::Mutex) {
 
-        };
+        }
 
 
         bool IdGenerator::init(long id) {
@@ -26,7 +26,7 @@ namespace hazelcast {
                 *residue = (id % BLOCK_SIZE) + 1;
             }
             return init;
-        };
+        }
 
         long IdGenerator::newId() {
             int value = (*residue)++;
@@ -41,11 +41,11 @@ namespace hazelcast {
 
             }
             return int(*local) * BLOCK_SIZE + value;
-        };
+        }
 
         void IdGenerator::onDestroy() {
             atomicLong.onDestroy();
-        };
+        }
 
     }
 }

@@ -17,11 +17,11 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , list(new IList<std::string>(client->getList< std::string >("ClientListTest"))) {
-            };
+            }
 
 
             ClientListTest::~ClientListTest() {
-            };
+            }
 
             void ClientListTest::addTests() {
                 addTest(&ClientListTest::testAddAll, "testAddAll");
@@ -32,23 +32,23 @@ namespace hazelcast {
                 addTest(&ClientListTest::testRemoveRetainAll, "testRemoveRetainAll");
                 addTest(&ClientListTest::testListener, "testListener");
 
-            };
+            }
 
             void ClientListTest::beforeClass() {
-            };
+            }
 
             void ClientListTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientListTest::beforeTest() {
 
-            };
+            }
 
             void ClientListTest::afterTest() {
                 list->clear();
-            };
+            }
 
             void ClientListTest::testAddAll() {
 

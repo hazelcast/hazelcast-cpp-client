@@ -28,7 +28,7 @@ namespace hazelcast {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeout);
-            };
+            }
 
 
         }

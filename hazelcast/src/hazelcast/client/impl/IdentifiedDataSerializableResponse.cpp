@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 
 namespace hazelcast {
     namespace client {
@@ -13,7 +13,7 @@ namespace hazelcast {
             }
 
             void IdentifiedDataSerializableResponse::writeData(serialization::ObjectDataOutput &writer) const{
-                throw exception::IOException(" Response::writeData(serialization::ObjectDataOutput &writer)", "write of Client responses is not implemented ");
+                throw exception::HazelcastSerializationException(" Response::writeData(serialization::ObjectDataOutput &writer)", "write of Client responses is not implemented ");
             }
         }
     }

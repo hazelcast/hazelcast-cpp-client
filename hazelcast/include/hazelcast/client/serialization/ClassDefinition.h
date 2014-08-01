@@ -25,43 +25,143 @@ namespace hazelcast {
                 class DataOutput;
             }
 
+            /**
+            * ClassDefinition defines a class schema for Portable classes. It allows to query field names, types, class id etc.
+            * It can be created manually using {@link ClassDefinitionBuilder}
+            * or on demand during serialization phase.
+            *
+            * @see Portable
+            * @see ClassDefinitionBuilder
+            */
             class HAZELCAST_API ClassDefinition {
             public:
 
+                /**
+                * Constructor
+                */
                 ClassDefinition();
 
+                /**
+                * Constructor
+                * @param factoryId factory id of class
+                * @param classId id of class
+                * @param version version of portable class
+                */
                 ClassDefinition(int factoryId, int classId, int version);
 
-                void add(FieldDefinition&);
+                /**
+                * Internal API
+                * @param fieldDefinition to be added
+                */
+                void addFieldDef(FieldDefinition& fieldDefinition);
 
-                void add(boost::shared_ptr<ClassDefinition>);
+                /**
+                * Internal API
+                * @param classDefinition to be added
+                */
+                void addClassDef(boost::shared_ptr<ClassDefinition> classDefinition);
 
-                bool isFieldDefinitionExists(const char *);
+                /**
+                * @param fieldName field name
+                * @return true if this class definition contains a field named by given name
+                */
+                bool hasField(char const *fieldName) const;
 
-                const FieldDefinition& get(const char *);
+                /**
+                * @param fieldName name of the field
+                * @return field definition by given name
+                * @throws IllegalArgumentException when field not found
+                */
+                const FieldDefinition& getField(const char *fieldName) const;
 
-                std::vector<boost::shared_ptr<ClassDefinition> >& getNestedClassDefinitions();
+                /**
+                * @param fieldIndex index of the field
+                * @return field definition by given index
+                * @throws IllegalArgumentException when field not found
+                */
+                const FieldDefinition& getField(int fieldIndex) const;
 
-                bool hasField(const char *fieldName) const;
+                /**
+                * @return all field names contained in this class definition
+                */
+                std::vector<std::string> getFieldNames() const;
 
+                /**
+                * @param fieldName name of the field
+                * @return type of given field
+                * @throws IllegalArgumentException
+                */
                 FieldType getFieldType(const char *fieldName) const;
 
+                /**
+                * @param fieldName name of the field
+                * @return class id of given field
+                * @throws IllegalArgumentException
+                */
+                int getFieldClassId(const char *fieldName) const;
+
+                /**
+                * @param fieldName name of the field
+                * @return version of given field
+                * @throws IllegalArgumentException
+                */
+                int getFieldVersion(const char *fieldName) const;
+
+                /**
+                * @return total field count
+                */
                 int getFieldCount() const;
 
+                /**
+                * Internal API.
+                * @return nested class definition vector
+                */
+                std::vector<boost::shared_ptr<ClassDefinition> >& getNestedClassDefinitions();
+
+                /**
+                * @return factory id
+                */
                 int getFactoryId() const;
 
+                /**
+                * @return class id
+                */
                 int getClassId() const;
 
+                /**
+                * @return version
+                */
                 int getVersion() const;
 
+                /**
+                * Internal API.
+                * Returns byte array of class definition
+                */
                 const std::vector<byte>& getBinary() const;
 
-                void setBinary(std::auto_ptr<std::vector<byte> >);
+                /**
+                *  Internal API.
+                *  Set internal byte compressed byte array
+                *  @param binary compressed binary
+                */
+                void setBinary(std::auto_ptr<std::vector<byte> > binary);
 
-                void setVersion(int);
+                /**
+                * Internal API
+                * @param version portable version
+                */
+                void setVersionIfNotSet(int version);
 
+                /**
+                * Internal API
+                * @param dataOutput
+                */
                 void writeData(pimpl::DataOutput& dataOutput);
 
+                /**
+                * Internal API
+                * @param dataInput
+                */
                 void readData(pimpl::DataInput& dataInput);
 
             private:

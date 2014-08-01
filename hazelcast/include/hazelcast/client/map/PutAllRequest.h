@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_MAP_PUT_ALL_REQUEST
 #define HAZELCAST_MAP_PUT_ALL_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/impl/MapEntrySet.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API PutAllRequest : public impl::PortableRequest {
+            class HAZELCAST_API PutAllRequest : public impl::ClientRequest {
             public:
                 PutAllRequest(const std::string &name, map::MapEntrySet &entrySet);
 

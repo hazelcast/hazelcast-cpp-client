@@ -19,7 +19,7 @@ namespace hazelcast {
             , testValue(testValue)
             , threadId(threadId) {
 
-            };
+            }
 
             int ReplaceIfSameRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -33,11 +33,12 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
+                writer.writeBoolean("a", false);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
                 testValue.writeData(out);
-            };
+            }
         }
     }
 }

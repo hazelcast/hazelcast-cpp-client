@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 #define HAZELCAST_ADD_ENTRY_LISTENER_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddEntryListenerRequest : public impl::ClientRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, bool includeValue);
 

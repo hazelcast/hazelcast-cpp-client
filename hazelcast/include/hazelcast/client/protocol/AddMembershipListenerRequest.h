@@ -7,12 +7,12 @@
 #ifndef HAZELCAST_ADD_MLR
 #define HAZELCAST_ADD_MLR
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API AddMembershipListenerRequest  : public impl::PortableRequest {
+            class HAZELCAST_API AddMembershipListenerRequest  : public impl::ClientRequest {
             public:
                 AddMembershipListenerRequest();
 

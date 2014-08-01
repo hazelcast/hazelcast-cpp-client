@@ -7,14 +7,14 @@
 #ifndef HAZELCAST_ADD_INDEX_REQUEST
 #define HAZELCAST_ADD_INDEX_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
 
-            class HAZELCAST_API AddIndexRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddIndexRequest : public impl::ClientRequest {
             public:
                 AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered);
 

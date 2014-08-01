@@ -8,8 +8,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DataAdapter::DataAdapter(const Data &data)
-                :status(stType)
+                DataAdapter::DataAdapter(PortableContext& context, const Data& data)
+                : status(ST_TYPE)
                 , factoryId(0)
                 , classId(0)
                 , version(0)
@@ -17,210 +17,219 @@ namespace hazelcast {
                 , skipClassDef(false)
                 , bytesRead(0)
                 , bytesWritten(0)
-                , data(data) {
+                , data(data)
+                , context(context) {
 
                 }
 
-                DataAdapter::DataAdapter()
-                :status(stType)
+                DataAdapter::DataAdapter(PortableContext& context)
+                : status(ST_TYPE)
                 , factoryId(0)
                 , classId(0)
                 , version(0)
                 , classDefSize(0)
                 , skipClassDef(false)
                 , bytesRead(0)
-                , bytesWritten(0) {
+                , bytesWritten(0)
+                , context(context) {
 
                 }
 
-                Data &DataAdapter::getData() {
-                    assert(isStatusSet(stAll));
+
+                DataAdapter::~DataAdapter() {
+
+                }
+
+                const Data& DataAdapter::getData() const{
                     return data;
                 }
 
+                void DataAdapter::setData(Data& data) {
+                    this->data = data;
+                }
 
-                bool DataAdapter::writeTo(util::ByteBuffer &destination) {
-                    if (!isStatusSet(stType)) {
+                bool DataAdapter::writeTo(util::ByteBuffer& destination) {
+                    if (!isStatusSet(ST_TYPE)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         destination.writeInt(data.getType());
-                        setStatus(stType);
+                        setStatus(ST_TYPE);
                     }
-                    if (!isStatusSet(stClassId)) {
+                    if (!isStatusSet(ST_CLASS_ID)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         classId = data.cd == NULL ? Data::NO_CLASS_ID : data.cd->getClassId();
                         destination.writeInt(classId);
                         if (classId == Data::NO_CLASS_ID) {
-                            setStatus(stFactoryId);
-                            setStatus(stVersion);
-                            setStatus(stClassDefSize);
-                            setStatus(stClassDef);
+                            setStatus(ST_FACTORY_ID);
+                            setStatus(ST_VERSION);
+                            setStatus(ST_CLASS_DEF_SIZE);
+                            setStatus(ST_CLASS_DEF);
                         }
-                        setStatus(stClassId);
+                        setStatus(ST_CLASS_ID);
                     }
-                    if (!isStatusSet(stFactoryId)) {
+                    if (!isStatusSet(ST_FACTORY_ID)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         destination.writeInt(data.cd->getFactoryId());
-                        setStatus(stFactoryId);
+                        setStatus(ST_FACTORY_ID);
                     }
-                    if (!isStatusSet(stVersion)) {
+                    if (!isStatusSet(ST_VERSION)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         int version = data.cd->getVersion();
                         destination.writeInt(version);
-                        setStatus(stVersion);
+                        setStatus(ST_VERSION);
                     }
-                    if (!isStatusSet(stClassDefSize)) {
+                    if (!isStatusSet(ST_CLASS_DEF_SIZE)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         classDefSize = data.cd->getBinary().size();
                         destination.writeInt(classDefSize);
-                        setStatus(stClassDefSize);
+                        setStatus(ST_CLASS_DEF_SIZE);
                         if (classDefSize == 0) {
-                            setStatus(stClassDef);
+                            setStatus(ST_CLASS_DEF);
                         }
                     }
-                    if (!isStatusSet(stClassDef)) {
+                    if (!isStatusSet(ST_CLASS_DEF)) {
                         if (destination.remaining() < data.cd->getBinary().size()) {
                             return false;
                         }
                         destination.readFrom(data.cd->getBinary());
-                        setStatus(stClassDef);
+                        setStatus(ST_CLASS_DEF);
                     }
-                    if (!isStatusSet(stSize)) {
+                    if (!isStatusSet(ST_SIZE)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         int size = data.bufferSize();
                         destination.writeInt(size);
-                        setStatus(stSize);
+                        setStatus(ST_SIZE);
                         if (size <= 0) {
-                            setStatus(stValue);
+                            setStatus(ST_VALUE);
                         } else {
                             bytesWritten = 0;
                         }
                     }
-                    if (!isStatusSet(stValue)) {
+                    if (!isStatusSet(ST_VALUE)) {
                         bytesWritten += destination.readFrom(*(data.buffer), bytesWritten);
                         if (bytesWritten != data.buffer->size()) {
                             return false;
                         }
-                        setStatus(stValue);
+                        setStatus(ST_VALUE);
                     }
-                    if (!isStatusSet(stHash)) {
+                    if (!isStatusSet(ST_HASH)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
                         destination.writeInt(data.getPartitionHash());
-                        setStatus(stHash);
+                        setStatus(ST_HASH);
                     }
-                    setStatus(stAll);
+                    setStatus(ST_ALL);
                     return true;
                 }
 
-                bool DataAdapter::readFrom(util::ByteBuffer &source) {
-                    if (!isStatusSet(stType)) {
+                bool DataAdapter::readFrom(util::ByteBuffer& source) {
+                    if (!isStatusSet(ST_TYPE)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         data.setType(source.readInt());
-                        setStatus(stType);
+                        setStatus(ST_TYPE);
                     }
-                    if (!isStatusSet(stClassId)) {
+                    if (!isStatusSet(ST_CLASS_ID)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         classId = source.readInt();
-                        setStatus(stClassId);
+                        setStatus(ST_CLASS_ID);
                         if (classId == Data::NO_CLASS_ID) {
-                            setStatus(stFactoryId);
-                            setStatus(stVersion);
-                            setStatus(stClassDefSize);
-                            setStatus(stClassDef);
+                            setStatus(ST_FACTORY_ID);
+                            setStatus(ST_VERSION);
+                            setStatus(ST_CLASS_DEF_SIZE);
+                            setStatus(ST_CLASS_DEF);
                         }
                     }
-                    if (!isStatusSet(stFactoryId)) {
+                    if (!isStatusSet(ST_FACTORY_ID)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         factoryId = source.readInt();
-                        setStatus(stFactoryId);
+                        setStatus(ST_FACTORY_ID);
                     }
-                    if (!isStatusSet(stVersion)) {
+                    if (!isStatusSet(ST_VERSION)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         version = source.readInt();
-                        setStatus(stVersion);
+                        setStatus(ST_VERSION);
                     }
-                    if (!isStatusSet(stClassDef)) {
+                    if (!isStatusSet(ST_CLASS_DEF)) {
                         if (!skipClassDef) {
-                            if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                                data.cd = context->lookup(factoryId, classId, version);
+                            if (context.isClassDefinitionExists(factoryId, classId, version)) {
+                                data.cd = context.lookup(factoryId, classId, version);
                                 skipClassDef = true;
                             }
                         }
-                        if (!isStatusSet(stClassDefSize)) {
+                        if (!isStatusSet(ST_CLASS_DEF_SIZE)) {
                             if (source.remaining() < 4) {
                                 return false;
                             }
                             classDefSize = source.readInt();
-                            setStatus(stClassDefSize);
+                            setStatus(ST_CLASS_DEF_SIZE);
                         }
-                        if (!isStatusSet(stClassDef)) {
+                        if (!isStatusSet(ST_CLASS_DEF)) {
                             if (source.remaining() < classDefSize) {
                                 return false;
                             }
                             if (skipClassDef) {
                                 source.skip(classDefSize);
                             } else {
-                                std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
+                                std::auto_ptr<std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                                 source.writeTo(*(classDefBytes.get()));
-                                data.cd = context->createClassDefinition(factoryId, classDefBytes);
+                                data.cd = context.createClassDefinition(factoryId, classDefBytes);
                             }
-                            setStatus(stClassDef);
+                            setStatus(ST_CLASS_DEF);
                         }
                     }
-                    if (!isStatusSet(stSize)) {
+                    if (!isStatusSet(ST_SIZE)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         int valueSize = source.readInt();
                         data.buffer.reset(new std::vector<byte>(valueSize));
-                        setStatus(stSize);
+                        setStatus(ST_SIZE);
                     }
-                    if (!isStatusSet(stValue)) {
+                    if (!isStatusSet(ST_VALUE)) {
                         bytesRead += source.writeTo((*(data.buffer)), bytesRead);
                         if (bytesRead != data.buffer->size()) {
                             return false;
                         }
-                        setStatus(stValue);
+                        setStatus(ST_VALUE);
                     }
 
-                    if (!isStatusSet(stHash)) {
+                    if (!isStatusSet(ST_HASH)) {
                         if (source.remaining() < 4) {
                             return false;
                         }
                         data.setPartitionHash(source.readInt());
-                        setStatus(stHash);
+                        setStatus(ST_HASH);
                     }
-                    setStatus(stAll);
+                    setStatus(ST_ALL);
                     return true;
                 }
 
-                void DataAdapter::setStatus(StatusBit bit) {
-                    status |= 1 << (int) bit;
+                void DataAdapter::setStatus(int bit) {
+                    status |= 1 << bit;
                 }
 
-                bool DataAdapter::isStatusSet(StatusBit bit) const {
-                    return (status & 1 << (int) bit) != 0;
+                bool DataAdapter::isStatusSet(int bit) const {
+                    return (status & 1 << bit) != 0;
                 }
             }
         }

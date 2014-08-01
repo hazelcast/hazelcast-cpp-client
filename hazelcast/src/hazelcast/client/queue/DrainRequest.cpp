@@ -14,7 +14,7 @@ namespace hazelcast {
             :name(name)
             , maxSize(maxSize) {
 
-            };
+            }
 
             int DrainRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -22,14 +22,14 @@ namespace hazelcast {
 
             int DrainRequest::getClassId() const {
                 return queue::QueuePortableHook::DRAIN;
-            };
+            }
 
 
             void DrainRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
                 writer.writeInt("m", maxSize);
-            };
+            }
         }
     }
 }

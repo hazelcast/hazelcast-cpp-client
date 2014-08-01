@@ -35,7 +35,7 @@ namespace hazelcast {
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
 			#endif
 
-        };
+        }
 
 
         Socket::Socket(int socketId)
@@ -50,7 +50,7 @@ namespace hazelcast {
 
         Socket::~Socket() {
             close();
-        };
+        }
 
         int Socket::connect(int timeoutInMillis) {
             assert(serverInfo != NULL && "Socket is already connected");
@@ -106,7 +106,7 @@ namespace hazelcast {
             if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, 0)) == -1)
                 throw client::exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
             return bytesSend;
-        };
+        }
 
         int Socket::receive(void *buffer, int len, int flag) const {
             int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
@@ -117,7 +117,7 @@ namespace hazelcast {
                 throw client::exception::IOException("Socket::receive", "Connection closed by remote");
             }
             return size;
-        };
+        }
 
         int Socket::getSocketId() const {
             return socketId;

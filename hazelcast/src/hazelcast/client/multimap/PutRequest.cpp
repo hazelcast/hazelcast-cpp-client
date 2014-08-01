@@ -17,11 +17,11 @@ namespace hazelcast {
             , threadId(threadId)
             , index(index) {
 
-            };
+            }
 
             int PutRequest::getClassId() const {
                 return MultiMapPortableHook::PUT;
-            };
+            }
 
 
             void PutRequest::write(serialization::PortableWriter &writer) const {
@@ -30,7 +30,7 @@ namespace hazelcast {
                 KeyBasedRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 value.writeData(out);
-            };
+            }
 
         }
     }

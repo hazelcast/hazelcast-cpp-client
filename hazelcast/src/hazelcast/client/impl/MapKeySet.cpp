@@ -13,7 +13,7 @@ namespace hazelcast {
 
             const std::vector<serialization::pimpl::Data>& MapKeySet::getKeySet() const {
                 return keySet;
-            };
+            }
 
             int MapKeySet::getFactoryId() const {
                 return DataSerializableHook::F_ID;

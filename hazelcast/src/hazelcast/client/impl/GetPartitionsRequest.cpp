@@ -10,7 +10,7 @@ namespace hazelcast {
         namespace impl {
             GetPartitionsRequest::GetPartitionsRequest() {
 
-            };
+            }
 
             int GetPartitionsRequest::getFactoryId() const {
                 return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;

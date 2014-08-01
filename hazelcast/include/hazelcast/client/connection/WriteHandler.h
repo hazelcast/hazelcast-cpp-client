@@ -9,14 +9,15 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/client/serialization/pimpl/DataAdapter.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class DataAdapter;
+                class Packet;
+
+                class Data;
             }
         }
         namespace connection {
@@ -38,8 +39,8 @@ namespace hazelcast {
 
             private:
                 util::ByteBuffer buffer;
-                util::ConcurrentQueue<serialization::pimpl::DataAdapter> writeQueue;
-                serialization::pimpl::DataAdapter *lastData;
+                util::ConcurrentQueue<serialization::pimpl::Packet> writeQueue;
+                serialization::pimpl::Packet *lastData;
                 bool ready;
                 util::AtomicBoolean informSelector;
 

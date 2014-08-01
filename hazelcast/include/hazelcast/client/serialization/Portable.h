@@ -17,48 +17,56 @@ namespace hazelcast {
             class PortableReader;
 
             /**
-             * Classes that will be used with hazelcast data structures like IMap, IQueue etc should either inherit from
-             * one of the following classes : Portable , IdentifiedDataSerializable or it should be custom serializable.
-             * For custom serializable see Serializer
-             *
-             * Note that: factoryId and classId is to the same class in find server side, hence they should be consistent
-             * with each other.
-             *
-             * @see IdentifiedDataSerializable
-             */
+            * Classes that will be used with hazelcast data structures like IMap, IQueue etc should either inherit from
+            * one of the following classes : Portable , IdentifiedDataSerializable or it should be custom serializable.
+            * For custom serializable see Serializer
+            *
+            * Portable serialization that have the following advantages:
+            * <ul>
+            *     <li>Support multiversion of the same object type.
+            *     See SerializationConfig#setPortableVersion(int)}</li>
+            *     <li>Fetching individual fields without having to rely on reflection.</li>
+            *     <li>Querying and indexing support without de-serialization and/or reflection.</li>
+            * </ul>
+            *
+            * Note that: factoryId and classId is to the same class in find server side, hence they should be consistent
+            * with each other.
+            *
+            * @see IdentifiedDataSerializable
+            */
             class HAZELCAST_API Portable {
             public:
                 /**
-                 * Destructor
-                 */
+                * Destructor
+                */
                 virtual ~Portable();
 
                 /**
-                 * @return factory id
-                 */
+                * @return factory id
+                */
                 virtual int getFactoryId() const = 0;
 
                 /**
-                 * @return class id
-                 */
+                * @return class id
+                */
                 virtual int getClassId() const = 0;
 
                 /**
-                 * Defines how this class will be written.
-                 * @param writer PortableWriter
-                 */
-                virtual void writePortable(PortableWriter &writer) const = 0;
+                * Defines how this class will be written.
+                * @param writer PortableWriter
+                */
+                virtual void writePortable(PortableWriter& writer) const = 0;
 
                 /**
-                 *Defines how this class will be read.
-                 * @param reader PortableReader
-                 */
-                virtual void readPortable(PortableReader &reader) = 0;
+                *Defines how this class will be read.
+                * @param reader PortableReader
+                */
+                virtual void readPortable(PortableReader& reader) = 0;
 
                 /**
-                 * Not public api. Do not override this method.
-                 * @return serializer id
-                 */
+                * Not public api. Do not override this method.
+                * @return serializer id
+                */
                 virtual int getSerializerId() const;
             };
         }

@@ -37,11 +37,11 @@ namespace hazelcast {
 
             int PortableEntryEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
-            };
+            }
 
             int PortableEntryEvent::getClassId() const {
                 return protocol::SpiConstants::ENTRY_EVENT;
-            };
+            }
 
 
             void PortableEntryEvent::readPortable(serialization::PortableReader& reader) {
@@ -52,7 +52,7 @@ namespace hazelcast {
                 util::readNullableData(in, &key);
                 util::readNullableData(in, &value);
                 util::readNullableData(in, &oldValue);
-            };
+            }
         }
     }
 }

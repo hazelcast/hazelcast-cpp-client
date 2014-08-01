@@ -22,17 +22,17 @@ namespace hazelcast {
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key, const std::string &sql)
             :name(name), includeValue(includeValue), key(key), sql(sql), hasKey(true), hasPredicate(true) {
 
-            };
+            }
 
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const std::string &sql)
             :name(name), includeValue(includeValue), sql(sql), hasKey(false), hasPredicate(true) {
 
-            };
+            }
 
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue, const serialization::pimpl::Data &key)
             :name(name), includeValue(includeValue), key(key), hasKey(true), hasPredicate(false) {
 
-            };
+            }
 
             int AddEntryListenerRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -58,7 +58,7 @@ namespace hazelcast {
                     serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     key.writeData(out);
                 }
-            };
+            }
 
 
         }

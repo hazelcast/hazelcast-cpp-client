@@ -149,10 +149,11 @@ namespace hazelcast {
                 void end();
 
                 /**
-                * To write a null portable value, user needs to provide class and factoryIds of related class.
+                * To write a null portable value.
                 *
                 * @tparam type of the portable field
                 * @param fieldName name of the field
+                *
                 * @throws IOException
                 */
                 template<typename T>

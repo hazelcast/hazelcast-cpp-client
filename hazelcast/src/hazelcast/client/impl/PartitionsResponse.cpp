@@ -15,19 +15,19 @@ namespace hazelcast {
 
             const std::vector<Address>&  PartitionsResponse::getMembers() const {
                 return members;
-            };
+            }
 
             const std::vector<int>&  PartitionsResponse::getOwnerIndexes() const {
                 return ownerIndexes;
-            };
+            }
 
             int PartitionsResponse::getFactoryId() const {
                 return protocol::ProtocolConstants::PARTITION_DS_FACTORY;
-            };
+            }
 
             int PartitionsResponse::getClassId() const {
                 return protocol::ProtocolConstants::PARTITIONS;
-            };
+            }
 
             void PartitionsResponse::readData(serialization::ObjectDataInput& reader) {
                 int len;
@@ -41,7 +41,7 @@ namespace hazelcast {
                 for (int i = 0; i < len; i++) {
                     ownerIndexes[i] = reader.readInt();
                 }
-            };
+            }
 
 
         }

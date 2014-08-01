@@ -16,15 +16,15 @@ namespace hazelcast {
             , key(key)
             , threadId(threadId)
             , force(force) {
-            };
+            }
 
             int UnlockRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int UnlockRequest::getClassId() const {
                 return PortableHook::UNLOCK;
-            };
+            }
 
             void UnlockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
@@ -32,7 +32,7 @@ namespace hazelcast {
                 writer.writeBoolean("force", force);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

@@ -79,7 +79,7 @@ namespace hazelcast {
 
         std::string Thread::getThreadName() const{
             return threadName;
-        };
+        }
 
         DWORD WINAPI Thread::controlledThread(LPVOID args) {
             std::auto_ptr<ThreadArgs> threadArgs((ThreadArgs *) args);
@@ -152,7 +152,7 @@ namespace hazelcast {
 
         std::string Thread::getThreadName() const {
             return threadName;
-        };
+        }
 
         void Thread::interrupt() {
             pthread_cancel(thread);

@@ -24,7 +24,7 @@ namespace hazelcast {
             , updating(false)
             , partitionCount(0) {
 
-            };
+            }
 
             bool PartitionService::start() {
                 util::LockGuard lg(startLock);
@@ -104,7 +104,7 @@ namespace hazelcast {
                     util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
                 }
                 return partitionResponse;
-            };
+            }
 
             boost::shared_ptr<impl::PartitionsResponse>PartitionService::getPartitionsFrom() {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
@@ -131,7 +131,7 @@ namespace hazelcast {
                         partitions.put(partitionId, address);
                     }
                 }
-            };
+            }
 
             bool PartitionService::getInitialPartitions() {
                 std::vector<Member> memberList = clientContext.getClusterService().getMemberList();
@@ -145,7 +145,7 @@ namespace hazelcast {
                 }
                 util::ILogger::getLogger().severe("PartitionService::getInitialPartitions Cannot get initial partitions!");
                 return false;
-            };
+            }
 
 
         }

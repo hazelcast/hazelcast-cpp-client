@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 #define HAZELCAST_QUEUE_REMAINING_CAPACITY_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API RemainingCapacityRequest : public impl::PortableRequest {
+            class HAZELCAST_API RemainingCapacityRequest : public impl::ClientRequest {
             public:
                 RemainingCapacityRequest(const std::string &name);
 

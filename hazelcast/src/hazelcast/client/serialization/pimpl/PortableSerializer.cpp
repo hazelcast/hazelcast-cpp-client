@@ -12,67 +12,65 @@
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableSerializer::PortableSerializer(PortableContext&portableContext)
+                PortableSerializer::PortableSerializer(PortableContext& portableContext)
                 : context(portableContext) {
 
-                };
+                }
 
-                boost::shared_ptr<ClassDefinition> PortableSerializer::getClassDefinition(const Portable &p) {
-                    boost::shared_ptr<ClassDefinition> cd;
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-                    if (context.isClassDefinitionExists(factoryId, classId)) {
-                        cd = context.lookup(factoryId, classId);
-                    } else {
-                        ClassDefinitionWriter cdw(factoryId, classId, context.getVersion(), context);
-                        PortableWriter classDefinitionWriter(&cdw);
-                        p.writePortable(classDefinitionWriter);
-                        cd = cdw.getClassDefinition();
-                        cd = context.registerClassDefinition(cd);
-                    }
-
-                    return cd;
-                };
-
-                void PortableSerializer::write(DataOutput &dataOutput, const Portable &p) {
-                    boost::shared_ptr<ClassDefinition> cd = getClassDefinition(p);
+                void PortableSerializer::write(DataOutput& dataOutput, const Portable& p) {
+                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
                     DefaultPortableWriter dpw(context, cd, dataOutput);
                     PortableWriter portableWriter(&dpw);
                     p.writePortable(portableWriter);
                     portableWriter.end();
-                };
+                }
 
-                void PortableSerializer::read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion) {
-                    boost::shared_ptr<ClassDefinition> cd;
+                void PortableSerializer::read(DataInput& dataInput, Portable& portable, int factoryId, int classId, int version) {
+                    int portableVersion = findPortableVersion(factoryId, classId, portable);
+                    PortableReader reader = createReader(dataInput, factoryId, classId, version, portableVersion);
+                    portable.readPortable(reader);
+                    reader.end();
+                }
 
-                    if (context.getVersion() == dataVersion) {
-                        cd = context.lookup(factoryId, classId); // using portableContext.version
-                        if (cd == NULL) {
-                            throw exception::IOException("PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion)",
-                                    "Could not find class-definition for factory-id: " + util::IOUtil::to_string(factoryId) + ", class-id: " + util::IOUtil::to_string(classId) + ", version: " + util::IOUtil::to_string(dataVersion));
-                        }
-                        DefaultPortableReader defaultPortableReader(context, dataInput, cd);
-                        PortableReader reader(&defaultPortableReader);
-                        object.readPortable(reader);
-                        reader.end();
-                    } else {
-                        cd = context.lookup(factoryId, classId, dataVersion); // registered during read
-                        if (cd == NULL) {
-                            throw exception::IOException("PortableSerializer::read(DataInput& dataInput, Portable& object, int factoryId, int classId, int dataVersion)",
-                                    "Could not find class-definition for factory-id: " + util::IOUtil::to_string(factoryId) + ", class-id: " + util::IOUtil::to_string(classId) + ", version: " + util::IOUtil::to_string(dataVersion));
-                        }
-                        MorphingPortableReader morphingPortableReader(context, dataInput, cd);
-                        PortableReader reader(&morphingPortableReader);
-                        object.readPortable(reader);
-                        reader.end();
+                PortableReader PortableSerializer::createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) {
+
+                    int effectiveVersion = version;
+                    if (version < 0) {
+                        effectiveVersion = context.getVersion();
                     }
-                };
+
+                    boost::shared_ptr<ClassDefinition> cd = context.lookup(factoryId, classId, effectiveVersion);
+                    if (cd == NULL) {
+                        std::stringstream s;
+                        s << "Could not find class-definition for ";
+                        s << "factory-id: " << factoryId << ", class-id: " << classId << ", version: " << effectiveVersion;
+                        throw  exception::HazelcastSerializationException("PortableSerializer::createReader", s.str());
+                    }
+
+                    if (portableVersion == effectiveVersion) {
+                        PortableReader reader(context, input, cd, true);
+                        return reader;
+                    } else {
+                        PortableReader reader(context, input, cd, false);
+                        return reader;
+                    }
+                }
+
+                int PortableSerializer::findPortableVersion(int factoryId, int classId, const Portable& portable) {
+                    int currentVersion = context.getClassVersion(factoryId, classId);
+                    if (currentVersion < 0) {
+                        currentVersion = PortableVersionHelper::getVersion(&portable, context.getVersion());
+                        if (currentVersion > 0) {
+                            context.setClassVersion(factoryId, classId, currentVersion);
+                        }
+                    }
+                    return currentVersion;
+                }
             }
         }
     }

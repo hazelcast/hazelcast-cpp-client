@@ -12,12 +12,12 @@ namespace hazelcast {
         namespace impl {
             RoundRobinLB::RoundRobinLB():index(0) {
 
-            };
+            }
 
             void RoundRobinLB::init(Cluster &cluster) {
                 AbstractLoadBalancer::init(cluster);
                 cluster.addMembershipListener(this);
-            };
+            }
 
             const Member RoundRobinLB::next() {
                 std::vector<Member> members = getMembers();

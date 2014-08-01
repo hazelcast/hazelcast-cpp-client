@@ -22,7 +22,7 @@ namespace hazelcast {
             void TxnMultiMapRequest::write(serialization::PortableWriter &writer) const {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
-            };
+            }
         }
     }
 }

@@ -11,15 +11,15 @@ namespace hazelcast {
         namespace impl {
             ClientMembershipEvent::ClientMembershipEvent() {
 
-            };
+            }
 
             const Member &ClientMembershipEvent::getMember() const {
                 return member;
-            };
+            }
 
             MembershipEvent::MembershipEventType ClientMembershipEvent::getEventType() const {
                 return eventType;
-            };
+            }
 
             const impl::MemberAttributeChange &ClientMembershipEvent::getMemberAttributeChange() const {
                 return *memberAttributeChange;

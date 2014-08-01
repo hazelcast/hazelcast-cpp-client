@@ -14,7 +14,7 @@ namespace hazelcast {
             AddListenerRequest::AddListenerRequest(const std::string& name, bool includeValue)
             :name(name)
             , includeValue(includeValue) {
-            };
+            }
 
             int AddListenerRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -22,12 +22,12 @@ namespace hazelcast {
 
             int AddListenerRequest::getClassId() const {
                 return queue::QueuePortableHook::ADD_LISTENER;
-            };
+            }
 
             void AddListenerRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeBoolean("i", includeValue);
-            };
+            }
         }
     }
 }

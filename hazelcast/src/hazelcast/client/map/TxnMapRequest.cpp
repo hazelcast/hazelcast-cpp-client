@@ -30,15 +30,15 @@ namespace hazelcast {
                 types[13] = KEYSET_BY_PREDICATE;
                 types[14] = VALUES;
                 types[15] = VALUES_BY_PREDICATE;
-            };
+            }
 
             TxnMapRequestType::operator int() const {
                 return value;
-            };
+            }
 
             void TxnMapRequestType::operator = (int i) {
                 value = types[i];
-            };
+            }
 
             //----------------------------------//
 
@@ -50,7 +50,7 @@ namespace hazelcast {
             , hasNewValue(false)
             , hasPredicate(false)
             , ttl(-1) {
-            };
+            }
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key)
             : name(name)
@@ -61,7 +61,7 @@ namespace hazelcast {
             , hasNewValue(false)
             , hasPredicate(false)
             , ttl(-1) {
-            };
+            }
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value)
             : name(name)
@@ -73,7 +73,7 @@ namespace hazelcast {
             , hasNewValue(false)
             , hasPredicate(false)
             , ttl(-1) {
-            };
+            }
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue)
             : name(name)
@@ -86,7 +86,7 @@ namespace hazelcast {
             , hasNewValue(true)
             , hasPredicate(false)
             , ttl(-1) {
-            };
+            }
 
             TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate)
             : name(name)
@@ -97,15 +97,15 @@ namespace hazelcast {
             , hasPredicate(true)
             , predicate(predicate)
             , ttl(-1) {
-            };
+            }
 
             int TxnMapRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int TxnMapRequest::getClassId() const {
                 return PortableHook::TXN_REQUEST_WITH_SQL_QUERY;
-            };
+            }
 
 
             void TxnMapRequest::write(serialization::PortableWriter &writer) const {
@@ -130,7 +130,7 @@ namespace hazelcast {
                     out.writeUTF(predicate);
                 }
                 out.writeLong(ttl);
-            };
+            }
         }
     }
 }

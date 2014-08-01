@@ -49,11 +49,9 @@ namespace hazelcast {
                         const T *object = static_cast<const T *>(portable);
                         DataOutput output;
                         getSerializerHolder().getPortableSerializer().write(output, *object);
-                        int factoryId = object->getFactoryId();
-                        int classId = object->getClassId();
                         Data data;
                         data.setType(SerializationConstants::CONSTANT_TYPE_PORTABLE);
-                        data.cd = portableContext.lookup(factoryId, classId);
+                        data.cd = lookupClassDefinition(portable);
                         data.setBuffer(output.toByteArray());
                         return data;
                     };
@@ -84,7 +82,7 @@ namespace hazelcast {
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
                                     + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
-                            throw exception::IOException("SerializationService::toData", message);
+                            throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
                         data.setType(type);
                         data.setBuffer(output.toByteArray());
@@ -141,7 +139,7 @@ namespace hazelcast {
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
                                     + util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
-                            throw exception::IOException("SerializationService::toObject", message);
+                            throw exception::HazelcastSerializationException("SerializationService::toObject", message);
                         }
                     };
 
@@ -160,6 +158,8 @@ namespace hazelcast {
                     const SerializationConfig& serializationConfig;
 
                     void checkClassType(int expectedType, int currentType);
+
+                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(const Portable* portable) ;
 
                 };
 

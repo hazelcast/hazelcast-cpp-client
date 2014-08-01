@@ -32,7 +32,7 @@ namespace hazelcast {
                 class HAZELCAST_API DefaultPortableWriter {
                 public:
 
-                    DefaultPortableWriter(PortableContext &portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &output);
+                    DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& output);
 
                     void writeInt(const char *fieldName, int value);
 
@@ -50,65 +50,65 @@ namespace hazelcast {
 
                     void writeShort(const char *fieldName, short value);
 
-                    void writeUTF(const char *fieldName, const std::string &str);
+                    void writeUTF(const char *fieldName, const std::string& str);
 
                     void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
-                    void writeByteArray(const char *fieldName, const std::vector<byte> &x);
+                    void writeByteArray(const char *fieldName, const std::vector<byte>& x);
 
-                    void writeCharArray(const char *fieldName, const std::vector<char > &data);
+                    void writeCharArray(const char *fieldName, const std::vector<char>& data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short > &data);
+                    void writeShortArray(const char *fieldName, const std::vector<short>& data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int> &data);
+                    void writeIntArray(const char *fieldName, const std::vector<int>& data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long > &data);
+                    void writeLongArray(const char *fieldName, const std::vector<long>& data);
 
-                    void writeFloatArray(const char *fieldName, const std::vector<float > &data);
+                    void writeFloatArray(const char *fieldName, const std::vector<float>& data);
 
-                    void writeDoubleArray(const char *fieldName, const std::vector<double > &data);
+                    void writeDoubleArray(const char *fieldName, const std::vector<double>& data);
 
                     void end();
 
-                    template <typename T>
+                    template<typename T>
                     void writeNullPortable(const char *fieldName) {
                         setPosition(fieldName);
                         dataOutput.writeBoolean(true);
-                    };
+                    }
 
-                    template <typename T>
-                    void writePortable(const char *fieldName, const T &portable) {
+                    template<typename T>
+                    void writePortable(const char *fieldName, const T& portable) {
                         setPosition(fieldName);
                         dataOutput.writeBoolean(false);
                         write(portable);
-                    };
+                    }
 
-                    template <typename T>
-                    void writePortableArray(const char *fieldName, const std::vector<T> &values) {
+                    template<typename T>
+                    void writePortableArray(const char *fieldName, const std::vector<T>& values) {
                         setPosition(fieldName);
                         int len = values.size();
                         dataOutput.writeInt(len);
                         if (len > 0) {
                             int offset = dataOutput.position();
-                            dataOutput.position(offset + len * sizeof (int));
+                            dataOutput.position(offset + len * sizeof(int));
                             for (int i = 0; i < len; i++) {
-                                dataOutput.writeInt(offset + i * sizeof (int), dataOutput.position());
+                                dataOutput.writeInt(offset + i * sizeof(int), dataOutput.position());
                                 write(values[i]);
                             }
                         }
-                    };
+                    }
 
-                    ObjectDataOutput &getRawDataOutput();
+                    ObjectDataOutput& getRawDataOutput();
 
                 private:
 
                     void setPosition(const char *fieldName);
 
-                    void write(const Portable &p);
+                    void write(const Portable& p);
 
                     bool raw;
-                    SerializerHolder &serializerHolder;
-                    DataOutput &dataOutput;
+                    SerializerHolder& serializerHolder;
+                    DataOutput& dataOutput;
                     ObjectDataOutput objectDataOutput;
                     int begin;
                     int offset;

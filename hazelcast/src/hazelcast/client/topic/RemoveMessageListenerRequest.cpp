@@ -10,15 +10,15 @@ namespace hazelcast {
             RemoveMessageListenerRequest::RemoveMessageListenerRequest(const std::string &instanceName, const std::string &registrationId)
             : impl::BaseRemoveListenerRequest(instanceName, registrationId) {
 
-            };
+            }
 
             int RemoveMessageListenerRequest::getFactoryId() const {
                 return TopicPortableHook::F_ID;
-            };
+            }
 
             int RemoveMessageListenerRequest::getClassId() const {
                 return TopicPortableHook::REMOVE_LISTENER;
-            };
+            }
         }
     }
 }

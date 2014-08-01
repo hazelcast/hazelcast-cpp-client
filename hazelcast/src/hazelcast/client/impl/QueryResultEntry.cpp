@@ -31,7 +31,7 @@ namespace hazelcast {
                 isNotNull = reader.readBoolean();
                 if (isNotNull)
                     value.readData(reader);
-            };
+            }
         }
     }
 }

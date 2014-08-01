@@ -19,7 +19,7 @@ namespace hazelcast {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 isAlive = true;
-            };
+            }
 
             void IOSelector::staticListen(util::ThreadArgs &args) {
                 IOSelector *inSelector = (IOSelector *) args.arg0;
@@ -38,7 +38,7 @@ namespace hazelcast {
                     util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw e;
                 }
-            };
+            }
 
             void IOSelector::listen() {
                 while (isAlive) {

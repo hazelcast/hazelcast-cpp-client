@@ -15,18 +15,18 @@ namespace hazelcast {
             :name(name)
             , serviceName(serviceName) {
 
-            };
+            }
 
             int CollectionRequest::getFactoryId() const {
                 return CollectionPortableHook::F_ID;
-            };
+            }
 
             void CollectionRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("s", serviceName);
                 writer.writeUTF("n", name);
-            };
+            }
 
-        };
+        }
     }
 }
 

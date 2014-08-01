@@ -54,7 +54,11 @@ namespace hazelcast {
                     TXN_REQUEST_WITH_SQL_QUERY = 42,
                     EXECUTE_WITH_PREDICATE = 43,
                     REMOVE_ENTRY_LISTENER = 44,
-                    EXECUTE_ON_KEYS = 45
+                    EXECUTE_ON_KEYS = 45,
+                    EVICT_ALL = 46,
+                    LOAD_ALL_GIVEN_KEYS = 47,
+                    LOAD_ALL_KEYS = 48,
+                    IS_EMPTY = 49
                 };
             }
 

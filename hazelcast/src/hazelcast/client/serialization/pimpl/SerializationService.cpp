@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
 #include "hazelcast/util/ILogger.h"
@@ -24,25 +25,31 @@ namespace hazelcast {
                     for(it = serializers.begin() ; it < serializers.end() ; ++it){
                         serializerHolder.registerSerializer(*it);
                     }
-                };
+                }
 
 
                 PortableContext&SerializationService::getPortableContext() {
                     return portableContext;
-                };
+                }
 
                 SerializerHolder &SerializationService::getSerializerHolder() {
                     return portableContext.getSerializerHolder();
-                };
+                }
 
 
                 bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
-                };
+                }
 
                 boost::shared_ptr<SerializerBase> SerializationService::serializerFor(int typeId) {
                     return getSerializerHolder().serializerFor(typeId);
-                };
+                }
+
+
+                boost::shared_ptr<ClassDefinition> SerializationService::lookupClassDefinition(const Portable *portable) {
+                    int version = PortableVersionHelper::getVersion(portable, portableContext.getVersion());
+                    return portableContext.lookup(portable->getFactoryId(), portable->getClassId(), version);
+                }
 
                 void SerializationService::checkClassType(int expectedType, int currentType) {
                     if (expectedType != currentType) {

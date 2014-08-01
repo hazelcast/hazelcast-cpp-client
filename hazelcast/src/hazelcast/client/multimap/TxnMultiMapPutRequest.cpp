@@ -27,7 +27,7 @@ namespace hazelcast {
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
-            };
+            }
 
         }
     }

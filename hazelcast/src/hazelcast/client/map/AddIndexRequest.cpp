@@ -16,7 +16,7 @@ namespace hazelcast {
             , attribute(attribute)
             , ordered(ordered) {
 
-            };
+            }
 
             int AddIndexRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -31,7 +31,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeUTF("a", attribute);
                 writer.writeBoolean("o", ordered);
-            };
+            }
         }
     }
 }

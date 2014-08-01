@@ -8,13 +8,13 @@
 //#ifndef HAZELCAST_IsShutDownRequest
 //#define HAZELCAST_IsShutDownRequest
 //
-//#include "hazelcast/client/impl/PortableRequest.h"
+//#include "hazelcast/client/impl/ClientRequest.h"
 //#include <string>
 //
 //namespace hazelcast {
 //    namespace client {
 //        namespace executor {
-//            class IsShutdownRequest : public impl::PortableRequest {
+//            class IsShutdownRequest : public impl::ClientRequest {
 //            public:
 //                IsShutdownRequest(const std::string &instanceName);
 //

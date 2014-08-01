@@ -14,16 +14,16 @@ namespace hazelcast {
             :CollectionRequest(name, serviceName)
             , includeValue(includeValue) {
 
-            };
+            }
 
             int CollectionAddListenerRequest::getClassId() const {
                 return CollectionPortableHook::COLLECTION_ADD_LISTENER;
-            };
+            }
 
             void CollectionAddListenerRequest::write(serialization::PortableWriter &writer) const {
                 CollectionRequest::write(writer);
                 writer.writeBoolean("i", includeValue);
-            };
+            }
         }
     }
 }

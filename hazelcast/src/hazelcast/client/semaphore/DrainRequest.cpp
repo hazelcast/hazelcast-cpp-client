@@ -12,11 +12,11 @@ namespace hazelcast {
             DrainRequest::DrainRequest(const std::string &instanceName)
             : SemaphoreRequest(instanceName, -1) {
 
-            };
+            }
 
             int DrainRequest::getClassId() const {
                 return SemaphorePortableHook::DRAIN;
-            };
+            }
         }
     }
 }

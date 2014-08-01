@@ -17,9 +17,10 @@ namespace hazelcast {
             , value(value)
             , threadId(threadId)
             , ttl(-1)
-            , timeout(timeout) {
+            , timeout(timeout)
+            , async(false){
 
-            };
+            }
 
             int TryPutRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -34,10 +35,11 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
+                writer.writeBoolean("a", async);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
-            };
+            }
         }
     }
 }

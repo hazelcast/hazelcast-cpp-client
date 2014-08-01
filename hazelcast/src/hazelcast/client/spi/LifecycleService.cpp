@@ -22,7 +22,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
 
-            };
+            }
 
             bool LifecycleService::start() {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
@@ -49,17 +49,17 @@ namespace hazelcast {
                 clientContext.getClusterService().stop();
                 clientContext.getPartitionService().stop();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
-            };
+            }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
                 util::LockGuard lg(listenerLock);
                 listeners.insert(lifecycleListener);
-            };
+            }
 
             bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
                 util::LockGuard lg(listenerLock);
                 return listeners.erase(lifecycleListener) == 1;
-            };
+            }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 util::LockGuard lg(listenerLock);
@@ -89,11 +89,11 @@ namespace hazelcast {
                     (*it)->stateChanged(lifecycleEvent);
                 }
 
-            };
+            }
 
             bool LifecycleService::isRunning() {
                 return active;
-            };
+            }
         }
     }
 }

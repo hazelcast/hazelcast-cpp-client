@@ -14,22 +14,22 @@ namespace hazelcast {
             : instanceName(instanceName)
             , message(message) {
 
-            };
+            }
 
             int PublishRequest::getFactoryId() const {
                 return TopicPortableHook::F_ID;
-            };
+            }
 
             int PublishRequest::getClassId() const {
                 return TopicPortableHook::PUBLISH;
-            };
+            }
 
 
             void PublishRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 message.writeData(out);
-            };
+            }
         }
     }
 }

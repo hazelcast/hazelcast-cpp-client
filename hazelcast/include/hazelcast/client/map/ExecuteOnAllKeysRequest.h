@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ExecuteOnEntriesRequest
 #define HAZELCAST_ExecuteOnEntriesRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -18,7 +18,7 @@ namespace hazelcast {
 
         namespace map {
             template<typename EntryProcessor>
-            class HAZELCAST_API ExecuteOnAllKeysRequest : public impl::PortableRequest {
+            class HAZELCAST_API ExecuteOnAllKeysRequest : public impl::ClientRequest {
             public:
                 ExecuteOnAllKeysRequest(const std::string name, EntryProcessor &entryProcessor)
                 :name(name)

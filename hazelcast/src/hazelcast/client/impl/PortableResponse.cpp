@@ -3,6 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/impl/PortableResponse.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 

@@ -23,7 +23,7 @@ namespace hazelcast {
 
         }
         namespace impl {
-            class PortableRequest;
+            class ClientRequest;
 
             class BaseEventHandler;
         }
@@ -43,19 +43,19 @@ namespace hazelcast {
 
                 void start();
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::PortableRequest *request);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::ClientRequest *request);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::PortableRequest *request, int partitionId);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::ClientRequest *request, int partitionId);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::PortableRequest *request, const Address &target);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::ClientRequest *request, const Address &target);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::PortableRequest *request, impl::BaseEventHandler *handler);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::PortableRequest *request, impl::BaseEventHandler *handler, const Address &target);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler, const Address &target);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::PortableRequest *request, impl::BaseEventHandler *handler, int partitionId);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::ClientRequest *request, impl::BaseEventHandler *handler, int partitionId);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnConnection(const impl::PortableRequest *request, boost::shared_ptr<connection::Connection> connection);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnConnection(const impl::ClientRequest *request, boost::shared_ptr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
@@ -64,7 +64,7 @@ namespace hazelcast {
                 bool redoOperation;
                 spi::ClientContext &clientContext;
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  doSend(std::auto_ptr<const impl::PortableRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>);
+                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  doSend(std::auto_ptr<const impl::ClientRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>);
 
 
             };

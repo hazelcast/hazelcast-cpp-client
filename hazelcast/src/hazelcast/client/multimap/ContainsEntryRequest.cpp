@@ -17,7 +17,7 @@ namespace hazelcast {
             , key(key)
             , value(value) {
 
-            };
+            }
 
             ContainsEntryRequest::ContainsEntryRequest(serialization::pimpl::Data &key, const std::string &name)
             : AllPartitionsRequest(name)
@@ -25,7 +25,7 @@ namespace hazelcast {
             , hasValue(false)
             , key(key) {
 
-            };
+            }
 
             ContainsEntryRequest::ContainsEntryRequest(const std::string &name, serialization::pimpl::Data &value)
             : AllPartitionsRequest(name)
@@ -33,11 +33,11 @@ namespace hazelcast {
             , hasValue(true)
             , value(value) {
 
-            };
+            }
 
             int ContainsEntryRequest::getClassId() const {
                 return MultiMapPortableHook::CONTAINS_ENTRY;
-            };
+            }
 
 
             void ContainsEntryRequest::write(serialization::PortableWriter &writer) const {
@@ -51,7 +51,7 @@ namespace hazelcast {
                 if (hasValue) {
                     value.writeData(out);
                 }
-            };
+            }
 
 
             bool ContainsEntryRequest::isRetryable() const {

@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ILock_UnlockRequest
 #define HAZELCAST_ILock_UnlockRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API UnlockRequest : public impl::PortableRequest {
+            class HAZELCAST_API UnlockRequest : public impl::ClientRequest {
             public:
                 UnlockRequest(serialization::pimpl::Data &key, long threadId);
 

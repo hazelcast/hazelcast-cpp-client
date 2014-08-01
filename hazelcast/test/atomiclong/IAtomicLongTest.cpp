@@ -23,7 +23,7 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {
-            };
+            }
 
 
             IAtomicLongTest::~IAtomicLongTest() {
@@ -31,26 +31,26 @@ namespace hazelcast {
 
             void IAtomicLongTest::addTests() {
                 addTest(&IAtomicLongTest::test, "ClientAtomicLongTest");
-            };
+            }
 
             void IAtomicLongTest::beforeClass() {
 
-            };
+            }
 
             void IAtomicLongTest::afterClass() {
                 client.reset();
                 client.reset();
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void IAtomicLongTest::beforeTest() {
                 atom->set(0);
-            };
+            }
 
             void IAtomicLongTest::afterTest() {
                 atom->set(0);
-            };
+            }
 
             void IAtomicLongTest::test() {
                 assertEqual(0, atom->getAndAdd(2));

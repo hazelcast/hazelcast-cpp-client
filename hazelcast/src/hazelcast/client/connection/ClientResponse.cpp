@@ -10,10 +10,6 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            bool ClientResponse::isEvent() const {
-                return event;
-            }
-
             bool ClientResponse::isException() const {
                 return exception;
             }
@@ -36,7 +32,6 @@ namespace hazelcast {
 
             void ClientResponse::readData(serialization::ObjectDataInput &reader) {
                 callId = reader.readInt();
-                event = reader.readBoolean();
                 exception = reader.readBoolean();
                 data.readData(reader);
             }

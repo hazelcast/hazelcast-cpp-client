@@ -24,6 +24,8 @@ namespace hazelcast {
 
             class Portable;
 
+            class PortableReader;
+
             namespace pimpl {
                 class DataOutput;
 
@@ -34,17 +36,20 @@ namespace hazelcast {
                 class HAZELCAST_API PortableSerializer {
                 public:
 
-                    PortableSerializer(PortableContext &portableContext);
+                    PortableSerializer(PortableContext& portableContext);
 
-                    boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable &p);
+                    boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable& p);
 
-                    void write(DataOutput &dataOutput, const Portable &p);
+                    void write(DataOutput& dataOutput, const Portable& p);
 
-                    void read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion);
+                    void read(DataInput& dataInput, Portable& portable, int factoryId, int classId, int dataVersion);
 
                 private:
-                    PortableContext &context;
+                    PortableContext& context;
 
+                    int findPortableVersion(int factoryId, int classId, const Portable& portable);
+
+                    PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion);
                 };
 
             }

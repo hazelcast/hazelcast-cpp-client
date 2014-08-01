@@ -18,6 +18,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <hazelcast/client/exception/HazelcastSerializationException.h>
 
 namespace hazelcast {
     namespace client {
@@ -236,7 +237,7 @@ namespace hazelcast {
                     } else {
                         const std::string &message = "No serializer found for serializerId :"
                                 + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
-                        throw exception::IOException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
+                        throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 
                 };

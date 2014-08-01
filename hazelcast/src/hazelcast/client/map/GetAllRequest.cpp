@@ -15,7 +15,7 @@ namespace hazelcast {
             :name(name)
             , keys(keys) {
 
-            };
+            }
 
             int GetAllRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -33,7 +33,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; i++) {
                     keys[i].writeData(out);
                 }
-            };
+            }
 
             bool GetAllRequest::isRetryable() const {
                 return true;

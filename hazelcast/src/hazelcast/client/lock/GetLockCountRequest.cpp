@@ -13,15 +13,15 @@ namespace hazelcast {
         namespace lock {
             GetLockCountRequest::GetLockCountRequest(serialization::pimpl::Data& key)
             :key(key) {
-            };
+            }
 
             int GetLockCountRequest::getClassId() const {
                 return LockPortableHook::GET_LOCK_COUNT;
-            };
+            }
 
             int GetLockCountRequest::getFactoryId() const {
                 return LockPortableHook::FACTORY_ID;
-            };
+            }
 
 
             bool GetLockCountRequest::isRetryable() const {
@@ -31,7 +31,7 @@ namespace hazelcast {
             void GetLockCountRequest::write(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

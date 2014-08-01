@@ -16,15 +16,15 @@ namespace hazelcast {
 
             int MapValueCollection::getFactoryId() const {
                 return DataSerializableHook::F_ID;
-            };
+            }
 
             int MapValueCollection::getClassId() const {
                 return DataSerializableHook::VALUES;
-            };
+            }
 
             const std::vector<serialization::pimpl::Data>  & MapValueCollection::getValues() const {
                 return values;
-            };
+            }
 
             void MapValueCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();

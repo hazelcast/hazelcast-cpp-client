@@ -12,11 +12,11 @@ namespace hazelcast {
             ReduceRequest::ReduceRequest(const std::string &instanceName, int permitCount)
             : SemaphoreRequest(instanceName, permitCount) {
 
-            };
+            }
 
             int ReduceRequest::getClassId() const {
                 return SemaphorePortableHook::REDUCE;
-            };
+            }
 
         }
     }

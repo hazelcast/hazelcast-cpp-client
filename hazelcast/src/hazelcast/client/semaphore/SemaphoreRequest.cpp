@@ -14,17 +14,17 @@ namespace hazelcast {
                 :instanceName(instanceName)
                 , permitCount(permitCount) {
 
-                };
+                }
 
                 int SemaphoreRequest::getFactoryId() const {
                     return SemaphorePortableHook::F_ID;
-                };
+                }
 
 
                 void SemaphoreRequest::write(serialization::PortableWriter& writer) const {
                     writer.writeUTF("n", instanceName);
                     writer.writeInt("p", permitCount);
-                };
+                }
 
         }
     }

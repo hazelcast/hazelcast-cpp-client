@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_MAX_SIZE_REQUEST
 #define HAZELCAST_QUEUE_MAX_SIZE_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API DrainRequest : public impl::PortableRequest {
+            class HAZELCAST_API DrainRequest : public impl::ClientRequest {
             public:
                 DrainRequest(const std::string &name, int maxSize);
 

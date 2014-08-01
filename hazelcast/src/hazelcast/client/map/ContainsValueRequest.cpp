@@ -13,7 +13,7 @@ namespace hazelcast {
             ContainsValueRequest::ContainsValueRequest(const std::string &name, const serialization::pimpl::Data &value)
             :name(name)
             , value(value) {
-            };
+            }
 
             int ContainsValueRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -27,7 +27,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 value.writeData(out);
-            };
+            }
 
         }
     }

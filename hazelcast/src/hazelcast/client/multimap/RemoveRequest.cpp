@@ -16,11 +16,11 @@ namespace hazelcast {
             , value(value)
             , threadId(threadId) {
 
-            };
+            }
 
             int RemoveRequest::getClassId() const {
                 return MultiMapPortableHook::REMOVE;
-            };
+            }
 
 
             void RemoveRequest::write(serialization::PortableWriter &writer) const {
@@ -28,7 +28,7 @@ namespace hazelcast {
                 KeyBasedRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 value.writeData(out);
-            };
+            }
 
         }
     }

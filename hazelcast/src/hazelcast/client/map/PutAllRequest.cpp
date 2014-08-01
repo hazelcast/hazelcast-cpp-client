@@ -15,7 +15,7 @@ namespace hazelcast {
             :name(name)
             , entrySet(entrySet) {
 
-            };
+            }
 
             int PutAllRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -29,7 +29,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 entrySet.writeData(out);
-            };
+            }
         }
     }
 }

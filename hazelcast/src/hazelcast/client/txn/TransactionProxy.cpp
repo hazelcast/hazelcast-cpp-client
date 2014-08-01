@@ -22,19 +22,19 @@ namespace hazelcast {
             , state(TxnState::NO_TXN)
             , startTime(0) {
 
-            };
+            }
 
             std::string TransactionProxy::getTxnId() const {
                 return txnId;
-            };
+            }
 
             TxnState TransactionProxy::getState() const {
                 return state;
-            };
+            }
 
             int TransactionProxy::getTimeoutSeconds() const {
                 return options.getTimeout();
-            };
+            }
 
 
             void TransactionProxy::begin() {
@@ -145,15 +145,15 @@ namespace hazelcast {
                 values[6] = COMMIT_FAILED;
                 values[7] = ROLLING_BACK;
                 values[8] = ROLLED_BACK;
-            };
+            }
 
             TxnState::operator int() const {
                 return value;
-            };
+            }
 
             void TxnState::operator = (int i) {
                 value = values[i];
-            };
+            }
         }
     }
 }

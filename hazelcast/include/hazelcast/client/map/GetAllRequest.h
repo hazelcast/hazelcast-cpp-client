@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_GET_ALL_REQUEST
 #define HAZELCAST_MAP_GET_ALL_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetAllRequest : public impl::PortableRequest {
+            class HAZELCAST_API GetAllRequest : public impl::ClientRequest {
             public:
                 GetAllRequest(const std::string &name, const std::vector<serialization::pimpl::Data> &keys);
 

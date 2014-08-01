@@ -26,7 +26,7 @@ namespace hazelcast {
             class UsernamePasswordCredentials;
         }
         namespace impl {
-            class PortableRequest;
+            class ClientRequest;
 
             class BaseEventHandler;
         }

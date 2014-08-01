@@ -15,7 +15,7 @@ namespace hazelcast {
             :name(name)
             , timeoutInMillis(timeout) {
 
-            };
+            }
 
             int PollRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -23,13 +23,13 @@ namespace hazelcast {
 
             int PollRequest::getClassId() const {
                 return queue::QueuePortableHook::POLL;
-            };
+            }
 
 
             void PollRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
-            };
+            }
         }
     }
 }

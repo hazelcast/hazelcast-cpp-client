@@ -21,7 +21,7 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , s(new ISemaphore(client->getISemaphore("ClientSemaphoreTest"))) {
-            };
+            }
 
 
             ClientSemaphoreTest::~ClientSemaphoreTest() {
@@ -30,25 +30,25 @@ namespace hazelcast {
             void ClientSemaphoreTest::addTests() {
                 addTest(&ClientSemaphoreTest::testAcquire, "testAcquire");
                 addTest(&ClientSemaphoreTest::testTryAcquire, "testTryAcquire");
-            };
+            }
 
             void ClientSemaphoreTest::beforeClass() {
-            };
+            }
 
             void ClientSemaphoreTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientSemaphoreTest::beforeTest() {
                 s->reducePermits(100);
                 s->release(10);
-            };
+            }
 
             void ClientSemaphoreTest::afterTest() {
                 s->reducePermits(100);
                 s->release(10);
-            };
+            }
 
             void testAcquireThread(util::ThreadArgs& args) {
                 ISemaphore *s = (ISemaphore *)args.arg0;

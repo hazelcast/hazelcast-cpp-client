@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_AddInterceptorRequest
 #define HAZELCAST_AddInterceptorRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include <string>
@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename Interceptor>
-            class HAZELCAST_API AddInterceptorRequest : impl::PortableRequest {
+            class HAZELCAST_API AddInterceptorRequest : impl::ClientRequest {
             public:
                 AddInterceptorRequest(const std::string name, Interceptor &interceptor)
                 :name(name)

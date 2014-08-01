@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_GetLockCountRequest
 #define HAZELCAST_GetLockCountRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API GetLockCountRequest : public impl::PortableRequest{
+            class HAZELCAST_API GetLockCountRequest : public impl::ClientRequest{
             public:
                 GetLockCountRequest(serialization::pimpl::Data& key);
 

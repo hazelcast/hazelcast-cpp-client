@@ -16,6 +16,9 @@
 namespace hazelcast {
     namespace client {
 
+        namespace impl{
+            class ClientRequest;
+        }
         namespace spi {
             class ClientContext;
         }
@@ -24,6 +27,10 @@ namespace hazelcast {
                 class SerializationService;
 
                 class Data;
+
+                class Packet;
+
+                class PortableContext;
             }
 
         }
@@ -53,7 +60,7 @@ namespace hazelcast {
 
                 void registerAndEnqueue(boost::shared_ptr<CallPromise> promise);
 
-                void handlePacket(const serialization::pimpl::Data &data);
+                void handlePacket(const serialization::pimpl::Packet &packet);
 
                 const Address &getRemoteEndpoint() const;
 
@@ -61,9 +68,7 @@ namespace hazelcast {
 
                 const Socket &getSocket() const;
 
-                void writeBlocking(serialization::pimpl::Data const &data);
-
-                serialization::pimpl::Data readBlocking();
+                boost::shared_ptr<connection::ClientResponse> sendAndReceive(const impl::ClientRequest& clientRequest);
 
                 ReadHandler &getReadHandler();
 
@@ -72,6 +77,12 @@ namespace hazelcast {
                 boost::shared_ptr<CallPromise> deRegisterEventHandler(int callId);
 
                 void setAsOwnerConnection(bool isOwnerConnection);
+
+                serialization::pimpl::PortableContext& getPortableContext();
+
+                void writeBlocking(serialization::pimpl::Packet const & packet);
+
+                serialization::pimpl::Packet readBlocking();
 
                 util::AtomicInt lastRead;
                 util::AtomicInt lastWrite;

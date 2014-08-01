@@ -23,7 +23,7 @@ namespace hazelcast {
             }
 
             void IssueTest::addTests() {
-                addTest(&IssueTest::testOperationRedo_smartRoutingDisabled, "testOperationRedo_smartRoutingDisabled");
+//                addTest(&IssueTest::testOperationRedo_smartRoutingDisabled, "testOperationRedo_smartRoutingDisabled");
             }
 
             void IssueTest::beforeClass() {

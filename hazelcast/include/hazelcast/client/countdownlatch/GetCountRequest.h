@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_GetCountRequest
 #define HAZELCAST_GetCountRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -16,7 +16,7 @@ namespace hazelcast {
             class PortableWriter;
         }
         namespace countdownlatch {
-            class HAZELCAST_API GetCountRequest : public impl::PortableRequest {
+            class HAZELCAST_API GetCountRequest : public impl::ClientRequest {
             public:
                 GetCountRequest(const std::string &instanceName);
 

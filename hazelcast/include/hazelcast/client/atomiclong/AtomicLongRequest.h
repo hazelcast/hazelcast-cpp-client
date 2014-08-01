@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_AtomicLongRequest
 #define HAZELCAST_AtomicLongRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
 
         namespace atomiclong {
 
-            class HAZELCAST_API AtomicLongRequest : public impl::PortableRequest {
+            class HAZELCAST_API AtomicLongRequest : public impl::ClientRequest {
             public:
                 AtomicLongRequest(const std::string &instanceName, long delta);
 

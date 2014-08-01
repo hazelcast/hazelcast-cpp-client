@@ -17,86 +17,86 @@ namespace hazelcast {
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
         , credentials(NULL) {
-        };
+        }
 
 
         ClientConfig::~ClientConfig() {
             if (credentials != NULL)
                 delete credentials;
-        };
+        }
 
         ClientConfig &ClientConfig::addAddress(const Address &address) {
             addressList.insert(address);
             return (*this);
-        };
+        }
 
         ClientConfig &ClientConfig::addAddresses(const std::vector<Address> &addresses) {
             addressList.insert(addresses.begin(), addresses.end());
             return (*this);
-        };
+        }
 
 
         std::set<Address, addressComparator> &ClientConfig::getAddresses() {
             return addressList;
-        };
+        }
 
         ClientConfig &ClientConfig::setGroupConfig(GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
             return *this;
-        };
+        }
 
 
         GroupConfig &ClientConfig::getGroupConfig() {
             return groupConfig;
-        };
+        }
 
 
         ClientConfig &ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
             this->connectionAttemptLimit = connectionAttemptLimit;
             return *this;
-        };
+        }
 
         int ClientConfig::getConnectionAttemptLimit() const {
             return connectionAttemptLimit;
-        };
+        }
 
         ClientConfig &ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
             this->connectionTimeout = connectionTimeoutInMillis;
             return *this;
-        };
+        }
 
         int ClientConfig::getConnectionTimeout() const {
             return connectionTimeout;
-        };
+        }
 
         ClientConfig &ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
             this->attemptPeriod = attemptPeriodInMillis;
             return *this;
-        };
+        }
 
         int ClientConfig::getAttemptPeriod() const {
             return attemptPeriod;
-        };
+        }
 
         ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
             this->redoOperation = redoOperation;
             return *this;
-        };
+        }
 
         bool ClientConfig::isRedoOperation() const {
             return redoOperation;
-        };
+        }
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
                 return defaultLoadBalancer.get();
             return loadBalancer;
-        };
+        }
 
         ClientConfig & ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
             this->loadBalancer = loadBalancer;
             return *this;
-        };
+        }
 
         ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
             util::ILogger::getLogger().setLogLevel(loggerLevel);
@@ -134,14 +134,14 @@ namespace hazelcast {
         ClientConfig & ClientConfig::setCredentials(Credentials *credentials) {
             this->credentials = credentials;
             return *this;
-        };
+        }
 
         Credentials &ClientConfig::getCredentials() {
             if (credentials == NULL) {
                 credentials = new protocol::UsernamePasswordCredentials(groupConfig.getName(), groupConfig.getPassword());
             }
             return *credentials;
-        };
+        }
 
         ClientConfig & ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
             this->socketInterceptor.reset(socketInterceptor);
@@ -150,7 +150,7 @@ namespace hazelcast {
 
         std::auto_ptr<SocketInterceptor> ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
-        };
+        }
 
         ClientConfig & ClientConfig::setSmart(bool smart) {
             this->smart = smart;

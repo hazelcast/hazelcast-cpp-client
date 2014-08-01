@@ -7,10 +7,10 @@ namespace hazelcast {
         namespace test {
             TestNamedPortableV2::TestNamedPortableV2() {
 
-            };
+            }
 
             TestNamedPortableV2::TestNamedPortableV2(std::string name, int v) : name(name), k(v * 10), v(v) {
-            };
+            }
 
             int TestNamedPortableV2::getFactoryId() const {
                 return 1;
@@ -25,14 +25,14 @@ namespace hazelcast {
                 writer.writeInt("v", v);
                 writer.writeUTF("name", name);
                 writer.writeInt("myint", k);
-            };
+            }
 
 
             void TestNamedPortableV2::readPortable(serialization::PortableReader& reader) {
                 v = reader.readInt("v");
                 name = reader.readUTF("name");
                 k = reader.readInt("myint");
-            };
+            }
 
         }
     }

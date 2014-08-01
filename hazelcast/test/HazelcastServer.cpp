@@ -18,7 +18,7 @@ namespace hazelcast {
             :factory(factory)
             , id(factory.getInstanceId())
             , isShutDown(false) {
-            };
+            }
 
 
             void HazelcastServer::shutdown() {
@@ -32,11 +32,11 @@ namespace hazelcast {
 					std::cerr << e.what() << std::endl;
 				}
                 
-            };
+            }
 
             HazelcastServer::~HazelcastServer() {
                 shutdown();
-            };
+            }
         }
     }
 }

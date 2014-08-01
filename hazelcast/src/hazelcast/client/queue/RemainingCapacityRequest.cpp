@@ -14,7 +14,7 @@ namespace hazelcast {
             RemainingCapacityRequest::RemainingCapacityRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int RemainingCapacityRequest::getFactoryId() const {
                 return QueuePortableHook::F_ID;
@@ -22,12 +22,12 @@ namespace hazelcast {
 
             int RemainingCapacityRequest::getClassId() const {
                 return QueuePortableHook::REMAINING_CAPACITY;
-            };
+            }
 
 
             void RemainingCapacityRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
 
 
             bool RemainingCapacityRequest::isRetryable() const {

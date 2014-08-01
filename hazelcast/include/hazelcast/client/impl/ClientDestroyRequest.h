@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientDestroyRequest
 #define HAZELCAST_ClientDestroyRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 
@@ -18,7 +18,7 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class HAZELCAST_API ClientDestroyRequest : public impl::PortableRequest {
+            class HAZELCAST_API ClientDestroyRequest : public impl::ClientRequest {
             public:
                 ClientDestroyRequest(const std::string &name, const std::string &serviceName);
 

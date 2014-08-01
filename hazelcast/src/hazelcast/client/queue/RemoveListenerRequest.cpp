@@ -11,7 +11,7 @@ namespace hazelcast {
         namespace queue {
             RemoveListenerRequest::RemoveListenerRequest(const std::string &name, const std::string &registrationId)
             :impl::BaseRemoveListenerRequest(name, registrationId) {
-            };
+            }
 
             int RemoveListenerRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -19,7 +19,7 @@ namespace hazelcast {
 
             int RemoveListenerRequest::getClassId() const {
                 return queue::QueuePortableHook::REMOVE_LISTENER;
-            };
+            }
         }
     }
 }

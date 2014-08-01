@@ -44,6 +44,7 @@
 #include "hazelcast/client/map/RemoveInterceptorRequest.h"
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/map/RemoveEntryListenerRequest.h"
+#include "hazelcast/client/map/MapIsEmptyRequest.h"
 #include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/impl/EntryListener.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
@@ -919,7 +920,9 @@ namespace hazelcast {
              * @return <tt>true</tt> if this map contains no key-value mappings
              */
             bool isEmpty() {
-                return size() == 0;
+                map::MapIsEmptyRequest *request = new map::MapIsEmptyRequest(getName());
+
+                return  *(invoke<bool>(request));;
             };
 
 

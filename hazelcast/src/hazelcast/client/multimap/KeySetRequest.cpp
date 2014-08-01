@@ -12,11 +12,11 @@ namespace hazelcast {
             KeySetRequest::KeySetRequest(const std::string& name)
             : AllPartitionsRequest(name) {
 
-            };
+            }
 
             int KeySetRequest::getClassId() const {
                 return MultiMapPortableHook::KEY_SET;
-            };
+            }
 
             bool KeySetRequest::isRetryable() const{
                 return true;

@@ -24,7 +24,7 @@ namespace hazelcast {
             MemberAttributeTest::MemberAttributeTest(HazelcastServerFactory &hazelcastInstanceFactory)
             :iTestFixture<MemberAttributeTest>("MemberAttributeTest")
             ,hazelcastInstanceFactory(hazelcastInstanceFactory){
-            };
+            }
 
 
             MemberAttributeTest::~MemberAttributeTest() {
@@ -33,23 +33,23 @@ namespace hazelcast {
             void MemberAttributeTest::addTests() {
                 addTest(&MemberAttributeTest::testInitialValues, "testInitialValues");
                 addTest(&MemberAttributeTest::testChangeWithListeners, "testChangeWithListeners");
-            };
+            }
 
             void MemberAttributeTest::beforeClass() {
 
-            };
+            }
 
             void MemberAttributeTest::afterClass() {
 
-            };
+            }
 
             void MemberAttributeTest::beforeTest() {
 
-            };
+            }
 
             void MemberAttributeTest::afterTest() {
 
-            };
+            }
 
             void MemberAttributeTest::testInitialValues() {
                 HazelcastServer instance(hazelcastInstanceFactory);
@@ -89,13 +89,13 @@ namespace hazelcast {
                 AttributeListener(util::CountDownLatch &_attributeLatch)
                   : _attributeLatch(_attributeLatch){
 
-                };
+                }
 
                 void memberAdded(const MembershipEvent &event) {
-                };
+                }
 
                 void memberRemoved(const MembershipEvent &event) {
-                };
+                }
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
                     if(memberAttributeEvent.getOperationType() != MemberAttributeEvent::PUT){
@@ -138,7 +138,7 @@ namespace hazelcast {
                             _attributeLatch.countDown();
                         }
                     }
-                };
+                }
             private:
                 util::CountDownLatch &_attributeLatch;
             };

@@ -21,7 +21,7 @@ namespace hazelcast {
 
             ClusterTest::ClusterTest(HazelcastServerFactory &hazelcastInstanceFactory)
                     : iTestFixture<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
-            };
+            }
 
 
             ClusterTest::~ClusterTest() {
@@ -32,50 +32,50 @@ namespace hazelcast {
                 addTest(&ClusterTest::testClusterListenersFromConfig, "testClusterListenersFromConfig");
                 addTest(&ClusterTest::testListenersWhenClusterDown, "testListenersWhenClusterDown");
                 addTest(&ClusterTest::testBehaviourWhenClusterNotFound, "testBehaviourWhenClusterNotFound");
-            };
+            }
 
             void ClusterTest::beforeClass() {
 
-            };
+            }
 
             void ClusterTest::afterClass() {
 
-            };
+            }
 
             void ClusterTest::beforeTest() {
 
-            };
+            }
 
             void ClusterTest::afterTest() {
 
-            };
+            }
 
             class SampleInitialListener : public InitialMembershipListener {
             public:
                 SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
                         : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
-                };
+                }
 
                 void init(const InitialMembershipEvent &event) {
                     std::vector<Member> const &members = event.getMembers();
                     if (members.size() == 1) {
                         _memberAdded.countDown();
                     }
-                };
+                }
 
                 void memberAdded(const MembershipEvent &event) {
                     _memberAdded.countDown();
-                };
+                }
 
                 void memberRemoved(const MembershipEvent &event) {
                     _memberRemoved.countDown();
-                };
+                }
 
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
                     _attributeLatch.countDown();
-                };
+                }
             private:
                 util::CountDownLatch &_memberAdded;
                 util::CountDownLatch &_attributeLatch;
@@ -88,20 +88,20 @@ namespace hazelcast {
                 SampleListenerInClusterTest(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
                         : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
-                };
+                }
 
                 void memberAdded(const MembershipEvent &event) {
                     _memberAdded.countDown();
-                };
+                }
 
                 void memberRemoved(const MembershipEvent &event) {
                     _memberRemoved.countDown();
-                };
+                }
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
                     memberAttributeEvent.getKey();
                     _attributeLatch.countDown();
-                };
+                }
             private:
                 util::CountDownLatch &_memberAdded;
                 util::CountDownLatch &_attributeLatch;
@@ -180,11 +180,11 @@ namespace hazelcast {
             public:
                 DummyListenerClusterTest(util::CountDownLatch &addLatch)
                         : addLatch(addLatch) {
-                };
+                }
 
                 void entryAdded(EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
-                };
+                }
 
                 void entryRemoved(EntryEvent<std::string, std::string> &event) {
                 }

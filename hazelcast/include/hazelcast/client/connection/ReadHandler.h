@@ -13,7 +13,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class DataAdapter;
+                class Packet;
             }
         }
         namespace spi {
@@ -36,7 +36,7 @@ namespace hazelcast {
 
             private:
                 util::ByteBuffer buffer;
-                serialization::pimpl::DataAdapter *lastData;
+                serialization::pimpl::Packet *lastData;
 
 
             };

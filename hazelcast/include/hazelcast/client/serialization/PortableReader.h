@@ -8,12 +8,22 @@
 #ifndef HAZELCAST_PortableReader
 #define HAZELCAST_PortableReader
 
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
+#include <memory>
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            namespace pimpl {
+
+                class PortableContext;
+
+                class DataInput;
+            }
+
+            class ClassDefinition;
 
             /**
             * Provides a mean of reading portable fields from a binary in form of java primitives
@@ -21,15 +31,16 @@ namespace hazelcast {
             */
             class HAZELCAST_API PortableReader {
             public:
-                /**
-                * Internal Api constructor
-                */
-                PortableReader(pimpl::DefaultPortableReader *defaultPortableReader);
 
                 /**
                 * Internal Api constructor
                 */
-                PortableReader(pimpl::MorphingPortableReader *morphingPortableReader);
+                PortableReader(pimpl::PortableContext& context, pimpl::DataInput& dataInput,
+                                boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader);
+
+                PortableReader(const PortableReader & reader);
+
+                PortableReader &operator = (const PortableReader & reader);
 
                 /**
                 * @param fieldName name of the field
@@ -178,7 +189,7 @@ namespace hazelcast {
                 * @return rawDataInput
                 * @throws IOException
                 */
-                ObjectDataInput &getRawDataInput();
+                ObjectDataInput& getRawDataInput();
 
                 /**
                 * Internal Api. Should not be called by end user.
@@ -186,9 +197,9 @@ namespace hazelcast {
                 void end();
 
             private:
-                pimpl::DefaultPortableReader *defaultPortableReader;
-                pimpl::MorphingPortableReader *morphingPortableReader;
                 bool isDefaultReader;
+                mutable std::auto_ptr<pimpl::DefaultPortableReader> defaultPortableReader;
+                mutable std::auto_ptr<pimpl::MorphingPortableReader> morphingPortableReader;
 
             };
         }

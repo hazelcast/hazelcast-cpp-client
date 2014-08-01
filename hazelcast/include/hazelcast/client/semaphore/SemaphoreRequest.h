@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_SemaphoreRequest
 #define HAZELCAST_SemaphoreRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class HAZELCAST_API SemaphoreRequest : public impl::PortableRequest {
+            class HAZELCAST_API SemaphoreRequest : public impl::ClientRequest {
             public:
                 SemaphoreRequest(const std::string &instanceName, int permitCount);
 

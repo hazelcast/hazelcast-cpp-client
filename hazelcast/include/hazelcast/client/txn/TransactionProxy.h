@@ -9,7 +9,7 @@
 #define HAZELCAST_TransactionProxy
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"

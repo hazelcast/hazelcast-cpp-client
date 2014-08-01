@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class HAZELCAST_API DefaultPortableReader {
+                class DefaultPortableReader {
                 public:
 
                     DefaultPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
@@ -73,7 +73,7 @@ namespace hazelcast {
                             return portable;
                         }
                         portable.reset(new T);
-                        const FieldDefinition &fd = cd->get(fieldName);
+                        const FieldDefinition &fd = cd->getField(fieldName);
                         int factoryId = fd.getFactoryId();
                         int classId = fd.getClassId();
                         read(dataInput, *portable, factoryId, classId);
@@ -85,7 +85,7 @@ namespace hazelcast {
                         std::vector< T > portables;
                         setPosition(fieldName);
 
-                        const FieldDefinition &fd = cd->get(fieldName);
+                        const FieldDefinition &fd = cd->getField(fieldName);
                         int factoryId = fd.getFactoryId();
                         int classId = fd.getClassId();
                         int len = dataInput.readInt();

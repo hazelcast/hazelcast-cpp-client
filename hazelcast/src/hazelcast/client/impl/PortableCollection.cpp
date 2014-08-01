@@ -13,15 +13,15 @@ namespace hazelcast {
 
             const std::vector<serialization::pimpl::Data>& PortableCollection::getCollection() const {
                 return collection;
-            };
+            }
 
             int PortableCollection::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
-            };
+            }
 
             int PortableCollection::getClassId() const {
                 return protocol::SpiConstants::COLLECTION;
-            };
+            }
 
             void PortableCollection::readPortable(serialization::PortableReader& reader) {
                 reader.readBoolean("l");
@@ -35,7 +35,7 @@ namespace hazelcast {
                     data.readData(in);
                     collection[i] = data;
                 }
-            };
+            }
         }
     }
 }

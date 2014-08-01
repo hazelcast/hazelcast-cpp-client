@@ -19,7 +19,7 @@ namespace hazelcast {
             ClientTxnTest::ClientTxnTest(HazelcastServerFactory &hazelcastInstanceFactory)
             : iTestFixture<ClientTxnTest>("ClientTxnTest")
             , hazelcastInstanceFactory(hazelcastInstanceFactory) {
-            };
+            }
 
 
             ClientTxnTest::~ClientTxnTest() {
@@ -28,20 +28,20 @@ namespace hazelcast {
             void ClientTxnTest::addTests() {
                 addTest(&ClientTxnTest::testTxnRollback, "testTxnRollback");
                 addTest(&ClientTxnTest::testTxnWithMultipleNodes, "testTxnWithMultipleNodes");
-            };
+            }
 
             void ClientTxnTest::beforeClass() {
-            };
+            }
 
             void ClientTxnTest::afterClass() {
-            };
+            }
 
             void ClientTxnTest::beforeTest() {
-            };
+            }
 
             void ClientTxnTest::afterTest() {
                 hazelcastInstanceFactory.shutdownAll();
-            };
+            }
 
 
             void ClientTxnTest::testTxnWithMultipleNodes() {

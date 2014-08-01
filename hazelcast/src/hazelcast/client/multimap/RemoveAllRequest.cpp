@@ -15,16 +15,16 @@ namespace hazelcast {
             : KeyBasedRequest(name, key)
             , threadId(threadId) {
 
-            };
+            }
 
             int RemoveAllRequest::getClassId() const {
                 return MultiMapPortableHook::REMOVE_ALL;
-            };
+            }
 
             void RemoveAllRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("t", threadId);
                 KeyBasedRequest::write(writer);
-            };
+            }
         }
     }
 }
