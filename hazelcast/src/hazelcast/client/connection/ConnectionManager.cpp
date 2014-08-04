@@ -61,36 +61,29 @@ namespace hazelcast {
             }
 
             void ConnectionManager::markOwnerAddressAsClosed() {
-                util::LockGuard lockGuard(ownerConnectionLock);
-                ownerConnectionAddress.reset(NULL);
+                ownerConnection.reset();
             }
 
             Address ConnectionManager::waitForOwnerConnection() {
-                util::LockGuard lockGuard(ownerConnectionLock);
-                if (ownerConnectionAddress.get() != NULL) {
-                    return *ownerConnectionAddress;
+                if (ownerConnection.get() != NULL) {
+                    return ownerConnection->getRemoteEndpoint();
                 }
                 ClientConfig &config = clientContext.getClientConfig();
                 int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
-                while (ownerConnectionAddress.get() == NULL) {
-                    ownerConnectionLock.unlock();
+                while (ownerConnection.get() == NULL) {
                     util::sleep(1);
-                    ownerConnectionLock.lock();
                     if (--tryCount == 0) {
                         throw exception::IOException("ConnectionManager", "Wait for owner connection is timed out");
                     }
                 }
-                return *ownerConnectionAddress;
+                return ownerConnection->getRemoteEndpoint();
             };
 
-            connection::Connection *ConnectionManager::ownerConnection(const Address &address) {
+            boost::shared_ptr<Connection> ConnectionManager::createOwnerConnection(const Address& address) {
                 Connection *clientConnection = connectTo(address, true);
                 clientConnection->setAsOwnerConnection(true);
-                {
-                    util::LockGuard lockGuard(ownerConnectionLock);
-                    ownerConnectionAddress.reset(new Address(clientConnection->getRemoteEndpoint()));
-                }
-                return clientConnection;
+                ownerConnection.reset(clientConnection);
+                return ownerConnection;
             }
 
             boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount) {
@@ -189,8 +182,24 @@ namespace hazelcast {
             };
 
 
-            void ConnectionManager::removeConnection(const Address &address) {
+            void ConnectionManager::destroyConnection(const Address& address) {
                 connections.remove(address);
+                closeIfOwnerConnection(address);
+            }
+
+
+            void ConnectionManager::closeIfOwnerConnection(const Address& address) {
+                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnection;
+
+                if (currentOwnerConnection.get() == NULL || !currentOwnerConnection->live) {
+                    return;
+                }
+                std::stringstream message;
+                message << "closing owner connection to " << address;
+                util::ILogger::getLogger().finest(message.str());
+                if (currentOwnerConnection->getRemoteEndpoint() == address) {
+                    currentOwnerConnection->close();
+                }
             }
 
             void ConnectionManager::checkLive() {

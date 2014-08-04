@@ -49,14 +49,21 @@ namespace hazelcast {
             }
 
             void Connection::close() {
-                if (!_isOwnerConnection) {
-                    removeConnectionCalls();
+                if(!live.compareAndSet(true, false)){
+                    return;
                 }
-                live = false;
                 socket.close();
+                if (_isOwnerConnection) {
+                    return;
+                }
+
+                clientContext.getConnectionManager().destroyConnection(socket.getRemoteEndpoint());
+                cleanResources();
             }
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
+                util::sleep(1);
+
                 if (promise->getRequest().isBindToSingleConnection()) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
@@ -212,8 +219,7 @@ namespace hazelcast {
                 _isOwnerConnection = isOwnerConnection;
             }
 
-            void Connection::removeConnectionCalls() {
-                clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
+            void Connection::cleanResources() {
                 typedef std::vector<std::pair<int, boost::shared_ptr<CallPromise> > > Entry_Set;
                 {
                     Entry_Set entrySet = callPromises.clear();

@@ -13,6 +13,7 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Future.h"
+#include "boost/shared_ptr.hpp"
 
 namespace hazelcast {
 
@@ -50,7 +51,7 @@ namespace hazelcast {
 
                 bool start();
 
-                connection::Connection *ownerConnection(const Address &address);
+                boost::shared_ptr<Connection> createOwnerConnection(const Address& address);
 
                 boost::shared_ptr<Connection> getConnectionIfAvailable(const Address &address);
 
@@ -58,7 +59,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection(int tryCount);
 
-                void removeConnection(const Address &address);
+                void destroyConnection(const Address &address);
 
                 void stop();
 
@@ -69,6 +70,8 @@ namespace hazelcast {
                 void markOwnerAddressAsClosed();
 
             protected:
+                void closeIfOwnerConnection(const Address &address);
+
                 connection::Connection *connectTo(const Address &address, bool reAuth);
 
                 boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
@@ -97,8 +100,7 @@ namespace hazelcast {
                 util::AtomicInt callIdGenerator;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
-                util::Mutex ownerConnectionLock;
-                std::auto_ptr<Address> ownerConnectionAddress;
+                boost::shared_ptr<Connection> ownerConnection;
 
             };
         }
