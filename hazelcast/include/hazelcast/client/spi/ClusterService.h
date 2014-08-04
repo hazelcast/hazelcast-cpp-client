@@ -83,7 +83,7 @@ namespace hazelcast {
 
                 void setMembers(const std::map<Address, Member, addressComparator > &map);
 
-                connection::Connection *connectToOne(const std::vector<Address> &socketAddresses);
+                connection::Connection *connectToOne();
                 // ------------------------------------------------------
 
             };

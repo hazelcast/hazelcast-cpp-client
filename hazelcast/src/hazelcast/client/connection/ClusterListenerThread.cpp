@@ -40,7 +40,7 @@ namespace hazelcast {
                     try {
                         if (conn.get() == NULL) {
                             try {
-                                conn.reset(pickConnection());
+                                conn.reset(clientContext.getClusterService().connectToOne());
                             } catch (std::exception &e) {
                                 util::ILogger::getLogger().severe(std::string("Error while connecting to cluster! =>") + e.what());
                                 isStartedSuccessfully = false;
@@ -82,7 +82,7 @@ namespace hazelcast {
                 clusterListenerThread->join();
             }
 
-            Connection *ClusterListenerThread::pickConnection() {
+            std::vector<Address> ClusterListenerThread::getSocketAddresses() {
                 std::vector<Address> addresses;
                 if (!members.empty()) {
                     std::vector<Address> clusterAddresses = getClusterAddresses();
@@ -90,8 +90,8 @@ namespace hazelcast {
                 }
                 std::vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(addresses.end(), configAddresses.begin(), configAddresses.end());
-                return clientContext.getClusterService().connectToOne(addresses);
-            };
+                return addresses;
+            }
 
             void ClusterListenerThread::loadInitialMemberList() {
                 protocol::AddMembershipListenerRequest requestObject;

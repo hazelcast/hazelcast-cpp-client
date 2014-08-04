@@ -42,6 +42,8 @@ namespace hazelcast {
 
                 void stop();
 
+                std::vector<Address> getSocketAddresses();
+
                 util::CountDownLatch startLatch;
                 bool isStartedSuccessfully;
             private:
@@ -49,9 +51,8 @@ namespace hazelcast {
                 std::auto_ptr<Connection> conn;
                 util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
-                std::auto_ptr<util::Thread> clusterListenerThread;
 
-                connection::Connection *pickConnection();
+                std::auto_ptr<util::Thread> clusterListenerThread;
 
                 void loadInitialMemberList();
 
