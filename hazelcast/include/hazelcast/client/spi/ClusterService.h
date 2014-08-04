@@ -83,7 +83,7 @@ namespace hazelcast {
 
                 void setMembers(const std::map<Address, Member, addressComparator > &map);
 
-                connection::Connection *connectToOne();
+                boost::shared_ptr<connection::Connection> connectToOne();
                 // ------------------------------------------------------
 
             };

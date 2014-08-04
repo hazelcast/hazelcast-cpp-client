@@ -133,7 +133,7 @@ namespace hazelcast {
 
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
-            connection::Connection *ClusterService::connectToOne() {
+            boost::shared_ptr<connection::Connection> ClusterService::connectToOne() {
                 active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
@@ -144,7 +144,7 @@ namespace hazelcast {
                     std::vector<Address> socketAddresses = clusterThread.getSocketAddresses();
                     for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
                         try {
-                            connection::Connection *pConnection = clientContext.getConnectionManager().ownerConnection(*it);
+                            boost::shared_ptr<connection::Connection> pConnection = clientContext.getConnectionManager().createOwnerConnection(*it);
                             active = true;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;

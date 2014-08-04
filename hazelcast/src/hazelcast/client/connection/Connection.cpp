@@ -49,14 +49,32 @@ namespace hazelcast {
             }
 
             void Connection::close() {
-                if (!_isOwnerConnection) {
-                    removeConnectionCalls();
+                if(!live.compareAndSet(true, false)){
+                    return;
                 }
-                live = false;
                 socket.close();
+                if (_isOwnerConnection) {
+                    return;
+                }
+
+                clientContext.getConnectionManager().destroyConnection(socket.getRemoteEndpoint());
+                cleanResources();
             }
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
+                util::sleep(1); //MTODO parameterize
+//                /**
+//                * Client will retry requests which either inherently retryable(idempotent requests)
+//                * or {@link ClientNetworkConfig#redoOperation} is set to true.
+//                * <p/>
+//                * Time delay in milisecond between retries.
+//                */
+//                public static final String PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast.client.request.retry.wait.time";
+//                /**
+//                * Default value of PROP_REQUEST_RETRY_WAIT_TIME when user not set it explicitly
+//                */
+//                public static final String PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT = "250";
+
                 if (promise->getRequest().isBindToSingleConnection()) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
@@ -228,8 +246,7 @@ namespace hazelcast {
                 return clientContext.getSerializationService().getPortableContext();
             }
 
-            void Connection::removeConnectionCalls() {
-                clientContext.getConnectionManager().removeConnection(socket.getRemoteEndpoint());
+            void Connection::cleanResources() {
                 typedef std::vector<std::pair<int, boost::shared_ptr<CallPromise> > > Entry_Set;
                 {
                     Entry_Set entrySet = callPromises.clear();

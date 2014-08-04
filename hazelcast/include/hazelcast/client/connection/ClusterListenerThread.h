@@ -48,7 +48,7 @@ namespace hazelcast {
                 bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
-                std::auto_ptr<Connection> conn;
+                boost::shared_ptr<Connection> conn;
                 util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
 

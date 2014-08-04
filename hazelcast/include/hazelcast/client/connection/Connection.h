@@ -12,6 +12,7 @@
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/Closeable.h"
 
 namespace hazelcast {
     namespace client {
@@ -46,7 +47,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection {
+            class HAZELCAST_API Connection : public util::Closeable{
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &listener);
 
@@ -96,7 +97,7 @@ namespace hazelcast {
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
 
-                void removeConnectionCalls();
+                void cleanResources();
 
                 boost::shared_ptr<CallPromise> deRegisterCall(int callId);
 

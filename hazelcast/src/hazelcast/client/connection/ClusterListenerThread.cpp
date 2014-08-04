@@ -22,7 +22,6 @@ namespace hazelcast {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
             : startLatch(1)
             , clientContext(clientContext)
-            , conn(NULL)
             , deletingConnection(false) {
 
             }
@@ -41,7 +40,7 @@ namespace hazelcast {
                     try {
                         if (conn.get() == NULL) {
                             try {
-                                conn.reset(clientContext.getClusterService().connectToOne());
+                                conn = clientContext.getClusterService().connectToOne();
                             } catch (std::exception &e) {
                                 util::ILogger::getLogger().severe(std::string("Error while connecting to cluster! =>") + e.what());
                                 isStartedSuccessfully = false;
@@ -62,6 +61,7 @@ namespace hazelcast {
 
                         clientContext.getConnectionManager().markOwnerAddressAsClosed();
                         if (deletingConnection.compareAndSet(false, true)) {
+                            util::IOUtil::closeResource(conn.get());
                             conn.reset();
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
@@ -76,6 +76,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::stop() {
                 if (deletingConnection.compareAndSet(false, true)) {
+                    util::IOUtil::closeResource(conn.get());
                     conn.reset();
                     deletingConnection = false;
                 }

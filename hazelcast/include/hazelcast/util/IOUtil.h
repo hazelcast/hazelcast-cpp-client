@@ -6,7 +6,9 @@
 #ifndef HAZELCAST_IOUtil
 #define HAZELCAST_IOUtil
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Closeable.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/IException.h"
 #include <string>
 #include <sstream>
 
@@ -19,15 +21,28 @@ namespace hazelcast {
                 std::stringstream s;
                 s << value;
                 return s.str();
-            };
+            }
 
             template<typename T>
-            static T to_value(const std::string &str) {
+            static T to_value(const std::string& str) {
                 std::stringstream s(str);
                 T value;
                 s >> value;
                 return value;
-            };
+            }
+
+            static void closeResource(Closeable *closable) {
+                if (closable != NULL) {
+                    try {
+                        closable->close();
+                    } catch (client::exception::IException& e) {
+                        std::stringstream message;
+                        message << "closeResource failed" << e.what();
+                        ILogger::getLogger().finest(message.str());
+                    }
+
+                }
+            }
 
             enum PRIMITIVE_ID {
                 PRIMITIVE_TYPE_BOOLEAN = 1,

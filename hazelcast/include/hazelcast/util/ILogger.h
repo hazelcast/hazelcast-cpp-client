@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client{
         enum LogLevel {
-            SEVERE = 100, WARNING = 90, INFO = 50
+            SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
         };
     }
 
@@ -32,6 +32,8 @@ namespace hazelcast {
             void warning(const std::string &message);
 
             void info(const std::string &message);
+
+            void finest(const std::string &message);
 
             void setPrefix(const std::string& prefix);
 

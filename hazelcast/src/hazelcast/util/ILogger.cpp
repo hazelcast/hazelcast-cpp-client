@@ -28,8 +28,15 @@ namespace hazelcast {
         }
 
         void ILogger::info(const std::string &message) {
-            if (client::WARNING >= HazelcastLogLevel) {
+            if (client::INFO >= HazelcastLogLevel) {
                 (std::cout << "INFO: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+            }
+        }
+
+
+        void ILogger::finest(const std::string& message) {
+            if (client::FINEST >= HazelcastLogLevel) {
+                (std::cout << "FINEST: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
             }
         }
 
