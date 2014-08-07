@@ -195,6 +195,10 @@ namespace hazelcast {
 
             /**
              * Adds a listener to configuration to be registered when HazelcastClient starts.
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
              *
              * @param listener LifecycleListener *listener
              * @return itself ClientConfig
@@ -209,6 +213,10 @@ namespace hazelcast {
 
             /**
              * Adds a listener to configuration to be registered when HazelcastClient starts.
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
              *
              * @param listener MembershipListener *listener
              * @return itself ClientConfig

@@ -22,6 +22,11 @@ namespace hazelcast {
          * When the InitializingMembershipListener already is registered on a Cluster and is registered again on the same
          * Cluster instance, it will not receive an additional MembershipInitializeEvent. So this is a once only event.
          *
+         * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+         * otherwise it will slow down the system.
+         *
+         * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+         *
          * @see Cluster#addMembershipListener(InitialMembershipListener *listener)
          * @see MembershipEvent#getMembers()
          */
