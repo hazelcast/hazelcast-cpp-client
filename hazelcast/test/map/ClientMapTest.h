@@ -77,6 +77,8 @@ namespace hazelcast {
 
                 void testBasicPredicate();
 
+                void testKeySetAndValuesWithPredicates();
+
                 void testSet();
 
                 void testValues();

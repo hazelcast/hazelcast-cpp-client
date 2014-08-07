@@ -25,96 +25,101 @@ namespace hazelcast {
                 }
 
                 int DefaultPortableReader::readInt(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_INT);
                     return dataInput.readInt();
                 }
 
                 long DefaultPortableReader::readLong(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_LONG);
                     return dataInput.readLong();
                 }
 
                 bool DefaultPortableReader::readBoolean(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_BOOLEAN);
                     return dataInput.readBoolean();
                 }
 
                 byte DefaultPortableReader::readByte(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_BYTE);
                     return dataInput.readByte();
                 }
 
                 char DefaultPortableReader::readChar(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_CHAR);
                     return dataInput.readChar();
                 }
 
                 double DefaultPortableReader::readDouble(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_DOUBLE);
                     return dataInput.readDouble();
                 }
 
                 float DefaultPortableReader::readFloat(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_FLOAT);
                     return dataInput.readFloat();
                 }
 
                 short DefaultPortableReader::readShort(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_SHORT);
                     return dataInput.readShort();
                 }
 
                 std::string DefaultPortableReader::readUTF(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_UTF);
                     return dataInput.readUTF();
                 }
 
                 std::vector <byte> DefaultPortableReader::readByteArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                     return dataInput.readByteArray();
                 }
 
                 std::vector<char> DefaultPortableReader::readCharArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                     return dataInput.readCharArray();
                 }
 
                 std::vector<int> DefaultPortableReader::readIntArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_INT_ARRAY);
                     return dataInput.readIntArray();
                 }
 
                 std::vector<long> DefaultPortableReader::readLongArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                     return dataInput.readLongArray();
                 }
 
                 std::vector<double> DefaultPortableReader::readDoubleArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                     return dataInput.readDoubleArray();
                 }
 
                 std::vector<float> DefaultPortableReader::readFloatArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                     return dataInput.readFloatArray();
                 }
 
                 std::vector<short> DefaultPortableReader::readShortArray(const char *fieldName) {
-                    setPosition(fieldName);
+                    setPosition(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                     return dataInput.readShortArray();
                 }
 
 
-                void DefaultPortableReader::setPosition(char const *fieldName) {
-                    dataInput.position(getPosition(fieldName));
+                void DefaultPortableReader::setPosition(char const *fieldName, FieldType const& fieldType) {
+                    dataInput.position(readPosition(fieldName, fieldType));
                 }
 
-                int DefaultPortableReader::getPosition(const char *fieldName) {
+                int DefaultPortableReader::readPosition(const char *fieldName, FieldType const& fieldType) {
                     if (raw) {
                         throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
                     }
-                    if (!cd->hasField(fieldName))
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", " unknownField " + std::string(fieldName));
+                    if (!cd->hasField(fieldName)){
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "dont have a field named" + std::string(fieldName));
+                    }
+
+                    if (cd->getFieldType(fieldName) != fieldType) {
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", " field type did not matched for " + std::string(fieldName));
+                    }
                     dataInput.position(offset + cd->getField(fieldName).getIndex() * sizeof (int));
                     return dataInput.readInt();
                 }
@@ -136,6 +141,7 @@ namespace hazelcast {
                 void DefaultPortableReader::end() {
                     dataInput.position(finalPosition);
                 }
+
             }
         }
     }

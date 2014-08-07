@@ -66,7 +66,7 @@ namespace hazelcast {
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
                         boost::shared_ptr<T> portable;
-                        setPosition(fieldName);
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
 
                         bool isNull = dataInput.readBoolean();
                         if (isNull) {
@@ -83,7 +83,7 @@ namespace hazelcast {
                     template<typename T>
                     std::vector< T > readPortableArray(const char *fieldName) {
                         std::vector< T > portables;
-                        setPosition(fieldName);
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
                         const FieldDefinition &fd = cd->getField(fieldName);
                         int factoryId = fd.getFactoryId();
@@ -109,9 +109,9 @@ namespace hazelcast {
                     void end();
 
                 private:
-                    int getPosition(const char *);
+                    int readPosition(const char *, FieldType const& fieldType);
 
-                    void setPosition(const char *);
+                    void setPosition(char const * , FieldType const& fieldType);
 
                     void read(DataInput &dataInput, Portable &object, int factoryId, int classId);
 

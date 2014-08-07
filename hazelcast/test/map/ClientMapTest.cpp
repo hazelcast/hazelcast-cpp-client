@@ -52,6 +52,7 @@ namespace hazelcast {
 //                addTest(&ClientMapTest::testMultipleThreadPut, "testMultipleThreadPut"); //MTODO
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
+                addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
             }
 
             void ClientMapTest::beforeClass() {
@@ -599,6 +600,27 @@ namespace hazelcast {
                 std::vector<std::pair<std::string, std::string> > ::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);
                 assertEqual("value1", (*it3).second);
+
+            }
+
+            void ClientMapTest::testKeySetAndValuesWithPredicates() {
+                std::string name = "testKeysetAndValuesWithPredicates";
+                IMap<Employee, Employee> map = client->getMap<Employee, Employee>(name);
+
+                Employee emp1("abc-123-xvz", 34);
+                Employee emp2("abc-123-xvz", 20);
+
+                map.put(emp1, emp1);
+                assertNull(map.put(emp2, emp2).get());
+                assertEqual(2, (int)map.size());
+                assertEqual(2, (int)map.keySet().size());
+                assertEqual(0, (int)map.keySet("a = 10").size());
+                assertEqual(0, (int)map.values("a = 10").size());
+                assertEqual(2, (int)map.keySet("a >= 10").size());
+                assertEqual(2, (int)map.values("a >= 10").size());
+                assertEqual(2, (int)map.size());
+                assertEqual(2, (int)map.values().size());
+
 
             }
 
