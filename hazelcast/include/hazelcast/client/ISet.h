@@ -52,6 +52,11 @@ namespace hazelcast {
              *
              *  Note that E is std::string in the example
              *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+             *
              *  @param listener to be added
              *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
              *  @returns registariondId that can be used to remove item listener
