@@ -38,12 +38,16 @@ namespace hazelcast {
 
                 void afterTest();
 
-                void testTxnWithMultipleNodes();
-
                 void testTxnRollback();
+
+                void testTxnRollbackOnServerCrash();
 
             private:
                 HazelcastServerFactory & hazelcastInstanceFactory;
+                std::auto_ptr<HazelcastServer> server;
+                std::auto_ptr<HazelcastServer> second;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<LoadBalancer> loadBalancer;
             };
 
         }

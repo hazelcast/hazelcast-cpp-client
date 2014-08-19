@@ -14,6 +14,7 @@ namespace hazelcast {
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster = &cluster;
                 setMembersRef();
+                cluster.addMembershipListener(this);
             }
 
             void AbstractLoadBalancer::setMembersRef() {
