@@ -30,11 +30,8 @@ namespace hazelcast {
                 * Destructor
                 */
                 virtual ~VersionedPortable(){
-                    aaa = 2;
                 }
 
-            private:
-                int aaa;
             };
         }
     }

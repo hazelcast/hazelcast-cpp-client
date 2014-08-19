@@ -51,7 +51,7 @@ namespace hazelcast {
                 }
                 request->setRegistrationId(resolvedRegistrationId);
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = clientContext.getInvocationService().invokeOnRandomTarget(request);
-                bool result = clientContext.getSerializationService().toObject<bool>(future->get());
+                bool result = *(clientContext.getSerializationService().toObject<bool>(future->get()));
                 return result;
             }
 
@@ -89,7 +89,7 @@ namespace hazelcast {
                     failedListeners.push_back(failedListener);
                     return;
                 }
-                connection->registerAndEnqueue(failedListener);
+                connection->registerAndEnqueue(failedListener, -1);
             }
 
             void ServerListenerService::triggerFailedListeners() {
@@ -106,7 +106,7 @@ namespace hazelcast {
                         newFailedListeners.push_back(*it);
                         continue;
                     }
-                    connection->registerAndEnqueue(*it);
+                    connection->registerAndEnqueue(*it, -1);
                 }
                 failedListeners = newFailedListeners;
             }

@@ -15,7 +15,8 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API ClientRequest : public serialization::VersionedPortable {
+            class HAZELCAST_API
+            ClientRequest : public serialization::VersionedPortable {
             public:
                 ClientRequest();
 

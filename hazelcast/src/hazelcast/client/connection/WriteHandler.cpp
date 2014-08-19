@@ -34,9 +34,8 @@ namespace hazelcast {
                 ready = false;
             }
 
-            void WriteHandler::enqueueData(const serialization::pimpl::Data &data) {
-                serialization::pimpl::Packet *socketWritable = new serialization::pimpl::Packet(connection.getPortableContext(), data);
-                writeQueue.offer(socketWritable);
+            void WriteHandler::enqueueData(serialization::pimpl::Packet *packet) {
+                writeQueue.offer(packet);
                 if (informSelector.compareAndSet(true, false)) {
                     ioListener.addTask(this);
                     ioListener.wakeUp();

@@ -13,13 +13,9 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API ContainsEntryRequest : public AllPartitionsRequest {
+            class HAZELCAST_API ContainsRequest : public AllPartitionsRequest {
             public:
-                ContainsEntryRequest(serialization::pimpl::Data &key, const std::string &name, serialization::pimpl::Data &value);
-
-                ContainsEntryRequest(serialization::pimpl::Data &key, const std::string &name);
-
-                ContainsEntryRequest(const std::string &name, serialization::pimpl::Data &value);
+                ContainsRequest(const std::string &name, serialization::pimpl::Data &value);
 
                 int getClassId() const;
 
@@ -28,9 +24,6 @@ namespace hazelcast {
                 bool isRetryable() const;
 
             private:
-                bool hasKey;
-                bool hasValue;
-                serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
             };
         }

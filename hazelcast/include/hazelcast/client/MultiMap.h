@@ -7,12 +7,13 @@
 #include "hazelcast/client/multimap/KeySetRequest.h"
 #include "hazelcast/client/multimap/ValuesRequest.h"
 #include "hazelcast/client/multimap/EntrySetRequest.h"
-#include "hazelcast/client/multimap/ContainsEntryRequest.h"
 #include "hazelcast/client/multimap/SizeRequest.h"
 #include "hazelcast/client/multimap/ClearRequest.h"
 #include "hazelcast/client/multimap/CountRequest.h"
 #include "hazelcast/client/multimap/AddEntryListenerRequest.h"
 #include "hazelcast/client/multimap/RemoveEntryListenerRequest.h"
+#include "hazelcast/client/multimap/KeyBasedContainsRequest.h"
+#include "hazelcast/client/multimap/ContainsRequest.h"
 #include "hazelcast/client/multimap/GetAllRequest.h"
 #include "hazelcast/client/multimap/MultiMapLockRequest.h"
 #include "hazelcast/client/multimap/MultiMapUnlockRequest.h"
@@ -155,7 +156,8 @@ namespace hazelcast {
             bool containsKey(const K &key) {
                 serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (keyData, getName());
+                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest (getName(), keyData);
+
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
@@ -168,7 +170,7 @@ namespace hazelcast {
              */
             bool containsValue(const V &value) {
                 serialization::pimpl::Data valueData = toData(value);
-                multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (getName(), valueData);
+                multimap::ContainsRequest *request = new multimap::ContainsRequest (getName(), valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
                 return *success;
             };
@@ -184,7 +186,7 @@ namespace hazelcast {
                 serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 serialization::pimpl::Data valueData = toData(value);
-                multimap::ContainsEntryRequest *request = new multimap::ContainsEntryRequest (keyData, getName(), valueData);
+                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest (getName(), keyData, valueData);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };

@@ -26,61 +26,56 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnRandomTarget(const impl::ClientRequest *request) {
-                std::auto_ptr<const impl::ClientRequest> managedRequest(request);
-                boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getRandomConnection(RETRY_COUNT);
-                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
+                return invokeOnRandomTarget(request, NULL);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnKeyOwner(const impl::ClientRequest *request, int partitionId) {
-                boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(partitionId);
-                if (owner.get() != NULL) {
-                    return invokeOnTarget(request, *owner);
-                }
-                return invokeOnRandomTarget(request);
+                return invokeOnKeyOwner(request,  NULL, partitionId);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnTarget(const impl::ClientRequest *request, const Address& address) {
-                std::auto_ptr<const impl::ClientRequest> managedRequest(request);
-                boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getOrConnect(address, RETRY_COUNT);
-                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
+                return invokeOnTarget(request, NULL, address);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnRandomTarget(const impl::ClientRequest *request, impl::BaseEventHandler *eventHandler) {
                 std::auto_ptr<const impl::ClientRequest> managedRequest(request);
                 std::auto_ptr<impl::BaseEventHandler> managedEventHandler(eventHandler);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getRandomConnection(RETRY_COUNT);
-                return doSend(managedRequest, managedEventHandler, connection);
+                return doSend(managedRequest, managedEventHandler, connection, -1);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnTarget(const impl::ClientRequest *request, impl::BaseEventHandler *eventHandler, const Address& address) {
                 std::auto_ptr<const impl::ClientRequest> managedRequest(request);
                 std::auto_ptr<impl::BaseEventHandler> managedEventHandler(eventHandler);
                 boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getOrConnect(address, RETRY_COUNT);
-                return doSend(managedRequest, managedEventHandler, connection);
+                return doSend(managedRequest, managedEventHandler, connection, -1);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnKeyOwner(const impl::ClientRequest *request, impl::BaseEventHandler *handler, int partitionId) {
                 boost::shared_ptr<Address> owner = clientContext.getPartitionService().getPartitionOwner(partitionId);
                 if (owner.get() != NULL) {
-                    return invokeOnTarget(request, handler, *owner);
+                    std::auto_ptr<const impl::ClientRequest> managedRequest(request);
+                    std::auto_ptr<impl::BaseEventHandler> managedEventHandler(handler);
+                    boost::shared_ptr<connection::Connection> connection = clientContext.getConnectionManager().getOrConnect(*owner, RETRY_COUNT);
+                    return doSend(managedRequest, managedEventHandler, connection, partitionId);
                 }
                 return invokeOnRandomTarget(request, handler);
             }
 
             boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::invokeOnConnection(const impl::ClientRequest *request, boost::shared_ptr<connection::Connection> connection) {
                 std::auto_ptr<const impl::ClientRequest> managedRequest(request);
-                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection);
+                return doSend(managedRequest, std::auto_ptr<impl::BaseEventHandler>(NULL), connection, -1);
             }
 
             bool InvocationService::isRedoOperation() const {
                 return redoOperation;
             }
 
-            boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::doSend(std::auto_ptr<const impl::ClientRequest> request, std::auto_ptr<impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection> connection) {
+            boost::shared_ptr<util::Future<serialization::pimpl::Data> >  InvocationService::doSend(std::auto_ptr<const impl::ClientRequest> request, std::auto_ptr<impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection> connection, int partitionId) {
                 boost::shared_ptr<connection::CallPromise> promise(new connection::CallPromise());
                 promise->setRequest(request);
                 promise->setEventHandler(eventHandler);
-                connection->registerAndEnqueue(promise);
+                connection->registerAndEnqueue(promise, partitionId);
                 return promise->getFuture();
             }
 

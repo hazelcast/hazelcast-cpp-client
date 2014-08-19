@@ -95,18 +95,20 @@ namespace hazelcast {
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
-                connection->registerAndEnqueue(promise);
+                connection->registerAndEnqueue(promise, -1);
             }
 
-            void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise) {
+            void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise, int partitionId) {
                 registerCall(promise); //Don't change the order with following line
-                serialization::pimpl::Data data = clientContext.getSerializationService().toData<impl::ClientRequest>(&(promise->getRequest()));
                 if (!live) {
                     deRegisterCall(promise->getRequest().callId);
                     resend(promise);
                     return;
                 }
-                writeHandler.enqueueData(data);
+                serialization::pimpl::Data data = clientContext.getSerializationService().toData<impl::ClientRequest>(&(promise->getRequest()));
+                serialization::pimpl::Packet *packet = new serialization::pimpl::Packet(getPortableContext(), data);
+                packet->setPartitionId(partitionId);
+                writeHandler.enqueueData(packet);
             }
 
 

@@ -59,7 +59,7 @@ namespace hazelcast {
 
                 void close();
 
-                void registerAndEnqueue(boost::shared_ptr<CallPromise> promise);
+                void registerAndEnqueue(boost::shared_ptr<CallPromise> promise, int partitionId);
 
                 void handlePacket(const serialization::pimpl::Packet &packet);
 

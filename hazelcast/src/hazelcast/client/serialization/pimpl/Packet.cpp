@@ -12,12 +12,14 @@ namespace hazelcast {
             namespace pimpl {
 
                 Packet::Packet(PortableContext& context)
-                : DataAdapter(context) {
+                : DataAdapter(context)
+                , partitionId(-1) {
 
                 }
 
                 Packet::Packet(PortableContext& context, const Data& data)
-                : DataAdapter(context, data) {
+                : DataAdapter(context, data)
+                , partitionId(-1) {
 
                 }
 

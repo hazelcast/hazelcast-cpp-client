@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/multimap/KeyBasedRequest.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
@@ -23,7 +22,7 @@ namespace hazelcast {
 
             void KeyBasedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput & output = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& output = writer.getRawDataOutput();
                 key.writeData(output);
             }
 

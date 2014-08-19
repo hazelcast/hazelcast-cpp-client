@@ -39,7 +39,9 @@ namespace hazelcast {
                     TXN_MM_REMOVE = 21,
                     TXN_MM_VALUE_COUNT = 22,
                     TXN_MM_SIZE = 23,
-                    REMOVE_ENTRY_LISTENER = 24
+                    REMOVE_ENTRY_LISTENER = 24,
+                    TXN_MM_REMOVEALL = 25,
+                    KEY_BASED_CONTAINS = 26,
                 };
             }
 

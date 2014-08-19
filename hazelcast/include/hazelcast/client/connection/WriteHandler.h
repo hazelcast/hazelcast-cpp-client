@@ -30,10 +30,9 @@ namespace hazelcast {
             class HAZELCAST_API WriteHandler : public IOHandler {
             public:
                 WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize);
-
                 void handle();
 
-                void enqueueData(const serialization::pimpl::Data &data);
+                void enqueueData(serialization::pimpl::Packet *packet);
 
                 void run();
 

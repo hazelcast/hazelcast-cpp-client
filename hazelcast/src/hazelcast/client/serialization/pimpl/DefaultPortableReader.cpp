@@ -7,13 +7,12 @@
 //
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableReader::DefaultPortableReader(PortableContext&portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
+                DefaultPortableReader::DefaultPortableReader(PortableContext& portableContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd)
                 : serializerHolder(portableContext.getSerializerHolder())
                 , dataInput(input)
                 , objectDataInput(input, portableContext)
@@ -69,7 +68,7 @@ namespace hazelcast {
                     return dataInput.readUTF();
                 }
 
-                std::vector <byte> DefaultPortableReader::readByteArray(const char *fieldName) {
+                std::vector<byte> DefaultPortableReader::readByteArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                     return dataInput.readByteArray();
                 }
@@ -113,18 +112,18 @@ namespace hazelcast {
                     if (raw) {
                         throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
                     }
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         throw exception::HazelcastSerializationException("PortableReader::getPosition ", "dont have a field named" + std::string(fieldName));
                     }
 
                     if (cd->getFieldType(fieldName) != fieldType) {
                         throw exception::HazelcastSerializationException("PortableReader::getPosition ", " field type did not matched for " + std::string(fieldName));
                     }
-                    dataInput.position(offset + cd->getField(fieldName).getIndex() * sizeof (int));
+                    dataInput.position(offset + cd->getField(fieldName).getIndex() * sizeof(int));
                     return dataInput.readInt();
                 }
 
-                ObjectDataInput &DefaultPortableReader::getRawDataInput() {
+                ObjectDataInput& DefaultPortableReader::getRawDataInput() {
                     if (!raw) {
                         dataInput.position(offset + cd->getFieldCount() * 4);
                         int pos = dataInput.readInt();
@@ -134,7 +133,7 @@ namespace hazelcast {
                     return objectDataInput;
                 }
 
-                void DefaultPortableReader::read(DataInput &dataInput, Portable &object, int factoryId, int classId) {
+                void DefaultPortableReader::read(DataInput& dataInput, Portable& object, int factoryId, int classId) {
                     serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, cd->getVersion());
                 }
 
