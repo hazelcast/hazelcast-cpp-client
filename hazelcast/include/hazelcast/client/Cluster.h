@@ -32,12 +32,22 @@ namespace hazelcast {
             /**
              * Adds InitialMembershipListener to listen for membership updates.
              *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+             *
              * @param listener InitialMembershipListener
              */
             void addMembershipListener(InitialMembershipListener *listener);
 
             /**
              * Adds InitialMembershipListener to listen for membership updates.
+             *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
              *
              * @param listener MembershipListener
              */

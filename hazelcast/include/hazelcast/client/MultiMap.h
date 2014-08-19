@@ -229,6 +229,11 @@ namespace hazelcast {
              * Adds an entry listener for this multimap. Listener will get notified
              * for all multimap add/remove/update/evict events.
              *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+             *
              * @param listener     entry listener
              * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
              *                     contain the value.
@@ -248,6 +253,10 @@ namespace hazelcast {
              * The listener will get notified for all
              * add/remove/update/evict events of the specified key only.
              *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
              *
              * @param listener     entry listener
              * @param key          the key to listen
