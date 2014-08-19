@@ -16,7 +16,48 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTxnTest::ClientTxnTest(HazelcastServerFactory &hazelcastInstanceFactory)
+            class MyLoadBalancer : public impl::AbstractLoadBalancer {
+            public:
+                const Member next() {
+                    std::vector<Member> members = getMembers();
+                    long len = members.size();
+                    if (len == 0) {
+                        throw exception::IException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                    }
+                    for (int i = 0; i < len; i++) {
+                        if (members[i].getAddress().getPort() == 5701) {
+                            return members[i];
+                        }
+                    }
+                    return members[0];
+                }
+
+            };
+
+            class MyLifecycleListener : public MembershipListener {
+            public:
+                MyLifecycleListener(util::CountDownLatch& countDownLatch)
+                : countDownLatch(countDownLatch) {
+
+                }
+
+                void memberAdded(const MembershipEvent& membershipEvent) {
+
+                }
+
+                void memberRemoved(const MembershipEvent& membershipEvent) {
+                    countDownLatch.countDown();
+                }
+
+                void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) {
+
+                }
+
+            private:
+                util::CountDownLatch& countDownLatch;
+            };
+
+            ClientTxnTest::ClientTxnTest(HazelcastServerFactory& hazelcastInstanceFactory)
             : iTestFixture<ClientTxnTest>("ClientTxnTest")
             , hazelcastInstanceFactory(hazelcastInstanceFactory) {
             };
@@ -27,8 +68,8 @@ namespace hazelcast {
 
             void ClientTxnTest::addTests() {
                 addTest(&ClientTxnTest::testTxnRollback, "testTxnRollback");
-                addTest(&ClientTxnTest::testTxnWithMultipleNodes, "testTxnWithMultipleNodes");
-            };
+                addTest(&ClientTxnTest::testTxnRollbackOnServerCrash, "testTxnRollbackOnServerCrash");
+            }
 
             void ClientTxnTest::beforeClass() {
             };
@@ -37,72 +78,82 @@ namespace hazelcast {
             };
 
             void ClientTxnTest::beforeTest() {
-            };
+                server.reset(new HazelcastServer(hazelcastInstanceFactory));
+                second.reset(new HazelcastServer(hazelcastInstanceFactory));
+                ClientConfig clientConfig;
+                clientConfig.setRedoOperation(true);
+                //always start the txn on first member
+                loadBalancer.reset(new MyLoadBalancer());
+                clientConfig.setLoadBalancer(loadBalancer.get());
+                client.reset(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))));
+            }
 
             void ClientTxnTest::afterTest() {
                 hazelcastInstanceFactory.shutdownAll();
-            };
-
-
-            void ClientTxnTest::testTxnWithMultipleNodes() {
-                HazelcastServer server(hazelcastInstanceFactory);
-                ClientConfig clientConfig;
-                HazelcastClient client(clientConfig.addAddress(Address(HOST, 5701)));
-
-                TransactionContext context = client.newTransactionContext();
-                HazelcastServer secondServer(hazelcastInstanceFactory);
-
-                bool rollbackSuccessful = false;
-                try {
-                    context.beginTransaction();
-                    TransactionalQueue<std::string> queue = context.getQueue<std::string>("testTxnRollback");
-
-                    server.shutdown();
-                    queue.offer("item");
-                    assertTrue(false, "queue offer should throw InstanceNotActiveException");
-
-                    context.commitTransaction();
-                } catch (exception::InstanceNotActiveException &) {
-                    context.rollbackTransaction();
-                    rollbackSuccessful = true;
-                }
-
-                assertTrue(rollbackSuccessful);
-
+                client->shutdown();
+                client.reset();
             }
 
             void ClientTxnTest::testTxnRollback() {
-                HazelcastServer server(hazelcastInstanceFactory);
-                ClientConfig clientConfig;
-                HazelcastClient client(clientConfig.addAddress(Address(HOST, 5701)));
+                util::CountDownLatch memberRemovedLatch(1);
+                std::string queueName = "testTxnRollback";
+                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
+                client->getCluster().addMembershipListener(&myLifecycleListener);
 
-                std::auto_ptr<HazelcastServer> second;
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client->newTransactionContext();
                 bool rollbackSuccessful = false;
                 try {
                     context.beginTransaction();
-                    second.reset(new HazelcastServer(hazelcastInstanceFactory));
-                    std::string txnId = context.getTxnId();
-                    assertTrue(txnId.compare("") != 0);
-                    TransactionalQueue<std::string> queue = context.getQueue<std::string>("testTxnRollback");
+                    TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
                     queue.offer("item");
-                    server.shutdown();
+                    server->shutdown();
                     context.commitTransaction();
                     assertTrue(false, "commit should throw exception!!!");
-                } catch (exception::InstanceNotActiveException &) {
+                } catch (exception::IException&) {
                     context.rollbackTransaction();
                     rollbackSuccessful = true;
                 }
 
                 assertTrue(rollbackSuccessful);
+                assertTrue(memberRemovedLatch.await(10), "Member removed is not signalled");
 
-                IQueue<std::string> q = client.getQueue<std::string>("testTxnRollback");
+                IQueue<std::string> q = client->getQueue<std::string>(queueName);
+                try {
+                    assertEqual(0, q.size());
+                    assertNull(q.poll().get());
+                } catch (exception::IException& e) {
+                    std::cout << e.what() << std::endl;
+                }
+
+            }
+
+            void ClientTxnTest::testTxnRollbackOnServerCrash() {
+                std::string queueName = "testTxnRollbackOnServerCrash";
+                TransactionContext context = client->newTransactionContext();
+                bool rollbackSuccessful = false;
+                util::CountDownLatch memberRemovedLatch(1);
+                context.beginTransaction();
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                queue.offer("str");
+                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
+                client->getCluster().addMembershipListener(&myLifecycleListener);
+                server->shutdown();
+                try {
+                    context.commitTransaction();
+                    assertTrue(false, "commit should throw exception!!!");
+                } catch (exception::IException&) {
+                    context.rollbackTransaction();
+                    rollbackSuccessful = true;
+                }
+
+                assertTrue(rollbackSuccessful);
+                assertTrue(memberRemovedLatch.await(10));
+
+                IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 assertNull(q.poll().get());
                 assertEqual(0, q.size());
             }
 
-
         }
     }
 }
-

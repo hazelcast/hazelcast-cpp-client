@@ -127,7 +127,7 @@ namespace hazelcast {
                 }
 
                 for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
-                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_ADDED, it->second));
+                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, it->second));
                 }
 
 
