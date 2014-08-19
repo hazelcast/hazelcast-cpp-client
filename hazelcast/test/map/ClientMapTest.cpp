@@ -131,12 +131,7 @@ namespace hazelcast {
 
                 void entryEvicted(EntryEvent<string, string> &event) {
 
-                    const string &value = event.getValue();
                     const string &oldValue = event.getOldValue();
-
-                    if (value.compare("")) {
-                        nullLatch.countDown();
-                    }
 
                     if (oldValue.compare("")) {
                         nullLatch.countDown();
@@ -153,7 +148,7 @@ namespace hazelcast {
 
             void ClientMapTest::testIssue537() {
                 util::CountDownLatch latch(2);
-                util::CountDownLatch nullLatch(2);
+                util::CountDownLatch nullLatch(1);
                 MyListener myListener(latch, nullLatch);
                 std::string id = imap->addEntryListener(myListener, true);
 
