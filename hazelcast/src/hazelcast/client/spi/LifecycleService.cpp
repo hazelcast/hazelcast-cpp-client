@@ -47,9 +47,9 @@ namespace hazelcast {
                     return;
                 active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                clientContext.getConnectionManager().stop();
-                clientContext.getClusterService().stop();
-                clientContext.getPartitionService().stop();
+                clientContext.getConnectionManager().shutdown();
+                clientContext.getClusterService().shutdown();
+                clientContext.getPartitionService().shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             };
 

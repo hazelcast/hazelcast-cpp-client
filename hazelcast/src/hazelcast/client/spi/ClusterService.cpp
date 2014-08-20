@@ -56,7 +56,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClusterService::stop() {
+            void ClusterService::shutdown() {
                 active = false;
                 clusterThread.stop();
             }

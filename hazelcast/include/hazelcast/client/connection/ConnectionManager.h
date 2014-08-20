@@ -10,6 +10,7 @@
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/OutSelector.h"
+#include "hazelcast/client/connection/OwnerConnectionFuture.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Future.h"
@@ -17,7 +18,7 @@
 
 namespace hazelcast {
 
-    namespace util{
+    namespace util {
         class CountDownLatch;
     }
 
@@ -45,50 +46,106 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
+            /**
+            * Responsible for managing {@link com.hazelcast.client.connection.nio.ClientConnection} objects.
+            */
             class HAZELCAST_API ConnectionManager {
             public:
-                ConnectionManager(spi::ClientContext &clientContext, bool smartRouting);
+                ConnectionManager(spi::ClientContext& clientContext, bool smartRouting);
 
+                /**
+                * Start clientConnectionManager
+                */
                 bool start();
 
+                /**
+                * Creates a new owner connection to given address
+                *
+                * @param address to be connection to established
+                * @return ownerConnection
+                * @throws Exception
+                */
                 boost::shared_ptr<Connection> createOwnerConnection(const Address& address);
 
-                boost::shared_ptr<Connection> getConnectionIfAvailable(const Address &address);
+                /**
+                * Gets a shared ptr to connection if available to given address
+                *
+                * @param address
+                */
+                boost::shared_ptr<Connection> getConnectionIfAvailable(const Address& address);
 
-                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress, int tryCount);
+                /**
+                * Tries to connect to an address in member list.
+                * Gets an address a hint first tries that if not successful, tries connections from LoadBalancer
+                *
+                * @param address hintAddress
+                * @return authenticated connection
+                * @throws Exception authentication failed or no connection found
+                */
+                boost::shared_ptr<Connection> getOrConnect(const Address& resolvedAddress, int tryCount);
 
+                /**
+                * Tries to connect to an address in member list.
+                *
+                * @return authenticated connection
+                * @throws Exception authentication failed or no connection found
+                */
                 boost::shared_ptr<Connection> getRandomConnection(int tryCount);
 
-                void destroyConnection(const Address &address);
+                /**
+                * Called when an connection is closed.
+                * Clears related resources of given clientConnection.
+                *
+                * @param clientConnection closed connection
+                */
+                void onConnectionClose(const Address& address);
 
-                void stop();
+                /**
+                * Shutdown clientConnectionManager
+                */
+                void shutdown();
 
+                /**
+                * Next unique call id for request
+                *
+                * @return new unique callId
+                */
                 int getNextCallId();
 
+                /**
+                * Removes event handler corresponding to callId from responsible ClientConnection
+                *
+                * @param callId of event handler registration request
+                * @return true if found and removed, false otherwise
+                */
                 void removeEventHandler(int callId);
 
-                void markOwnerAddressAsClosed();
+                /**
+                * Called when an owner connection is closed
+                */
+                void onCloseOwnerConnection();
+
+                /**
+                * @param address
+                * @param ownerConnection
+                */
+                connection::Connection *connectTo(const Address& address, bool ownerConnection);
 
             protected:
-                void closeIfOwnerConnection(const Address &address);
 
-                connection::Connection *connectTo(const Address &address, bool reAuth);
+                boost::shared_ptr<Connection> getOrConnectResolved(const Address& resolvedAddress);
 
-                boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
-
-                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress);
+                boost::shared_ptr<Connection> getOrConnect(const Address& resolvedAddress);
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
-                void authenticate(Connection &connection, bool reAuth, bool firstConnection);
+                void authenticate(Connection& connection, bool firstConnection);
 
                 void checkLive();
 
-                Address waitForOwnerConnection();
-
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
-                spi::ClientContext &clientContext;
+                spi::ClientContext& clientContext;
                 std::auto_ptr<SocketInterceptor> socketInterceptor;
                 InSelector iListener;
                 OutSelector oListener;
@@ -100,7 +157,8 @@ namespace hazelcast {
                 util::AtomicInt callIdGenerator;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
-                boost::shared_ptr<Connection> ownerConnection;
+                OwnerConnectionFuture ownerConnectionFuture;
+
 
             };
         }

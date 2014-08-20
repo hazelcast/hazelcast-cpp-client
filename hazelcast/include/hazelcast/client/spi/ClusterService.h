@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 bool start();
 
-                void stop();
+                void shutdown();
 
                 std::auto_ptr<Address> getMasterAddress();
 

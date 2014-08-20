@@ -36,7 +36,7 @@ namespace hazelcast {
                 return true;
             }
 
-            void PartitionService::stop() {
+            void PartitionService::shutdown() {
                 util::LockGuard lg(startLock);
                 if (partitionListenerThread.get() != NULL) {
                     partitionListenerThread->interrupt();

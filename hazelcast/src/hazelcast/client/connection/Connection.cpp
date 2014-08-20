@@ -57,7 +57,7 @@ namespace hazelcast {
                     return;
                 }
 
-                clientContext.getConnectionManager().destroyConnection(socket.getRemoteEndpoint());
+                clientContext.getConnectionManager().onConnectionClose(socket.getRemoteEndpoint());
                 cleanResources();
             }
 
