@@ -27,7 +27,8 @@ namespace hazelcast {
             , oListenerThread(NULL)
             , live(true)
             , callIdGenerator(10)
-            , smartRouting(smartRouting) {
+            , smartRouting(smartRouting)
+            , ownerConnectionFuture(clientContext){
                 const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
                 PROTOCOL.insert(PROTOCOL.begin(), protocol_bytes, protocol_bytes + 6);
             }
@@ -45,7 +46,7 @@ namespace hazelcast {
                 return true;
             }
 
-            void ConnectionManager::stop() {
+            void ConnectionManager::shutdown() {
                 live = false;
                 iListener.shutdown();
                 oListener.shutdown();
@@ -60,30 +61,13 @@ namespace hazelcast {
                 connections.clear();
             }
 
-            void ConnectionManager::markOwnerAddressAsClosed() {
-                ownerConnection.reset();
-            }
-
-            Address ConnectionManager::waitForOwnerConnection() {
-                if (ownerConnection.get() != NULL) {
-                    return ownerConnection->getRemoteEndpoint();
-                }
-                ClientConfig& config = clientContext.getClientConfig();
-                int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
-                while (ownerConnection.get() == NULL) {
-                    util::sleep(1);
-                    if (--tryCount == 0) {
-                        throw exception::IOException("ConnectionManager", "Wait for owner connection is timed out");
-                    }
-                }
-                return ownerConnection->getRemoteEndpoint();
+            void ConnectionManager::onCloseOwnerConnection() {
+                //mark the owner connection as closed so that operations requiring owner connection can be waited.
+                ownerConnectionFuture.markAsClosed();
             }
 
             boost::shared_ptr<Connection> ConnectionManager::createOwnerConnection(const Address& address) {
-                Connection *clientConnection = connectTo(address, true);
-                clientConnection->setAsOwnerConnection(true);
-                ownerConnection.reset(clientConnection);
-                return ownerConnection;
+                return ownerConnectionFuture.createNew(address);
             }
 
             boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount) {
@@ -125,7 +109,8 @@ namespace hazelcast {
                 if (smartRouting)
                     return getOrConnectResolved(address);
                 else {
-                    return getOrConnectResolved(waitForOwnerConnection());
+                    boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
+                    return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
                 }
             }
 
@@ -151,11 +136,10 @@ namespace hazelcast {
                 return getOrConnect(address);
             }
 
-            void ConnectionManager::authenticate(Connection& connection, bool reAuth, bool firstConnection) {
+            void ConnectionManager::authenticate(Connection& connection, bool ownerConnection) {
                 protocol::AuthenticationRequest auth(clientContext.getClientConfig().getCredentials());
                 auth.setPrincipal(principal.get());
-                auth.setReAuth(reAuth);
-                auth.setFirstConnection(firstConnection);
+                auth.setFirstConnection(ownerConnection);
 
                 connection.init(PROTOCOL);
                 boost::shared_ptr<ClientResponse> clientResponse = connection.sendAndReceive(auth);
@@ -173,29 +157,14 @@ namespace hazelcast {
                 std::stringstream message;
                 (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
                 util::ILogger::getLogger().info(message.str());
-                if (firstConnection)
+                if (ownerConnection)
                     this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
             }
 
 
-            void ConnectionManager::destroyConnection(const Address& address) {
+            void ConnectionManager::onConnectionClose(const Address& address) {
                 connections.remove(address);
-                closeIfOwnerConnection(address);
-            }
-
-
-            void ConnectionManager::closeIfOwnerConnection(const Address& address) {
-                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnection;
-
-                if (currentOwnerConnection.get() == NULL || !currentOwnerConnection->live) {
-                    return;
-                }
-                std::stringstream message;
-                message << "closing owner connection to " << address;
-                util::ILogger::getLogger().finest(message.str());
-                if (currentOwnerConnection->getRemoteEndpoint() == address) {
-                    currentOwnerConnection->close();
-                }
+                ownerConnectionFuture.closeIfAddressMatches(address);
             }
 
             void ConnectionManager::checkLive() {
@@ -219,7 +188,7 @@ namespace hazelcast {
                 }
             }
 
-            connection::Connection *ConnectionManager::connectTo(const Address& address, bool reAuth) {
+            connection::Connection *ConnectionManager::connectTo(const Address& address, bool ownerConnection) {
                 std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
 
                 checkLive();
@@ -227,7 +196,7 @@ namespace hazelcast {
                 if (socketInterceptor.get() != NULL) {
                     socketInterceptor.get()->onConnect(conn->getSocket());
                 }
-                authenticate(*conn, reAuth, reAuth);
+                authenticate(*conn, ownerConnection);
                 return conn.release();
             }
         }

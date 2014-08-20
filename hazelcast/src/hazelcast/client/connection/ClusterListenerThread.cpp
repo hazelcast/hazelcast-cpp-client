@@ -59,7 +59,7 @@ namespace hazelcast {
                             util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
 
-                        clientContext.getConnectionManager().markOwnerAddressAsClosed();
+                        clientContext.getConnectionManager().onCloseOwnerConnection();
                         if (deletingConnection.compareAndSet(false, true)) {
                             util::IOUtil::closeResource(conn.get());
                             conn.reset();

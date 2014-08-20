@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 bool start();
 
-                void stop();
+                void shutdown();
 
                 boost::shared_ptr<Address> getPartitionOwner(int partitionId);
 
