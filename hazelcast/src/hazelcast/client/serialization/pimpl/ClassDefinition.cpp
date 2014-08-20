@@ -5,10 +5,6 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
-#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,7 +20,7 @@ namespace hazelcast {
                 , binary(new std::vector<byte>) {
                 };
 
-                void ClassDefinition::add(FieldDefinition &fd) {
+                void ClassDefinition::add(FieldDefinition& fd) {
                     fieldDefinitions.push_back(fd);
                     fieldDefinitionsMap[fd.getName()] = fd;
                 };
@@ -33,15 +29,11 @@ namespace hazelcast {
                     nestedClassDefinitions.push_back(cd);
                 };
 
-                bool ClassDefinition::isFieldDefinitionExists(const char *name) {
-                    return (fieldDefinitionsMap.count(name) > 0);
-                }
-
-                const FieldDefinition &ClassDefinition::get(const char *name) {
+                const FieldDefinition& ClassDefinition::get(const char *name) {
                     return fieldDefinitionsMap[name];
                 };
 
-                std::vector<boost::shared_ptr<ClassDefinition> > &ClassDefinition::getNestedClassDefinitions() {
+                std::vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
                     return nestedClassDefinitions;
                 };
 
@@ -58,7 +50,7 @@ namespace hazelcast {
                 }
 
                 int ClassDefinition::getFieldCount() const {
-                    return (int) fieldDefinitions.size();
+                    return (int)fieldDefinitions.size();
                 };
 
 
@@ -79,32 +71,32 @@ namespace hazelcast {
                     this->version = version;
                 };
 
-                const std::vector<byte> &ClassDefinition::getBinary() const {
+                const std::vector<byte>& ClassDefinition::getBinary() const {
                     return *(binary.get());
                 };
 
-                void ClassDefinition::setBinary(std::auto_ptr < std::vector<byte> > binary) {
+                void ClassDefinition::setBinary(std::auto_ptr<std::vector<byte> > binary) {
                     this->binary.reset(binary.release());
                 };
 
-                void ClassDefinition::writeData(DataOutput &dataOutput) {
+                void ClassDefinition::writeData(DataOutput& dataOutput) {
                     dataOutput.writeInt(factoryId);
                     dataOutput.writeInt(classId);
                     dataOutput.writeInt(version);
                     dataOutput.writeInt(fieldDefinitions.size());
-		    std::vector<FieldDefinition>::iterator it;
-                    for (it = fieldDefinitions.begin() ; it != fieldDefinitions.end(); ++it) {
+                    std::vector<FieldDefinition>::iterator it;
+                    for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
                         it->writeData(dataOutput);
                     }
 
                     dataOutput.writeInt(nestedClassDefinitions.size());
-		    std::vector<boost::shared_ptr<ClassDefinition>  >::iterator cdIt;
+                    std::vector<boost::shared_ptr<ClassDefinition> >::iterator cdIt;
                     for (cdIt = nestedClassDefinitions.begin(); cdIt != nestedClassDefinitions.end(); ++cdIt) {
                         (*cdIt)->writeData(dataOutput);
                     }
                 };
 
-                void ClassDefinition::readData(DataInput &dataInput) {
+                void ClassDefinition::readData(DataInput& dataInput) {
                     factoryId = dataInput.readInt();
                     classId = dataInput.readInt();
                     version = dataInput.readInt();

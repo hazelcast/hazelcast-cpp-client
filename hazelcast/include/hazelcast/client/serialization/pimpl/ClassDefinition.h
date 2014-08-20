@@ -35,8 +35,6 @@ namespace hazelcast {
 
                     void add(boost::shared_ptr<ClassDefinition>);
 
-                    bool isFieldDefinitionExists(const char *);
-
                     const FieldDefinition &get(const char *);
 
                     std::vector<boost::shared_ptr<ClassDefinition>  > &getNestedClassDefinitions();

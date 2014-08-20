@@ -44,6 +44,8 @@ namespace hazelcast {
                 void testCompression();
 
                 void testBasicFunctionality();
+
+                void testTemplatedPortable_whenMultipleTypesAreUsed();
             };
         }
     }

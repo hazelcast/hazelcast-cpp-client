@@ -1,0 +1,58 @@
+//
+// Created by sancar koyunlu on 20/08/14.
+//
+
+
+#ifndef HAZELCAST_ChildTemplatedPortable1
+#define HAZELCAST_ChildTemplatedPortable1
+
+
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include <string>
+
+namespace hazelcast {
+    namespace client {
+        namespace test {
+
+            class HAZELCAST_API ChildTemplatedPortable1 : public serialization::Portable {
+            public:
+                ChildTemplatedPortable1(){
+
+                }
+
+                ChildTemplatedPortable1(std::string s1, std::string s2)
+                :s1(s1)
+                ,s2(s2){
+
+                }
+
+                int getFactoryId() const {
+                    return 1;
+                }
+
+                int getClassId() const {
+                    return 2;
+                }
+
+                void writePortable(serialization::PortableWriter& writer) const {
+                    writer.writeUTF("s1", s1);
+                    writer.writeUTF("s2", s2);
+                }
+
+                void readPortable(serialization::PortableReader& reader) {
+                    s1 = reader.readUTF("s1");
+                    s2 = reader.readUTF("s2");
+                }
+
+            private:
+                std::string s1;
+                std::string s2;
+            };
+        }
+    }
+}
+
+
+#endif //HAZELCAST_ChildTemplatedPortable1

@@ -19,6 +19,11 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             class Portable;
+
+            class ClassDefinition;
+            
+            class FieldDefinition;
+
             namespace pimpl {
                 class ClassDefinition;
 
@@ -73,24 +78,28 @@ namespace hazelcast {
                         dataOutput.writeBoolean(true);
                     };
 
-                    template <typename T>
-                    void writePortable(const char *fieldName, const T &portable) {
-                        setPosition(fieldName);
+                    template<typename T>
+                    void writePortable(const char *fieldName, const T& portable) {
+                        FieldDefinition const& fieldDefinition = setPosition(fieldName);
+                        checkPortableAttributes(fieldDefinition, portable);
                         dataOutput.writeBoolean(false);
+                        checkPortableAttributes(fieldDefinition, portable);
                         write(portable);
                     };
 
-                    template <typename T>
-                    void writePortableArray(const char *fieldName, const std::vector<T> &values) {
-                        setPosition(fieldName);
+                    template<typename T>
+                    void writePortableArray(const char *fieldName, const std::vector<T>& values) {
+                        FieldDefinition const& fieldDefinition = setPosition(fieldName);
                         int len = values.size();
                         dataOutput.writeInt(len);
                         if (len > 0) {
                             int offset = dataOutput.position();
                             dataOutput.position(offset + len * sizeof (int));
                             for (int i = 0; i < len; i++) {
-                                dataOutput.writeInt(offset + i * sizeof (int), dataOutput.position());
-                                write(values[i]);
+                                dataOutput.writeInt(offset + i * sizeof(int), dataOutput.position());
+                                Portable const& portable = values[i];
+                                checkPortableAttributes(fieldDefinition, portable);
+                                write(portable);
                             }
                         }
                     };
@@ -99,9 +108,11 @@ namespace hazelcast {
 
                 private:
 
-                    void setPosition(const char *fieldName);
+                    FieldDefinition const& setPosition(const char *fieldName);
 
                     void write(const Portable &p);
+
+                    void checkPortableAttributes(const FieldDefinition& fd, const Portable& portable);
 
                     bool raw;
                     SerializerHolder &serializerHolder;
