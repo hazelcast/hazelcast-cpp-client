@@ -11,6 +11,9 @@
 #include "serialization/TestInvalidReadPortable.h"
 #include "serialization/TestInvalidWritePortable.h"
 #include "serialization/testUtil.h"
+#include "serialization/ChildTemplatedPortable2.h"
+#include "serialization/ParentTemplatedPortable.h"
+#include "serialization/ChildTemplatedPortable1.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
 #include "hazelcast/client/SerializationConfig.h"
@@ -48,6 +51,7 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testDifferentVersionsUsingDataWriteAndRead, "testDifferentVersionsUsingDataWriteAndRead");
                 addTest(&ClientSerializationTest::testCompression, "testCompression");
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
+                addTest(&ClientSerializationTest::testTemplatedPortable_whenMultipleTypesAreUsed, "testTemplatedPortable_whenMultipleTypesAreUsed");
             }
 
             void ClientSerializationTest::testCustomSerialization() {
@@ -314,6 +318,25 @@ namespace hazelcast {
                 tmp2 = serializationService2.toObject<TestMainPortable >(data);
                 iTest::assertEqual(main, *tmp1);
                 iTest::assertEqual(main, *tmp2);
+            }
+
+
+            void ClientSerializationTest::testTemplatedPortable_whenMultipleTypesAreUsed() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+
+                ParentTemplatedPortable<ChildTemplatedPortable1> portable(new ChildTemplatedPortable1("aaa", "bbb"));
+                ss.toData< ParentTemplatedPortable<ChildTemplatedPortable1> >(&portable);
+                ParentTemplatedPortable<ChildTemplatedPortable2> portable2(new ChildTemplatedPortable2("ccc"));
+
+                bool expectedException = false;
+                try {
+                    ss.toData< ParentTemplatedPortable<ChildTemplatedPortable2> >(&portable2);
+                }catch (exception::HazelcastSerializationException& e){
+                    expectedException = true;
+                }
+                iTest::assertTrue(expectedException);
+
             }
         }
     }

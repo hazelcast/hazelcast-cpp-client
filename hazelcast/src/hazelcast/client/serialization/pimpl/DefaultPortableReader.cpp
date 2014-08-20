@@ -113,11 +113,11 @@ namespace hazelcast {
                         throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
                     }
                     if (!cd->hasField(fieldName)) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "dont have a field named" + std::string(fieldName));
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Don't have a field named " + std::string(fieldName));
                     }
 
                     if (cd->getFieldType(fieldName) != fieldType) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", " field type did not matched for " + std::string(fieldName));
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Field type did not matched for " + std::string(fieldName));
                     }
                     dataInput.position(offset + cd->getField(fieldName).getIndex() * sizeof(int));
                     return dataInput.readInt();

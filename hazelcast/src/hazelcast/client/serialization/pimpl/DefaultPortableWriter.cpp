@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(PortableContext&portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &dataOutput)
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& dataOutput)
                 : raw(false)
                 , serializerHolder(portableContext.getSerializerHolder())
                 , dataOutput(dataOutput)
@@ -23,7 +23,7 @@ namespace hazelcast {
                 , begin(dataOutput.position())
                 , offset(dataOutput.position() + sizeof(int))
                 , cd(cd) {
-                    int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof (int);
+                    int const fieldIndexesLength = (cd->getFieldCount() + 1) * sizeof(int);
                     this->dataOutput.position(offset + fieldIndexesLength);
                 }
 
@@ -67,71 +67,70 @@ namespace hazelcast {
                     dataOutput.writeShort(value);
                 }
 
-                void DefaultPortableWriter::writeUTF(const char *fieldName, const std::string &value) {
+                void DefaultPortableWriter::writeUTF(const char *fieldName, const std::string& value) {
                     setPosition(fieldName);
                     dataOutput.writeUTF(value);
                 }
 
-                void DefaultPortableWriter::writeByteArray(const char *fieldName, const std::vector<byte> &bytes) {
+                void DefaultPortableWriter::writeByteArray(const char *fieldName, const std::vector<byte>& bytes) {
                     setPosition(fieldName);
                     dataOutput.writeByteArray(bytes);
                 }
 
-                void DefaultPortableWriter::writeCharArray(const char *fieldName, const std::vector<char > &data) {
+                void DefaultPortableWriter::writeCharArray(const char *fieldName, const std::vector<char>& data) {
                     setPosition(fieldName);
                     dataOutput.writeCharArray(data);
                 }
 
-                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<short > &data) {
+                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<short>& data) {
                     setPosition(fieldName);
                     dataOutput.writeShortArray(data);
                 }
 
-                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int> &data) {
+                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int>& data) {
                     setPosition(fieldName);
                     dataOutput.writeIntArray(data);
                 }
 
-                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<long > &data) {
+                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<long>& data) {
                     setPosition(fieldName);
                     dataOutput.writeLongArray(data);
                 }
 
-                void DefaultPortableWriter::writeFloatArray(const char *fieldName, const std::vector<float > &data) {
+                void DefaultPortableWriter::writeFloatArray(const char *fieldName, const std::vector<float>& data) {
                     setPosition(fieldName);
                     dataOutput.writeFloatArray(data);
                 }
 
-                void DefaultPortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double > &data) {
+                void DefaultPortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double>& data) {
                     setPosition(fieldName);
                     dataOutput.writeDoubleArray(data);
                 }
 
-                void DefaultPortableWriter::setPosition(const char *fieldName) {
+                FieldDefinition const& DefaultPortableWriter::setPosition(const char *fieldName) {
                     if (raw) throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");
                     if (!cd->hasField(fieldName)) {
-                        std::string error;
-                        error += "HazelcastSerializationException( Invalid field name: '";
-                        error += fieldName;
-                        error += "' for ClassDefinition {id: ";
-                        error += ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
-                        error += util::IOUtil::to_string(cd->getClassId());
-                        error += ", version: ";
-                        error += util::IOUtil::to_string(cd->getVersion());
-                        error += "}";
+                        std::stringstream error;
+                        error << "HazelcastSerializationException( Invalid field name: '" << fieldName;
+                        error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd->getClassId());
+                        error << ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
+                        error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}";
 
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", error);
+                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
                     }
 
-                    if (writtenFields.count(fieldName) != 0)
+                    if (writtenFields.count(fieldName) != 0) {
                         throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
+                    }
                     writtenFields.insert(fieldName);
-                    dataOutput.writeInt(offset + cd->getField(fieldName).getIndex() * sizeof (int), dataOutput.position());
+                    FieldDefinition const& field = cd->getField(fieldName);
+                    dataOutput.writeInt(offset + field.getIndex() * sizeof(int), dataOutput.position());
+                    return field;
 
                 }
 
 
-                ObjectDataOutput &DefaultPortableWriter::getRawDataOutput() {
+                ObjectDataOutput& DefaultPortableWriter::getRawDataOutput() {
                     if (!raw) {
                         int pos = dataOutput.position();
                         int index = cd->getFieldCount(); // last index
@@ -145,10 +144,25 @@ namespace hazelcast {
                     dataOutput.writeInt(begin, dataOutput.position()); // write final offset
                 }
 
-                void DefaultPortableWriter::write(const Portable &p) {
+                void DefaultPortableWriter::write(const Portable& p) {
                     return serializerHolder.getPortableSerializer().write(dataOutput, p);
                 }
 
+
+                void DefaultPortableWriter::checkPortableAttributes(const FieldDefinition& fd, const Portable& portable) {
+                    if (fd.getFactoryId() != portable.getFactoryId()) {
+                        std::stringstream errorMessage;
+                        errorMessage << "Wrong Portable type! Templated portable types are not supported! "
+                        << " Expected factory-id: " << fd.getFactoryId() << ", Actual factory-id: " << portable.getFactoryId();
+                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                    }
+                    if (fd.getClassId() != portable.getClassId()) {
+                        std::stringstream errorMessage;
+                        errorMessage << "Wrong Portable type! Templated portable types are not supported! "
+                        << "Expected class-id: " << fd.getClassId() << ", Actual class-id: " << portable.getClassId();
+                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                    }
+                }
             }
         }
     }
