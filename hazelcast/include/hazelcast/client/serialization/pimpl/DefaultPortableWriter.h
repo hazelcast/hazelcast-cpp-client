@@ -20,12 +20,10 @@ namespace hazelcast {
         namespace serialization {
             class Portable;
 
-            class ClassDefinition;
-            
-            class FieldDefinition;
-
             namespace pimpl {
                 class ClassDefinition;
+
+                class FieldDefinition;
 
                 class SerializerHolder;
 

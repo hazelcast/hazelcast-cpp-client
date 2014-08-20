@@ -5,6 +5,10 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {

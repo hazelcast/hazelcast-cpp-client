@@ -9,6 +9,7 @@
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
@@ -107,7 +108,7 @@ namespace hazelcast {
                 };
 
                 FieldDefinition const& DefaultPortableWriter::setPosition(const char *fieldName) {
-                    if (raw) throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");
+                    if (raw) throw exception::IOException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");
                     if (!cd->hasField(fieldName)) {
                         std::stringstream error;
                         error << "HazelcastSerializationException( Invalid field name: '" << fieldName;
@@ -115,14 +116,14 @@ namespace hazelcast {
                         error << ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
                         error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}";
 
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
+                        throw exception::IOException("PortableWriter::setPosition", error.str());
                     }
 
                     if (writtenFields.count(fieldName) != 0) {
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
+                        throw exception::IOException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
                     }
                     writtenFields.insert(fieldName);
-                    FieldDefinition const& field = cd->getField(fieldName);
+                    FieldDefinition const& field = cd->get(fieldName);
                     dataOutput.writeInt(offset + field.getIndex() * sizeof(int), dataOutput.position());
                     return field;
                 };
@@ -152,13 +153,13 @@ namespace hazelcast {
                         std::stringstream errorMessage;
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
                         << " Expected factory-id: " << fd.getFactoryId() << ", Actual factory-id: " << portable.getFactoryId();
-                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                        throw exception::IOException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
                     }
                     if (fd.getClassId() != portable.getClassId()) {
                         std::stringstream errorMessage;
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
                         << "Expected class-id: " << fd.getClassId() << ", Actual class-id: " << portable.getClassId();
-                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                        throw exception::IOException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
                     }
                 }
             }

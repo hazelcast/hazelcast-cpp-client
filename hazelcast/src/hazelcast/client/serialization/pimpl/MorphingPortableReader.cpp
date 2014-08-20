@@ -240,7 +240,7 @@ namespace hazelcast {
                 };
 
                 bool MorphingPortableReader::setPosition(char const *fieldName) {
-                    if (cd->isFieldDefinitionExists(fieldName)) {
+                    if (cd->hasField(fieldName)) {
                         const FieldDefinition &fd = cd->get(fieldName);
                         currentFactoryId = fd.getFactoryId();
                         currentClassId = fd.getClassId();
