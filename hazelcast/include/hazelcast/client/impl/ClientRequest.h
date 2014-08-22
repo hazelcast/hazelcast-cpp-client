@@ -9,14 +9,12 @@
 #define HAZELCAST_Request
 
 #include "hazelcast/client/serialization/VersionedPortable.h"
-//#include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API
-            ClientRequest : public serialization::VersionedPortable {
+            class HAZELCAST_API ClientRequest : public serialization::VersionedPortable {
             public:
                 ClientRequest();
 

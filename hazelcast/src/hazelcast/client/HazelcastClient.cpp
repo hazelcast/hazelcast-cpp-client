@@ -10,6 +10,7 @@ namespace hazelcast {
 
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)
+        , clientProperties(config)
         , clientContext(*this)
         , lifecycleService(clientContext, clientConfig)
         , serializationService(config.getSerializationConfig())

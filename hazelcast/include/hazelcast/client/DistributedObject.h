@@ -10,6 +10,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/connection/CallFuture.h"
 #include <string>
 
 namespace hazelcast {
@@ -94,8 +95,8 @@ namespace hazelcast {
              */
             boost::shared_ptr<Response> invoke(const impl::ClientRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnKeyOwner(request, partitionId);
-                return context->getSerializationService().template toObject<Response>(future->get());
+                connection::CallFuture  future = invocationService.invokeOnKeyOwner(request, partitionId);
+                return context->getSerializationService().template toObject<Response>(future.get());
             };
 
             /**
@@ -107,8 +108,8 @@ namespace hazelcast {
              */
             template<typename Response>
             boost::shared_ptr<Response> invoke(const impl::ClientRequest *request) {
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = getContext().getInvocationService().invokeOnRandomTarget(request);
-                return context->getSerializationService().template toObject<Response>(future->get());
+                connection::CallFuture  future = getContext().getInvocationService().invokeOnRandomTarget(request);
+                return context->getSerializationService().template toObject<Response>(future.get());
             };
 
             /**

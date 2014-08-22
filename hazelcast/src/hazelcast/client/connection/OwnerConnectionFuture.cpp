@@ -55,13 +55,24 @@ namespace hazelcast {
                 if (currentOwnerConnection.get() == NULL || !currentOwnerConnection->live) {
                     return;
                 }
-                std::stringstream message;
-                message << "closing owner connection to " << address;
-                util::ILogger::getLogger().finest(message.str());
+
                 if (currentOwnerConnection->getRemoteEndpoint() == address) {
-                    currentOwnerConnection->close();
-                    markAsClosed();
+                    close();
                 }
+            }
+
+
+            void OwnerConnectionFuture::close() {
+                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnectionPtr;
+                if (currentOwnerConnection.get() == NULL) {
+                    return;
+                }
+
+                std::stringstream message;
+                message << "Closing owner connection to " << currentOwnerConnection->getRemoteEndpoint() << std::endl;
+                util::ILogger::getLogger().finest(message.str());
+                util::IOUtil::closeResource(currentOwnerConnection.get());
+                markAsClosed();
             }
         }
     }

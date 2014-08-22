@@ -29,7 +29,7 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastRead = clock();
+                connection.lastRead = time(NULL);
                 try {
                     buffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {

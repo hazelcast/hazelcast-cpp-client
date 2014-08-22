@@ -46,6 +46,11 @@ namespace hazelcast {
                 return hazelcastClient.connectionManager;
             }
 
+
+            ClientProperties& ClientContext::getClientProperties() {
+                return hazelcastClient.clientProperties;
+            }
+
             Cluster &ClientContext::getCluster() {
                 return hazelcastClient.cluster;
             }

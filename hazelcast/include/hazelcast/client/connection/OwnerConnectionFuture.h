@@ -31,6 +31,8 @@ namespace hazelcast {
 
                 void closeIfAddressMatches(const Address& address);
 
+                void close();
+
             private:
                 boost::shared_ptr<Connection> ownerConnectionPtr;
                 spi::ClientContext& clientContext;

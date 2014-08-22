@@ -22,6 +22,8 @@ namespace hazelcast {
         }
         namespace spi {
             class ClientContext;
+
+            class InvocationService;
         }
         namespace serialization {
             namespace pimpl {
@@ -85,17 +87,28 @@ namespace hazelcast {
 
                 serialization::pimpl::Packet readBlocking();
 
+                bool isHeartBeating();
+
+                void heartBeatingFailed();
+
+                void heartBeatingSucceed();
+
+                void handleTargetNotActive(boost::shared_ptr<CallPromise> promise);
+
                 util::AtomicInt lastRead;
                 util::AtomicInt lastWrite;
                 util::AtomicBoolean live;
             private:
                 spi::ClientContext &clientContext;
+                spi::InvocationService& invocationService;
                 Socket socket;
                 util::SynchronizedMap<int, CallPromise > callPromises;
                 util::SynchronizedMap<int, CallPromise > eventHandlerPromises;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
+
+                util::AtomicInt failedHeartBeat;
 
                 void cleanResources();
 
@@ -108,8 +121,6 @@ namespace hazelcast {
                 void resend(boost::shared_ptr<CallPromise> promise);
 
                 void registerCall(boost::shared_ptr<CallPromise> promise);
-
-                void targetNotActive(boost::shared_ptr<CallPromise> promise);
 
                 bool handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise);
 

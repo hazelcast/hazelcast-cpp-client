@@ -11,10 +11,11 @@
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/OwnerConnectionFuture.h"
+#include "hazelcast/client/connection/HeartBeater.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Future.h"
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
 
@@ -131,6 +132,18 @@ namespace hazelcast {
                 */
                 connection::Connection *connectTo(const Address& address, bool ownerConnection);
 
+                /**
+                * @param address
+                * @param ownerConnection
+                */
+                std::vector< boost::shared_ptr<Connection> > getConnections();
+
+                /**
+                * Called heartbeat timeout is detected on a connection.
+                *
+                * @param connection to be marked.
+                */
+                void onDetectingUnresponsiveConnection(Connection& connection);
             protected:
 
                 boost::shared_ptr<Connection> getOrConnectResolved(const Address& resolvedAddress);
@@ -155,6 +168,8 @@ namespace hazelcast {
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
                 util::AtomicInt callIdGenerator;
+                connection::HeartBeater heartBeater;
+                std::auto_ptr<util::Thread> heartBeatThread;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;

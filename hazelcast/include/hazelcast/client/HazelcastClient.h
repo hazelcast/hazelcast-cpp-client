@@ -16,6 +16,7 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ClientProperties.h"
 
 namespace hazelcast {
     namespace client {
@@ -599,6 +600,7 @@ namespace hazelcast {
 
         private:
             ClientConfig clientConfig;
+            ClientProperties clientProperties;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;

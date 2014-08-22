@@ -21,25 +21,38 @@ namespace iTest {
 
     HAZELCAST_API void assertNotNull(const void *expected);
 
-    template<typename  Expected, typename Actual >
-    HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual, const char *message) {
+    template<typename Expected, typename Actual>
+    HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
         assertNumber++;
         if (expected != actual) {
             iTestException e;
             std::stringstream s;
-            s << "Assert[ "<< assertNumber << " ] is failed. Message : " << message << std::endl;
+            s << "Assert[ " << assertNumber << " ] is failed. Message : " << message << std::endl;
             e.message = s.str();
             throw e;
         }
     }
 
-    template<typename  Expected, typename Actual >
-    HAZELCAST_API void assertEqual(const Expected &expected, const Actual &actual) {
+    template<typename Expected, typename Actual>
+    HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual) {
         assertNumber++;
         if (actual != expected) {
             iTestException e;
             std::stringstream s;
-            s << "Assert[ "<< assertNumber << " ] is failed." << std::endl;
+            s << "Assert[ " << assertNumber << " ] is failed." << std::endl;
+            e.message = s.str();
+            throw e;
+        }
+    }
+
+    template<typename Type>
+    HAZELCAST_API void assertEqualWithEpsilon(const Type& value1, const Type& value2, const Type& epsilon) {
+        assertNumber++;
+        if (std::abs(value1 - value2) > epsilon) {
+            iTestException e;
+            std::stringstream s;
+            s << "Assert[ " << assertNumber << " ] is failed." << std::endl;
+            s << "Message: " << value1 << " != " << value2 << " : epsilon " << epsilon << std::endl;
             e.message = s.str();
             throw e;
         }

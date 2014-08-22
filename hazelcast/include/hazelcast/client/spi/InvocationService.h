@@ -6,8 +6,7 @@
 #define HAZELCAST_INVOCATION_SERVICE
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Future.h"
-#include <boost/shared_ptr.hpp>
+#include "boost/shared_ptr.hpp"
 
 namespace hazelcast {
 
@@ -31,7 +30,7 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class CallPromise;
+            class CallFuture;
         }
         namespace spi {
 
@@ -39,32 +38,41 @@ namespace hazelcast {
 
             class HAZELCAST_API InvocationService {
             public:
-                InvocationService(spi::ClientContext &clientContext);
+                InvocationService(spi::ClientContext& clientContext);
 
                 void start();
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::ClientRequest *request);
+                connection::CallFuture invokeOnRandomTarget(const impl::ClientRequest *request);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::ClientRequest *request, int partitionId);
+                connection::CallFuture invokeOnKeyOwner(const impl::ClientRequest *request, int partitionId);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::ClientRequest *request, const Address &target);
+                connection::CallFuture invokeOnTarget(const impl::ClientRequest *request, const Address& target);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnRandomTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler);
+                connection::CallFuture invokeOnRandomTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler, const Address &target);
+                connection::CallFuture invokeOnTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler, const Address& target);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnKeyOwner(const impl::ClientRequest *request, impl::BaseEventHandler *handler, int partitionId);
+                connection::CallFuture invokeOnKeyOwner(const impl::ClientRequest *request, impl::BaseEventHandler *handler, int partitionId);
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> > invokeOnConnection(const impl::ClientRequest *request, boost::shared_ptr<connection::Connection> connection);
+                connection::CallFuture invokeOnConnection(const impl::ClientRequest *request, boost::shared_ptr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
-                static const int RETRY_COUNT = 20;
-            private :
-                bool redoOperation;
-                spi::ClientContext &clientContext;
+                int getRetryWaitTime() const;
 
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  doSend(std::auto_ptr<const impl::ClientRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>, int);
+                int getRetryCount() const;
+
+                int getMaxFailedHeartbeatCount() const;
+
+            private:
+                bool redoOperation;
+                int heartbeatTimeout;
+                int maxFailedHeartbeatCount;
+                int retryWaitTime;
+                int retryCount;
+                spi::ClientContext& clientContext;
+
+                connection::CallFuture doSend(std::auto_ptr<const impl::ClientRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>, int);
 
 
             };

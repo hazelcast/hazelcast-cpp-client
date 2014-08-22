@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -27,8 +26,10 @@ namespace hazelcast {
             , oListenerThread(NULL)
             , live(true)
             , callIdGenerator(10)
+            , heartBeater(clientContext)
+            , heartBeatThread(NULL)
             , smartRouting(smartRouting)
-            , ownerConnectionFuture(clientContext){
+            , ownerConnectionFuture(clientContext) {
                 const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
                 PROTOCOL.insert(PROTOCOL.begin(), protocol_bytes, protocol_bytes + 6);
             }
@@ -43,11 +44,17 @@ namespace hazelcast {
                 }
                 iListenerThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &iListener));
                 oListenerThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &oListener));
+                heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
                 return true;
             }
 
             void ConnectionManager::shutdown() {
                 live = false;
+                 heartBeater.shutdown();
+                if (heartBeatThread.get() != NULL) {
+                    heartBeatThread->interrupt();
+                    heartBeatThread->join();
+                }
                 iListener.shutdown();
                 oListener.shutdown();
                 if (iListenerThread.get() != NULL) {
@@ -198,6 +205,25 @@ namespace hazelcast {
                 }
                 authenticate(*conn, ownerConnection);
                 return conn.release();
+            }
+
+
+            std::vector<boost::shared_ptr<Connection> > ConnectionManager::getConnections() {
+                return connections.values();
+            }
+
+            void ConnectionManager::onDetectingUnresponsiveConnection(Connection& connection) {
+                if (smartRouting) {
+                    //closing the owner connection if unresponsive so that it can be switched to a healthy one.
+                    ownerConnectionFuture.closeIfAddressMatches(connection.getRemoteEndpoint());
+                    // we do not close connection itself since we will continue to send heartbeat ping to this connection.
+                    // IOUtil.closeResource(connection);
+                    return;
+                }
+
+                //close both owner and operation connection
+                ownerConnectionFuture.close();
+                util::IOUtil::closeResource(&connection);
             }
         }
     }

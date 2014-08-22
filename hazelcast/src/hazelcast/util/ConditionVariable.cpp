@@ -48,6 +48,7 @@ namespace hazelcast {
 #include "hazelcast/util/Mutex.h"
 #include <sys/errno.h>
 #include <cassert>
+#include <sys/time.h>
 
 namespace hazelcast {
     namespace util {
@@ -65,7 +66,28 @@ namespace hazelcast {
             assert(EINVAL != error);
         }
 
-        void ConditionVariable::wait(Mutex &mutex) {
+        bool ConditionVariable::waitFor(Mutex& mutex, int timeInSec) {
+            struct timeval tv;
+            ::gettimeofday(&tv, NULL);
+
+            struct timespec ts;
+            ts.tv_sec = tv.tv_sec;
+            ts.tv_nsec = tv.tv_usec * 1000;
+            ts.tv_sec += timeInSec;
+
+
+            int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
+            assert(EPERM != error);
+            assert(EINVAL != error);
+
+            if (ETIMEDOUT == error) {
+                return false;
+            }
+
+            return true;
+        }
+
+        void ConditionVariable::wait(Mutex& mutex) {
             int err = pthread_cond_wait(&condition, &(mutex.mutex));
             assert (EPERM != err);
             assert (EINVAL != err);

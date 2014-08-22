@@ -17,6 +17,8 @@
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/impl/ServerException.h"
+#include "hazelcast/client/impl/RemoveAllListeners.h"
+#include "hazelcast/client/connection/CallFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,6 +26,7 @@ namespace hazelcast {
             Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& oListener)
             : live(true)
             , clientContext(clientContext)
+            , invocationService(clientContext.getInvocationService())
             , socket(address)
             , readHandler(*this, iListener, 16 << 10)
             , writeHandler(*this, oListener, 16 << 10)
@@ -49,9 +52,13 @@ namespace hazelcast {
             }
 
             void Connection::close() {
-                if(!live.compareAndSet(true, false)){
+                if (!live.compareAndSet(true, false)) {
                     return;
                 }
+
+                std::stringstream message;
+                message << "Closing connection to " << getRemoteEndpoint() << std::endl;
+                util::ILogger::getLogger().finest(message.str());
                 socket.close();
                 if (_isOwnerConnection) {
                     return;
@@ -62,25 +69,14 @@ namespace hazelcast {
             }
 
             void Connection::resend(boost::shared_ptr<CallPromise> promise) {
-                util::sleep(1); //MTODO parameterize
-//                /**
-//                * Client will retry requests which either inherently retryable(idempotent requests)
-//                * or {@link ClientNetworkConfig#redoOperation} is set to true.
-//                * <p/>
-//                * Time delay in milisecond between retries.
-//                */
-//                public static final String PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast.client.request.retry.wait.time";
-//                /**
-//                * Default value of PROP_REQUEST_RETRY_WAIT_TIME when user not set it explicitly
-//                */
-//                public static final String PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT = "250";
+                util::sleep(invocationService.getRetryWaitTime());
 
                 if (promise->getRequest().isBindToSingleConnection()) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
                 }
-                if (promise->incrementAndGetResendCount() > spi::InvocationService::RETRY_COUNT) {
+                if (promise->incrementAndGetResendCount() > invocationService.getRetryCount()) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
                     return;
@@ -89,7 +85,7 @@ namespace hazelcast {
                 boost::shared_ptr<Connection> connection;
                 try {
                     ConnectionManager& cm = clientContext.getConnectionManager();
-                    connection = cm.getRandomConnection(spi::InvocationService::RETRY_COUNT);
+                    connection = cm.getRandomConnection(invocationService.getRetryCount());
                 } catch (exception::IOException&) {
                     std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                     promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
@@ -100,7 +96,7 @@ namespace hazelcast {
 
             void Connection::registerAndEnqueue(boost::shared_ptr<CallPromise> promise, int partitionId) {
                 registerCall(promise); //Don't change the order with following line
-                if (!live) {
+                if (!live || !isHeartBeating()) {
                     deRegisterCall(promise->getRequest().callId);
                     resend(promise);
                     return;
@@ -110,7 +106,6 @@ namespace hazelcast {
                 packet->setPartitionId(partitionId);
                 writeHandler.enqueueData(packet);
             }
-
 
             void Connection::handlePacket(const serialization::pimpl::Packet& packet) {
                 const serialization::pimpl::Data& data = packet.getData();
@@ -144,7 +139,7 @@ namespace hazelcast {
 
                     std::string exceptionClassName = ex->name;
                     if (exceptionClassName == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
-                        targetNotActive(promise);
+                        handleTargetNotActive(promise);
                     } else {
                         promise->setException(ex->name, ex->message + ":" + ex->details + "\n");
                     }
@@ -254,7 +249,7 @@ namespace hazelcast {
                     Entry_Set entrySet = callPromises.clear();
                     Entry_Set::iterator it;
                     for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                        targetNotActive(it->second);
+                        handleTargetNotActive(it->second);
                     }
                 }
                 {
@@ -266,7 +261,7 @@ namespace hazelcast {
                 }
             }
 
-            void Connection::targetNotActive(boost::shared_ptr<CallPromise> promise) {
+            void Connection::handleTargetNotActive(boost::shared_ptr<CallPromise> promise) {
                 spi::InvocationService& invocationService = clientContext.getInvocationService();
                 if (promise->getRequest().isRetryable() || invocationService.isRedoOperation()) {
                     resend(promise);
@@ -275,6 +270,49 @@ namespace hazelcast {
                 std::string address = util::IOUtil::to_string(socket.getRemoteEndpoint());
                 promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, address);
 
+            }
+
+
+            void Connection::heartBeatingFailed() {
+                failedHeartBeat++;
+                std::stringstream errorMessage;
+                errorMessage << "Heartbeat to connection  " << getRemoteEndpoint() << " is failed. " << std::endl;
+                errorMessage << "Retrycount is  " << failedHeartBeat << " , max allowed  " << invocationService.getMaxFailedHeartbeatCount() << std::endl;
+                util::ILogger::getLogger().warning(errorMessage.str());
+                ConnectionManager& connectionManager = clientContext.getConnectionManager();
+                if (failedHeartBeat == invocationService.getMaxFailedHeartbeatCount()) {
+                    connectionManager.onDetectingUnresponsiveConnection(*this);
+                    std::vector<boost::shared_ptr<CallPromise> > waitingPromises = eventHandlerPromises.values();
+                    std::vector<boost::shared_ptr<CallPromise> >::iterator it;
+                    for (it = waitingPromises.begin(); it != waitingPromises.end(); ++it) {
+                        handleTargetNotActive(*it);
+                    }
+                }
+            }
+
+            void Connection::heartBeatingSucceed() {
+                int lastFailedHeartBeat = failedHeartBeat;
+                failedHeartBeat = 0;
+                if (lastFailedHeartBeat != 0) {
+                    if (lastFailedHeartBeat >= invocationService.getMaxFailedHeartbeatCount()) {
+                        try {
+                            impl::RemoveAllListeners *request = new impl::RemoveAllListeners();
+                            spi::InvocationService& invocationService = clientContext.getInvocationService();
+                            CallFuture future = invocationService.invokeOnTarget(request, getRemoteEndpoint());
+                            future.get();
+                        } catch (exception::IException& e) {
+                            std::stringstream errorMessage;
+                            errorMessage << "Clearing listeners upon recovering from heart-attack failed.";
+                            errorMessage << "Exception message :" << e.what();
+                            util::ILogger::getLogger().warning(errorMessage.str());
+                        }
+                    }
+                }
+            }
+
+
+            bool Connection::isHeartBeating() {
+                return failedHeartBeat < invocationService.getMaxFailedHeartbeatCount();
             }
         }
     }

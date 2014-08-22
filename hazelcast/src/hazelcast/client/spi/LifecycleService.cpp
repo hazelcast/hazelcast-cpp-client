@@ -37,6 +37,7 @@ namespace hazelcast {
                 if (!clientContext.getPartitionService().start()) {
                     return false;
                 }
+
                 fireLifecycleEvent(LifecycleEvent::STARTED);
                 return true;
             }
