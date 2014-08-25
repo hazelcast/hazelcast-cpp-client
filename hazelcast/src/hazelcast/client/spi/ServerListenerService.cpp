@@ -51,7 +51,7 @@ namespace hazelcast {
                 }
                 request->setRegistrationId(resolvedRegistrationId);
                 boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = clientContext.getInvocationService().invokeOnRandomTarget(request);
-                bool result = clientContext.getSerializationService().toObject<bool>(future->get());
+                bool result = *(clientContext.getSerializationService().toObject<bool>(future->get()));
                 return result;
             }
 
