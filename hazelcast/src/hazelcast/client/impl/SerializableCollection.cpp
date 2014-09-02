@@ -17,8 +17,8 @@ namespace hazelcast {
             }
 
             SerializableCollection::~SerializableCollection() {
-		std::vector <serialization::pimpl::Data * >::iterator it;
-                for (it = dataCollection.begin() ; it != dataCollection.end(); ++it) {
+                std::vector<serialization::pimpl::Data *>::iterator it;
+                for (it = dataCollection.begin(); it != dataCollection.end(); ++it) {
                     delete (*it);
                 }
             }
@@ -31,13 +31,13 @@ namespace hazelcast {
                 return protocol::SpiConstants::DS_COLLECTION;
             }
 
-            const std::vector<serialization::pimpl::Data *>&  SerializableCollection::getCollection() const {
+            const std::vector<serialization::pimpl::Data *>& SerializableCollection::getCollection() const {
                 return dataCollection;
             }
 
 
             void SerializableCollection::writeData(serialization::ObjectDataOutput& writer) const {
-		int size = dataCollection.size();
+                int size = dataCollection.size();
                 writer.writeInt(size);
                 for (int i = 0; i < size; ++i) {
                     dataCollection[i]->writeData(writer);

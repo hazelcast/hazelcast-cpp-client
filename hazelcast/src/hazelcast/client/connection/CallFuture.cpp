@@ -2,23 +2,29 @@
 // Created by sancar koyunlu on 21/08/14.
 //
 
+#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include <climits>
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
 
-            CallFuture::CallFuture() : heartBeatTimeout(0){
+            CallFuture::CallFuture()
+            : invocationService(NULL)
+            , heartBeatTimeout(0) {
 
             }
 
-            CallFuture::CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout)
+            CallFuture::CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService *invocationService)
             : promise(promise)
             , connection(connection)
+            , invocationService(invocationService)
             , heartBeatTimeout(heartBeatTimeout) {
 
             }
@@ -35,7 +41,8 @@ namespace hazelcast {
                         return promise->getFuture()->get(min);
                     } catch (exception::TimeoutException& exception) {
                         if (!connection->isHeartBeating()) {
-                            connection->handleTargetNotActive(promise);
+                            std::string address = util::IOUtil::to_string(connection->getRemoteEndpoint());
+                            invocationService->tryResend(promise, address);
                         }
                     }
                     time_t elapsed = time(NULL) - beg;

@@ -592,7 +592,7 @@ namespace hazelcast {
                 std::vector<std::pair<std::string, std::string> > tempVector3;
                 tempVector3 = imap->entrySet("this == value1");
 
-                std::vector<std::pair<std::string, std::string> > ::iterator it3 = tempVector3.begin();
+                std::vector<std::pair<std::string, std::string> >::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);
                 assertEqual("value1", (*it3).second);
 

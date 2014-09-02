@@ -45,7 +45,7 @@ namespace hazelcast {
 
                 void reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId);
 
-                void retryFailedListener(boost::shared_ptr<connection::CallPromise> failedListener);
+                void retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise);
 
                 void triggerFailedListeners();
 

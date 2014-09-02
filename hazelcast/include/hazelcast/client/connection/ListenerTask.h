@@ -13,8 +13,6 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            class IOSelector;
-
             class HAZELCAST_API ListenerTask {
             public:
                 virtual void run() = 0;

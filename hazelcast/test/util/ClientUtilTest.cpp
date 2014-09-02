@@ -220,9 +220,10 @@ namespace hazelcast {
                 time_t beg = time(NULL);
                 util::Thread thread(sleepyThread, &sleepTime);
                 util::sleep(wakeUpTime);
+                thread.interrupt();
                 thread.join();
                 time_t end = time(NULL);
-                assertEqualWithEpsilon((int)(end - beg), sleepTime , 1);
+                assertEqualWithEpsilon((int)(end - beg), wakeUpTime , 1);
             }
 
         }

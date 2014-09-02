@@ -23,7 +23,7 @@ namespace hazelcast {
 
                 void write(serialization::PortableWriter &writer) const;
 
-                virtual bool isBindToSingleConnection() const override;
+                virtual bool isBindToSingleConnection() const;
             };
         }
     }

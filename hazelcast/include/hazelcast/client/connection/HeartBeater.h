@@ -6,10 +6,13 @@
 #ifndef HAZELCAST_HeartBeater
 #define HAZELCAST_HeartBeater
 
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
         class ThreadArgs;
+
+        class Thread;
     }
     namespace client {
         namespace spi{
@@ -17,7 +20,7 @@ namespace hazelcast {
         }
 
         namespace connection {
-            class HeartBeater {
+            class HAZELCAST_API HeartBeater {
             public:
                 HeartBeater(spi::ClientContext& clientContext);
 
@@ -26,9 +29,6 @@ namespace hazelcast {
                 void shutdown();
 
             private:
-
-                time_t getRemainingTimeout(time_t, int heartBeatTimeoutSeconds);
-
                 void run(util::Thread *currentThread);
 
                 volatile bool live;

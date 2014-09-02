@@ -5,14 +5,13 @@
 
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/connection/CallPromise.h"
+#include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/ClientRequest.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseRemoveListenerRequest.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -24,7 +23,7 @@ namespace hazelcast {
             }
 
             std::string ServerListenerService::listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnKeyOwner(registrationRequest, handler, partitionId);
+                connection::CallFuture future = clientContext.getInvocationService().invokeOnPartitionOwner(registrationRequest, handler, partitionId);
                 boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
                 handler->registrationId = *registrationId;
                 registerListener(registrationId, registrationRequest->callId);
@@ -72,45 +71,39 @@ namespace hazelcast {
                 if (uuid != NULL) {
                     registrationId = *uuid;
                     boost::shared_ptr<int> callId = registrationIdMap.remove(*uuid);
-                    clientContext.getConnectionManager().removeEventHandler(*callId);
+                    clientContext.getInvocationService().removeEventHandler(*callId);
                     return true;
                 }
                 return false;
             }
 
-            void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> failedListener) {
-                boost::shared_ptr<connection::Connection> connection;
+            void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise) {
                 try {
-                    connection::ConnectionManager& cm = clientContext.getConnectionManager();
                     InvocationService& invocationService = clientContext.getInvocationService();
-                    connection = cm.getRandomConnection(invocationService.getRetryCount());
+                    invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
                 } catch (exception::IException&) {
                     util::LockGuard lockGuard(failedListenerLock);
-                    failedListeners.push_back(failedListener);
-                    return;
+                    failedListeners.push_back(listenerPromise);
                 }
-                connection->registerAndEnqueue(failedListener, -1);
             }
 
             void ServerListenerService::triggerFailedListeners() {
                 std::vector<boost::shared_ptr<connection::CallPromise> >::iterator it;
                 std::vector<boost::shared_ptr<connection::CallPromise> > newFailedListeners;
+                InvocationService& invocationService = clientContext.getInvocationService();
 
                 util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
-                    boost::shared_ptr<connection::Connection> connection;
                     try {
-                        connection::ConnectionManager& cm = clientContext.getConnectionManager();
-                        InvocationService& invocationService = clientContext.getInvocationService();
-                        connection = cm.getRandomConnection(invocationService.getRetryCount());
+                        invocationService.resend(*it, "internalRetryOfUnkownAddress");
                     } catch (exception::IOException&) {
                         newFailedListeners.push_back(*it);
                         continue;
                     }
-                    connection->registerAndEnqueue(*it, -1);
                 }
                 failedListeners = newFailedListeners;
             }
+
         }
     }
 }

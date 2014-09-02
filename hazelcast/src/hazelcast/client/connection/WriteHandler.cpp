@@ -24,6 +24,14 @@ namespace hazelcast {
 
             }
 
+
+            WriteHandler::~WriteHandler() {
+                serialization::pimpl::Packet *packet;
+                while ((packet = writeQueue.poll()) != NULL) {
+                    delete packet;
+                }
+            }
+
             void WriteHandler::run() {
                 informSelector = true;
                 if (ready) {
@@ -37,8 +45,8 @@ namespace hazelcast {
             void WriteHandler::enqueueData(serialization::pimpl::Packet *packet) {
                 writeQueue.offer(packet);
                 if (informSelector.compareAndSet(true, false)) {
-                    ioListener.addTask(this);
-                    ioListener.wakeUp();
+                    ioSelector.addTask(this);
+                    ioSelector.wakeUp();
                 }
             }
 
@@ -46,7 +54,7 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastWrite = clock();
+                connection.lastWrite = time(NULL);
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();

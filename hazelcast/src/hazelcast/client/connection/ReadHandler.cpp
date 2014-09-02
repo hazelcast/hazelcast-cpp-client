@@ -3,23 +3,26 @@
 //
 
 #include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/pimpl/Packet.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include <ctime>
+
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, int bufferSize)
+            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, int bufferSize, spi::ClientContext& clientContext)
             : IOHandler(connection, iListener)
             , buffer(bufferSize)
-            , lastData(NULL) {
+            , lastData(NULL)
+            , clientContext(clientContext){
 
             }
-
 
             void ReadHandler::run() {
                 registerHandler();
@@ -43,11 +46,11 @@ namespace hazelcast {
 
                 while (buffer.hasRemaining()) {
                     if (lastData == NULL) {
-                        lastData = new serialization::pimpl::Packet(connection.getPortableContext());
+                        lastData = new serialization::pimpl::Packet(getPortableContext());
                     }
                     bool complete = lastData->readFrom(buffer);
                     if (complete) {
-                        connection.handlePacket(*lastData);
+                        clientContext.getInvocationService().handlePacket(connection, *lastData);
                         delete lastData;
                         lastData = NULL;
                     } else {
@@ -60,6 +63,11 @@ namespace hazelcast {
                 } else {
                     buffer.clear();
                 }
+            }
+
+
+            serialization::pimpl::PortableContext& ReadHandler::getPortableContext() {
+                return clientContext.getSerializationService().getPortableContext();
             }
         }
     }

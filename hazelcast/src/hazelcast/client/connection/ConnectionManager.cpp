@@ -5,7 +5,6 @@
 
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
@@ -20,12 +19,11 @@ namespace hazelcast {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext& clientContext, bool smartRouting)
             : clientContext(clientContext)
-            , iListener(*this)
-            , oListener(*this)
-            , iListenerThread(NULL)
-            , oListenerThread(NULL)
+            , inSelector(*this)
+            , outSelector(*this)
+            , inSelectorThread(NULL)
+            , outSelectorThread(NULL)
             , live(true)
-            , callIdGenerator(10)
             , heartBeater(clientContext)
             , heartBeatThread(NULL)
             , smartRouting(smartRouting)
@@ -36,34 +34,34 @@ namespace hazelcast {
 
             bool ConnectionManager::start() {
                 socketInterceptor = clientContext.getClientConfig().getSocketInterceptor();
-                if (!iListener.start()) {
+                if (!inSelector.start()) {
                     return false;
                 }
-                if (!oListener.start()) {
+                if (!outSelector.start()) {
                     return false;
                 }
-                iListenerThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &iListener));
-                oListenerThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &oListener));
+                inSelectorThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &inSelector));
+                outSelectorThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &outSelector));
                 heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
                 return true;
             }
 
             void ConnectionManager::shutdown() {
                 live = false;
-                 heartBeater.shutdown();
+                heartBeater.shutdown();
                 if (heartBeatThread.get() != NULL) {
                     heartBeatThread->interrupt();
                     heartBeatThread->join();
                 }
-                iListener.shutdown();
-                oListener.shutdown();
-                if (iListenerThread.get() != NULL) {
-                    iListenerThread->interrupt();
-                    iListenerThread->join();
+                inSelector.shutdown();
+                outSelector.shutdown();
+                if (inSelectorThread.get() != NULL) {
+                    inSelectorThread->interrupt();
+                    inSelectorThread->join();
                 }
-                if (oListenerThread.get() != NULL) {
-                    oListenerThread->interrupt();
-                    oListenerThread->join();
+                if (outSelectorThread.get() != NULL) {
+                    outSelectorThread->interrupt();
+                    outSelectorThread->join();
                 }
                 connections.clear();
             }
@@ -113,9 +111,10 @@ namespace hazelcast {
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address& address) {
                 checkLive();
-                if (smartRouting)
+                if (smartRouting) {
                     return getOrConnectResolved(address);
-                else {
+
+                } else {
                     boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
                     return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
                 }
@@ -180,23 +179,8 @@ namespace hazelcast {
                 }
             }
 
-            int ConnectionManager::getNextCallId() {
-                return callIdGenerator++;
-            }
-
-            void ConnectionManager::removeEventHandler(int callId) {
-                std::vector<boost::shared_ptr<Connection> > v = connections.values();
-                std::vector<boost::shared_ptr<Connection> >::iterator it;
-                for (it = v.begin(); it != v.end(); ++it) {
-                    boost::shared_ptr<CallPromise> promise = (*it)->deRegisterEventHandler(callId);
-                    if (promise != NULL) {
-                        return;
-                    }
-                }
-            }
-
             connection::Connection *ConnectionManager::connectTo(const Address& address, bool ownerConnection) {
-                std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, iListener, oListener));
+                std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, inSelector, outSelector));
 
                 checkLive();
                 conn->connect(clientContext.getClientConfig().getConnectionTimeout());
@@ -224,6 +208,13 @@ namespace hazelcast {
                 //close both owner and operation connection
                 ownerConnectionFuture.close();
                 util::IOUtil::closeResource(&connection);
+            }
+
+            void ConnectionManager::removeEndpoint(const Address& address) {
+                boost::shared_ptr<Connection> connection = getConnectionIfAvailable(address);
+                if (connection.get() != NULL) {
+                    connection->close();
+                }
             }
         }
     }

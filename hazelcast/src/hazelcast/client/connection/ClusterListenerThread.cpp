@@ -125,7 +125,11 @@ namespace hazelcast {
                 }
 
                 for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
-                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, it->second));
+                    Member& member = it->second;
+                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, member));
+                    if (clientContext.getClusterService().isMemberExists(member.getAddress())) {
+                         clientContext.getConnectionManager().removeEndpoint(member.getAddress());
+                    }
                 }
 
 
@@ -147,6 +151,7 @@ namespace hazelcast {
                     if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
                         membersUpdated = true;
+                        clientContext.getConnectionManager().removeEndpoint(member.getAddress());
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         std::vector<Member>::iterator it = std::find(members.begin(), members.end(), member);
                         if (members.end() != it) {

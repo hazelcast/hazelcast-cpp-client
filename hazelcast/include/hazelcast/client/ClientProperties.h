@@ -60,15 +60,6 @@ namespace hazelcast {
         static const std::string PROP_HEARTBEAT_INTERVAL_DEFAULT = "10";
 
         /**
-        * Connection is assumed that when max failed heartbeat count exceeds given failed heartbeat count.
-        */
-        static const std::string PROP_MAX_FAILED_HEARTBEAT_COUNT = "hazelcast_client_max_failed_heartbeat_count";
-        /**
-        * Default value of PROP_MAX_FAILED_HEARTBEAT_COUNT when user not set it explicitly
-        */
-        static const std::string PROP_MAX_FAILED_HEARTBEAT_COUNT_DEFAULT = "3";
-
-        /**
         * Client will retry requests which either inherently retryable(idempotent client)
         * or {@link ClientNetworkConfig#redoOperation} is set to true_
         * <p/>
@@ -100,8 +91,6 @@ namespace hazelcast {
 
             const ClientProperty& getHeartbeatInterval() const;
 
-            const ClientProperty& getMaxFailedHeartbeatCount() const;
-
             const ClientProperty& getRetryCount() const;
 
             const ClientProperty& getRetryWaitTime() const;
@@ -109,7 +98,6 @@ namespace hazelcast {
         private:
             ClientProperty heartbeatTimeout;
             ClientProperty heartbeatInterval;
-            ClientProperty maxFailedHeartbeatCount;
             ClientProperty retryCount;
             ClientProperty retryWaitTime;
         };

@@ -35,7 +35,7 @@ namespace hazelcast {
                 serialization::pimpl::Data data = toData(e);
                 collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), data);
                 boost::shared_ptr<bool> success = invoke<bool>(request);
-                return success;
+                return *success;
             }
 
             /**

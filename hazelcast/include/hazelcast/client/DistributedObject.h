@@ -95,7 +95,7 @@ namespace hazelcast {
              */
             boost::shared_ptr<Response> invoke(const impl::ClientRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
-                connection::CallFuture  future = invocationService.invokeOnKeyOwner(request, partitionId);
+                connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
                 return context->getSerializationService().template toObject<Response>(future.get());
             };
 

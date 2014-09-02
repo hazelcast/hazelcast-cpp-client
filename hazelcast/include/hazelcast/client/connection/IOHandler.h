@@ -19,22 +19,24 @@ namespace hazelcast {
             class HAZELCAST_API IOHandler : public ListenerTask {
             public:
 
-                IOHandler(Connection &connection, IOSelector &ioListener);
+                IOHandler(Connection &connection, IOSelector & ioSelector);
 
                 virtual ~IOHandler();
 
                 virtual void handle() = 0;
 
-                void handleSocketException(const std::string& message);
-
                 void registerSocket();
 
-            protected:
-                IOSelector &ioListener;
+                /* should be called from registered io thread */
+                void deRegisterSocket();
 
+            protected:
+                IOSelector & ioSelector;
                 Connection &connection;
 
                 void registerHandler();
+
+                void handleSocketException(const std::string& message);
 
             };
         }

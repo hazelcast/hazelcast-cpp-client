@@ -64,7 +64,7 @@ namespace hazelcast {
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
-                    wakeUpSocketSet.sockets.insert(sleepingSocket.get());
+                    wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
                     return true;
                 } else {
@@ -82,11 +82,11 @@ namespace hazelcast {
             }
 
             void IOSelector::addSocket(const Socket &socket) {
-                socketSet.sockets.insert(&socket);
+                socketSet.insertSocket(&socket);
             }
 
             void IOSelector::removeSocket(const Socket &socket) {
-                socketSet.sockets.erase(&socket);
+                socketSet.removeSocket(&socket);
             }
 
             void IOSelector::processListenerQueue() {

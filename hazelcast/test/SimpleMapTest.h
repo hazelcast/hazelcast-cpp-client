@@ -14,7 +14,7 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 4;
+int THREAD_COUNT = 1;
 int ENTRY_COUNT = 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;

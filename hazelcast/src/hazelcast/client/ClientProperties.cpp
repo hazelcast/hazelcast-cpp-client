@@ -49,9 +49,8 @@ namespace hazelcast {
 
 
         ClientProperties::ClientProperties(ClientConfig& clientConfig)
-        : heartbeatTimeout(clientConfig, PROP_HEARTBEAT_TIMEOUT, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT)
+        : heartbeatTimeout(clientConfig, PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT)
         , heartbeatInterval(clientConfig, PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT)
-        , maxFailedHeartbeatCount(clientConfig, PROP_MAX_FAILED_HEARTBEAT_COUNT, PROP_MAX_FAILED_HEARTBEAT_COUNT_DEFAULT)
         , retryCount(clientConfig, PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT)
         , retryWaitTime(clientConfig, PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT) {
 
@@ -64,10 +63,6 @@ namespace hazelcast {
 
         const ClientProperty& ClientProperties::getHeartbeatInterval() const {
             return heartbeatInterval;
-        }
-
-        const ClientProperty& ClientProperties::getMaxFailedHeartbeatCount() const {
-            return maxFailedHeartbeatCount;
         }
 
         const ClientProperty& ClientProperties::getRetryCount() const {

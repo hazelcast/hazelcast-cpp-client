@@ -38,7 +38,7 @@ namespace hazelcast {
             void set_exception(const std::string& exceptionName, const std::string& exceptionDetails) {
                 LockGuard guard(mutex);
                 if (exceptionReady || resultReady) {
-                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details") + exceptionDetails);
+                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exceptionDetails);
                     return;
                 }
                 this->exceptionName = exceptionName;

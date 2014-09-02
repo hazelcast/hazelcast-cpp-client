@@ -8,17 +8,27 @@
 #define HAZELCAST_SocketSet
 
 #include "hazelcast/client/Socket.h"
+#include "hazelcast/util/Mutex.h"
 #include <set>
 
 namespace hazelcast {
     namespace util {
         class SocketSet {
         public:
-            fd_set get_fd_set() const;
+            static fd_set get_fd_set(std::set<client::Socket const *, client::socketPtrComp> sockets);
 
-            int getHighestSocketId() const;
+            static int getHighestSocketId(std::set<client::Socket const *, client::socketPtrComp> sockets);
 
+            std::set<client::Socket const *, client::socketPtrComp> getSockets();
+
+            void insertSocket(client::Socket const *);
+
+            void removeSocket(client::Socket const *);
+
+        private:
             std::set<client::Socket const *, client::socketPtrComp> sockets;
+            util::Mutex accessLock;
+
         };
 
     }

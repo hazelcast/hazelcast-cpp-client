@@ -7,7 +7,7 @@
 #define HAZELCAST_PortableVersionHelper
 
 #include "hazelcast/client/serialization/VersionedPortable.h"
-#import "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {

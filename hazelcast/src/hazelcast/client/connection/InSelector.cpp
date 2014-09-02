@@ -6,12 +6,11 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InSelector::InSelector(ConnectionManager &connectionManager)
+            InSelector::InSelector(ConnectionManager& connectionManager)
             : IOSelector(connectionManager) {
 
             }
@@ -21,8 +20,10 @@ namespace hazelcast {
             }
 
             void InSelector::listenInternal() {
-                int n = socketSet.getHighestSocketId();
-                fd_set read_fds = socketSet.get_fd_set();
+                std::set<Socket const *, socketPtrComp> currentSockets = socketSet.getSockets();
+                int n = util::SocketSet::getHighestSocketId(currentSockets);
+                fd_set read_fds = util::SocketSet::get_fd_set(currentSockets);
+
                 int err = select(n + 1, &read_fds, NULL, NULL, &t);
                 if (err == 0) {
                     return;
@@ -33,8 +34,8 @@ namespace hazelcast {
                 }
 
                 std::set<Socket const *, client::socketPtrComp>::iterator it;
-                it = socketSet.sockets.begin();
-                while (it != socketSet.sockets.end()) {
+                it = currentSockets.begin();
+                while (it != currentSockets.end()) {
                     Socket const *currentSocket = *it;
                     ++it;
                     int id = currentSocket->getSocketId();

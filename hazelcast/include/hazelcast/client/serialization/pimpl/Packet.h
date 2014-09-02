@@ -18,7 +18,7 @@ namespace hazelcast {
             namespace pimpl {
                 class Packet : public DataAdapter {
                 public:
-                    static byte const VERSION = 1;
+                    static byte const VERSION = 2;
                     static int const HEADER_OP = 0;
                     static int const HEADER_RESPONSE = 1;
                     static int const HEADER_EVENT = 2;
