@@ -17,7 +17,7 @@ namespace hazelcast {
 
         bool ISemaphore::init(int permits) {
             semaphore::InitRequest *request = new semaphore::InitRequest(getName(), permits);
-            return invoke<bool>(request, partitionId);
+            return *(invoke<bool>(request, partitionId));
         };
 
         void ISemaphore::acquire() {
