@@ -43,7 +43,7 @@ namespace hazelcast {
             }
 
             const FieldDefinition& ClassDefinition::getField(int fieldIndex) const {
-                if (fieldDefinitions.size() <= fieldIndex) {
+                if (fieldDefinitions.size() <= (size_t)fieldIndex) {
                     return fieldDefinitions[fieldIndex];
                 }
                 throw exception::IllegalArgumentException("ClassDefinition::getField", "index out of bound");
