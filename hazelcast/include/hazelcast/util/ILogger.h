@@ -17,7 +17,7 @@ namespace hazelcast {
     }
 
     namespace util {
-        class ILogger{
+        class HAZELCAST_API ILogger{
         public:
             static ILogger& getLogger()
             {
