@@ -52,16 +52,19 @@ namespace hazelcast {
                 if (heartBeatThread.get() != NULL) {
                     heartBeatThread->interrupt();
                     heartBeatThread->join();
+                    heartBeatThread.reset();
                 }
                 inSelector.shutdown();
                 outSelector.shutdown();
                 if (inSelectorThread.get() != NULL) {
                     inSelectorThread->interrupt();
                     inSelectorThread->join();
+                    inSelectorThread.reset();
                 }
                 if (outSelectorThread.get() != NULL) {
                     outSelectorThread->interrupt();
                     outSelectorThread->join();
+                    outSelectorThread.reset();
                 }
                 connections.clear();
             }

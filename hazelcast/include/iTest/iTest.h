@@ -6,7 +6,7 @@
 #define HAZELCAST_iTest
 
 #include "iTest/iTestFixture.h"
-
+#include <cstdlib>
 
 namespace iTest {
     HAZELCAST_API void assertFalse(bool isFalse, const char *message);

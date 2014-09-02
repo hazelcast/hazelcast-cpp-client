@@ -32,7 +32,6 @@ void testSpeed() {
 
 void unitTests() {
     try {
-
         ClientUtilTest utilTest;
         utilTest.executeTests();
 

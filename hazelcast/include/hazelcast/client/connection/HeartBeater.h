@@ -7,6 +7,7 @@
 #define HAZELCAST_HeartBeater
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 namespace hazelcast {
     namespace util {
@@ -31,7 +32,7 @@ namespace hazelcast {
             private:
                 void run(util::Thread *currentThread);
 
-                volatile bool live;
+                util::AtomicBoolean live;
                 spi::ClientContext& clientContext;
                 int heartBeatIntervalSeconds;
                 int heartBeatTimeoutSeconds;

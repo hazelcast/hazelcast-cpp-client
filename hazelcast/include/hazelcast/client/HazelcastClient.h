@@ -107,7 +107,7 @@ namespace hazelcast {
  * \subsection Windows
  *
  * For Windows, there are two distributions one is 32bit the other is 64bit.
- * Currently release have only Visual Studio 2010 compatible libraries. For others please contact with support@hazelcast.com
+ * Currently release have only Visual Studio 2013 compatible libraries. For others please contact with support@hazelcast.com
  *
  * 
  * 

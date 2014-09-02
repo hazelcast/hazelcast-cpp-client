@@ -51,7 +51,7 @@ namespace hazelcast {
             */
             class HAZELCAST_API ConnectionManager{
             public:
-                ConnectionManager(spi::ClientContext& clientContext, bool smartRouting);
+                ConnectionManager(spi::ClientContext& clientContext, bool smartRouting);              
 
                 /**
                 * Start clientConnectionManager
