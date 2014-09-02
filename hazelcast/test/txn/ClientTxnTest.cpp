@@ -115,7 +115,7 @@ namespace hazelcast {
                 }
 
                 assertTrue(rollbackSuccessful);
-                assertTrue(memberRemovedLatch.await(10), "Member removed is not signalled");
+                assertTrue(memberRemovedLatch.await(120), "Member removed is not signalled");
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 try {
@@ -147,7 +147,7 @@ namespace hazelcast {
                 }
 
                 assertTrue(rollbackSuccessful);
-                assertTrue(memberRemovedLatch.await(10));
+                assertTrue(memberRemovedLatch.await(120));
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 assertNull(q.poll().get());
