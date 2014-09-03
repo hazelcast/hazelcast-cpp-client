@@ -40,8 +40,8 @@ namespace hazelcast {
                     time_t beg = time(NULL);
                     try {
 						using namespace std;
-                        int min = min(timeoutInSeconds, heartBeatTimeout);
-                        return promise->getFuture()->get(min);
+                        int waitSeconds = min(timeoutInSeconds, heartBeatTimeout);
+                        return promise->getFuture()->get(waitSeconds);
                     } catch (exception::TimeoutException& exception) {
                         if (!connection->isHeartBeating()) {
                             std::string address = util::IOUtil::to_string(connection->getRemoteEndpoint());

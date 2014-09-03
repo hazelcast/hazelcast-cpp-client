@@ -116,7 +116,6 @@ namespace hazelcast {
                 checkLive();
                 if (smartRouting) {
                     return getOrConnectResolved(address);
-
                 } else {
                     boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
                     return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
