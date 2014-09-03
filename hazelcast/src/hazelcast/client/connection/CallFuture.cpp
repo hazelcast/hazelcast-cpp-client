@@ -9,6 +9,8 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include <climits>
+#include <ctime>
+#include <algorithm>
 
 namespace hazelcast {
     namespace client {
@@ -34,10 +36,11 @@ namespace hazelcast {
             }
 
             serialization::pimpl::Data CallFuture::get(int timeoutInSeconds) {
-                while (timeoutInSeconds > 0) {
+				while (timeoutInSeconds > 0) {
                     time_t beg = time(NULL);
                     try {
-                        int min = std::min(timeoutInSeconds, heartBeatTimeout);
+						using namespace std;
+                        int min = min(timeoutInSeconds, heartBeatTimeout);
                         return promise->getFuture()->get(min);
                     } catch (exception::TimeoutException& exception) {
                         if (!connection->isHeartBeating()) {

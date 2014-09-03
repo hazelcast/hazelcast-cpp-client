@@ -6,6 +6,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Thread.h"
+#include <ctime>
 
 namespace hazelcast {
     namespace client {

@@ -11,6 +11,7 @@
 #include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/util/IOUtil.h"
+#include <ctime>
 
 namespace hazelcast {
     namespace client {
