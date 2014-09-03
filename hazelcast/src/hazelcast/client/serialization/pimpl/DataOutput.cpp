@@ -6,6 +6,7 @@
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
+#include <algorithm>
 
 namespace hazelcast {
     namespace client {

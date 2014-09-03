@@ -24,9 +24,9 @@ namespace hazelcast {
             assert(success && "SleepConditionVariable");
         }
 
-        bool ConditionVariable::waitFor(Mutex &mutex, long timeInMillis) {
-            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeInMillis);
-            if(!interrupted){
+        bool ConditionVariable::waitFor(Mutex &mutex, int timeSec) {
+            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeSec * 1000);
+            if(interrupted){
                 return true;
             }
             return false;

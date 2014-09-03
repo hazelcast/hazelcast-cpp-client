@@ -24,7 +24,7 @@ namespace hazelcast {
 
             void wait(Mutex &mutex);
 
-			bool waitFor(Mutex &mutex, long timeInMillis);
+			bool waitFor(Mutex &mutex, int timeInSec);
 
             void notify();
 
