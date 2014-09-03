@@ -38,6 +38,7 @@ namespace hazelcast {
                 }
                 ClientConfig& config = clientContext.getClientConfig();
                 int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
+				
                 while (currentOwnerConnection.get() == NULL) {
                     currentOwnerConnection = ownerConnectionPtr;
                     util::sleep(1);

@@ -37,10 +37,6 @@ namespace hazelcast {
 
                 void testConditionWakeUpTime();
 
-                void testConditionAcquireLock_afterWakeUp();
-
-                void testConditionAcquireLock_afterTimeout();
-
                 void testFutureWaitTimeout();
 
                 void testFutureSetValue();

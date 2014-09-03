@@ -22,8 +22,6 @@ namespace hazelcast {
             void ClientUtilTest::addTests() {
                 addTest(&ClientUtilTest::testConditionWaitTimeout, "testConditionWaitTimeout");
                 addTest(&ClientUtilTest::testConditionWakeUpTime, "testConditionWakeUpTime");
-                addTest(&ClientUtilTest::testConditionAcquireLock_afterWakeUp, "testConditionAcquireLock_afterWakeUp");
-                addTest(&ClientUtilTest::testConditionAcquireLock_afterTimeout, "testConditionAcquireLock_afterTimeout");
                 addTest(&ClientUtilTest::testFutureWaitTimeout, "testFutureWaitTimeout");
                 addTest(&ClientUtilTest::testFutureSetValue, "testFutureSetValue");
                 addTest(&ClientUtilTest::testFutureSetException, "testFutureSetException");
@@ -57,8 +55,8 @@ namespace hazelcast {
                     util::LockGuard lockGuard(mutex);
                     time_t beg = time(NULL);
                     time_t end = 0;
-                    bool wokeUp = conditionVariable.waitFor(mutex, waitSeconds);
-                    if (!wokeUp) {
+                    bool wokenUpByInterruption = conditionVariable.waitFor(mutex, waitSeconds);
+                    if (!wokenUpByInterruption) {
                         end = time(NULL);
                     }
                     assertEqualWithEpsilon((int)(end - beg), waitSeconds , 1);
@@ -86,43 +84,14 @@ namespace hazelcast {
                     util::LockGuard lockGuard(mutex);
                     time_t beg = time(NULL);
                     time_t end = 0;
-                    bool wokeUp = conditionVariable.waitFor(mutex, waitSeconds);
-                    if (wokeUp) {
+                    bool wokenUpByInterruption = conditionVariable.waitFor(mutex, waitSeconds);
+                    if (wokenUpByInterruption) {
                         end = time(NULL);
                     }
                     assertEqualWithEpsilon((int)(end - beg), wakeUpTime , 1);
                 }
 
             }
-
-            void ClientUtilTest::testConditionAcquireLock_afterWakeUp() {
-                util::Mutex mutex;
-                util::ConditionVariable conditionVariable;
-                int wakeUpTime = 3;
-                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
-                int waitSeconds = 30;
-                {
-                    util::LockGuard lockGuard(mutex);
-                    conditionVariable.waitFor(mutex, waitSeconds);
-                    util::Mutex::status status = mutex.tryLock();
-                    assertEqual(util::Mutex::alreadyLocked, status);
-                }
-
-            }
-
-
-            void ClientUtilTest::testConditionAcquireLock_afterTimeout() {
-                util::Mutex mutex;
-                util::ConditionVariable conditionVariable;
-                int waitSeconds = 5;
-                {
-                    util::LockGuard lockGuard(mutex);
-                    conditionVariable.waitFor(mutex, waitSeconds);
-                    util::Mutex::status status = mutex.tryLock();
-                    assertEqual(util::Mutex::alreadyLocked, status);
-                }
-            }
-
 
             void ClientUtilTest::testFutureWaitTimeout() {
                 util::Future<int> future;
