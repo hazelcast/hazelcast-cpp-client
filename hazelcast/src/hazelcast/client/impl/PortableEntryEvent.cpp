@@ -35,6 +35,10 @@ namespace hazelcast {
                 return name;
             }
 
+            int PortableEntryEvent::getNumberOfAffectedEntries() const {
+                return numberOfAffectedEntries;
+            }
+
             int PortableEntryEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             }
@@ -48,7 +52,7 @@ namespace hazelcast {
                 eventType = reader.readInt("e");
                 uuid = reader.readUTF("u");
                 numberOfAffectedEntries = reader.readInt("n");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                serialization::ObjectDataInput& in = reader.getRawDataInput();
                 util::readNullableData(in, &key);
                 util::readNullableData(in, &value);
                 util::readNullableData(in, &oldValue);

@@ -53,18 +53,18 @@ namespace hazelcast {
                 q->clear();
             }
 
-            class ItemListener {
+            class QueueTestItemListener : public ItemListener<std::string>  {
             public:
-                ItemListener(util::CountDownLatch &latch)
+                QueueTestItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
 
-                void itemAdded(ItemEvent<std::string> itemEvent) {
+                void itemAdded(const ItemEvent<std::string>& itemEvent) {
                     latch.countDown();
                 }
 
-                void itemRemoved(ItemEvent<std::string> item) {
+                void itemRemoved(const ItemEvent<std::string>& item) {
                 }
 
             private:
@@ -76,7 +76,7 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(5);
 
-                ItemListener listener(latch);
+                QueueTestItemListener listener(latch);
                 std::string id = q->addItemListener(listener, true);
 
                 util::sleep(1);

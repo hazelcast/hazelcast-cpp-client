@@ -239,12 +239,11 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-            template < typename L>
-            std::string addEntryListener(L &listener, bool includeValue) {
+            std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
                 multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), includeValue);
                 spi::ClusterService &clusterService = getContext().getClusterService();
                 serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
-                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), clusterService, ss, listener, includeValue);
+                impl::EntryEventHandler<K, V> *entryEventHandler = new impl::EntryEventHandler<K, V>(getName(), clusterService, ss, listener, includeValue);
                 return listen(request, entryEventHandler);
             };
 
@@ -264,12 +263,11 @@ namespace hazelcast {
              *                     contain the value.
              * @return returns registration id.
              */
-            template < typename L>
-            std::string addEntryListener(L &listener, const K &key, bool includeValue) {
+            std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
                 serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 multimap::AddEntryListenerRequest *request = new multimap::AddEntryListenerRequest(getName(), keyData, includeValue);
-                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                impl::EntryEventHandler<K, V> *entryEventHandler = new impl::EntryEventHandler<K, V>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
                 return listen(request, partitionId, entryEventHandler);
             };
 

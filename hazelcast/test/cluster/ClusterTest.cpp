@@ -7,9 +7,10 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
-#include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -176,24 +177,16 @@ namespace hazelcast {
                 instance.shutdown();
             }
 
-            class DummyListenerClusterTest {
+            class DummyListenerClusterTest : public EntryAdapter<std::string, std::string>{
             public:
                 DummyListenerClusterTest(util::CountDownLatch &addLatch)
                         : addLatch(addLatch) {
                 }
 
-                void entryAdded(EntryEvent<std::string, std::string> &event) {
+                void entryAdded(const EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
                 }
 
-                void entryRemoved(EntryEvent<std::string, std::string> &event) {
-                }
-
-                void entryUpdated(EntryEvent<std::string, std::string> &event) {
-                }
-
-                void entryEvicted(EntryEvent<std::string, std::string> &event) {
-                }
 
             private:
                 util::CountDownLatch &addLatch;
