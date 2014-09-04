@@ -701,9 +701,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> key = toObject<K>(returnedEntries[i].first);
                     boost::shared_ptr<V> value = toObject<V>(returnedEntries[i].second);
-                    K& keyRef = *key;
-                    V& valueRef = *value;
-                    entrySet[i] = std::make_pair<K, V>(keyRef, valueRef);
+                    entrySet[i] = std::make_pair(*key, *value);
                 }
                 return entrySet;
             };
@@ -753,9 +751,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; ++i) {
                     boost::shared_ptr<K> key = toObject<K>(dataResult[i].key);
                     boost::shared_ptr<V> value = toObject<V>(dataResult[i].value);
-                    K& keyRef = *key;
-                    V& valueRef = *value;
-                    keySet[i] = std::make_pair<K, V>(keyRef, valueRef);
+                    keySet[i] = std::make_pair(*key, *value);
                 }
                 return keySet;
             };
