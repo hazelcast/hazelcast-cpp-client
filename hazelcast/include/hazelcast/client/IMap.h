@@ -617,7 +617,7 @@ namespace hazelcast {
             */
             void evictAll() {
                 map::EvictAllRequest *request = new map::EvictAllRequest(getName());
-                invoke<bool>(request);
+                invoke<int>(request);
             };
 
 

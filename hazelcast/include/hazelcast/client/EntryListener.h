@@ -10,7 +10,7 @@
 
 namespace hazelcast {
     namespace client {
-        class IMapEvent;
+        class MapEvent;
 
         /**
         * Map Entry listener to get notified when a map entry
@@ -66,12 +66,12 @@ namespace hazelcast {
             *
             * @param event map event
             */
-            virtual void mapEvicted(const IMapEvent& event) = 0;
+            virtual void mapEvicted(const MapEvent& event) = 0;
 
             /**
             * Invoked when all entries are removed by {@link IMap#clear()}.}
             */
-            virtual void mapCleared(const IMapEvent& event) = 0;
+            virtual void mapCleared(const MapEvent& event) = 0;
 
         };
     }

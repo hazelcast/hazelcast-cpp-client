@@ -16,12 +16,12 @@ namespace hazelcast {
         /**
         * Map events common contract.
         */
-        class HAZELCAST_API IMapEvent {
+        class HAZELCAST_API MapEvent {
         public:
             /**
             * Constructor
             */
-            IMapEvent(Member& member, EntryEventType eventType, const std::string& name, int numberOfEntriesAffected);
+            MapEvent(Member& member, EntryEventType eventType, const std::string& name, int numberOfEntriesAffected);
 
             /**
             * Returns the member fired this event.

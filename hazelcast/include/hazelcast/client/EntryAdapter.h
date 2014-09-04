@@ -9,11 +9,11 @@
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryListener.h"
-#include "hazelcast/client/IMapEvent.h"
+#include "hazelcast/client/MapEvent.h"
 
 namespace hazelcast {
     namespace client {
-        class IMapEvent;
+        class MapEvent;
 
         /**
         * Adapter for EntryListener.
@@ -45,11 +45,11 @@ namespace hazelcast {
 
             }
 
-            virtual void mapEvicted(const IMapEvent& event) {
+            virtual void mapEvicted(const MapEvent& event) {
 
             }
 
-            virtual void mapCleared(const IMapEvent& event) {
+            virtual void mapCleared(const MapEvent& event) {
 
             }
         };

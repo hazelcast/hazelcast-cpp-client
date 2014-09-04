@@ -32,22 +32,22 @@ void testSpeed() {
 
 void unitTests() {
     try {
-        ClientUtilTest utilTest;
-        utilTest.executeTests();
-
-        ClientSerializationTest serializationTest;
-        serializationTest.executeTests();
+//        ClientUtilTest utilTest;
+//        utilTest.executeTests();
+//
+//        ClientSerializationTest serializationTest;
+//        serializationTest.executeTests();
 
         HazelcastServerFactory factory;
 
-        IssueTest issueTest(factory);
-        issueTest.executeTests();
-
-        MemberAttributeTest memberAttributeTest(factory);
-        memberAttributeTest.executeTests();
-
-        ClusterTest clusterTest(factory);
-        clusterTest.executeTests();
+//        IssueTest issueTest(factory);
+//        issueTest.executeTests();
+//
+//        MemberAttributeTest memberAttributeTest(factory);
+//        memberAttributeTest.executeTests();
+//
+//        ClusterTest clusterTest(factory);
+//        clusterTest.executeTests();
 
 
         ClientMapTest mapTest(factory);

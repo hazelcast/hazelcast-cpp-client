@@ -10,7 +10,7 @@
 
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/IMapEvent.h"
+#include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/ClusterService.h"
@@ -30,26 +30,28 @@ namespace hazelcast {
                 , listener(listener)
                 , includeValue(includeValue) {
 
-                };
+                }
+
 
                 void handle(const client::serialization::pimpl::Data& data) {
                     boost::shared_ptr<PortableEntryEvent> event = serializationService.toObject<PortableEntryEvent>(data);
-                    handle(*event);
+                    EntryEventHandler::handleEvent(*event);
                 }
 
-                void handle(const PortableEntryEvent& event) {
+                inline void handleEvent(const PortableEntryEvent& event) {
                     EntryEventType type = event.getEventType();
                     if (type == EntryEventType::EVICT_ALL || type == EntryEventType::CLEAR_ALL) {
-                        fireMapEvent(event);
+                        fireMapWideEvent(event);
                         return;
                     }
                     fireEntryEvent(event);
                 }
 
-                void fireMapEvent(const PortableEntryEvent& event) {
+            private:
+                void fireMapWideEvent(const PortableEntryEvent& event) {
                     Member member = clusterService.getMember(event.getUuid());
                     EntryEventType type = event.getEventType();
-                    IMapEvent mapEvent(member, type, instanceName, event.getNumberOfAffectedEntries());
+                    MapEvent mapEvent(member, type, instanceName, event.getNumberOfAffectedEntries());
                     if (type == EntryEventType::CLEAR_ALL) {
                         listener.mapCleared(mapEvent);
                     } else if (type == EntryEventType::EVICT_ALL) {
@@ -79,7 +81,6 @@ namespace hazelcast {
                     }
                 }
 
-            private:
                 const std::string& instanceName;
                 spi::ClusterService& clusterService;
                 serialization::pimpl::SerializationService& serializationService;

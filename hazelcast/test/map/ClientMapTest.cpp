@@ -29,32 +29,32 @@ namespace hazelcast {
             }
 
             void ClientMapTest::addTests() {
-                addTest(&ClientMapTest::testContains, "testContains");
-                addTest(&ClientMapTest::testGet, "testGet");
-                addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
-                addTest(&ClientMapTest::testRemoveIfSame, "testRemoveIfSame");
-                addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
-                addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
-                addTest(&ClientMapTest::testPutTtl, "testPutTtl");
-                addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
-                addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
-                addTest(&ClientMapTest::testSet, "testSet");
-                addTest(&ClientMapTest::testLock, "testLock");
-                addTest(&ClientMapTest::testLockTtl, "testLockTtl");
-                addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
-                addTest(&ClientMapTest::testTryLock, "testTryLock");
-                addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
-                addTest(&ClientMapTest::testValues, "testValues");
-                addTest(&ClientMapTest::testReplace, "testReplace");
-                addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
-                addTest(&ClientMapTest::testListener, "testListener");
-                addTest(&ClientMapTest::testEvictAllEvent, "testEvictAllEvent");
+//                addTest(&ClientMapTest::testContains, "testContains");
+//                addTest(&ClientMapTest::testGet, "testGet");
+//                addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
+//                addTest(&ClientMapTest::testRemoveIfSame, "testRemoveIfSame");
+//                addTest(&ClientMapTest::testGetAllPutAll, "testGetAllPutAll");
+//                addTest(&ClientMapTest::testTryPutRemove, "testTryPutRemove");
+//                addTest(&ClientMapTest::testPutTtl, "testPutTtl");
+//                addTest(&ClientMapTest::testPutIfAbsent, "testPutIfAbsent");
+//                addTest(&ClientMapTest::testPutIfAbsentTtl, "testPutIfAbsentTtl");
+//                addTest(&ClientMapTest::testSet, "testSet");
+//                addTest(&ClientMapTest::testLock, "testLock");
+//                addTest(&ClientMapTest::testLockTtl, "testLockTtl");
+//                addTest(&ClientMapTest::testLockTtl2, "testLockTtl2");
+//                addTest(&ClientMapTest::testTryLock, "testTryLock");
+//                addTest(&ClientMapTest::testForceUnlock, "testForceUnlock");
+//                addTest(&ClientMapTest::testValues, "testValues");
+//                addTest(&ClientMapTest::testReplace, "testReplace");
+//                addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
+//                addTest(&ClientMapTest::testListener, "testListener");
                 addTest(&ClientMapTest::testClearEvent, "testClearEvent");
-                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
-                addTest(&ClientMapTest::testIssue537, "testIssue537");
-                addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
-                addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
-                addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
+                addTest(&ClientMapTest::testEvictAllEvent, "testEvictAllEvent");
+//                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
+//                addTest(&ClientMapTest::testIssue537, "testIssue537");
+//                addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
+//                addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
+//                addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
             }
 
             void ClientMapTest::beforeClass() {
@@ -149,7 +149,7 @@ namespace hazelcast {
 
                 }
 
-                void mapCleared(const IMapEvent& event) {
+                void mapCleared(const MapEvent& event) {
                     latch.countDown();
                 }
 
@@ -163,7 +163,7 @@ namespace hazelcast {
 
                 }
 
-                void mapEvicted(const IMapEvent& event) {
+                void mapEvicted(const MapEvent& event) {
                     latch.countDown();
                 }
 
@@ -560,6 +560,7 @@ namespace hazelcast {
                 util::CountDownLatch latch(1);
                 ClearListener clearListener(latch);
                 imap->addEntryListener(clearListener, false);
+                imap->put("key1", "value1");
                 imap->clear();
                 assertTrue(latch.await(120));
             }
@@ -568,6 +569,7 @@ namespace hazelcast {
                 util::CountDownLatch latch(1);
                 EvictListener evictListener(latch);
                 imap->addEntryListener(evictListener, false);
+                imap->put("key1", "value1");
                 imap->evictAll();
                 assertTrue(latch.await(120));
             }
