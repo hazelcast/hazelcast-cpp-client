@@ -5,7 +5,6 @@
 
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "TestHelperFunctions.h"
@@ -16,12 +15,12 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientMapTest::ClientMapTest(HazelcastServerFactory& hazelcastInstanceFactory)
+            ClientMapTest::ClientMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
             : iTestFixture<ClientMapTest>("ClientMapTest")
             , instance(hazelcastInstanceFactory)
             , instance2(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
-            , imap(new IMap<string, string>(client->getMap<string, string>("clientMapTest"))) {
+            , imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
             }
 
 
@@ -48,10 +47,9 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testReplace, "testReplace");
                 addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
                 addTest(&ClientMapTest::testListener, "testListener");
-                addTest(&ClientMapTest::testEvictAllEvent, "testEvictAllEvent");
-                addTest(&ClientMapTest::testClearEvent, "testClearEvent");
                 addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
                 addTest(&ClientMapTest::testIssue537, "testIssue537");
+//                addTest(&ClientMapTest::testMultipleThreadPut, "testMultipleThreadPut"); //MTODO
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
                 addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
@@ -84,51 +82,57 @@ namespace hazelcast {
                 }
             }
 
-            class SampleEntryListener : public EntryAdapter<std::string, std::string> {
+            class SampleEntryListener {
             public:
-                SampleEntryListener(util::CountDownLatch& addLatch, util::CountDownLatch& removeLatch, util::CountDownLatch& updateLatch, util::CountDownLatch& evictLatch)
-                : addLatch(addLatch)
+                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch, util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
+                :addLatch(addLatch)
                 , removeLatch(removeLatch)
                 , updateLatch(updateLatch)
                 , evictLatch(evictLatch) {
                 }
 
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+                void entryAdded(EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
                 }
 
-                void entryRemoved(const EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(EntryEvent<std::string, std::string> &event) {
                     removeLatch.countDown();
                 }
 
-                void entryUpdated(const EntryEvent<std::string, std::string>& event) {
+                void entryUpdated(EntryEvent<std::string, std::string> &event) {
                     updateLatch.countDown();
                 }
 
-                void entryEvicted(const EntryEvent<std::string, std::string>& event) {
+                void entryEvicted(EntryEvent<std::string, std::string> &event) {
                     evictLatch.countDown();
                 }
 
             private:
-                util::CountDownLatch& addLatch;
-                util::CountDownLatch& removeLatch;
-                util::CountDownLatch& updateLatch;
-                util::CountDownLatch& evictLatch;
+                util::CountDownLatch &addLatch;
+                util::CountDownLatch &removeLatch;
+                util::CountDownLatch &updateLatch;
+                util::CountDownLatch &evictLatch;
             };
 
-            class MyListener : public EntryAdapter<std::string, std::string> {
+            class MyListener {
             public:
-                MyListener(util::CountDownLatch& latch, util::CountDownLatch& nullLatch)
-                : latch(latch), nullLatch(nullLatch) {
+                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
+                :latch(latch), nullLatch(nullLatch) {
                 }
 
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+                void entryAdded(EntryEvent<string, string> &event) {
                     latch.countDown();
                 }
 
-                void entryEvicted(const EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(EntryEvent<string, string> &event) {
+                }
 
-                    const string& oldValue = event.getOldValue();
+                void entryUpdated(EntryEvent<string, string> &event) {
+                }
+
+                void entryEvicted(EntryEvent<string, string> &event) {
+
+                    const string &oldValue = event.getOldValue();
 
                     if (oldValue.compare("")) {
                         nullLatch.countDown();
@@ -138,38 +142,10 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& latch;
-                util::CountDownLatch& nullLatch;
+                util::CountDownLatch &latch;
+                util::CountDownLatch &nullLatch;
             };
 
-
-            class ClearListener : public EntryAdapter<std::string, std::string> {
-            public:
-                ClearListener(util::CountDownLatch& latch) : latch(latch) {
-
-                }
-
-                void mapCleared(const IMapEvent& event) {
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch& latch;
-            };
-
-            class EvictListener : public EntryAdapter<std::string, std::string> {
-            public:
-                EvictListener(util::CountDownLatch& latch) : latch(latch) {
-
-                }
-
-                void mapEvicted(const IMapEvent& event) {
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch& latch;
-            };
 
             void ClientMapTest::testIssue537() {
                 util::CountDownLatch latch(2);
@@ -187,6 +163,38 @@ namespace hazelcast {
                 imap->put("key2", "value2");
                 assertEqual(1, imap->size());
             }
+
+//            void putThread(util::ThreadArgs& args) { //MTODO
+//                    int start = args.arg0;
+//                IMap<int, int>* map = args.arg1;
+//                util::CountDownLatch *latch = args.arg2;
+//                for (int i = 0; i < 100; i++) {
+//                    map->put(start * 100 + i, start * 100 + i);
+//                }
+//                latch->countDown();
+//            }
+//
+//            void ClientMapTest::testMultipleThreadPut() {
+//                int THREAD_COUNT = 20;
+//                util::CountDownLatch latch(THREAD_COUNT);
+//                IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
+//                for (int i = 0; i < THREAD_COUNT; i++) {
+//                    util::Thread t(putThread, &i, &iMap, &latch);
+//                    t.detach();
+//                }
+//
+//                assertTrue(latch.await(10), "put not finished");
+//
+//                for (int i = 0; i < 100 * THREAD_COUNT; i++) {
+//                    boost::shared_ptr<int> actual = iMap.get(i);
+//                    assertNotNull(actual.get());
+//                    assertEqual(i, *(actual.get()));
+//                }
+//
+//                iMap.clear();
+//                iMap.destroy();
+//
+//            }
 
             void ClientMapTest::testContains() {
                 fillMap();
@@ -268,18 +276,18 @@ namespace hazelcast {
 
             }
 
-            void tryPutThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void tryPutThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 bool result = imap->tryPut("key1", "value3", 1 * 1000);
                 if (!result) {
                     latch->countDown();
                 }
             }
 
-            void tryRemoveThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void tryRemoveThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 bool result = imap->tryRemove("key2", 1 * 1000);
                 if (!result) {
                     latch->countDown();
@@ -347,9 +355,9 @@ namespace hazelcast {
                 ASSERT_EVENTUALLY(assertNull, imap->get("key1").get());
             }
 
-            void testLockThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->tryPut("key1", "value2", 1);
                 latch->countDown();
             }
@@ -366,9 +374,9 @@ namespace hazelcast {
 
             }
 
-            void testLockTTLThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockTTLThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->tryPut("key1", "value2", 5 * 1000);
                 latch->countDown();
             }
@@ -386,9 +394,9 @@ namespace hazelcast {
 
             }
 
-            void testLockTTL2Thread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockTTL2Thread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (!imap->tryLock("key1")) {
                     latch->countDown();
                 }
@@ -406,17 +414,17 @@ namespace hazelcast {
 
             }
 
-            void testMapTryLockThread1(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapTryLockThread1(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (!imap->tryLock("key1", 2)) {
                     latch->countDown();
                 }
             }
 
-            void testMapTryLockThread2(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapTryLockThread2(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (imap->tryLock("key1", 20 * 1000)) {
                     latch->countDown();
                 }
@@ -443,9 +451,9 @@ namespace hazelcast {
 
             }
 
-            void testMapForceUnlockThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapForceUnlockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->forceUnlock("key1");
                 latch->countDown();
             }
@@ -489,21 +497,30 @@ namespace hazelcast {
                 assertEqual("value3", *(imap->get("key1")));
             }
 
-            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
+            class SampleEntryListenerForPortableKey {
             public:
-                SampleEntryListenerForPortableKey(util::CountDownLatch& latch, util::AtomicInt& atomicInteger)
-                : latch(latch), atomicInteger(atomicInteger) {
+                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
+                :latch(latch), atomicInteger(atomicInteger) {
 
                 }
 
-                void entryAdded(const EntryEvent<Employee, int>& event) {
+                void entryAdded(EntryEvent<Employee, int> &event) {
                     ++atomicInteger;
                     latch.countDown();
                 }
 
+                void entryRemoved(EntryEvent<Employee, int> &event) {
+                }
+
+                void entryUpdated(EntryEvent<Employee, int> &event) {
+                }
+
+                void entryEvicted(EntryEvent<Employee, int> &event) {
+                }
+
             private:
-                util::CountDownLatch& latch;
-                util::AtomicInt& atomicInteger;
+                util::CountDownLatch &latch;
+                util::AtomicInt &atomicInteger;
             };
 
 
@@ -518,7 +535,7 @@ namespace hazelcast {
                 tradeMap.put(key2, 1);
                 tradeMap.put(key, 3);
                 assertTrue(countDownLatch.await(5));
-                assertEqual(1, (int)atomicInteger);
+                assertEqual(1, (int) atomicInteger);
 
                 assertTrue(tradeMap.removeEntryListener(id));
             }
@@ -554,24 +571,8 @@ namespace hazelcast {
 
                 assertTrue(imap->removeEntryListener(listener1ID));
                 assertTrue(imap->removeEntryListener(listener2ID));
-            }
 
-            void ClientMapTest::testClearEvent() {
-                util::CountDownLatch latch(1);
-                ClearListener clearListener(latch);
-                imap->addEntryListener(clearListener, false);
-                imap->clear();
-                assertTrue(latch.await(120));
             }
-
-            void ClientMapTest::testEvictAllEvent() {
-                util::CountDownLatch latch(1);
-                EvictListener evictListener(latch);
-                imap->addEntryListener(evictListener, false);
-                imap->evictAll();
-                assertTrue(latch.await(120));
-            }
-
 
             void ClientMapTest::testBasicPredicate() {
 
@@ -643,7 +644,6 @@ namespace hazelcast {
                 assertTrue(imap->evict("ali"));
                 assertNull(imap->get("ali").get());
             }
-
         }
     }
 }

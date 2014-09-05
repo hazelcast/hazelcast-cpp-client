@@ -28,7 +28,6 @@
 #include "hazelcast/client/map/UnlockRequest.h"
 #include "hazelcast/client/map/GetEntryViewRequest.h"
 #include "hazelcast/client/map/EvictRequest.h"
-#include "hazelcast/client/map/EvictAllRequest.h"
 #include "hazelcast/client/map/KeySetRequest.h"
 #include "hazelcast/client/map/GetAllRequest.h"
 #include "hazelcast/client/map/EntrySetRequest.h"
@@ -512,7 +511,31 @@ namespace hazelcast {
             }
 
             /**
-             * Adds an entry listener for this map.
+             * Adds an entry listener for this map. Listener will get notified
+             * for all map add/remove/update/evict events.
+             *
+             * Listener class should be like in the following example.
+             *
+             *      class MyListener {
+             *      public:
+             *          //....
+             *
+             *         void entryAdded(EntryEvent<string, string> &event) {
+             *              //....
+             *          };
+             *
+             *          void entryRemoved(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *
+             *          void entryUpdated(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *
+             *          void entryEvicted(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *      }
              *
              * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
              * otherwise it will slow down the system.
@@ -525,9 +548,10 @@ namespace hazelcast {
              *
              * @return registrationId of added listener that can be used to remove the entry listener.
              */
-            std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
+            template < typename L>
+            std::string addEntryListener(L &listener, bool includeValue) {
                 map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue);
-                impl::EntryEventHandler<K, V> *entryEventHandler = new impl::EntryEventHandler<K, V>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
                 return listen(request, entryEventHandler);
             };
 
@@ -548,6 +572,33 @@ namespace hazelcast {
 
             /**
              * Adds the specified entry listener for the specified key.
+             * The listener will get notified for all
+             * add/remove/update/evict events of the specified key only.
+             *
+             *
+             * Listener class should be like in the following example.
+             *
+             *      class MyListener {
+             *      public:
+             *          //....
+             *
+             *         void entryAdded(EntryEvent<string, string> &event) {
+             *              //....
+             *          };
+             *
+             *          void entryRemoved(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *
+             *          void entryUpdated(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *
+             *          void entryEvicted(EntryEvent<string, string> &event) {
+             *              //....
+             *          }
+             *      }
+             *
              *
              * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
              * otherwise it will slow down the system.
@@ -559,11 +610,12 @@ namespace hazelcast {
              * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
              *                     contain the value.
              */
-            std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
+            template < typename L>
+            std::string addEntryListener(L &listener, const K &key, bool includeValue) {
                 serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
                 map::AddEntryListenerRequest *request = new map::AddEntryListenerRequest(getName(), includeValue, keyData);
-                impl::EntryEventHandler<K, V> *entryEventHandler = new impl::EntryEventHandler<K, V>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                impl::EntryEventHandler<K, V, L> *entryEventHandler = new impl::EntryEventHandler<K, V, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
                 return listen(request, partitionId, entryEventHandler);
             };
 
@@ -602,24 +654,6 @@ namespace hazelcast {
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
             };
-
-            /**
-            * Evicts all keys from this map except locked ones.
-            * <p/>
-            * If a <tt>MapStore</tt> is defined for this map, deleteAll is <strong>not</strong> called by this method.
-            * If you do want to deleteAll to be called use the #clear() method.
-            * <p/>
-            * The EVICT_ALL event is fired for any registered listeners.
-            * See EntryListener#mapEvicted(MapEvent)}.
-            *
-            * @see #clear()
-            * @since 3.3
-            */
-            void evictAll() {
-                map::EvictAllRequest *request = new map::EvictAllRequest(getName());
-                invoke<bool>(request);
-            };
-
 
             /**
              * Returns a vector clone of the keys contained in this map.

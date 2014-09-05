@@ -15,11 +15,11 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API PortableEntryEvent : public impl::PortableResponse {
             public:
-                const serialization::pimpl::Data& getKey() const;
+                const serialization::pimpl::Data &getKey() const;
 
-                const serialization::pimpl::Data& getOldValue() const;
+                const serialization::pimpl::Data &getOldValue() const;
 
-                const serialization::pimpl::Data& getValue() const;
+                const serialization::pimpl::Data &getValue() const;
 
                 std::string getUuid() const;
 
@@ -27,13 +27,11 @@ namespace hazelcast {
 
                 std::string getName() const;
 
-                int getNumberOfAffectedEntries() const;
-
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void readPortable(serialization::PortableReader& reader);
+                void readPortable(serialization::PortableReader &reader);
 
             private:
                 serialization::pimpl::Data key;

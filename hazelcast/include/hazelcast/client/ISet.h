@@ -34,6 +34,24 @@ namespace hazelcast {
 
         public:
             /**
+             * Listener should implement itemAdded and itemRemoved as follows
+             *
+             *      class MyListItemListener {
+             *      public:
+             *      //....
+             *
+             *      void itemAdded(ItemEvent<std::string> itemEvent) {
+             *          //...
+             *      }
+             *
+             *      void itemRemoved(ItemEvent<std::string> item) {
+             *              //...
+             *      }
+             *
+             *      };
+             *
+             *  Note that E is std::string in the example
+             *
              * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
              * otherwise it will slow down the system.
              *
@@ -41,12 +59,13 @@ namespace hazelcast {
              *
              *  @param listener to be added
              *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
-             *  @returns registrationId that can be used to remove item listener
+             *  @returns registariondId that can be used to remove item listener
              */
-            std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
+            template < typename L>
+            std::string addItemListener(L &listener, bool includeValue) {
                 collection::CollectionAddListenerRequest *request = new collection::CollectionAddListenerRequest(getName(), getServiceName(), includeValue);
-                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return listen(request, itemEventHandler);
+                impl::ItemEventHandler<E, L> *entryEventHandler = new impl::ItemEventHandler<E, L>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
+                return listen(request, entryEventHandler);
             };
 
             /**

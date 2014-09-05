@@ -121,18 +121,18 @@ namespace hazelcast {
 
             }
 
-            class MySetItemListener : public ItemListener<std::string> {
+            class MySetItemListener {
             public:
                 MySetItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
 
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
+                void itemAdded(ItemEvent<std::string> itemEvent) {
                     latch.countDown();
                 }
 
-                void itemRemoved(const ItemEvent<std::string>& item) {
+                void itemRemoved(ItemEvent<std::string> item) {
                 }
 
             private:

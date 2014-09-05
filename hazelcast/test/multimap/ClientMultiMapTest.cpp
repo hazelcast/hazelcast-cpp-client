@@ -5,7 +5,6 @@
 
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 
 namespace hazelcast {
@@ -119,18 +118,24 @@ namespace hazelcast {
                 assertTrue(mm->containsEntry("key2", "value5"));
             }
 
-            class MyMultiMapListener : public EntryAdapter<std::string, std::string>{
+            class MyMultiMapListener {
             public:
                 MyMultiMapListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
                 : addedLatch(addedLatch), removedLatch(removedLatch) {
                 }
 
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+                void entryAdded(EntryEvent<std::string, std::string>& event) {
                     addedLatch.countDown();
                 }
 
-                void entryRemoved(const EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(EntryEvent<std::string, std::string>& event) {
                     removedLatch.countDown();
+                }
+
+                void entryUpdated(EntryEvent<std::string, std::string>& event) {
+                }
+
+                void entryEvicted(EntryEvent<std::string, std::string>& event) {
                 }
 
             private:

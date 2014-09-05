@@ -50,12 +50,13 @@ namespace hazelcast {
              *                     to the item listener, <tt>false</tt> otherwise.
              * @return returns registration id.
              */
-            std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
+            template < typename L>
+            std::string addItemListener(L &listener, bool includeValue) {
                 queue::AddListenerRequest *request = new queue::AddListenerRequest(getName(), includeValue);
                 spi::ClusterService &cs = getContext().getClusterService();
                 serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
-                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), cs, ss, listener, includeValue);
-                return listen(request, itemEventHandler);
+                impl::ItemEventHandler<E, L> *entryEventHandler = new impl::ItemEventHandler<E, L>(getName(), cs, ss, listener, includeValue);
+                return listen(request, entryEventHandler);
             };
 
             /**
