@@ -14,7 +14,7 @@ namespace hazelcast {
             /**
             * Raised when an operation is timed out
             */
-            class TimeoutException : public IException {
+            class HAZELCAST_API TimeoutException : public IException {
 
             public:
                 /**

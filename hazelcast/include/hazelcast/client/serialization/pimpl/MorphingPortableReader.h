@@ -26,7 +26,7 @@ namespace hazelcast {
                 class SerializerHolder;
 
 
-                class MorphingPortableReader {
+                class HAZELCAST_API MorphingPortableReader {
                 public:
 
                     MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);

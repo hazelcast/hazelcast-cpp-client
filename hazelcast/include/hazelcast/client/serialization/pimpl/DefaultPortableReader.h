@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class DefaultPortableReader {
+                class HAZELCAST_API DefaultPortableReader {
                 public:
 
                     DefaultPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
