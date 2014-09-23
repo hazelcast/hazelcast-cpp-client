@@ -15,6 +15,8 @@ include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
+FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
+
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
@@ -31,7 +33,7 @@ message(STATUS "Generating ${HZ_LIB_TYPE} Library")
 
 SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
 
-add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES})
+add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_HEADERS})
 
 IF(${HZ_CODE_COVERAGE} MATCHES "ON")
 	message(STATUS "Code coverage is on")

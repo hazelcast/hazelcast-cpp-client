@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (HazelcastClientTest)
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
+FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test)
 
@@ -9,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/ha
 
 SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT}.exe)
 
-add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES})
+add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS} )
 
 IF(${HZ_CODE_COVERAGE} MATCHES "ON")
 	message(STATUS "Code coverage is on")
