@@ -10,7 +10,7 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             AddMembershipListenerRequest::AddMembershipListenerRequest() {
-            };
+            }
 
             int AddMembershipListenerRequest::getFactoryId() const {
                 return protocol::ProtocolConstants::CLIENT_PORTABLE_FACTORY;

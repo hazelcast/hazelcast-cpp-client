@@ -46,7 +46,6 @@ namespace hazelcast {
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
-                util::Mutex lifecycleLock;
                 util::AtomicBoolean active;
 
             };

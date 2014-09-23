@@ -16,7 +16,7 @@ namespace hazelcast {
             , reAuth(true)
             , firstConnection(true) {
 
-            };
+            }
 
             void AuthenticationRequest::setPrincipal(Principal *principal) {
                 this->principal = principal;
@@ -37,7 +37,7 @@ namespace hazelcast {
 
             int AuthenticationRequest::getClassId() const {
                 return protocol::ProtocolConstants::AUTHENTICATION_REQUEST_ID;
-            };
+            }
 
             void AuthenticationRequest::write(serialization::PortableWriter &writer) const {
                 writer.writePortable("credentials", credentials);
@@ -48,7 +48,7 @@ namespace hazelcast {
                 }
                 writer.writeBoolean("reAuth", reAuth);
                 writer.writeBoolean("firstConnection", firstConnection);
-            };
+            }
         }
     }
 }

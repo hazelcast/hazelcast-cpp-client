@@ -13,11 +13,13 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class DataAdapter;
+                class Packet;
+
+                class PortableContext;
             }
         }
         namespace spi {
-            class ClusterService;
+            class ClientContext;
         }
         namespace connection {
             class Connection;
@@ -28,7 +30,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ReadHandler : public IOHandler {
             public:
-                ReadHandler(Connection &connection, InSelector &iListener, int bufferSize);
+                ReadHandler(Connection &connection, InSelector &iListener, int bufferSize, spi::ClientContext& clientContext);
 
                 void handle();
 
@@ -36,7 +38,10 @@ namespace hazelcast {
 
             private:
                 util::ByteBuffer buffer;
-                serialization::pimpl::DataAdapter *lastData;
+                serialization::pimpl::Packet *lastData;
+                spi::ClientContext& clientContext;
+
+                serialization::pimpl::PortableContext& getPortableContext();
 
 
             };

@@ -18,15 +18,15 @@ namespace hazelcast {
             , threadId(threadId)
             , ttl(ttl)
             , timeout(timeout) {
-            };
+            }
 
             int LockRequest::getClassId() const {
                 return LockPortableHook::LOCK;
-            };
+            }
 
             int LockRequest::getFactoryId() const {
                 return LockPortableHook::FACTORY_ID;
-            };
+            }
 
 
             void LockRequest::write(serialization::PortableWriter &writer) const {
@@ -35,7 +35,7 @@ namespace hazelcast {
                 writer.writeLong("timeout", timeout);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
 
         }
     }

@@ -8,13 +8,13 @@
 #define HAZELCAST_AddEntryListenerRequest
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API AddEntryListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddEntryListenerRequest : public impl::ClientRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, const serialization::pimpl::Data &key, bool includeValue);
 

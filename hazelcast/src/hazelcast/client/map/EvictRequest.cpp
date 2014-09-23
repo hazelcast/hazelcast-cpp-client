@@ -16,22 +16,22 @@ namespace hazelcast {
             , key(key)
             , threadId(threadId) {
 
-            };
+            }
 
             int EvictRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int EvictRequest::getClassId() const {
                 return PortableHook::EVICT;
-            };
+            }
 
             void EvictRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
 
         }
     }

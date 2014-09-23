@@ -11,10 +11,10 @@
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/OwnerConnectionFuture.h"
-#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/client/connection/HeartBeater.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Future.h"
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
 
@@ -49,9 +49,9 @@ namespace hazelcast {
             /**
             * Responsible for managing {@link com.hazelcast.client.connection.nio.ClientConnection} objects.
             */
-            class HAZELCAST_API ConnectionManager {
+            class HAZELCAST_API ConnectionManager{
             public:
-                ConnectionManager(spi::ClientContext& clientContext, bool smartRouting);
+                ConnectionManager(spi::ClientContext& clientContext, bool smartRouting);              
 
                 /**
                 * Start clientConnectionManager
@@ -106,21 +106,6 @@ namespace hazelcast {
                 void shutdown();
 
                 /**
-                * Next unique call id for request
-                *
-                * @return new unique callId
-                */
-                int getNextCallId();
-
-                /**
-                * Removes event handler corresponding to callId from responsible ClientConnection
-                *
-                * @param callId of event handler registration request
-                * @return true if found and removed, false otherwise
-                */
-                void removeEventHandler(int callId);
-
-                /**
                 * Called when an owner connection is closed
                 */
                 void onCloseOwnerConnection();
@@ -131,7 +116,25 @@ namespace hazelcast {
                 */
                 connection::Connection *connectTo(const Address& address, bool ownerConnection);
 
-            protected:
+                /**
+                * @param address
+                * @param ownerConnection
+                */
+                std::vector< boost::shared_ptr<Connection> > getConnections();
+
+                /**
+                * Called heartbeat timeout is detected on a connection.
+                *
+                * @param connection to be marked.
+                */
+                void onDetectingUnresponsiveConnection(Connection& connection);
+
+                /**
+                 * Called when a member left the cluster
+                 * @param address address of the member
+                */
+                void removeEndpoint(const Address& address);
+            private:
 
                 boost::shared_ptr<Connection> getOrConnectResolved(const Address& resolvedAddress);
 
@@ -147,19 +150,19 @@ namespace hazelcast {
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext& clientContext;
                 std::auto_ptr<SocketInterceptor> socketInterceptor;
-                InSelector iListener;
-                OutSelector oListener;
-                std::auto_ptr<util::Thread> iListenerThread;
-                std::auto_ptr<util::Thread> oListenerThread;
+                InSelector inSelector;
+                OutSelector outSelector;
+                std::auto_ptr<util::Thread> inSelectorThread;
+                std::auto_ptr<util::Thread> outSelectorThread;
                 util::AtomicBoolean live;
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
-                util::AtomicInt callIdGenerator;
+
+                connection::HeartBeater heartBeater;
+                std::auto_ptr<util::Thread> heartBeatThread;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;
-
-
             };
         }
     }

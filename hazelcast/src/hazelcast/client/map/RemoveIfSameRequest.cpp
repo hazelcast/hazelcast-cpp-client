@@ -17,7 +17,7 @@ namespace hazelcast {
             , value(value)
             , threadId(threadId) {
 
-            };
+            }
 
             int RemoveIfSameRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -33,7 +33,7 @@ namespace hazelcast {
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
-            };
+            }
 
         }
     }

@@ -13,30 +13,30 @@ namespace hazelcast {
 
             const serialization::pimpl::Data& PortableMessage::getMessage() const {
                 return message;
-            };
+            }
 
             std::string PortableMessage::getUuid() const {
                 return uuid;
-            };
+            }
 
             long PortableMessage::getPublishTime() const {
                 return publishTime;
-            };
+            }
 
             int PortableMessage::getFactoryId() const {
                 return TopicPortableHook::F_ID;
-            };
+            }
 
             int PortableMessage::getClassId() const {
                 return TopicPortableHook::PORTABLE_MESSAGE;
-            };
+            }
 
             void PortableMessage::readPortable(serialization::PortableReader& reader) {
                 publishTime = reader.readLong("pt");
                 uuid = reader.readUTF("u");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 message.readData(in);
-            };
+            }
         }
     }
 }

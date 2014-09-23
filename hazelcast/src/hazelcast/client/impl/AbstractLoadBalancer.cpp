@@ -20,15 +20,15 @@ namespace hazelcast {
             void AbstractLoadBalancer::setMembersRef() {
                 util::LockGuard lg(membersLock);
                 membersRef = cluster->getMembers();
-            };
+            }
 
             void AbstractLoadBalancer::memberAdded(const MembershipEvent &membershipEvent) {
                 setMembersRef();
-            };
+            }
 
             void AbstractLoadBalancer::memberRemoved(const MembershipEvent &membershipEvent) {
                 setMembersRef();
-            };
+            }
 
 
             void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
@@ -38,11 +38,11 @@ namespace hazelcast {
             std::vector<Member>  AbstractLoadBalancer::getMembers() {
                 util::LockGuard lg(membersLock);
                 return membersRef;
-            };
+            }
 
             AbstractLoadBalancer::~AbstractLoadBalancer() {
 
-            };
+            }
         }
     }
 }

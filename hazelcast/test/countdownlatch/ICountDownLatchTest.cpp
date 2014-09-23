@@ -20,7 +20,7 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {
-            };
+            }
 
 
             ICountDownLatchTest::~ICountDownLatchTest() {
@@ -28,23 +28,23 @@ namespace hazelcast {
 
             void ICountDownLatchTest::addTests() {
                 addTest(&ICountDownLatchTest::testLatch, "ICountDownLatchTest");
-            };
+            }
 
             void ICountDownLatchTest::beforeClass() {
 
-            };
+            }
 
             void ICountDownLatchTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ICountDownLatchTest::beforeTest() {
 
-            };
+            }
 
             void ICountDownLatchTest::afterTest() {
-            };
+            }
 
             void testLatchThread(util::ThreadArgs &args) {
                 ICountDownLatch *l = (ICountDownLatch *) args.arg0;

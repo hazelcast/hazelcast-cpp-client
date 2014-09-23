@@ -30,7 +30,7 @@ namespace hazelcast {
                 TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
                         -897543.3678909, "this is main portable object created for testing!", inner);
                 return main;
-            };
+            }
         }
     }
 }

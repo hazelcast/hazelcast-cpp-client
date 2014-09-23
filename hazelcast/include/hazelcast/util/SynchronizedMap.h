@@ -127,6 +127,26 @@ namespace hazelcast {
                 return valueArray;
             }
 
+            std::vector<K> keys() {
+                util::LockGuard lg(mapLock);
+                std::vector<boost::shared_ptr<V> > keysArray(internalMap.size());
+                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
+                int i = 0;
+                for (it = internalMap.begin(); it != internalMap.end(); it++) {
+                    keysArray[i++] = it->first;
+                }
+                return keysArray;
+            }
+
+            boost::shared_ptr<V> getOrPutIfAbsent(const K& key) {
+                boost::shared_ptr<V> value = get(key);
+                if (value.get() == NULL) {
+                    value.reset(new V());
+                    boost::shared_ptr<V> current = putIfAbsent(key, value);
+                    value = current.get() == NULL ? value : current;
+                }
+                return value;
+            }
         private:
             std::map<K, boost::shared_ptr<V>, Comparator> internalMap;
             mutable util::Mutex mapLock;

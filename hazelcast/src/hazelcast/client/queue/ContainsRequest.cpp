@@ -15,7 +15,7 @@ namespace hazelcast {
             :name(name)
             , dataList(dataList) {
 
-            };
+            }
 
             int ContainsRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -23,7 +23,7 @@ namespace hazelcast {
 
             int ContainsRequest::getClassId() const {
                 return queue::QueuePortableHook::CONTAINS;
-            };
+            }
 
 
             bool ContainsRequest::isRetryable() const {
@@ -39,7 +39,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; ++i) {
                     dataList[i].writeData(out);
                 }
-            };
+            }
         }
     }
 }

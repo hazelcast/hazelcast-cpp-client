@@ -6,13 +6,13 @@
 #ifndef HAZELCAST_MAP_SIZE_REQUEST
 #define HAZELCAST_MAP_SIZE_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API SizeRequest : public impl::PortableRequest{
+            class HAZELCAST_API SizeRequest : public impl::ClientRequest{
             public:
                 SizeRequest(const std::string& name);
 

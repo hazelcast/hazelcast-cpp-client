@@ -8,7 +8,7 @@
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
@@ -19,90 +19,178 @@ namespace hazelcast {
             namespace pimpl {
                 class DataOutput;
             }
+
+            /**
+            * Provides serialization methods for primitive types,a arrays of primitive types, Portable,
+            * IdentifiedDataSerializable and custom serializables.
+            * For custom serialization @see Serializer
+            */
             class HAZELCAST_API ObjectDataOutput {
             public:
-                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializationContext &serializationContext);
+                /**
+                * Internal API Constructor
+                */
+                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::PortableContext &portableContext);
 
+                /**
+                * Internal API Constructor
+                */
                 ObjectDataOutput();
 
-                std::auto_ptr< std::vector<byte> > toByteArray();
+                /**
+                * @return copy of internal byte array
+                */
+                std::auto_ptr<std::vector<byte> > toByteArray();
 
+                /**
+                * Writes all the bytes in array to stream
+                * @param bytes to be written
+                */
                 void write(const std::vector<byte> &bytes);
 
-                void writeBoolean(bool b);
+                /**
+                * @param value the bool value to be written
+                */
+                void writeBoolean(bool value);
 
-                void writeByte(int i);
+                /**
+                * @param value the byte value to be written
+                */
+                void writeByte(int value);
 
-                void writeShort(int i);
+                /**
+                * @param value the short value to be written
+                */
+                void writeShort(int value);
 
-                void writeChar(int i);
+                /**
+                * @param value the char value to be written
+                */
+                void writeChar(int value);
 
-                void writeInt(int i);
+                /**
+                * @param value the int value to be written
+                */
+                void writeInt(int value);
 
-                void writeLong(long l);
+                /**
+                * @param value the long value to be written
+                */
+                void writeLong(long value);
 
-                void writeFloat(float v);
+                /**
+                * @param value the float value to be written
+                */
+                void writeFloat(float value);
 
-                void writeDouble(double v);
+                /**
+                * @param value the double value to be written
+                */
+                void writeDouble(double value);
 
-                void writeUTF(const std::string &s);
+                /**
+                * @param value the utf string value to be written
+                */
+                void writeUTF(const std::string &value);
 
-                void writeByteArray(const std::vector<byte> &data);
+                /**
+                * @param value the utf string value to be written
+                */
+                void writeByteArray(const std::vector<byte> &value);
 
-                void writeCharArray(const std::vector<char> &bytes);
+                /**
+                * @param value the utf string value to be written
+                */
+                void writeCharArray(const std::vector<char> &value);
 
-                void writeShortArray(const std::vector<short > &data);
+                /**
+                * @param value the short array value to be written
+                */
+                void writeShortArray(const std::vector<short> &value);
 
-                void writeIntArray(const std::vector<int> &data);
+                /**
+                * @param value the int array value to be written
+                */
+                void writeIntArray(const std::vector<int> &value);
 
-                void writeLongArray(const std::vector<long > &data);
+                /**
+                * @param value the short array value to be written
+                */
+                void writeLongArray(const std::vector<long> &value);
 
-                void writeFloatArray(const std::vector<float > &data);
+                /**
+                * @param value the float array value to be written
+                */
+                void writeFloatArray(const std::vector<float> &value);
 
-                void writeDoubleArray(const std::vector<double > &data);
+                /**
+                * @param value the double array value to be written
+                */
+                void writeDoubleArray(const std::vector<double> &value);
 
-                void writeByte(int index, int i);
-
-                void writeInt(int index, int v);
-
-                void writeNullObject();
-
+                /**
+                * @param object Portable object to be written
+                * @see Portable
+                * @throws IOException
+                */
                 template<typename T>
-                void writeObject(const Portable *portable) {
+                void writeObject(const Portable *object) {
                     if (isEmpty) return;
-                    const T *object = static_cast<const T *>(portable);
-                    writePortable(portable);
+                    if(object == NULL){
+                        writeBoolean(true);
+                        return;
+                    }
+                    const T *portable = static_cast<const T *>(object);
+                    writePortable(object);
                 };
 
+                /**
+                * @param object IdentifiedDataSerializable object to be written
+                * @see IdentifiedDataSerializable
+                * @throws IOException
+                */
                 template<typename T>
-                void writeObject(const IdentifiedDataSerializable *dataSerializable) {
+                void writeObject(const IdentifiedDataSerializable *object) {
                     if (isEmpty) return;
-                    const T *object = static_cast<const T *>(dataSerializable);
-                    writeIdentifiedDataSerializable(dataSerializable);
+                    if(object == NULL){
+                        writeBoolean(true);
+                        return;
+                    }
+                    const T *dataSerializable = static_cast<const T *>(object);
+                    writeIdentifiedDataSerializable(object);
                 };
 
+                /**
+                * @param object custom serializable object to be written
+                * @see Serializer
+                * @throws IOException
+                */
                 template<typename T>
-                void writeObject(const void *serializable) {
+                void writeObject(const void *object) {
                     if (isEmpty) return;
-                    const T *object = static_cast<const T *>(serializable);
-                    int type = object->getSerializerId();
-                    writeBoolean(true);
+                    if(object == NULL){
+                        writeBoolean(true);
+                        return;
+                    }
+                    const T *serializable = static_cast<const T *>(object);
+                    int type = serializable->getSerializerId();
+                    writeBoolean(false);
                     writeInt(type);
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
                     if (serializer.get() != NULL) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
-                        s->write(*this, *object);
+                        s->write(*this, *serializable);
                     } else {
                         const std::string &message = "No serializer found for serializerId :"
                                 + util::IOUtil::to_string(type)
                                 + ", typename :" + typeid(T).name();
-                        throw exception::IOException("ObjectDataOutput::writeObject", message);
+                        throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
                     }
                 };
 
             private:
                 pimpl::DataOutput *dataOutput;
-                pimpl::SerializationContext *context;
+                pimpl::PortableContext *context;
                 pimpl::SerializerHolder *serializerHolder;
                 bool isEmpty;
 
@@ -116,7 +204,7 @@ namespace hazelcast {
 
                 ObjectDataOutput(const ObjectDataOutput &);
 
-                void operator = (const ObjectDataOutput &);
+                void operator=(const ObjectDataOutput &);
             };
 
         }

@@ -14,7 +14,7 @@ namespace hazelcast {
             IteratorRequest::IteratorRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int IteratorRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -22,13 +22,13 @@ namespace hazelcast {
 
             int IteratorRequest::getClassId() const {
                 return queue::QueuePortableHook::ITERATOR;
-            };
+            }
 
 
             void IteratorRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
-            };
+            }
 
         }
     }

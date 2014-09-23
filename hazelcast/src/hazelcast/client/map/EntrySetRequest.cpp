@@ -15,7 +15,7 @@ namespace hazelcast {
             EntrySetRequest::EntrySetRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int EntrySetRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -27,7 +27,7 @@ namespace hazelcast {
 
             void EntrySetRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
 
 
             bool EntrySetRequest::isRetryable() const {

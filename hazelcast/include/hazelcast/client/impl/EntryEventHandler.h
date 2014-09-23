@@ -36,6 +36,10 @@ namespace hazelcast {
                 }
 
                 void handle(const PortableEntryEvent &event) {
+                    EntryEventType type = event.getEventType();
+                    if(type == EntryEventType::EVICT_ALL || type == EntryEventType::CLEAR_ALL){
+                        return;
+                    }
 
                     boost::shared_ptr<V> value;
                     boost::shared_ptr<V> oldValue;
@@ -45,7 +49,6 @@ namespace hazelcast {
                     }
                     boost::shared_ptr<K> key = serializationService.toObject<K>(event.getKey());
                     Member member = clusterService.getMember(event.getUuid());
-                    EntryEventType type = event.getEventType();
                     EntryEvent<K, V> entryEvent(instanceName, member, type, key, value, oldValue);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);

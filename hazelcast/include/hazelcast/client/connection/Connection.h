@@ -17,14 +17,23 @@
 namespace hazelcast {
     namespace client {
 
+        namespace impl {
+            class ClientRequest;
+        }
         namespace spi {
             class ClientContext;
+
+            class InvocationService;
         }
         namespace serialization {
             namespace pimpl {
                 class SerializationService;
 
                 class Data;
+
+                class Packet;
+
+                class PortableContext;
             }
 
         }
@@ -40,69 +49,57 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable{
+            class HAZELCAST_API Connection : public util::Closeable {
             public:
-                Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener, OutSelector &listener);
+                Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
 
                 ~Connection();
 
-                void init(const std::vector<byte> &PROTOCOL);
+                void init(const std::vector<byte>& PROTOCOL);
 
-                void connect();
+                void connect(int timeoutInMillis);
 
                 void close();
 
-                void registerAndEnqueue(boost::shared_ptr<CallPromise> promise);
+                void write(serialization::pimpl::Packet *packet);
 
-                void handlePacket(const serialization::pimpl::Data &data);
+                const Address& getRemoteEndpoint() const;
 
-                const Address &getRemoteEndpoint() const;
+                void setRemoteEndpoint(Address& remoteEndpoint);
 
-                void setRemoteEndpoint(Address &remoteEndpoint);
+                Socket& getSocket();
 
-                const Socket &getSocket() const;
+                boost::shared_ptr<connection::ClientResponse> sendAndReceive(const impl::ClientRequest& clientRequest);
 
-                void writeBlocking(serialization::pimpl::Data const &data);
+                ReadHandler& getReadHandler();
 
-                serialization::pimpl::Data readBlocking();
-
-                ReadHandler &getReadHandler();
-
-                WriteHandler &getWriteHandler();
-
-                boost::shared_ptr<CallPromise> deRegisterEventHandler(int callId);
+                WriteHandler& getWriteHandler();
 
                 void setAsOwnerConnection(bool isOwnerConnection);
+
+                void writeBlocking(serialization::pimpl::Packet const& packet);
+
+                serialization::pimpl::Packet readBlocking();
+
+                bool isHeartBeating();
+
+                void heartBeatingFailed();
+
+                void heartBeatingSucceed();
 
                 util::AtomicInt lastRead;
                 util::AtomicInt lastWrite;
                 util::AtomicBoolean live;
             private:
-                spi::ClientContext &clientContext;
+                spi::ClientContext& clientContext;
+                spi::InvocationService& invocationService;
                 Socket socket;
-                util::SynchronizedMap<int, CallPromise > callPromises;
-                util::SynchronizedMap<int, CallPromise > eventHandlerPromises;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
 
-                void cleanResources();
+                util::AtomicBoolean heartBeating;
 
-                boost::shared_ptr<CallPromise> deRegisterCall(int callId);
-
-                void registerEventHandler(boost::shared_ptr<CallPromise> promise);
-
-                boost::shared_ptr<CallPromise> getEventHandlerPromise(int callId);
-
-                void resend(boost::shared_ptr<CallPromise> promise);
-
-                void registerCall(boost::shared_ptr<CallPromise> promise);
-
-                void targetNotActive(boost::shared_ptr<CallPromise> promise);
-
-                bool handleEventUuid(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise);
-
-                bool handleException(boost::shared_ptr<ClientResponse> response, boost::shared_ptr<CallPromise> promise);
 
             };
 

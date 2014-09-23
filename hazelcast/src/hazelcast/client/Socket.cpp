@@ -35,7 +35,7 @@ namespace hazelcast {
             setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
 			#endif
 
-        };
+        }
 
 
         Socket::Socket(int socketId)
@@ -50,22 +50,22 @@ namespace hazelcast {
 
         Socket::~Socket() {
             close();
-        };
+        }
 
-        int Socket::connect() {
+        int Socket::connect(int timeoutInMillis) {
             assert(serverInfo != NULL && "Socket is already connected");
             setBlocking(false);
             ::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
 
             struct timeval tv;
-            tv.tv_sec = 15;
-            tv.tv_usec = 0;
+            tv.tv_sec = timeoutInMillis / 1000;
+            tv.tv_usec = (timeoutInMillis - tv.tv_sec * 1000) * 1000;
             fd_set mySet, err;
             FD_ZERO(&mySet);
             FD_ZERO(&err);
             FD_SET(socketId, &mySet);
             FD_SET(socketId, &err);
-            if (select(socketId+1, NULL, &mySet, &err , &tv) > 0) {
+            if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
                 setBlocking(true);
                 return 0;
             }
@@ -90,8 +90,8 @@ namespace hazelcast {
             }
             ioctlsocket(socketId, FIONBIO, &iMode);
             #else
-            int arg = fcntl(socketId, F_GETFL, NULL);
-            if(blocking){
+            long arg = fcntl(socketId, F_GETFL, NULL);
+            if (blocking) {
                 arg &= (~O_NONBLOCK);
             } else {
                 arg |= O_NONBLOCK;
@@ -104,20 +104,20 @@ namespace hazelcast {
         int Socket::send(const void *buffer, int len) const {
             int bytesSend = 0;
             if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, 0)) == -1)
-                throw client::exception::IOException("Socket::send ", "Error socket send" + std::string(strerror(errno)));
+                throw client::exception::IOException("Socket::send ", "Error socket send " + std::string(strerror(errno)));
             return bytesSend;
-        };
+        }
 
         int Socket::receive(void *buffer, int len, int flag) const {
             int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
 
             if (size == -1)
-                throw client::exception::IOException("Socket::receive", "Error socket read");
+                throw client::exception::IOException("Socket::receive", "Error socket read " + std::string(strerror(errno)));
             else if (size == 0) {
                 throw client::exception::IOException("Socket::receive", "Connection closed by remote");
             }
             return size;
-        };
+        }
 
         int Socket::getSocketId() const {
             return socketId;

@@ -12,12 +12,13 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/util/IOUtil.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <hazelcast/client/exception/HazelcastSerializationException.h>
 
 namespace hazelcast {
     namespace client {
@@ -30,61 +31,162 @@ namespace hazelcast {
             namespace pimpl {
                 class SerializationService;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class DataInput;
             }
 
-
+            /**
+            * Provides deserialization methods for primitives types, arrays of primitive types
+            * Portable, IdentifiedDataSerializable and custom serializable types
+            */
             class HAZELCAST_API ObjectDataInput {
             public:
-                ObjectDataInput(pimpl::DataInput &, pimpl::SerializationContext &);
+                /**
+                * Internal API. Constructor
+                */
+                ObjectDataInput(pimpl::DataInput &, pimpl::PortableContext &);
 
-                pimpl::SerializationContext *getSerializationContext();
+                /**
+                * Internal API.
+                * @return portableContext
+                */
+                pimpl::PortableContext *getPortableContext();
 
-                void readFully(std::vector<byte> &);
+                /**
+                * fills all content to given byteArray
+                * @param byteArray to fill the data in
+                */
+                void readFully(std::vector<byte> &byteArray);
 
+                /**
+                *
+                * @param i number of bytes to skip
+                */
                 int skipBytes(int i);
 
+                /**
+                * @return the boolean read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 bool readBoolean();
 
+                /**
+                * @return the byte read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 byte readByte();
 
+                /**
+                * @return the short read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 short readShort();
 
+                /**
+                * @return the char read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 char readChar();
 
+                /**
+                * @return the int read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 int readInt();
 
+                /**
+                * @return the long read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 long readLong();
 
+                /**
+                * @return the boolean read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 float readFloat();
 
+                /**
+                * @return the double read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 double readDouble();
 
+                /**
+                * @return the utf string read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::string readUTF();
 
+                /**
+                * @return the byte array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<byte> readByteArray();
 
+                /**
+                * @return the char array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<char> readCharArray();
 
+                /**
+                * @return the int array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<int> readIntArray();
 
+                /**
+                * @return the long array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<long> readLongArray();
 
+                /**
+                * @return the double array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<double> readDoubleArray();
 
+                /**
+                * @return the float array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<float> readFloatArray();
 
+                /**
+                * @return the short array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
                 std::vector<short> readShortArray();
 
-                template<typename  T>
+                /**
+                * Object can be Portable, IdentifiedDataSerializable or custom serializable
+                * for custom serialization @see Serializer
+                * @return the object read
+                * @throws IOException if it reaches end of file before finish reading
+                */
+                template<typename T>
                 boost::shared_ptr<T> readObject() {
                     T *tag = NULL;
                     return readObjectResolved<T>(tag);
                 };
 
-                template<typename  T>
+                /**
+                * @return current position index
+                */
+                int position();
+
+                /**
+                * Move cursor to given index
+                * @param newPos new position index to be set
+                */
+                void position(int newPos);
+
+            private:
+
+                template<typename T>
                 boost::shared_ptr<T> readObjectResolved(Portable *tag) {
                     bool isNull = readBoolean();
                     boost::shared_ptr<T> object;
@@ -95,17 +197,17 @@ namespace hazelcast {
 
                     readInt();
 
-                    boost::shared_ptr<pimpl::ClassDefinition> classDefinition(new pimpl::ClassDefinition());
+                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
                     classDefinition->readData(dataInput);
                     int factoryId = classDefinition->getFactoryId();
                     int classId = classDefinition->getClassId();
                     int version = classDefinition->getVersion();
-                    serializationContext.registerClassDefinition(classDefinition);
+                    portableContext.registerClassDefinition(classDefinition);
                     serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
                     return object;
                 };
 
-                template<typename  T>
+                template<typename T>
                 boost::shared_ptr<T> readObjectResolved(IdentifiedDataSerializable *tag) {
                     bool isNull = readBoolean();
                     boost::shared_ptr<T> object;
@@ -118,7 +220,7 @@ namespace hazelcast {
                     return object;
                 };
 
-                template<typename  T>
+                template<typename T>
                 boost::shared_ptr<T> readObjectResolved(void *tag) {
                     bool isNull = readBoolean();
                     boost::shared_ptr<T> object;
@@ -135,23 +237,18 @@ namespace hazelcast {
                     } else {
                         const std::string &message = "No serializer found for serializerId :"
                                 + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
-                        throw exception::IOException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
+                        throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 
                 };
 
-                int position();
-
-                void position(int newPos);
-
-            private:
                 pimpl::DataInput &dataInput;
-                pimpl::SerializationContext &serializationContext;
+                pimpl::PortableContext &portableContext;
                 pimpl::SerializerHolder &serializerHolder;
 
                 ObjectDataInput(const ObjectDataInput &);
 
-                void operator = (const ObjectDataInput &);
+                void operator=(const ObjectDataInput &);
             };
         }
     }

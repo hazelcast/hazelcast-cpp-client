@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_AwaitRequest
 #define HAZELCAST_AwaitRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -17,7 +17,7 @@ namespace hazelcast {
         }
 
         namespace countdownlatch {
-            class HAZELCAST_API AwaitRequest : public impl::PortableRequest {
+            class HAZELCAST_API AwaitRequest : public impl::ClientRequest {
             public:
                 AwaitRequest(const std::string& instanceName, long timeout);
 

@@ -11,10 +11,10 @@ namespace hazelcast {
         namespace map{
                 int DataEntryView::getFactoryId() const {
                     return map::DataSerializableHook::F_ID;
-                };
+                }
                 int DataEntryView::getClassId() const {
                     return map::DataSerializableHook::ENTRY_VIEW;
-                };
+                }
                 void DataEntryView::readData(serialization::ObjectDataInput &in) {
                     key = *(in.readObject<serialization::pimpl::Data>());
                     value = *(in.readObject<serialization::pimpl::Data>());
@@ -26,7 +26,7 @@ namespace hazelcast {
                     lastStoredTime = in.readLong();
                     lastUpdateTime = in.readLong();
                     version = in.readLong();
-                };
+                }
         }
     }
 }

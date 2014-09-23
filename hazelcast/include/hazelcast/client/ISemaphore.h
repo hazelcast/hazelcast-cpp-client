@@ -14,30 +14,32 @@ namespace hazelcast {
     namespace client {
         /**
          * ISemaphore is a backed-up distributed alternative to the java.util.concurrent.Semaphore.
-         * <p/>
+         * 
          * ISemaphore is a cluster-wide counting semaphore.  Conceptually,
          * it maintains a set of permits.  Each acquire() blocks if necessary until
          * a permit is available, and then takes it.  Each release() adds a permit,
          * potentially releasing a blocking acquirer. However, no actual permit objects are
-         * used; the semaphore just keeps a count of the number available and acts accordingly.
-         * <p/>The Hazelcast distributed semaphore implementation guarantees that
+         * used; the semaphore just keeps a count of the number available and acts according
+         * ly.
+         * The Hazelcast distributed semaphore implementation guarantees that
          * threads invoking any of the acquire methods are selected
          * to obtain permits in the order in which their invocation of those methods
          * was processed(first-in-first-out; FIFO).  Note that FIFO ordering necessarily
          * applies to specific internal points of execution within the cluster.  So,
          * it is possible for one member to invoke acquire before another, but reach
          * the ordering point after the other, and similarly upon return from the method.
-         * <p/>This class also provides convenience methods to 
+         * 
+         * This class also provides convenience methods to 
          * acquire and #release(int) release multiple
          * permits at a time.  Beware of the increased risk of indefinite
          * postponement when using the multiple acquire.  If a single permit is
          * released to a semaphore that is currently blocking, a thread waiting
          * for one permit will acquire it before a thread waiting for multiple
          * permits regardless of the call order.
-         * <p/>
-         * <ul>
-         * <li>Correct usage of a semaphore is established by programming convention in the application.
-         * </ul>
+         * 
+         * 
+         * Correct usage of a semaphore is established by programming convention in the application.
+         * 
          *
          */
         class HAZELCAST_API ISemaphore : public DistributedObject {
@@ -53,25 +55,25 @@ namespace hazelcast {
             bool init(int permits);
 
             /**
-             * <p>Acquires a permit, if one is available and returns immediately,
+             * Acquires a permit, if one is available and returns immediately,
              * reducing the number of available permits by one.
              *
-             * <p>If no permit is available then the current thread becomes
+             * If no permit is available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
-             * <ul>
-             * <li>Some other thread invokes one of the #release methods for this
+             * 
+             * Some other thread invokes one of the #release methods for this
              * semaphore and the current thread is next to be assigned a permit;
-             * <li>This ISemaphore instance is destroyed; or
-             * <li>Some other thread interrupts
+             * This ISemaphore instance is destroyed; or
+             * Some other thread interrupts
              * the current thread.
-             * </ul>
-             * <p>If the current thread:
-             * <ul>
-             * <li>has its interrupted status set on entry to this method; or
-             * <li>is interrupted while waiting
+             * 
+             * If the current thread:
+             * 
+             * has its interrupted status set on entry to this method; or
+             * is interrupted while waiting
              * for a permit,
-             * </ul>
+             * 
              * then InterruptedException is thrown and the current thread's
              * interrupted status is cleared.
              *
@@ -81,28 +83,28 @@ namespace hazelcast {
             void acquire();
 
             /**
-             * <p>Acquires the given number of permits, if they are available,
+             * Acquires the given number of permits, if they are available,
              * and returns immediately, reducing the number of available permits
              * by the given amount.
              *
-             * <p>If insufficient permits are available then the current thread becomes
+             * If insufficient permits are available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
-             * <ul>
-             * <li>Some other thread invokes one of the #release() release
+             * 
+             * Some other thread invokes one of the #release() release
              * methods for this semaphore, the current thread is next to be assigned
              * permits and the number of available permits satisfies this request;
-             * <li>This ISemaphore instance is destroyed; or
-             * <li>Some other thread interrupts
+             * This ISemaphore instance is destroyed; or
+             * Some other thread interrupts
              * the current thread.
-             * </ul>
+             * 
              *
-             * <p>If the current thread:
-             * <ul>
-             * <li>has its interrupted status set on entry to this method; or
-             * <li>is interrupted while waiting
+             * If the current thread:
+             * 
+             * has its interrupted status set on entry to this method; or
+             * is interrupted while waiting
              * for a permit,
-             * </ul>
+             * 
              * then InterruptedException is thrown and the current thread's
              * interrupted status is cleared.
              *
@@ -116,8 +118,8 @@ namespace hazelcast {
             /**
              * Returns the current number of permits currently available in this semaphore.
              *
-             * <ul><li>This method is typically used for debugging and testing purposes.
-             * </ul>
+             * This method is typically used for debugging and testing purposes.
+             * 
              *
              * @return the number of permits available in this semaphore
              */
@@ -184,7 +186,7 @@ namespace hazelcast {
              * returns immediately, with the value true,
              * reducing the number of available permits by the given amount.
              *
-             * <p>If insufficient permits are available then this method will return
+             * If insufficient permits are available then this method will return
              * immediately with the value false and the number of available
              * permits is unchanged.
              *
@@ -206,13 +208,13 @@ namespace hazelcast {
              * If no permit is available then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
              * one of three things happens:
-             * <ul>
-             * <li>Some other thread invokes the #release method for this
+             * 
+             * Some other thread invokes the #release method for this
              * semaphore and the current thread is next to be assigned a permit; or
-             * <li>Some other thread interrupts
+             * Some other thread interrupts
              * the current thread; or
-             * <li>The specified waiting time elapses.
-             * </ul>
+             * The specified waiting time elapses.
+             * 
              *
              * If a permit is acquired then the value true is returned.
              *
@@ -220,17 +222,16 @@ namespace hazelcast {
              * is returned.  If the time is less than or equal to zero, the method
              * will not wait at all.
              *
-             * <p>If the current thread:
-             * <ul>
-             * <li>has its interrupted status set on entry to this method; or
-             * <li>is interrupted while waiting
+             * If the current thread:
+             * 
+             * has its interrupted status set on entry to this method; or
+             * is interrupted while waiting
              * for a permit,
-             * </ul>
+             * 
              * then InterruptedException is thrown and the current thread's
              * interrupted status is cleared.
              *
-             * @param timeout the maximum time to wait for a permit
-             * @param unit    the time unit of the timeout argument
+             * @param timeoutInMillis the maximum time to wait for a permit
              * @return true if a permit was acquired and false
              *         if the waiting time elapsed before a permit was acquired
              * @throws InterruptedException       if the current thread is interrupted
@@ -246,14 +247,14 @@ namespace hazelcast {
              * If insufficient permits are available then
              * the current thread becomes disabled for thread scheduling
              * purposes and lies dormant until one of three things happens:
-             * <ul>
-             * <li>Some other thread invokes one of the #release() release
+             * 
+             * Some other thread invokes one of the #release() release
              * methods for this semaphore, the current thread is next to be assigned
              * permits and the number of available permits satisfies this request; or
-             * <li>Some other thread interrupts
+             * Some other thread interrupts
              * the current thread; or
-             * <li>The specified waiting time elapses.
-             * </ul>
+             * The specified waiting time elapses.
+             * 
              *
              * If the permits are acquired then the value true is returned.
              *
@@ -261,18 +262,17 @@ namespace hazelcast {
              * is returned.  If the time is less than or equal to zero, the method
              * will not wait at all.
              *
-             * <p>If the current thread:
-             * <ul>
-             * <li>has its interrupted status set on entry to this method; or
-             * <li>is interrupted while waiting
+             * If the current thread:
+             * 
+             * has its interrupted status set on entry to this method; or
+             * is interrupted while waiting
              * for a permit,
-             * </ul>
+             * 
              * then InterruptedException is thrown and the current thread's
              * interrupted status is cleared.
              *
              * @param permits the number of permits to acquire
-             * @param timeout the maximum time to wait for the permits
-             * @param unit    the time unit of the timeout argument
+             * @param timeoutInMillis the maximum time to wait for the permits
              * @return true if all permits were acquired and false
              *         if the waiting time elapsed before all permits could be acquired
              * @throws InterruptedException       if the current thread is interrupted

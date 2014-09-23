@@ -8,33 +8,30 @@
 namespace hazelcast {
     namespace util {
         ByteBuffer::ByteBuffer(int capacity)
-        :pos(0),
-        limit(capacity),
-        capacity(capacity),
-        buffer(new char [capacity]) {
+        : pos(0), limit(capacity), capacity(capacity), buffer(new char[capacity]) {
 
         }
 
 
         ByteBuffer::~ByteBuffer() {
-            delete [] buffer;
+            delete[] buffer;
         }
 
-        ByteBuffer &ByteBuffer::flip() {
+        ByteBuffer& ByteBuffer::flip() {
             limit = pos;
             pos = 0;
             return *this;
         }
 
 
-        ByteBuffer &ByteBuffer::compact() {
-            std::memcpy(buffer, ix(), (size_t) remaining());
+        ByteBuffer& ByteBuffer::compact() {
+            std::memcpy(buffer, ix(), (size_t)remaining());
             pos = remaining();
             limit = capacity;
             return *this;
         }
 
-        ByteBuffer &ByteBuffer::clear() {
+        ByteBuffer& ByteBuffer::clear() {
             pos = 0;
             limit = capacity;
             return *this;
@@ -52,17 +49,17 @@ namespace hazelcast {
             return pos;
         }
 
-        void ByteBuffer::readFrom(const client::Socket &socket) {
+        void ByteBuffer::readFrom(const client::Socket& socket) {
             int rm = remaining();
             int bytesReceived = socket.receive(ix(), rm, 0);
             pos += bytesReceived;
-        };
+        }
 
-        void ByteBuffer::writeTo(const client::Socket &socket) {
+        void ByteBuffer::writeTo(const client::Socket& socket) {
             int rm = remaining();
             int bytesSend = socket.send(ix(), rm);
             pos += bytesSend;
-        };
+        }
 
         int ByteBuffer::readInt() {
             char a = readByte();
@@ -70,9 +67,9 @@ namespace hazelcast {
             char c = readByte();
             char d = readByte();
             return (0xff000000 & (a << 24)) |
-                    (0x00ff0000 & (b << 16)) |
-                    (0x0000ff00 & (c << 8)) |
-                    (0x000000ff & d);
+            (0x00ff0000 & (b << 16)) |
+            (0x0000ff00 & (c << 8)) |
+            (0x000000ff & d);
         }
 
         void ByteBuffer::writeInt(int v) {
@@ -82,29 +79,42 @@ namespace hazelcast {
             writeByte(char(v));
         }
 
-        int ByteBuffer::writeTo(std::vector<byte> &destination, int offset) {
+
+        int ByteBuffer::readShort() {
+            byte a = readByte();
+            byte b = readByte();
+            return (0xff00 & (a << 8)) |
+            (0x00ff & b);
+        }
+
+        void ByteBuffer::writeShort(int v) {
+            writeByte(char(v >> 8));
+            writeByte(char(v));
+        }
+
+        int ByteBuffer::writeTo(std::vector<byte>& destination, int offset) {
             int m = minimum(destination.size() - offset, remaining());
-            std::memcpy((void *) (&destination[offset]), ix(), m);
+            std::memcpy((void *)(&destination[offset]), ix(), m);
             pos += m;
             return m;
         }
 
-        void ByteBuffer::writeTo(std::vector<byte> &destination) {
+        void ByteBuffer::writeTo(std::vector<byte>& destination) {
             int len = destination.size();
-            std::memcpy((void *) (&destination[0]), ix(), len);
+            std::memcpy((void *)(&destination[0]), ix(), len);
             pos += len;
         }
 
 
-        void ByteBuffer::readFrom(std::vector<byte> const &source) {
+        void ByteBuffer::readFrom(std::vector<byte> const& source) {
             int len = source.size();
-            std::memcpy(ix(), (void *) (&source[0]), len);
+            std::memcpy(ix(), (void *)(&source[0]), len);
             pos += len;
         }
 
-        int ByteBuffer::readFrom(std::vector<byte> const &source, int offset) {
+        int ByteBuffer::readFrom(std::vector<byte> const& source, int offset) {
             int m = minimum(source.size() - offset, remaining());
-            std::memcpy(ix(), (void *) (&source[offset]), m);
+            std::memcpy(ix(), (void *)(&source[offset]), m);
             pos += m;
             return m;
         }
@@ -122,7 +132,7 @@ namespace hazelcast {
         }
 
         void *ByteBuffer::ix() const {
-            return (void *) (buffer + pos);
+            return (void *)(buffer + pos);
         }
 
         int ByteBuffer::minimum(int a, int b) const {

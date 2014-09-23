@@ -19,7 +19,7 @@ namespace hazelcast {
             : iTestFixture<ClientTxnSetTest>("ClientTxnSetTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701)))) {
-            };
+            }
 
 
             ClientTxnSetTest::~ClientTxnSetTest() {
@@ -27,21 +27,21 @@ namespace hazelcast {
 
             void ClientTxnSetTest::addTests() {
                 addTest(&ClientTxnSetTest::testAddRemove, "testAddRemove");
-            };
+            }
 
             void ClientTxnSetTest::beforeClass() {
-            };
+            }
 
             void ClientTxnSetTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientTxnSetTest::beforeTest() {
-            };
+            }
 
             void ClientTxnSetTest::afterTest() {
-            };
+            }
 
             void ClientTxnSetTest::testAddRemove() {
                 ISet<std::string> s = client->getSet<std::string>("testAddRemove");

@@ -60,7 +60,7 @@ namespace hazelcast {
             ClientTxnTest::ClientTxnTest(HazelcastServerFactory& hazelcastInstanceFactory)
             : iTestFixture<ClientTxnTest>("ClientTxnTest")
             , hazelcastInstanceFactory(hazelcastInstanceFactory) {
-            };
+            }
 
 
             ClientTxnTest::~ClientTxnTest() {
@@ -72,10 +72,10 @@ namespace hazelcast {
             }
 
             void ClientTxnTest::beforeClass() {
-            };
+            }
 
             void ClientTxnTest::afterClass() {
-            };
+            }
 
             void ClientTxnTest::beforeTest() {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
@@ -93,6 +93,7 @@ namespace hazelcast {
                 client->shutdown();
                 client.reset();
             }
+
 
             void ClientTxnTest::testTxnRollback() {
                 util::CountDownLatch memberRemovedLatch(1);
@@ -115,7 +116,7 @@ namespace hazelcast {
                 }
 
                 assertTrue(rollbackSuccessful);
-                assertTrue(memberRemovedLatch.await(120), "Member removed is not signalled");
+                assertTrue(memberRemovedLatch.await(10), "Member removed is not signalled");
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 try {
@@ -147,7 +148,7 @@ namespace hazelcast {
                 }
 
                 assertTrue(rollbackSuccessful);
-                assertTrue(memberRemovedLatch.await(120));
+                assertTrue(memberRemovedLatch.await(10));
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 assertNull(q.poll().get());

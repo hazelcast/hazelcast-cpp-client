@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_MORPHING_PORTABLE_READER
 #define HAZELCAST_MORPHING_PORTABLE_READER
 
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include <string>
@@ -29,7 +29,7 @@ namespace hazelcast {
                 class HAZELCAST_API MorphingPortableReader {
                 public:
 
-                    MorphingPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
                     int readInt(const char *fieldName);
 

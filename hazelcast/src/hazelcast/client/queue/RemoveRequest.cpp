@@ -16,7 +16,7 @@ namespace hazelcast {
             :name(name)
             , data(data) {
 
-            };
+            }
 
             int RemoveRequest::getFactoryId() const {
                 return QueuePortableHook::F_ID;
@@ -32,7 +32,7 @@ namespace hazelcast {
                 writer.writeLong("t", 0);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
+            }
         }
     }
 }

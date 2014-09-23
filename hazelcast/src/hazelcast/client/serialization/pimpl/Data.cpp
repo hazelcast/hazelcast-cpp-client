@@ -20,7 +20,7 @@ namespace hazelcast {
                 , partitionHash(0)
                 , type(SerializationConstants::CONSTANT_TYPE_DATA){
 
-                };
+                }
 
                 Data::Data(const Data &rhs)
                 : cd(rhs.cd)
@@ -28,7 +28,7 @@ namespace hazelcast {
                 , partitionHash(rhs.partitionHash)
                 , type(rhs.type){
 
-                };
+                }
 
                 Data &Data::operator = (const Data &rhs) {
                     partitionHash = rhs.partitionHash;
@@ -36,11 +36,11 @@ namespace hazelcast {
                     cd = rhs.cd;
                     buffer = rhs.buffer;
                     return (*this);
-                };
+                }
 
                 int Data::bufferSize() const {
                     return buffer->size();
-                };
+                }
 
                 /**
                  * Calculates the size of the binary after the Data is serialized.
@@ -65,7 +65,7 @@ namespace hazelcast {
                     total += bufferSize(); // buffer
                     total += 4; // partition-hash
                     return total;
-                };
+                }
 
 
                 int Data::hashCode() const {
@@ -78,7 +78,7 @@ namespace hazelcast {
                         hash = (hash ^ (*buffer)[i]) * prime;
                     }
                     return hash;
-                };
+                }
 
                 int Data::getPartitionHash() const {
                     if (partitionHash == 0) {
@@ -87,7 +87,7 @@ namespace hazelcast {
                         }
                     }
                     return partitionHash;
-                };
+                }
 
 
                 void Data::setPartitionHash(int partitionHash) {
@@ -96,15 +96,15 @@ namespace hazelcast {
 
                 int Data::getType() const {
                     return type;
-                };
+                }
 
                 void Data::setType(int type) {
                     this->type = type;
-                };
+                }
 
                 void Data::setBuffer(std::auto_ptr<std::vector<unsigned char> > buffer) {
                     this->buffer = buffer;
-                };
+                }
 
 
                 int Data::getFactoryId() const {
@@ -145,14 +145,14 @@ namespace hazelcast {
                         int version = objectDataInput.readInt();
 
                         int classDefSize = objectDataInput.readInt();
-                        SerializationContext *serializationContext = objectDataInput.getSerializationContext();
-                        if (serializationContext->isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = serializationContext->lookup(factoryId, classId, version);
+                        PortableContext *portableContext = objectDataInput.getPortableContext();
+                        if (portableContext->isClassDefinitionExists(factoryId, classId, version)) {
+                            cd = portableContext->lookup(factoryId, classId, version);
                             objectDataInput.skipBytes(classDefSize);
                         } else {
                             std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
                             objectDataInput.readFully(*(classDefBytes.get()));
-                            cd = serializationContext->createClassDefinition(factoryId, classDefBytes);
+                            cd = portableContext->createClassDefinition(factoryId, classDefBytes);
                         }
                     }
                     int size = objectDataInput.readInt();

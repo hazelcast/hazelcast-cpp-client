@@ -12,11 +12,11 @@ namespace hazelcast {
             AvailableRequest::AvailableRequest(const std::string &instanceName)
             : SemaphoreRequest(instanceName, -1) {
 
-            };
+            }
 
             int AvailableRequest::getClassId() const {
                 return SemaphorePortableHook::AVAILABLE;
-            };
+            }
 
             bool AvailableRequest::isRetryable() const {
                 return true;

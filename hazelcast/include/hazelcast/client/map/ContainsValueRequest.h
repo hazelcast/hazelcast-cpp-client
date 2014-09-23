@@ -5,14 +5,14 @@
 #ifndef HAZELCAST_MAP_CONTAINS_VALUE_R
 #define HAZELCAST_MAP_CONTAINS_VALUE_R
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ContainsValueRequest : public impl::PortableRequest {
+            class HAZELCAST_API ContainsValueRequest : public impl::ClientRequest {
             public:
                 ContainsValueRequest(const std::string &name, const serialization::pimpl::Data &value);
 

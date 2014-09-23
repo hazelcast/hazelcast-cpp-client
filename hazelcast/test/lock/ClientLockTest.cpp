@@ -15,7 +15,7 @@ namespace hazelcast {
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , l(new ILock(client->getILock("ClientLockTest"))) {
-            };
+            }
 
 
             ClientLockTest::~ClientLockTest() {
@@ -27,22 +27,22 @@ namespace hazelcast {
                 addTest(&ClientLockTest::testTryLock, "testTryLock");
                 addTest(&ClientLockTest::testForceUnlock, "testForceUnlock");
                 addTest(&ClientLockTest::testStats, "testStats");
-            };
+            }
 
             void ClientLockTest::beforeClass() {
-            };
+            }
 
             void ClientLockTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientLockTest::beforeTest() {
-            };
+            }
 
             void ClientLockTest::afterTest() {
                 l->forceUnlock();
-            };
+            }
 
             void testLockLockThread(util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;

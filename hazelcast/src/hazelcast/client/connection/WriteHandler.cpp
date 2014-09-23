@@ -7,6 +7,7 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/serialization/pimpl/Packet.h"
 #include <ctime>
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
@@ -21,7 +22,15 @@ namespace hazelcast {
             , informSelector(true)
             {
 
-            };
+            }
+
+
+            WriteHandler::~WriteHandler() {
+                serialization::pimpl::Packet *packet;
+                while ((packet = writeQueue.poll()) != NULL) {
+                    delete packet;
+                }
+            }
 
             void WriteHandler::run() {
                 informSelector = true;
@@ -33,12 +42,11 @@ namespace hazelcast {
                 ready = false;
             }
 
-            void WriteHandler::enqueueData(const serialization::pimpl::Data &data) {
-                serialization::pimpl::DataAdapter *socketWritable = new serialization::pimpl::DataAdapter(data);
-                writeQueue.offer(socketWritable);
+            void WriteHandler::enqueueData(serialization::pimpl::Packet *packet) {
+                writeQueue.offer(packet);
                 if (informSelector.compareAndSet(true, false)) {
-                    ioListener.addTask(this);
-                    ioListener.wakeUp();
+                    ioSelector.addTask(this);
+                    ioSelector.wakeUp();
                 }
             }
 
@@ -46,7 +54,7 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastWrite = clock();
+                connection.lastWrite = time(NULL);
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();
@@ -85,7 +93,7 @@ namespace hazelcast {
                 ready = false;
                 registerHandler();
 
-            };
+            }
         }
     }
 }

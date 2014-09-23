@@ -37,7 +37,7 @@ namespace hazelcast {
                     break;
                 }
                 util::sleep(1);
-            };
+            }
         }
     }
 }

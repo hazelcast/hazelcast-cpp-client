@@ -18,21 +18,23 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+
             class Portable;
 
-            namespace pimpl {
-                class ClassDefinition;
+            class ClassDefinition;
+            
+            class FieldDefinition;
 
-                class FieldDefinition;
+            namespace pimpl {
 
                 class SerializerHolder;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API DefaultPortableWriter {
                 public:
 
-                    DefaultPortableWriter(SerializationContext &serializationContext, boost::shared_ptr<ClassDefinition> cd, DataOutput &output);
+                    DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& output);
 
                     void writeInt(const char *fieldName, int value);
 
@@ -50,31 +52,31 @@ namespace hazelcast {
 
                     void writeShort(const char *fieldName, short value);
 
-                    void writeUTF(const char *fieldName, const std::string &str);
+                    void writeUTF(const char *fieldName, const std::string& str);
 
                     void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
-                    void writeByteArray(const char *fieldName, const std::vector<byte> &x);
+                    void writeByteArray(const char *fieldName, const std::vector<byte>& x);
 
-                    void writeCharArray(const char *fieldName, const std::vector<char > &data);
+                    void writeCharArray(const char *fieldName, const std::vector<char>& data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short > &data);
+                    void writeShortArray(const char *fieldName, const std::vector<short>& data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int> &data);
+                    void writeIntArray(const char *fieldName, const std::vector<int>& data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long > &data);
+                    void writeLongArray(const char *fieldName, const std::vector<long>& data);
 
-                    void writeFloatArray(const char *fieldName, const std::vector<float > &data);
+                    void writeFloatArray(const char *fieldName, const std::vector<float>& data);
 
-                    void writeDoubleArray(const char *fieldName, const std::vector<double > &data);
+                    void writeDoubleArray(const char *fieldName, const std::vector<double>& data);
 
                     void end();
 
-                    template <typename T>
+                    template<typename T>
                     void writeNullPortable(const char *fieldName) {
                         setPosition(fieldName);
                         dataOutput.writeBoolean(true);
-                    };
+                    }
 
                     template<typename T>
                     void writePortable(const char *fieldName, const T& portable) {
@@ -83,7 +85,7 @@ namespace hazelcast {
                         dataOutput.writeBoolean(false);
                         checkPortableAttributes(fieldDefinition, portable);
                         write(portable);
-                    };
+                    }
 
                     template<typename T>
                     void writePortableArray(const char *fieldName, const std::vector<T>& values) {
@@ -92,7 +94,7 @@ namespace hazelcast {
                         dataOutput.writeInt(len);
                         if (len > 0) {
                             int offset = dataOutput.position();
-                            dataOutput.position(offset + len * sizeof (int));
+                            dataOutput.position(offset + len * sizeof(int));
                             for (int i = 0; i < len; i++) {
                                 dataOutput.writeInt(offset + i * sizeof(int), dataOutput.position());
                                 Portable const& portable = values[i];
@@ -100,21 +102,21 @@ namespace hazelcast {
                                 write(portable);
                             }
                         }
-                    };
+                    }
 
-                    ObjectDataOutput &getRawDataOutput();
+                    ObjectDataOutput& getRawDataOutput();
 
                 private:
 
                     FieldDefinition const& setPosition(const char *fieldName);
 
-                    void write(const Portable &p);
+                    void write(const Portable& p);
 
                     void checkPortableAttributes(const FieldDefinition& fd, const Portable& portable);
 
                     bool raw;
-                    SerializerHolder &serializerHolder;
-                    DataOutput &dataOutput;
+                    SerializerHolder& serializerHolder;
+                    DataOutput& dataOutput;
                     ObjectDataOutput objectDataOutput;
                     int begin;
                     int offset;

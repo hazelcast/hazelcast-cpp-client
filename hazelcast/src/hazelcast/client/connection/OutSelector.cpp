@@ -5,7 +5,6 @@
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,11 +21,16 @@ namespace hazelcast {
             }
 
             void OutSelector::listenInternal() {
-
                 using std::max;
-                int n = max(wakeUpSocketSet.getHighestSocketId(), socketSet.getHighestSocketId());
-                fd_set write_fds = socketSet.get_fd_set();
-                fd_set wakeUp_fd = wakeUpSocketSet.get_fd_set();
+                std::set<Socket const *, socketPtrComp> currentWakeUpSockets = wakeUpSocketSet.getSockets();
+                std::set<Socket const *, socketPtrComp> currentSockets = socketSet.getSockets();
+                int id1 = util::SocketSet::getHighestSocketId(currentSockets);
+                int id2 = util::SocketSet::getHighestSocketId(currentWakeUpSockets);
+                int n = max(id1, id2);
+
+                fd_set write_fds = util::SocketSet::get_fd_set(currentSockets);
+                fd_set wakeUp_fd =  util::SocketSet::get_fd_set(currentWakeUpSockets);
+
                 int err = select(n + 1, &wakeUp_fd, &write_fds, NULL, &t);
                 if (err == 0) {
                     return;
@@ -36,7 +40,7 @@ namespace hazelcast {
                     return;
                 }
                 std::set<Socket const *, client::socketPtrComp>::iterator it;
-                for (it = wakeUpSocketSet.sockets.begin(); it != wakeUpSocketSet.sockets.end(); ++it) {
+                for (it = currentWakeUpSockets.begin(); it != currentWakeUpSockets.end(); ++it) {
                     if (FD_ISSET((*it)->getSocketId(), &wakeUp_fd)) {
                         int wakeUpSignal;
                         (*it)->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
@@ -44,13 +48,13 @@ namespace hazelcast {
                     }
                 }
 
-                it = socketSet.sockets.begin();
-                while (it != socketSet.sockets.end()) {
+                it = currentSockets.begin();
+                while (it != currentSockets.end()) {
                     Socket const *currentSocket = *it;
                     ++it;
                     int id = currentSocket->getSocketId();
                     if (FD_ISSET(id, &write_fds)) {
-                        socketSet.sockets.erase(currentSocket);
+                        socketSet.removeSocket(currentSocket);
                         boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
                         if (conn.get() != NULL)
                             conn->getWriteHandler().handle();

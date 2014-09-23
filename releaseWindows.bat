@@ -3,7 +3,7 @@ mkdir ReleaseStatic32
 cd .\ReleaseStatic32
 cd
 cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release 
-MSBuild.exe HazelcastClient.sln /property:Configuration=Release
+MSBuild.exe HazelcastClient.sln /property:Configuration=Release /p:VisualStudioVersion=12.0
 cd ..
 
 echo "Compiling Shared 32bit library"
@@ -11,7 +11,7 @@ mkdir ReleaseShared32
 cd .\ReleaseShared32
 cd;
 cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release 
-MSBuild.exe HazelcastClient.sln /property:Configuration=Release
+MSBuild.exe HazelcastClient.sln /property:Configuration=Release /p:VisualStudioVersion=12.0
 cd ..
 
 echo "Moving 32bit libraries to target"
@@ -42,16 +42,16 @@ echo "Compiling Static 64bit library"
 mkdir ReleaseStatic64
 cd .\ReleaseStatic64
 cd;
-cmake .. -G "Visual Studio 10 Win64" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
-MSBuild.exe HazelcastClient.sln /property:Configuration=Release
+cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
+MSBuild.exe HazelcastClient.sln /property:Configuration=Release /p:VisualStudioVersion=12.0
 cd ..
 
 echo "Compiling Shared 64bit library"
 mkdir ReleaseShared64
 cd .\ReleaseShared64
 cd;
-cmake .. -G "Visual Studio 10 Win64" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
-MSBuild.exe HazelcastClient.sln /property:Configuration=Release
+cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
+MSBuild.exe HazelcastClient.sln /property:Configuration=Release /p:VisualStudioVersion=12.0
 cd ..
 
 echo "Moving 64bit libraries to target"

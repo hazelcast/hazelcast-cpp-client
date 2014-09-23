@@ -14,15 +14,15 @@ namespace hazelcast {
             :name(name)
             , key(key) {
 
-            };
+            }
 
             int GetEntryViewRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int GetEntryViewRequest::getClassId() const {
                 return PortableHook::GET_ENTRY_VIEW;
-            };
+            }
 
 
             bool GetEntryViewRequest::isRetryable() const {
@@ -33,7 +33,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
 
         }
     }

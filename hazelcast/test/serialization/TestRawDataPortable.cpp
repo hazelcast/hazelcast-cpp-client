@@ -7,7 +7,7 @@ namespace hazelcast {
         namespace test {
             TestRawDataPortable::TestRawDataPortable() {
 
-            };
+            }
 
             int TestRawDataPortable::getFactoryId() const {
                 return 1;
@@ -26,7 +26,7 @@ namespace hazelcast {
                 out.writeInt(k);
                 out.writeUTF(s);
                 ds.writeData(out);
-            };
+            }
 
 
             void TestRawDataPortable::readPortable(serialization::PortableReader &reader) {
@@ -39,7 +39,7 @@ namespace hazelcast {
                 k = in.readInt();
                 s = in.readUTF();
                 ds.readData(in);
-            };
+            }
 
             TestRawDataPortable::TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
                 this->l = l;
@@ -48,7 +48,7 @@ namespace hazelcast {
                 this->k = k;
                 this->s = s;
                 this->ds = ds;
-            };
+            }
 
             bool TestRawDataPortable::operator ==(const TestRawDataPortable &m) const {
                 if (this == &m)
@@ -60,11 +60,11 @@ namespace hazelcast {
                 if (ds != m.ds) return false;
                 if (s.compare(m.s) != 0) return false;
                 return true;
-            };
+            }
 
             bool TestRawDataPortable::operator !=(const TestRawDataPortable &m) const {
                 return !(*this == m);
-            };
+            }
         }
     }
 }

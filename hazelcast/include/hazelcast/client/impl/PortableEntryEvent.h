@@ -38,6 +38,7 @@ namespace hazelcast {
                 serialization::pimpl::Data value;
                 serialization::pimpl::Data oldValue;
                 EntryEventType eventType;
+                int numberOfAffectedEntries;
                 std::string uuid;
                 std::string name;
 

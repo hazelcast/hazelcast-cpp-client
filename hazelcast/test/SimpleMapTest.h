@@ -14,8 +14,8 @@
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 4;
-int ENTRY_COUNT = 10 * 1000;
+int THREAD_COUNT = 1;
+int ENTRY_COUNT = 1000;
 int VALUE_SIZE = 1000;
 int STATS_SECONDS = 10;
 int GET_PERCENTAGE = 30;
@@ -123,16 +123,23 @@ public:
         std::cerr << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
+        clientConfig.setProperty(PROP_HEARTBEAT_TIMEOUT, "10");
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
-
+        clientConfig.setLogLevel(FINEST);
         hazelcast::util::Thread monitor(printStats);
         HazelcastClient hazelcastClient(clientConfig);
 
+        std::vector< hazelcast::util::Thread * > threads(THREAD_COUNT);
+
         for (int i = 0; i < THREAD_COUNT; i++) {
-            hazelcast::util::Thread t(&SimpleMapTest::staticOp, this, &hazelcastClient);
+            threads[i] = new hazelcast::util::Thread(&SimpleMapTest::staticOp, this, &hazelcastClient);
         }
         monitor.join();
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            delete threads[i];
+        }
     }
 };
 

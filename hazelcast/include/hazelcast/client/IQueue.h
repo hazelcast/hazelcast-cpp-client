@@ -29,7 +29,7 @@ namespace hazelcast {
         /**
          * Concurrent, blocking, distributed, observable, client queue.
          *
-         * @param <E> item type
+         * @tparam E item type
          */
         template<typename E>
         class HAZELCAST_API IQueue : public DistributedObject {
@@ -80,8 +80,8 @@ namespace hazelcast {
              *         <tt>false</tt>
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool offer(const E &e) {
-                return offer(e, 0);
+            bool offer(const E &element) {
+                return offer(element, 0);
             };
 
             /**
@@ -96,13 +96,13 @@ namespace hazelcast {
              * Inserts the specified element into this queue.
              * If queue is  full waits for space to became available for specified time.
              *
-             * @param e the element to add
-             * @param timeout how long to wait before giving up, in units of
+             * @param element to add
+             * @param timeoutInMillis how long to wait before giving up, in units of
              * @return <tt>true</tt> if successful, or <tt>false</tt> if
              *         the specified waiting time elapses before space is available
              */
-            bool offer(const E &e, long timeoutInMillis) {
-                serialization::pimpl::Data data = toData(e);
+            bool offer(const E &element, long timeoutInMillis) {
+                serialization::pimpl::Data data = toData(element);
                 queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
                 return *(invoke<bool>(request, partitionId));
             };
@@ -117,7 +117,7 @@ namespace hazelcast {
 
             /**
              *
-             * @param long timeoutInMillis time to wait if item is not available.
+             * @param timeoutInMillis time to wait if item is not available.
              * @return the head of the queue. If queue is empty waits for specified time.
              */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
@@ -161,7 +161,7 @@ namespace hazelcast {
             /**
              * Note that elements will be pushed_back to vector.
              *
-             * @param vector that elements will be drained to.
+             * @param elements the vector that elements will be drained to.
              * @return number of elements drained.
              */
             int drainTo(std::vector<E> &elements) {
@@ -172,16 +172,16 @@ namespace hazelcast {
              * Note that elements will be pushed_back to vector.
              *
              * @param maxElements upper limit to be filled to vector.
-             * @param vector that elements will be drained to.
+             * @param elements vector that elements will be drained to.
              * @return number of elements drained.
              */
-            int drainTo(std::vector<E> &c, int maxElements) {
+            int drainTo(std::vector<E> &elements, int maxElements) {
                 queue::DrainRequest *request = new queue::DrainRequest(getName(), maxElements);
                 boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, partitionId);
                 const std::vector<serialization::pimpl::Data> &coll = result->getCollection();
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
                     boost::shared_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
-                    c.push_back(*e);
+                    elements.push_back(*e);
                 }
                 return coll.size();
             };
@@ -266,8 +266,8 @@ namespace hazelcast {
              * @return true if all elements are removed successfully.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool removeAll(const std::vector<E> &c) {
-                std::vector<serialization::pimpl::Data> dataList = getDataList(c);
+            bool removeAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataList = getDataList(elements);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, false);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;
@@ -280,8 +280,8 @@ namespace hazelcast {
              * @return true if operation is successful.
              * @throws IClassCastException if the type of the specified element is incompatible with the server side.
              */
-            bool retainAll(const std::vector<E> &c) {
-                std::vector<serialization::pimpl::Data> dataList = getDataList(c);
+            bool retainAll(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataList = getDataList(elements);
                 queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, true);
                 boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
                 return *success;

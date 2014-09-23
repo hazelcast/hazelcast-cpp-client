@@ -50,10 +50,12 @@ namespace hazelcast {
         void Thread::interruptibleSleep(int seconds){
             LockGuard lock(mutex);
 			if(isInterrupted){
+				isInterrupted = false;
 				throw thread_interrupted();
 			}
-            bool ok = condition.waitFor(mutex, seconds * 1000);
-            if(!ok){
+            bool wokenUpbyInterruption = condition.waitFor(mutex, seconds);
+            if(wokenUpbyInterruption){
+				isInterrupted = false;
                 throw thread_interrupted();
             }
 
@@ -79,7 +81,7 @@ namespace hazelcast {
 
         std::string Thread::getThreadName() const{
             return threadName;
-        };
+        }
 
         DWORD WINAPI Thread::controlledThread(LPVOID args) {
             std::auto_ptr<ThreadArgs> threadArgs((ThreadArgs *) args);
@@ -152,7 +154,7 @@ namespace hazelcast {
 
         std::string Thread::getThreadName() const {
             return threadName;
-        };
+        }
 
         void Thread::interrupt() {
             pthread_cancel(thread);

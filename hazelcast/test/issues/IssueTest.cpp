@@ -57,6 +57,7 @@ namespace hazelcast {
                 clientConfig.setSmart(false);
 
                 HazelcastClient client(clientConfig);
+
                 client::IMap<int, int> map = client.getMap<int, int>("m");
                 util::Thread* thread = NULL;
                 int expected = 1000;
@@ -69,7 +70,6 @@ namespace hazelcast {
                 thread->join();
                 delete thread;
                 iTest::assertEqual(expected, map.size());
-
             }
         }
     }

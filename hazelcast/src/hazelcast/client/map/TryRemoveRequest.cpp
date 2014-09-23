@@ -18,15 +18,15 @@ namespace hazelcast {
             , threadId(threadId)
             , timeout(timeout) {
 
-            };
+            }
 
             int TryRemoveRequest::getFactoryId() const {
                 return PortableHook::F_ID;
-            };
+            }
 
             int TryRemoveRequest::getClassId() const {
                 return PortableHook::TRY_REMOVE;
-            };
+            }
 
             void TryRemoveRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("timeout", timeout);
@@ -34,7 +34,7 @@ namespace hazelcast {
                 writer.writeLong("t", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

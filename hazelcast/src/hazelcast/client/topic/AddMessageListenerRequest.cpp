@@ -14,19 +14,19 @@ namespace hazelcast {
             AddMessageListenerRequest::AddMessageListenerRequest(const std::string& instanceName)
             : instanceName(instanceName) {
 
-            };
+            }
 
             int AddMessageListenerRequest::getFactoryId() const {
                 return TopicPortableHook::F_ID;
-            };
+            }
 
             int AddMessageListenerRequest::getClassId() const {
                 return TopicPortableHook::ADD_LISTENER;
-            };
+            }
 
             void AddMessageListenerRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", instanceName);
-            };
+            }
         }
     }
 }

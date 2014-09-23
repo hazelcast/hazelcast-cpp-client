@@ -14,7 +14,7 @@ namespace hazelcast {
             , key(key)
             , threadId(threadId) {
 
-            };
+            }
 
             int DeleteRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -30,7 +30,7 @@ namespace hazelcast {
                 writer.writeLong("t", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

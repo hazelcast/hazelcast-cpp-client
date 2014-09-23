@@ -25,6 +25,7 @@ namespace hazelcast {
                 int const CLIENT_PING = 11;
                 int const GET_PARTITIONS = 12;
                 int const REMOVE_LISTENER = 13;
+                int const REMOVE_ALL_LISTENERS = 14;
 
                 int const PARTITION_DS_FACTORY = -2;
                 int const PARTITIONS = 2;
@@ -37,8 +38,6 @@ namespace hazelcast {
                 int const MEMBERSHIP_EVENT = 8;
                 int const PING = 9;
 
-//                const byte protocol_bytes[6] = {'C', 'B', '1', 'C', 'P', 'P'};
-//                std::vector<byte> const PROTOCOL(protocol_bytes, protocol_bytes + 6);
             }
 
             namespace SpiConstants {

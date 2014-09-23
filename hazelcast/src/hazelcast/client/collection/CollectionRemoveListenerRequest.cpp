@@ -19,7 +19,7 @@ namespace hazelcast {
 
             int CollectionRemoveListenerRequest::getFactoryId() const {
                 return CollectionPortableHook::F_ID;
-            };
+            }
 
             int CollectionRemoveListenerRequest::getClassId() const {
                 return CollectionPortableHook::COLLECTION_REMOVE_LISTENER;

@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_CLEAR_REQUEST
 #define HAZELCAST_QUEUE_CLEAR_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API ClearRequest : public impl::PortableRequest {
+            class HAZELCAST_API ClearRequest : public impl::ClientRequest {
             public:
                 ClearRequest(const std::string &name);
 

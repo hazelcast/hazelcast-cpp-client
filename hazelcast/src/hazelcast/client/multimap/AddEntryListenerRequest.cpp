@@ -17,22 +17,22 @@ namespace hazelcast {
             , hasKey(true)
             , includeValue(includeValue) {
 
-            };
+            }
 
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue)
             :name(name)
             , hasKey(false)
             , includeValue(includeValue) {
 
-            };
+            }
 
             int AddEntryListenerRequest::getFactoryId() const {
                 return MultiMapPortableHook::F_ID;
-            };
+            }
 
             int AddEntryListenerRequest::getClassId() const {
                 return MultiMapPortableHook::ADD_ENTRY_LISTENER;
-            };
+            }
 
 
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
@@ -44,7 +44,7 @@ namespace hazelcast {
                 } else {
                     util::writeNullableData(out, NULL);
                 }
-            };
+            }
 
             bool AddEntryListenerRequest::isRetryable() const {
                 return true;

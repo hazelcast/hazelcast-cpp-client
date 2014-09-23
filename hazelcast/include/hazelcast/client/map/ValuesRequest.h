@@ -6,13 +6,13 @@
 #ifndef MAP_VALUES_REQUEST
 #define MAP_VALUES_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ValuesRequest : public impl::PortableRequest {
+            class HAZELCAST_API ValuesRequest : public impl::ClientRequest {
             public:
                 ValuesRequest(const std::string &name);
 

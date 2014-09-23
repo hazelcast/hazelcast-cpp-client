@@ -15,20 +15,20 @@ namespace hazelcast {
             : instanceName(instanceName)
             , timeout(timeout) {
 
-            };
+            }
 
             int AwaitRequest::getFactoryId() const {
                 return CountDownLatchPortableHook::F_ID;
-            };
+            }
 
             int AwaitRequest::getClassId() const {
                 return CountDownLatchPortableHook::AWAIT;
-            };
+            }
 
             void AwaitRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
                 writer.writeLong("timeout", timeout);
-            };
+            }
 
         }
     }

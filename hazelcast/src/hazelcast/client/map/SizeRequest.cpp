@@ -14,7 +14,7 @@ namespace hazelcast {
             SizeRequest::SizeRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int SizeRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void SizeRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
 
             bool SizeRequest::isRetryable() const{
                 return true;

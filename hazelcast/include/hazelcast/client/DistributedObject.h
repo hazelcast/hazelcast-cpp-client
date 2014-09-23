@@ -10,6 +10,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/connection/CallFuture.h"
 #include <string>
 
 namespace hazelcast {
@@ -34,7 +35,6 @@ namespace hazelcast {
          * @see ICountDownLatch
          * @see IdGenerator
          * @see IAtomicLong
-         * @see IExecutorService
          * @see TransactionalMap
          * @see TransactionalQueue
          * @see TransactionalMultiMap
@@ -91,12 +91,12 @@ namespace hazelcast {
              * memory ownership is moved to DistributedObject.
              *
              * @param partitionId that given request will be send to.
-             * @param request PortableRequest ptr.
+             * @param request ClientRequest ptr.
              */
-            boost::shared_ptr<Response> invoke(const impl::PortableRequest *request, int partitionId) {
+            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request, int partitionId) {
                 spi::InvocationService &invocationService = getContext().getInvocationService();
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnKeyOwner(request, partitionId);
-                return context->getSerializationService().template toObject<Response>(future->get());
+                connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
+                return context->getSerializationService().template toObject<Response>(future.get());
             };
 
             /**
@@ -104,36 +104,36 @@ namespace hazelcast {
              * method to be called by distributed objects.
              * memory ownership is moved to DistributedObject.
              *
-             * @param request PortableRequest ptr.
+             * @param request ClientRequest ptr.
              */
             template<typename Response>
-            boost::shared_ptr<Response> invoke(const impl::PortableRequest *request) {
-                boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = getContext().getInvocationService().invokeOnRandomTarget(request);
-                return context->getSerializationService().template toObject<Response>(future->get());
+            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request) {
+                connection::CallFuture  future = getContext().getInvocationService().invokeOnRandomTarget(request);
+                return context->getSerializationService().template toObject<Response>(future.get());
             };
 
             /**
              * Internal API.
              *
-             * @param registrationRequest PortableRequest ptr.
+             * @param registrationRequest ClientRequest ptr.
              * @param partitionId
              * @param handler
              */
-            std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
+            std::string listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
             /**
              * Internal API.
              *
-             * @param registrationRequest PortableRequest ptr.
+             * @param registrationRequest ClientRequest ptr.
              * @param handler
              */
-            std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
+            std::string listen(const impl::ClientRequest *registrationRequest, impl::BaseEventHandler *handler);
 
             /**
              * Internal API.
              *
-             * @param request PortableRequest ptr.
-             * @param registrationId.
+             * @param request ClientRequest ptr.
+             * @param registrationId
              */
             bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 

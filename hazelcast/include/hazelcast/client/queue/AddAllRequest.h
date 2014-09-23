@@ -5,13 +5,13 @@
 #define HAZELCAST_QUEUE_ADD_ALL_REQUEST
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API AddAllRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddAllRequest : public impl::ClientRequest {
             public:
 
                 AddAllRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList);

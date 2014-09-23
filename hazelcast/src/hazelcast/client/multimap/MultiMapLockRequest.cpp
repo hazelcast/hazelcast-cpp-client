@@ -17,7 +17,7 @@ namespace hazelcast {
             , ttl(-1)
             , timeout(-1) {
 
-            };
+            }
 
             MultiMapLockRequest::MultiMapLockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, long ttl, long timeout)
             :KeyBasedRequest(name, key)
@@ -25,22 +25,22 @@ namespace hazelcast {
             , ttl(ttl)
             , timeout(timeout) {
 
-            };
+            }
 
             int MultiMapLockRequest::getFactoryId() const {
                 return MultiMapPortableHook::F_ID;
-            };
+            }
 
             int MultiMapLockRequest::getClassId() const {
                 return MultiMapPortableHook::LOCK;
-            };
+            }
 
             void MultiMapLockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("tid", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeLong("timeout", timeout);
                 KeyBasedRequest::write(writer);
-            };
+            }
 
         }
     }

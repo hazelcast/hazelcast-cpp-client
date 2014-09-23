@@ -26,7 +26,7 @@
 //            , client(new HazelcastClient(clientConfig.addAddress(Address("localhost", 5701))))
 //            , service(new IExecutorService(client->getExecutorService("IExecuterServiceTest"))) {
 //
-//            };
+//            }
 //
 //
 //            IExecutorServiceTest::~IExecutorServiceTest() {
@@ -40,25 +40,25 @@
 //                addTest(&IExecutorServiceTest::submitCallable3, "submitCallable3");
 //                addTest(&IExecutorServiceTest::submitCallable4, "submitCallable4");
 //                addTest(&IExecutorServiceTest::submitFailingCallable, "submitFailingCallable");
-//            };
+//            }
 //
 //            void IExecutorServiceTest::beforeClass() {
 //
-//            };
+//            }
 //
 //            void IExecutorServiceTest::afterClass() {
 //                client.reset();
 //                instance.shutdown();
 //                second.shutdown();
 //                third.shutdown();
-//            };
+//            }
 //
 //            void IExecutorServiceTest::beforeTest() {
 //
-//            };
+//            }
 //
 //            void IExecutorServiceTest::afterTest() {
-//            };
+//            }
 //
 //            void IExecutorServiceTest::testSubmitWithResult() {
 //                int res = 5;
@@ -96,7 +96,7 @@
 //
 //            private:
 //                util::CountDownLatch& latch;
-//            };
+//            }
 //
 //            void IExecutorServiceTest::submitCallable2() {
 //
@@ -132,7 +132,7 @@
 //                    if (!response.compare("asd:result")) {
 //                        latch.countDown();
 //                    }
-//                };
+//                }
 //
 //                void onComplete(std::map<Member, std::string >& values) {
 //                    std::map<Member, std::string >::iterator it;
@@ -142,11 +142,11 @@
 //                            latch.countDown();
 //                        }
 //                    }
-//                };
+//                }
 //
 //            private:
 //                util::CountDownLatch& latch;
-//            };
+//            }
 //
 //            void IExecutorServiceTest::submitCallable4() {
 //                util::CountDownLatch latch(4);

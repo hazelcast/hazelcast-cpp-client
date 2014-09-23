@@ -14,7 +14,7 @@ namespace hazelcast {
             :name(name)
             , key(key){
 
-            };
+            }
 
             int IsLockedRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -29,7 +29,7 @@ namespace hazelcast {
                 writer.writeLong("tid", 0);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
 
         }
     }

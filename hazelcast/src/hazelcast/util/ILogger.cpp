@@ -15,33 +15,37 @@ namespace hazelcast {
             HazelcastLogLevel = logLevel;
         }
 
-        void ILogger::severe(const std::string &message) {
-            if (client::SEVERE >= HazelcastLogLevel) {
+        void ILogger::severe(const std::string& message) {
+            if (isEnabled(client::SEVERE)) {
                 (std::cout << "SEVERE: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
             }
         }
 
-        void ILogger::warning(const std::string &message) {
-            if (client::WARNING >= HazelcastLogLevel) {
-                (std::cout << "WARNING: " << prefix <<  " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+        void ILogger::warning(const std::string& message) {
+            if (isEnabled(client::WARNING)) {
+                (std::cout << "WARNING: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
             }
         }
 
-        void ILogger::info(const std::string &message) {
-            if (client::INFO >= HazelcastLogLevel) {
+        void ILogger::info(const std::string& message) {
+            if (isEnabled(client::INFO)) {
                 (std::cout << "INFO: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
             }
         }
 
 
         void ILogger::finest(const std::string& message) {
-            if (client::FINEST >= HazelcastLogLevel) {
+            if (isEnabled(client::FINEST)) {
                 (std::cout << "FINEST: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
             }
         }
 
-        void ILogger::setPrefix(const std::string &prefix) {
+        void ILogger::setPrefix(const std::string& prefix) {
             this->prefix = prefix;
+        }
+
+        bool ILogger::isEnabled(int logLevel) {
+            return logLevel >= HazelcastLogLevel;
         }
     }
 }

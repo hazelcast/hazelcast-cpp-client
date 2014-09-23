@@ -106,7 +106,7 @@ namespace hazelcast {
             /**
              * Return the event type
              *
-             * @return event type
+             * @return event type ItemEventType
              */
             ItemEventType getEventType() const {
                 return eventType;

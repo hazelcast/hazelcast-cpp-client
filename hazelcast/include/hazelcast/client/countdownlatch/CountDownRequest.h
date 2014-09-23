@@ -8,7 +8,7 @@
 #define HAZELCAST_CountDownRequest
 
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
         }
 
         namespace countdownlatch {
-            class HAZELCAST_API CountDownRequest : public impl::PortableRequest {
+            class HAZELCAST_API CountDownRequest : public impl::ClientRequest {
             public:
                 CountDownRequest(const std::string& instanceName);
 

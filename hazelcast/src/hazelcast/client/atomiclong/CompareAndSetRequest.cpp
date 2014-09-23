@@ -15,16 +15,16 @@ namespace hazelcast {
             : AtomicLongRequest(instanceName, value)
             , expect(expect) {
 
-            };
+            }
 
             int CompareAndSetRequest::getClassId() const {
                 return AtomicLongPortableHook::COMPARE_AND_SET;
-            };
+            }
 
             void CompareAndSetRequest::write(serialization::PortableWriter &writer) const {
                 AtomicLongRequest::write(writer);
                 writer.writeLong("e", expect);
-            };
+            }
         }
     }
 }

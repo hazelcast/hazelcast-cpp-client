@@ -14,26 +14,24 @@ namespace hazelcast {
             namespace pimpl {
                 DataSerializer::DataSerializer() {
 
-                };
+                }
 
                 void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) {
                     out.writeBoolean(true);
                     out.writeInt(object.getFactoryId());
                     out.writeInt(object.getClassId());
                     object.writeData(out);
-                };
+                }
 
                 void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) {
                     bool identified = in.readBoolean();
                     if (!identified) {
-                        throw exception::IOException("void DataSerializer::read", " DataSerializable is not identified");
+                        throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");
                     }
-                    int factoryId = in.readInt();
-                    int classId = in.readInt(); //classId
-                    assert(object.getFactoryId() == factoryId); //factoryId
-                    assert(object.getClassId() == classId); //factoryId
+                    assert(object.getFactoryId() == in.readInt()); //factoryId
+                    assert(object.getClassId() == in.readInt()); //classId
                     object.readData(in);
-                };
+                }
 
             }
         }

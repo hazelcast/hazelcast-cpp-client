@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_IsLockedRequest
 #define HAZELCAST_IsLockedRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API IsLockedRequest : public impl::PortableRequest {
+            class HAZELCAST_API IsLockedRequest : public impl::ClientRequest {
             public:
                 IsLockedRequest(serialization::pimpl::Data &key);
 

@@ -41,11 +41,11 @@ namespace hazelcast {
             context->getInvocationService().invokeOnRandomTarget(request);
         }
 
-        std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
+        std::string DistributedObject::listen(const impl::ClientRequest*registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
             return context->getServerListenerService().listen(registrationRequest, partitionId, handler);
         }
 
-        std::string DistributedObject::listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler) {
+        std::string DistributedObject::listen(const impl::ClientRequest*registrationRequest, impl::BaseEventHandler *handler) {
             return context->getServerListenerService().listen(registrationRequest, handler);
         }
 

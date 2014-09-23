@@ -19,12 +19,12 @@ namespace hazelcast {
             class SerializerBase;
 
             namespace pimpl {
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API SerializerHolder {
 
                 public:
-                    SerializerHolder(SerializationContext &context);
+                    SerializerHolder(PortableContext &context);
 
                     bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 

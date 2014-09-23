@@ -17,7 +17,7 @@ namespace hazelcast {
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
                 //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
-                if (int error = socket.connect())
+                if (int error = socket.connect(5000))
                     std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 
             }
@@ -40,7 +40,7 @@ namespace hazelcast {
                 if (i != OK) {
                     std::cout << "void HazelcastServerFactory::shutdownInstance(int id):" << i << std::endl;
                 }
-            };
+            }
 
             void HazelcastServerFactory::shutdownAll() {
                 outputSocketStream.writeInt(SHUTDOWN_ALL);
@@ -54,7 +54,7 @@ namespace hazelcast {
                     std::cout << e.what() << std::endl;
                 }
 
-            };
+            }
 
             int HazelcastServerFactory::getInstanceId() {
                 outputSocketStream.writeInt(START);

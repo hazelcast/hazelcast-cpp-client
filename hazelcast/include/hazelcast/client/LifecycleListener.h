@@ -23,15 +23,14 @@ namespace hazelcast {
          * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
          *
          * @see LifecycleEvent
-         * @see HazelcastInstance#getLifecycleService()
-         * @see LifecycleService#addLifecycleListener(LifecycleListener *lifecycleListener)
+         * @see HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener)
          *
          */
         class HAZELCAST_API LifecycleListener {
         public:
             /**
              * Called when instance's state changes
-             * @param event Lifecycle event
+             * @param lifecycleEvent LifecycleEvent
              *
              */
             virtual void stateChanged(const LifecycleEvent &lifecycleEvent) = 0;

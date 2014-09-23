@@ -46,7 +46,7 @@ echo "Generating docs "
 doxygen docsConfig
 
 echo "Moving docs to target"
-mv docs/ cpp
+mv  docs/ cpp
 
 cp enterprise-license.txt cpp/enterprise-license.txt
 

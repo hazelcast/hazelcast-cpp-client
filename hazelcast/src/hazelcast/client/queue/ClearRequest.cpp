@@ -13,7 +13,7 @@ namespace hazelcast {
             ClearRequest::ClearRequest(const std::string &name)
             :name(name) {
 
-            };
+            }
 
             int ClearRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -21,12 +21,12 @@ namespace hazelcast {
 
             int ClearRequest::getClassId() const {
                 return queue::QueuePortableHook::CLEAR;
-            };
+            }
 
             void ClearRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", 0);
-            };
+            }
 
 
             bool ClearRequest::isRetryable() const {

@@ -18,22 +18,22 @@ namespace hazelcast {
             }
 
             int Principal::getFactoryId() const {
-                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;;
+                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;
             }
 
             int Principal::getClassId() const {
-                return ProtocolConstants::PRINCIPAL_ID;;
+                return ProtocolConstants::PRINCIPAL_ID;
             }
 
             void Principal::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("uuid", uuid);
                 writer.writeUTF("ownerUuid", ownerUuid);
-            };
+            }
 
             void Principal::readPortable(serialization::PortableReader& reader) {
                 uuid = reader.readUTF("uuid");
                 ownerUuid = reader.readUTF("ownerUuid");
-            };
+            }
 
 
         }

@@ -13,7 +13,7 @@ namespace hazelcast {
             PeekRequest::PeekRequest(const std::string &name)
             :name(name) {
 
-            };
+            }
 
             int PeekRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -21,11 +21,11 @@ namespace hazelcast {
 
             int PeekRequest::getClassId() const {
                 return queue::QueuePortableHook::PEEK;
-            };
+            }
 
             void PeekRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
 
 
             bool PeekRequest::isRetryable() const {

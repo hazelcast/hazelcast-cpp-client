@@ -21,11 +21,11 @@ namespace hazelcast {
             , instance2(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
             , imap(new IMap<string, string>(client->getMap< string, string >("clientMapTest"))) {
-            };
+            }
 
 
             ClientMapTest::~ClientMapTest() {
-            };
+            }
 
             void ClientMapTest::addTests() {
                 addTest(&ClientMapTest::testContains, "testContains");
@@ -52,24 +52,25 @@ namespace hazelcast {
 //                addTest(&ClientMapTest::testMultipleThreadPut, "testMultipleThreadPut"); //MTODO
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
-            };
+                addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
+            }
 
             void ClientMapTest::beforeClass() {
-            };
+            }
 
             void ClientMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
                 instance2.shutdown();
-            };
+            }
 
             void ClientMapTest::beforeTest() {
                 imap->clear();
-            };
+            }
 
             void ClientMapTest::afterTest() {
                 imap->clear();
-            };
+            }
 
             void ClientMapTest::fillMap() {
                 for (int i = 0; i < 10; i++) {
@@ -88,11 +89,11 @@ namespace hazelcast {
                 , removeLatch(removeLatch)
                 , updateLatch(updateLatch)
                 , evictLatch(evictLatch) {
-                };
+                }
 
                 void entryAdded(EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
-                };
+                }
 
                 void entryRemoved(EntryEvent<std::string, std::string> &event) {
                     removeLatch.countDown();
@@ -117,11 +118,11 @@ namespace hazelcast {
             public:
                 MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
                 :latch(latch), nullLatch(nullLatch) {
-                };
+                }
 
                 void entryAdded(EntryEvent<string, string> &event) {
                     latch.countDown();
-                };
+                }
 
                 void entryRemoved(EntryEvent<string, string> &event) {
                 }
@@ -591,9 +592,30 @@ namespace hazelcast {
                 std::vector<std::pair<std::string, std::string> > tempVector3;
                 tempVector3 = imap->entrySet("this == value1");
 
-                std::vector<std::pair<std::string, std::string> > ::iterator it3 = tempVector3.begin();
+                std::vector<std::pair<std::string, std::string> >::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);
                 assertEqual("value1", (*it3).second);
+
+            }
+
+            void ClientMapTest::testKeySetAndValuesWithPredicates() {
+                std::string name = "testKeysetAndValuesWithPredicates";
+                IMap<Employee, Employee> map = client->getMap<Employee, Employee>(name);
+
+                Employee emp1("abc-123-xvz", 34);
+                Employee emp2("abc-123-xvz", 20);
+
+                map.put(emp1, emp1);
+                assertNull(map.put(emp2, emp2).get());
+                assertEqual(2, (int)map.size());
+                assertEqual(2, (int)map.keySet().size());
+                assertEqual(0, (int)map.keySet("a = 10").size());
+                assertEqual(0, (int)map.values("a = 10").size());
+                assertEqual(2, (int)map.keySet("a >= 10").size());
+                assertEqual(2, (int)map.values("a >= 10").size());
+                assertEqual(2, (int)map.size());
+                assertEqual(2, (int)map.values().size());
+
 
             }
 
@@ -609,8 +631,8 @@ namespace hazelcast {
                 assertEqual(view.value, employee);
                 assertEqual(view.key, 1);
 
-                employees.addIndex("age", true);
-                employees.addIndex("name", false);
+                employees.addIndex("a", true);
+                employees.addIndex("n", false);
             }
 
 

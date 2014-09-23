@@ -8,17 +8,19 @@
 #ifndef HAZELCAST_Request
 #define HAZELCAST_Request
 
-#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/serialization/VersionedPortable.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API PortableRequest : public serialization::Portable {
+            class HAZELCAST_API ClientRequest : public serialization::VersionedPortable {
             public:
-                PortableRequest();
+                ClientRequest();
 
-                ~PortableRequest();
+                virtual ~ClientRequest();
+
+                int getClassVersion() const;
 
                 void writePortable(serialization::PortableWriter &writer) const;
 

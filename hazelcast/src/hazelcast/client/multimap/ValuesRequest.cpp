@@ -12,11 +12,11 @@ namespace hazelcast {
             ValuesRequest::ValuesRequest(const std::string& name)
             : AllPartitionsRequest(name) {
 
-            };
+            }
 
             int ValuesRequest::getClassId() const {
                 return MultiMapPortableHook::VALUES;
-            };
+            }
 
             bool ValuesRequest::isRetryable() const{
                 return true;

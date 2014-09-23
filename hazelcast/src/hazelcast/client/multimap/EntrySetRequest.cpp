@@ -12,11 +12,11 @@ namespace hazelcast {
             EntrySetRequest::EntrySetRequest(const std::string& name)
             : AllPartitionsRequest(name) {
 
-            };
+            }
 
             int EntrySetRequest::getClassId() const {
                 return MultiMapPortableHook::ENTRY_SET;
-            };
+            }
 
             bool EntrySetRequest::isRetryable() const{
                 return true;

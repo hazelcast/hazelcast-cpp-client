@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_QUERY_REQUEST
 #define HAZELCAST_QUERY_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API QueryRequest : public impl::PortableRequest {
+            class HAZELCAST_API QueryRequest : public impl::ClientRequest {
             public:
                 QueryRequest(const std::string &name, const std::string &iterationType, const std::string &sql);
 

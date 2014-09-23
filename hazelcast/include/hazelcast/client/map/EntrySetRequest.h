@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_MAP_ENTRY_SET_REQUEST
 #define HAZELCAST_MAP_ENTRY_SET_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API EntrySetRequest : public impl::PortableRequest{
+            class HAZELCAST_API EntrySetRequest : public impl::ClientRequest{
             public:
                 EntrySetRequest(const std::string& name);
 

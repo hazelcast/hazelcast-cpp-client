@@ -24,7 +24,7 @@ namespace hazelcast {
                 TxnMultiMapRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
+            }
 
         }
     }

@@ -13,32 +13,39 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API DataAdapter {
-                    enum StatusBit {
-                        stType,
-                        stClassId,
-                        stFactoryId,
-                        stVersion,
-                        stClassDefSize,
-                        stClassDef,
-                        stSize,
-                        stValue,
-                        stHash,
-                        stAll
-                    };
                 public:
-                    DataAdapter();
+                    DataAdapter(PortableContext& context);
 
-                    DataAdapter(const Data &data);
+                    DataAdapter(PortableContext& context, const Data& data);
 
-                    Data &getData();
+                    virtual ~DataAdapter();
 
-                    bool readFrom(util::ByteBuffer &buffer);
+                    const Data& getData() const;
 
-                    bool writeTo(util::ByteBuffer &destination);
+                    void setData(Data& data);
 
+                    virtual bool readFrom(util::ByteBuffer& buffer);
+
+                    virtual bool writeTo(util::ByteBuffer& destination);
+
+                protected:
+                    void setStatus(int statusBit);
+
+                    bool isStatusSet(int statusBit) const;
+
+                    static const int ST_TYPE = 1;
+                    static const int ST_CLASS_ID = 2;
+                    static const int ST_FACTORY_ID = 3;
+                    static const int ST_VERSION = 4;
+                    static const int ST_CLASS_DEF_SIZE = 5;
+                    static const int ST_CLASS_DEF = 6;
+                    static const int ST_SIZE = 7;
+                    static const int ST_VALUE = 8;
+                    static const int ST_HASH = 9;
+                    static const int ST_ALL = 10;
                 private:
                     int status;
                     int factoryId;
@@ -49,11 +56,7 @@ namespace hazelcast {
                     size_t bytesRead;
                     size_t bytesWritten;
                     Data data;
-                    SerializationContext *context;
-
-                    void setStatus(StatusBit bit);
-
-                    bool isStatusSet(StatusBit bit) const;
+                    PortableContext& context;
                 };
             }
         }

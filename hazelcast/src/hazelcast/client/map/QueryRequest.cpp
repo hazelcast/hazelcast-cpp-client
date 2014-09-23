@@ -15,7 +15,7 @@ namespace hazelcast {
             , iterationType(iterationType)
             , sql(sql) {
 
-            };
+            }
 
             int QueryRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -29,7 +29,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeUTF("t", iterationType);
                 writer.writeUTF("sql", sql);
-            };
+            }
 
 
             bool QueryRequest::isRetryable() const {

@@ -19,11 +19,11 @@ namespace hazelcast {
                 if (i != rhs.i) return false;
                 if (c != rhs.c) return false;
                 return true;
-            };
+            }
 
             bool TestDataSerializable::operator !=(const TestDataSerializable& m) const {
                 return !(*this == m);
-            };
+            }
 
             int TestDataSerializable::getFactoryId() const {
                 return 1;
@@ -36,12 +36,12 @@ namespace hazelcast {
             void TestDataSerializable::writeData(serialization::ObjectDataOutput& writer) const {
                 writer.writeChar(c);
                 writer.writeInt(i);
-            };
+            }
 
             void TestDataSerializable::readData(serialization::ObjectDataInput& reader) {
                 c = reader.readChar();
                 i = reader.readInt();
-            };
+            }
         }
     }
 }

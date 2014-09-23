@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_PORTABLE_READER
 #define HAZELCAST_PORTABLE_READER
 
-#include "hazelcast/client/serialization/pimpl/ClassDefinition.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include <string>
@@ -24,12 +24,12 @@ namespace hazelcast {
             namespace pimpl {
                 class SerializerHolder;
 
-                class SerializationContext;
+                class PortableContext;
 
                 class HAZELCAST_API DefaultPortableReader {
                 public:
 
-                    DefaultPortableReader(SerializationContext &serializationContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    DefaultPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
                     int readInt(const char *fieldName);
 
@@ -66,21 +66,30 @@ namespace hazelcast {
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
                         boost::shared_ptr<T> portable;
-                        setPosition(fieldName);
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
+
                         bool isNull = dataInput.readBoolean();
                         if (isNull) {
                             return portable;
                         }
                         portable.reset(new T);
-                        read(dataInput, *portable, currentFactoryId, currentClassId);
+                        const FieldDefinition &fd = cd->getField(fieldName);
+                        int factoryId = fd.getFactoryId();
+                        int classId = fd.getClassId();
+                        read(dataInput, *portable, factoryId, classId);
                         return portable;
                     };
 
                     template<typename T>
                     std::vector< T > readPortableArray(const char *fieldName) {
                         std::vector< T > portables;
-                        setPosition(fieldName);
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
+
+                        const FieldDefinition &fd = cd->getField(fieldName);
+                        int factoryId = fd.getFactoryId();
+                        int classId = fd.getClassId();
                         int len = dataInput.readInt();
+
                         portables.resize(len, T());
                         if (len > 0) {
                             int offset = dataInput.position();
@@ -89,7 +98,7 @@ namespace hazelcast {
                                 int start = dataInput.readInt();
                                 dataInput.position(start);
 
-                                read(dataInput, portables[i], currentFactoryId, currentClassId);
+                                read(dataInput, portables[i], factoryId, classId);
                             }
                         }
                         return portables;
@@ -100,9 +109,9 @@ namespace hazelcast {
                     void end();
 
                 private:
-                    int getPosition(const char *);
+                    int readPosition(const char *, FieldType const& fieldType);
 
-                    void setPosition(const char *);
+                    void setPosition(char const * , FieldType const& fieldType);
 
                     void read(DataInput &dataInput, Portable &object, int factoryId, int classId);
 
@@ -113,8 +122,7 @@ namespace hazelcast {
                     int offset;
                     bool raw;
                     boost::shared_ptr<ClassDefinition> cd;
-                    int currentFactoryId;
-                    int currentClassId;
+
                 };
             }
 

@@ -15,7 +15,7 @@ namespace hazelcast {
             , timeoutInMillis(timeout)
             , data(data) {
 
-            };
+            }
 
             int OfferRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -31,7 +31,7 @@ namespace hazelcast {
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
+            }
         }
     }
 }

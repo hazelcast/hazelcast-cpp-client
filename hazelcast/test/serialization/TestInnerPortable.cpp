@@ -6,7 +6,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             TestInnerPortable::TestInnerPortable() {
-            };
+            }
 
             TestInnerPortable::TestInnerPortable(const TestInnerPortable& rhs) {
                 *this = rhs;
@@ -20,7 +20,7 @@ namespace hazelcast {
                     std::vector<float> f,
                     std::vector<double> d,
                     std::vector<TestNamedPortable> n):ii(i), bb(b), cc(c), ss(s), ll(l), ff(f), dd(d), nn(n) {
-            };
+            }
 
             TestInnerPortable::~TestInnerPortable() {
             }
@@ -39,11 +39,11 @@ namespace hazelcast {
 
             int TestInnerPortable::getClassId() const {
                 return 2;
-            };
+            }
 
             int TestInnerPortable::getFactoryId() const {
                 return 1;
-            };
+            }
 
             bool TestInnerPortable::operator ==(const TestInnerPortable& m) const {
                 if (bb != m.bb) return false;
@@ -58,12 +58,12 @@ namespace hazelcast {
                     if (nn[i] != m.nn[i])
                         return false;
                 return true;
-            };
+            }
 
 
             bool TestInnerPortable::operator !=(const TestInnerPortable& m) const {
                 return !(*this == m);
-            };
+            }
 
 
             void TestInnerPortable::writePortable(serialization::PortableWriter& writer) const {
@@ -75,7 +75,7 @@ namespace hazelcast {
                 writer.writeFloatArray("f", ff);
                 writer.writeDoubleArray("d", dd);
                 writer.writePortableArray("nn", nn);
-            };
+            }
 
             void TestInnerPortable::readPortable(serialization::PortableReader& reader) {
                 bb = reader.readByteArray("b");
@@ -86,7 +86,7 @@ namespace hazelcast {
                 ff = reader.readFloatArray("f");
                 dd = reader.readDoubleArray("d");
                 nn = reader.readPortableArray<TestNamedPortable>("nn");
-            };
+            }
 
         }
     }

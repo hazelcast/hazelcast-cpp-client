@@ -15,9 +15,10 @@ namespace hazelcast {
             , key(key)
             , value(value)
             , threadId(threadId)
-            , ttl(ttl) {
+            , ttl(ttl)
+            , async(false) {   //MTODO implement putAsync request on IMAP
 
-            };
+            }
 
             int PutRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -31,10 +32,11 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
+                writer.writeBoolean("a", async);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
-            };
+            }
 
         }
     }

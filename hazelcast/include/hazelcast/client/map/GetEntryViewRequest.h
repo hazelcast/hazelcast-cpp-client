@@ -4,14 +4,14 @@
 #ifndef HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 #define HAZELCAST_MAP_GET_ENTRY_VIEW_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetEntryViewRequest : public impl::PortableRequest {
+            class HAZELCAST_API GetEntryViewRequest : public impl::ClientRequest {
             public:
                 GetEntryViewRequest(const std::string &name, const serialization::pimpl::Data &key);
 

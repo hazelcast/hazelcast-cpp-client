@@ -5,14 +5,14 @@
 #ifndef HAZELCAST_CollectionRequest
 #define HAZELCAST_CollectionRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace collection {
 
-            class HAZELCAST_API CollectionRequest : public impl::PortableRequest {
+            class HAZELCAST_API CollectionRequest : public impl::ClientRequest {
             public:
                 CollectionRequest(const std::string &name, const std::string &serviceName);
 

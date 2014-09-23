@@ -13,23 +13,23 @@ namespace hazelcast {
 
         bool Member::operator ==(const Member &rhs) const {
             return address == rhs.address;
-        };
+        }
 
         const Address &Member::getAddress() const {
             return address;
-        };
+        }
 
         const std::string &Member::getUuid() const {
             return uuid;
-        };
+        }
 
         int Member::getFactoryId() const {
             return protocol::ProtocolConstants::DATA_FACTORY_ID;
-        };
+        }
 
         int Member::getClassId() const {
             return protocol::ProtocolConstants::MEMBER_ID;
-        };
+        }
 
         void Member::readData(serialization::ObjectDataInput &reader) {
             address.readData(reader);
@@ -56,7 +56,7 @@ namespace hazelcast {
                     stringAttributes[key] = reader.readUTF();
                 }
             }
-        };
+        }
 
 
         std::string Member::getAttributeResolved(const std::string &key, std::string *tag) {
@@ -189,7 +189,7 @@ namespace hazelcast {
 
         std::ostream &operator <<(std::ostream &stream, const Member &member) {
             return stream << "Member[" << member.getAddress() << "]";
-        };
+        }
     }
 }
 

@@ -8,13 +8,13 @@
 #ifndef HAZELCAST_AllPartitionsRequest
 #define HAZELCAST_AllPartitionsRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API AllPartitionsRequest : public impl::PortableRequest {
+            class HAZELCAST_API AllPartitionsRequest : public impl::ClientRequest {
             public:
                 AllPartitionsRequest(const std::string &name);
 

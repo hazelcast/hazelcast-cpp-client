@@ -22,7 +22,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
 
-            };
+            }
 
             bool LifecycleService::start() {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
@@ -37,31 +37,30 @@ namespace hazelcast {
                 if (!clientContext.getPartitionService().start()) {
                     return false;
                 }
+
                 fireLifecycleEvent(LifecycleEvent::STARTED);
                 return true;
             }
 
             void LifecycleService::shutdown() {
-                util::LockGuard lg(lifecycleLock);
-                if (!active)
+                if (!active.compareAndSet(true, false))
                     return;
-                active = false;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().shutdown();
                 clientContext.getClusterService().shutdown();
                 clientContext.getPartitionService().shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
-            };
+            }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
                 util::LockGuard lg(listenerLock);
                 listeners.insert(lifecycleListener);
-            };
+            }
 
             bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
                 util::LockGuard lg(listenerLock);
                 return listeners.erase(lifecycleListener) == 1;
-            };
+            }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 util::LockGuard lg(listenerLock);
@@ -91,11 +90,11 @@ namespace hazelcast {
                     (*it)->stateChanged(lifecycleEvent);
                 }
 
-            };
+            }
 
             bool LifecycleService::isRunning() {
                 return active;
-            };
+            }
         }
     }
 }

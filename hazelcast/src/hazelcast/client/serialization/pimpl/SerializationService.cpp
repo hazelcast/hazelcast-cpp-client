@@ -6,36 +6,50 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
 #include "hazelcast/util/ILogger.h"
-
+#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializationService::SerializationService(int version)
-                : serializationContext(version) {
-                };
+                SerializationService::SerializationService(const SerializationConfig& serializationConfig)
+                : portableContext(serializationConfig.getPortableVersion())
+                , serializationConfig(serializationConfig) {
+                    std::vector<boost::shared_ptr<SerializerBase> > const &serializers = serializationConfig.getSerializers();
+                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
+                    SerializerHolder &serializerHolder = getSerializerHolder();
+                    for(it = serializers.begin() ; it < serializers.end() ; ++it){
+                        serializerHolder.registerSerializer(*it);
+                    }
+                }
 
 
-                SerializationContext &SerializationService::getSerializationContext() {
-                    return serializationContext;
-                };
+                PortableContext&SerializationService::getPortableContext() {
+                    return portableContext;
+                }
 
                 SerializerHolder &SerializationService::getSerializerHolder() {
-                    return serializationContext.getSerializerHolder();
-                };
+                    return portableContext.getSerializerHolder();
+                }
 
 
                 bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
-                };
+                }
 
                 boost::shared_ptr<SerializerBase> SerializationService::serializerFor(int typeId) {
                     return getSerializerHolder().serializerFor(typeId);
-                };
+                }
+
+
+                boost::shared_ptr<ClassDefinition> SerializationService::lookupClassDefinition(const Portable *portable) {
+                    int version = PortableVersionHelper::getVersion(portable, portableContext.getVersion());
+                    return portableContext.lookup(portable->getFactoryId(), portable->getClassId(), version);
+                }
 
                 void SerializationService::checkClassType(int expectedType, int currentType) {
                     if (expectedType != currentType) {

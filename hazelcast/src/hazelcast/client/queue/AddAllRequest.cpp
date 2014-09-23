@@ -15,7 +15,7 @@ namespace hazelcast {
             :name(name)
             , dataList(dataList) {
 
-            };
+            }
 
             int AddAllRequest::getFactoryId() const {
                 return queue::QueuePortableHook::F_ID;
@@ -34,7 +34,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; ++i) {
                     dataList[i].writeData(out);
                 }
-            };
+            }
 
         }
     }

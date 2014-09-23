@@ -31,7 +31,7 @@ namespace hazelcast {
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 data.writeData(out);
-            };
+            }
 
         }
     }

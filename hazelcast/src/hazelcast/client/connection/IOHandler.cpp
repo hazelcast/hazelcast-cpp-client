@@ -11,34 +11,37 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOHandler::IOHandler(Connection &connection, IOSelector &ioListener)
-            : ioListener(ioListener)
+            IOHandler::IOHandler(Connection& connection, IOSelector& ioSelector)
+            : ioSelector(ioSelector)
             , connection(connection) {
 
             }
 
             void IOHandler::registerSocket() {
-                ioListener.addTask(this);
-                ioListener.wakeUp();
+                ioSelector.addTask(this);
+                ioSelector.wakeUp();
             }
 
             void IOHandler::registerHandler() {
                 if (!connection.live)
                     return;
-                Socket const &socket = connection.getSocket();
-                ioListener.addSocket(socket);
+                Socket const& socket = connection.getSocket();
+                ioSelector.addSocket(socket);
+            }
+
+            void IOHandler::deRegisterSocket() {
+                ioSelector.removeSocket(connection.getSocket());
             }
 
             IOHandler::~IOHandler() {
 
             }
 
-            void IOHandler::handleSocketException(const std::string &message) {
-                ioListener.removeSocket(connection.getSocket());
+            void IOHandler::handleSocketException(const std::string& message) {
                 std::stringstream warningStr;
-                Address const &address = connection.getRemoteEndpoint();
+                Address const& address = connection.getRemoteEndpoint();
                 (warningStr << " Closing socket to endpoint " << address.getHost() << ":" << address.getPort()
-                        << ", Cause:" << message);
+                << ", Cause:" << message);
                 util::ILogger::getLogger().getLogger().warning(warningStr.str());
                 connection.close();
             }

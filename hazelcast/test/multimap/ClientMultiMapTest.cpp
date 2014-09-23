@@ -6,23 +6,22 @@
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             using namespace iTest;
 
-            ClientMultiMapTest::ClientMultiMapTest(HazelcastServerFactory &hazelcastInstanceFactory)
+            ClientMultiMapTest::ClientMultiMapTest(HazelcastServerFactory& hazelcastInstanceFactory)
             : iTestFixture<ClientMultiMapTest>("ClientMultiMapTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
-            , mm(new MultiMap<std::string, std::string>(client->getMultiMap< std::string, std::string >("ClientMultiMapTest"))) {
-            };
+            , mm(new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("ClientMultiMapTest"))) {
+            }
 
 
             ClientMultiMapTest::~ClientMultiMapTest() {
-            };
+            }
 
             void ClientMultiMapTest::addTests() {
                 addTest(&ClientMultiMapTest::testPutGetRemove, "testPutGetRemove");
@@ -34,23 +33,23 @@ namespace hazelcast {
                 addTest(&ClientMultiMapTest::testTryLock, "testTryLock");
                 addTest(&ClientMultiMapTest::testForceUnlock, "testForceUnlock");
 
-            };
+            }
 
             void ClientMultiMapTest::beforeClass() {
-            };
+            }
 
             void ClientMultiMapTest::afterClass() {
                 client.reset();
                 instance.shutdown();
-            };
+            }
 
             void ClientMultiMapTest::beforeTest() {
                 mm->clear();
-            };
+            }
 
             void ClientMultiMapTest::afterTest() {
                 mm->clear();
-            };
+            }
 
             void ClientMultiMapTest::testPutGetRemove() {
                 assertTrue(mm->put("key1", "value1"));
@@ -121,28 +120,27 @@ namespace hazelcast {
 
             class MyMultiMapListener {
             public:
-                MyMultiMapListener(util::CountDownLatch &addedLatch, util::CountDownLatch &removedLatch)
-                :addedLatch(addedLatch)
-                , removedLatch(removedLatch) {
-                };
+                MyMultiMapListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
+                : addedLatch(addedLatch), removedLatch(removedLatch) {
+                }
 
-                void entryAdded(EntryEvent<std::string, std::string> &event) {
+                void entryAdded(EntryEvent<std::string, std::string>& event) {
                     addedLatch.countDown();
-                };
+                }
 
-                void entryRemoved(EntryEvent<std::string, std::string> &event) {
+                void entryRemoved(EntryEvent<std::string, std::string>& event) {
                     removedLatch.countDown();
                 }
 
-                void entryUpdated(EntryEvent<std::string, std::string> &event) {
+                void entryUpdated(EntryEvent<std::string, std::string>& event) {
                 }
 
-                void entryEvicted(EntryEvent<std::string, std::string> &event) {
+                void entryEvicted(EntryEvent<std::string, std::string>& event) {
                 }
 
             private:
-                util::CountDownLatch &addedLatch;
-                util::CountDownLatch &removedLatch;
+                util::CountDownLatch& addedLatch;
+                util::CountDownLatch& removedLatch;
             };
 
             void ClientMultiMapTest::testListener() {
@@ -206,7 +204,7 @@ namespace hazelcast {
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
                 }
-               
+
                 if (mm->tryLock("key1", 5 * 1000)) {
                     latch->countDown();
                 }
@@ -249,7 +247,7 @@ namespace hazelcast {
                 assertTrue(mm->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
                 util::Thread t(tryLockThread, mm.get(), &latch);
-                assertTrue(latch.await(100 ));
+                assertTrue(latch.await(100));
                 assertTrue(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
@@ -273,7 +271,7 @@ namespace hazelcast {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
                 util::Thread t(forceUnlockThread, mm.get(), &latch);
-                assertTrue(latch.await(100 ));
+                assertTrue(latch.await(100));
                 assertFalse(mm->isLocked("key1"));
             }
         }

@@ -12,9 +12,10 @@ namespace hazelcast {
         namespace map {
             GetRequest::GetRequest(const std::string &name, serialization::pimpl::Data &key)
             :name(name)
+            , async(false) //MTODO implement getAsync request on IMAP
             , key(key) {
 
-            };
+            }
 
             int GetRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -30,9 +31,10 @@ namespace hazelcast {
 
             void GetRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
+                writer.writeBoolean("a", async);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

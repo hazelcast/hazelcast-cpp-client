@@ -64,7 +64,7 @@ namespace hazelcast {
              * Returns the value of the specified key for this member or
              * default constructed value if value is undefined.
              *
-             * @param AttributeType type template for attribute type
+             * @tparam AttributeType type template for attribute type
              * @param key The key to lookup.
              * @return The value for this members key.
              */
@@ -77,6 +77,7 @@ namespace hazelcast {
             /**
              * check if an attribute is defined for given key.
              *
+             * @tparam AttributeType type template for attribute type
              * @return true if attribute is defined.
              */
             template <typename AttributeType>

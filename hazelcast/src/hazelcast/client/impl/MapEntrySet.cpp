@@ -34,7 +34,7 @@ namespace hazelcast {
                     entrySet[i].first.writeData(writer);
                     entrySet[i].second.writeData(writer);
                 }
-            };
+            }
 
             void MapEntrySet::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
@@ -47,7 +47,7 @@ namespace hazelcast {
                     data2.readData(reader);
                     entrySet[i].second = data2;
                 }
-            };
+            }
         }
     }
 }

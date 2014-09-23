@@ -13,20 +13,20 @@ namespace hazelcast {
         namespace lock {
             GetRemainingLeaseRequest::GetRemainingLeaseRequest(serialization::pimpl::Data& key)
             :key(key) {
-            };
+            }
 
             int GetRemainingLeaseRequest::getClassId() const {
                 return LockPortableHook::GET_REMAINING_LEASE;
-            };
+            }
 
             int GetRemainingLeaseRequest::getFactoryId() const {
                 return LockPortableHook::FACTORY_ID;
-            };
+            }
 
             void GetRemainingLeaseRequest::write(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
 
 
             bool GetRemainingLeaseRequest::isRetryable() const {

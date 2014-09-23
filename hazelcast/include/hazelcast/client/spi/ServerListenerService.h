@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class PortableRequest;
+            class ClientRequest;
 
             class BaseRemoveListenerRequest;
 
@@ -37,15 +37,15 @@ namespace hazelcast {
             public:
                 ServerListenerService(spi::ClientContext &clientContext);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
+                std::string listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
 
-                std::string listen(const impl::PortableRequest *registrationRequest, impl::BaseEventHandler *handler);
+                std::string listen(const impl::ClientRequest *registrationRequest, impl::BaseEventHandler *handler);
 
                 bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
 
                 void reRegisterListener(const std::string &registrationId, boost::shared_ptr<std::string> alias, int callId);
 
-                void retryFailedListener(boost::shared_ptr<connection::CallPromise> failedListener);
+                void retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise);
 
                 void triggerFailedListeners();
 

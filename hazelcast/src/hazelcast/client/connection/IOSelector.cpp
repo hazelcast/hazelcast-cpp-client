@@ -19,7 +19,7 @@ namespace hazelcast {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 isAlive = true;
-            };
+            }
 
             void IOSelector::staticListen(util::ThreadArgs &args) {
                 IOSelector *inSelector = (IOSelector *) args.arg0;
@@ -38,7 +38,7 @@ namespace hazelcast {
                     util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw e;
                 }
-            };
+            }
 
             void IOSelector::listen() {
                 while (isAlive) {
@@ -61,10 +61,10 @@ namespace hazelcast {
                     localAddress = "::1";
 
                 wakeUpSocket.reset(new Socket(Address(localAddress, p)));
-                int error = wakeUpSocket->connect();
+                int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
-                    wakeUpSocketSet.sockets.insert(sleepingSocket.get());
+                    wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
                     return true;
                 } else {
@@ -82,11 +82,11 @@ namespace hazelcast {
             }
 
             void IOSelector::addSocket(const Socket &socket) {
-                socketSet.sockets.insert(&socket);
+                socketSet.insertSocket(&socket);
             }
 
             void IOSelector::removeSocket(const Socket &socket) {
-                socketSet.sockets.erase(&socket);
+                socketSet.removeSocket(&socket);
             }
 
             void IOSelector::processListenerQueue() {

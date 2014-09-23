@@ -13,7 +13,7 @@ namespace hazelcast {
             ValuesRequest::ValuesRequest(const std::string& name)
             :name(name) {
 
-            };
+            }
 
             int ValuesRequest::getFactoryId() const {
                 return PortableHook::F_ID;
@@ -25,7 +25,7 @@ namespace hazelcast {
 
             void ValuesRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
-            };
+            }
 
 
             bool ValuesRequest::isRetryable() const {

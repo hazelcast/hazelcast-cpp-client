@@ -35,8 +35,7 @@ namespace hazelcast {
              * Gets the lock for the specified lease time.
              * After lease time, lock will be released..
              *
-             * @param leaseTime time to wait before releasing the lock.
-             * @param timeUnit unit of time to specify lease time.
+             * @param leaseTimeInMillis time to wait before releasing the lock.
              */
             void lock(long leaseTimeInMillis);
 
@@ -88,7 +87,7 @@ namespace hazelcast {
             /**
              * Tries to acquire the lock. Returns after timeInMillis seconds
              *
-             * @param long timeInMillis time to wait
+             * @param timeInMillis time to wait
              * @return true if lock is get, false otherwise.
              */
 

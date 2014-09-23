@@ -9,7 +9,7 @@
 #ifndef HAZELCAST_SERIALIZATION_SERVICE
 #define HAZELCAST_SERIALIZATION_SERVICE
 
-#include "hazelcast/client/serialization/pimpl/SerializationContext.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
 #include "hazelcast/client/serialization/Portable.h"
@@ -29,12 +29,14 @@
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
             namespace pimpl {
                 class HAZELCAST_API SerializationService {
                 public:
 
-                    SerializationService(int version);
+                    SerializationService(const SerializationConfig& serializationConfig);
 
                     /**
                     *
@@ -47,11 +49,9 @@ namespace hazelcast {
                         const T *object = static_cast<const T *>(portable);
                         DataOutput output;
                         getSerializerHolder().getPortableSerializer().write(output, *object);
-                        int factoryId = object->getFactoryId();
-                        int classId = object->getClassId();
                         Data data;
                         data.setType(SerializationConstants::CONSTANT_TYPE_PORTABLE);
-                        data.cd = serializationContext.lookup(factoryId, classId);
+                        data.cd = lookupClassDefinition(portable);
                         data.setBuffer(output.toByteArray());
                         return data;
                     };
@@ -61,7 +61,7 @@ namespace hazelcast {
                         const T *object = static_cast<const T *>(dataSerializable);
                         Data data;
                         DataOutput dataOutput;
-                        ObjectDataOutput output(dataOutput, serializationContext);
+                        ObjectDataOutput output(dataOutput, portableContext);
                         getSerializerHolder().getDataSerializer().write(output, *object);
                         data.setType(SerializationConstants::CONSTANT_TYPE_DATA);
                         data.setBuffer(output.toByteArray());
@@ -73,8 +73,8 @@ namespace hazelcast {
                         const T *object = static_cast<const T *>(serializable);
                         Data data;
                         DataOutput dataOutput;
-                        ObjectDataOutput output(dataOutput, serializationContext);
-                        int type = object->getSerializerId();
+                        ObjectDataOutput output(dataOutput, portableContext);
+                        int type = object->getTypeId();
                         boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
@@ -82,7 +82,7 @@ namespace hazelcast {
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
                                     + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
-                            throw exception::IOException("SerializationService::toData", message);
+                            throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
                         data.setType(type);
                         data.setBuffer(output.toByteArray());
@@ -95,7 +95,7 @@ namespace hazelcast {
                         return toObjectResolved<T>(data, tag);
                     };
 
-                    SerializationContext &getSerializationContext();
+                    PortableContext &getPortableContext();
 
                 private:
                     template<typename T>
@@ -105,7 +105,7 @@ namespace hazelcast {
                         boost::shared_ptr<T> object(new T);
                         DataInput dataInput(*(data.buffer.get()));
 
-                        serializationContext.registerClassDefinition(data.cd);
+                        portableContext.registerClassDefinition(data.cd);
                         int factoryId = data.cd->getFactoryId();
                         int classId = data.cd->getClassId();
                         int version = data.cd->getVersion();
@@ -119,7 +119,7 @@ namespace hazelcast {
                         checkClassType(SerializationConstants::CONSTANT_TYPE_DATA, data.getType());
                         boost::shared_ptr<T> object(new T);
                         DataInput dataInput(*(data.buffer.get()));
-                        ObjectDataInput objectDataInput(dataInput, serializationContext);
+                        ObjectDataInput objectDataInput(dataInput, portableContext);
                         getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
                         return object;
                     };
@@ -128,18 +128,18 @@ namespace hazelcast {
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, void *tag) {
                         if (data.bufferSize() == 0) return boost::shared_ptr<T>();
                         boost::shared_ptr<T> object(new T);
-                        checkClassType(object->getSerializerId(), data.getType());
+                        checkClassType(object->getTypeId(), data.getType());
                         DataInput dataInput(*(data.buffer.get()));
-                        ObjectDataInput objectDataInput(dataInput, serializationContext);
-                        boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getSerializerId());
+                        ObjectDataInput objectDataInput(dataInput, portableContext);
+                        boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getTypeId());
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                             s->read(objectDataInput, *object);
                             return object;
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + util::IOUtil::to_string(object->getSerializerId()) + ", typename :" + typeid(T).name();
-                            throw exception::IOException("SerializationService::toObject", message);
+                                    + util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
+                            throw exception::HazelcastSerializationException("SerializationService::toObject", message);
                         }
                     };
 
@@ -151,11 +151,15 @@ namespace hazelcast {
 
                     SerializationService &operator = (const SerializationService &);
 
-                    SerializationContext serializationContext;
+                    PortableContext portableContext;
 
                     SerializationConstants constants;
 
+                    const SerializationConfig& serializationConfig;
+
                     void checkClassType(int expectedType, int currentType);
+
+                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(const Portable* portable) ;
 
                 };
 

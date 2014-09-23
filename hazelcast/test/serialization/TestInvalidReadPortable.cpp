@@ -27,7 +27,7 @@ namespace hazelcast {
                 writer.writeLong("l", l);
                 writer.writeInt("i", i);
                 writer.writeUTF("s", s);
-            };
+            }
 
 
             void TestInvalidReadPortable::readPortable(serialization::PortableReader& reader) {
@@ -35,7 +35,7 @@ namespace hazelcast {
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 i = in.readInt();
                 s = reader.readLong("s");
-            };
+            }
         }
     }
 }

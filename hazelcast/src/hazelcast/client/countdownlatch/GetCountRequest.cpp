@@ -13,15 +13,15 @@ namespace hazelcast {
             GetCountRequest::GetCountRequest(const std::string& instanceName)
             : instanceName(instanceName) {
 
-            };
+            }
 
             int GetCountRequest::getFactoryId() const {
                 return CountDownLatchPortableHook::F_ID;
-            };
+            }
 
             int GetCountRequest::getClassId() const {
                 return CountDownLatchPortableHook::GET_COUNT;
-            };
+            }
 
 
             bool GetCountRequest::isRetryable() const {
@@ -30,7 +30,7 @@ namespace hazelcast {
 
             void GetCountRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("name", instanceName);
-            };
+            }
         }
     }
 }

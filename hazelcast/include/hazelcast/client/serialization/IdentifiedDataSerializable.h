@@ -15,15 +15,12 @@ namespace hazelcast {
             class ObjectDataInput;
 
             /**
-             * Classes that will be used with hazelcast data structures like IMap, IQueue etc. should inherit from
-             * one of the following classes
-             * Portable
-             * IdentifiedDataSerializable
+             * Classes that will be used with hazelcast data structures like IMap, IQueue etc should either inherit from
+             * one of the following classes : Portable , IdentifiedDataSerializable or it should be custom serializable.
+             * For custom serializable see Serializer
              *
-             * Note that: factoryId and classId is to the same class in find server side, hence they should be consistent
+             * Note that: factoryId and classId of the same class in server side should be consistent
              * with each other.
-             *
-             *
              *
              * @see Portable
              */

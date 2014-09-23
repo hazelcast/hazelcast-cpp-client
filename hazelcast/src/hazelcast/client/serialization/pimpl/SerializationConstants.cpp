@@ -43,7 +43,7 @@ namespace hazelcast {
                     if (i < 0 || i >= size)
                         return "custom";
                     return typeIdNameVector[i];
-                };
+                }
 
                 int SerializationConstants::idToIndex(int id) {
                     return id + size;

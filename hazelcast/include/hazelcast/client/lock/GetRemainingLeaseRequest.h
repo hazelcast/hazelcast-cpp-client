@@ -8,7 +8,7 @@
 #define HAZELCAST_GetRemainingLeaseRequest
 
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API GetRemainingLeaseRequest : public impl::PortableRequest{
+            class HAZELCAST_API GetRemainingLeaseRequest : public impl::ClientRequest{
             public:
                 GetRemainingLeaseRequest(serialization::pimpl::Data& key);
 

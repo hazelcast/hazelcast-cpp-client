@@ -4,7 +4,7 @@
 #ifndef HAZELCAST_MAP_GET_REQUEST
 #define HAZELCAST_MAP_GET_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>
 
@@ -19,7 +19,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class HAZELCAST_API GetRequest : public impl::PortableRequest {
+            class HAZELCAST_API GetRequest : public impl::ClientRequest {
             public:
                 GetRequest(const std::string &name, serialization::pimpl::Data &key);
 
@@ -33,6 +33,7 @@ namespace hazelcast {
 
             private:
                 std::string name;
+                bool async;
                 serialization::pimpl::Data key;
             };
         }

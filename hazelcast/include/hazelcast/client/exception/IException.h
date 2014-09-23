@@ -25,8 +25,10 @@ namespace hazelcast {
              * @see InstanceNotActiveException
              * @see InterruptedException
              * @see IOException
+             * @see HazelcastSerializationException
              * @see IClassCastException
              * @see IllegalStateException
+             * @see IllegalArgumentException
              */
             class HAZELCAST_API IException : public std::exception {
             public:

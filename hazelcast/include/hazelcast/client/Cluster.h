@@ -24,6 +24,9 @@ namespace hazelcast {
          */
         class HAZELCAST_API Cluster {
         public:
+            /**
+             * Constructor
+             */
             Cluster(spi::ClusterService &clusterService);
 
             /**

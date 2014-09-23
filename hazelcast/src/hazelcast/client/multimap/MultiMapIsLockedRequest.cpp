@@ -14,27 +14,27 @@ namespace hazelcast {
             MultiMapIsLockedRequest::MultiMapIsLockedRequest(const std::string &name, const serialization::pimpl::Data &key)
             :KeyBasedRequest(name, key) {
 
-            };
+            }
 
             int MultiMapIsLockedRequest::getFactoryId() const {
                 return MultiMapPortableHook::F_ID;
-            };
+            }
 
             int MultiMapIsLockedRequest::getClassId() const {
                 return MultiMapPortableHook::IS_LOCKED;
-            };
+            }
 
 
             void MultiMapIsLockedRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("tid", 0);
                 KeyBasedRequest::write(writer);
-            };
+            }
 
 
             bool MultiMapIsLockedRequest::isRetryable() const {
                 return true;
             }
-        };
+        }
 
     }
 }

@@ -7,13 +7,13 @@
 #ifndef HAZELCAST_AddMessageListenerRequest
 #define HAZELCAST_AddMessageListenerRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class HAZELCAST_API AddMessageListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddMessageListenerRequest : public impl::ClientRequest {
             public:
                 AddMessageListenerRequest(const std::string& instanceName);
 

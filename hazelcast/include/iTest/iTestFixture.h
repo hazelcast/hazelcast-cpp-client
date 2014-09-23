@@ -24,8 +24,8 @@ namespace iTest {
         typedef void (T::*TestFunction)();
 
     public:
-        iTestFixture(const std::string& fixtureName)
-        : fixtureName(fixtureName), id(0) {
+        iTestFixture(const std::string &fixtureName)
+                : fixtureName(fixtureName), id(0) {
 
         }
 
@@ -42,7 +42,7 @@ namespace iTest {
 
         virtual void afterTest() = 0;
 
-        void addTest(TestFunction test, const std::string& name) {
+        void addTest(TestFunction test, const std::string &name) {
             tests.push_back(test);
             testNames[id++] = name;
         }
@@ -60,7 +60,7 @@ namespace iTest {
                 try {
                     assertNumber = 0;
                     ((*t).*(test))();
-                } catch (iTestException& e) {
+                } catch (iTestException &e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
                 } catch (...) {

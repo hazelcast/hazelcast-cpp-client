@@ -9,20 +9,31 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            PortableReader::PortableReader(pimpl::DefaultPortableReader *defaultPortableReader)
-            : defaultPortableReader(defaultPortableReader)
-            , morphingPortableReader(NULL)
-            , isDefaultReader(true) {
+
+            PortableReader::PortableReader(pimpl::PortableContext& context, pimpl::DataInput& input, boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
+            : isDefaultReader(isDefaultReader) {
+                if (isDefaultReader) {
+                    defaultPortableReader.reset(new pimpl::DefaultPortableReader(context, input, cd));
+                } else {
+                    morphingPortableReader.reset(new pimpl::MorphingPortableReader(context, input, cd));
+                }
+
+            }
 
 
-            };
+            PortableReader::PortableReader(const PortableReader& reader)
+            : isDefaultReader(reader.isDefaultReader)
+            , defaultPortableReader(reader.defaultPortableReader.release())
+            , morphingPortableReader(reader.morphingPortableReader.release()) {
 
-            PortableReader::PortableReader(pimpl::MorphingPortableReader *morphingPortableReader)
-            : defaultPortableReader(NULL)
-            , morphingPortableReader(morphingPortableReader)
-            , isDefaultReader(false) {
+            }
 
-            };
+            PortableReader& PortableReader::operator=(const PortableReader& reader) {
+                this->isDefaultReader = reader.isDefaultReader;
+                this->defaultPortableReader.reset(reader.defaultPortableReader.release());
+                this->morphingPortableReader.reset(reader.morphingPortableReader.release());
+                return *this;
+            }
 
             int PortableReader::readInt(const char *fieldName) {
                 if (isDefaultReader)
@@ -132,7 +143,6 @@ namespace hazelcast {
                 return morphingPortableReader->end();
 
             }
-
         }
     }
 }

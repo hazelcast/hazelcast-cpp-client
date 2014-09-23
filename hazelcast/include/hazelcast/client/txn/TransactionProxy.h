@@ -9,11 +9,12 @@
 #define HAZELCAST_TransactionProxy
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/connection/CallFuture.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -104,8 +105,8 @@ namespace hazelcast {
                     request->setThreadId(threadId);
                     spi::InvocationService &invocationService = clientContext.getInvocationService();
                     serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
-                    boost::shared_ptr< util::Future<serialization::pimpl::Data> >  future = invocationService.invokeOnConnection(request, connection);
-                    serialization::pimpl::Data data = future->get();
+                    connection::CallFuture  future = invocationService.invokeOnConnection(request, connection);
+                    serialization::pimpl::Data data = future.get();
                     return ss.toObject<Response>(data);
                 }
 

@@ -5,14 +5,14 @@
 #define HAZELCAST_QUEUE_CONTAINS_REQUEST
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <vector>
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API ContainsRequest : public impl::PortableRequest {
+            class HAZELCAST_API ContainsRequest : public impl::ClientRequest {
             public:
 
                 ContainsRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList);

@@ -14,19 +14,19 @@ namespace hazelcast {
             CountDownRequest::CountDownRequest(const std::string& instanceName)
             : instanceName(instanceName) {
 
-            };
+            }
 
             int CountDownRequest::getFactoryId() const {
                 return CountDownLatchPortableHook::F_ID;
-            };
+            }
 
             int CountDownRequest::getClassId() const {
                 return CountDownLatchPortableHook::COUNT_DOWN;
-            };
+            }
 
             void CountDownRequest::write(serialization::PortableWriter & writer) const {
                 writer.writeUTF("name", instanceName);
-            };
+            }
 
         }
     }

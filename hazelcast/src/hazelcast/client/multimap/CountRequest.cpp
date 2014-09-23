@@ -12,11 +12,11 @@ namespace hazelcast {
             CountRequest::CountRequest(const std::string& name, const serialization::pimpl::Data& key)
             :KeyBasedRequest(name, key) {
 
-            };
+            }
 
             int CountRequest::getClassId() const {
                 return MultiMapPortableHook::COUNT;
-            };
+            }
 
 
             bool CountRequest::isRetryable() const {

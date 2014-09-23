@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
+#include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
@@ -96,10 +97,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::loadInitialMemberList() {
                 protocol::AddMembershipListenerRequest requestObject;
-                serialization::pimpl::Data request = clientContext.getSerializationService().toData<protocol::AddMembershipListenerRequest>(&requestObject);
-                conn->writeBlocking(request);
-                serialization::pimpl::Data data = conn->readBlocking();
-                boost::shared_ptr<ClientResponse> response = clientContext.getSerializationService().toObject<ClientResponse >(data);
+                boost::shared_ptr<ClientResponse> response = conn->sendAndReceive(requestObject);
                 boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection >(response->getData());
 
                 std::map<std::string, Member> prevMembers;
@@ -127,18 +125,23 @@ namespace hazelcast {
                 }
 
                 for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
-                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, it->second));
+                    Member& member = it->second;
+                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, member));
+                    if (clientContext.getClusterService().isMemberExists(member.getAddress())) {
+                         clientContext.getConnectionManager().removeEndpoint(member.getAddress());
+                    }
                 }
 
 
                 for (std::vector<MembershipEvent>::iterator it = events.begin(); it != events.end(); ++it) {
                     clientContext.getClusterService().fireMembershipEvent((*it));
                 }
-            };
+            }
 
             void ClusterListenerThread::listenMembershipEvents() {
                 while (clientContext.getLifecycleService().isRunning()) {
-                    serialization::pimpl::Data data = conn->readBlocking();
+                    serialization::pimpl::Packet packet = conn->readBlocking();
+                    serialization::pimpl::Data const& data = packet.getData();
                     if (!clientContext.getLifecycleService().isRunning())
                         break;
                     boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
@@ -148,6 +151,7 @@ namespace hazelcast {
                     if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
                         members.push_back(member);
                         membersUpdated = true;
+                        clientContext.getConnectionManager().removeEndpoint(member.getAddress());
                     } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
                         std::vector<Member>::iterator it = std::find(members.begin(), members.end(), member);
                         if (members.end() != it) {
@@ -169,7 +173,7 @@ namespace hazelcast {
                         clientContext.getClusterService().fireMembershipEvent(membershipEvent);
                     }
                 }
-            };
+            }
 
 
             void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const &memberAttributeChange, Member &target) {
@@ -230,7 +234,7 @@ namespace hazelcast {
                 util::ILogger::getLogger().info(memberInfo.str());
                 clientContext.getClusterService().setMembers(map);
 
-            };
+            }
 
             std::vector<Address> ClusterListenerThread::getClusterAddresses() const {
                 std::vector<Address> socketAddresses;
@@ -238,7 +242,7 @@ namespace hazelcast {
                     socketAddresses.push_back((*it).getAddress());
                 }
                 return socketAddresses;
-            };
+            }
 
             std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
@@ -254,7 +258,7 @@ namespace hazelcast {
                 }
                 std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
-            };
+            }
         }
     }
 }

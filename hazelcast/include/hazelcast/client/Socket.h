@@ -55,9 +55,10 @@ namespace hazelcast {
             ~Socket();
             /**
              * connects to given address in constructor.
+             * @param timeoutInMillis if not connected within timeout, it will return errorCode
              * @return zero if error. -1 otherwise.
              */
-            int connect();
+            int connect(int timeoutInMillis);
 
             /**
              * @param buffer

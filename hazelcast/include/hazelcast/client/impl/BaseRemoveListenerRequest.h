@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_BaseRemoveListenerRequest
 #define HAZELCAST_BaseRemoveListenerRequest
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
@@ -15,7 +15,7 @@ namespace hazelcast {
             class PortableWriter;
         }
         namespace impl {
-            class HAZELCAST_API BaseRemoveListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API BaseRemoveListenerRequest : public impl::ClientRequest {
             public:
                 BaseRemoveListenerRequest(const std::string &name, const std::string registrationId);
 

@@ -15,18 +15,18 @@ namespace hazelcast {
             :name(name)
             , hasData(false) {
 
-            };
+            }
 
             TxnCollectionRequest::TxnCollectionRequest(const std::string &name, serialization::pimpl::Data &data)
             :name(name)
             , hasData(true)
             , data(data) {
 
-            };
+            }
 
             int TxnCollectionRequest::getFactoryId() const {
                 return CollectionPortableHook::F_ID;
-            };
+            }
 
             void TxnCollectionRequest::write(serialization::PortableWriter &writer) const {
                 BaseTxnRequest::write(writer);
@@ -36,7 +36,7 @@ namespace hazelcast {
                 if (hasData) {
                     data.writeData(out);
                 }
-            };
+            }
         }
     }
 }

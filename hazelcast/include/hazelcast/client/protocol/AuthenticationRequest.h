@@ -10,12 +10,12 @@
 
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API AuthenticationRequest : public impl::PortableRequest {
+            class HAZELCAST_API AuthenticationRequest : public impl::ClientRequest {
             public:
                 AuthenticationRequest(const Credentials &credential);
 

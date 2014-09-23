@@ -16,8 +16,6 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 class HAZELCAST_API DataInput {
-                    //friend ObjectDataInput;
-
                 public:
                     DataInput(const std::vector<byte> &rhsBuffer);
 

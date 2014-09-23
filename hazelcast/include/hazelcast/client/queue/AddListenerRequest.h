@@ -4,13 +4,13 @@
 #ifndef HAZELCAST_QUEUE_ADD_LISTENER_REQUEST
 #define HAZELCAST_QUEUE_ADD_LISTENER_REQUEST
 
-#include "hazelcast/client/impl/PortableRequest.h"
+#include "hazelcast/client/impl/ClientRequest.h"
 #include <string>
 
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API AddListenerRequest : public impl::PortableRequest {
+            class HAZELCAST_API AddListenerRequest : public impl::ClientRequest {
             public:
                 AddListenerRequest(const std::string& name, bool includeValue);
 
@@ -19,8 +19,6 @@ namespace hazelcast {
                 int getClassId() const;
 
                 void write(serialization::PortableWriter& writer) const;
-
-
 
             private:
                 std::string name;

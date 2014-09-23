@@ -21,7 +21,7 @@
 #include "cluster/ClusterTest.h"
 #include "cluster/MemberAttributeTest.h"
 #include "issues/IssueTest.h"
-#include <cstdlib>
+#include "util/ClientUtilTest.h"
 
 using namespace hazelcast::client::test;
 
@@ -32,6 +32,11 @@ void testSpeed() {
 
 void unitTests() {
     try {
+        ClientUtilTest utilTest;
+        utilTest.executeTests();
+
+        ClientSerializationTest serializationTest;
+        serializationTest.executeTests();
 
         HazelcastServerFactory factory;
 
@@ -44,8 +49,6 @@ void unitTests() {
         ClusterTest clusterTest(factory);
         clusterTest.executeTests();
 
-        ClientSerializationTest serializationTest;
-        serializationTest.executeTests();
 
         ClientMapTest mapTest(factory);
         mapTest.executeTests();
@@ -97,7 +100,7 @@ void unitTests() {
 
         ClientTxnTest clientTxnTest(factory);
         clientTxnTest.executeTests();
-    } catch(std::exception &e) {
+    } catch (std::exception& e) {
         std::cout << "unitTests " << e.what() << std::endl;
     }
 }
@@ -105,7 +108,7 @@ void unitTests() {
 int main() {
     unitTests();
 //    testSpeed();
-	return 0;
+    return 0;
 }
 
 

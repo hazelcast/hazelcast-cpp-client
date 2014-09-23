@@ -20,6 +20,8 @@ namespace hazelcast {
 
         class ClientConfig;
 
+        class ClientProperties;
+
         namespace connection {
             class ConnectionManager;
         }
@@ -55,6 +57,8 @@ namespace hazelcast {
                 ServerListenerService &getServerListenerService();
 
                 connection::ConnectionManager &getConnectionManager();
+
+                ClientProperties &getClientProperties();
 
                 Cluster &getCluster();
 

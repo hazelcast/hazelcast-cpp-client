@@ -21,18 +21,18 @@ namespace hazelcast {
 
                 ~SerializableCollection();
 
-                const std::vector<serialization::pimpl::Data *> &getCollection() const;
+                const std::vector<serialization::pimpl::Data *>& getCollection() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput &writer) const;
+                void writeData(serialization::ObjectDataOutput& writer) const;
 
-                void readData(serialization::ObjectDataInput &reader);
+                void readData(serialization::ObjectDataInput& reader);
 
             private:
-                std::vector <serialization::pimpl::Data * > dataCollection;
+                std::vector<serialization::pimpl::Data *> dataCollection;
             };
         }
     }

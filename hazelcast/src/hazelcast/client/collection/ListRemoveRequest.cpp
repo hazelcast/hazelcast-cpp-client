@@ -23,7 +23,7 @@ namespace hazelcast {
 
             int ListRemoveRequest::getClassId() const {
                 return collection::CollectionPortableHook::LIST_REMOVE;
-            };
+            }
         }
     }
 }

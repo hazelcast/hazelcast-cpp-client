@@ -61,6 +61,7 @@ namespace hazelcast {
                 std::auto_ptr<Socket> wakeUpSocket;
                 std::auto_ptr<Socket> sleepingSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
+
                 util::AtomicBoolean isAlive;
             };
         }

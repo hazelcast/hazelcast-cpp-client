@@ -14,28 +14,28 @@ namespace hazelcast {
             :key(key)
             , threadId(threadId)
             , force(false) {
-            };
+            }
 
             UnlockRequest::UnlockRequest(serialization::pimpl::Data &key, long threadId, bool force)
             :key(key)
             , threadId(threadId)
             , force(force) {
-            };
+            }
 
             int UnlockRequest::getClassId() const {
                 return LockPortableHook::UNLOCK;
-            };
+            }
 
             int UnlockRequest::getFactoryId() const {
                 return LockPortableHook::FACTORY_ID;
-            };
+            }
 
             void UnlockRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("tid", threadId);
                 writer.writeBoolean("force", force);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
-            };
+            }
         }
     }
 }

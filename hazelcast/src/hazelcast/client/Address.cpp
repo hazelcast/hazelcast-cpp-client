@@ -7,7 +7,7 @@ namespace hazelcast {
     namespace client {
 
         Address::Address():host("localhost") {
-        };
+        }
 
 
         Address::Address(hazelcast::client::Address const &address)
@@ -20,7 +20,7 @@ namespace hazelcast {
         Address::Address(const std::string &url, int port)
         : host(url), port(port), type(IPv4) {
 
-        };
+        }
 
         bool Address::operator ==(const Address &rhs) const {
             if (rhs.host.compare(host) != 0) {
@@ -28,23 +28,23 @@ namespace hazelcast {
             } else {
                 return rhs.port == port;
             }
-        };
+        }
 
         int Address::getPort() const {
             return port;
-        };
+        }
 
         std::string Address::getHost() const {
             return host;
-        };
+        }
 
         int Address::getFactoryId() const {
             return protocol::ProtocolConstants::DATA_FACTORY_ID;
-        };
+        }
 
         int Address::getClassId() const {
             return protocol::ProtocolConstants::ADDRESS_ID;
-        };
+        }
 
         void Address::writeData(serialization::ObjectDataOutput &writer) const {
             writer.writeInt(port);
@@ -57,7 +57,7 @@ namespace hazelcast {
                 temp.insert(temp.begin(), str, str + size);
                 writer.write(temp);
             }
-        };
+        }
 
         void Address::readData(serialization::ObjectDataInput &reader) {
             port = reader.readInt();
@@ -70,10 +70,10 @@ namespace hazelcast {
                 std::copy(temp.begin(), temp.end(), std::ostream_iterator<byte>(oss));
                 host = oss.str();
             }
-        };
+        }
 
         std::ostream &operator <<(std::ostream &stream, const Address &address) {
             return stream << "Address[" << address.getHost() << ":" << address.getPort() << "]";
-        };
+        }
     }
 }
