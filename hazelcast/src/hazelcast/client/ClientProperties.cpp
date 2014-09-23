@@ -5,6 +5,9 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ClientProperties.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror	
+
 namespace hazelcast {
     namespace client {
 
@@ -74,4 +77,6 @@ namespace hazelcast {
         }
     }
 }
+
+#pragma warning(pop)
 

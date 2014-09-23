@@ -35,14 +35,14 @@ namespace hazelcast {
                 return get(INT_MAX);
             }
 
-            serialization::pimpl::Data CallFuture::get(int timeoutInSeconds) {
+            serialization::pimpl::Data CallFuture::get(time_t timeoutInSeconds) {
 				while (timeoutInSeconds > 0) {
                     time_t beg = time(NULL);
                     try {
 						using namespace std;
-                        int waitSeconds = min(timeoutInSeconds, heartBeatTimeout);
+                        time_t waitSeconds = (time_t)min(timeoutInSeconds, heartBeatTimeout);
                         return promise->getFuture()->get(waitSeconds);
-                    } catch (exception::TimeoutException& exception) {
+                    } catch (exception::TimeoutException&) {
                         if (!connection->isHeartBeating()) {
                             std::string address = util::IOUtil::to_string(connection->getRemoteEndpoint());
                             invocationService->tryResend(promise, address);

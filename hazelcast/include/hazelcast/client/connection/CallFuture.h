@@ -33,7 +33,7 @@ namespace hazelcast {
 
                 serialization::pimpl::Data get();
 
-                serialization::pimpl::Data get(int timeoutInSeconds);
+                serialization::pimpl::Data get(time_t timeoutInSeconds);
 
             private:
                 boost::shared_ptr<CallPromise> promise;

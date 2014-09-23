@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 long DefaultPortableReader::readLong(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG);
-                    return dataInput.readLong();
+                    return (long)dataInput.readLong();
                 }
 
                 bool DefaultPortableReader::readBoolean(const char *fieldName) {

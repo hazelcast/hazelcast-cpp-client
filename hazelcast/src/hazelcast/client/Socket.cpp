@@ -5,6 +5,9 @@
 #include <cassert>
 #include <cstdlib>
 
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror	
+
 namespace hazelcast {
     namespace client {
         Socket::Socket(const client::Address &address) {
@@ -164,3 +167,4 @@ namespace hazelcast {
     }
 }
 
+#pragma warning(pop)

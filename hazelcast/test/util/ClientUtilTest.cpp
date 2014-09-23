@@ -100,7 +100,7 @@ namespace hazelcast {
                 time_t end = 0;
                 try {
                     future.get(waitSeconds);
-                } catch (exception::TimeoutException& e) {
+                } catch (exception::TimeoutException&) {
                     end = time(NULL);
                 }
                 assertEqualWithEpsilon((int)(end - beg), waitSeconds , 1);
@@ -123,7 +123,7 @@ namespace hazelcast {
                 future.set_exception("exceptionName", "details");
                 try {
                     future.get(waitSeconds);
-                } catch (exception::IException& e) {
+                } catch (exception::IException&) {
                     gotException = true;
                 }
                 assertEqual(true, gotException);
@@ -163,7 +163,7 @@ namespace hazelcast {
                 util::Thread thread(setExceptionToFuture, &future, &wakeUpTime);
                 try {
                     future.get(waitSeconds);
-                } catch (exception::IException& e) {
+                } catch (exception::IException&) {
                     gotException = true;
                 }
                 assertEqual(true, gotException);

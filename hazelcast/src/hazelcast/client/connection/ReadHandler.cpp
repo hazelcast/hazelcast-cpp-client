@@ -32,7 +32,7 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastRead = time(NULL);
+                connection.lastRead = (int)time(NULL);
                 try {
                     buffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {

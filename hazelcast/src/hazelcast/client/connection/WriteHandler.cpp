@@ -54,7 +54,7 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastWrite = time(NULL);
+                connection.lastWrite = (int)time(NULL);
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();

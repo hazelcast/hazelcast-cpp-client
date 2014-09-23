@@ -49,7 +49,7 @@ namespace hazelcast {
                         return 0;
 
                     if (currentFieldType == FieldTypes::TYPE_LONG) {
-                        return dataInput.readLong();
+                        return (long)dataInput.readLong();
                     } else if (currentFieldType == FieldTypes::TYPE_INT) {
                         return dataInput.readInt();
                     } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
@@ -105,7 +105,7 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_DOUBLE) {
                         return dataInput.readDouble();
                     } else if (currentFieldType == FieldTypes::TYPE_LONG) {
-                        return dataInput.readLong();
+                        return (long)dataInput.readLong();
                     } else if (currentFieldType == FieldTypes::TYPE_INT) {
                         return dataInput.readInt();
                     } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
@@ -127,7 +127,7 @@ namespace hazelcast {
                     if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                         return dataInput.readFloat();
                     } else if (currentFieldType == FieldTypes::TYPE_INT) {
-                        return dataInput.readInt();
+                        return (float)dataInput.readInt();
                     } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
                         return dataInput.readByte();
                     } else if (currentFieldType == FieldTypes::TYPE_CHAR) {

@@ -13,7 +13,7 @@ namespace hazelcast {
             TestInvalidWritePortable::TestInvalidWritePortable(long l, int i, std::string s) {
                 this->l = l;
                 this->i = i;
-                this->s = l;
+                this->s = s;
             }
 
             int TestInvalidWritePortable::getFactoryId() const {
@@ -34,7 +34,7 @@ namespace hazelcast {
             void TestInvalidWritePortable::readPortable(serialization::PortableReader& reader) {
                 l = reader.readLong("l");
                 i = reader.readInt("i");
-                s = reader.readLong("s");
+                s = reader.readUTF("s");
             }
         }
     }

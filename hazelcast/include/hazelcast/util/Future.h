@@ -66,7 +66,7 @@ namespace hazelcast {
                 return sharedObject;
             };
 
-            T get(int timeInSeconds) {
+            T get(time_t timeInSeconds) {
                 LockGuard guard(mutex);
                 if (resultReady) {
                     return sharedObject;

@@ -14,6 +14,10 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/ServerException.h"
 
+
+#pragma warning(push)
+#pragma warning(disable: 4355) //for strerror	
+
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -221,3 +225,6 @@ namespace hazelcast {
         }
     }
 }
+
+#pragma warning(pop)
+

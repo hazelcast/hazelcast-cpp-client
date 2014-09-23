@@ -10,6 +10,9 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Thread.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror	
+
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -97,5 +100,9 @@ namespace hazelcast {
         }
     }
 }
+
+
+#pragma warning(pop)
+
 
 
