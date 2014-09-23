@@ -7,6 +7,9 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror	
+
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -54,4 +57,7 @@ namespace hazelcast {
         }
     }
 }
+
+
+#pragma warning(pop)
 

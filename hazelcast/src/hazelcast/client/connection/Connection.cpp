@@ -16,6 +16,10 @@
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/CallFuture.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#pragma warning(disable: 4355) 	
+
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -147,3 +151,6 @@ namespace hazelcast {
         }
     }
 }
+
+#pragma warning(pop)
+

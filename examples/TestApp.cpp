@@ -778,7 +778,7 @@ public:
         } else {
             try {
                 locked = getMap().tryLock(key, time);
-            } catch (std::exception &e) {
+            } catch (std::exception &) {
                 locked = false;
             }
         }

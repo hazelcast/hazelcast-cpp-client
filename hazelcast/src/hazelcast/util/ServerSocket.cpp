@@ -6,6 +6,9 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror	
+
 namespace hazelcast {
     namespace util {
 
@@ -100,3 +103,5 @@ namespace hazelcast {
         }
     }
 }
+
+#pragma warning(pop)

@@ -70,14 +70,14 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeLong(long long l) {
-                    writeByte((l >> 56));
-                    writeByte((l >> 48));
-                    writeByte((l >> 40));
-                    writeByte((l >> 32));
-                    writeByte((l >> 24));
-                    writeByte((l >> 16));
-                    writeByte((l >> 8));
-                    writeByte(l);
+                    writeByte((byte)(l >> 56));
+                    writeByte((byte)(l >> 48));
+                    writeByte((byte)(l >> 40));
+                    writeByte((byte)(l >> 32));
+                    writeByte((byte)(l >> 24));
+                    writeByte((byte)(l >> 16));
+                    writeByte((byte)(l >> 8));
+                    writeByte((byte)l);
                 }
 
                 void DataOutput::writeFloat(float x) {

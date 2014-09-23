@@ -309,7 +309,7 @@ namespace hazelcast {
                 iTest::assertEqual(inner, *tip1);
                 iTest::assertEqual(inner, *tip2);
 
-                TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678,
+                TestMainPortable main((byte) 113, true, 'x', -500, 56789, -50992225, 900.5678f,
                         -897543.3678909, "this is main portable object created for testing!", inner);
                 data = serializationService.toData<TestMainPortable>(&main);
 
@@ -332,7 +332,7 @@ namespace hazelcast {
                 bool expectedException = false;
                 try {
                     ss.toData< ParentTemplatedPortable<ChildTemplatedPortable2> >(&portable2);
-                }catch (exception::HazelcastSerializationException& e){
+                }catch (exception::HazelcastSerializationException&){
                     expectedException = true;
                 }
                 iTest::assertTrue(expectedException);

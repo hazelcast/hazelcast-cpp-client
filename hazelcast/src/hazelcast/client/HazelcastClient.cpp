@@ -5,6 +5,10 @@
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/Version.h"
 
+
+#pragma warning(push)
+#pragma warning(disable: 4355) //for strerror	
+
 namespace hazelcast {
     namespace client {
 
@@ -87,4 +91,7 @@ namespace hazelcast {
 
     }
 }
+
+#pragma warning(pop)
+
 

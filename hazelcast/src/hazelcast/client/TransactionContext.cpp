@@ -8,12 +8,12 @@
 
 namespace hazelcast {
     namespace client {
-        TransactionContext::TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &options)
+        TransactionContext::TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &txnOptions)
         : CONNECTION_TRY_COUNT(5)
         , clientContext(clientContext)
-        , options(options)
+        , options(txnOptions)
         , txnConnection(connect())
-        , transaction(this->options, clientContext, txnConnection) {
+        , transaction(options, clientContext, txnConnection) {
 
         }
 

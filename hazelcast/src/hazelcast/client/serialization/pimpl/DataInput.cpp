@@ -27,7 +27,7 @@ namespace hazelcast {
                 }
 
                 bool DataInput::readBoolean() {
-                    return readByte();
+                    return readByte() != 0;
                 }
 
                 byte DataInput::readByte() {
@@ -210,7 +210,7 @@ namespace hazelcast {
                     int len = readInt();
                     std::vector<long> values(len);
                     for (int i = 0; i < len; i++) {
-                        values[i] = readLong();
+                        values[i] = (long)readLong();
                     }
                     return values;
                 }

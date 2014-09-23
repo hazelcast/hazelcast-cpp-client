@@ -15,6 +15,8 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
+			
+			template class HAZELCAST_API  std::vector<FieldDefinition>;
             /**
             * ClassDefinitionBuilder is used to build and register ClassDefinitions manually.
             *
@@ -72,9 +74,9 @@ namespace hazelcast {
                 int version;
                 int index;
                 bool done;
-                std::vector<FieldDefinition> fieldDefinitions;
+				std::vector<FieldDefinition> fieldDefinitions;
                 std::vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
-
+				
                 void addField(const std::string& fieldName , FieldType const &fieldType);
 
                 void check();

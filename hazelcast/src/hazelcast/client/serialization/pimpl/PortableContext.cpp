@@ -10,6 +10,9 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4355) //for strerror	
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -88,3 +91,6 @@ namespace hazelcast {
         }
     }
 }
+
+#pragma warning(pop)
+

@@ -27,7 +27,7 @@ namespace hazelcast {
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
                 TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
-                TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678,
+                TestMainPortable main((byte) 113, true, 'x', (short) -500, 56789, -50992225, 900.5678f,
                         -897543.3678909, "this is main portable object created for testing!", inner);
                 return main;
             }

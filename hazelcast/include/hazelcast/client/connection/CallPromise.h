@@ -12,6 +12,8 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/client/impl/ClientRequest.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 #include <memory>
 
 namespace hazelcast {
@@ -22,11 +24,7 @@ namespace hazelcast {
 
         namespace impl {
 
-            class ClientRequest;
-
             class ServerException;
-
-            class BaseEventHandler;
         }
         namespace serialization {
 

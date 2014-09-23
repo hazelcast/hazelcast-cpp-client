@@ -24,8 +24,8 @@ namespace hazelcast {
             assert(success && "SleepConditionVariable");
         }
 
-        bool ConditionVariable::waitFor(Mutex &mutex, int timeSec) {
-            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), timeSec * 1000);
+        bool ConditionVariable::waitFor(Mutex &mutex, time_t timeSec) {
+            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD)timeSec * 1000);
             if(interrupted){
                 return true;
             }
@@ -66,7 +66,7 @@ namespace hazelcast {
             assert(EINVAL != error);
         }
 
-        bool ConditionVariable::waitFor(Mutex& mutex, int timeInSec) {
+        bool ConditionVariable::waitFor(Mutex& mutex, time_t timeInSec) {
             struct timeval tv;
             ::gettimeofday(&tv, NULL);
 
