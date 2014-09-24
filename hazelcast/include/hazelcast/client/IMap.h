@@ -613,7 +613,6 @@ namespace hazelcast {
             * See EntryListener#mapEvicted(MapEvent)}.
             *
             * @see #clear()
-            * @since 3.3
             */
             void evictAll() {
                 map::EvictAllRequest *request = new map::EvictAllRequest(getName());
