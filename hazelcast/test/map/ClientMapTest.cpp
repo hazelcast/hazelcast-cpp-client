@@ -48,8 +48,8 @@ namespace hazelcast {
 //                addTest(&ClientMapTest::testReplace, "testReplace");
 //                addTest(&ClientMapTest::testPredicateListenerWithPortableKey, "testPredicateListenerWithPortableKey");
 //                addTest(&ClientMapTest::testListener, "testListener");
-                addTest(&ClientMapTest::testClearEvent, "testClearEvent");
                 addTest(&ClientMapTest::testEvictAllEvent, "testEvictAllEvent");
+                addTest(&ClientMapTest::testClearEvent, "testClearEvent");
 //                addTest(&ClientMapTest::testBasicPredicate, "testBasicPredicate");
 //                addTest(&ClientMapTest::testIssue537, "testIssue537");
 //                addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
@@ -559,19 +559,21 @@ namespace hazelcast {
             void ClientMapTest::testClearEvent() {
                 util::CountDownLatch latch(1);
                 ClearListener clearListener(latch);
-                imap->addEntryListener(clearListener, false);
+                std::string listenerId = imap->addEntryListener(clearListener, false);
                 imap->put("key1", "value1");
                 imap->clear();
                 assertTrue(latch.await(120));
+                imap->removeEntryListener(listenerId);
             }
 
             void ClientMapTest::testEvictAllEvent() {
                 util::CountDownLatch latch(1);
                 EvictListener evictListener(latch);
-                imap->addEntryListener(evictListener, false);
+                std::string listenerId = imap->addEntryListener(evictListener, false);
                 imap->put("key1", "value1");
                 imap->evictAll();
                 assertTrue(latch.await(120));
+                imap->removeEntryListener(listenerId);
             }
 
 
