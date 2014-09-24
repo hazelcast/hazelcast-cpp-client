@@ -11,6 +11,7 @@
 #include <climits>
 #include <ctime>
 #include <algorithm>
+#include <cstdlib>
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +41,7 @@ namespace hazelcast {
                     time_t beg = time(NULL);
                     try {
 						using namespace std;
-                        time_t waitSeconds = (time_t)min(timeoutInSeconds, heartBeatTimeout);
+                        time_t waitSeconds = (time_t)min(timeoutInSeconds, (time_t)heartBeatTimeout);
                         return promise->getFuture()->get(waitSeconds);
                     } catch (exception::TimeoutException&) {
                         if (!connection->isHeartBeating()) {

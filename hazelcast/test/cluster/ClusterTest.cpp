@@ -7,6 +7,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/LifecycleListener.h"
@@ -19,8 +20,8 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClusterTest::ClusterTest(HazelcastServerFactory &hazelcastInstanceFactory)
-                    : iTestFixture<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
+            ClusterTest::ClusterTest(HazelcastServerFactory& hazelcastInstanceFactory)
+            : iTestFixture<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
             }
 
 
@@ -52,60 +53,62 @@ namespace hazelcast {
 
             class SampleInitialListener : public InitialMembershipListener {
             public:
-                SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
-                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
+                SampleInitialListener(util::CountDownLatch& _memberAdded, util::CountDownLatch& _attributeLatch, util::CountDownLatch& _memberRemoved)
+                : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 }
 
-                void init(const InitialMembershipEvent &event) {
-                    std::vector<Member> const &members = event.getMembers();
+                void init(const InitialMembershipEvent& event) {
+                    std::vector<Member> const& members = event.getMembers();
                     if (members.size() == 1) {
                         _memberAdded.countDown();
                     }
                 }
 
-                void memberAdded(const MembershipEvent &event) {
+                void memberAdded(const MembershipEvent& event) {
                     _memberAdded.countDown();
                 }
 
-                void memberRemoved(const MembershipEvent &event) {
+                void memberRemoved(const MembershipEvent& event) {
                     _memberRemoved.countDown();
                 }
 
 
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
+                void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) {
                     _attributeLatch.countDown();
                 }
+
             private:
-                util::CountDownLatch &_memberAdded;
-                util::CountDownLatch &_attributeLatch;
-                util::CountDownLatch &_memberRemoved;
+                util::CountDownLatch& _memberAdded;
+                util::CountDownLatch& _attributeLatch;
+                util::CountDownLatch& _memberRemoved;
             };
 
 
             class SampleListenerInClusterTest : public MembershipListener {
             public:
-                SampleListenerInClusterTest(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch, util::CountDownLatch &_memberRemoved)
-                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
+                SampleListenerInClusterTest(util::CountDownLatch& _memberAdded, util::CountDownLatch& _attributeLatch, util::CountDownLatch& _memberRemoved)
+                : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 }
 
-                void memberAdded(const MembershipEvent &event) {
+                void memberAdded(const MembershipEvent& event) {
                     _memberAdded.countDown();
                 }
 
-                void memberRemoved(const MembershipEvent &event) {
+                void memberRemoved(const MembershipEvent& event) {
                     _memberRemoved.countDown();
                 }
 
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
+                void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) {
                     memberAttributeEvent.getKey();
                     _attributeLatch.countDown();
                 }
+
             private:
-                util::CountDownLatch &_memberAdded;
-                util::CountDownLatch &_attributeLatch;
-                util::CountDownLatch &_memberRemoved;
+                util::CountDownLatch& _memberAdded;
+                util::CountDownLatch& _attributeLatch;
+                util::CountDownLatch& _memberRemoved;
             };
 
             void ClusterTest::testClusterListeners() {
@@ -176,44 +179,35 @@ namespace hazelcast {
                 instance.shutdown();
             }
 
-            class DummyListenerClusterTest {
+            class DummyListenerClusterTest : public EntryAdapter<std::string, std::string> {
             public:
-                DummyListenerClusterTest(util::CountDownLatch &addLatch)
-                        : addLatch(addLatch) {
+                DummyListenerClusterTest(util::CountDownLatch& addLatch)
+                : addLatch(addLatch) {
                 }
 
-                void entryAdded(EntryEvent<std::string, std::string> &event) {
+                void entryAdded(const EntryEvent<std::string, std::string>& event) {
                     addLatch.countDown();
                 }
 
-                void entryRemoved(EntryEvent<std::string, std::string> &event) {
-                }
-
-                void entryUpdated(EntryEvent<std::string, std::string> &event) {
-                }
-
-                void entryEvicted(EntryEvent<std::string, std::string> &event) {
-                }
-
             private:
-                util::CountDownLatch &addLatch;
+                util::CountDownLatch& addLatch;
             };
 
             class LclForClusterTest : public LifecycleListener {
             public:
-                LclForClusterTest(util::CountDownLatch &latch)
-                        : latch(latch) {
+                LclForClusterTest(util::CountDownLatch& latch)
+                : latch(latch) {
 
                 }
 
-                void stateChanged(const LifecycleEvent &event) {
+                void stateChanged(const LifecycleEvent& event) {
                     if (event.getState() == LifecycleEvent::CLIENT_CONNECTED) {
                         latch.countDown();
                     }
                 }
 
             private:
-                util::CountDownLatch &latch;
+                util::CountDownLatch& latch;
             };
 
             void ClusterTest::testListenersWhenClusterDown() {
@@ -245,7 +239,7 @@ namespace hazelcast {
                 try {
                     HazelcastClient hazelcastClient(clientConfig);
                     assertTrue(false);
-                } catch (exception::IllegalStateException &) {
+                } catch (exception::IllegalStateException&) {
 
                 }
             }

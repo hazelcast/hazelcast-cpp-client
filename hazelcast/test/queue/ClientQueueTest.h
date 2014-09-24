@@ -22,7 +22,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ClientQueueTest : public iTest::iTestFixture<ClientQueueTest> {
             public:
-                ClientQueueTest(HazelcastServerFactory &);
+                ClientQueueTest(HazelcastServerFactory&);
 
                 ~ClientQueueTest();
 
@@ -60,7 +60,7 @@ namespace hazelcast {
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IQueue< std::string> > q;
+                std::auto_ptr<IQueue<std::string> > q;
             };
         }
     }

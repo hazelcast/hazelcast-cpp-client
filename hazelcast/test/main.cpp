@@ -49,7 +49,6 @@ void unitTests() {
         ClusterTest clusterTest(factory);
         clusterTest.executeTests();
 
-
         ClientMapTest mapTest(factory);
         mapTest.executeTests();
 

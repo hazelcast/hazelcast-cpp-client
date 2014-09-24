@@ -59,6 +59,10 @@ namespace hazelcast {
 
                 void testIssue537();
 
+                void testEvictAllEvent();
+
+                void testClearEvent();
+
 //                void testMultipleThreadPut(); //MTODO
 
                 void testPredicateListenerWithPortableKey();

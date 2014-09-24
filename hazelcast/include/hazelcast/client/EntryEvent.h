@@ -65,6 +65,13 @@ namespace hazelcast {
                     case 4:
                         value = EVICTED;
                         break;
+                    case 5:
+                        value = EVICT_ALL;
+                        break;
+                    case 6:
+                        value = CLEAR_ALL;
+                        break;
+
                 }
             }
 
