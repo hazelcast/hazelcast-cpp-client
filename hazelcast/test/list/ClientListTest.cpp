@@ -12,11 +12,11 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientListTest::ClientListTest(HazelcastServerFactory &hazelcastInstanceFactory)
+            ClientListTest::ClientListTest(HazelcastServerFactory& hazelcastInstanceFactory)
             : iTestFixture<ClientListTest>("ClientListTest")
             , instance(hazelcastInstanceFactory)
             , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
-            , list(new IList<std::string>(client->getList< std::string >("ClientListTest"))) {
+            , list(new IList<std::string>(client->getList<std::string>("ClientListTest"))) {
             }
 
 
@@ -117,7 +117,7 @@ namespace hazelcast {
 
                 std::vector<std::string> arr2 = list->subList(1, 3);
 
-                assertEqual(2, (int) arr2.size());
+                assertEqual(2, (int)arr2.size());
                 assertEqual("item2", arr2[0]);
                 assertEqual("item1", arr2[1]);
             }
@@ -151,38 +151,38 @@ namespace hazelcast {
                 l.push_back("item3");
 
                 assertTrue(list->removeAll(l));
-                assertEqual(3, (int) list->size());
+                assertEqual(3, (int)list->size());
                 assertFalse(list->removeAll(l));
-                assertEqual(3, (int) list->size());
+                assertEqual(3, (int)list->size());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
                 assertFalse(list->retainAll(l));
-                assertEqual(3, (int) list->size());
+                assertEqual(3, (int)list->size());
 
                 l.clear();
                 assertTrue(list->retainAll(l));
-                assertEqual(0, (int) list->size());
+                assertEqual(0, (int)list->size());
 
             }
 
-            class MyListItemListener {
+            class MyListItemListener : public ItemListener<std::string> {
             public:
-                MyListItemListener(util::CountDownLatch &latch)
-                :latch(latch) {
+                MyListItemListener(util::CountDownLatch& latch)
+                : latch(latch) {
 
                 }
 
-                void itemAdded(ItemEvent<std::string> itemEvent) {
+                void itemAdded(const ItemEvent<std::string>& itemEvent) {
                     latch.countDown();
                 }
 
-                void itemRemoved(ItemEvent<std::string> item) {
+                void itemRemoved(const ItemEvent<std::string>& item) {
                 }
 
             private:
-                util::CountDownLatch &latch;
+                util::CountDownLatch& latch;
             };
 
             void ClientListTest::testListener() {

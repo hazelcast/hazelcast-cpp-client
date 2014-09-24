@@ -31,10 +31,6 @@ namespace hazelcast {
                 return eventType;
             }
 
-            std::string PortableEntryEvent::getName() const {
-                return name;
-            }
-
             int PortableEntryEvent::getFactoryId() const {
                 return protocol::SpiConstants::SPI_PORTABLE_FACTORY;
             }
@@ -43,6 +39,10 @@ namespace hazelcast {
                 return protocol::SpiConstants::ENTRY_EVENT;
             }
 
+
+            int PortableEntryEvent::getNumberOfAffectedEntries() const {
+                return numberOfAffectedEntries;
+            }
 
             void PortableEntryEvent::readPortable(serialization::PortableReader& reader) {
                 eventType = reader.readInt("e");

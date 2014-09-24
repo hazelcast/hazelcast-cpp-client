@@ -1,3 +1,5 @@
+set -e #abort the script at first faiure
+
 echo "Compiling Static Library"
 mkdir ReleaseStatic
 cd ReleaseStatic

@@ -25,11 +25,11 @@ namespace hazelcast {
 
                 EntryEventType getEventType() const;
 
-                std::string getName() const;
-
                 int getFactoryId() const;
 
                 int getClassId() const;
+
+                int getNumberOfAffectedEntries() const;
 
                 void readPortable(serialization::PortableReader &reader);
 
@@ -40,8 +40,6 @@ namespace hazelcast {
                 EntryEventType eventType;
                 int numberOfAffectedEntries;
                 std::string uuid;
-                std::string name;
-
             };
         }
     }
