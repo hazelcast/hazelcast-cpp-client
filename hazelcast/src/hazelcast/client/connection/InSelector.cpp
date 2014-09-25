@@ -7,8 +7,10 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
+#pragma warning(disable: 4996) //for strerror
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -58,6 +60,6 @@ namespace hazelcast {
     }
 }
 
-
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-
+#endif
