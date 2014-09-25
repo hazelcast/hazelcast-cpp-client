@@ -1,3 +1,9 @@
+set -e #abort the script at first faiure
+
+echo "Cleanup release directories"
+rm -rf ./Release*
+rm -rf ./cpp
+
 echo "Compiling Static Library"
 mkdir ReleaseStatic
 cd ReleaseStatic
