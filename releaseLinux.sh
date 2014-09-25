@@ -1,3 +1,5 @@
+set -e #abort the script at first faiure
+
 echo "Compiling Static 32bit library"
 mkdir ReleaseStatic32;
 cd ./ReleaseStatic32;
