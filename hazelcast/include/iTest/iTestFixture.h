@@ -79,13 +79,13 @@ namespace iTest {
                 afterTest();
                 if (isOk) {
                     std::cout << "============OK============== " << std::endl;
-                    return true;
                 } else {
                     std::cout << "============FAILED============== " << std::endl;
                     return false;
                 }
             }
             afterClass();
+            return true;
         }
 
 
