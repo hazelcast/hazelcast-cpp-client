@@ -21,7 +21,7 @@ namespace hazelcast {
             class HAZELCAST_API ClientUtilTest : public iTest::iTestFixture<ClientUtilTest> {
             public:
 
-                ClientUtilTest();
+                ClientUtilTest(int dummy);
 
                 void addTests();
 

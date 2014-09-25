@@ -12,6 +12,14 @@
 #include <sstream>
 #include <string>
 
+
+#define RUN_TEST(TEST, ...) do{ \
+  TEST t(  __VA_ARGS__ );       \
+  if(!t.executeTests()){        \
+    return 1;               \
+  }                         \
+}while(0)
+
 namespace iTest {
     static int assertNumber;
 
@@ -24,8 +32,8 @@ namespace iTest {
         typedef void (T::*TestFunction)();
 
     public:
-        iTestFixture(const std::string &fixtureName)
-                : fixtureName(fixtureName), id(0) {
+        iTestFixture(const std::string& fixtureName)
+        : fixtureName(fixtureName), id(0) {
 
         }
 
@@ -42,12 +50,12 @@ namespace iTest {
 
         virtual void afterTest() = 0;
 
-        void addTest(TestFunction test, const std::string &name) {
+        void addTest(TestFunction test, const std::string& name) {
             tests.push_back(test);
             testNames[id++] = name;
         }
 
-        void executeTests() {
+        bool executeTests() {
             addTests();
             (std::cout << "<<<<<<< " << fixtureName << " >>>>>>" << std::endl);
             beforeClass();
@@ -60,7 +68,7 @@ namespace iTest {
                 try {
                     assertNumber = 0;
                     ((*t).*(test))();
-                } catch (iTestException &e) {
+                } catch (iTestException& e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
                 } catch (...) {
@@ -69,10 +77,13 @@ namespace iTest {
                     throw;
                 }
                 afterTest();
-                if (isOk)
+                if (isOk) {
                     std::cout << "============OK============== " << std::endl;
-                else
+                    return true;
+                } else {
                     std::cout << "============FAILED============== " << std::endl;
+                    return false;
+                }
             }
             afterClass();
         }
