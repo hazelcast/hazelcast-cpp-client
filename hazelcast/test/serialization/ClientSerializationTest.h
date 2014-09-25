@@ -13,7 +13,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ClientSerializationTest : public iTest::iTestFixture<ClientSerializationTest> {
             public:
-                ClientSerializationTest();
+                ClientSerializationTest(int dummy);
 
                 void beforeClass();
 

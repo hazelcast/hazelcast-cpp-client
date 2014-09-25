@@ -30,85 +30,41 @@ void testSpeed() {
     s.run();
 }
 
-void unitTests() {
+int unitTests() {
     try {
-        ClientUtilTest utilTest;
-        utilTest.executeTests();
-
-        ClientSerializationTest serializationTest;
-        serializationTest.executeTests();
-
+        RUN_TEST(ClientUtilTest, 1);
+        RUN_TEST(ClientSerializationTest, 1);
         HazelcastServerFactory factory;
-
-        IssueTest issueTest(factory);
-        issueTest.executeTests();
-
-        MemberAttributeTest memberAttributeTest(factory);
-        memberAttributeTest.executeTests();
-
-        ClusterTest clusterTest(factory);
-        clusterTest.executeTests();
-
-
-        ClientMapTest mapTest(factory);
-        mapTest.executeTests();
-
-        ClientMultiMapTest multiMapTest(factory);
-        multiMapTest.executeTests();
-
-        ClientQueueTest queueTest(factory);
-        queueTest.executeTests();
-
-        ClientListTest listTest(factory);
-        listTest.executeTests();
-
-        ClientSetTest setTest(factory);
-        setTest.executeTests();
-
-        IAtomicLongTest atomTest(factory);
-        atomTest.executeTests();
-
-        IdGeneratorTest generatorTest(factory);
-        generatorTest.executeTests();
-
-        ICountDownLatchTest latchTest(factory);
-        latchTest.executeTests();
-
-        ClientLockTest lockTest(factory);
-        lockTest.executeTests();
-
-        ClientSemaphoreTest semaphoreTest(factory);
-        semaphoreTest.executeTests();
-
-        ClientTopicTest topicTest(factory);
-        topicTest.executeTests();
-
-        ClientTxnListTest clientTxnListTest(factory);
-        clientTxnListTest.executeTests();
-
-        ClientTxnMapTest clientTxnMapTest(factory);
-        clientTxnMapTest.executeTests();
-
-        ClientTxnMultiMapTest clientTxnMultiMapTest(factory);
-        clientTxnMultiMapTest.executeTests();
-
-        ClientTxnQueueTest clientTxnQueueTest(factory);
-        clientTxnQueueTest.executeTests();
-
-        ClientTxnSetTest clientTxnSetTest(factory);
-        clientTxnSetTest.executeTests();
-
-        ClientTxnTest clientTxnTest(factory);
-        clientTxnTest.executeTests();
+        RUN_TEST(IssueTest, factory);
+        RUN_TEST(MemberAttributeTest, factory);
+        RUN_TEST(ClusterTest, factory);
+        RUN_TEST(ClientMapTest, factory);
+        RUN_TEST(ClientMultiMapTest, factory);
+        RUN_TEST(ClientQueueTest, factory);
+        RUN_TEST(ClientListTest, factory);
+        RUN_TEST(ClientSetTest, factory);
+        RUN_TEST(IAtomicLongTest, factory);
+        RUN_TEST(IdGeneratorTest, factory);
+        RUN_TEST(ICountDownLatchTest, factory);
+        RUN_TEST(ClientLockTest, factory);
+        RUN_TEST(ClientSemaphoreTest, factory);
+        RUN_TEST(ClientTopicTest, factory);
+        RUN_TEST(ClientTxnListTest, factory);
+        RUN_TEST(ClientTxnMapTest, factory);
+        RUN_TEST(ClientTxnMultiMapTest, factory);
+        RUN_TEST(ClientTxnQueueTest, factory);
+        RUN_TEST(ClientTxnSetTest, factory);
+        RUN_TEST(ClientTxnTest, factory);
+        return 0;
     } catch (std::exception& e) {
         std::cout << "unitTests " << e.what() << std::endl;
+        return 1;
     }
 }
 
 int main() {
-    unitTests();
 //    testSpeed();
-    return 0;
+    return unitTests();
 }
 
 
