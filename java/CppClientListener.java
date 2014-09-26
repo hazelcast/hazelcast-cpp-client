@@ -15,13 +15,19 @@
 */
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.MemberAttributeConfig;
+import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.*;
+import com.hazelcast.nio.serialization.DataSerializableFactory;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import com.hazelcast.nio.serialization.Portable;
+import com.hazelcast.nio.serialization.PortableFactory;
+import com.hazelcast.nio.serialization.PortableReader;
+import com.hazelcast.nio.serialization.PortableWriter;
+import com.hazelcast.nio.serialization.StreamSerializer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -32,8 +38,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -41,6 +45,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 * Date: 8/26/13
 * Time: 1:51 PM
 */
+
+class Person {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
 
 class Employee implements Portable {
     private String name;
@@ -72,6 +88,7 @@ class Employee implements Portable {
         name = reader.readUTF("n");
         age = reader.readInt("a");
     }
+
 }
 
 class SampleFailingTask implements Callable, IdentifiedDataSerializable {
@@ -168,7 +185,6 @@ public class CppClientListener {
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());
         final Socket socket = welcomeSocket.accept();
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
         final DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         while (true) {
@@ -214,7 +230,7 @@ public class CppClientListener {
                 return null;
             }
         });
-        config.getSerializationConfig().addDataSerializableFactory(666, new DataSerializableFactory(){
+        config.getSerializationConfig().addDataSerializableFactory(666, new DataSerializableFactory() {
             public IdentifiedDataSerializable create(int typeId) {
                 if (typeId == 1) {
                     return new SampleFailingTask();
@@ -224,11 +240,42 @@ public class CppClientListener {
                 return null;
             }
         });
+
+        final SerializerConfig serializerConfig = new SerializerConfig();
+        serializerConfig.setImplementation(new StreamSerializer<Person>() {
+            @Override
+            public int getTypeId() {
+                return 999;
+            }
+
+            public void destroy() {
+
+            }
+
+            public void write(ObjectDataOutput out, Person object) throws IOException {
+                out.writeInt(999);
+                out.writeUTF(object.getName());
+                out.writeInt(999);
+            }
+
+            public Person read(ObjectDataInput in) throws IOException {
+                if (in.readInt() != 999) {
+                    throw new IOException(" wrong value is read expected 999 ");
+                }
+                final Person person = new Person();
+                person.setName(in.readUTF());
+                if (in.readInt() != 999) {
+                    throw new IOException(" wrong value is read expected 999 ");
+                }
+                return person;
+            }
+        });
+        serializerConfig.setTypeClass(Person.class);
+        config.getSerializationConfig().addSerializerConfig(serializerConfig);
         return config;
     }
 
     private static HazelcastInstance getInstance(Config config) {
-        MemberAttributeConfig memberAttributeConfig = config.getMemberAttributeConfig();
         final HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
         instance.getCluster().getLocalMember().setIntAttribute("intAttr", 211);
         instance.getCluster().getLocalMember().setBooleanAttribute("boolAttr", true);
@@ -240,4 +287,3 @@ public class CppClientListener {
         return instance;
     }
 }
-
