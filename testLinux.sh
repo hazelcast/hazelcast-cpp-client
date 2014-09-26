@@ -8,6 +8,7 @@ cd ..
 cd java
 mvn clean install
 mvn exec:java -Dexec.mainClass="CppClientListener" &
+sleep 20
 cd ..
 ./build/hazelcast/test/clientTest_STATIC_64.exe
 #lsof | grep IPv | grep 6543 | awk '{print $2}' | xargs -l -i kill -9 {}
