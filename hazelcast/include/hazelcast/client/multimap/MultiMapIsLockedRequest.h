@@ -19,7 +19,7 @@ namespace hazelcast {
 
         }
         namespace multimap {
-            class HAZELCAST_API MultiMapIsLockedRequest : public KeyBasedRequest{
+            class MultiMapIsLockedRequest : public KeyBasedRequest{
             public:
                 MultiMapIsLockedRequest(const std::string& name, const serialization::pimpl::Data& key);
 

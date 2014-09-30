@@ -14,7 +14,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            class HAZELCAST_API AddIndexRequest : public impl::ClientRequest {
+            class AddIndexRequest : public impl::ClientRequest {
             public:
                 AddIndexRequest(const std::string& name, const std::string& attribute, bool ordered);
 

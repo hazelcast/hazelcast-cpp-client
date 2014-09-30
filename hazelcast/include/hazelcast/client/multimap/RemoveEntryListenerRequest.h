@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API RemoveEntryListenerRequest : public impl::BaseRemoveListenerRequest {
+            class RemoveEntryListenerRequest : public impl::BaseRemoveListenerRequest {
             public:
                 RemoveEntryListenerRequest(const std::string &name, const std::string &registrationId);
 

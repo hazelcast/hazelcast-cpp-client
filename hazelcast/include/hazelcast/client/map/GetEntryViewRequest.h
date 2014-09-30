@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetEntryViewRequest : public impl::ClientRequest {
+            class GetEntryViewRequest : public impl::ClientRequest {
             public:
                 GetEntryViewRequest(const std::string &name, const serialization::pimpl::Data &key);
 

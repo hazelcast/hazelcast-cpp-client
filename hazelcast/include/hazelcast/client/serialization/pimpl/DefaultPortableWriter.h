@@ -15,6 +15,12 @@
 #include <set>
 #include <vector>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -53,8 +59,6 @@ namespace hazelcast {
                     void writeShort(const char *fieldName, short value);
 
                     void writeUTF(const char *fieldName, const std::string& str);
-
-                    void writeNullPortable(const char *fieldName, int factoryId, int classId);
 
                     void writeByteArray(const char *fieldName, const std::vector<byte>& x);
 
@@ -128,5 +132,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_PORTABLE_WRITER */
 

@@ -7,11 +7,15 @@
 #ifndef HAZELCAST_DistributedObject
 #define HAZELCAST_DistributedObject
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
+#define DESERIALIZE(data, RETURN_TYPE) boost::shared_ptr<RETURN_TYPE> result = getContext().getSerializationService().toObject<RETURN_TYPE>(data);
 
 namespace hazelcast {
     namespace client {
@@ -19,6 +23,18 @@ namespace hazelcast {
             class BaseEventHandler;
 
             class BaseRemoveListenerRequest;
+
+            class ClientRequest;
+        }
+
+        namespace spi{
+            class ClientContext;
+        }
+
+        namespace serialization{
+            namespace pimpl{
+                class Data;
+            }
         }
 
         /**
@@ -84,7 +100,6 @@ namespace hazelcast {
              */
             virtual void onDestroy() = 0;
 
-            template<typename Response>
             /**
              * Internal API.
              * method to be called by distributed objects.
@@ -93,11 +108,7 @@ namespace hazelcast {
              * @param partitionId that given request will be send to.
              * @param request ClientRequest ptr.
              */
-            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request, int partitionId) {
-                spi::InvocationService &invocationService = getContext().getInvocationService();
-                connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
-                return context->getSerializationService().template toObject<Response>(future.get());
-            };
+            serialization::pimpl::Data invoke(const impl::ClientRequest *request, int partitionId);
 
             /**
              * Internal API.
@@ -106,11 +117,7 @@ namespace hazelcast {
              *
              * @param request ClientRequest ptr.
              */
-            template<typename Response>
-            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request) {
-                connection::CallFuture  future = getContext().getInvocationService().invokeOnRandomTarget(request);
-                return context->getSerializationService().template toObject<Response>(future.get());
-            };
+            serialization::pimpl::Data invoke(const impl::ClientRequest *request);
 
             /**
              * Internal API.
@@ -144,12 +151,16 @@ namespace hazelcast {
             int getPartitionId(const serialization::pimpl::Data &key);
 
         private:
+            spi::ClientContext *context;
             const std::string name;
             const std::string serviceName;
-            spi::ClientContext *context;
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_DistributedObject
 

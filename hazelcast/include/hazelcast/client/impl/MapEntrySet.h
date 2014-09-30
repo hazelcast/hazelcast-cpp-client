@@ -19,6 +19,8 @@ namespace hazelcast {
             public:
                 MapEntrySet();
 
+                MapEntrySet(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& entrySet);
+
                 int getFactoryId() const;
 
                 int getClassId() const;

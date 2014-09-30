@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ReplaceRequest : public impl::ClientRequest {
+            class ReplaceRequest : public impl::ClientRequest {
             public:
-                ReplaceRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId);
+                ReplaceRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId);
 
                 int getFactoryId() const;
 

@@ -15,6 +15,12 @@ namespace hazelcast {
 
             }
 
+
+            MapEntrySet::MapEntrySet(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& entrySet)
+            :entrySet(entrySet) {
+
+            }
+
             int MapEntrySet::getFactoryId() const {
                 return DataSerializableHook::F_ID;
             }
@@ -29,7 +35,7 @@ namespace hazelcast {
 
             void MapEntrySet::writeData(serialization::ObjectDataOutput& writer) const {
                 int size = entrySet.size();
-		writer.writeInt(size);
+		        writer.writeInt(size);
                 for (int i = 0; i < size; ++i) {
                     entrySet[i].first.writeData(writer);
                     entrySet[i].second.writeData(writer);

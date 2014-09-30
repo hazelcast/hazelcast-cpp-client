@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API MapKeySet : public impl::IdentifiedDataSerializableResponse {
+            class MapKeySet : public impl::IdentifiedDataSerializableResponse {
             public:
                 int getFactoryId() const;
 

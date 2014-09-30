@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API OfferRequest : public impl::ClientRequest {
+            class OfferRequest : public impl::ClientRequest {
             public:
-                OfferRequest(const std::string &name, serialization::pimpl::Data &data, long timeout);
+                OfferRequest(const std::string &name, const serialization::pimpl::Data &data, long timeout);
 
                 int getFactoryId() const;
 

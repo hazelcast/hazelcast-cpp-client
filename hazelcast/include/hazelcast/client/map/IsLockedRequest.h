@@ -13,15 +13,15 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API IsLockedRequest : public impl::ClientRequest {
+            class IsLockedRequest : public impl::ClientRequest {
             public:
-                IsLockedRequest(const std::string &name, serialization::pimpl::Data &key);
+                IsLockedRequest(const std::string& name, const serialization::pimpl::Data& key);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

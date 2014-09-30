@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            DeleteRequest::DeleteRequest(const std::string &name, serialization::pimpl::Data &key, long threadId)
+            DeleteRequest::DeleteRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId)
             :name(name)
             , key(key)
             , threadId(threadId) {

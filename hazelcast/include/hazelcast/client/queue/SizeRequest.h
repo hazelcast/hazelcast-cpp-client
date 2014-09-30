@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API SizeRequest : public impl::ClientRequest {
+            class SizeRequest : public impl::ClientRequest {
             public:
                 SizeRequest(const std::string &name);
 

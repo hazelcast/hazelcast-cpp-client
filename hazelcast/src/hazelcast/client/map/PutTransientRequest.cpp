@@ -10,8 +10,8 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            PutTransientRequest::PutTransientRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl)
-            :name(name)
+            PutTransientRequest::PutTransientRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long threadId, long ttl)
+            : name(name)
             , key(key)
             , value(value)
             , threadId(threadId)
@@ -28,12 +28,12 @@ namespace hazelcast {
             }
 
 
-            void PutTransientRequest::write(serialization::PortableWriter &writer) const {
+            void PutTransientRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeBoolean("a", false);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
             }

@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            UnlockRequest::UnlockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId, bool force)
+            UnlockRequest::UnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, bool force)
             :name(name)
             , key(key)
             , threadId(threadId)

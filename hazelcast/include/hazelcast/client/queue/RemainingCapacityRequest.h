@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API RemainingCapacityRequest : public impl::ClientRequest {
+            class RemainingCapacityRequest : public impl::ClientRequest {
             public:
                 RemainingCapacityRequest(const std::string &name);
 

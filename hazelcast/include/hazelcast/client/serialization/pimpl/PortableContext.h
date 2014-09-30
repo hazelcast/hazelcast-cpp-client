@@ -9,13 +9,17 @@
 #ifndef HAZELCAST_SERIALIZATION_CONTEXT
 #define HAZELCAST_SERIALIZATION_CONTEXT
 
+#include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include <map>
 #include <vector>
 #include <memory>
-#include <hazelcast/client/serialization/Portable.h>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -69,5 +73,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_SERIALIZATION_CONTEXT */
 

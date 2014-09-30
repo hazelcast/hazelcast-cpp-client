@@ -13,14 +13,16 @@
 #include "hazelcast/client/serialization/FieldType.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/FieldDefinition.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include <string>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -117,5 +119,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_CLASS_DEFINITION_WRITER */
 

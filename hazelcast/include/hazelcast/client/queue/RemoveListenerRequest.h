@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API RemoveListenerRequest : public impl::BaseRemoveListenerRequest {
+            class RemoveListenerRequest : public impl::BaseRemoveListenerRequest {
             public:
                 RemoveListenerRequest(const std::string &name, const std::string &registrationId);
 

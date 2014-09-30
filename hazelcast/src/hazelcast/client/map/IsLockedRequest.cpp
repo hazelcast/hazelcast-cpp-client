@@ -10,9 +10,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            IsLockedRequest::IsLockedRequest(const std::string &name, serialization::pimpl::Data &key)
-            :name(name)
-            , key(key){
+            IsLockedRequest::IsLockedRequest(const std::string& name, const serialization::pimpl::Data& key)
+            : name(name)
+            , key(key) {
 
             }
 
@@ -24,10 +24,10 @@ namespace hazelcast {
                 return PortableHook::IS_LOCKED;
             }
 
-            void IsLockedRequest::write(serialization::PortableWriter &writer) const {
+            void IsLockedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("tid", 0);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             }
 

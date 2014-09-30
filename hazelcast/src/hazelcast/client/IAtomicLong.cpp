@@ -4,6 +4,7 @@
 #include "hazelcast/client/atomiclong/GetAndAddRequest.h"
 #include "hazelcast/client/atomiclong/GetAndSetRequest.h"
 #include "hazelcast/client/atomiclong/SetRequest.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,14 +18,16 @@ namespace hazelcast {
 
         long IAtomicLong::addAndGet(long delta) {
             atomiclong::AddAndGetRequest *request = new atomiclong::AddAndGetRequest(getName(), delta);
-            boost::shared_ptr<long> response = invoke<long>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data , long);
+            return *result;
         }
 
         bool IAtomicLong::compareAndSet(long expect, long update) {
             atomiclong::CompareAndSetRequest *request = new atomiclong::CompareAndSetRequest(getName(), expect, update);
-            boost::shared_ptr<bool> response = invoke<bool>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data , bool);
+            return *result;
         }
 
         long IAtomicLong::decrementAndGet() {
@@ -37,14 +40,16 @@ namespace hazelcast {
 
         long IAtomicLong::getAndAdd(long delta) {
             atomiclong::GetAndAddRequest *request = new atomiclong::GetAndAddRequest(getName(), delta);
-            boost::shared_ptr<long> response = invoke<long>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data , long);
+            return *result;
         }
 
         long IAtomicLong::getAndSet(long newValue) {
             atomiclong::GetAndSetRequest *request = new atomiclong::GetAndSetRequest(getName(), newValue);
-            boost::shared_ptr<long> response = invoke<long>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data , long);
+            return *result;
         }
 
         long IAtomicLong::incrementAndGet() {
@@ -57,7 +62,7 @@ namespace hazelcast {
 
         void IAtomicLong::set(long newValue) {
             atomiclong::SetRequest *request = new atomiclong::SetRequest(getName(), newValue);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         void IAtomicLong::onDestroy() {

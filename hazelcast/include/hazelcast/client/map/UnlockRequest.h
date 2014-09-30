@@ -11,10 +11,10 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API UnlockRequest : public impl::ClientRequest {
+            class UnlockRequest : public impl::ClientRequest {
             public:
 
-                UnlockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId, bool force);
+                UnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, bool force);
 
                 int getFactoryId() const;
 

@@ -9,12 +9,10 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
-
-
         ILock::ILock(const std::string &instanceName, spi::ClientContext *context)
         : DistributedObject("hz:impl:lockService", instanceName, context)
         , key(context->getSerializationService().toData<std::string>(&instanceName)) {
@@ -27,39 +25,45 @@ namespace hazelcast {
 
         void ILock::lock(long leaseTimeInMillis) {
             lock::LockRequest *request = new lock::LockRequest(key, util::getThreadId(), leaseTimeInMillis, -1);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         void ILock::unlock() {
             lock::UnlockRequest *request = new lock::UnlockRequest(key, util::getThreadId(), false);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         void ILock::forceUnlock() {
             lock::UnlockRequest *request = new lock::UnlockRequest(key, util::getThreadId(), true);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         bool ILock::isLocked() {
             lock::IsLockedRequest *request = new lock::IsLockedRequest(key);
-            return *(invoke<bool>(request, partitionId));
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         bool ILock::isLockedByCurrentThread() {
             lock::IsLockedRequest *request = new lock::IsLockedRequest(key, util::getThreadId());
-            return *(invoke<bool>(request, partitionId));
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         int ILock::getLockCount() {
             lock::GetLockCountRequest *request = new lock::GetLockCountRequest(key);
-            boost::shared_ptr<int> response = invoke<int>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, int);
+            return *result;
         }
 
         long ILock::getRemainingLeaseTime() {
             lock::GetRemainingLeaseRequest *request = new lock::GetRemainingLeaseRequest(key);
-            boost::shared_ptr<long> response = invoke<long>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, long);
+            return *result;
         }
 
         bool ILock::tryLock() {
@@ -68,8 +72,9 @@ namespace hazelcast {
 
         bool ILock::tryLock(long timeInMillis) {
             lock::LockRequest *request = new lock::LockRequest(key, util::getThreadId(), -1, timeInMillis);
-            boost::shared_ptr<bool> response = invoke<bool>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         void ILock::onDestroy() {

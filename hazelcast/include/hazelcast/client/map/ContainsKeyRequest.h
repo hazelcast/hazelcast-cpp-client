@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ContainsKeyRequest : public impl::ClientRequest {
+            class ContainsKeyRequest : public impl::ClientRequest {
             public:
-                ContainsKeyRequest(const std::string &name, serialization::pimpl::Data &key);
+                ContainsKeyRequest(const std::string &name, const serialization::pimpl::Data &key);
 
                 int getFactoryId() const;
 

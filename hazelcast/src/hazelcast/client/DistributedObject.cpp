@@ -10,11 +10,15 @@
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/connection/CallFuture.h"
+
 
 namespace hazelcast {
     namespace client {
         DistributedObject::DistributedObject(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context)
-        : name(objectName), serviceName(serviceName), context(context) {
+        : context(context) , name(objectName), serviceName(serviceName){
 
         }
 
@@ -56,6 +60,17 @@ namespace hazelcast {
         int DistributedObject::getPartitionId(const serialization::pimpl::Data &key) {
             return context->getPartitionService().getPartitionId(key);
         }
+
+        serialization::pimpl::Data DistributedObject::invoke(const impl::ClientRequest *request, int partitionId) {
+            spi::InvocationService &invocationService = getContext().getInvocationService();
+            connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
+            return future.get();
+        };
+
+        serialization::pimpl::Data DistributedObject::invoke(const impl::ClientRequest *request) {
+            connection::CallFuture  future = getContext().getInvocationService().invokeOnRandomTarget(request);
+            return future.get();
+        };
     }
 }
 

@@ -5,6 +5,7 @@
 #include "hazelcast/client/semaphore/DrainRequest.h"
 #include "hazelcast/client/semaphore/ReduceRequest.h"
 #include "hazelcast/client/semaphore/ReleaseRequest.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +18,9 @@ namespace hazelcast {
 
         bool ISemaphore::init(int permits) {
             semaphore::InitRequest *request = new semaphore::InitRequest(getName(), permits);
-            return *(invoke<bool>(request, partitionId));
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         void ISemaphore::acquire() {
@@ -26,24 +29,26 @@ namespace hazelcast {
 
         void ISemaphore::acquire(int permits) {
             semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, -1);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         int ISemaphore::availablePermits() {
             semaphore::AvailableRequest *request = new semaphore::AvailableRequest(getName());
-            boost::shared_ptr<int> response = invoke<int>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, int);
+            return *result;
         }
 
         int ISemaphore::drainPermits() {
             semaphore::DrainRequest *request = new semaphore::DrainRequest(getName());
-            boost::shared_ptr<int> response = invoke<int>(request, partitionId);
-            return *response;
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, int);
+            return *result;
         }
 
         void ISemaphore::reducePermits(int reduction) {
             semaphore::ReduceRequest *request = new semaphore::ReduceRequest(getName(), reduction);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         void ISemaphore::release() {
@@ -52,7 +57,7 @@ namespace hazelcast {
 
         void ISemaphore::release(int permits) {
             semaphore::ReleaseRequest *request = new semaphore::ReleaseRequest(getName(), permits);
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         bool ISemaphore::tryAcquire() {
@@ -69,7 +74,9 @@ namespace hazelcast {
 
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             semaphore::AcquireRequest *request = new semaphore::AcquireRequest(getName(), permits, timeoutInMillis);
-            return *(invoke<bool>(request, partitionId));
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         void ISemaphore::onDestroy() {
