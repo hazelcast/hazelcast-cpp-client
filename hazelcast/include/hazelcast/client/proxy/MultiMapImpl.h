@@ -8,7 +8,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class MultiMapImpl : public ProxyImpl {
+            class HAZELCAST_API MultiMapImpl : public ProxyImpl {
             protected:
                 MultiMapImpl(const std::string& instanceName, spi::ClientContext *context);
 

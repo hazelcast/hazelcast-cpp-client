@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class IListImpl : public ProxyImpl {
+            class HAZELCAST_API IListImpl : public ProxyImpl {
             protected:
                 IListImpl(const std::string& instanceName, spi::ClientContext *context);
 

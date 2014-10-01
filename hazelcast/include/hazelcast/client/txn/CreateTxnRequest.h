@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API CreateTxnRequest : public BaseTxnRequest {
+            class CreateTxnRequest : public BaseTxnRequest {
             public:
                 CreateTxnRequest(TransactionOptions options);
 

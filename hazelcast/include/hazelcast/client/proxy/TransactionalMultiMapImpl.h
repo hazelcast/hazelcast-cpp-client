@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class TransactionalMultiMapImpl : public TransactionalObject {
+            class HAZELCAST_API TransactionalMultiMapImpl : public TransactionalObject {
             protected:
                 TransactionalMultiMapImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
 

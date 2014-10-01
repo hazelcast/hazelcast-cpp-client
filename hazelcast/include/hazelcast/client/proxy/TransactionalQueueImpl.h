@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class TransactionalQueueImpl : public TransactionalObject {
+            class HAZELCAST_API TransactionalQueueImpl : public TransactionalObject {
             public:
                 TransactionalQueueImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
 

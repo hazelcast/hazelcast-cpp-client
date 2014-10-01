@@ -8,7 +8,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class IQueueImpl : public ProxyImpl {
+            class HAZELCAST_API IQueueImpl : public ProxyImpl {
             protected:
                 IQueueImpl(const std::string& instanceName, spi::ClientContext *context);
 
