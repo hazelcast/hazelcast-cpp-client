@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientMapTest : public iTestFixture<ClientMapTest> {
+            class ClientMapTest : public iTestFixture<ClientMapTest> {
             public:
                 ClientMapTest(HazelcastServerFactory &);
 

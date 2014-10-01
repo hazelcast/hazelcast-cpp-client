@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientTopicTest : public iTest::iTestFixture<ClientTopicTest> {
+            class ClientTopicTest : public iTest::iTestFixture<ClientTopicTest> {
 
             public:
 

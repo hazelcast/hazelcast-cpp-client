@@ -11,14 +11,14 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API TestCustomXSerializable {
+            class TestCustomXSerializable {
             public:
                 int id;
 
                 int getTypeId() const;
             };
 
-            class HAZELCAST_API TestCustomPerson {
+            class TestCustomPerson {
             public:
 
                 std::string getName() const;

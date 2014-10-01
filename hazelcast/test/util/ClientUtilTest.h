@@ -18,7 +18,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientUtilTest : public iTest::iTestFixture<ClientUtilTest> {
+            class ClientUtilTest : public iTest::iTestFixture<ClientUtilTest> {
             public:
 
                 ClientUtilTest(int dummy);

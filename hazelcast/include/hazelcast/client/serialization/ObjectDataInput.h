@@ -234,7 +234,7 @@ namespace hazelcast {
                     }
                     object.reset(new T);
                     const int typeId = readInt();
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object.getSerializerId());
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getSerializerId());
                     if (serializer.get() != NULL) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->read(*this, *object);

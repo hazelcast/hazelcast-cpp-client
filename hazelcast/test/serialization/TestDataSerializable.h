@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API TestDataSerializable : public serialization::IdentifiedDataSerializable {
+            class TestDataSerializable : public serialization::IdentifiedDataSerializable {
             public:
                 TestDataSerializable();
 
