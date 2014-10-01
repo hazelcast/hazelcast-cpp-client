@@ -3,7 +3,6 @@
 //
 
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/LogLevel.h"
 #include "hazelcast/util/Thread.h"
 #include <iostream>
 

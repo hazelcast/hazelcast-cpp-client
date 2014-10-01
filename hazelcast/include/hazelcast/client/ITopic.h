@@ -8,9 +8,7 @@
 #define HAZELCAST_TOPIC
 
 #include "hazelcast/client/proxy/ITopicImpl.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/topic/TopicEventHandler.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
 #include <string>
 
 namespace hazelcast {

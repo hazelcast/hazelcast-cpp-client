@@ -1,8 +1,6 @@
 #ifndef HAZELCAST_IMAP
 #define HAZELCAST_IMAP
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/map/AddInterceptorRequest.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
@@ -11,13 +9,17 @@
 #include "hazelcast/client/map/ExecuteOnKeyRequest.h"
 #include "hazelcast/client/map/ExecuteOnAllKeysRequest.h"
 #include "hazelcast/client/impl/MapEntrySet.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include <string>
 #include <map>
 #include <set>
 #include <vector>
 #include <stdexcept>
 #include <climits>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -769,16 +771,20 @@ namespace hazelcast {
             void clear() {
                 proxy::IMapImpl::clear();
             }
-            
+
         private:
             IMap(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::IMapImpl(instanceName, context){
+            : proxy::IMapImpl(instanceName, context) {
 
             }
 
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_IMAP */
 

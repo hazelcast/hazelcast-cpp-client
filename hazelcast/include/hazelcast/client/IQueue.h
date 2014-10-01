@@ -1,12 +1,9 @@
 #ifndef HAZELCAST_IQUEUE
 #define HAZELCAST_IQUEUE
 
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/proxy/IQueueImpl.h"
 #include <stdexcept>
 
 namespace hazelcast {

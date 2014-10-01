@@ -2,7 +2,6 @@
 #define HAZELCAST_ADDRESS
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include <string>
 #include <sstream>

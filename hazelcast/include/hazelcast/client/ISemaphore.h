@@ -1,10 +1,7 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
 
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/exception/IException.h"
 #include <string>
 #include <stdexcept>

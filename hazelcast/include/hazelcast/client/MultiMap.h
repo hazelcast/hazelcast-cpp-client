@@ -1,12 +1,9 @@
 #ifndef HAZELCAST_MULTI_MAP
 #define HAZELCAST_MULTI_MAP
 
-#include "hazelcast/client/multimap/PortableEntrySetResponse.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/proxy/MultiMapImpl.h"
+#include "hazelcast/client/multimap/PortableEntrySetResponse.h"
+#include "hazelcast/client/impl/EntryEventHandler.h"
 #include <string>
 #include <map>
 #include <set>

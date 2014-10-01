@@ -10,7 +10,7 @@
 
 namespace hazelcast {
     namespace util {
-        class LockGuard {
+        class HAZELCAST_API LockGuard {
         public:
             LockGuard(Mutex &mutex)
             :mutex(mutex) {

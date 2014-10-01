@@ -6,6 +6,8 @@
 #ifndef HAZELCAST_LOAD_BALANCER
 #define HAZELCAST_LOAD_BALANCER
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         class Member;

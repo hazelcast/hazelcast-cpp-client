@@ -9,14 +9,14 @@
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

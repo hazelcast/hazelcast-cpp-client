@@ -2,12 +2,8 @@
 #define HAZELCAST_ISET
 
 #include "hazelcast/client/proxy/ISetImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/DistributedObject.h"
 #include <stdexcept>
 
 
