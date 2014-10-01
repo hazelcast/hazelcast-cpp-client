@@ -20,7 +20,6 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/Void.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
@@ -495,11 +494,6 @@ namespace hazelcast {
                     DataInput dataInput(*(data.buffer.get()));
                     *object = dataInput.readUTF();
                     return object;
-                };
-
-                template<>
-                inline boost::shared_ptr<Void> SerializationService::toObject(const Data &data) {
-                    return boost::shared_ptr<Void>();
                 };
             }
         }

@@ -7,14 +7,12 @@
 #include "hazelcast/client/txn/CreateTxnRequest.h"
 #include "hazelcast/client/txn/CommitTxnRequest.h"
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/util/ILogger.h"
-#include <ctime> 
+
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext, boost::shared_ptr<connection::Connection> connection)
+            TransactionProxy::TransactionProxy(TransactionOptions& txnOptions, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection)
             : options(txnOptions)
             , clientContext(clientContext)
             , connection(connection)
@@ -50,10 +48,10 @@ namespace hazelcast {
                     startTime = time(NULL);
 
                     CreateTxnRequest *request = new CreateTxnRequest(options);
-                    boost::shared_ptr<std::string> response = invoke<std::string>(request);
+                    boost::shared_ptr<std::string> response = getSerializationService().toObject<std::string>(invoke(request));
                     txnId = *response;
                     state = TxnState::ACTIVE;
-                } catch (exception::IException &e) {
+                } catch (exception::IException& e) {
                     onTxnEnd();
                     throw e;
                 }
@@ -68,7 +66,7 @@ namespace hazelcast {
                     checkThread();
                     checkTimeout();
                     CommitTxnRequest *request = new CommitTxnRequest(true);
-                    invoke<serialization::pimpl::Void>(request);
+                    invoke(request);
                     state = TxnState::COMMITTED;
                 } catch (...) {
                     state = TxnState::ROLLING_BACK;
@@ -91,11 +89,11 @@ namespace hazelcast {
                     checkThread();
                     try {
                         RollbackTxnRequest *request = new RollbackTxnRequest();
-                        invoke<serialization::pimpl::Void>(request);
-                    } catch (std::exception &) {
+                        invoke(request);
+                    } catch (std::exception&) {
                     }
                     state = TxnState::ROLLED_BACK;
-                } catch(exception::IException &e) {
+                } catch (exception::IException& e) {
                     onTxnEnd();
                     throw e;
                 }
@@ -103,11 +101,11 @@ namespace hazelcast {
 
             }
 
-            serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
+            serialization::pimpl::SerializationService& TransactionProxy::getSerializationService() {
                 return clientContext.getSerializationService();
             }
 
-            spi::InvocationService &TransactionProxy::getInvocationService() {
+            spi::InvocationService& TransactionProxy::getInvocationService() {
                 return clientContext.getInvocationService();
             }
 
@@ -119,6 +117,14 @@ namespace hazelcast {
                 //threadFlag.set(null);
             }
 
+            serialization::pimpl::Data TransactionProxy::invoke(BaseTxnRequest *request) {
+                request->setTxnId(txnId);
+                request->setThreadId(threadId);
+                spi::InvocationService& invocationService = clientContext.getInvocationService();
+                connection::CallFuture future = invocationService.invokeOnConnection(request, connection);
+                return future.get();
+            }
+
             void TransactionProxy::checkThread() {
                 if (threadId != util::getThreadId()) {
                     throw exception::IllegalStateException("TransactionProxy::checkThread()", "Transaction cannot span multiple threads!");
@@ -127,9 +133,9 @@ namespace hazelcast {
 
             void TransactionProxy::checkTimeout() {
                 time_t current = time(NULL);
-				time_t timeoutPoint = startTime + options.getTimeout();
-				if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
-					throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
+                time_t timeoutPoint = startTime + options.getTimeout();
+                if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
+                    throw exception::IllegalStateException("TransactionProxy::checkTimeout()", "Transaction is timed-out!");
                 }
             }
 
@@ -151,7 +157,7 @@ namespace hazelcast {
                 return value;
             }
 
-            void TxnState::operator = (int i) {
+            void TxnState::operator=(int i) {
                 value = values[i];
             }
         }

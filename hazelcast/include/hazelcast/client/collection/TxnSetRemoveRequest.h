@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace collection {
             class TxnSetRemoveRequest : public TxnCollectionRequest {
             public:
-                TxnSetRemoveRequest(const std::string &name, serialization::pimpl::Data &);
+                TxnSetRemoveRequest(const std::string& name, const serialization::pimpl::Data&);
 
                 int getClassId() const;
             };

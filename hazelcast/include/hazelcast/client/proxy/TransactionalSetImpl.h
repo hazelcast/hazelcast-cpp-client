@@ -3,28 +3,27 @@
 //
 
 
-#ifndef HAZELCAST_TransactionalListProxy
-#define HAZELCAST_TransactionalListProxy
+#ifndef HAZELCAST_TransactionalSetProxy
+#define HAZELCAST_TransactionalSetProxy
 
 #include "hazelcast/client/proxy/TransactionalObject.h"
-
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            class TransactionalListProxy : public proxy::TransactionalObject {
+            class HAZELCAST_API TransactionalSetImpl : public TransactionalObject {
             public:
-                TransactionalListProxy(const std::string& objectName, txn::TransactionProxy *context);
+                TransactionalSetImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
 
                 bool add(const serialization::pimpl::Data& e);
 
                 bool remove(const serialization::pimpl::Data& e);
 
                 int size();
-
             };
         }
     }
 }
 
-#endif //HAZELCAST_TransactionalListProxy
+
+#endif //HAZELCAST_TransactionalSetProxy

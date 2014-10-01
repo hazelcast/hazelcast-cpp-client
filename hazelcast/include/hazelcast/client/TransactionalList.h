@@ -8,8 +8,7 @@
 #ifndef HAZELCAST_TransactionalList
 #define HAZELCAST_TransactionalList
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/proxy/TransactionalListProxy.h"
+#include "hazelcast/client/proxy/TransactionalListImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +17,7 @@ namespace hazelcast {
          * Transactional implementation of IList.
          */
         template <typename E>
-        class HAZELCAST_API TransactionalList : public proxy::TransactionalListProxy {
+        class HAZELCAST_API TransactionalList : public proxy::TransactionalListImpl {
             friend class TransactionContext;
 
         public:
@@ -28,7 +27,7 @@ namespace hazelcast {
              * @return true if item is added successfully
              */
             bool add(const E &e) {
-                return proxy::TransactionalListProxy::add(toData(e));
+                return proxy::TransactionalListImpl::add(toData(e));
             }
 
             /**
@@ -37,7 +36,7 @@ namespace hazelcast {
              * @return true if item is remove successfully
              */
             bool remove(const E &e) {
-                return proxy::TransactionalListProxy::remove(toData(e));
+                return proxy::TransactionalListImpl::remove(toData(e));
             }
 
             /**
@@ -45,12 +44,12 @@ namespace hazelcast {
              * @return size
              */
             int size() {
-                return proxy::TransactionalListProxy::size();
+                return proxy::TransactionalListImpl::size();
             }
 
         private:
             TransactionalList(const std::string &instanceName, txn::TransactionProxy *context)
-            : proxy::TransactionalListProxy(instanceName, context) {
+            : proxy::TransactionalListImpl(instanceName, context) {
 
             }
         };

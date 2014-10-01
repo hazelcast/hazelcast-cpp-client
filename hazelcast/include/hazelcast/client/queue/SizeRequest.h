@@ -12,13 +12,13 @@ namespace hazelcast {
         namespace queue {
             class SizeRequest : public impl::ClientRequest {
             public:
-                SizeRequest(const std::string &name);
+                SizeRequest(const std::string& name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
 

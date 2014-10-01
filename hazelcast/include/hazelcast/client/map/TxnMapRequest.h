@@ -14,11 +14,6 @@
 #include <vector>
 #include <string>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -29,7 +24,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class HAZELCAST_API TxnMapRequestType {
+            class TxnMapRequestType {
             public:
                 enum Type {
                     NONE = 0,
@@ -61,16 +56,16 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class HAZELCAST_API TxnMapRequest : public txn::BaseTxnRequest {
+            class TxnMapRequest : public txn::BaseTxnRequest {
             public:
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, const serialization::pimpl::Data &newValue);
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate);
 
@@ -97,10 +92,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_TxnMapRequest
 

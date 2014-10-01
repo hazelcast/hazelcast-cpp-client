@@ -10,14 +10,14 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key)
+            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string& name, const serialization::pimpl::Data& key)
             : TxnMultiMapRequest(name)
             , key(key)
             , hasValue(false) {
 
             }
 
-            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value)
+            TxnMultiMapRemoveRequest::TxnMultiMapRemoveRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value)
             : TxnMultiMapRequest(name)
             , key(key)
             , hasValue(true)
@@ -29,9 +29,9 @@ namespace hazelcast {
                 return MultiMapPortableHook::TXN_MM_REMOVE;
             }
 
-            void TxnMultiMapRemoveRequest::write(serialization::PortableWriter &writer) const {
+            void TxnMultiMapRemoveRequest::write(serialization::PortableWriter& writer) const {
                 TxnMultiMapRequest::write(writer);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
                 out.writeBoolean(hasValue);
                 if (hasValue)

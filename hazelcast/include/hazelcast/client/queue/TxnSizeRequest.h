@@ -13,15 +13,15 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API TxnSizeRequest : public txn::BaseTxnRequest {
+            class TxnSizeRequest : public txn::BaseTxnRequest {
             public:
-                TxnSizeRequest(const std::string &name);
+                TxnSizeRequest(const std::string& name);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

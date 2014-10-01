@@ -7,20 +7,17 @@
 #ifndef HAZELCAST_TransactionalObject
 #define HAZELCAST_TransactionalObject
 
+
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Util.h"
 #include <string>
+#include <vector>
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class TransactionProxy;
-
+            class BaseTxnRequest;
         }
         namespace proxy {
 
@@ -42,22 +39,26 @@ namespace hazelcast {
                 template<typename T>
                 serialization::pimpl::Data toData(const T& object) {
                     return context->getSerializationService().template toData<T>(&object);
-                };
+                }
 
                 template<typename T>
                 boost::shared_ptr<T> toObject(const serialization::pimpl::Data& data) {
                     return context->getSerializationService().template toObject<T>(data);
-                };
+                }
 
-                template<typename Response>
-                boost::shared_ptr<Response> invoke(txn::BaseTxnRequest *request) {
-                    request->setTxnId(context->getTxnId());
-                    request->setThreadId(util::getThreadId());
-                    spi::InvocationService& invocationService = context->getInvocationService();
-                    serialization::pimpl::SerializationService& ss = context->getSerializationService();
-                    connection::CallFuture future = invocationService.invokeOnConnection(request, context->getConnection());
-                    return ss.toObject<Response>(future.get());
-                };
+                template<typename K>
+                std::vector<K> toObjectCollection(const std::vector<serialization::pimpl::Data>& keyDataSet) {
+                    int size = keyDataSet.size();
+                    std::vector<K> keys(size);
+                    for (int i = 0; i < size; i++) {
+                        boost::shared_ptr<K> v = toObject<K>(keyDataSet[i]);
+                        keys[i] = *v;
+                    }
+                    return keys;
+                }
+
+                serialization::pimpl::Data invoke(txn::BaseTxnRequest *request);
+
             private:
                 const std::string serviceName;
                 const std::string name;

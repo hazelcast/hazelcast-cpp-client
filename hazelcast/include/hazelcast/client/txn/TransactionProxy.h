@@ -12,7 +12,6 @@
 #include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/txn/BaseTxnRequest.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/CallFuture.h"
 #include <boost/shared_ptr.hpp>
@@ -38,6 +37,7 @@ namespace hazelcast {
         }
 
         namespace txn {
+            class BaseTxnRequest;
 
             class HAZELCAST_API TxnState {
             public:
@@ -57,7 +57,7 @@ namespace hazelcast {
 
                 operator int() const;
 
-                void operator = (int i);
+                void operator=(int i);
 
                 std::vector<State> values;
             };
@@ -65,7 +65,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions &, spi::ClientContext &clientContext, boost::shared_ptr<connection::Connection> connection);
+                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
 
                 std::string getTxnId() const;
 
@@ -79,16 +79,16 @@ namespace hazelcast {
 
                 void rollback();
 
-                serialization::pimpl::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService& getSerializationService();
 
-                spi::InvocationService &getInvocationService();
+                spi::InvocationService& getInvocationService();
 
                 boost::shared_ptr<connection::Connection> getConnection();
 
             private:
 
-                TransactionOptions &options;
-                spi::ClientContext &clientContext;
+                TransactionOptions& options;
+                spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
                 long threadId;
@@ -99,16 +99,7 @@ namespace hazelcast {
 
                 void onTxnEnd();
 
-                template<typename Response>
-                boost::shared_ptr<Response> invoke(BaseTxnRequest *request) {
-                    request->setTxnId(txnId);
-                    request->setThreadId(threadId);
-                    spi::InvocationService &invocationService = clientContext.getInvocationService();
-                    serialization::pimpl::SerializationService &ss = clientContext.getSerializationService();
-                    connection::CallFuture  future = invocationService.invokeOnConnection(request, connection);
-                    serialization::pimpl::Data data = future.get();
-                    return ss.toObject<Response>(data);
-                }
+                serialization::pimpl::Data invoke(BaseTxnRequest *request);
 
                 void checkThread();
 
