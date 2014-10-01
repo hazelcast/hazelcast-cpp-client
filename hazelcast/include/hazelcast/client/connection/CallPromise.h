@@ -42,7 +42,7 @@ namespace hazelcast {
         }
 
         namespace connection {
-            class HAZELCAST_API CallPromise {
+            class CallPromise {
             public:
                 CallPromise();
 

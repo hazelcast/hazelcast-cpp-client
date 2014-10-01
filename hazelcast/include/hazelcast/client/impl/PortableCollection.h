@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PortableCollection : public impl::PortableResponse {
+            class PortableCollection : public impl::PortableResponse {
             public:
 
                 const std::vector<serialization::pimpl::Data>& getCollection() const;

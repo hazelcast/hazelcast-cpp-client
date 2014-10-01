@@ -15,7 +15,7 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class HAZELCAST_API SerializableCollection : public serialization::IdentifiedDataSerializable {
+            class SerializableCollection : public serialization::IdentifiedDataSerializable {
             public:
                 SerializableCollection();
 

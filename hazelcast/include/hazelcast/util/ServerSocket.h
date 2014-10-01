@@ -11,8 +11,7 @@
 
 namespace hazelcast {
     namespace util {
-
-        class HAZELCAST_API ServerSocket {
+        class ServerSocket {
         public:
             ServerSocket(int port = 0);
 

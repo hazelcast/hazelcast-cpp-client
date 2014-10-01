@@ -13,7 +13,7 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API CountDownLatch {
+        class CountDownLatch {
         public:
             CountDownLatch(int count);
 

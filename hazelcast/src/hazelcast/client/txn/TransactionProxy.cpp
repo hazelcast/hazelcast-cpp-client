@@ -8,6 +8,7 @@
 #include "hazelcast/client/txn/CommitTxnRequest.h"
 #include "hazelcast/client/txn/RollbackTxnRequest.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include <ctime>
 
 namespace hazelcast {
     namespace client {

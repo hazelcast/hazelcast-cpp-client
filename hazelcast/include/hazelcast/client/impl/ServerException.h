@@ -10,8 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-
-            class HAZELCAST_API ServerException : public impl::PortableResponse {
+            class ServerException : public impl::PortableResponse {
             public:
                 ServerException();
 

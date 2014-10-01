@@ -17,7 +17,7 @@ namespace hazelcast {
             class QueryResultEntry;
         }
         namespace impl {
-            class HAZELCAST_API QueryResultSet : public impl::IdentifiedDataSerializableResponse {
+            class QueryResultSet : public impl::IdentifiedDataSerializableResponse {
             public:
                 int getFactoryId() const;
 
