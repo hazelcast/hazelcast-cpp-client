@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace list {
-            class HAZELCAST_API ListIndexOfRequest : public collection::CollectionRequest {
+            class ListIndexOfRequest : public collection::CollectionRequest {
             public:
 
                 ListIndexOfRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data, bool last);

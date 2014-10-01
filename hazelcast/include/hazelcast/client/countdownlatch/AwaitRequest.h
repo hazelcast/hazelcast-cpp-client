@@ -17,7 +17,7 @@ namespace hazelcast {
         }
 
         namespace countdownlatch {
-            class HAZELCAST_API AwaitRequest : public impl::ClientRequest {
+            class AwaitRequest : public impl::ClientRequest {
             public:
                 AwaitRequest(const std::string& instanceName, long timeout);
 

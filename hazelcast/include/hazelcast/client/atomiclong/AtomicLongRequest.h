@@ -15,16 +15,15 @@ namespace hazelcast {
         namespace serialization {
             class PortableWriter;
         }
-
         namespace atomiclong {
 
-            class HAZELCAST_API AtomicLongRequest : public impl::ClientRequest {
+            class AtomicLongRequest : public impl::ClientRequest {
             public:
-                AtomicLongRequest(const std::string &instanceName, long delta);
+                AtomicLongRequest(const std::string& instanceName, long delta);
 
                 virtual int getFactoryId() const;
 
-                virtual void write(serialization::PortableWriter &writer) const;
+                virtual void write(serialization::PortableWriter& writer) const;
 
             private:
                 long delta;

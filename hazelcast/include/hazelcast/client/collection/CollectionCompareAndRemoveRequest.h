@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class HAZELCAST_API CollectionCompareAndRemoveRequest : public CollectionRequest {
+            class CollectionCompareAndRemoveRequest : public CollectionRequest {
             public:
                 CollectionCompareAndRemoveRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueSet, bool retain);
 

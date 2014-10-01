@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 30/09/14.
 //
 
-#include "hazelcast/client/pimpl/ISetImpl.h"
+#include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/collection/CollectionAddListenerRequest.h"
 #include "hazelcast/client/collection/CollectionRemoveListenerRequest.h"
 #include "hazelcast/client/collection/CollectionSizeRequest.h"
@@ -13,7 +13,6 @@
 #include "hazelcast/client/collection/CollectionGetAllRequest.h"
 #include "hazelcast/client/collection/CollectionAddRequest.h"
 #include "hazelcast/client/collection/CollectionClearRequest.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
@@ -21,15 +20,11 @@
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
+        namespace proxy {
             ISetImpl::ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext)
-            : DistributedObject("hz:impl:setService", instanceName, clientContext) {
-                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+            : ProxyImpl("hz:impl:setService", instanceName, clientContext) {
+                serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&instanceName);
                 partitionId = getPartitionId(keyData);
-            }
-
-            void ISetImpl::onDestroy() {
-
             }
 
             std::string ISetImpl::addItemListener(impl::BaseEventHandler *itemEventHandler, bool includeValue) {

@@ -5,14 +5,13 @@
 
 #include "hazelcast/client/map/PutAllRequest.h"
 #include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/impl/MapEntrySet.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace map {
-            PutAllRequest::PutAllRequest(const std::string& name, const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& m)
-            :name(name)
+            PutAllRequest::PutAllRequest(const std::string& name, const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m)
+            : name(name)
             , entrySet(m) {
 
             }

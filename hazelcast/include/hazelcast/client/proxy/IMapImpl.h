@@ -1,17 +1,15 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
-            class HAZELCAST_API IMapImpl : public DistributedObject {
-            public:
+        namespace proxy {
+            class HAZELCAST_API IMapImpl : public ProxyImpl {
+            protected:
                 IMapImpl(const std::string& instanceName, spi::ClientContext *context);
-
-                void onDestroy();
 
                 bool containsKey(const serialization::pimpl::Data& key);
 
@@ -91,10 +89,9 @@ namespace hazelcast {
 
                 bool isEmpty();
 
-                void putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& m);
+                void putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m);
 
                 void clear();
-
             };
         }
 

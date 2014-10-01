@@ -9,13 +9,12 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
-        ILock::ILock(const std::string &instanceName, spi::ClientContext *context)
-        : DistributedObject("hz:impl:lockService", instanceName, context)
-        , key(context->getSerializationService().toData<std::string>(&instanceName)) {
+        ILock::ILock(const std::string& instanceName, spi::ClientContext *context)
+        : proxy::ProxyImpl("hz:impl:lockService", instanceName, context)
+        , key(toData<std::string>(instanceName)) {
             partitionId = getPartitionId(key);
         }
 
@@ -76,9 +75,5 @@ namespace hazelcast {
             DESERIALIZE(data, bool);
             return *result;
         }
-
-        void ILock::onDestroy() {
-        }
-
     }
 }

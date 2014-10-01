@@ -19,7 +19,7 @@ namespace hazelcast {
         /**
          * Cluster-wide unique id generator.
          */
-        class HAZELCAST_API IdGenerator : public DistributedObject {
+        class HAZELCAST_API IdGenerator : public proxy::ProxyImpl {
             friend class HazelcastClient;
 
         public:

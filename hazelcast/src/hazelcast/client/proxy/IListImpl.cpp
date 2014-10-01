@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 30/09/14.
 //
 
-#include "hazelcast/client/pimpl/IListImpl.h"
+#include "hazelcast/client/proxy/IListImpl.h"
 #include "hazelcast/client/collection/CollectionAddListenerRequest.h"
 #include "hazelcast/client/collection/CollectionRemoveListenerRequest.h"
 #include "hazelcast/client/collection/ListAddRequest.h"
@@ -19,22 +19,18 @@
 #include "hazelcast/client/collection/CollectionRemoveRequest.h"
 #include "hazelcast/client/collection/CollectionClearRequest.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
+        namespace proxy {
 
             IListImpl::IListImpl(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:listService", instanceName, context) {
-                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+            : ProxyImpl("hz:impl:listService", instanceName, context) {
+                serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&instanceName);
                 partitionId = getPartitionId(keyData);
-            }
-
-            void IListImpl::onDestroy() {
             }
 
             std::string IListImpl::addItemListener(impl::BaseEventHandler *entryEventHandler, bool includeValue) {

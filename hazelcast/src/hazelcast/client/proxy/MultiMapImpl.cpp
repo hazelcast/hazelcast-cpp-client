@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 30/09/14.
 //
 
-#include "hazelcast/client/pimpl/MultiMapImpl.h"
+#include "hazelcast/client/proxy/MultiMapImpl.h"
 #include "hazelcast/client/multimap/PutRequest.h"
 #include "hazelcast/client/multimap/RemoveRequest.h"
 #include "hazelcast/client/multimap/RemoveAllRequest.h"
@@ -22,20 +22,15 @@
 #include "hazelcast/client/impl/PortableCollection.h"
 #include "hazelcast/client/multimap/MultiMapIsLockedRequest.h"
 #include "hazelcast/client/multimap/PortableEntrySetResponse.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
+        namespace proxy {
             MultiMapImpl::MultiMapImpl(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:multiMapService", instanceName, context) {
-
-            }
-
-            void MultiMapImpl::onDestroy() {
+            : ProxyImpl("hz:impl:multiMapService", instanceName, context) {
 
             }
 

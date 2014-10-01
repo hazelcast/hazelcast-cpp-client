@@ -11,7 +11,7 @@ namespace hazelcast {
     namespace client {
 
         ISemaphore::ISemaphore(const std::string &name, spi::ClientContext *context)
-        :DistributedObject("hz:impl:semaphoreService", name, context) {
+        : proxy::ProxyImpl("hz:impl:semaphoreService", name, context) {
             serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&name);
             partitionId = getPartitionId(keyData);
         }
@@ -78,10 +78,5 @@ namespace hazelcast {
             DESERIALIZE(data, bool);
             return *result;
         }
-
-        void ISemaphore::onDestroy() {
-        }
-
-
     }
 }

@@ -3,21 +3,20 @@
 #include "hazelcast/client/countdownlatch/CountDownRequest.h"
 #include "hazelcast/client/countdownlatch/GetCountRequest.h"
 #include "hazelcast/client/countdownlatch/SetCountRequest.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch(const std::string &instanceName, spi::ClientContext *context)
-        :DistributedObject("hz:impl:atomicLongService", instanceName, context) {
-            serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+        ICountDownLatch::ICountDownLatch(const std::string& objectName, spi::ClientContext *context)
+        : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
+            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
             partitionId = getPartitionId(keyData);
         }
 
         bool ICountDownLatch::await(long timeoutInMillis) {
             countdownlatch::AwaitRequest *request = new countdownlatch::AwaitRequest(getName(), timeoutInMillis);
             serialization::pimpl::Data data = invoke(request, partitionId);
-            DESERIALIZE(data , bool);
+            DESERIALIZE(data, bool);
             return *result;
         }
 
@@ -38,10 +37,6 @@ namespace hazelcast {
             serialization::pimpl::Data data = invoke(request, partitionId);
             DESERIALIZE(data, bool);
             return *result;
-        }
-
-        void ICountDownLatch::onDestroy() {
-
         }
     }
 }

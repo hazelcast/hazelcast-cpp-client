@@ -2,9 +2,7 @@
 // Created by sancar koyunlu on 29/09/14.
 //
 
-#include "hazelcast/client/exception/IException.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/MapKeySet.h"
@@ -46,23 +44,16 @@
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/map/RemoveEntryListenerRequest.h"
 #include "hazelcast/client/map/MapIsEmptyRequest.h"
-#include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/EntryView.h"
-#include "hazelcast/client/pimpl/IMapImpl.h"
-
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
+        namespace proxy {
 
             IMapImpl::IMapImpl(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:mapService", instanceName, context) {
+            : ProxyImpl("hz:impl:mapService", instanceName, context) {
 
-            }
-
-            void IMapImpl::onDestroy() {
             }
 
             bool IMapImpl::containsKey(const serialization::pimpl::Data& key) {
@@ -319,7 +310,7 @@ namespace hazelcast {
                 return *result;
             }
 
-            void IMapImpl::putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >& entrySet) {
+            void IMapImpl::putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& entrySet) {
                 map::PutAllRequest *request = new map::PutAllRequest(getName(), entrySet);
                 invoke(request);
             }

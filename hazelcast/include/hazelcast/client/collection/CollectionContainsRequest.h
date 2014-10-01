@@ -20,7 +20,7 @@ namespace hazelcast {
             }
         }
         namespace collection {
-            class HAZELCAST_API CollectionContainsRequest : public CollectionRequest {
+            class CollectionContainsRequest : public CollectionRequest {
             public:
                 CollectionContainsRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueSet);
 

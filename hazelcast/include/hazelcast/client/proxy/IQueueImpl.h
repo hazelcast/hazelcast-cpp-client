@@ -1,19 +1,16 @@
 #ifndef HAZELCAST_IQUEUE_IMPL
 #define HAZELCAST_IQUEUE_IMPL
 
-#include "hazelcast/client/DistributedObject.h"
-#include <stdexcept>
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
-            class IQueueImpl : public DistributedObject {
-            public:
+        namespace proxy {
+            class IQueueImpl : public ProxyImpl {
+            protected:
                 IQueueImpl(const std::string& instanceName, spi::ClientContext *context);
-
-                void onDestroy();
 
                 std::string addItemListener(impl::BaseEventHandler *handler, bool includeValue);
 

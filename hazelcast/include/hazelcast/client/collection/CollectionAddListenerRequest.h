@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class HAZELCAST_API CollectionAddListenerRequest : public CollectionRequest {
+            class CollectionAddListenerRequest : public CollectionRequest {
             public:
                 CollectionAddListenerRequest(const std::string &name, const std::string &serviceName, bool includeValue);
 

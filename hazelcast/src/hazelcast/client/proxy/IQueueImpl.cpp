@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 30/09/14.
 //
 
-#include "hazelcast/client/pimpl/IQueueImpl.h"
+#include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/queue/OfferRequest.h"
 #include "hazelcast/client/queue/PollRequest.h"
 #include "hazelcast/client/queue/RemainingCapacityRequest.h"
@@ -21,14 +21,13 @@
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/impl/ServerException.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
+        namespace proxy {
             IQueueImpl::IQueueImpl(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:queueService", instanceName, context) {
-                serialization::pimpl::Data data = getContext().getSerializationService().toData<std::string>(&instanceName);
+            : ProxyImpl("hz:impl:queueService", instanceName, context) {
+                serialization::pimpl::Data data = context->getSerializationService().toData<std::string>(&instanceName);
                 partitionId = getPartitionId(data);
             }
 
@@ -137,8 +136,6 @@ namespace hazelcast {
                 invoke(request, partitionId);
             }
 
-            void IQueueImpl::onDestroy() {
-            }
         }
     }
 }

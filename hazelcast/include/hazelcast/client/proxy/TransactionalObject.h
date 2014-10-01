@@ -26,36 +26,36 @@ namespace hazelcast {
 
             class HAZELCAST_API TransactionalObject {
             public:
-                TransactionalObject(const std::string &serviceName, const std::string &objectName, txn::TransactionProxy *context);
+                TransactionalObject(const std::string& serviceName, const std::string& objectName, txn::TransactionProxy *context);
 
                 virtual ~TransactionalObject();
 
-                const std::string &getServiceName();
+                const std::string& getServiceName();
 
-                const std::string &getName();
+                const std::string& getName();
 
                 void destroy();
 
             protected:
-                virtual void onDestroy() = 0;
+                virtual void onDestroy();
 
                 template<typename T>
-                serialization::pimpl::Data toData(const T &object) {
+                serialization::pimpl::Data toData(const T& object) {
                     return context->getSerializationService().template toData<T>(&object);
                 };
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
+                boost::shared_ptr<T> toObject(const serialization::pimpl::Data& data) {
                     return context->getSerializationService().template toObject<T>(data);
                 };
 
-                template<typename Response >
+                template<typename Response>
                 boost::shared_ptr<Response> invoke(txn::BaseTxnRequest *request) {
                     request->setTxnId(context->getTxnId());
                     request->setThreadId(util::getThreadId());
-                    spi::InvocationService &invocationService = context->getInvocationService();
-                    serialization::pimpl::SerializationService &ss = context->getSerializationService();
-                    connection::CallFuture  future = invocationService.invokeOnConnection(request, context->getConnection());
+                    spi::InvocationService& invocationService = context->getInvocationService();
+                    serialization::pimpl::SerializationService& ss = context->getSerializationService();
+                    connection::CallFuture future = invocationService.invokeOnConnection(request, context->getConnection());
                     return ss.toObject<Response>(future.get());
                 };
             private:

@@ -10,7 +10,7 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
 
-            TransactionalObject::TransactionalObject(const std::string &serviceName, const std::string &objectName, txn::TransactionProxy *context)
+            TransactionalObject::TransactionalObject(const std::string& serviceName, const std::string& objectName, txn::TransactionProxy *context)
             : serviceName(serviceName), name(objectName), context(context) {
 
             }
@@ -19,19 +19,24 @@ namespace hazelcast {
 
             }
 
-            const std::string &TransactionalObject::getServiceName() {
+            const std::string& TransactionalObject::getServiceName() {
                 return serviceName;
             }
 
-            const std::string &TransactionalObject::getName() {
+            const std::string& TransactionalObject::getName() {
                 return name;
             }
 
             void TransactionalObject::destroy() {
                 onDestroy();
                 impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
-                spi::InvocationService &invocationService = context->getInvocationService();
+                spi::InvocationService& invocationService = context->getInvocationService();
                 invocationService.invokeOnConnection(request, context->getConnection());
+            }
+
+
+            void TransactionalObject::onDestroy() {
+
             }
         }
     }

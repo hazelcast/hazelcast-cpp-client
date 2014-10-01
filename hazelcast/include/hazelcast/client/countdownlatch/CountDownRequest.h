@@ -18,7 +18,7 @@ namespace hazelcast {
         }
 
         namespace countdownlatch {
-            class HAZELCAST_API CountDownRequest : public impl::ClientRequest {
+            class CountDownRequest : public impl::ClientRequest {
             public:
                 CountDownRequest(const std::string& instanceName);
 

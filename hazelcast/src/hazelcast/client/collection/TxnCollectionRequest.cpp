@@ -11,14 +11,14 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            TxnCollectionRequest::TxnCollectionRequest(const std::string &name)
-            :name(name)
+            TxnCollectionRequest::TxnCollectionRequest(const std::string& name)
+            : name(name)
             , hasData(false) {
 
             }
 
-            TxnCollectionRequest::TxnCollectionRequest(const std::string &name, serialization::pimpl::Data &data)
-            :name(name)
+            TxnCollectionRequest::TxnCollectionRequest(const std::string& name, const serialization::pimpl::Data& data)
+            : name(name)
             , hasData(true)
             , data(data) {
 
@@ -28,10 +28,10 @@ namespace hazelcast {
                 return CollectionPortableHook::F_ID;
             }
 
-            void TxnCollectionRequest::write(serialization::PortableWriter &writer) const {
+            void TxnCollectionRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeBoolean(hasData);
                 if (hasData) {
                     data.writeData(out);

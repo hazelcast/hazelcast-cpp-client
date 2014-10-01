@@ -6,17 +6,15 @@
 #define HAZELCAST_ISetImpl
 
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
-            class ISetImpl : public DistributedObject {
-            public:
+        namespace proxy {
+            class ISetImpl : public ProxyImpl {
+            protected:
                 ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
-
-                void onDestroy();
 
                 std::string addItemListener(impl::BaseEventHandler *handler, bool includeValue);
 
@@ -26,7 +24,7 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data*> toArray();
+                std::vector<serialization::pimpl::Data *> toArray();
 
                 bool add(const serialization::pimpl::Data& element);
 

@@ -6,18 +6,15 @@
 #define HAZELCAST_IListImpl
 
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
-
-            class IListImpl : public DistributedObject {
-            public:
+        namespace proxy {
+            class IListImpl : public ProxyImpl {
+            protected:
                 IListImpl(const std::string& instanceName, spi::ClientContext *context);
-
-                void onDestroy();
 
                 std::string addItemListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
 

@@ -2,17 +2,15 @@
 #define HAZELCAST_MULTI_MAP_IMPL
 
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace pimpl {
-            class MultiMapImpl : public hazelcast::client::DistributedObject {
-            public:
+        namespace proxy {
+            class MultiMapImpl : public ProxyImpl {
+            protected:
                 MultiMapImpl(const std::string& instanceName, spi::ClientContext *context);
-
-                void onDestroy();
 
                 bool put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 

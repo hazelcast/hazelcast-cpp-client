@@ -4,7 +4,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <string>
 
 
@@ -15,12 +15,12 @@ namespace hazelcast {
         }
 
         /**
-         * IAtomicLong is a distributed atomic long implementation.
-         * Note that, in node failures atomic long will be restored
-         * via backup.
-         *
-         */
-        class HAZELCAST_API IAtomicLong : public DistributedObject {
+        * IAtomicLong is a distributed atomic long implementation.
+        * Note that, in node failures atomic long will be restored
+        * via backup.
+        *
+        */
+        class HAZELCAST_API IAtomicLong : public proxy::ProxyImpl {
             friend class HazelcastClient;
 
             friend class IdGenerator;
@@ -28,82 +28,80 @@ namespace hazelcast {
         public:
 
             /**
-             * adds the given value to the current value.
-             *
-             * @param delta the value to add
-             * @return the updated value
-             */
+            * adds the given value to the current value.
+            *
+            * @param delta the value to add
+            * @return the updated value
+            */
             long addAndGet(long delta);
 
             /**
-             * sets the value to the given updated value
-             * only if the current value is equal to the expected value.
-             *
-             * @param expect the expected value
-             * @param update the new value
-             * @return true if successful; or false if the actual value
-             *         was not equal to the expected value.
-             */
+            * sets the value to the given updated value
+            * only if the current value is equal to the expected value.
+            *
+            * @param expect the expected value
+            * @param update the new value
+            * @return true if successful; or false if the actual value
+            *         was not equal to the expected value.
+            */
             bool compareAndSet(long expect, long update);
 
             /**
-             * decrements the current value by one.
-             *
-             * @return the updated value
-             */
+            * decrements the current value by one.
+            *
+            * @return the updated value
+            */
             long decrementAndGet();
 
             /**
-             * Gets the current value.
-             *
-             * @return the current value
-             */
+            * Gets the current value.
+            *
+            * @return the current value
+            */
             long get();
 
             /**
-             * adds the given value to the current value.
-             *
-             * @param delta the value to add
-             * @return the old value before the add
-             */
+            * adds the given value to the current value.
+            *
+            * @param delta the value to add
+            * @return the old value before the add
+            */
             long getAndAdd(long delta);
 
             /**
-             * sets the given value and returns the old value.
-             *
-             * @param newValue the new value
-             * @return the old value
-             */
+            * sets the given value and returns the old value.
+            *
+            * @param newValue the new value
+            * @return the old value
+            */
             long getAndSet(long newValue);
 
             /**
-             * increments the current value by one.
-             *
-             * @return the updated value
-             */
+            * increments the current value by one.
+            *
+            * @return the updated value
+            */
             long incrementAndGet();
 
             /**
-             * increments the current value by one.
-             *
-             * @return the old value
-             */
+            * increments the current value by one.
+            *
+            * @return the old value
+            */
             long getAndIncrement();
 
             /**
-             * sets the given value.
-             *
-             * @param newValue the new value
-             */
+            * sets the given value.
+            *
+            * @param newValue the new value
+            */
             void set(long newValue);
 
         private:
 
-            IAtomicLong(const std::string &instanceName, spi::ClientContext *context);
+            IAtomicLong(const std::string& objectName, spi::ClientContext *context);
 
             int partitionId;
-
-            void onDestroy();
         };
     }
 }

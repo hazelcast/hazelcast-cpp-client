@@ -5,7 +5,7 @@
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/pimpl/IListImpl.h"
+#include "hazelcast/client/proxy/IListImpl.h"
 #include <stdexcept>
 
 
@@ -18,8 +18,9 @@ namespace hazelcast {
         * @param <E> item type
         */
         template<typename E>
-        class HAZELCAST_API IList : public DistributedObject {
+        class HAZELCAST_API IList : public proxy::IListImpl {
             friend class HazelcastClient;
+
         public:
             /**
             *
@@ -33,8 +34,8 @@ namespace hazelcast {
             *  @returns registrationId that can be used to remove item listener
             */
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                impl::ItemEventHandler<E> *entryEventHandler = new impl::ItemEventHandler<E>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return impl->addItemListener(entryEventHandler, includeValue);
+                impl::ItemEventHandler<E> *entryEventHandler = new impl::ItemEventHandler<E>(getName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return proxy::IListImpl::addItemListener(entryEventHandler, includeValue);
             }
 
             /**
@@ -46,7 +47,7 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeItemListener(const std::string& registrationId) {
-                return impl->removeItemListener(registrationId);
+                return proxy::IListImpl::removeItemListener(registrationId);
             }
 
             /**
@@ -54,7 +55,7 @@ namespace hazelcast {
             * @return size of the distributed list
             */
             int size() {
-                return impl->size();
+                return proxy::IListImpl::size();
             }
 
             /**
@@ -72,7 +73,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool contains(const E& element) {
-                return impl->contains(toData(element));
+                return proxy::IListImpl::contains(toData(element));
             }
 
             /**
@@ -80,7 +81,7 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                std::vector<serialization::pimpl::Data *> collection = impl->toArray();
+                std::vector<serialization::pimpl::Data *> collection = proxy::IListImpl::toArray();
                 int size = collection.size();
                 std::vector<E> set(size);
                 for (int i = 0; i < size; ++i) {
@@ -97,7 +98,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool add(const E& element) {
-                return impl->add(toData(element));
+                return proxy::IListImpl::add(toData(element));
             }
 
             /**
@@ -107,7 +108,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool remove(const E& element) {
-                return impl->remove(toData(element));
+                return proxy::IListImpl::remove(toData(element));
             }
 
             /**
@@ -117,7 +118,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool containsAll(const std::vector<E>& elements) {
-                return impl->containsAll(toDataCollection(elements));
+                return proxy::IListImpl::containsAll(toDataCollection(elements));
             }
 
             /**
@@ -127,7 +128,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool addAll(const std::vector<E>& elements) {
-                return impl->addAll(toDataCollection(elements));
+                return proxy::IListImpl::addAll(toDataCollection(elements));
             }
 
             /**
@@ -142,7 +143,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             bool addAll(int index, const std::vector<E>& elements) {
-                return impl->addAll(index, toDataCollection(elements));
+                return proxy::IListImpl::addAll(index, toDataCollection(elements));
             }
 
             /**
@@ -152,7 +153,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool removeAll(const std::vector<E>& elements) {
-                return impl->removeAll(toDataCollection(elements));
+                return proxy::IListImpl::removeAll(toDataCollection(elements));
             }
 
             /**
@@ -163,14 +164,14 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool retainAll(const std::vector<E>& elements) {
-                return impl->retainAll(toDataCollection(elements));
+                return proxy::IListImpl::retainAll(toDataCollection(elements));
             }
 
             /**
             * Removes all elements from list.
             */
             void clear() {
-                impl->clear();
+                proxy::IListImpl::clear();
             }
 
             /**
@@ -186,7 +187,7 @@ namespace hazelcast {
             *
             */
             boost::shared_ptr<E> get(int index) {
-                return toObject<E>(impl->get(index));
+                return toObject<E>(proxy::IListImpl::get(index));
             }
 
             /**
@@ -199,7 +200,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             boost::shared_ptr<E> set(int index, const E& element) {
-                return toObject<E>(impl->set(index, toData(element)));
+                return toObject<E>(proxy::IListImpl::set(index, toData(element)));
             }
 
             /**
@@ -211,7 +212,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             void add(int index, const E& element) {
-                impl->add(index, toData(element));
+                proxy::IListImpl::add(index, toData(element));
             }
 
             /**
@@ -222,7 +223,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             boost::shared_ptr<E> remove(int index) {
-                return toObject<E>(impl->remove(index));
+                return toObject<E>(proxy::IListImpl::remove(index));
             }
 
             /**
@@ -233,7 +234,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             int indexOf(const E& element) {
-                return impl->indexOf(toData(element));
+                return proxy::IListImpl::indexOf(toData(element));
             }
 
             /**
@@ -243,7 +244,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             int lastIndexOf(const E& element) {
-                return impl->lastIndexOf(toData(element));
+                return proxy::IListImpl::lastIndexOf(toData(element));
             }
 
             /**
@@ -252,7 +253,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             std::vector<E> subList(int fromIndex, int toIndex) {
-                std::vector<serialization::pimpl::Data *> collection = impl->subList(fromIndex, toIndex);
+                std::vector<serialization::pimpl::Data *> collection = proxy::IListImpl::subList(fromIndex, toIndex);
                 int size = collection.size();
                 std::vector<E> set(toIndex - fromIndex);
                 for (int i = 0; i < size; ++i) {
@@ -262,46 +263,10 @@ namespace hazelcast {
                 return set;
             }
 
-            /**
-            * Destructor
-            */
-            ~IList() {
-                delete impl;
-            }
-
         private:
-            template<typename T>
-            const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T>& elements) {
-                int size = elements.size();
-                std::vector<serialization::pimpl::Data> dataCollection(size);
-                for (int i = 0; i < size; ++i) {
-                    dataCollection[i] = toData(elements[i]);
-                }
-                return dataCollection;
-            }
-
-            template<typename T>
-            serialization::pimpl::Data toData(const T& object) {
-                return getContext().getSerializationService().template toData<T>(&object);
-            }
-
-            template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::pimpl::Data& data) {
-                return getContext().getSerializationService().template toObject<T>(data);
-            }
-
             IList(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:listService", instanceName, context)
-            , impl(new pimpl::IListImpl(instanceName, context)) {
-                serialization::pimpl::Data keyData = getContext().getSerializationService().template toData<std::string>(&instanceName);
-                partitionId = getPartitionId(keyData);
+            : proxy::IListImpl(instanceName, context) {
             }
-
-            void onDestroy() {
-            }
-
-            pimpl::IListImpl *impl;
-            int partitionId;
         };
     }
 }
