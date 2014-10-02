@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace util {
         class Mutex;
 
-        class HAZELCAST_API ConditionVariable {
+        class ConditionVariable {
         public:
             ConditionVariable();
 

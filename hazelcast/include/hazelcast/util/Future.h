@@ -21,7 +21,7 @@
 namespace hazelcast {
     namespace util {
         template<typename T>
-        class HAZELCAST_API Future {
+        class Future {
         public:
             Future()
             : resultReady(false)

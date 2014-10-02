@@ -15,7 +15,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API AuthenticationRequest : public impl::ClientRequest {
+            class AuthenticationRequest : public impl::ClientRequest {
             public:
                 AuthenticationRequest(const Credentials &credential);
 

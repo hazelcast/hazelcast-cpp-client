@@ -7,6 +7,7 @@
 #define HAZELCAST_LockGuard
 
 #include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {

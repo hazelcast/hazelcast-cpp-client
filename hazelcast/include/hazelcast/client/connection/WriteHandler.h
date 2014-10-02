@@ -32,7 +32,7 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API WriteHandler : public IOHandler {
+            class WriteHandler : public IOHandler {
             public:
                 WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize);
 

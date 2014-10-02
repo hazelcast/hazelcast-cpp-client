@@ -25,7 +25,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class HAZELCAST_API ClassDefinitionContext {
+                class ClassDefinitionContext {
                 public:
 
                     ClassDefinitionContext(PortableContext *portableContext);

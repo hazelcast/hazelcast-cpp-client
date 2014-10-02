@@ -5,11 +5,12 @@
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
-#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
+#include <boost/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -27,6 +28,7 @@ namespace hazelcast {
         }
 
         namespace connection {
+            class Connection;
 
             class ConnectionManager;
 

@@ -24,7 +24,7 @@ namespace hazelcast {
             }
         }
         namespace connection {
-            class HAZELCAST_API InputSocketStream {
+            class InputSocketStream {
             public:
 
                 InputSocketStream(Socket &socket);

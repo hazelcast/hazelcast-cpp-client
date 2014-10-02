@@ -4,14 +4,15 @@
 
 
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/impl/ServerException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

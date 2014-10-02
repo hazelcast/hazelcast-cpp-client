@@ -2,33 +2,34 @@
 // Created by sancar koyunlu on 5/23/13.
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
-#include "hazelcast/client/serialization/pimpl/Packet.h"
-#include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
-#include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/impl/ClientMemberShipEvent.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/connection/ClientResponse.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ClientResponse.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/Packet.h"
+#include "hazelcast/client/impl/ClientMemberShipEvent.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
+            ClusterListenerThread::ClusterListenerThread(spi::ClientContext& clientContext)
             : startLatch(1)
             , clientContext(clientContext)
             , deletingConnection(false) {
 
             }
 
-            void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
-                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                clusterListenerThread->run( args.currentThread );
+            void ClusterListenerThread::staticRun(util::ThreadArgs& args) {
+                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *)args.arg0;
+                clusterListenerThread->run(args.currentThread);
             }
 
             void ClusterListenerThread::setThread(util::Thread *thread) {
@@ -41,7 +42,7 @@ namespace hazelcast {
                         if (conn.get() == NULL) {
                             try {
                                 conn = clientContext.getClusterService().connectToOne();
-                            } catch (std::exception &e) {
+                            } catch (std::exception& e) {
                                 util::ILogger::getLogger().severe(std::string("Error while connecting to cluster! =>") + e.what());
                                 isStartedSuccessfully = false;
                                 startLatch.countDown();
@@ -54,7 +55,7 @@ namespace hazelcast {
                         startLatch.countDown();
                         listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
-                    } catch(std::exception &e) {
+                    } catch (std::exception& e) {
                         if (clientContext.getLifecycleService().isRunning()) {
                             util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
                         }
@@ -98,7 +99,7 @@ namespace hazelcast {
             void ClusterListenerThread::loadInitialMemberList() {
                 protocol::AddMembershipListenerRequest requestObject;
                 boost::shared_ptr<ClientResponse> response = conn->sendAndReceive(requestObject);
-                boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection >(response->getData());
+                boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection>(response->getData());
 
                 std::map<std::string, Member> prevMembers;
                 if (!members.empty()) {
@@ -108,7 +109,7 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                const std::vector<serialization::pimpl::Data> &collection = coll->getCollection();
+                const std::vector<serialization::pimpl::Data>& collection = coll->getCollection();
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
                     boost::shared_ptr<Member> member = clientContext.getSerializationService().toObject<Member>(*it);
                     members.push_back(*member);
@@ -124,11 +125,11 @@ namespace hazelcast {
                     }
                 }
 
-                for (std::map< std::string, Member >::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
+                for (std::map<std::string, Member>::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
                     Member& member = it->second;
                     events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, member));
                     if (clientContext.getClusterService().isMemberExists(member.getAddress())) {
-                         clientContext.getConnectionManager().removeEndpoint(member.getAddress());
+                        clientContext.getConnectionManager().removeEndpoint(member.getAddress());
                     }
                 }
 
@@ -159,9 +160,9 @@ namespace hazelcast {
                         }
                         membersUpdated = true;
                     } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        impl::MemberAttributeChange const &memberAttributeChange = event->getMemberAttributeChange();
+                        impl::MemberAttributeChange const& memberAttributeChange = event->getMemberAttributeChange();
                         for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                            Member &target = *it;
+                            Member& target = *it;
                             if (target.getUuid() == memberAttributeChange.getUuid()) {
                                 fireMemberAttributeEvent(memberAttributeChange, target);
                             }
@@ -176,11 +177,11 @@ namespace hazelcast {
             }
 
 
-            void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const &memberAttributeChange, Member &target) {
+            void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const& memberAttributeChange, Member& target) {
                 MemberAttributeEvent::MemberAttributeOperationType operationType = memberAttributeChange.getOperationType();
-                const std::string &value = memberAttributeChange.getValue();
+                const std::string& value = memberAttributeChange.getValue();
                 util::IOUtil::PRIMITIVE_ID primitive_id = memberAttributeChange.getTypeId();
-                const std::string &key = memberAttributeChange.getKey();
+                const std::string& key = memberAttributeChange.getKey();
                 if (operationType == MemberAttributeEvent::PUT) {//PUT
                     if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
                         target.setAttribute(key, util::IOUtil::to_value<bool>(value));
@@ -223,7 +224,7 @@ namespace hazelcast {
             }
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member, addressComparator > map;
+                std::map<Address, Member, addressComparator> map;
                 std::stringstream memberInfo;
                 memberInfo << std::endl << "Members [" << members.size() << "]  {" << std::endl;
                 for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
@@ -246,7 +247,7 @@ namespace hazelcast {
 
             std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
-                std::set<Address, addressComparator> &configAddresses = clientContext.getClientConfig().getAddresses();
+                std::set<Address, addressComparator>& configAddresses = clientContext.getClientConfig().getAddresses();
                 std::set<Address, addressComparator>::iterator it;
 
                 for (it = configAddresses.begin(); it != configAddresses.end(); ++it) {

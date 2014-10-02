@@ -7,9 +7,12 @@
 #define HAZELCAST_ServerSocket
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/Socket.h"
+#include "AtomicBoolean.h"
 
 namespace hazelcast {
+    namespace client{
+        class Socket;
+    }
     namespace util {
         class ServerSocket {
         public:
