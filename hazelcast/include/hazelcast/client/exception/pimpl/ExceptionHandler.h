@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace client {
         namespace exception {
             namespace pimpl{
-                class ExceptionHandler {
+                class HAZELCAST_API ExceptionHandler {
                 public:
                     /**
                     * InternalAPI java side class name of interrupted exception

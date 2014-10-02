@@ -6,8 +6,14 @@
 #ifndef HAZELCAST_ServerSocket
 #define HAZELCAST_ServerSocket
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma comment(lib, "Ws2_32.lib")
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "AtomicBoolean.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 namespace hazelcast {
     namespace client{

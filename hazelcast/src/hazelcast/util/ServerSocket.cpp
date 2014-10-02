@@ -3,6 +3,7 @@
 //
 
 #include "hazelcast/util/ServerSocket.h"
+#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
