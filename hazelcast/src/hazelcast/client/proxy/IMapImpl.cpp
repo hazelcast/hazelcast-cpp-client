@@ -46,6 +46,7 @@
 #include "hazelcast/client/map/MapIsEmptyRequest.h"
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/EntryView.h"
+#include <climits>
 
 namespace hazelcast {
     namespace client {
