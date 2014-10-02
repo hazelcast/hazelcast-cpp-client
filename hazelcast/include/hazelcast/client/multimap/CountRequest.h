@@ -12,13 +12,18 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class CountRequest : public KeyBasedRequest{
+            class CountRequest : public KeyBasedRequest {
             public:
-                CountRequest(const std::string& name, const serialization::pimpl::Data& key);
+                CountRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
                 int getClassId() const;
 
                 bool isRetryable() const;
+
+                virtual void write(serialization::PortableWriter& writer) const;
+
+            private:
+                long threadId;
             };
         }
     }

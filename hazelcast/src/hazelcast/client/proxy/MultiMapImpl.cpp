@@ -24,7 +24,7 @@
 #include "hazelcast/client/multimap/PortableEntrySetResponse.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
-
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -44,7 +44,7 @@ namespace hazelcast {
 
             std::vector<serialization::pimpl::Data> MultiMapImpl::get(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                multimap::GetAllRequest *request = new multimap::GetAllRequest(getName(), key);
+                multimap::GetAllRequest *request = new multimap::GetAllRequest(getName(), key, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, impl::PortableCollection);
                 return result->getCollection();
@@ -90,7 +90,7 @@ namespace hazelcast {
 
             bool MultiMapImpl::containsKey(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest(getName(), key);
+                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest(getName(), key, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -105,7 +105,7 @@ namespace hazelcast {
 
             bool MultiMapImpl::containsEntry(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 int partitionId = getPartitionId(key);
-                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest(getName(), key, value);
+                multimap::KeyBasedContainsRequest *request = new multimap::KeyBasedContainsRequest(getName(), key, value, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -125,7 +125,7 @@ namespace hazelcast {
 
             int MultiMapImpl::valueCount(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                multimap::CountRequest *request = new multimap::CountRequest(getName(), key);
+                multimap::CountRequest *request = new multimap::CountRequest(getName(), key, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, int);
                 return *result;
