@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            PutRequest::PutRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl)
+            PutRequest::PutRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId, long ttl)
             :name(name)
             , key(key)
             , value(value)

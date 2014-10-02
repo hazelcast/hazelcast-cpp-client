@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ContainsValueRequest : public impl::ClientRequest {
+            class ContainsValueRequest : public impl::ClientRequest {
             public:
                 ContainsValueRequest(const std::string &name, const serialization::pimpl::Data &value);
 

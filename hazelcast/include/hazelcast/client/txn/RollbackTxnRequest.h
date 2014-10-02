@@ -12,13 +12,13 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API RollbackTxnRequest : public BaseTxnRequest {
+            class RollbackTxnRequest : public BaseTxnRequest {
             public:
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             };
         }

@@ -24,7 +24,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API IdGeneratorTest : public iTest::iTestFixture<IdGeneratorTest> {
+            class IdGeneratorTest : public iTest::iTestFixture<IdGeneratorTest> {
 
             public:
                 IdGeneratorTest(HazelcastServerFactory &);

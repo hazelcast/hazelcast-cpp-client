@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API GetLockCountRequest : public impl::ClientRequest{
+            class GetLockCountRequest : public impl::ClientRequest {
             public:
                 GetLockCountRequest(serialization::pimpl::Data& key);
 
@@ -29,6 +29,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
+
             private:
 
                 serialization::pimpl::Data& key;

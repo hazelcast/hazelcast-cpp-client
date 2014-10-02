@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API PortableEntrySetResponse : public impl::PortableResponse {
+            class PortableEntrySetResponse : public impl::PortableResponse {
             public:
                 PortableEntrySetResponse();
 

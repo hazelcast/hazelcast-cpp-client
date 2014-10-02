@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            CompareAndRemoveRequest::CompareAndRemoveRequest(const std::string& name, std::vector<serialization::pimpl::Data>& dataList, bool retain)
+            CompareAndRemoveRequest::CompareAndRemoveRequest(const std::string& name, const std::vector<serialization::pimpl::Data>& dataList, bool retain)
             :name(name)
             , dataList(dataList)
             , retain(retain) {

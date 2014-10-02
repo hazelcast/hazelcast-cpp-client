@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API QueryRequest : public impl::ClientRequest {
+            class QueryRequest : public impl::ClientRequest {
             public:
                 QueryRequest(const std::string &name, const std::string &iterationType, const std::string &sql);
 

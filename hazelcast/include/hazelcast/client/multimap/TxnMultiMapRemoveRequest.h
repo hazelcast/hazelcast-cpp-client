@@ -14,11 +14,11 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API TxnMultiMapRemoveRequest : public TxnMultiMapRequest {
+            class TxnMultiMapRemoveRequest : public TxnMultiMapRequest {
             public:
-                TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key);
+                TxnMultiMapRemoveRequest(const std::string &name, const serialization::pimpl::Data &key);
 
-                TxnMultiMapRemoveRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value);
+                TxnMultiMapRemoveRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 int getClassId() const;
 

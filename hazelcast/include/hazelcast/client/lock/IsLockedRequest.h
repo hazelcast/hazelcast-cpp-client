@@ -18,23 +18,23 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API IsLockedRequest : public impl::ClientRequest {
+            class IsLockedRequest : public impl::ClientRequest {
             public:
-                IsLockedRequest(serialization::pimpl::Data &key);
+                IsLockedRequest(serialization::pimpl::Data& key);
 
-                IsLockedRequest(serialization::pimpl::Data &key, long threadId);
+                IsLockedRequest(serialization::pimpl::Data& key, long threadId);
 
                 int getClassId() const;
 
                 int getFactoryId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
 
             private:
                 long threadId;
-                serialization::pimpl::Data &key;
+                serialization::pimpl::Data& key;
             };
         }
     }

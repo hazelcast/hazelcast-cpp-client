@@ -9,7 +9,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
 
-            PutIfAbsentRequest::PutIfAbsentRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl)
+            PutIfAbsentRequest::PutIfAbsentRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId, long ttl)
             : name(name)
             , key(key)
             , value(value)

@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API ClearRequest : public impl::ClientRequest{
+            class ClearRequest : public impl::ClientRequest{
             public:
                 ClearRequest(const std::string& name);
 

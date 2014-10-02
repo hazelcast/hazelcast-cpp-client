@@ -12,10 +12,9 @@
 namespace hazelcast {
     namespace client {
         namespace atomiclong {
-
-            class HAZELCAST_API GetAndSetRequest : public AtomicLongRequest {
+            class GetAndSetRequest : public AtomicLongRequest {
             public:
-                GetAndSetRequest(const std::string &instanceName, long value);
+                GetAndSetRequest(const std::string& instanceName, long value);
 
                 int getClassId() const;
 

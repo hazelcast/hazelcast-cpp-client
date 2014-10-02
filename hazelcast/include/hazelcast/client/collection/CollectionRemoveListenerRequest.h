@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class HAZELCAST_API CollectionRemoveListenerRequest : public impl::BaseRemoveListenerRequest {
+            class CollectionRemoveListenerRequest : public impl::BaseRemoveListenerRequest {
             public:
                 CollectionRemoveListenerRequest(const std::string &name, const std::string &serviceName, const std::string &registrationId);
 

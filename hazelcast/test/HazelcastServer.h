@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API HazelcastServer {
+            class HazelcastServer {
             public:
                 HazelcastServer(HazelcastServerFactory &);
 

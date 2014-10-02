@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API EvictAllRequest : public impl::ClientRequest {
+            class EvictAllRequest : public impl::ClientRequest {
             public:
                 EvictAllRequest(const std::string& name);
 

@@ -9,7 +9,6 @@
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryListener.h"
-#include "hazelcast/client/MapEvent.h"
 
 namespace hazelcast {
     namespace client {

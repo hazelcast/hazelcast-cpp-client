@@ -17,18 +17,18 @@ namespace hazelcast {
             class QueryResultEntry;
         }
         namespace impl {
-            class HAZELCAST_API QueryResultSet : public impl::IdentifiedDataSerializableResponse {
+            class QueryResultSet : public impl::IdentifiedDataSerializableResponse {
             public:
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                const std::vector<QueryResultEntry> & getResultData() const;
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > getResultData() const;
 
                 void readData(serialization::ObjectDataInput& in);
 
             private:
-                std::vector<QueryResultEntry> q;
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > q;
             };
         }
     }

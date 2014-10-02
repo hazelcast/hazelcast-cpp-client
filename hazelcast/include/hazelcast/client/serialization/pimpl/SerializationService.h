@@ -20,12 +20,16 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/Void.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -491,14 +495,14 @@ namespace hazelcast {
                     *object = dataInput.readUTF();
                     return object;
                 };
-
-                template<>
-                inline boost::shared_ptr<Void> SerializationService::toObject(const Data &data) {
-                    return boost::shared_ptr<Void>();
-                };
             }
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_SERIALIZATION_SERVICE */
 

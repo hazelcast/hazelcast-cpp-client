@@ -13,9 +13,9 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API ContainsRequest : public AllPartitionsRequest {
+            class ContainsRequest : public AllPartitionsRequest {
             public:
-                ContainsRequest(const std::string &name, serialization::pimpl::Data &value);
+                ContainsRequest(const std::string &name, const serialization::pimpl::Data &value);
 
                 int getClassId() const;
 

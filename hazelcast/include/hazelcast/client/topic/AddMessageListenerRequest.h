@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class HAZELCAST_API AddMessageListenerRequest : public impl::ClientRequest {
+            class AddMessageListenerRequest : public impl::ClientRequest {
             public:
                 AddMessageListenerRequest(const std::string& instanceName);
 

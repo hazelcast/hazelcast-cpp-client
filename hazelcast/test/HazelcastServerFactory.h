@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServer;
 
-            class HAZELCAST_API HazelcastServerFactory {
+            class HazelcastServerFactory {
                 friend class HazelcastServer;
 
                 enum {

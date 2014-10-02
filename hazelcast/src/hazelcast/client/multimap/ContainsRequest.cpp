@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            ContainsRequest::ContainsRequest(const std::string &name, serialization::pimpl::Data &value)
+            ContainsRequest::ContainsRequest(const std::string &name, const serialization::pimpl::Data &value)
             : AllPartitionsRequest(name)
             , value(value) {
 
@@ -19,7 +19,6 @@ namespace hazelcast {
             int ContainsRequest::getClassId() const {
                 return MultiMapPortableHook::CONTAINS_ENTRY;
             }
-
 
             void ContainsRequest::write(serialization::PortableWriter &writer) const {
                 AllPartitionsRequest::write(writer);

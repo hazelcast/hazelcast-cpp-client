@@ -1,10 +1,7 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
 
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/DistributedObject.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/exception/IException.h"
 #include <string>
 #include <stdexcept>
@@ -42,7 +39,7 @@ namespace hazelcast {
          * 
          *
          */
-        class HAZELCAST_API ISemaphore : public DistributedObject {
+        class HAZELCAST_API ISemaphore : public proxy::ProxyImpl {
             friend class HazelcastClient;
 
         public:
@@ -281,8 +278,6 @@ namespace hazelcast {
             bool tryAcquire(int permits, long timeoutInMillis);
 
         private:
-
-            void onDestroy();
 
             ISemaphore(const std::string &instanceName, spi::ClientContext *context);
 

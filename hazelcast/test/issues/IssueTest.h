@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API IssueTest : public iTest::iTestFixture<IssueTest> {
+            class IssueTest : public iTest::iTestFixture<IssueTest> {
 
             public:
                 IssueTest(HazelcastServerFactory &);

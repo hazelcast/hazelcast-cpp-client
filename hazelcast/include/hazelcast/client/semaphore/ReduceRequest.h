@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class HAZELCAST_API ReduceRequest : public SemaphoreRequest {
+            class ReduceRequest : public SemaphoreRequest {
             public:
                 ReduceRequest(const std::string &instanceName, int permitCount);
 

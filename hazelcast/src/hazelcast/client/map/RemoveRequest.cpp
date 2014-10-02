@@ -11,7 +11,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            RemoveRequest::RemoveRequest(const std::string &name, serialization::pimpl::Data &key, long threadId)
+            RemoveRequest::RemoveRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId)
             :name(name)
             , async(false) //MTODO implement removeAsync request on IMAP
             , key(key)

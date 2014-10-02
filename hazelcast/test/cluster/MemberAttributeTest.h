@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API MemberAttributeTest : public iTest::iTestFixture<MemberAttributeTest> {
+            class MemberAttributeTest : public iTest::iTestFixture<MemberAttributeTest> {
 
             public:
 

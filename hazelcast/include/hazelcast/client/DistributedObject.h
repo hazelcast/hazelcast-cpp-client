@@ -7,11 +7,13 @@
 #ifndef HAZELCAST_DistributedObject
 #define HAZELCAST_DistributedObject
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include <string>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -19,49 +21,57 @@ namespace hazelcast {
             class BaseEventHandler;
 
             class BaseRemoveListenerRequest;
+
+            class ClientRequest;
+        }
+
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
         }
 
         /**
-         * Base class for all distributed objects.
-         *
-         * @see IMap
-         * @see MultiMap
-         * @see IQueue
-         * @see IList
-         * @see ISet
-         * @see ITopic
-         * @see ILock
-         * @see ISemaphore
-         * @see ICountDownLatch
-         * @see IdGenerator
-         * @see IAtomicLong
-         * @see TransactionalMap
-         * @see TransactionalQueue
-         * @see TransactionalMultiMap
-         * @see TransactionalSet
-         * @see TransactionalList
-         */
+        * Base class for all distributed objects.
+        *
+        * @see IMap
+        * @see MultiMap
+        * @see IQueue
+        * @see IList
+        * @see ISet
+        * @see ITopic
+        * @see ILock
+        * @see ISemaphore
+        * @see ICountDownLatch
+        * @see IdGenerator
+        * @see IAtomicLong
+        * @see TransactionalMap
+        * @see TransactionalQueue
+        * @see TransactionalMultiMap
+        * @see TransactionalSet
+        * @see TransactionalList
+        */
         class HAZELCAST_API DistributedObject {
             friend class HazelcastClient;
 
         public:
             /**
-             * Returns the service name for this object.
-             */
-            const std::string &getServiceName() const;
+            * Returns the service name for this object.
+            */
+            const std::string& getServiceName() const;
 
             /**
-             * Returns the unique name for this DistributedObject.
-             *
-             * @return the unique name for this object.
-             */
-            const std::string &getName() const;
+            * Returns the unique name for this DistributedObject.
+            *
+            * @return the unique name for this object.
+            */
+            const std::string& getName() const;
 
             /**
-             * Destroys this object cluster-wide.
-             * Clears and releases all resources for this object.
-             */
-            void destroy();
+            * Destroys this object cluster-wide.
+            * Clears and releases all resources for this object.
+            */
+            virtual void destroy() = 0;
 
             /**
             * Destructor
@@ -70,86 +80,25 @@ namespace hazelcast {
 
         protected:
             /**
-             * Constructor.
-             */
-            DistributedObject(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
+            * Constructor.
+            */
+            DistributedObject(const std::string& serviceName, const std::string& objectName);
+
 
             /**
-             * @returns ClientContext.
-             */
-            spi::ClientContext &getContext();
+            * method to be called when cluster-wide destroy method is called.
+            */
+            virtual void onDestroy();
 
-            /**
-             * method to be called when cluster-wide destroy method is called.
-             */
-            virtual void onDestroy() = 0;
-
-            template<typename Response>
-            /**
-             * Internal API.
-             * method to be called by distributed objects.
-             * memory ownership is moved to DistributedObject.
-             *
-             * @param partitionId that given request will be send to.
-             * @param request ClientRequest ptr.
-             */
-            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request, int partitionId) {
-                spi::InvocationService &invocationService = getContext().getInvocationService();
-                connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
-                return context->getSerializationService().template toObject<Response>(future.get());
-            };
-
-            /**
-             * Internal API.
-             * method to be called by distributed objects.
-             * memory ownership is moved to DistributedObject.
-             *
-             * @param request ClientRequest ptr.
-             */
-            template<typename Response>
-            boost::shared_ptr<Response> invoke(const impl::ClientRequest *request) {
-                connection::CallFuture  future = getContext().getInvocationService().invokeOnRandomTarget(request);
-                return context->getSerializationService().template toObject<Response>(future.get());
-            };
-
-            /**
-             * Internal API.
-             *
-             * @param registrationRequest ClientRequest ptr.
-             * @param partitionId
-             * @param handler
-             */
-            std::string listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler);
-
-            /**
-             * Internal API.
-             *
-             * @param registrationRequest ClientRequest ptr.
-             * @param handler
-             */
-            std::string listen(const impl::ClientRequest *registrationRequest, impl::BaseEventHandler *handler);
-
-            /**
-             * Internal API.
-             *
-             * @param request ClientRequest ptr.
-             * @param registrationId
-             */
-            bool stopListening(impl::BaseRemoveListenerRequest *request, const std::string &registrationId);
-
-            /**
-             * Internal API.
-             * @param key
-             */
-            int getPartitionId(const serialization::pimpl::Data &key);
-
-        private:
             const std::string name;
             const std::string serviceName;
-            spi::ClientContext *context;
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_DistributedObject
 

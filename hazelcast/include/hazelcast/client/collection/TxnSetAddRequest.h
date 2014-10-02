@@ -13,9 +13,9 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class HAZELCAST_API TxnSetAddRequest : public TxnCollectionRequest {
+            class TxnSetAddRequest : public TxnCollectionRequest {
             public:
-                TxnSetAddRequest(const std::string &name, serialization::pimpl::Data &);
+                TxnSetAddRequest(const std::string& name, const serialization::pimpl::Data&);
 
                 int getClassId() const;
 

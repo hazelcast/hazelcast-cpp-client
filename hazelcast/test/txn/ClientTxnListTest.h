@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientTxnListTest : public iTest::iTestFixture<ClientTxnListTest> {
+            class ClientTxnListTest : public iTest::iTestFixture<ClientTxnListTest> {
             public:
 
                 ClientTxnListTest(HazelcastServerFactory &);

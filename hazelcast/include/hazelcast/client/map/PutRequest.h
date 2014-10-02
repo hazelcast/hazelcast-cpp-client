@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API PutRequest : public impl::ClientRequest {
+            class PutRequest : public impl::ClientRequest {
             public:
-                PutRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl);
+                PutRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId, long ttl);
 
                 int getFactoryId() const;
 

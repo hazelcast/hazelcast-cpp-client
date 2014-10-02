@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ICountDownLatchTest : public iTest::iTestFixture<ICountDownLatchTest> {
+            class ICountDownLatchTest : public iTest::iTestFixture<ICountDownLatchTest> {
             public:
 
                 ICountDownLatchTest(HazelcastServerFactory &);

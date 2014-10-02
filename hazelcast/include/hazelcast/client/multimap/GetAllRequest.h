@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API GetAllRequest : public KeyBasedRequest{
+            class GetAllRequest : public KeyBasedRequest{
             public:
                 GetAllRequest(const std::string& name, const serialization::pimpl::Data& key);
 

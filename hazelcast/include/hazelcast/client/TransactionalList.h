@@ -8,12 +8,7 @@
 #ifndef HAZELCAST_TransactionalList
 #define HAZELCAST_TransactionalList
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/collection/TxnListAddRequest.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/collection/TxnListRemoveRequest.h"
-#include "hazelcast/client/collection/TxnListSizeRequest.h"
-#include "hazelcast/client/proxy/TransactionalObject.h"
+#include "hazelcast/client/proxy/TransactionalListImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -22,7 +17,7 @@ namespace hazelcast {
          * Transactional implementation of IList.
          */
         template <typename E>
-        class HAZELCAST_API TransactionalList : public proxy::TransactionalObject {
+        class HAZELCAST_API TransactionalList : public proxy::TransactionalListImpl {
             friend class TransactionContext;
 
         public:
@@ -32,10 +27,7 @@ namespace hazelcast {
              * @return true if item is added successfully
              */
             bool add(const E &e) {
-                serialization::pimpl::Data data = toData(e);
-                collection::TxnListAddRequest *request = new collection::TxnListAddRequest(getName(), data);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
-                return *success;
+                return proxy::TransactionalListImpl::add(toData(e));
             }
 
             /**
@@ -44,10 +36,7 @@ namespace hazelcast {
              * @return true if item is remove successfully
              */
             bool remove(const E &e) {
-                serialization::pimpl::Data data = toData(e);
-                collection::TxnListRemoveRequest *request = new collection::TxnListRemoveRequest(getName(), data);
-                boost::shared_ptr<bool> success = invoke<bool>(request);
-                return *success;
+                return proxy::TransactionalListImpl::remove(toData(e));
             }
 
             /**
@@ -55,20 +44,14 @@ namespace hazelcast {
              * @return size
              */
             int size() {
-                collection::TxnListSizeRequest *request = new collection::TxnListSizeRequest(getName());
-                boost::shared_ptr<int> s = invoke<int>(request);
-                return *s;
+                return proxy::TransactionalListImpl::size();
             }
 
         private:
             TransactionalList(const std::string &instanceName, txn::TransactionProxy *context)
-            :TransactionalObject("hz:impl:listService", instanceName, context) {
+            : proxy::TransactionalListImpl(instanceName, context) {
 
             }
-
-            void onDestroy() {
-            }
-
         };
 
     }

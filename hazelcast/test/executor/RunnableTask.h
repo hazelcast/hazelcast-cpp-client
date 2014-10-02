@@ -13,7 +13,7 @@
 //
 //using namespace hazelcast::client;
 //
-//class HAZELCAST_API RunnableTask : public serialization::Portable {
+//class RunnableTask : public serialization::Portable {
 //public:
 //
 //    RunnableTask();

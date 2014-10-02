@@ -1,27 +1,9 @@
 #ifndef HAZELCAST_IQUEUE
 #define HAZELCAST_IQUEUE
 
-#include "hazelcast/client/queue/OfferRequest.h"
-#include "hazelcast/client/queue/PollRequest.h"
-#include "hazelcast/client/queue/RemainingCapacityRequest.h"
-#include "hazelcast/client/queue/RemoveRequest.h"
-#include "hazelcast/client/queue/ContainsRequest.h"
-#include "hazelcast/client/queue/DrainRequest.h"
-#include "hazelcast/client/queue/PeekRequest.h"
-#include "hazelcast/client/queue/SizeRequest.h"
-#include "hazelcast/client/queue/CompareAndRemoveRequest.h"
-#include "hazelcast/client/queue/AddAllRequest.h"
-#include "hazelcast/client/queue/ClearRequest.h"
-#include "hazelcast/client/queue/IteratorRequest.h"
-#include "hazelcast/client/queue/AddListenerRequest.h"
-#include "hazelcast/client/queue/RemoveListenerRequest.h"
-#include "hazelcast/client/impl/PortableCollection.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/impl/ServerException.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
 #include <stdexcept>
 
 namespace hazelcast {
@@ -33,7 +15,7 @@ namespace hazelcast {
         * @tparam E item type
         */
         template<typename E>
-        class HAZELCAST_API IQueue : public DistributedObject {
+        class HAZELCAST_API IQueue : public proxy::IQueueImpl {
             friend class HazelcastClient;
 
         public:
@@ -51,13 +33,12 @@ namespace hazelcast {
             *                     to the item listener, <tt>false</tt> otherwise.
             * @return returns registration id.
             */
-            std::string addItemListener(ItemListener <E>& listener, bool includeValue) {
-                queue::AddListenerRequest *request = new queue::AddListenerRequest(getName(), includeValue);
-                spi::ClusterService& cs = getContext().getClusterService();
-                serialization::pimpl::SerializationService& ss = getContext().getSerializationService();
+            std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
+                spi::ClusterService& cs = context->getClusterService();
+                serialization::pimpl::SerializationService& ss = context->getSerializationService();
                 impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), cs, ss, listener, includeValue);
-                return listen(request, itemEventHandler);
-            };
+                return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
+            }
 
             /**
             * Removes the specified item listener.
@@ -68,9 +49,8 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeItemListener(const std::string& registrationId) {
-                queue::RemoveListenerRequest *request = new queue::RemoveListenerRequest(getName(), registrationId);
-                return stopListening(request, registrationId);
-            };
+                return proxy::IQueueImpl::removeItemListener(registrationId);
+            }
 
             /**
             * Inserts the specified element into this queue.
@@ -82,7 +62,7 @@ namespace hazelcast {
             */
             bool offer(const E& element) {
                 return offer(element, 0);
-            };
+            }
 
             /**
             * Puts the element into queue.
@@ -90,7 +70,7 @@ namespace hazelcast {
             */
             void put(const E& e) {
                 offer(e, -1);
-            };
+            }
 
             /**
             * Inserts the specified element into this queue.
@@ -102,10 +82,8 @@ namespace hazelcast {
             *         the specified waiting time elapses before space is available
             */
             bool offer(const E& element, long timeoutInMillis) {
-                serialization::pimpl::Data data = toData(element);
-                queue::OfferRequest *request = new queue::OfferRequest(getName(), data, timeoutInMillis);
-                return *(invoke<bool>(request, partitionId));
-            };
+                return proxy::IQueueImpl::offer(toData(element), timeoutInMillis);
+            }
 
             /**
             *
@@ -113,7 +91,7 @@ namespace hazelcast {
             */
             boost::shared_ptr<E> take() {
                 return poll(-1);
-            };
+            }
 
             /**
             *
@@ -121,19 +99,16 @@ namespace hazelcast {
             * @return the head of the queue. If queue is empty waits for specified time.
             */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                queue::PollRequest *request = new queue::PollRequest(getName(), timeoutInMillis);
-                return invoke<E>(request, partitionId);
-            };
+                return toObject<E>(proxy::IQueueImpl::poll(timeoutInMillis));
+            }
 
             /**
             *
             * @return remaining capacity
             */
             int remainingCapacity() {
-                queue::RemainingCapacityRequest *request = new queue::RemainingCapacityRequest(getName());
-                boost::shared_ptr<int> cap = invoke<int>(request, partitionId);
-                return *cap;
-            };
+                return proxy::IQueueImpl::remainingCapacity();
+            }
 
             /**
             *
@@ -141,10 +116,8 @@ namespace hazelcast {
             * @return true if element removed successfully.
             */
             bool remove(const E& element) {
-                serialization::pimpl::Data data = toData(element);
-                queue::RemoveRequest *request = new queue::RemoveRequest(getName(), data);
-                return *(invoke<bool>(request, partitionId));
-            };
+                return proxy::IQueueImpl::remove(toData(element));
+            }
 
             /**
             *
@@ -152,11 +125,8 @@ namespace hazelcast {
             * @return true if queue contains the element.
             */
             bool contains(const E& element) {
-                std::vector<serialization::pimpl::Data> list(1);
-                list[0] = toData(element);
-                queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
-                return *(invoke<bool>(request, partitionId));
-            };
+                return proxy::IQueueImpl::contains(toData(element));
+            }
 
             /**
             * Note that elements will be pushed_back to vector.
@@ -166,7 +136,7 @@ namespace hazelcast {
             */
             int drainTo(std::vector<E>& elements) {
                 return drainTo(elements, -1);
-            };
+            }
 
             /**
             * Note that elements will be pushed_back to vector.
@@ -176,15 +146,13 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             int drainTo(std::vector<E>& elements, int maxElements) {
-                queue::DrainRequest *request = new queue::DrainRequest(getName(), maxElements);
-                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, partitionId);
-                const std::vector<serialization::pimpl::Data>& coll = result->getCollection();
+                std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainTo(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    boost::shared_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
+                    boost::shared_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
-            };
+            }
 
             /**
             * Returns immediately without waiting.
@@ -193,7 +161,7 @@ namespace hazelcast {
             */
             boost::shared_ptr<E> poll() {
                 return poll(0);
-            };
+            }
 
             /**
             * Returns immediately without waiting.
@@ -201,18 +169,15 @@ namespace hazelcast {
             * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
             */
             boost::shared_ptr<E> peek() {
-                queue::PeekRequest *request = new queue::PeekRequest(getName());
-                return invoke<E>(request, partitionId);
-            };
+                return toObject<E>(proxy::IQueueImpl::peek());
+            }
 
             /**
             *
             * @return size of this distributed queue
             */
             int size() {
-                queue::SizeRequest *request = new queue::SizeRequest(getName());
-                boost::shared_ptr<int> size = invoke<int>(request, partitionId);
-                return *size;
+                return proxy::IQueueImpl::size();
             }
 
             /**
@@ -221,18 +186,15 @@ namespace hazelcast {
             */
             bool isEmpty() {
                 return size() == 0;
-            };
+            }
 
             /**
             *
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                queue::IteratorRequest *request = new queue::IteratorRequest(getName());
-                boost::shared_ptr<impl::PortableCollection> result = invoke<impl::PortableCollection>(request, partitionId);
-                std::vector<serialization::pimpl::Data> const& coll = result->getCollection();
-                return getObjectList(coll);
-            };
+                return toObjectCollection<E>(proxy::IQueueImpl::toArray());
+            }
 
             /**
             *
@@ -241,10 +203,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool containsAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> list = getDataList(elements);
-                queue::ContainsRequest *request = new queue::ContainsRequest(getName(), list);
-                boost::shared_ptr<bool> contains = invoke<bool>(request, partitionId);
-                return *contains;
+                std::vector<serialization::pimpl::Data> list = toDataCollection(elements);
+                return proxy::IQueueImpl::containsAll(list);
             }
 
             /**
@@ -254,10 +214,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool addAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> dataList = getDataList(elements);
-                queue::AddAllRequest *request = new queue::AddAllRequest(getName(), dataList);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
+                std::vector<serialization::pimpl::Data> dataList = toDataCollection(elements);
+                return proxy::IQueueImpl::addAll(dataList);
             }
 
             /**
@@ -267,10 +225,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool removeAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> dataList = getDataList(elements);
-                queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, false);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
+                std::vector<serialization::pimpl::Data> dataList = toDataCollection(elements);
+                return proxy::IQueueImpl::removeAll(dataList);
             }
 
             /**
@@ -281,59 +237,21 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool retainAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> dataList = getDataList(elements);
-                queue::CompareAndRemoveRequest *request = new queue::CompareAndRemoveRequest(getName(), dataList, true);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
+                std::vector<serialization::pimpl::Data> dataList = toDataCollection(elements);
+                return proxy::IQueueImpl::retainAll(dataList);
             }
 
             /**
             * Removes all elements from queue.
             */
             void clear() {
-                queue::ClearRequest *request = new queue::ClearRequest(getName());
-                invoke<serialization::pimpl::Void>(request, partitionId);
-            };
-
+                proxy::IQueueImpl::clear();
+            }
         private:
-
-            int partitionId;
-
             IQueue(const std::string& instanceName, spi::ClientContext *context)
-            : DistributedObject("hz:impl:queueService", instanceName, context) {
-                serialization::pimpl::Data data = toData<std::string>(getName());
-                partitionId = getPartitionId(data);
-            };
-
-            template<typename T>
-            serialization::pimpl::Data toData(const T& object) {
-                return getContext().getSerializationService().template toData<T>(&object);
-            };
-
-
-            std::vector<serialization::pimpl::Data> getDataList(const std::vector<E>& objects) {
-                int size = objects.size();
-                std::vector<serialization::pimpl::Data> dataList(size);
-                for (int i = 0; i < size; i++) {
-                    dataList[i] = toData(objects[i]);
-                }
-                return dataList;
-            };
-
-            std::vector<E> getObjectList(const std::vector<serialization::pimpl::Data>& dataList) {
-                size_t size = dataList.size();
-                std::vector<E> objects(size);
-                for (size_t i = 0; i < size; i++) {
-                    boost::shared_ptr<E> object = getContext().getSerializationService().template toObject<E>(dataList[i]);
-                    objects[i] = *object;
-                }
-                return objects;
-            };
-
-            void onDestroy() {
-            };
-
-
+            : proxy::IQueueImpl(instanceName, context){
+                
+            }
         };
     }
 }

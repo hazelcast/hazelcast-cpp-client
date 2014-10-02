@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API AddListenerRequest : public impl::ClientRequest {
+            class AddListenerRequest : public impl::ClientRequest {
             public:
                 AddListenerRequest(const std::string& name, bool includeValue);
 

@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            ContainsKeyRequest::ContainsKeyRequest(const std::string &name, serialization::pimpl::Data &key)
+            ContainsKeyRequest::ContainsKeyRequest(const std::string &name, const serialization::pimpl::Data &key)
             :name(name)
             , key(key) {
             }

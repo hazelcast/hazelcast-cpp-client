@@ -22,7 +22,7 @@ int GET_PERCENTAGE = 30;
 int PUT_PERCENTAGE = 30;
 
 
-class HAZELCAST_API Stats {
+class Stats {
 public:
     Stats() {
     };
@@ -67,7 +67,7 @@ void printStats(hazelcast::util::ThreadArgs &args) {
     }
 };
 
-class HAZELCAST_API SimpleMapTest {
+class SimpleMapTest {
 public:
     std::string server_address;
     int server_port;

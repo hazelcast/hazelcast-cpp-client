@@ -16,7 +16,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HAZELCAST_API ChildTemplatedPortable2 : public serialization::Portable {
+            class ChildTemplatedPortable2 : public serialization::Portable {
             public:
                 ChildTemplatedPortable2(){
 

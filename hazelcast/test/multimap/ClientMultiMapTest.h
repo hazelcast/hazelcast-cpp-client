@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientMultiMapTest : public iTest::iTestFixture<ClientMultiMapTest> {
+            class ClientMultiMapTest : public iTest::iTestFixture<ClientMultiMapTest> {
             public:
                 ClientMultiMapTest(HazelcastServerFactory &);
 

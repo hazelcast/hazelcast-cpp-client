@@ -11,10 +11,10 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API CompareAndRemoveRequest : public impl::ClientRequest {
+            class CompareAndRemoveRequest : public impl::ClientRequest {
             public:
 
-                CompareAndRemoveRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList, bool retain);
+                CompareAndRemoveRequest(const std::string &name, const std::vector<serialization::pimpl::Data> &dataList, bool retain);
 
                 int getFactoryId() const;
 

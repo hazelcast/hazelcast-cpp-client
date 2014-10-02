@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API PollRequest : public impl::ClientRequest {
+            class PollRequest : public impl::ClientRequest {
             public:
                 PollRequest(const std::string &name, long timeout);
 

@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API RemoveIfSameRequest : public impl::ClientRequest {
+            class RemoveIfSameRequest : public impl::ClientRequest {
             public:
-                RemoveIfSameRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId);
+                RemoveIfSameRequest(const std::string &name, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long threadId);
 
                 int getFactoryId() const;
 

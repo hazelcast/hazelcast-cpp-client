@@ -8,87 +8,72 @@
 #ifndef HAZELCAST_TransactionalQueue
 #define HAZELCAST_TransactionalQueue
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/queue/TxnOfferRequest.h"
-#include "hazelcast/client/queue/TxnPollRequest.h"
-#include "hazelcast/client/queue/TxnSizeRequest.h"
+#include "hazelcast/client/proxy/TransactionalQueueImpl.h"
 
 namespace hazelcast {
     namespace client {
         /**
-         * Transactional implementation of IQueue.
-         *
-         * @see IQueue
-         * @param <E> element type
-         */
-        template <typename E>
-        class HAZELCAST_API TransactionalQueue : public proxy::TransactionalObject {
+        * Transactional implementation of IQueue.
+        *
+        * @see IQueue
+        * @param <E> element type
+        */
+        template<typename E>
+        class HAZELCAST_API TransactionalQueue : public proxy::TransactionalQueueImpl {
             friend class TransactionContext;
 
         public:
             /**
-             * Transactional implementation of IQueue::offer(const E &e)
-             *
-             * @see IQueue::offer(const E &e)
-             */
-            bool offer(const E &e) {
+            * Transactional implementation of IQueue::offer(const E &e)
+            *
+            * @see IQueue::offer(const E &e)
+            */
+            bool offer(const E& e) {
                 return offer(e, 0);
-            };
+            }
 
             /**
-             * Transactional implementation of IQueue::offer(const E &e, long timeoutInMillis)
-             *
-             * @see IQueue::offer(const E &e, long timeoutInMillis)
-             */
-            bool offer(const E &e, long timeoutInMillis) {
-                serialization::pimpl::Data data = toData(e);
-                queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, data);
-                return *(invoke<bool>(request));
-            };
+            * Transactional implementation of IQueue::offer(const E &e, long timeoutInMillis)
+            *
+            * @see IQueue::offer(const E &e, long timeoutInMillis)
+            */
+            bool offer(const E& e, long timeoutInMillis) {
+                return proxy::TransactionalQueueImpl::offer(toData(e), timeoutInMillis);
+            }
 
             /**
-             * Transactional implementation of IQueue::poll()
-             *
-             * @see IQueue::poll()
-             */
+            * Transactional implementation of IQueue::poll()
+            *
+            * @see IQueue::poll()
+            */
             boost::shared_ptr<E> poll() {
                 return poll(0);
-            };
+            }
 
             /**
-             * Transactional implementation of IQueue::poll(long timeoutInMillis)
-             *
-             * @see IQueue::poll(long timeoutInMillis)
-             */
+            * Transactional implementation of IQueue::poll(long timeoutInMillis)
+            *
+            * @see IQueue::poll(long timeoutInMillis)
+            */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                queue::TxnPollRequest *request = new queue::TxnPollRequest(getName(), timeoutInMillis);
-                return invoke<E>(request);
-            };
+                return toObject<E>(proxy::TransactionalQueueImpl::poll(timeoutInMillis));
+            }
 
             /**
-             * Transactional implementation of IQueue::size()
-             *
-             * @see IQueue::size()
-             */
+            * Transactional implementation of IQueue::size()
+            *
+            * @see IQueue::size()
+            */
             int size() {
-                queue::TxnSizeRequest *request = new queue::TxnSizeRequest(getName());
-                boost::shared_ptr<int> s = invoke<int>(request);
-                return *s;
+                return proxy::TransactionalQueueImpl::size();
             }
 
         private:
-            TransactionalQueue(const std::string &name, txn::TransactionProxy *transactionProxy)
-            :TransactionalObject("hz:impl:queueService", name, transactionProxy) {
+            TransactionalQueue(const std::string& name, txn::TransactionProxy *transactionProxy)
+            : proxy::TransactionalQueueImpl(name, transactionProxy) {
 
             }
-
-
-            void onDestroy() {
-            }
-
         };
-
     }
 }
 

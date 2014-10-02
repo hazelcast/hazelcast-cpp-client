@@ -1,22 +1,9 @@
 #ifndef HAZELCAST_ISET
 #define HAZELCAST_ISET
 
-#include "hazelcast/client/collection/CollectionAddListenerRequest.h"
-#include "hazelcast/client/collection/CollectionRemoveListenerRequest.h"
-#include "hazelcast/client/collection/CollectionSizeRequest.h"
-#include "hazelcast/client/collection/CollectionContainsRequest.h"
-#include "hazelcast/client/collection/CollectionRemoveRequest.h"
-#include "hazelcast/client/collection/CollectionAddAllRequest.h"
-#include "hazelcast/client/collection/CollectionCompareAndRemoveRequest.h"
-#include "hazelcast/client/collection/CollectionGetAllRequest.h"
-#include "hazelcast/client/collection/CollectionAddRequest.h"
-#include "hazelcast/client/collection/CollectionClearRequest.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/impl/SerializableCollection.h"
-#include "hazelcast/client/DistributedObject.h"
 #include <stdexcept>
 
 
@@ -29,7 +16,7 @@ namespace hazelcast {
         * @tparam E item type
         */
         template<typename E>
-        class HAZELCAST_API ISet : public DistributedObject {
+        class HAZELCAST_API ISet : public proxy::ISetImpl {
             friend class HazelcastClient;
 
         public:
@@ -44,10 +31,9 @@ namespace hazelcast {
             *  @returns registrationId that can be used to remove item listener
             */
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                collection::CollectionAddListenerRequest *request = new collection::CollectionAddListenerRequest(getName(), getServiceName(), includeValue);
-                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), getContext().getClusterService(), getContext().getSerializationService(), listener, includeValue);
-                return listen(request, itemEventHandler);
-            };
+                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+                return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
+            }
 
             /**
             * Removes the specified item listener.
@@ -58,19 +44,16 @@ namespace hazelcast {
             * @return true if registration is removed, false otherwise
             */
             bool removeItemListener(const std::string& registrationId) {
-                collection::CollectionRemoveListenerRequest *request = new collection::CollectionRemoveListenerRequest(getName(), getServiceName(), registrationId);
-                return stopListening(request, registrationId);
-            };
+                return proxy::ISetImpl::removeItemListener(registrationId);
+            }
 
             /**
             *
             * @returns size of the distributed set
             */
             int size() {
-                collection::CollectionSizeRequest *request = new collection::CollectionSizeRequest(getName(), getServiceName());
-                boost::shared_ptr<int> i = invoke<int>(request, partitionId);
-                return *i;
-            };
+                return proxy::ISetImpl::size();
+            }
 
             /**
             *
@@ -78,7 +61,7 @@ namespace hazelcast {
             */
             bool isEmpty() {
                 return size() == 0;
-            };
+            }
 
             /**
             *
@@ -87,29 +70,16 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool contains(const E& element) {
-                serialization::pimpl::Data valueData = toData(element);
-                std::vector<serialization::pimpl::Data> valueSet;
-                valueSet.push_back(valueData);
-                collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest(getName(), getServiceName(), valueSet);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::contains(toData(element));
+            }
 
             /**
             *
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
-                boost::shared_ptr<impl::SerializableCollection> result = invoke<impl::SerializableCollection>(request, partitionId);
-                const std::vector<serialization::pimpl::Data *>& collection = result->getCollection();
-                std::vector<E> set(collection.size());
-                for (int i = 0; i < collection.size(); ++i) {
-                    boost::shared_ptr<E> e = toObject<E>(*(collection[i]));
-                    set[i] = *e;
-                }
-                return set;
-            };
+                return toObjectCollection<E>(proxy::ISetImpl::toArray());
+            }
 
             /**
             *
@@ -118,11 +88,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool add(const E& element) {
-                serialization::pimpl::Data valueData = toData(element);
-                collection::CollectionAddRequest *request = new collection::CollectionAddRequest(getName(), getServiceName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::add(toData(element));
+            }
 
             /**
             *
@@ -131,11 +98,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool remove(const E& element) {
-                serialization::pimpl::Data valueData = toData(element);
-                collection::CollectionRemoveRequest *request = new collection::CollectionRemoveRequest(getName(), getServiceName(), valueData);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::remove(toData(element));
+            }
 
             /**
             *
@@ -145,10 +109,8 @@ namespace hazelcast {
             */
             bool containsAll(const std::vector<E>& elements) {
                 std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                collection::CollectionContainsRequest *request = new collection::CollectionContainsRequest(getName(), getServiceName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::containsAll(dataCollection);
+            }
 
             /**
             *
@@ -158,10 +120,8 @@ namespace hazelcast {
             */
             bool addAll(const std::vector<E>& elements) {
                 std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                collection::CollectionAddAllRequest *request = new collection::CollectionAddAllRequest(getName(), getServiceName(), dataCollection);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::addAll(dataCollection);
+            }
 
             /**
             *
@@ -171,10 +131,8 @@ namespace hazelcast {
             */
             bool removeAll(const std::vector<E>& elements) {
                 std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, false);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::removeAll(dataCollection);
+            }
 
             /**
             *
@@ -184,56 +142,22 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             bool retainAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                collection::CollectionCompareAndRemoveRequest *request = new collection::CollectionCompareAndRemoveRequest(getName(), getServiceName(), dataCollection, true);
-                boost::shared_ptr<bool> success = invoke<bool>(request, partitionId);
-                return *success;
-            };
+                return proxy::ISetImpl::retainAll(toDataCollection(elements));
+            }
 
             /**
             *
             * Removes all elements from set.
             */
             void clear() {
-                collection::CollectionClearRequest *request = new collection::CollectionClearRequest(getName(), getServiceName());
-                invoke<serialization::pimpl::Void>(request, partitionId);
-            };
-
+                proxy::ISetImpl::clear();
+            }
 
         private:
-            template<typename T>
-            const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T>& objects) {
-                int size = objects.size();
-                std::vector<serialization::pimpl::Data> dataCollection(size);
-                for (int i = 0; i < size; ++i) {
-                    dataCollection[i] = toData(objects[i]);
-                }
-                return dataCollection;
-            };
-
-            template<typename T>
-            serialization::pimpl::Data toData(const T& object) {
-                return getContext().getSerializationService().template toData<T>(&object);
-            };
-
-            template<typename T>
-            boost::shared_ptr<T> toObject(const serialization::pimpl::Data& data) {
-                return getContext().getSerializationService().template toObject<T>(data);
-            };
-
-            ISet(const std::string& instanceName, spi::ClientContext *clientContext)
-            : DistributedObject("hz:impl:setService", instanceName, clientContext) {
-                serialization::pimpl::Data keyData = toData(instanceName);
-                partitionId = getPartitionId(keyData);
-            };
-
-            void onDestroy() {
-
-            };
-
-            int partitionId;
+            ISet(const std::string& instanceName, spi::ClientContext *context)
+            : proxy::ISetImpl(instanceName, context) {
+            }
         };
-
     }
 }
 

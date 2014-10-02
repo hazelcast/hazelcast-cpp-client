@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API GetAllRequest : public impl::ClientRequest {
+            class GetAllRequest : public impl::ClientRequest {
             public:
                 GetAllRequest(const std::string &name, const std::vector<serialization::pimpl::Data> &keys);
 

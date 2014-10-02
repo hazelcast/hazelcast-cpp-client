@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HAZELCAST_API Employee : public serialization::Portable {
+            class Employee : public serialization::Portable {
             public:
                 Employee();
 

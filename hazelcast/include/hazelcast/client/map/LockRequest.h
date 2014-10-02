@@ -11,17 +11,17 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API LockRequest : public impl::ClientRequest {
+            class LockRequest : public impl::ClientRequest {
             public:
-                LockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId, long ttl, long timeout);
+                LockRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId, long ttl, long timeout);
 
-                LockRequest(const std::string &name, serialization::pimpl::Data &key, long threadId);
+                LockRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

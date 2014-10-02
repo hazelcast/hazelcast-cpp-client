@@ -19,7 +19,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClusterTest : public iTest::iTestFixture<ClusterTest> {
+            class ClusterTest : public iTest::iTestFixture<ClusterTest> {
 
             public:
 

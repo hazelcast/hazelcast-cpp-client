@@ -16,7 +16,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API ClientMembershipEvent : public impl::IdentifiedDataSerializableResponse {
+            class ClientMembershipEvent : public impl::IdentifiedDataSerializableResponse {
             public:
                 ClientMembershipEvent();
 

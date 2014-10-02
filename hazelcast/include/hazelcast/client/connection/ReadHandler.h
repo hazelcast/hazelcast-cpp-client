@@ -28,7 +28,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API ReadHandler : public IOHandler {
+            class ReadHandler : public IOHandler {
             public:
                 ReadHandler(Connection &connection, InSelector &iListener, int bufferSize, spi::ClientContext& clientContext);
 

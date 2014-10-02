@@ -14,11 +14,6 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Closeable.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
-
 namespace hazelcast {
     namespace client {
 
@@ -54,7 +49,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable {
+            class Connection : public util::Closeable {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
 
@@ -111,10 +106,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#endif 
 
 #endif //HAZELCAST_CONNECTION
 

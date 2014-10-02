@@ -13,13 +13,13 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API TxnMultiMapRequest : public txn::BaseTxnRequest {
+            class TxnMultiMapRequest : public txn::BaseTxnRequest {
             public:
-                TxnMultiMapRequest(const std::string &name);
+                TxnMultiMapRequest(const std::string& name);
 
                 int getFactoryId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

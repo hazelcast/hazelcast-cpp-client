@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API AddEntryListenerRequest : public impl::ClientRequest {
+            class AddEntryListenerRequest : public impl::ClientRequest {
             public:
                 AddEntryListenerRequest(const std::string &name, const serialization::pimpl::Data &key, bool includeValue);
 

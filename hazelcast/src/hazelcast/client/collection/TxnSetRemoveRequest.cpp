@@ -9,7 +9,7 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            TxnSetRemoveRequest::TxnSetRemoveRequest(const std::string &name, serialization::pimpl::Data &data)
+            TxnSetRemoveRequest::TxnSetRemoveRequest(const std::string &name, const serialization::pimpl::Data &data)
             :TxnCollectionRequest(name, data) {
 
             }
