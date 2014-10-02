@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/map/ReplaceIfSameRequest.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 
@@ -12,8 +11,8 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            ReplaceIfSameRequest::ReplaceIfSameRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &testValue, serialization::pimpl::Data &value, long threadId)
-            :name(name)
+            ReplaceIfSameRequest::ReplaceIfSameRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& testValue, const serialization::pimpl::Data& value, long threadId)
+            : name(name)
             , key(key)
             , value(value)
             , testValue(testValue)
@@ -29,12 +28,12 @@ namespace hazelcast {
                 return PortableHook::REPLACE_IF_SAME;
             }
 
-            void ReplaceIfSameRequest::write(serialization::PortableWriter &writer) const {
+            void ReplaceIfSameRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
                 writer.writeBoolean("a", false);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
                 value.writeData(out);
                 testValue.writeData(out);

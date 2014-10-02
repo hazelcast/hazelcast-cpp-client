@@ -10,8 +10,8 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            TxnOfferRequest::TxnOfferRequest(const std::string &name, long timeoutInMillis, serialization::pimpl::Data &data)
-            :name(name)
+            TxnOfferRequest::TxnOfferRequest(const std::string& name, long timeoutInMillis, const serialization::pimpl::Data& data)
+            : name(name)
             , data(data)
             , timeoutInMillis(timeoutInMillis) {
 
@@ -25,11 +25,11 @@ namespace hazelcast {
                 return QueuePortableHook::TXN_OFFER;
             }
 
-            void TxnOfferRequest::write(serialization::PortableWriter &writer) const {
+            void TxnOfferRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 data.writeData(out);
             }
 

@@ -20,7 +20,7 @@ namespace hazelcast {
 
         }
         namespace list {
-            class HAZELCAST_API ListSetRequest : public collection::CollectionRequest {
+            class ListSetRequest : public collection::CollectionRequest {
             public:
 
                 ListSetRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data, int index);

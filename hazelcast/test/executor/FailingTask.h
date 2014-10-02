@@ -10,7 +10,7 @@
 //
 //using namespace hazelcast::client;
 //
-//class HAZELCAST_API FailingTask : public serialization::IdentifiedDataSerializable {
+//class FailingTask : public serialization::IdentifiedDataSerializable {
 //public:
 //    FailingTask();
 //

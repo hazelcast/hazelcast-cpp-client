@@ -10,22 +10,17 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            namespace pimpl{
-                class Data;
-            }
-        }
         namespace queue {
-            class HAZELCAST_API RemoveRequest : public impl::ClientRequest {
+            class RemoveRequest : public impl::ClientRequest {
             public:
 
-                RemoveRequest(const std::string &name, serialization::pimpl::Data &data);
+                RemoveRequest(const std::string& name, const serialization::pimpl::Data& data);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

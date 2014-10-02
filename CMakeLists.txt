@@ -16,6 +16,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
+
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )

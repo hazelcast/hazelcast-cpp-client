@@ -5,11 +5,17 @@
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
-#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
+#include <boost/shared_ptr.hpp>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -27,6 +33,7 @@ namespace hazelcast {
         }
 
         namespace connection {
+            class Connection;
 
             class ConnectionManager;
 
@@ -69,6 +76,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CLUSTER_LISTENER_THREAD
 

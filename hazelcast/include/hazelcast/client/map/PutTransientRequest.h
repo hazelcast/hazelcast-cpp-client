@@ -11,15 +11,15 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API PutTransientRequest : public impl::ClientRequest {
+            class PutTransientRequest : public impl::ClientRequest {
             public:
-                PutTransientRequest(const std::string &name, serialization::pimpl::Data &key, serialization::pimpl::Data &value, long threadId, long ttl);
+                PutTransientRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long threadId, long ttl);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

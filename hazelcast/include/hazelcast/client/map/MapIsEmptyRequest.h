@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API MapIsEmptyRequest : public impl::ClientRequest {
+            class MapIsEmptyRequest : public impl::ClientRequest {
             public:
                 MapIsEmptyRequest(const std::string& name);
 

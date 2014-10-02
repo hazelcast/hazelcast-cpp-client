@@ -9,14 +9,19 @@
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -376,108 +381,108 @@ namespace hazelcast {
         class Cluster;
 
         /**
-         * Hazelcast Client enables you to do all Hazelcast operations without
-         * being a member of the cluster. It connects to one of the
-         * cluster members and delegates all cluster wide operations to it.
-         * When the connected cluster member dies, client will
-         * automatically switch to another live member.
-         */
+        * Hazelcast Client enables you to do all Hazelcast operations without
+        * being a member of the cluster. It connects to one of the
+        * cluster members and delegates all cluster wide operations to it.
+        * When the connected cluster member dies, client will
+        * automatically switch to another live member.
+        */
         class HAZELCAST_API HazelcastClient {
             friend class spi::ClientContext;
 
         public:
             /**
-             * Constructs a hazelcastClient with given ClientConfig.
-             * Note: ClientConfig will be copied.
-             */
-            HazelcastClient(ClientConfig &);
+            * Constructs a hazelcastClient with given ClientConfig.
+            * Note: ClientConfig will be copied.
+            */
+            HazelcastClient(ClientConfig&);
 
             /**
-             * Destructor
-             */
+            * Destructor
+            */
             ~HazelcastClient();
 
             /**
-             *
-             * @tparam T type of the distributed object
-             * @param name name of the distributed object.
-             * @returns distributed object
-             */
-            template <typename T>
-            T getDistributedObject(const std::string &name) {
+            *
+            * @tparam T type of the distributed object
+            * @param name name of the distributed object.
+            * @returns distributed object
+            */
+            template<typename T>
+            T getDistributedObject(const std::string& name) {
                 T t(name, &(clientContext));
                 return t;
             };
 
             /**
-             * Returns the distributed map instance with the specified name.
-             *
-             * @tparam K key type
-             * @tparam V value type
-             * @param name name of the distributed map
-             * @return distributed map instance with the specified name
-             */
+            * Returns the distributed map instance with the specified name.
+            *
+            * @tparam K key type
+            * @tparam V value type
+            * @param name name of the distributed map
+            * @return distributed map instance with the specified name
+            */
             template<typename K, typename V>
-            IMap<K, V> getMap(const std::string &name) {
-                return getDistributedObject< IMap<K, V > >(name);
+            IMap<K, V> getMap(const std::string& name) {
+                return getDistributedObject<IMap<K, V> >(name);
             };
 
             /**
-             * Returns the distributed multimap instance with the specified name.
-             *
-             * @param name name of the distributed multimap
-             * @return distributed multimap instance with the specified name
-             */
+            * Returns the distributed multimap instance with the specified name.
+            *
+            * @param name name of the distributed multimap
+            * @return distributed multimap instance with the specified name
+            */
             template<typename K, typename V>
-            MultiMap<K, V> getMultiMap(const std::string &name) {
-                return getDistributedObject< MultiMap<K, V > >(name);
+            MultiMap<K, V> getMultiMap(const std::string& name) {
+                return getDistributedObject<MultiMap<K, V> >(name);
             };
 
             /**
-             * Returns the distributed queue instance with the specified name and entry type E.
-             *
-             * @param name name of the distributed queue
-             * @return distributed queue instance with the specified name
-             */
+            * Returns the distributed queue instance with the specified name and entry type E.
+            *
+            * @param name name of the distributed queue
+            * @return distributed queue instance with the specified name
+            */
             template<typename E>
-            IQueue<E> getQueue(const std::string &name) {
-                return getDistributedObject< IQueue<E > >(name);
+            IQueue<E> getQueue(const std::string& name) {
+                return getDistributedObject<IQueue<E> >(name);
             };
 
             /**
-             * Returns the distributed set instance with the specified name and entry type E.
-             * Set is ordered unique set of entries. similar to std::set
-             *
-             * @param name name of the distributed set
-             * @return distributed set instance with the specified name
-             */
+            * Returns the distributed set instance with the specified name and entry type E.
+            * Set is ordered unique set of entries. similar to std::set
+            *
+            * @param name name of the distributed set
+            * @return distributed set instance with the specified name
+            */
 
             template<typename E>
-            ISet<E> getSet(const std::string &name) {
-                return getDistributedObject< ISet<E > >(name);
+            ISet<E> getSet(const std::string& name) {
+                return getDistributedObject<ISet<E> >(name);
             };
 
             /**
-             * Returns the distributed list instance with the specified name.
-             * List is ordered set of entries. similar to std::vector
-             *
-             * @param name name of the distributed list
-             * @return distributed list instance with the specified name
-             */
+            * Returns the distributed list instance with the specified name.
+            * List is ordered set of entries. similar to std::vector
+            *
+            * @param name name of the distributed list
+            * @return distributed list instance with the specified name
+            */
             template<typename E>
-            IList<E> getList(const std::string &name) {
-                return getDistributedObject< IList<E > >(name);
+            IList<E> getList(const std::string& name) {
+                return getDistributedObject<IList<E> >(name);
             };
 
             /**
-             * Returns the distributed topic instance with the specified name and entry type E.
-             *
-             * @param name name of the distributed topic
-             * @return distributed topic instance with the specified name
-             */
+            * Returns the distributed topic instance with the specified name and entry type E.
+            *
+            * @param name name of the distributed topic
+            * @return distributed topic instance with the specified name
+            */
             template<typename E>
-            ITopic<E> getTopic(const std::string &name) {
-                return getDistributedObject< ITopic<E> >(name);
+            ITopic<E> getTopic(const std::string& name) {
+                return getDistributedObject<ITopic<E> >(name);
             };
 
             /**
@@ -488,7 +493,7 @@ namespace hazelcast {
             * @param name name of the IdGenerator
             * @return IdGenerator for the given name
             */
-            IdGenerator getIdGenerator(const std::string &name);
+            IdGenerator getIdGenerator(const std::string& name);
 
             /**
             * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed
@@ -497,105 +502,105 @@ namespace hazelcast {
             * @param name name of the IAtomicLong proxy
             * @return IAtomicLong proxy for the given name
             */
-            IAtomicLong getIAtomicLong(const std::string &name);
+            IAtomicLong getIAtomicLong(const std::string& name);
 
             /**
-             * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
-             * implementation of <tt>java.util.concurrent.CountDownLatch</tt>.
-             *
-             * @param name name of the ICountDownLatch proxy
-             * @return ICountDownLatch proxy for the given name
-             */
+            * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
+            * implementation of <tt>java.util.concurrent.CountDownLatch</tt>.
+            *
+            * @param name name of the ICountDownLatch proxy
+            * @return ICountDownLatch proxy for the given name
+            */
 
-            ICountDownLatch getICountDownLatch(const std::string &name);
-
-            /**
-             * Returns the distributed lock instance for the specified key object.
-             * The specified object is considered to be the key for this lock.
-             * So keys are considered equals cluster-wide as long as
-             * they are serialized to the same byte array such as String, long,
-             * Integer.
-             *
-             * Locks are fail-safe. If a member holds a lock and some of the
-             * members go down, cluster will keep your locks safe and available.
-             * Moreover, when a member leaves the cluster, all the locks acquired
-             * by this dead member will be removed so that these locks can be
-             * available for live members immediately.
-             *
-             *      Lock lock = hazelcastInstance.getLock("PROCESS_LOCK");
-             *      lock.lock();
-             *      try {
-             *        // process
-             *      } finally {
-             *        lock.unlock();
-             *      }
-             *
-             * @param name name of the lock instance
-             * @return distributed lock instance for the specified name.
-             */
-            ILock getILock(const std::string &name);
+            ICountDownLatch getICountDownLatch(const std::string& name);
 
             /**
-             * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
-             * implementation of <tt>java.util.concurrent.Semaphore</tt>.
-             *
-             * @param name name of the ISemaphore proxy
-             * @return ISemaphore proxy for the given name
-             */
-            ISemaphore getISemaphore(const std::string &name);
+            * Returns the distributed lock instance for the specified key object.
+            * The specified object is considered to be the key for this lock.
+            * So keys are considered equals cluster-wide as long as
+            * they are serialized to the same byte array such as String, long,
+            * Integer.
+            *
+            * Locks are fail-safe. If a member holds a lock and some of the
+            * members go down, cluster will keep your locks safe and available.
+            * Moreover, when a member leaves the cluster, all the locks acquired
+            * by this dead member will be removed so that these locks can be
+            * available for live members immediately.
+            *
+            *      Lock lock = hazelcastInstance.getLock("PROCESS_LOCK");
+            *      lock.lock();
+            *      try {
+            *        // process
+            *      } finally {
+            *        lock.unlock();
+            *      }
+            *
+            * @param name name of the lock instance
+            * @return distributed lock instance for the specified name.
+            */
+            ILock getILock(const std::string& name);
 
             /**
-             *
-             * @return configuration of this Hazelcast client.
-             */
-            ClientConfig &getClientConfig();
+            * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
+            * implementation of <tt>java.util.concurrent.Semaphore</tt>.
+            *
+            * @param name name of the ISemaphore proxy
+            * @return ISemaphore proxy for the given name
+            */
+            ISemaphore getISemaphore(const std::string& name);
 
             /**
-             * Creates a new TransactionContext associated with the current thread using default options.
-             *
-             * @return new TransactionContext
-             */
+            *
+            * @return configuration of this Hazelcast client.
+            */
+            ClientConfig& getClientConfig();
+
+            /**
+            * Creates a new TransactionContext associated with the current thread using default options.
+            *
+            * @return new TransactionContext
+            */
             TransactionContext newTransactionContext();
 
             /**
-             * Creates a new TransactionContext associated with the current thread with given options.
-             *
-             * @param options options for this transaction
-             * @return new TransactionContext
-             */
-            TransactionContext newTransactionContext(const TransactionOptions &options);
+            * Creates a new TransactionContext associated with the current thread with given options.
+            *
+            * @param options options for this transaction
+            * @return new TransactionContext
+            */
+            TransactionContext newTransactionContext(const TransactionOptions& options);
 
             /**
-             * Returns the Cluster that connected Hazelcast instance is a part of.
-             * Cluster interface allows you to add listener for membership
-             * events and learn more about the cluster.
-             *
-             * @return cluster
-             */
-            Cluster &getCluster();
+            * Returns the Cluster that connected Hazelcast instance is a part of.
+            * Cluster interface allows you to add listener for membership
+            * events and learn more about the cluster.
+            *
+            * @return cluster
+            */
+            Cluster& getCluster();
 
             /**
-             * Add listener to listen lifecycle events.
-             *
-             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
-             * otherwise it will slow down the system.
-             *
-             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
-             *
-             * @param lifecycleListener Listener object
-             */
+            * Add listener to listen lifecycle events.
+            *
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * otherwise it will slow down the system.
+            *
+            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+            *
+            * @param lifecycleListener Listener object
+            */
             void addLifecycleListener(LifecycleListener *lifecycleListener);
 
             /**
-             * Remove lifecycle listener
-             * @param lifecycleListener
-             * @return true if removed successfully
-             */
+            * Remove lifecycle listener
+            * @param lifecycleListener
+            * @return true if removed successfully
+            */
             bool removeLifecycleListener(LifecycleListener *lifecycleListener);
 
             /**
-             * Shuts down this HazelcastClient.
-             */
+            * Shuts down this HazelcastClient.
+            */
             void shutdown();
 
         private:
@@ -611,12 +616,17 @@ namespace hazelcast {
             spi::ServerListenerService serverListenerService;
             Cluster cluster;
 
-            HazelcastClient(const HazelcastClient &rhs);
+            HazelcastClient(const HazelcastClient& rhs);
 
-            void operator = (const HazelcastClient &rhs);
+            void operator=(const HazelcastClient& rhs);
 
         };
 
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_CLIENT */

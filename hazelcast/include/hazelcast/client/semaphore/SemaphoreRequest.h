@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace semaphore {
-            class HAZELCAST_API SemaphoreRequest : public impl::ClientRequest {
+            class SemaphoreRequest : public impl::ClientRequest {
             public:
                 SemaphoreRequest(const std::string &instanceName, int permitCount);
 

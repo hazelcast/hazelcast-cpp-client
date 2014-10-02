@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API PeekRequest : public impl::ClientRequest {
+            class PeekRequest : public impl::ClientRequest {
             public:
                 PeekRequest(const std::string &name);
 

@@ -6,13 +6,21 @@
 #ifndef HAZELCAST_ServerSocket
 #define HAZELCAST_ServerSocket
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma comment(lib, "Ws2_32.lib")
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 namespace hazelcast {
+    namespace client{
+        class Socket;
+    }
     namespace util {
-
-        class HAZELCAST_API ServerSocket {
+        class ServerSocket {
         public:
             ServerSocket(int port = 0);
 

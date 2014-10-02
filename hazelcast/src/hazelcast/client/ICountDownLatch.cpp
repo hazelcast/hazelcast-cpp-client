@@ -7,37 +7,36 @@
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch(const std::string &instanceName, spi::ClientContext *context)
-        :DistributedObject("hz:impl:atomicLongService", instanceName, context) {
-            serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+        ICountDownLatch::ICountDownLatch(const std::string& objectName, spi::ClientContext *context)
+        : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
+            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
             partitionId = getPartitionId(keyData);
         }
 
         bool ICountDownLatch::await(long timeoutInMillis) {
             countdownlatch::AwaitRequest *request = new countdownlatch::AwaitRequest(getName(), timeoutInMillis);
-            return *(invoke<bool>(request, partitionId));
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
 
         void ICountDownLatch::countDown() {
             countdownlatch::CountDownRequest *request = new countdownlatch::CountDownRequest(getName());
-            invoke<serialization::pimpl::Void>(request, partitionId);
+            invoke(request, partitionId);
         }
 
         int ICountDownLatch::getCount() {
             countdownlatch::GetCountRequest *request = new countdownlatch::GetCountRequest(getName());
-            boost::shared_ptr<int> response = invoke<int>(request, partitionId);
-            return *response;
-
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, int);
+            return *result;
         }
 
         bool ICountDownLatch::trySetCount(int count) {
             countdownlatch::SetCountRequest *request = new countdownlatch::SetCountRequest(getName(), count);
-            boost::shared_ptr<bool> response = invoke<bool>(request, partitionId);
-            return *response;
-        }
-
-        void ICountDownLatch::onDestroy() {
-
+            serialization::pimpl::Data data = invoke(request, partitionId);
+            DESERIALIZE(data, bool);
+            return *result;
         }
     }
 }

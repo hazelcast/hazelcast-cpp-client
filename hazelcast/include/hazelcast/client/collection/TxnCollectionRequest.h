@@ -14,15 +14,15 @@
 namespace hazelcast {
     namespace client {
         namespace collection {
-            class HAZELCAST_API TxnCollectionRequest : public txn::BaseTxnRequest {
+            class TxnCollectionRequest : public txn::BaseTxnRequest {
             public:
-                TxnCollectionRequest(const std::string &name);
+                TxnCollectionRequest(const std::string& name);
 
-                TxnCollectionRequest(const std::string &name, serialization::pimpl::Data &);
+                TxnCollectionRequest(const std::string& name, const serialization::pimpl::Data&);
 
                 int getFactoryId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

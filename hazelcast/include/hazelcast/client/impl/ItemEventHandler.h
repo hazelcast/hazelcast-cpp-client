@@ -10,7 +10,7 @@
 
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/impl/PortableItemEvent.h"
-#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
@@ -19,10 +19,10 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            template<typename E, typename L>
+            template<typename E>
             class HAZELCAST_API ItemEventHandler : public impl::BaseEventHandler {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, L &listener, bool includeValue)
+                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, ItemListener<E> &listener, bool includeValue)
                 :instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
@@ -55,7 +55,7 @@ namespace hazelcast {
                 const std::string &instanceName;
                 spi::ClusterService &clusterService;
                 serialization::pimpl::SerializationService &serializationService;
-                L &listener;
+                ItemListener<E> &listener;
                 bool includeValue;
             };
         }

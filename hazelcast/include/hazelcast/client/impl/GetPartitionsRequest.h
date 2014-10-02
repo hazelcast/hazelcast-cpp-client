@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API GetPartitionsRequest : public impl::ClientRequest{
+            class GetPartitionsRequest : public impl::ClientRequest{
             public:
                 GetPartitionsRequest();
 

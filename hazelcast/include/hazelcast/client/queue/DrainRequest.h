@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API DrainRequest : public impl::ClientRequest {
+            class DrainRequest : public impl::ClientRequest {
             public:
                 DrainRequest(const std::string &name, int maxSize);
 

@@ -20,7 +20,7 @@ namespace hazelcast {
 
         }
         namespace connection {
-            class HAZELCAST_API ClientResponse : public impl::IdentifiedDataSerializableResponse {
+            class ClientResponse : public impl::IdentifiedDataSerializableResponse {
             public:
                 const serialization::pimpl::Data &getData() const;
 

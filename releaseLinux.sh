@@ -79,4 +79,3 @@ cp ReleaseStatic64/examples/*exe cpp/Linux_64/examples/
 echo "Clearing temporary 64bit libraries"
 rm -rf ./ReleaseShared64
 rm -rf ./ReleaseStatic64
-

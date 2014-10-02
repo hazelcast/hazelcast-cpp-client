@@ -15,7 +15,7 @@ namespace hazelcast {
         namespace impl {
 
 
-            class HAZELCAST_API MemberAttributeChange : public serialization::pimpl::DataSerializable {
+            class MemberAttributeChange : public serialization::pimpl::DataSerializable {
             public:
 
                 MemberAttributeChange();

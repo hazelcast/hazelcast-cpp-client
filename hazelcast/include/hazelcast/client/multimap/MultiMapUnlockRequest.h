@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class HAZELCAST_API MultiMapUnlockRequest : public KeyBasedRequest {
+            class MultiMapUnlockRequest : public KeyBasedRequest {
             public:
                 MultiMapUnlockRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId);
 

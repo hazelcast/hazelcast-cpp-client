@@ -20,7 +20,7 @@ namespace hazelcast {
 
         }
         namespace collection {
-            class HAZELCAST_API CollectionRemoveRequest : public CollectionRequest {
+            class CollectionRemoveRequest : public CollectionRequest {
             public:
                 CollectionRemoveRequest(const std::string &name, const std::string &serviceName, const serialization::pimpl::Data &data);
 

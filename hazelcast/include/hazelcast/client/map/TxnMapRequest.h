@@ -24,7 +24,7 @@ namespace hazelcast {
         }
         namespace map {
 
-            class HAZELCAST_API TxnMapRequestType {
+            class TxnMapRequestType {
             public:
                 enum Type {
                     NONE = 0,
@@ -56,16 +56,16 @@ namespace hazelcast {
                 std::vector<Type> types;
             };
 
-            class HAZELCAST_API TxnMapRequest : public txn::BaseTxnRequest {
+            class TxnMapRequest : public txn::BaseTxnRequest {
             public:
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue);
+                TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, const serialization::pimpl::Data &newValue);
 
                 TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate);
 

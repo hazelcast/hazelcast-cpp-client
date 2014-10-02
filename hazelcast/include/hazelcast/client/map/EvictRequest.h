@@ -14,9 +14,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API EvictRequest : public impl::ClientRequest {
+            class EvictRequest : public impl::ClientRequest {
             public:
-                EvictRequest(const std::string &name, serialization::pimpl::Data &key, long threadId);
+                EvictRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId);
 
                 int getFactoryId() const;
 

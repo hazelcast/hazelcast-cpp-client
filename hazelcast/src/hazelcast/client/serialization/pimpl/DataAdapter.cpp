@@ -3,6 +3,7 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/DataAdapter.h"
+#include "hazelcast/util/ByteBuffer.h"
 
 namespace hazelcast {
     namespace client {

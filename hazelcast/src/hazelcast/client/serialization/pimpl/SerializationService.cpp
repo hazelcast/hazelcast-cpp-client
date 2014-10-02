@@ -9,7 +9,6 @@
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
@@ -19,20 +18,20 @@ namespace hazelcast {
                 SerializationService::SerializationService(const SerializationConfig& serializationConfig)
                 : portableContext(serializationConfig.getPortableVersion())
                 , serializationConfig(serializationConfig) {
-                    std::vector<boost::shared_ptr<SerializerBase> > const &serializers = serializationConfig.getSerializers();
+                    std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
                     std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
-                    SerializerHolder &serializerHolder = getSerializerHolder();
-                    for(it = serializers.begin() ; it < serializers.end() ; ++it){
+                    SerializerHolder& serializerHolder = getSerializerHolder();
+                    for (it = serializers.begin(); it < serializers.end(); ++it) {
                         serializerHolder.registerSerializer(*it);
                     }
                 }
 
 
-                PortableContext&SerializationService::getPortableContext() {
+                PortableContext& SerializationService::getPortableContext() {
                     return portableContext;
                 }
 
-                SerializerHolder &SerializationService::getSerializerHolder() {
+                SerializerHolder& SerializationService::getSerializerHolder() {
                     return portableContext.getSerializerHolder();
                 }
 

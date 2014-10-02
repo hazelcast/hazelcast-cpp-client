@@ -5,17 +5,19 @@
 #ifndef HAZELCAST_DataAdapter
 #define HAZELCAST_DataAdapter
 
-#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <memory>
 
 namespace hazelcast {
+    namespace util{
+        class ByteBuffer;
+    }
     namespace client {
         namespace serialization {
             namespace pimpl {
                 class PortableContext;
 
-                class HAZELCAST_API DataAdapter {
+                class DataAdapter {
                 public:
                     DataAdapter(PortableContext& context);
 

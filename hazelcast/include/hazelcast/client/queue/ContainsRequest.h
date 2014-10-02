@@ -12,10 +12,10 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API ContainsRequest : public impl::ClientRequest {
+            class ContainsRequest : public impl::ClientRequest {
             public:
 
-                ContainsRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList);
+                ContainsRequest(const std::string &name, const std::vector<serialization::pimpl::Data> &dataList);
 
                 int getFactoryId() const;
 

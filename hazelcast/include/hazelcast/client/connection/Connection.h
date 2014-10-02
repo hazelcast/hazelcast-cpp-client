@@ -54,7 +54,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable {
+            class Connection : public util::Closeable {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
 
@@ -113,7 +113,7 @@ namespace hazelcast {
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
+#pragma warning(pop)
 #endif 
 
 #endif //HAZELCAST_CONNECTION

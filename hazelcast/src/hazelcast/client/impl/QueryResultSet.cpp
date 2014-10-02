@@ -20,7 +20,7 @@ namespace hazelcast {
                 return map::DataSerializableHook::QUERY_RESULT_SET;
             }
 
-            const std::vector<QueryResultEntry> &QueryResultSet::getResultData() const {
+            std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > QueryResultSet::getResultData() const {
                 return q;
             }
 
@@ -30,7 +30,7 @@ namespace hazelcast {
                 int size = in.readInt();
                 for (int i = 0; i < size; i++) {
                     boost::shared_ptr<QueryResultEntry> entry = in.readObject<QueryResultEntry>();
-                    q.push_back(*entry);
+                    q.push_back(std::make_pair(entry->key, entry->value));
                 }
 
             }

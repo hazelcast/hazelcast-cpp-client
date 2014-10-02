@@ -16,6 +16,11 @@
 #include <boost/shared_ptr.hpp>
 
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -38,8 +43,6 @@ namespace hazelcast {
 
                     PortableSerializer(PortableContext& portableContext);
 
-                    boost::shared_ptr<ClassDefinition> getClassDefinition(const Portable& p);
-
                     void write(DataOutput& dataOutput, const Portable& p);
 
                     void read(DataInput& dataInput, Portable& portable, int factoryId, int classId, int dataVersion);
@@ -56,5 +59,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_PORTABLE_SERIALIZER */
 

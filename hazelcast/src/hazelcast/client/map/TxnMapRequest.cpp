@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace map {
 
             TxnMapRequestType::TxnMapRequestType(TxnMapRequestType::Type value)
-            :value(value) {
+            : value(value) {
                 types.resize(16);
                 types[0] = NONE;
                 types[1] = CONTAINS_KEY;
@@ -36,13 +36,13 @@ namespace hazelcast {
                 return value;
             }
 
-            void TxnMapRequestType::operator = (int i) {
+            void TxnMapRequestType::operator=(int i) {
                 value = types[i];
             }
 
             //----------------------------------//
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType)
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType)
             : name(name)
             , requestType(requestType)
             , hasKey(false)
@@ -52,7 +52,7 @@ namespace hazelcast {
             , ttl(-1) {
             }
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key)
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, const serialization::pimpl::Data& key)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -63,7 +63,7 @@ namespace hazelcast {
             , ttl(-1) {
             }
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value)
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -75,7 +75,7 @@ namespace hazelcast {
             , ttl(-1) {
             }
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, serialization::pimpl::Data &key, serialization::pimpl::Data &value, serialization::pimpl::Data &newValue)
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, const serialization::pimpl::Data& newValue)
             : name(name)
             , requestType(requestType)
             , key(key)
@@ -88,7 +88,7 @@ namespace hazelcast {
             , ttl(-1) {
             }
 
-            TxnMapRequest::TxnMapRequest(const std::string &name, TxnMapRequestType requestType, const std::string &predicate)
+            TxnMapRequest::TxnMapRequest(const std::string& name, TxnMapRequestType requestType, const std::string& predicate)
             : name(name)
             , requestType(requestType)
             , hasKey(false)
@@ -107,12 +107,11 @@ namespace hazelcast {
                 return PortableHook::TXN_REQUEST_WITH_SQL_QUERY;
             }
 
-
-            void TxnMapRequest::write(serialization::PortableWriter &writer) const {
+            void TxnMapRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
-                writer.writeInt("t", (int) requestType);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                writer.writeInt("t", (int)requestType);
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeBoolean(hasKey);
                 if (hasKey) {
                     key.writeData(out);

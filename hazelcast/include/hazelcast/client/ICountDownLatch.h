@@ -3,12 +3,16 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/exception/IException.h"
 #include <string>
 #include <stdexcept>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +44,7 @@ namespace hazelcast {
          * </ol>
          *
          */
-        class HAZELCAST_API ICountDownLatch : public DistributedObject {
+        class HAZELCAST_API ICountDownLatch : public proxy::ProxyImpl {
             friend class HazelcastClient;
 
         public:
@@ -128,15 +132,17 @@ namespace hazelcast {
             bool trySetCount(int count);
 
         private:
-            ICountDownLatch(const std::string &instanceName, spi::ClientContext *clientContext);
+            ICountDownLatch(const std::string &objectName, spi::ClientContext *clientContext);
 
             serialization::pimpl::Data key;
 
             int partitionId;
-
-            void onDestroy();
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_ICOUNT_DOWN_LATCH */

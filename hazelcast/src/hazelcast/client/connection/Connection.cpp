@@ -11,7 +11,6 @@
 #include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/impl/RemoveAllListeners.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/connection/CallFuture.h"

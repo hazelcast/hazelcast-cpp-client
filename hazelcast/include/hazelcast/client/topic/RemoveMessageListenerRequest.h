@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class HAZELCAST_API RemoveMessageListenerRequest : public impl::BaseRemoveListenerRequest {
+            class RemoveMessageListenerRequest : public impl::BaseRemoveListenerRequest {
             public:
                 RemoveMessageListenerRequest(const std::string &instanceName, const std::string &registrationId);
 

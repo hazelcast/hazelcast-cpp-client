@@ -13,7 +13,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            class HAZELCAST_API CommitTxnRequest : public BaseTxnRequest {
+            class CommitTxnRequest : public BaseTxnRequest {
             public:
                 CommitTxnRequest(bool prepareAndCommit);
 
@@ -21,7 +21,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 bool prepareAndCommit;

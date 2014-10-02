@@ -11,9 +11,9 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API DeleteRequest : public impl::ClientRequest {
+            class DeleteRequest : public impl::ClientRequest {
             public:
-                DeleteRequest(const std::string &name, serialization::pimpl::Data &key, long threadId);
+                DeleteRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId);
 
                 int getFactoryId() const;
 

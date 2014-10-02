@@ -11,15 +11,15 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API PutAllRequest : public impl::ClientRequest {
+            class PutAllRequest : public impl::ClientRequest {
             public:
-                PutAllRequest(const std::string &name, map::MapEntrySet &entrySet);
+                PutAllRequest(const std::string& name, const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

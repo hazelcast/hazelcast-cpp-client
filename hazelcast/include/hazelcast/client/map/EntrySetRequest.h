@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API EntrySetRequest : public impl::ClientRequest{
+            class EntrySetRequest : public impl::ClientRequest{
             public:
                 EntrySetRequest(const std::string& name);
 

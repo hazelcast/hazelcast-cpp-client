@@ -4,19 +4,20 @@
 
 
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/AuthenticationRequest.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
-#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/impl/ServerException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4355) //for strerror	
+#pragma warning(disable: 4355) //for strerror
 #endif
 
 namespace hazelcast {
@@ -164,14 +165,14 @@ namespace hazelcast {
                     throw exception::IException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
-                std::vector<serialization::pimpl::Data *> const& getCollection = collection->getCollection();
-                boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
+                std::vector<serialization::pimpl::Data> const& getCollection = collection->getCollection();
+                boost::shared_ptr<Address> address = serializationService.toObject<Address>(getCollection[0]);
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;
                 (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
                 util::ILogger::getLogger().info(message.str());
                 if (ownerConnection)
-                    this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
+                    this->principal = serializationService.toObject<protocol::Principal>(getCollection[1]);
             }
 
 

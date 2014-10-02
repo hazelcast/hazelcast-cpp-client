@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API PartitionsResponse : public impl::IdentifiedDataSerializableResponse {
+            class PartitionsResponse : public impl::IdentifiedDataSerializableResponse {
             public:
                 const std::vector<Address>& getMembers() const;
 

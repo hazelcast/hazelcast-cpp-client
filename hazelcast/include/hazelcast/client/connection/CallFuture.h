@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class Connection;
 
-            class HAZELCAST_API CallFuture {
+            class CallFuture {
             public:
                 CallFuture();
 

@@ -10,7 +10,7 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            OfferRequest::OfferRequest(const std::string &name, serialization::pimpl::Data &data, long timeout)
+            OfferRequest::OfferRequest(const std::string &name, const serialization::pimpl::Data &data, long timeout)
             :name(name)
             , timeoutInMillis(timeout)
             , data(data) {

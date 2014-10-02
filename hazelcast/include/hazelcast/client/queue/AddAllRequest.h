@@ -11,16 +11,16 @@
 namespace hazelcast {
     namespace client {
         namespace queue {
-            class HAZELCAST_API AddAllRequest : public impl::ClientRequest {
+            class AddAllRequest : public impl::ClientRequest {
             public:
 
-                AddAllRequest(const std::string &name, std::vector<serialization::pimpl::Data> &dataList);
+                AddAllRequest(const std::string& name, const std::vector<serialization::pimpl::Data>& dataList);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

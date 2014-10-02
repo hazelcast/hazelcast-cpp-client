@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class HAZELCAST_API ClientMapTest : public iTestFixture<ClientMapTest> {
+            class ClientMapTest : public iTestFixture<ClientMapTest> {
             public:
                 ClientMapTest(HazelcastServerFactory &);
 
@@ -58,6 +58,10 @@ namespace hazelcast {
                 void testTryPutRemove();
 
                 void testIssue537();
+
+                void testEvictAllEvent();
+
+                void testClearEvent();
 
 //                void testMultipleThreadPut(); //MTODO
 

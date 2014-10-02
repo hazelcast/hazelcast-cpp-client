@@ -12,7 +12,7 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            TryRemoveRequest::TryRemoveRequest(const std::string &name, serialization::pimpl::Data &key, long threadId, long timeout)
+            TryRemoveRequest::TryRemoveRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId, long timeout)
             :name(name)
             , key(key)
             , threadId(threadId)

@@ -11,6 +11,7 @@
 #include <climits>
 #include <ctime>
 #include <algorithm>
+#include <cstdlib>
 
 namespace hazelcast {
     namespace client {

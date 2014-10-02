@@ -3,8 +3,8 @@
 namespace hazelcast {
     namespace client {
 
-        IdGenerator::IdGenerator(const std::string &instanceName, spi::ClientContext *context)
-        : DistributedObject("idGeneratorService", instanceName, context)
+        IdGenerator::IdGenerator(const std::string& instanceName, spi::ClientContext *context)
+        : proxy::ProxyImpl("idGeneratorService", instanceName, context)
         , atomicLong("hz:atomic:idGenerator:" + instanceName, context)
         , local(new util::AtomicInt(-1))
         , residue(new util::AtomicInt(BLOCK_SIZE))

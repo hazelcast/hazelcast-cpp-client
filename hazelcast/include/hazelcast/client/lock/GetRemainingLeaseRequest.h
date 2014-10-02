@@ -18,7 +18,7 @@ namespace hazelcast {
             }
         }
         namespace lock {
-            class HAZELCAST_API GetRemainingLeaseRequest : public impl::ClientRequest{
+            class GetRemainingLeaseRequest : public impl::ClientRequest {
             public:
                 GetRemainingLeaseRequest(serialization::pimpl::Data& key);
 
@@ -29,6 +29,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
+
             private:
                 serialization::pimpl::Data& key;
             };

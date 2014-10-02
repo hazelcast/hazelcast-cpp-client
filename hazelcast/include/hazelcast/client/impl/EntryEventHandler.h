@@ -10,37 +10,61 @@
 
 #include "hazelcast/client/impl/PortableEntryEvent.h"
 #include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/MapEvent.h"
+#include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            template<typename K, typename V, typename L>
+            template<typename K, typename V>
             class HAZELCAST_API EntryEventHandler : public BaseEventHandler {
             public:
-                EntryEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, L &listener, bool includeValue)
-                :instanceName(instanceName)
+                EntryEventHandler(const std::string& instanceName, spi::ClusterService& clusterService, serialization::pimpl::SerializationService& serializationService, EntryListener<K, V>& listener, bool includeValue)
+                : instanceName(instanceName)
                 , clusterService(clusterService)
                 , serializationService(serializationService)
                 , listener(listener)
                 , includeValue(includeValue) {
+                }
 
-                };
-
-                void handle(const client::serialization::pimpl::Data &data) {
+                void handle(const client::serialization::pimpl::Data& data) {
                     boost::shared_ptr<PortableEntryEvent> event = serializationService.toObject<PortableEntryEvent>(data);
                     handle(*event);
                 }
 
-                void handle(const PortableEntryEvent &event) {
+                void handle(const PortableEntryEvent& event) {
                     EntryEventType type = event.getEventType();
-                    if(type == EntryEventType::EVICT_ALL || type == EntryEventType::CLEAR_ALL){
+                    if (type == EntryEventType::EVICT_ALL || type == EntryEventType::CLEAR_ALL) {
+                        fireMapWideEvent(event);
                         return;
                     }
 
+                    fireEntryEvent(event);
+                }
+
+            private:
+                void fireMapWideEvent(const PortableEntryEvent& event) {
+                    Member member = clusterService.getMember(event.getUuid());
+                    EntryEventType type = event.getEventType();
+                    MapEvent mapEvent(member, type, instanceName, event.getNumberOfAffectedEntries());
+                    if (type == EntryEventType::CLEAR_ALL) {
+                        listener.mapCleared(mapEvent);
+                    } else if (type == EntryEventType::EVICT_ALL) {
+                        listener.mapEvicted(mapEvent);
+                    }
+                }
+
+                void fireEntryEvent(const PortableEntryEvent& event) {
+                    EntryEventType type = event.getEventType();
                     boost::shared_ptr<V> value;
                     boost::shared_ptr<V> oldValue;
                     if (includeValue) {
@@ -60,17 +84,22 @@ namespace hazelcast {
                         listener.entryEvicted(entryEvent);
                     }
 
-                };
+                }
+
             private:
-                const std::string &instanceName;
-                spi::ClusterService &clusterService;
-                serialization::pimpl::SerializationService &serializationService;
-                L &listener;
+                const std::string& instanceName;
+                spi::ClusterService& clusterService;
+                serialization::pimpl::SerializationService& serializationService;
+                EntryListener<K, V>& listener;
                 bool includeValue;
             };
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //__EntryEventHandler_H_
 
