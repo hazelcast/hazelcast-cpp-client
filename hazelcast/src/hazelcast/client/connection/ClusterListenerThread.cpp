@@ -108,9 +108,9 @@ namespace hazelcast {
                     members.clear();
                 }
 
-                const std::vector<serialization::pimpl::Data *> &collection = coll->getCollection();
-                for (std::vector<serialization::pimpl::Data *>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
-                    boost::shared_ptr<Member> member = clientContext.getSerializationService().toObject<Member>(**it);
+                const std::vector<serialization::pimpl::Data> &collection = coll->getCollection();
+                for (std::vector<serialization::pimpl::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
+                    boost::shared_ptr<Member> member = clientContext.getSerializationService().toObject<Member>(*it);
                     members.push_back(*member);
                 }
                 updateMembersRef();

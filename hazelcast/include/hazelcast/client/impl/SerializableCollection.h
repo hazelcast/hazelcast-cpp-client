@@ -9,30 +9,26 @@
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
 
-            class SerializableCollection : public serialization::IdentifiedDataSerializable {
+            class SerializableCollection : public IdentifiedDataSerializableResponse {
             public:
                 SerializableCollection();
 
-                ~SerializableCollection();
-
-                const std::vector<serialization::pimpl::Data *>& getCollection() const;
+                const std::vector<serialization::pimpl::Data>& getCollection() const;
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void writeData(serialization::ObjectDataOutput& writer) const;
-
                 void readData(serialization::ObjectDataInput& reader);
 
             private:
-                std::vector<serialization::pimpl::Data *> dataCollection;
+                std::vector<serialization::pimpl::Data> dataCollection;
             };
         }
     }

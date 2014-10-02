@@ -78,13 +78,7 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                std::vector<serialization::pimpl::Data *> collection = proxy::ISetImpl::toArray();
-                std::vector<E> set(collection.size());
-                for (int i = 0; i < collection.size(); ++i) {
-                    boost::shared_ptr<E> e = toObject<E>(*(collection[i]));
-                    set[i] = *e;
-                }
-                return set;
+                return toObjectCollection<E>(proxy::ISetImpl::toArray());
             }
 
             /**

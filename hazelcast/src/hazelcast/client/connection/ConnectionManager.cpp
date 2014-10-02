@@ -164,14 +164,14 @@ namespace hazelcast {
                     throw exception::IException("ConnectionManager::authenticate", ex->what());
                 }
                 boost::shared_ptr<impl::SerializableCollection> collection = serializationService.toObject<impl::SerializableCollection>(clientResponse->getData());
-                std::vector<serialization::pimpl::Data *> const& getCollection = collection->getCollection();
-                boost::shared_ptr<Address> address = serializationService.toObject<Address>(*(getCollection[0]));
+                std::vector<serialization::pimpl::Data> const& getCollection = collection->getCollection();
+                boost::shared_ptr<Address> address = serializationService.toObject<Address>(getCollection[0]);
                 connection.setRemoteEndpoint(*address);
                 std::stringstream message;
                 (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
                 util::ILogger::getLogger().info(message.str());
                 if (ownerConnection)
-                    this->principal = serializationService.toObject<protocol::Principal>(*(getCollection[1]));
+                    this->principal = serializationService.toObject<protocol::Principal>(getCollection[1]);
             }
 
 

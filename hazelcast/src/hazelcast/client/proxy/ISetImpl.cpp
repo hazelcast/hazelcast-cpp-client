@@ -54,7 +54,7 @@ namespace hazelcast {
                 return *result;
             }
 
-            std::vector<serialization::pimpl::Data *> ISetImpl::toArray() {
+            std::vector<serialization::pimpl::Data> ISetImpl::toArray() {
                 collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, impl::SerializableCollection)

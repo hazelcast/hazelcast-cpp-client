@@ -299,7 +299,7 @@ namespace hazelcast {
             int IMapImpl::size() {
                 map::SizeRequest *request = new map::SizeRequest(getName());
                 serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, bool);
+                DESERIALIZE(data, int);
                 return *result;
             }
 

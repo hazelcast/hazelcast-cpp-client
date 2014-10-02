@@ -59,10 +59,10 @@ namespace hazelcast {
                 return *result;
             }
 
-            std::vector<serialization::pimpl::Data *> IListImpl::toArray() {
+            std::vector<serialization::pimpl::Data> IListImpl::toArray() {
                 collection::CollectionGetAllRequest *request = new collection::CollectionGetAllRequest(getName(), getServiceName());
                 serialization::pimpl::Data data = invoke(request, partitionId);
-                DESERIALIZE(data, impl::SerializableCollection)
+                boost::shared_ptr<impl::SerializableCollection> result = context->getSerializationService().toObject<impl::SerializableCollection>(data);
                 return result->getCollection();
             }
 
@@ -156,7 +156,7 @@ namespace hazelcast {
                 return *result;
             }
 
-            std::vector<serialization::pimpl::Data *> IListImpl::subList(int fromIndex, int toIndex) {
+            std::vector<serialization::pimpl::Data> IListImpl::subList(int fromIndex, int toIndex) {
                 list::ListSubRequest *request = new list::ListSubRequest(getName(), getServiceName(), fromIndex, toIndex);
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, impl::SerializableCollection)

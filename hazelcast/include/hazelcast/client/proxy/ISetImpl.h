@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data *> toArray();
+                std::vector<serialization::pimpl::Data> toArray();
 
                 bool add(const serialization::pimpl::Data& element);
 

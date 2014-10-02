@@ -24,7 +24,7 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data *> toArray();
+                std::vector<serialization::pimpl::Data> toArray();
 
                 bool add(const serialization::pimpl::Data& element);
 
@@ -54,7 +54,7 @@ namespace hazelcast {
 
                 int lastIndexOf(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data *> subList(int fromIndex, int toIndex);
+                std::vector<serialization::pimpl::Data> subList(int fromIndex, int toIndex);
 
             private:
                 int partitionId;

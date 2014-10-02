@@ -81,14 +81,7 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                std::vector<serialization::pimpl::Data *> collection = proxy::IListImpl::toArray();
-                int size = collection.size();
-                std::vector<E> set(size);
-                for (int i = 0; i < size; ++i) {
-                    boost::shared_ptr<E> e = toObject<E>(*((collection[i])));
-                    set[i] = *e;
-                }
-                return set;
+                return toObjectCollection<E>(proxy::IListImpl::toArray());
             }
 
             /**
@@ -253,14 +246,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             std::vector<E> subList(int fromIndex, int toIndex) {
-                std::vector<serialization::pimpl::Data *> collection = proxy::IListImpl::subList(fromIndex, toIndex);
-                int size = collection.size();
-                std::vector<E> set(toIndex - fromIndex);
-                for (int i = 0; i < size; ++i) {
-                    boost::shared_ptr<E> e = toObject<E>(*(collection[i]));
-                    set[i] = *e;
-                }
-                return set;
+                return toObjectCollection<E>(proxy::IListImpl::subList(fromIndex, toIndex));
             }
 
         private:
