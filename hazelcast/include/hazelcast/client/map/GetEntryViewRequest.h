@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace map {
             class GetEntryViewRequest : public impl::ClientRequest {
             public:
-                GetEntryViewRequest(const std::string &name, const serialization::pimpl::Data &key);
+                GetEntryViewRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId);
 
                 int getFactoryId() const;
 
@@ -26,6 +26,7 @@ namespace hazelcast {
             private:
                 std::string name;
                 serialization::pimpl::Data key;
+                long threadId;
             };
         }
     }

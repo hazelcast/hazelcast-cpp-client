@@ -15,11 +15,11 @@ namespace hazelcast {
             class KeyBasedContainsRequest : public KeyBasedRequest {
             public:
                 KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key
-                , const serialization::pimpl::Data& value);
+                , const serialization::pimpl::Data& value, long threadId);
 
-                KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key);
+                KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
-                void write(serialization::PortableWriter& writer) const ;
+                void write(serialization::PortableWriter& writer) const;
 
                 int getClassId() const;
 
@@ -28,6 +28,7 @@ namespace hazelcast {
             private:
                 bool hasValue;
                 serialization::pimpl::Data value;
+                long threadId;
             };
         }
     }

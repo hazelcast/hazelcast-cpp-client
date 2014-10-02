@@ -3,7 +3,7 @@
 //
 
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/Util.h"
 #include <iostream>
 
 
@@ -16,26 +16,26 @@ namespace hazelcast {
 
         void ILogger::severe(const std::string& message) {
             if (isEnabled(client::SEVERE)) {
-                (std::cout << "SEVERE: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+                (std::cout << "SEVERE: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
 
         void ILogger::warning(const std::string& message) {
             if (isEnabled(client::WARNING)) {
-                (std::cout << "WARNING: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+                (std::cout << "WARNING: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
 
         void ILogger::info(const std::string& message) {
             if (isEnabled(client::INFO)) {
-                (std::cout << "INFO: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+                (std::cout << "INFO: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
 
 
         void ILogger::finest(const std::string& message) {
             if (isEnabled(client::FINEST)) {
-                (std::cout << "FINEST: " << prefix << " [" << util::Thread::getThreadID() << "] " << message << std::endl);
+                (std::cout << "FINEST: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
 

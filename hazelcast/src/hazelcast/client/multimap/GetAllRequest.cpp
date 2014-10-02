@@ -5,12 +5,14 @@
 
 #include "hazelcast/client/multimap/GetAllRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            GetAllRequest::GetAllRequest(const std::string& name, const serialization::pimpl::Data& key)
-            : KeyBasedRequest(name, key) {
+            GetAllRequest::GetAllRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId)
+            : KeyBasedRequest(name, key)
+            , threadId(threadId) {
 
             }
 
@@ -18,8 +20,13 @@ namespace hazelcast {
                 return MultiMapPortableHook::GET_ALL;
             }
 
-            bool GetAllRequest::isRetryable() const{
+            bool GetAllRequest::isRetryable() const {
                 return true;
+            }
+
+            void GetAllRequest::write(serialization::PortableWriter& writer) const {
+                writer.writeLong("threadId", threadId);
+                KeyBasedRequest::write(writer);
             }
         }
     }

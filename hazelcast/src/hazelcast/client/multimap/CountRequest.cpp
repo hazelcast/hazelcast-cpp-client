@@ -5,12 +5,14 @@
 
 #include "hazelcast/client/multimap/CountRequest.h"
 #include "hazelcast/client/multimap/MultiMapPortableHook.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            CountRequest::CountRequest(const std::string& name, const serialization::pimpl::Data& key)
-            :KeyBasedRequest(name, key) {
+            CountRequest::CountRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId)
+            : KeyBasedRequest(name, key)
+            , threadId(threadId) {
 
             }
 
@@ -21,6 +23,13 @@ namespace hazelcast {
 
             bool CountRequest::isRetryable() const {
                 return true;
+            }
+
+
+            void CountRequest::write(serialization::PortableWriter& writer) const {
+                writer.writeLong("threadId", threadId);
+                KeyBasedRequest::write(writer);
+
             }
         }
     }

@@ -12,13 +12,18 @@
 namespace hazelcast {
     namespace client {
         namespace multimap {
-            class GetAllRequest : public KeyBasedRequest{
+            class GetAllRequest : public KeyBasedRequest {
             public:
-                GetAllRequest(const std::string& name, const serialization::pimpl::Data& key);
+                GetAllRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
                 int getClassId() const;
 
                 bool isRetryable() const;
+
+                void write(serialization::PortableWriter& writer) const;
+
+            private:
+                long threadId;
             };
         }
     }

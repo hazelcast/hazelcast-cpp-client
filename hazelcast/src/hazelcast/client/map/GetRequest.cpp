@@ -10,10 +10,11 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            GetRequest::GetRequest(const std::string &name, const serialization::pimpl::Data &key)
-            :name(name)
+            GetRequest::GetRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId)
+            : name(name)
             , async(false) //MTODO implement getAsync request on IMAP
-            , key(key) {
+            , key(key)
+            , threadId(threadId) {
 
             }
 
@@ -29,10 +30,11 @@ namespace hazelcast {
                 return true;
             }
 
-            void GetRequest::write(serialization::PortableWriter &writer) const {
+            void GetRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 writer.writeBoolean("a", async);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                writer.writeLong("threadId", threadId);
+                serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 key.writeData(out);
             }
         }
