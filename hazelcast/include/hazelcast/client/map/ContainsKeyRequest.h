@@ -13,19 +13,20 @@ namespace hazelcast {
         namespace map {
             class ContainsKeyRequest : public impl::ClientRequest {
             public:
-                ContainsKeyRequest(const std::string &name, const serialization::pimpl::Data &key);
+                ContainsKeyRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
 
             private:
                 std::string name;
                 serialization::pimpl::Data key;
+                long threadId;
             };
         }
     }

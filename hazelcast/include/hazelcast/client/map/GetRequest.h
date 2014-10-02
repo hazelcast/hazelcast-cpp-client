@@ -10,24 +10,17 @@
 
 namespace hazelcast {
     namespace client {
-
-        namespace serialization {
-            namespace pimpl{
-                class Data;
-            }
-
-        }
         namespace map {
 
             class GetRequest : public impl::ClientRequest {
             public:
-                GetRequest(const std::string &name, const serialization::pimpl::Data &key);
+                GetRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId);
 
                 int getFactoryId() const;
 
                 int getClassId() const;
 
-                void write(serialization::PortableWriter &writer) const;
+                void write(serialization::PortableWriter& writer) const;
 
                 bool isRetryable() const;
 
@@ -35,6 +28,7 @@ namespace hazelcast {
                 std::string name;
                 bool async;
                 serialization::pimpl::Data key;
+                long threadId;
             };
         }
     }

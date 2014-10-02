@@ -10,9 +10,10 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            ContainsKeyRequest::ContainsKeyRequest(const std::string &name, const serialization::pimpl::Data &key)
+            ContainsKeyRequest::ContainsKeyRequest(const std::string &name, const serialization::pimpl::Data &key, long threadId)
             :name(name)
-            , key(key) {
+            , key(key)
+            , threadId(threadId){
             }
 
             int ContainsKeyRequest::getFactoryId() const {
@@ -30,6 +31,7 @@ namespace hazelcast {
 
             void ContainsKeyRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", name);
+                writer.writeLong("threadId", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 key.writeData(out);
             }

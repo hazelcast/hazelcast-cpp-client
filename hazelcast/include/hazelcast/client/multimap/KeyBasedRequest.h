@@ -16,11 +16,11 @@ namespace hazelcast {
         namespace multimap {
             class KeyBasedRequest : public impl::ClientRequest {
             public:
-                KeyBasedRequest(const std::string &name, const serialization::pimpl::Data &key);
+                KeyBasedRequest(const std::string& name, const serialization::pimpl::Data& key);
 
                 virtual int getFactoryId() const;
 
-                virtual void write(serialization::PortableWriter &writer) const;
+                virtual void write(serialization::PortableWriter& writer) const;
 
             private:
                 std::string name;

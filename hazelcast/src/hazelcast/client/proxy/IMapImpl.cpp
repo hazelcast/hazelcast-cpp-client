@@ -59,7 +59,7 @@ namespace hazelcast {
 
             bool IMapImpl::containsKey(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::ContainsKeyRequest *request = new map::ContainsKeyRequest(getName(), key);
+                map::ContainsKeyRequest *request = new map::ContainsKeyRequest(getName(), key, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -74,7 +74,7 @@ namespace hazelcast {
 
             serialization::pimpl::Data IMapImpl::get(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::GetRequest *request = new map::GetRequest(getName(), key);
+                map::GetRequest *request = new map::GetRequest(getName(), key, util::getThreadId());
                 return invoke(request, partitionId);
             }
 
@@ -221,7 +221,7 @@ namespace hazelcast {
 
             map::DataEntryView IMapImpl::getEntryView(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), key);
+                map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), key, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, map::DataEntryView);
                 return *result;

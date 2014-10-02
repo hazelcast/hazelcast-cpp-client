@@ -10,16 +10,18 @@ namespace hazelcast {
     namespace client {
         namespace multimap {
 
-            KeyBasedContainsRequest::KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value)
+            KeyBasedContainsRequest::KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long threadId)
             : KeyBasedRequest(name, key)
             , hasValue(true)
-            , value(value) {
+            , value(value)
+            , threadId(threadId) {
 
             }
 
-            KeyBasedContainsRequest::KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key)
+            KeyBasedContainsRequest::KeyBasedContainsRequest(const std::string& name, const serialization::pimpl::Data& key, long threadId)
             : KeyBasedRequest(name, key)
-            , hasValue(false) {
+            , hasValue(false)
+            , threadId(threadId) {
 
             }
 
@@ -28,6 +30,7 @@ namespace hazelcast {
             }
 
             void KeyBasedContainsRequest::write(serialization::PortableWriter& writer) const {
+                writer.writeLong("threadId", threadId);
                 KeyBasedRequest::write(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeBoolean(hasValue);
