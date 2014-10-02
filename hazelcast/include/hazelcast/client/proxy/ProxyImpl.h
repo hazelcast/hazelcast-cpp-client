@@ -109,7 +109,7 @@ namespace hazelcast {
 
                 template <typename V>
                 std::vector<V> toObjectCollection(std::vector<serialization::pimpl::Data> const& dataCollection) {
-                    int size = dataCollection.size();
+                    size_t size = dataCollection.size();
                     std::vector<V> multimap(size);
                     for (int i = 0; i < size; i++) {
                         boost::shared_ptr<V> v = toObject<V>(dataCollection[i]);
@@ -120,7 +120,7 @@ namespace hazelcast {
 
                 template<typename T>
                 const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T>& elements) {
-                    int size = elements.size();
+                    size_t size = elements.size();
                     std::vector<serialization::pimpl::Data> dataCollection(size);
                     for (int i = 0; i < size; ++i) {
                         dataCollection[i] = toData(elements[i]);
@@ -130,7 +130,7 @@ namespace hazelcast {
 
                 template <typename K, typename V>
                 std::vector<std::pair<K, V> > toObjectEntrySet(std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > const& dataEntrySet) {
-                    int size = dataEntrySet.size();
+                    size_t size = dataEntrySet.size();
                     std::vector<std::pair<K, V> > entrySet(size);
                     for (int i = 0; i < size; i++) {
                         boost::shared_ptr<K> key = toObject<K>(dataEntrySet[i].first);
