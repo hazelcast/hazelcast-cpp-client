@@ -33,13 +33,13 @@ namespace hazelcast {
                 retryCount = properties.getRetryCount().getInteger();
                 heartbeatTimeout = properties.getHeartbeatTimeout().getInteger();
                 if (retryWaitTime <= 0) {
-                    retryWaitTime = util::IOUtil::to_value<int>(PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT);
+                    retryWaitTime = util::IOUtil::to_value<int>(ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT);
                 }
                 if (retryCount <= 0) {
-                    retryCount = util::IOUtil::to_value<int>(PROP_REQUEST_RETRY_COUNT_DEFAULT);
+                    retryCount = util::IOUtil::to_value<int>(ClientProperties::PROP_REQUEST_RETRY_COUNT_DEFAULT);
                 }
                 if (heartbeatTimeout <= 0) {
-                    heartbeatTimeout = util::IOUtil::to_value<int>(PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT);
+                    heartbeatTimeout = util::IOUtil::to_value<int>(ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT);
                 }
             }
 

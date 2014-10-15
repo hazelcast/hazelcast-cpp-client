@@ -123,7 +123,7 @@ public:
         std::cerr << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
         ClientConfig clientConfig;
-        clientConfig.setProperty(PROP_HEARTBEAT_TIMEOUT, "10");
+        clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
         clientConfig.setLogLevel(FINEST);
