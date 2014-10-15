@@ -121,11 +121,9 @@ namespace hazelcast {
             int getConnectionAttemptLimit() const;
 
             /**
-            * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-            * passing between client and member within the ClientConfig#connectionTimeout milliseconds the connection
-            * will be considered dead until member respond to heartbeat messages again.
+            * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
+            *                          A zero value means wait until connection established or an error occurs.
             *
-            * @param connectionTimeoutInMillis
             * @return itself ClientConfig
             */
             ClientConfig& setConnectionTimeout(int connectionTimeoutInMillis);

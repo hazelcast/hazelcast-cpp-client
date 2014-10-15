@@ -24,10 +24,10 @@ namespace hazelcast {
                 heartBeatTimeoutSeconds = properties.getHeartbeatTimeout().getInteger();
                 heartBeatIntervalSeconds = properties.getHeartbeatInterval().getInteger();
                 if (heartBeatTimeoutSeconds <= 0) {
-                    heartBeatTimeoutSeconds = util::IOUtil::to_value<int>(PROP_HEARTBEAT_TIMEOUT_DEFAULT);
+                    heartBeatTimeoutSeconds = util::IOUtil::to_value<int>((std::string)ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT);
                 }
                 if (heartBeatIntervalSeconds <= 0) {
-                    heartBeatIntervalSeconds = util::IOUtil::to_value<int>(PROP_HEARTBEAT_INTERVAL_DEFAULT);
+                    heartBeatIntervalSeconds = util::IOUtil::to_value<int>((std::string)ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT);
                 }
             }
 

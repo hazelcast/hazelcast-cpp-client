@@ -13,6 +13,15 @@
 namespace hazelcast {
     namespace client {
 
+        const std::string ClientProperties::PROP_HEARTBEAT_TIMEOUT = "hazelcast_client_heartbeat_timeout";
+        const std::string ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT = "60";
+        const std::string ClientProperties::PROP_HEARTBEAT_INTERVAL = "hazelcast_client_heartbeat_interval";
+        const std::string ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT = "10";
+        const std::string ClientProperties::PROP_REQUEST_RETRY_COUNT = "hazelcast_client_request_retry_count";
+        const std::string ClientProperties::PROP_REQUEST_RETRY_COUNT_DEFAULT = "20";
+        const std::string ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast_client_request_retry_wait_time";
+        const std::string ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT = "1";
+
         ClientProperty::ClientProperty(ClientConfig& config, const std::string& name, const std::string& defaultValue)
         : name(name) {
             if (config.getProperties().count(name) > 0) {

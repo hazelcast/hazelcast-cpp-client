@@ -13,7 +13,7 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -42,51 +42,6 @@ namespace hazelcast {
             std::string value;
         };
 
-        /**
-        * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-        * passing between client and member within the given time via this property in seconds the connection
-        * will be closed.
-        *
-        * "hazelcast.client.heartbeat.timeout"
-        */
-        static const std::string PROP_HEARTBEAT_TIMEOUT = "hazelcast_client_heartbeat_timeout";
-        /**
-        * Default value of heartbeat timeout in seconds when user not set it explicitly
-        */
-        static const std::string PROP_HEARTBEAT_TIMEOUT_DEFAULT = "60";
-
-        /**
-        * Time interval in seconds between heartbeats to nodes from client
-        */
-        static const std::string PROP_HEARTBEAT_INTERVAL = "hazelcast_client_heartbeat_interval";
-        /**
-        * Default value of PROP_HEARTBEAT_INTERVAL when user not set it explicitly
-        */
-        static const std::string PROP_HEARTBEAT_INTERVAL_DEFAULT = "10";
-
-        /**
-        * Client will retry requests which either inherently retryable(idempotent client)
-        * or {@link ClientNetworkConfig#redoOperation} is set to true_
-        * <p/>
-        * This property is to configure retry count before client give up retrying_
-        */
-        static const std::string PROP_REQUEST_RETRY_COUNT = "hazelcast_client_request_retry_count";
-        /**
-        * Default value of PROP_REQUEST_RETRY_COUNT when user not set it explicitly
-        */
-        static const std::string PROP_REQUEST_RETRY_COUNT_DEFAULT = "20";
-
-        /**
-        * Client will retry requests which either inherently retryable(idempotent client)
-        * or {@link ClientNetworkConfig#redoOperation} is set to true.
-        * <p/>
-        * Time delay in seconds between retries.
-        */
-        static const std::string PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast_client_request_retry_wait_time";
-        /**
-        * Default value of PROP_REQUEST_RETRY_WAIT_TIME when user not set it explicitly
-        */
-        static const std::string PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT = "1";
 
         class HAZELCAST_API ClientProperties {
         public:
@@ -100,6 +55,50 @@ namespace hazelcast {
 
             const ClientProperty& getRetryWaitTime() const;
 
+
+            /**
+            * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
+            * passing between client and member within the given time via this property in seconds the connection
+            * will be closed.
+            *
+            * attribute      "hazelcast_client_heartbeat_timeout"
+            * default value  "60"
+            */
+            static const std::string PROP_HEARTBEAT_TIMEOUT;
+            static const std::string PROP_HEARTBEAT_TIMEOUT_DEFAULT;
+
+            /**
+            * Time interval in seconds between heartbeats to nodes from client
+            *
+            * attribute      "hazelcast_client_heartbeat_interval"
+            * default value  "10"
+            */
+            static const std::string PROP_HEARTBEAT_INTERVAL;
+            static const std::string PROP_HEARTBEAT_INTERVAL_DEFAULT;
+
+            /**
+            * Client will retry requests which either inherently retryable(idempotent client)
+            * or {@link ClientNetworkConfig#redoOperation} is set to true_
+            * <p/>
+            * This property is to configure retry count before client give up retrying
+            *
+            * attribute      "hazelcast_client_request_retry_count"
+            * default value  "20"
+            */
+            static const std::string PROP_REQUEST_RETRY_COUNT;
+            static const std::string PROP_REQUEST_RETRY_COUNT_DEFAULT;
+
+            /**
+            * Client will retry requests which either inherently retryable(idempotent client)
+            * or {@link ClientNetworkConfig#redoOperation} is set to true.
+            * <p/>
+            * Time delay in seconds between retries.
+            *
+            * attribute      "hazelcast_client_request_retry_wait_time"
+            * default value  "1"
+            */
+            static const std::string PROP_REQUEST_RETRY_WAIT_TIME;
+            static const std::string PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT;
         private:
             ClientProperty heartbeatTimeout;
             ClientProperty heartbeatInterval;
@@ -112,6 +111,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif //HAZELCAST_ClientProperties

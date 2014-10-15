@@ -11,6 +11,7 @@
 *~
 build*/*
 cpp/*
+.DS_Store
 
 # Compiled Dynamic libraries
 *.so
