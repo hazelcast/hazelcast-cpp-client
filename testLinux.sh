@@ -2,7 +2,7 @@ set -e
 rm -rf build
 mkdir build
 cd build
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
 make
 cd ..
 cd java
