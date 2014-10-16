@@ -28,8 +28,8 @@ namespace hazelcast {
                     if (!identified) {
                         throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");
                     }
-                    assert(object.getFactoryId() == in.readInt()); //factoryId
-                    assert(object.getClassId() == in.readInt()); //classId
+                    in.readInt(); //factoryId
+                    in.readInt(); //classId
                     object.readData(in);
                 }
 
