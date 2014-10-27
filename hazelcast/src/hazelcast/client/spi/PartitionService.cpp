@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            PartitionService::PartitionService(spi::ClientContext &clientContext)
+            PartitionService::PartitionService(spi::ClientContext& clientContext)
             : clientContext(clientContext)
             , updating(false)
             , partitionCount(0) {
@@ -47,18 +47,18 @@ namespace hazelcast {
                 return partitions.get(partitionId);
             }
 
-            int PartitionService::getPartitionId(const serialization::pimpl::Data &key) {
+            int PartitionService::getPartitionId(const serialization::pimpl::Data& key) {
                 const int pc = partitionCount;
                 int hash = key.getPartitionHash();
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             }
 
-            void PartitionService::staticRunListener(util::ThreadArgs &args) {
-                PartitionService *partitionService = (PartitionService *) args.arg0;
+            void PartitionService::staticRunListener(util::ThreadArgs& args) {
+                PartitionService *partitionService = (PartitionService *)args.arg0;
                 partitionService->runListener(args.currentThread);
             }
 
-            void PartitionService::runListener(util::Thread* currentThread) {
+            void PartitionService::runListener(util::Thread *currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         currentThread->interruptibleSleep(10);
@@ -66,7 +66,7 @@ namespace hazelcast {
                             break;
                         }
                         runRefresher();
-                    } catch(exception::IException &e) {
+                    } catch (exception::IException& e) {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     }
                 }
@@ -86,20 +86,24 @@ namespace hazelcast {
                         if (partitionResponse != NULL) {
                             processPartitionResponse(*partitionResponse);
                         }
-                    } catch(...) {
+                    } catch (hazelcast::client::exception::IException& e) {
+                        util::ILogger::getLogger().finest(std::string("Exception partitionService::runRefresher ") + e.what());
+                    } catch (...) {
+                        util::ILogger::getLogger().finest(std::string("Unkown exception partitionService::runRefresher "));
+                        throw;
                     }
                     updating = false;
                 }
 
             }
 
-            boost::shared_ptr<impl::PartitionsResponse> PartitionService::getPartitionsFrom(const Address &address) {
+            boost::shared_ptr<impl::PartitionsResponse> PartitionService::getPartitionsFrom(const Address& address) {
                 impl::GetPartitionsRequest *request = new impl::GetPartitionsRequest();
                 boost::shared_ptr<impl::PartitionsResponse> partitionResponse;
                 try {
                     connection::CallFuture future = clientContext.getInvocationService().invokeOnTarget(request, address);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
-                } catch(exception::IOException &e) {
+                } catch (exception::IOException& e) {
                     util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
                 }
                 return partitionResponse;
@@ -111,19 +115,19 @@ namespace hazelcast {
                 try {
                     connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(request);
                     partitionResponse = clientContext.getSerializationService().toObject<impl::PartitionsResponse>(future.get());
-                } catch(exception::IOException &e) {
+                } catch (exception::IOException& e) {
                     util::ILogger::getLogger().warning(std::string("Error while fetching cluster partition table => ") + e.what());
                 }
                 return partitionResponse;
             }
 
-            void PartitionService::processPartitionResponse(impl::PartitionsResponse &response) {
-                const std::vector<Address> &members = response.getMembers();
-                const std::vector<int> &ownerIndexes = response.getOwnerIndexes();
+            void PartitionService::processPartitionResponse(impl::PartitionsResponse& response) {
+                const std::vector<Address>& members = response.getMembers();
+                const std::vector<int>& ownerIndexes = response.getOwnerIndexes();
                 if (partitionCount == 0) {
                     partitionCount = ownerIndexes.size();
                 }
-                for (int partitionId = 0; partitionId < (int) partitionCount; ++partitionId) {
+                for (int partitionId = 0; partitionId < (int)partitionCount; ++partitionId) {
                     int ownerIndex = ownerIndexes[partitionId];
                     if (ownerIndex > -1) {
                         boost::shared_ptr<Address> address(new Address(members[ownerIndex]));

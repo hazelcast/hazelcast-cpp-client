@@ -109,6 +109,7 @@ public:
             } catch(...) {
                 std::cerr << ">unkown exception" << std::endl;
                 running = false;
+                throw;
             }
 
         }
