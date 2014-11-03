@@ -18,12 +18,12 @@ namespace hazelcast {
             namespace pimpl {
                 class Packet : public DataAdapter {
                 public:
-                    static byte const VERSION = 3;
-                    static int const HEADER_OP = 0;
-                    static int const HEADER_RESPONSE = 1;
-                    static int const HEADER_EVENT = 2;
-                    static int const HEADER_WAN_REPLICATION = 3;
-                    static int const HEADER_URGENT = 4;
+                    static byte const VERSION;
+                    static int const HEADER_OP;
+                    static int const HEADER_RESPONSE;
+                    static int const HEADER_EVENT;
+                    static int const HEADER_WAN_REPLICATION;
+                    static int const HEADER_URGENT;
 
                     Packet(PortableContext& context);
 
@@ -42,10 +42,11 @@ namespace hazelcast {
                     void setHeader(short header);
 
                     void setPartitionId(int partitionId);
+
                 private:
-                    static int const ST_VERSION = 11;
-                    static int const ST_HEADER = 12;
-                    static int const ST_PARTITION = 13;
+                    static int const ST_VERSION;
+                    static int const ST_HEADER;
+                    static int const ST_PARTITION;
 
                     short header;
                     int partitionId;
