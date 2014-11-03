@@ -12,6 +12,16 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
 
+                byte const Packet::VERSION = 2;
+                int const Packet::HEADER_OP = 0;
+                int const Packet::HEADER_RESPONSE = 1;
+                int const Packet::HEADER_EVENT = 2;
+                int const Packet::HEADER_WAN_REPLICATION = 3;
+                int const Packet::HEADER_URGENT = 4;
+                int const Packet::ST_VERSION = 10;
+                int const Packet::ST_HEADER = 11;
+                int const Packet::ST_PARTITION = 12;
+
                 Packet::Packet(PortableContext& context)
                 : DataAdapter(context)
                 , partitionId(-1) {

@@ -8,34 +8,63 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+
+                int const SerializationConstants::CONSTANT_TYPE_PORTABLE = -1;
+                int const SerializationConstants::CONSTANT_TYPE_DATA = -2;
+                int const SerializationConstants::CONSTANT_TYPE_BYTE = -3;
+                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN = -4;
+                int const SerializationConstants::CONSTANT_TYPE_CHAR = -5;
+                int const SerializationConstants::CONSTANT_TYPE_SHORT = -6;
+                int const SerializationConstants::CONSTANT_TYPE_INTEGER = -7;
+                int const SerializationConstants::CONSTANT_TYPE_LONG = -8;
+                int const SerializationConstants::CONSTANT_TYPE_FLOAT = -9;
+                int const SerializationConstants::CONSTANT_TYPE_DOUBLE = -10;
+                int const SerializationConstants::CONSTANT_TYPE_STRING = -11;
+                int const SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY = -12;
+                int const SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY = -13;
+                int const SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY = -14;
+                int const SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY = -15;
+                int const SerializationConstants::CONSTANT_TYPE_LONG_ARRAY = -16;
+                int const SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY = -17;
+                int const SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY = -18;
+                int const SerializationConstants::CONSTANT_SERIALIZERS_LENGTH = -(-19) - 1;
+                // ------------------------------------------------------------
+                int const SerializationConstants::DEFAULT_TYPE_CLASS = -19;
+                int const SerializationConstants::DEFAULT_TYPE_DATE = -20;
+                int const SerializationConstants::DEFAULT_TYPE_BIG_INTEGER = -21;
+                int const SerializationConstants::DEFAULT_TYPE_BIG_DECIMAL = -22;
+                int const SerializationConstants::DEFAULT_TYPE_OBJECT = -23;
+                int const SerializationConstants::DEFAULT_TYPE_EXTERNALIZABLE = -24;
+                int const SerializationConstants::DEFAULT_TYPE_ENUM = -25;
+
                 SerializationConstants::SerializationConstants()
                 :size(25)
                 , typeIdNameVector(size) {
-                    typeIdNameVector[idToIndex(-1)] = "portable";
-                    typeIdNameVector[idToIndex(-2)] = "data";
-                    typeIdNameVector[idToIndex(-3)] = "byte";
-                    typeIdNameVector[idToIndex(-4)] = "boolean";
-                    typeIdNameVector[idToIndex(-5)] = "char";
-                    typeIdNameVector[idToIndex(-6)] = "short";
-                    typeIdNameVector[idToIndex(-7)] = "integer";
-                    typeIdNameVector[idToIndex(-8)] = "long";
-                    typeIdNameVector[idToIndex(-9)] = "float";
-                    typeIdNameVector[idToIndex(-10)] = "double";
-                    typeIdNameVector[idToIndex(-11)] = "string";
-                    typeIdNameVector[idToIndex(-12)] = "byteArray";
-                    typeIdNameVector[idToIndex(-13)] = "charArray";
-                    typeIdNameVector[idToIndex(-14)] = "shortArray";
-                    typeIdNameVector[idToIndex(-15)] = "integerArray";
-                    typeIdNameVector[idToIndex(-16)] = "longArray";
-                    typeIdNameVector[idToIndex(-17)] = "floatArray";
-                    typeIdNameVector[idToIndex(-18)] = "doubleArray";
-                    typeIdNameVector[idToIndex(-19)] = "class";
-                    typeIdNameVector[idToIndex(-20)] = "data";
-                    typeIdNameVector[idToIndex(-21)] = "bigInteger";
-                    typeIdNameVector[idToIndex(-22)] = "bigDecimal";
-                    typeIdNameVector[idToIndex(-23)] = "object";
-                    typeIdNameVector[idToIndex(-24)] = "externalizable";
-                    typeIdNameVector[idToIndex(-25)] = "enum";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_DATA)] = "data";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_BYTE)] = "byte";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_BOOLEAN)] = "boolean";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_CHAR)] = "char";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_SHORT)] = "short";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_INTEGER)] = "integer";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_LONG)] = "long";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_FLOAT)] = "float";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_DOUBLE)] = "double";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING)] = "string";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_BYTE_ARRAY)] = "byteArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_CHAR_ARRAY)] = "charArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_SHORT_ARRAY)] = "shortArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_INTEGER_ARRAY)] = "integerArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_LONG_ARRAY)] = "longArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_FLOAT_ARRAY)] = "floatArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_DOUBLE_ARRAY)] = "doubleArray";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_CLASS)] = "class";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_DATE)] = "date";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_INTEGER)] = "bigInteger";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_DECIMAL)] = "bigDecimal";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_OBJECT)] = "object";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_EXTERNALIZABLE)] = "externalizable";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_ENUM)] = "enum";
                 }
 
                 std::string SerializationConstants::typeIdToName(int typeId) {
