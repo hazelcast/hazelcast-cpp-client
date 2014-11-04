@@ -1,3 +1,7 @@
+ldd --version
+g++ --version
+gcc --version
+
 set -e
 rm -rf build
 mkdir build
