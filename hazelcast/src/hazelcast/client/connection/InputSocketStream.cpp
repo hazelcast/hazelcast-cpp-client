@@ -9,6 +9,7 @@
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {
@@ -75,28 +76,41 @@ namespace hazelcast {
 
             void InputSocketStream::readData(serialization::pimpl::Data& data) {
                 data.setType(readInt());
-                int classId = readInt();
 
-                if (classId != data.NO_CLASS_ID) {
-                    int factoryId = readInt();
-                    int version = readInt();
+                int hasClassDefinition = readByte();
+                if(hasClassDefinition){
+                    size_t classDefCount = (size_t) readInt();
+                    std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(classDefCount * (size_t)serialization::pimpl::Data::HEADER_ENTRY_LENGTH));
+                    for (int classDefIndex = 0; classDefIndex < classDefCount; classDefIndex++) {
+                                              //read header
+                        int factoryId = readInt();
+                        int classId = readInt();
+                        int version = readInt();
 
-                    int classDefSize = readInt();
-                    if (context->isClassDefinitionExists(factoryId, classId, version)) {
-                        data.cd = context->lookup(factoryId, classId, version);
+                        int classDefSize = readInt();
+                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_FACTORY_OFFSET, factoryId);
+                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_CLASS_OFFSET, classId);
+                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_VERSION_OFFSET, version);
+
+                        boost::shared_ptr<serialization::ClassDefinition> cd = context->lookup(factoryId, classId, version);
+                        if(cd.get() == NULL){
+                            std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>(classDefSize));
+                            readFully(*buffer);
+                            boost::shared_ptr<serialization::ClassDefinition> cdProxy(new serialization::ClassDefinition(factoryId, classId, version));
+                            context->registerClassDefinition(cdProxy);
+                        }
                         skipBytes(classDefSize);
-                    } else {
-                        std::auto_ptr<std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                        readFully(*(classDefBytes.get()));
-                        data.cd = context->createClassDefinition(factoryId, classDefBytes);
+                        // read data 
                     }
-                }
-                int size = readInt();
-                if (size > 0) {
-                    data.buffer->resize(size);
-                    readFully(*(data.buffer.get()));
+                    data.setHeader(header);
                 }
                 data.setPartitionHash(readInt());
+                size_t size = (size_t)readInt();
+                if (size > 0) {
+                    data.data->resize(size);
+                    readFully(*(data.data.get()));
+                }
+                
             }
         }
     }

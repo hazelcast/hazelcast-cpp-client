@@ -33,9 +33,7 @@ namespace hazelcast {
                 if (size == -1)
                     return;
                 for (int i = 0; i < size; i++) {
-                    serialization::pimpl::Data data;
-                    data.readData(reader);
-                    dataCollection.push_back(data);
+                    dataCollection.push_back(reader.readData());
                 }
             }
 

@@ -94,7 +94,7 @@ namespace hazelcast {
                     template<typename T>
                     void writePortableArray(const char *fieldName, const std::vector<T>& values) {
                         FieldDefinition const& fieldDefinition = setPosition(fieldName);
-                        int len = values.size();
+                        size_t len = values.size();
                         dataOutput.writeInt(len);
                         if (len > 0) {
                             int offset = dataOutput.position();

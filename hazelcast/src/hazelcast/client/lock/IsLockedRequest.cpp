@@ -31,7 +31,7 @@ namespace hazelcast {
             void IsLockedRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeLong("tid", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                key.writeData(out);
+                out.writeData(&key);
             }
 
 

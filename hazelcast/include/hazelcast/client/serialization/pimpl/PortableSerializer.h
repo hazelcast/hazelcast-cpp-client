@@ -45,7 +45,7 @@ namespace hazelcast {
 
                     void write(DataOutput& dataOutput, const Portable& p);
 
-                    void read(DataInput& dataInput, Portable& portable, int factoryId, int classId, int dataVersion);
+                    void read(DataInput& dataInput, Portable& portable);
 
                 private:
                     PortableContext& context;

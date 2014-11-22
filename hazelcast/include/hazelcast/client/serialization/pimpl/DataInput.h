@@ -8,6 +8,7 @@
 #define HAZELCAST_DataInput
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 #include <string>
 
@@ -17,12 +18,17 @@
 #endif
 
 namespace hazelcast {
+    namespace util{
+        class ByteBuffer;
+    }
     namespace client {
         namespace serialization {
             namespace pimpl {
                 class HAZELCAST_API DataInput {
                 public:
-                    DataInput(const std::vector<byte> &rhsBuffer);
+                    DataInput(const std::vector<byte> &buffer);
+
+                    DataInput(const std::vector<byte> &buffer, std::vector<byte>& header);
 
                     void readFully(std::vector<byte> &);
 
@@ -64,11 +70,15 @@ namespace hazelcast {
 
                     void position(int newPos);
 
+                    hazelcast::util::ByteBuffer& getHeaderBuffer();
+
                 private:
                     const std::vector<byte> &buffer;
+                    util::ByteBuffer headerBuffer;
+
                     int pos;
 
-                    static int const STRING_CHUNK_SIZE = 16 * 1024;
+                    static int const STRING_CHUNK_SIZE;
 
                     std::string readShortUTF();
 

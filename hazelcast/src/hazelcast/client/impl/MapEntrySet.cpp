@@ -37,8 +37,8 @@ namespace hazelcast {
                 int size = entrySet.size();
 		        writer.writeInt(size);
                 for (int i = 0; i < size; ++i) {
-                    entrySet[i].first.writeData(writer);
-                    entrySet[i].second.writeData(writer);
+                    writer.writeData(&(entrySet[i].first));
+                    writer.writeData(&(entrySet[i].second));
                 }
             }
 
@@ -46,12 +46,8 @@ namespace hazelcast {
                 int size = reader.readInt();
                 entrySet.resize(size);
                 for (int i = 0; i < size; i++) {
-                    serialization::pimpl::Data data;
-                    data.readData(reader);
-                    entrySet[i].first = data;
-                    serialization::pimpl::Data data2;
-                    data2.readData(reader);
-                    entrySet[i].second = data2;
+                    entrySet[i].first = reader.readData();;
+                    entrySet[i].second = reader.readData();
                 }
             }
         }

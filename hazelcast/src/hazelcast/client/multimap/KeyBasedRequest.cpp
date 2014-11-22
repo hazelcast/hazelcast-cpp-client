@@ -23,7 +23,7 @@ namespace hazelcast {
             void KeyBasedRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& output = writer.getRawDataOutput();
-                key.writeData(output);
+                output.writeData(&key);
             }
 
         }

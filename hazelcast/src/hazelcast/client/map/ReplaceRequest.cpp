@@ -33,8 +33,8 @@ namespace hazelcast {
                 writer.writeLong("ttl", -1);
                 writer.writeBoolean("a", false);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                key.writeData(out);
-                value.writeData(out);
+                out.writeData(&key);
+                out.writeData(&value);
             }
 
 

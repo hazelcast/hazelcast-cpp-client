@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 int getClassId() const;
 
-                void readData(serialization::ObjectDataInput &reader);
+                void readData(serialization::ObjectDataInput & in);
 
             private:
                 int callId;

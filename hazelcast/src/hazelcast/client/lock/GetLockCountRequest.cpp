@@ -30,7 +30,7 @@ namespace hazelcast {
 
             void GetLockCountRequest::write(serialization::PortableWriter& writer) const {
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                key.writeData(out);
+                out.writeData(&key);
             }
         }
     }

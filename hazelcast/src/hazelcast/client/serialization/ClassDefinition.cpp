@@ -121,16 +121,10 @@ namespace hazelcast {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
-                dataOutput.writeInt(fieldDefinitions.size());
+                dataOutput.writeShort(fieldDefinitions.size());
                 std::vector<FieldDefinition>::iterator it;
                 for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
                     it->writeData(dataOutput);
-                }
-
-                dataOutput.writeInt(nestedClassDefinitions.size());
-                std::vector<boost::shared_ptr<ClassDefinition> >::iterator cdIt;
-                for (cdIt = nestedClassDefinitions.begin(); cdIt != nestedClassDefinitions.end(); ++cdIt) {
-                    (*cdIt)->writeData(dataOutput);
                 }
             }
 
@@ -138,17 +132,11 @@ namespace hazelcast {
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
                 version = dataInput.readInt();
-                int size = dataInput.readInt();
+                int size = dataInput.readShort();
                 for (int i = 0; i < size; i++) {
                     FieldDefinition fieldDefinition;
                     fieldDefinition.readData(dataInput);
                     addFieldDef(fieldDefinition);
-                }
-                size = dataInput.readInt();
-                for (int i = 0; i < size; i++) {
-                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
-                    classDefinition->readData(dataInput);
-                    addClassDef(classDefinition);
                 }
             }
         }

@@ -97,10 +97,9 @@ namespace hazelcast {
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
-
                 util::AtomicBoolean heartBeating;
-
-
+                char* receiveBuffer;
+                util::ByteBuffer receiveByteBuffer;
             };
 
         }

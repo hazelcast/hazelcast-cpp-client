@@ -26,22 +26,6 @@ namespace hazelcast {
             return util::Thread::getThreadID();
         }
 
-        void writeNullableData(client::serialization::ObjectDataOutput &out, const client::serialization::pimpl::Data *data) {
-            if (data != NULL) {
-                out.writeBoolean(true);
-                data->writeData(out);
-            } else {
-                // null
-                out.writeBoolean(false);
-            }
-        }
-
-        void readNullableData(client::serialization::ObjectDataInput &in, client::serialization::pimpl::Data *data) {
-            bool isNotNull = in.readBoolean();
-            if (isNotNull)
-                data->readData(in);
-        }
-
 		void sleep(int seconds){
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			Sleep(seconds * 1000);

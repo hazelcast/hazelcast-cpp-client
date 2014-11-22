@@ -5,6 +5,7 @@
 #include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/Bits.h"
 #include <sstream>
 
 namespace hazelcast {
@@ -24,21 +25,19 @@ namespace hazelcast {
 
                 Packet::Packet(PortableContext& context)
                 : DataAdapter(context)
-                , partitionId(-1) {
+                , partitionId(-1)
+                , header(0){
 
                 }
 
                 Packet::Packet(PortableContext& context, const Data& data)
                 : DataAdapter(context, data)
-                , partitionId(-1) {
+                , partitionId(-1)
+                , header(0){
 
                 }
 
-                bool Packet::isHeaderSet(int bit) const {
-                    return (header & 1 << bit) != 0;
-                }
-
-                bool Packet::writeTo(util::ByteBuffer& destination) {
+                bool Packet::writeTo(hazelcast::util::ByteBuffer& destination) {
                     if (!isStatusSet(ST_VERSION)) {
                         if (!destination.hasRemaining()) {
                             return false;
@@ -63,7 +62,7 @@ namespace hazelcast {
                     return DataAdapter::writeTo(destination);
                 }
 
-                bool Packet::readFrom(util::ByteBuffer& source) {
+                bool Packet::readFrom(hazelcast::util::ByteBuffer& source) {
                     if (!isStatusSet(ST_VERSION)) {
                         if (!source.hasRemaining()) {
                             return false;
@@ -108,6 +107,10 @@ namespace hazelcast {
 
                 void Packet::setPartitionId(int partitionId) {
                     this->partitionId = partitionId;
+                }
+
+                bool Packet::isHeaderSet(int bit) const {
+                    return util::isBitSet(header, bit);
                 }
             }
         }

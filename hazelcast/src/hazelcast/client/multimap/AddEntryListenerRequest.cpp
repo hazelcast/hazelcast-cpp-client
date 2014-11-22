@@ -39,10 +39,11 @@ namespace hazelcast {
                 writer.writeBoolean("i", includeValue);
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                
                 if (hasKey) {
-                    util::writeNullableData(out, &key);
+                    out.writeData(&key);
                 } else {
-                    util::writeNullableData(out, NULL);
+                    out.writeData(NULL);
                 }
             }
 

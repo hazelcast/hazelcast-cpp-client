@@ -14,9 +14,10 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize)
+            WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize)
             : IOHandler(connection, oListener)
-            , buffer(bufferSize)
+            , buffer(new char[bufferSize])
+            , byteBuffer(buffer, bufferSize)
             , lastData(NULL)
             , ready(false)
             , informSelector(true)
@@ -30,6 +31,7 @@ namespace hazelcast {
                 while ((packet = writeQueue.poll()) != NULL) {
                     delete packet;
                 }
+                delete buffer;
             }
 
             void WriteHandler::run() {
@@ -58,13 +60,13 @@ namespace hazelcast {
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();
-                    if (lastData == NULL && buffer.position() == 0) {
+                    if (lastData == NULL && byteBuffer.position() == 0) {
                         ready = true;
                         return;
                     }
                 }
-                while (buffer.hasRemaining() && lastData != NULL) {
-                    bool complete = lastData->writeTo(buffer);
+                while (byteBuffer.hasRemaining() && lastData != NULL) {
+                    bool complete = lastData->writeTo(byteBuffer);
                     if (complete) {
                         delete lastData;
                         lastData = NULL;
@@ -74,20 +76,20 @@ namespace hazelcast {
                     }
                 }
 
-                if (buffer.position() > 0) {
-                    buffer.flip();
+                if (byteBuffer.position() > 0) {
+                    byteBuffer.flip();
                     try {
-                        buffer.writeTo(connection.getSocket());
+                        byteBuffer.writeTo(connection.getSocket());
                     } catch (exception::IOException &e) {
                         delete lastData;
                         lastData = NULL;
                         handleSocketException(e.what());
                         return;
                     }
-                    if (buffer.hasRemaining()) {
-                        buffer.compact();
+                    if (byteBuffer.hasRemaining()) {
+                        byteBuffer.compact();
                     } else {
-                        buffer.clear();
+                        byteBuffer.clear();
                     }
                 }
                 ready = false;

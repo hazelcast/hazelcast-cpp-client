@@ -11,9 +11,21 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DataInput::DataInput(const std::vector<byte> &rhsBuffer)
-                :buffer(rhsBuffer)
+
+                int const DataInput::STRING_CHUNK_SIZE = 16 * 1024;
+
+                DataInput::DataInput(const std::vector<byte> &buffer)
+                :buffer(buffer)
+                , headerBuffer(NULL, 0)  //MTODO_S
                 , pos(0) {
+                }
+
+
+                DataInput::DataInput(const std::vector<byte>& buffer, std::vector<byte>& header)
+                :buffer(buffer)
+                , headerBuffer((char*)&(header[0]), header.size()) //MTODO_S
+                , pos(0) {
+
                 }
 
                 void DataInput::readFully(std::vector<byte> &bytes) {
@@ -240,6 +252,11 @@ namespace hazelcast {
                         values[i] = readShort();
                     }
                     return values;
+                }
+
+
+                hazelcast::util::ByteBuffer& DataInput::getHeaderBuffer() {
+                    return headerBuffer;
                 }
             }
         }

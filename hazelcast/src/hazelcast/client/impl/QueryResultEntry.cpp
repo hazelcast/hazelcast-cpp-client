@@ -22,15 +22,9 @@ namespace hazelcast {
             }
 
             void QueryResultEntry::readData(serialization::ObjectDataInput& reader) {
-                bool isNotNull = reader.readBoolean();
-                if (isNotNull)
-                    keyIndex.readData(reader);
-                isNotNull = reader.readBoolean();
-                if (isNotNull)
-                    key.readData(reader);
-                isNotNull = reader.readBoolean();
-                if (isNotNull)
-                    value.readData(reader);
+                keyIndex = reader.readData();
+                key = reader.readData();
+                value = reader.readData();
             }
         }
     }

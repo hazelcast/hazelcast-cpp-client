@@ -79,10 +79,7 @@ namespace hazelcast {
                             return portable;
                         }
                         portable.reset(new T);
-                        const FieldDefinition &fd = cd->getField(fieldName);
-                        int factoryId = fd.getFactoryId();
-                        int classId = fd.getClassId();
-                        read(dataInput, *portable, factoryId, classId);
+                        read(dataInput, *portable);
                         return portable;
                     };
 
@@ -91,9 +88,6 @@ namespace hazelcast {
                         std::vector< T > portables;
                         setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
-                        const FieldDefinition &fd = cd->getField(fieldName);
-                        int factoryId = fd.getFactoryId();
-                        int classId = fd.getClassId();
                         int len = dataInput.readInt();
 
                         portables.resize(len, T());
@@ -104,7 +98,7 @@ namespace hazelcast {
                                 int start = dataInput.readInt();
                                 dataInput.position(start);
 
-                                read(dataInput, portables[i], factoryId, classId);
+                                read(dataInput, portables[i]);
                             }
                         }
                         return portables;
@@ -119,7 +113,7 @@ namespace hazelcast {
 
                     void setPosition(char const * , FieldType const& fieldType);
 
-                    void read(DataInput &dataInput, Portable &object, int factoryId, int classId);
+                    void read(DataInput &dataInput, Portable &object);
 
                     SerializerHolder &serializerHolder;
                     DataInput &dataInput;

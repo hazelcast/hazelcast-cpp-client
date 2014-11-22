@@ -23,7 +23,7 @@ namespace hazelcast {
                 int size = valueSet.size();
                 output.writeInt(size);
                 for (int i = 0; i < size; i++) {
-                    valueSet[i].writeData(output);
+                    output.writeData(&(valueSet[i]));
                 }
             }
 

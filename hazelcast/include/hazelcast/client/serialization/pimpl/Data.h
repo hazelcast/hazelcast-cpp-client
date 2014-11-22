@@ -18,25 +18,25 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
 
-                class HAZELCAST_API Data : public serialization::IdentifiedDataSerializable {
+                class HAZELCAST_API Data {
                 public:
 
                     Data();
 
-                    Data(const Data &);
+                    Data(const Data&);
 
-                    Data &operator = (const Data &);
+                    Data& operator=(const Data&);
 
                     int bufferSize() const;
 
-                    int totalSize() const;
+                    size_t headerSize() const;
 
                     int getPartitionHash() const;
 
@@ -46,26 +46,38 @@ namespace hazelcast {
 
                     void setType(int type);
 
-                    void setBuffer(std::auto_ptr< std::vector<byte> > buffer);
+                    void setBuffer(std::auto_ptr<std::vector<byte> > buffer);
 
-                    int hashCode() const;
+                    void setHeader(std::auto_ptr<std::vector<byte> > header);
 
-                    void writeData(serialization::ObjectDataOutput &objectDataOutput) const;
+                    bool hasPartitionHash()  const;
 
-                    void readData(serialization::ObjectDataInput &objectDataInput);
+                    bool isPortable() const;
 
-                    int getFactoryId() const;
+                    bool hasClassDefinition() const;
 
-                    int getClassId() const;
+                    size_t getClassDefinitionCount() const;
 
-                    boost::shared_ptr<ClassDefinition> cd;
-                    mutable std::auto_ptr< std::vector<byte> > buffer;
-                    static int const NO_CLASS_ID = 0;
+                    std::vector<boost::shared_ptr<ClassDefinition> > getClassDefinitions(PortableContext& context) const;
+
+                    mutable std::auto_ptr<std::vector<byte> > data;
+
+                    mutable std::auto_ptr<std::vector<byte> > header;
+                    static int HEADER_ENTRY_LENGTH;
+
+                    static int HEADER_FACTORY_OFFSET;
+                    static int HEADER_CLASS_OFFSET;
+                    static int HEADER_VERSION_OFFSET;
                 private:
+
                     mutable int partitionHash;
                     int type;
-                    static int const FACTORY_ID = 0;
-                    static int const CLASS_ID = 0;
+
+                    boost::shared_ptr<ClassDefinition> readClassDefinition(PortableContext& context, int start) const;
+
+                    int readIntHeader(int offset) const;
+
+                    int hashCode() const;
                 };
             }
         }
@@ -74,7 +86,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif /* HAZELCAST_DATA */
 

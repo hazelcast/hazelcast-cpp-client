@@ -29,9 +29,7 @@ namespace hazelcast {
             void MapValueCollection::readData(serialization::ObjectDataInput& reader) {
                 int size = reader.readInt();
                 for (int i = 0; i < size; ++i) {
-                    serialization::pimpl::Data data;
-                    data.readData(reader);
-                    values.push_back(data);
+                    values.push_back(reader.readData());
                 }
             }
 

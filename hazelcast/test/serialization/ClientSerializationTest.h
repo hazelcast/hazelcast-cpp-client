@@ -25,6 +25,10 @@ namespace hazelcast {
 
                 void addTests();
 
+                void testBasicFunctionality();
+
+                void testBasicFunctionalityWithDifferentVersions();
+
                 void testCustomSerialization();
 
                 void testRawData();
@@ -39,13 +43,9 @@ namespace hazelcast {
 
                 void testDifferentVersions();
 
-                void testDifferentVersionsUsingDataWriteAndRead();
-
-                void testCompression();
-
-                void testBasicFunctionality();
-
                 void testTemplatedPortable_whenMultipleTypesAreUsed();
+
+                void testDataHash();
             };
         }
     }

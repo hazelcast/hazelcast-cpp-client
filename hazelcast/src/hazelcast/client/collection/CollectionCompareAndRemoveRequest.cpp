@@ -5,14 +5,13 @@
 
 #include "hazelcast/client/collection/CollectionCompareAndRemoveRequest.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/collection/CollectionPortableHook.h"
 
 namespace hazelcast {
     namespace client {
         namespace collection {
-            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string &name, const std::string &serviceName, const std::vector<serialization::pimpl::Data> &valueSet, bool retain)
-            :CollectionRequest(name, serviceName)
+            CollectionCompareAndRemoveRequest::CollectionCompareAndRemoveRequest(const std::string& name, const std::string& serviceName, const std::vector<serialization::pimpl::Data>& valueSet, bool retain)
+            : CollectionRequest(name, serviceName)
             , valueSet(valueSet)
             , retain(retain) {
 
@@ -22,14 +21,14 @@ namespace hazelcast {
                 return CollectionPortableHook::COLLECTION_COMPARE_AND_REMOVE;
             }
 
-            void CollectionCompareAndRemoveRequest::write(serialization::PortableWriter &writer) const {
+            void CollectionCompareAndRemoveRequest::write(serialization::PortableWriter& writer) const {
                 CollectionRequest::write(writer);
                 writer.writeBoolean("r", retain);
-                serialization::ObjectDataOutput &output = writer.getRawDataOutput();
+                serialization::ObjectDataOutput& output = writer.getRawDataOutput();
                 int size = valueSet.size();
                 output.writeInt(size);
                 for (int i = 0; i < size; i++) {
-                    valueSet[i].writeData(output);
+                    output.writeData(&(valueSet[i]));
                 }
 
             }

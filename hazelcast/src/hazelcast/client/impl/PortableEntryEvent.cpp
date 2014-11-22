@@ -49,9 +49,9 @@ namespace hazelcast {
                 uuid = reader.readUTF("u");
                 numberOfAffectedEntries = reader.readInt("n");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
-                util::readNullableData(in, &key);
-                util::readNullableData(in, &value);
-                util::readNullableData(in, &oldValue);
+                key = in.readData();
+                value = in.readData();
+                oldValue = in.readData();
             }
         }
     }

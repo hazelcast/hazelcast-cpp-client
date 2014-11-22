@@ -78,8 +78,7 @@ namespace hazelcast {
                 int index;
                 bool done;
 				std::vector<FieldDefinition> fieldDefinitions;
-                std::vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
-				
+
                 void addField(const std::string& fieldName , FieldType const &fieldType);
 
                 void check();

@@ -31,9 +31,7 @@ namespace hazelcast {
                 collection.resize(size);
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 for (int i = 0; i < size; ++i) {
-                    serialization::pimpl::Data data;
-                    data.readData(in);
-                    collection[i] = data;
+                    collection[i] = in.readData();
                 }
             }
         }

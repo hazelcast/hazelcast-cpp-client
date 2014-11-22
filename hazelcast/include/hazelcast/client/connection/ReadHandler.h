@@ -30,14 +30,17 @@ namespace hazelcast {
 
             class ReadHandler : public IOHandler {
             public:
-                ReadHandler(Connection &connection, InSelector &iListener, int bufferSize, spi::ClientContext& clientContext);
+                ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize, spi::ClientContext& clientContext);
+
+                ~ReadHandler();
 
                 void handle();
 
                 void run();
 
             private:
-                util::ByteBuffer buffer;
+                char* buffer;
+                util::ByteBuffer byteBuffer;
                 serialization::pimpl::Packet *lastData;
                 spi::ClientContext& clientContext;
 

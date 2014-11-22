@@ -34,7 +34,7 @@ namespace hazelcast {
 
             class WriteHandler : public IOHandler {
             public:
-                WriteHandler(Connection &connection, OutSelector &oListener, int bufferSize);
+                WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize);
 
                 ~WriteHandler();
 
@@ -45,7 +45,8 @@ namespace hazelcast {
                 void run();
 
             private:
-                util::ByteBuffer buffer;
+                char* buffer;
+                util::ByteBuffer byteBuffer;
                 util::ConcurrentQueue<serialization::pimpl::Packet> writeQueue;
                 serialization::pimpl::Packet *lastData;
                 bool ready;

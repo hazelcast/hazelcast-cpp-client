@@ -27,7 +27,7 @@ namespace hazelcast {
                 int size = valueList.size();
                 output.writeInt(size);
                 for (int i = 0; i < size; i++) {
-                    valueList[i].writeData(output);
+                    output.writeData(&(valueList[i]));
                 }
             }
         }

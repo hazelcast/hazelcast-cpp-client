@@ -45,14 +45,6 @@ namespace hazelcast {
                     return getClassDefinitionContext(factoryId).createClassDefinition(binary);
                 }
 
-                void PortableContext::registerNestedDefinitions(boost::shared_ptr<ClassDefinition> cd) {
-                    std::vector<boost::shared_ptr<ClassDefinition> > nestedDefinitions = cd->getNestedClassDefinitions();
-                    for (std::vector<boost::shared_ptr<ClassDefinition> >::iterator it = nestedDefinitions.begin(); it < nestedDefinitions.end(); it++) {
-                        registerClassDefinition(*it);
-                        registerNestedDefinitions(*it);
-                    }
-                }
-
                 boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                     return getClassDefinitionContext(cd->getFactoryId()).registerClassDefinition(cd);
                 }

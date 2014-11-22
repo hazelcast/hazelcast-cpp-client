@@ -23,8 +23,7 @@ namespace hazelcast {
             void ContainsRequest::write(serialization::PortableWriter &writer) const {
                 AllPartitionsRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                out.writeBoolean(true);
-                value.writeData(out);
+                out.writeData(&value);
             }
 
             bool ContainsRequest::isRetryable() const {

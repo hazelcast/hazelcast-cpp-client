@@ -24,13 +24,32 @@ namespace hazelcast {
 
                 void PortableSerializer::write(DataOutput& dataOutput, const Portable& p) {
                     boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
+
+
+                    util::ByteBuffer& headerBuffer = dataOutput.getHeaderBuffer();
+                    int pos = headerBuffer.position();
+                    dataOutput.writeInt(pos);
+
+                    headerBuffer.writeInt(cd->getFactoryId());
+                    headerBuffer.writeInt(cd->getClassId());
+                    headerBuffer.writeInt(cd->getVersion());
+
                     DefaultPortableWriter dpw(context, cd, dataOutput);
                     PortableWriter portableWriter(&dpw);
                     p.writePortable(portableWriter);
                     portableWriter.end();
                 }
 
-                void PortableSerializer::read(DataInput& dataInput, Portable& portable, int factoryId, int classId, int version) {
+                void PortableSerializer::read(DataInput& dataInput, Portable& portable) {
+
+                    util::ByteBuffer& byteBuffer = dataInput.getHeaderBuffer();
+                    int headerBufferPos = dataInput.readInt();
+                    byteBuffer.position((size_t)headerBufferPos);
+
+                    int factoryId = byteBuffer.readInt();
+                    int classId = byteBuffer.readInt();
+                    int version = byteBuffer.readInt();
+
                     int portableVersion = findPortableVersion(factoryId, classId, portable);
                     PortableReader reader = createReader(dataInput, factoryId, classId, version, portableVersion);
                     portable.readPortable(reader);

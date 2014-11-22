@@ -31,7 +31,7 @@ namespace hazelcast {
                 writer.writeInt("size", size);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 for (int i = 0; i < size; i++) {
-                    keys[i].writeData(out);
+                    out.writeData(&(keys[i]));
                 }
             }
 

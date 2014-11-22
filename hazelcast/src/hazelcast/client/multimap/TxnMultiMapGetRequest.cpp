@@ -23,7 +23,7 @@ namespace hazelcast {
             void TxnMultiMapGetRequest::write(serialization::PortableWriter &writer) const {
                 TxnMultiMapRequest::write(writer);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                data.writeData(out);
+                out.writeData(&data);
             }
         }
     }

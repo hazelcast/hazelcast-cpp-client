@@ -1,24 +1,23 @@
 #include <hazelcast/client/serialization/pimpl/Packet.h>
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            OutputSocketStream::OutputSocketStream(Socket &socket)
-            :socket(socket) {
+            OutputSocketStream::OutputSocketStream(Socket& socket)
+            : socket(socket) {
             }
 
-            void OutputSocketStream::write(const std::vector<byte> &bytes) {
-                socket.send((void *) &(bytes[0]), sizeof (char) * bytes.size());
+            void OutputSocketStream::write(const std::vector<byte>& bytes) {
+                socket.send((void *)&(bytes[0]), sizeof(char) * bytes.size());
             }
 
 
             void OutputSocketStream::writeByte(int i) {
-                char x = (char) (0xff & i);
-                socket.send((void *) &(x), sizeof(char));
+                char x = (char)(0xff & i);
+                socket.send((void *)&(x), sizeof(char));
             }
 
 
@@ -35,32 +34,46 @@ namespace hazelcast {
                 writeByte(v);
             }
 
-            void OutputSocketStream::writePacket(serialization::pimpl::Packet const &packet) {
+            void OutputSocketStream::writePacket(serialization::pimpl::Packet const& packet) {
                 writeByte(serialization::pimpl::Packet::VERSION);
                 writeShort(packet.getHeader());
                 writeInt(packet.getPartitionId());
-                writeData(packet.getData());
+                writeData(packet.getData(), packet.getPortableContext());
             }
 
-            void OutputSocketStream::writeData(serialization::pimpl::Data const &data) {
-                writeInt(data.getType());
-                if (data.cd != NULL) {
-                    writeInt(data.cd->getClassId());
-                    writeInt(data.cd->getFactoryId());
-                    writeInt(data.cd->getVersion());
-                    const std::vector<byte> &classDefBytes = data.cd->getBinary();
 
-                    writeInt(classDefBytes.size());
-                    write(classDefBytes);
+            void OutputSocketStream::writeData(serialization::pimpl::Data const& data, serialization::pimpl::PortableContext& context) {
+                writeInt(data.getType());
+                bool hasClassDef = data.hasClassDefinition();
+                if (hasClassDef) {
+                    writeByte(1);
+                    int classDefCount = data.getClassDefinitionCount();
+                    writeInt(classDefCount);
+                    std::vector<boost::shared_ptr<serialization::ClassDefinition> > classDefinitions = data.getClassDefinitions(context);
+                    for (int classDefIndex = 0; classDefIndex < classDefCount; classDefIndex++) {
+                        boost::shared_ptr<serialization::ClassDefinition> cd = classDefinitions[classDefIndex];
+
+                        //writeHeader
+                        writeInt(cd->getFactoryId());
+                        writeInt(cd->getClassId());
+                        writeInt(cd->getVersion());
+
+                        std::vector<byte> const& binary = cd->getBinary();
+                        writeInt(binary.size());
+
+                        //writeData
+                        write(binary);
+                    }
                 } else {
-                    writeInt(data.NO_CLASS_ID);
+                    writeByte(0);
                 }
+                writeInt(data.hasPartitionHash() ? data.getPartitionHash() : 0);
                 int len = data.bufferSize();
                 writeInt(len);
                 if (len > 0) {
-                    write(*(data.buffer.get()));
+                    write(*(data.data.get()));
                 }
-                writeInt(data.getPartitionHash());
+
             }
         }
     }

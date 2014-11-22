@@ -48,8 +48,8 @@ namespace hazelcast {
                     static int const ST_HEADER;
                     static int const ST_PARTITION;
 
-                    short header;
                     int partitionId;
+                    short header;
                 };
             }
         }

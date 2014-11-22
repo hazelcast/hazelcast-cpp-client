@@ -29,6 +29,8 @@ namespace hazelcast {
 
             namespace pimpl {
 
+                class Data;
+
                 class ClassDefinitionContext;
 
                 class HAZELCAST_API PortableContext {
@@ -49,8 +51,6 @@ namespace hazelcast {
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                     boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
-
-                    void registerNestedDefinitions(boost::shared_ptr<ClassDefinition>);
 
                     int getVersion();
 

@@ -6,6 +6,7 @@
 #include "hazelcast/client/impl/ClientRequest.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {

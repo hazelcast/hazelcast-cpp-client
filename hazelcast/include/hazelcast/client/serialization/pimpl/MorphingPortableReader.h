@@ -78,7 +78,7 @@ namespace hazelcast {
                             return portable;
                         }
                         portable.reset(new T);
-                        read(dataInput, *portable, currentFactoryId, currentClassId, cd->getVersion());
+                        read(dataInput, *portable);
                         return portable;
                     };
 
@@ -95,7 +95,7 @@ namespace hazelcast {
                                 dataInput.position(offset + i * sizeof (int));
                                 int start = dataInput.readInt();
                                 dataInput.position(start);
-                                serializerHolder.getPortableSerializer().read(dataInput, portables[i], currentFactoryId, currentClassId, cd->getVersion());
+                                serializerHolder.getPortableSerializer().read(dataInput, portables[i]);
                             }
                         }
                         return portables;
@@ -106,7 +106,7 @@ namespace hazelcast {
                     ObjectDataInput &getRawDataInput();
 
                 private:
-                    void read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion);
+                    void read(DataInput &dataInput, Portable &object);
 
                     int getPosition(const char *);
 
@@ -119,10 +119,7 @@ namespace hazelcast {
                     int offset;
                     bool raw;
                     boost::shared_ptr<ClassDefinition> cd;
-
                     FieldType currentFieldType;
-                    int currentFactoryId;
-                    int currentClassId;
                 };
 
             }

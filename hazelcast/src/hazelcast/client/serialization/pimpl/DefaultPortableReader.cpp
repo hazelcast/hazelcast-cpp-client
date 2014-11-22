@@ -133,8 +133,8 @@ namespace hazelcast {
                     return objectDataInput;
                 }
 
-                void DefaultPortableReader::read(DataInput& dataInput, Portable& object, int factoryId, int classId) {
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, cd->getVersion());
+                void DefaultPortableReader::read(DataInput& dataInput, Portable& object) {
+                    serializerHolder.getPortableSerializer().read(dataInput, object);
                 }
 
                 void DefaultPortableReader::end() {

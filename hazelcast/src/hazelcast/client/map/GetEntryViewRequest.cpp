@@ -34,7 +34,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("threadId", threadId);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                key.writeData(out);
+                out.writeData(&key);
             }
 
         }

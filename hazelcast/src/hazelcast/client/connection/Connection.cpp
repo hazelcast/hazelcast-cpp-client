@@ -31,7 +31,9 @@ namespace hazelcast {
             , socket(address)
             , readHandler(*this, iListener, 16 << 10, clientContext)
             , writeHandler(*this, oListener, 16 << 10)
-            , _isOwnerConnection(false) {
+            , _isOwnerConnection(false)
+            , receiveBuffer(new char[16 << 10])
+            , receiveByteBuffer(receiveBuffer, 16 << 10) {
 
             }
 
@@ -98,7 +100,7 @@ namespace hazelcast {
             }
 
             void Connection::writeBlocking(serialization::pimpl::Packet const& packet) {
-                connection::OutputSocketStream outputSocketStream(socket);
+                OutputSocketStream outputSocketStream(socket);
                 outputSocketStream.writePacket(packet);
             }
 

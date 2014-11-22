@@ -30,7 +30,7 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                data.writeData(out);
+                out.writeData(&data);
             }
         }
     }

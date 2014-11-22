@@ -7,84 +7,63 @@
 //
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-
+#include "hazelcast/util/MurmurHash3.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+
+                int Data::HEADER_ENTRY_LENGTH = 12;
+                int Data::HEADER_FACTORY_OFFSET = 0;
+                int Data::HEADER_CLASS_OFFSET = 4;
+                int Data::HEADER_VERSION_OFFSET = 8;
+
                 Data::Data()
-                : buffer(new std::vector<byte>)
+                : data(new std::vector<byte>)
+                , header(new std::vector<byte>)
                 , partitionHash(0)
-                , type(SerializationConstants::CONSTANT_TYPE_DATA){
+                , type(SerializationConstants::CONSTANT_TYPE_DATA) {
 
                 }
 
-                Data::Data(const Data &rhs)
-                : cd(rhs.cd)
-                , buffer(rhs.buffer.release())
+                Data::Data(const Data& rhs)
+                : data(rhs.data.release())
+                , header(rhs.header.release())
                 , partitionHash(rhs.partitionHash)
-                , type(rhs.type){
+                , type(rhs.type) {
 
                 }
 
-                Data &Data::operator = (const Data &rhs) {
+                Data& Data::operator=(const Data& rhs) {
                     partitionHash = rhs.partitionHash;
                     type = rhs.type;
-                    cd = rhs.cd;
-                    buffer = rhs.buffer;
+                    data = rhs.data;
+                    header = rhs.header;
                     return (*this);
                 }
 
                 int Data::bufferSize() const {
-                    return buffer->size();
+                    return data->size();
                 }
 
-                /**
-                 * Calculates the size of the binary after the Data is serialized.
-                 *
-                 * WARNING:
-                 *
-                 * Should be in sync with #writeData(com.hazelcast.nio.ObjectDataOutput)
-                 */
-                int Data::totalSize() const {
-                    int total = 0;
-                    total += 4; // id
-                    if (cd != NULL) {
-                        total += 4; // classDefinition-classId
-                        total += 4; // // classDefinition-factory-id
-                        total += 4; // classDefinition-version
-                        total += 4; // classDefinition-binary-length
-                        total += cd->getBinary().size(); // cd-binary
-                    } else {
-                        total += 4; // no-classId
-                    }
-                    total += 4; // buffer-size
-                    total += bufferSize(); // buffer
-                    total += 4; // partition-hash
-                    return total;
-                }
 
+                size_t Data::headerSize() const {
+                    return header->size();
+                }
 
                 int Data::hashCode() const {
-                    if (buffer.get() == NULL)
-                        return 0;
-                    // FNV (Fowler/Noll/Vo) Hash "1a"
-                    const int prime = 0x01000193;
-                    int hash = 0x811c9dc5;
-                    for (int i = buffer->size() - 1; i >= 0; i--) {
-                        hash = (hash ^ (*buffer)[i]) * prime;
-                    }
-                    return hash;
+                    return hazelcast::util::MurmurHash3_x86_32((void*)&((*data)[0]) , data->size());
+                }
+
+
+                bool Data::hasPartitionHash() const {
+                    return partitionHash != 0;
                 }
 
                 int Data::getPartitionHash() const {
                     if (partitionHash == 0) {
-                        if (buffer.get() != NULL) {
-                            partitionHash = hashCode();
-                        }
+                        partitionHash = hashCode();
                     }
                     return partitionHash;
                 }
@@ -102,67 +81,61 @@ namespace hazelcast {
                     this->type = type;
                 }
 
-                void Data::setBuffer(std::auto_ptr<std::vector<unsigned char> > buffer) {
-                    this->buffer = buffer;
+                void Data::setBuffer(std::auto_ptr<std::vector<byte> > buffer) {
+                    this->data = buffer;
+                }
+
+                void Data::setHeader(std::auto_ptr<std::vector<byte> > header) {
+                    this->header = header;
+                }
+
+                bool Data::isPortable() const {
+                    return SerializationConstants::CONSTANT_TYPE_PORTABLE == type;
                 }
 
 
-                int Data::getFactoryId() const {
-                    return FACTORY_ID;
-                }
-
-                int Data::getClassId() const {
-                    return CLASS_ID;
-                }
-
-                void Data::writeData(serialization::ObjectDataOutput &objectDataOutput) const {
-                    objectDataOutput.writeInt(type);
-                    if (cd != NULL) {
-                        objectDataOutput.writeInt(cd->getClassId());
-                        objectDataOutput.writeInt(cd->getFactoryId());
-                        objectDataOutput.writeInt(cd->getVersion());
-                        const std::vector<byte> &classDefBytes = cd->getBinary();
-
-                        objectDataOutput.writeInt(classDefBytes.size());
-                        objectDataOutput.write(classDefBytes);
-                    } else {
-                        objectDataOutput.writeInt(NO_CLASS_ID);
+                bool Data::hasClassDefinition() const {
+                    if (isPortable()) {
+                        return true;
                     }
-                    int len = bufferSize();
-                    objectDataOutput.writeInt(len);
-                    if (len > 0) {
-                        objectDataOutput.write(*(buffer.get()));
-                    }
-                    objectDataOutput.writeInt(partitionHash);
+                    return headerSize() > 0;
                 }
 
-                void Data::readData(serialization::ObjectDataInput &objectDataInput) {
-                    type = objectDataInput.readInt();
-                    int classId = objectDataInput.readInt();
 
-                    if (classId != NO_CLASS_ID) {
-                        int factoryId = objectDataInput.readInt();
-                        int version = objectDataInput.readInt();
-
-                        int classDefSize = objectDataInput.readInt();
-                        PortableContext *portableContext = objectDataInput.getPortableContext();
-                        if (portableContext->isClassDefinitionExists(factoryId, classId, version)) {
-                            cd = portableContext->lookup(factoryId, classId, version);
-                            objectDataInput.skipBytes(classDefSize);
-                        } else {
-                            std::auto_ptr< std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                            objectDataInput.readFully(*(classDefBytes.get()));
-                            cd = portableContext->createClassDefinition(factoryId, classDefBytes);
-                        }
-                    }
-                    int size = objectDataInput.readInt();
-                    if (size > 0) {
-                        this->buffer->resize(size);
-                        objectDataInput.readFully(*(buffer.get()));
-                    }
-                    partitionHash = objectDataInput.readInt();
+                size_t Data::getClassDefinitionCount() const {
+                    size_t len = headerSize();
+                    assert(len % HEADER_ENTRY_LENGTH == 0 && "Header length should be factor of HEADER_ENTRY_LENGTH");
+                    return len / HEADER_ENTRY_LENGTH;
                 }
 
+                std::vector<boost::shared_ptr<ClassDefinition> > Data::getClassDefinitions(PortableContext& context) const{
+                    if (headerSize() == 0) {
+                        return std::vector<boost::shared_ptr<ClassDefinition> >();
+                    }
+
+                    size_t count = getClassDefinitionCount();
+                    std::vector<boost::shared_ptr<ClassDefinition> > definitions(count);
+                    for (int i = 0; i < count; i++) {
+                        definitions[i] = readClassDefinition(context, i * Data::HEADER_ENTRY_LENGTH);
+                    }
+                    return definitions;
+                }
+
+                boost::shared_ptr<ClassDefinition> Data::readClassDefinition(PortableContext& context, int start) const{
+                    int factoryId = readIntHeader(start + Data::HEADER_FACTORY_OFFSET);
+                    int classId = readIntHeader(start + Data::HEADER_CLASS_OFFSET);
+                    int version = readIntHeader(start + Data::HEADER_VERSION_OFFSET);
+                    return context.lookup(factoryId, classId, version);
+                }
+
+                int Data::readIntHeader(int offset) const{
+                    std::vector<byte>& b = *header;
+                    int byte3 = (b[offset] & 0xFF) << 24;
+                    int byte2 = (b[offset + 1] & 0xFF) << 16;
+                    int byte1 = (b[offset + 2] & 0xFF) << 8;
+                    int byte0 = b[offset + 3] & 0xFF;
+                    return byte3 + byte2 + byte1 + byte0;
+                }
             }
         }
     }

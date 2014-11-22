@@ -6,6 +6,7 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -116,6 +117,37 @@ namespace hazelcast {
                 if (isEmpty) return;
                 dataOutput->writeDoubleArray(data);
             }
+
+
+            void ObjectDataOutput::writeData(const pimpl::Data *data) {
+                if (isEmpty) return;
+                bool isNull = data == NULL;
+                writeBoolean(isNull);
+                if (isNull) {
+                    return;
+                }
+                writeInt(data->getType());
+                writeInt(data->hasPartitionHash() ? data->getPartitionHash() : 0);
+                writePortableHeader(*data);
+
+                int size = data->bufferSize();
+                writeInt(size);
+                if (size > 0) {
+                    dataOutput->write(*(data->data));
+                }
+            }
+
+            void ObjectDataOutput::writePortableHeader(const pimpl::Data& data) {
+                if (data.headerSize() == 0) {
+                    writeInt(0);
+                } else {
+                    util::ByteBuffer& headerBuffer = dataOutput->getHeaderBuffer();
+                    writeInt(data.header->size());
+                    writeInt(headerBuffer.position());
+                    headerBuffer.readFrom(*data.header);
+                }
+            }
+
 
             void ObjectDataOutput::writePortable(const Portable *portable) {
                 writeBoolean(false);

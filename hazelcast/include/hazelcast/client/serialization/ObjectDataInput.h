@@ -39,6 +39,8 @@ namespace hazelcast {
                 class PortableContext;
 
                 class DataInput;
+
+                class Data;
             }
 
             /**
@@ -50,7 +52,7 @@ namespace hazelcast {
                 /**
                 * Internal API. Constructor
                 */
-                ObjectDataInput(pimpl::DataInput &, pimpl::PortableContext &);
+                ObjectDataInput(pimpl::DataInput&, pimpl::PortableContext&);
 
                 /**
                 * Internal API.
@@ -62,7 +64,7 @@ namespace hazelcast {
                 * fills all content to given byteArray
                 * @param byteArray to fill the data in
                 */
-                void readFully(std::vector<byte> &byteArray);
+                void readFully(std::vector<byte>& byteArray);
 
                 /**
                 *
@@ -179,6 +181,12 @@ namespace hazelcast {
                 };
 
                 /**
+                * @return the data read
+                * @throws IOException if it reaches end of file before finish reading
+                */
+                pimpl::Data readData();
+
+                /**
                 * @return current position index
                 */
                 int position();
@@ -240,20 +248,22 @@ namespace hazelcast {
                         s->read(*this, *object);
                         return object;
                     } else {
-                        const std::string &message = "No serializer found for serializerId :"
-                                + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
+                        const std::string& message = "No serializer found for serializerId :"
+                        + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 
                 };
 
-                pimpl::DataInput &dataInput;
-                pimpl::PortableContext &portableContext;
-                pimpl::SerializerHolder &serializerHolder;
+                pimpl::DataInput& dataInput;
+                pimpl::PortableContext& portableContext;
+                pimpl::SerializerHolder& serializerHolder;
 
-                ObjectDataInput(const ObjectDataInput &);
+                ObjectDataInput(const ObjectDataInput&);
 
-                void operator=(const ObjectDataInput &);
+                void operator=(const ObjectDataInput&);
+
+                std::auto_ptr<std::vector<byte> > readPortableHeader();
             };
         }
     }

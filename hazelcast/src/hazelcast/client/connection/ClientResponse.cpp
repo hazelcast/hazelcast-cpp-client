@@ -30,10 +30,10 @@ namespace hazelcast {
                 return protocol::ProtocolConstants::CLIENT_RESPONSE;
             }
 
-            void ClientResponse::readData(serialization::ObjectDataInput &reader) {
-                callId = reader.readInt();
-                exception = reader.readBoolean();
-                data.readData(reader);
+            void ClientResponse::readData(serialization::ObjectDataInput & in) {
+                callId = in.readInt();
+                exception = in.readBoolean();
+                data = in.readData();
             }
         }
     }

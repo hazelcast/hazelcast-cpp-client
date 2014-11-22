@@ -15,11 +15,9 @@ namespace hazelcast {
         class Socket;
     }
     namespace util {
-        class ByteBuffer {
+        class HAZELCAST_API ByteBuffer {
         public:
-            ByteBuffer(int capacity);
-
-            ~ByteBuffer();
+            ByteBuffer(char* buffer, size_t size);
 
             ByteBuffer &flip();
 
@@ -31,9 +29,11 @@ namespace hazelcast {
 
             bool hasRemaining() const;
 
-            int position() const;
+            size_t position() const;
 
-            void readFrom(const client::Socket &socket);
+            void position(size_t );
+
+            size_t readFrom(const client::Socket &socket, int flag = 0);
 
             void writeTo(const client::Socket &socket);
 
@@ -45,28 +45,32 @@ namespace hazelcast {
 
             void writeShort(int v);
 
-            int writeTo(std::vector<byte> &destination, int offset);
+            size_t writeTo(std::vector<byte> &destination, size_t offset);
 
             void writeTo(std::vector<byte> &destination);
 
             void readFrom(std::vector<byte> const &source);
 
-            int readFrom(std::vector<byte> const &source, int offset);
+            size_t readFrom(std::vector<byte> const &source, size_t offset);
 
             void skip(int l);
 
             char readByte();
+
+            size_t limit() const;
 
             void writeByte(char c);
         private:
 
             void *ix() const;
 
-            int minimum(int a, int b) const;
+            size_t minimum(size_t a, size_t b) const;
 
-            int pos;
-            int limit;
-            int capacity;
+            void safeIncrementPosition(size_t );
+
+            size_t pos;
+            size_t lim;
+            size_t capacity;
             char *buffer;
         };
     }

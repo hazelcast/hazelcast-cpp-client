@@ -112,17 +112,20 @@ namespace hazelcast {
                 writer.writeUTF("n", name);
                 writer.writeInt("t", (int)requestType);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                out.writeBoolean(hasKey);
                 if (hasKey) {
-                    key.writeData(out);
+                    out.writeData(&key);
+                } else {
+                    out.writeData(NULL);
                 }
-                out.writeBoolean(hasValue);
                 if (hasValue) {
-                    value.writeData(out);
+                    out.writeData(&value);
+                } else {
+                    out.writeData(NULL);
                 }
-                out.writeBoolean(hasNewValue);
                 if (hasNewValue) {
-                    newValue.writeData(out);
+                    out.writeData(&newValue);
+                } else {
+                    out.writeData(NULL);
                 }
                 out.writeBoolean(hasPredicate);
                 if (hasPredicate) {

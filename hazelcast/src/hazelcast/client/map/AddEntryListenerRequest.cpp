@@ -56,7 +56,7 @@ namespace hazelcast {
                 }
                 if (hasKey) {
                     serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                    key.writeData(out);
+                    out.writeData(&key);
                 }
             }
 

@@ -32,9 +32,10 @@ namespace hazelcast {
                 BaseTxnRequest::write(writer);
                 writer.writeUTF("n", name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                out.writeBoolean(hasData);
                 if (hasData) {
-                    data.writeData(out);
+                    out.writeData(&data);
+                } else{
+                    out.writeData(NULL);
                 }
             }
         }

@@ -9,6 +9,7 @@
 
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -73,11 +74,17 @@ namespace hazelcast {
 
                     void position(size_t newPos);
 
-                    static int const STRING_CHUNK_SIZE = 16 * 1024;
-                    static int const DEFAULT_SIZE = 4 * 1024;
+                    util::ByteBuffer& getHeaderBuffer();
+
+                    std::auto_ptr< std::vector<byte> > getPortableHeader();
+
+                    static size_t const STRING_CHUNK_SIZE;
+                    static size_t const DEFAULT_SIZE;
 
                 private:
                     std::auto_ptr< std::vector<byte> > outputStream;
+                    char* headerBuffer;
+                    util::ByteBuffer headerByteBuffer;
 
                     void writeShortUTF(const std::string &);
 

@@ -63,7 +63,6 @@ namespace hazelcast {
                 boost::shared_ptr<ClassDefinition>  ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                     cd->setVersionIfNotSet(portableContext->getVersion());
                     setClassDefBinary(cd);
-                    portableContext->registerNestedDefinitions(cd);
 
                     long long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
                     boost::shared_ptr<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(versionedClassId, cd);

@@ -241,9 +241,6 @@ namespace hazelcast {
 
                 bool MorphingPortableReader::setPosition(char const *fieldName) {
                     if (cd->hasField(fieldName)) {
-                        const FieldDefinition &fd = cd->getField(fieldName);
-                        currentFactoryId = fd.getFactoryId();
-                        currentClassId = fd.getClassId();
                         dataInput.position(getPosition(fieldName));
                         currentFieldType = cd->getFieldType(fieldName);
                         return false;
@@ -267,8 +264,8 @@ namespace hazelcast {
                     dataInput.position(finalPosition);
                 }
 
-                void MorphingPortableReader::read(DataInput &dataInput, Portable &object, int factoryId, int classId, int dataVersion) {
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId, dataVersion);
+                void MorphingPortableReader::read(DataInput &dataInput, Portable &object) {
+                    serializerHolder.getPortableSerializer().read(dataInput, object);
                 }
             }
         }

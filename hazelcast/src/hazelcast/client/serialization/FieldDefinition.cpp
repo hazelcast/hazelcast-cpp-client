@@ -16,7 +16,7 @@ namespace hazelcast {
         namespace serialization {
             FieldDefinition::FieldDefinition()
             : index(0)
-            , classId(pimpl::Data::NO_CLASS_ID)
+            , classId(0)
             , factoryId(0)
             , version(-1) {
 
@@ -26,7 +26,7 @@ namespace hazelcast {
             : index(index)
             , fieldName(fieldName)
             , type(type)
-            , classId(pimpl::Data::NO_CLASS_ID)
+            , classId(0)
             , factoryId(0)
             , version(-1) {
             }
@@ -79,7 +79,6 @@ namespace hazelcast {
                 dataOutput.writeByte(type.getId());
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
-                dataOutput.writeInt(version);
             }
 
             void FieldDefinition::readData(pimpl::DataInput& dataInput) {
@@ -88,7 +87,6 @@ namespace hazelcast {
                 type.id = dataInput.readByte();
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
-                version = dataInput.readInt();
             }
 
         }

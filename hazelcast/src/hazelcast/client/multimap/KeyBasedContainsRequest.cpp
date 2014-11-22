@@ -33,9 +33,10 @@ namespace hazelcast {
                 writer.writeLong("threadId", threadId);
                 KeyBasedRequest::write(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                out.writeBoolean(hasValue);
                 if (hasValue) {
-                    value.writeData(out);
+                    out.writeData(&value);
+                } else {
+                    out.writeData(NULL);
                 }
             }
 

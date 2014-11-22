@@ -16,12 +16,17 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, int bufferSize, spi::ClientContext& clientContext)
+            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize, spi::ClientContext& clientContext)
             : IOHandler(connection, iListener)
-            , buffer(bufferSize)
+            , buffer(new char[bufferSize])
+            , byteBuffer(buffer, bufferSize)
             , lastData(NULL)
             , clientContext(clientContext){
 
+            }
+
+            ReadHandler::~ReadHandler() {
+                delete buffer;
             }
 
             void ReadHandler::run() {
@@ -34,21 +39,21 @@ namespace hazelcast {
                 }
                 connection.lastRead = (int)time(NULL);
                 try {
-                    buffer.readFrom(connection.getSocket());
+                    byteBuffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {
                     handleSocketException(e.what());
                     return;
                 }
 
-                if (buffer.position() == 0)
+                if (byteBuffer.position() == 0)
                     return;
-                buffer.flip();
+                byteBuffer.flip();
 
-                while (buffer.hasRemaining()) {
+                while (byteBuffer.hasRemaining()) {
                     if (lastData == NULL) {
                         lastData = new serialization::pimpl::Packet(getPortableContext());
                     }
-                    bool complete = lastData->readFrom(buffer);
+                    bool complete = lastData->readFrom(byteBuffer);
                     if (complete) {
                         clientContext.getInvocationService().handlePacket(connection, *lastData);
                         delete lastData;
@@ -58,10 +63,10 @@ namespace hazelcast {
                     }
                 }
 
-                if (buffer.hasRemaining()) {
-                    buffer.compact();
+                if (byteBuffer.hasRemaining()) {
+                    byteBuffer.compact();
                 } else {
-                    buffer.clear();
+                    byteBuffer.clear();
                 }
             }
 

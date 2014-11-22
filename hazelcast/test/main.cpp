@@ -35,10 +35,10 @@ int unitTests() {
         RUN_TEST(ClientUtilTest, 1);
         RUN_TEST(ClientSerializationTest, 1);
         HazelcastServerFactory factory;
+        RUN_TEST(ClientMapTest, factory);
         RUN_TEST(IssueTest, factory);
         RUN_TEST(MemberAttributeTest, factory);
         RUN_TEST(ClusterTest, factory);
-        RUN_TEST(ClientMapTest, factory);
         RUN_TEST(ClientMultiMapTest, factory);
         RUN_TEST(ClientQueueTest, factory);
         RUN_TEST(ClientListTest, factory);

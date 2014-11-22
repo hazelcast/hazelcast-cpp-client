@@ -32,10 +32,10 @@ namespace hazelcast {
             void TxnMultiMapRemoveRequest::write(serialization::PortableWriter& writer) const {
                 TxnMultiMapRequest::write(writer);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
-                key.writeData(out);
+                out.writeData(&key);
                 out.writeBoolean(hasValue);
                 if (hasValue)
-                    value.writeData(out);
+                    out.writeData(&value);
             }
 
         }

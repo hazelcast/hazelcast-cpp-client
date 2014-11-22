@@ -112,23 +112,21 @@ namespace hazelcast {
 
             ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
                 check();
-                if (def->getClassId() == pimpl::Data::NO_CLASS_ID) {
+                if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
                 }
                 FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(), def->getClassId(), def->getVersion());
                 fieldDefinitions.push_back(fieldDefinition);
-                nestedClassDefinitions.push_back(def);
                 return *this;
             }
 
             ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
                 check();
-                if (def->getClassId() == pimpl::Data::NO_CLASS_ID) {
+                if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
                 }
                 FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, def->getFactoryId(), def->getClassId(), def->getVersion());
                 fieldDefinitions.push_back(fieldDefinition);
-                nestedClassDefinitions.push_back(def);
                 return *this;
             }
 
@@ -139,11 +137,6 @@ namespace hazelcast {
                 std::vector<FieldDefinition>::iterator fdIt;
                 for (fdIt = fieldDefinitions.begin(); fdIt != fieldDefinitions.end(); fdIt++) {
                     cd->addFieldDef(*fdIt);
-                }
-
-                std::vector<boost::shared_ptr<ClassDefinition> >::iterator it;
-                for (it = nestedClassDefinitions.begin(); it != nestedClassDefinitions.end(); it++) {
-                    cd->addClassDef(*it);
                 }
                 return cd;
             }

@@ -32,7 +32,7 @@ namespace hazelcast {
                 writer.writeLong("t", threadId);
                 writer.writeBoolean("a", async);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                key.writeData(out);
+                out.writeData(&key);
             }
         }
     }

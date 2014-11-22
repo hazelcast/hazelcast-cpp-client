@@ -3,45 +3,45 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/DataAdapter.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionAdapter.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include  "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+
+                const int DataAdapter::ST_TYPE = 1;
+                const int DataAdapter::ST_SIZE = 2;
+                const int DataAdapter::ST_VALUE = 3;
+                const int DataAdapter::ST_HASH = 4;
+                const int DataAdapter::ST_ALL = 5;
+
                 DataAdapter::DataAdapter(PortableContext& context, const Data& data)
                 : status(ST_TYPE)
-                , factoryId(0)
-                , classId(0)
-                , version(0)
-                , classDefSize(0)
-                , skipClassDef(false)
                 , bytesRead(0)
                 , bytesWritten(0)
                 , data(data)
-                , context(context) {
+                , context(context)
+                , classDefinitionAdapter(NULL) {
 
                 }
 
                 DataAdapter::DataAdapter(PortableContext& context)
                 : status(ST_TYPE)
-                , factoryId(0)
-                , classId(0)
-                , version(0)
-                , classDefSize(0)
-                , skipClassDef(false)
                 , bytesRead(0)
                 , bytesWritten(0)
-                , context(context) {
+                , context(context)
+                , classDefinitionAdapter(NULL) {
 
                 }
 
 
                 DataAdapter::~DataAdapter() {
-
                 }
 
-                const Data& DataAdapter::getData() const{
+                const Data& DataAdapter::getData() const {
                     return data;
                 }
 
@@ -49,60 +49,41 @@ namespace hazelcast {
                     this->data = data;
                 }
 
-                bool DataAdapter::writeTo(util::ByteBuffer& destination) {
+
+                PortableContext& DataAdapter::getPortableContext() const {
+                    return context;
+                }
+
+                bool DataAdapter::writeTo(hazelcast::util::ByteBuffer& destination) {
+
                     if (!isStatusSet(ST_TYPE)) {
-                        if (destination.remaining() < 4) {
+                        if (destination.remaining() < 5) {
                             return false;
                         }
                         destination.writeInt(data.getType());
+
+                        bool hasClassDef = data.hasClassDefinition();
+                        if (hasClassDef) {
+                            classDefinitionAdapter = new ClassDefinitionAdapter(data, context);
+                        }
+                        destination.writeByte((byte)(hasClassDef ? 1 : 0));
+
                         setStatus(ST_TYPE);
                     }
-                    if (!isStatusSet(ST_CLASS_ID)) {
+
+                    if (classDefinitionAdapter != NULL) {
+                        if (!classDefinitionAdapter->write(destination)) {
+                            return false;
+                        }
+                        delete classDefinitionAdapter;
+                    }
+
+                    if (!isStatusSet(ST_HASH)) {
                         if (destination.remaining() < 4) {
                             return false;
                         }
-                        classId = data.cd == NULL ? Data::NO_CLASS_ID : data.cd->getClassId();
-                        destination.writeInt(classId);
-                        if (classId == Data::NO_CLASS_ID) {
-                            setStatus(ST_FACTORY_ID);
-                            setStatus(ST_VERSION);
-                            setStatus(ST_CLASS_DEF_SIZE);
-                            setStatus(ST_CLASS_DEF);
-                        }
-                        setStatus(ST_CLASS_ID);
-                    }
-                    if (!isStatusSet(ST_FACTORY_ID)) {
-                        if (destination.remaining() < 4) {
-                            return false;
-                        }
-                        destination.writeInt(data.cd->getFactoryId());
-                        setStatus(ST_FACTORY_ID);
-                    }
-                    if (!isStatusSet(ST_VERSION)) {
-                        if (destination.remaining() < 4) {
-                            return false;
-                        }
-                        int version = data.cd->getVersion();
-                        destination.writeInt(version);
-                        setStatus(ST_VERSION);
-                    }
-                    if (!isStatusSet(ST_CLASS_DEF_SIZE)) {
-                        if (destination.remaining() < 4) {
-                            return false;
-                        }
-                        classDefSize = data.cd->getBinary().size();
-                        destination.writeInt(classDefSize);
-                        setStatus(ST_CLASS_DEF_SIZE);
-                        if (classDefSize == 0) {
-                            setStatus(ST_CLASS_DEF);
-                        }
-                    }
-                    if (!isStatusSet(ST_CLASS_DEF)) {
-                        if (destination.remaining() < data.cd->getBinary().size()) {
-                            return false;
-                        }
-                        destination.readFrom(data.cd->getBinary());
-                        setStatus(ST_CLASS_DEF);
+                        destination.writeInt(data.hasPartitionHash() ? data.getPartitionHash() : 0);
+                        setStatus(ST_HASH);
                     }
                     if (!isStatusSet(ST_SIZE)) {
                         if (destination.remaining() < 4) {
@@ -118,100 +99,35 @@ namespace hazelcast {
                         }
                     }
                     if (!isStatusSet(ST_VALUE)) {
-                        bytesWritten += destination.readFrom(*(data.buffer), bytesWritten);
-                        if (bytesWritten != data.buffer->size()) {
+                        bytesWritten += destination.readFrom(*(data.data), bytesWritten);
+                        if (bytesWritten != data.data->size()) {
                             return false;
                         }
                         setStatus(ST_VALUE);
-                    }
-                    if (!isStatusSet(ST_HASH)) {
-                        if (destination.remaining() < 4) {
-                            return false;
-                        }
-                        destination.writeInt(data.getPartitionHash());
-                        setStatus(ST_HASH);
                     }
                     setStatus(ST_ALL);
                     return true;
                 }
 
-                bool DataAdapter::readFrom(util::ByteBuffer& source) {
+                bool DataAdapter::readFrom(hazelcast::util::ByteBuffer& source) {
                     if (!isStatusSet(ST_TYPE)) {
-                        if (source.remaining() < 4) {
+                        if (source.remaining() < 5) {
                             return false;
                         }
                         data.setType(source.readInt());
                         setStatus(ST_TYPE);
+
+                        bool hasClassDef = source.readByte() == 1;
+                        if (hasClassDef) {
+                            classDefinitionAdapter = new ClassDefinitionAdapter(data, context);
+                        }
                     }
-                    if (!isStatusSet(ST_CLASS_ID)) {
-                        if (source.remaining() < 4) {
+
+                    if (classDefinitionAdapter != NULL) {
+                        if (!classDefinitionAdapter->read(source)) {
                             return false;
                         }
-                        classId = source.readInt();
-                        setStatus(ST_CLASS_ID);
-                        if (classId == Data::NO_CLASS_ID) {
-                            setStatus(ST_FACTORY_ID);
-                            setStatus(ST_VERSION);
-                            setStatus(ST_CLASS_DEF_SIZE);
-                            setStatus(ST_CLASS_DEF);
-                        }
-                    }
-                    if (!isStatusSet(ST_FACTORY_ID)) {
-                        if (source.remaining() < 4) {
-                            return false;
-                        }
-                        factoryId = source.readInt();
-                        setStatus(ST_FACTORY_ID);
-                    }
-                    if (!isStatusSet(ST_VERSION)) {
-                        if (source.remaining() < 4) {
-                            return false;
-                        }
-                        version = source.readInt();
-                        setStatus(ST_VERSION);
-                    }
-                    if (!isStatusSet(ST_CLASS_DEF)) {
-                        if (!skipClassDef) {
-                            if (context.isClassDefinitionExists(factoryId, classId, version)) {
-                                data.cd = context.lookup(factoryId, classId, version);
-                                skipClassDef = true;
-                            }
-                        }
-                        if (!isStatusSet(ST_CLASS_DEF_SIZE)) {
-                            if (source.remaining() < 4) {
-                                return false;
-                            }
-                            classDefSize = source.readInt();
-                            setStatus(ST_CLASS_DEF_SIZE);
-                        }
-                        if (!isStatusSet(ST_CLASS_DEF)) {
-                            if (source.remaining() < classDefSize) {
-                                return false;
-                            }
-                            if (skipClassDef) {
-                                source.skip(classDefSize);
-                            } else {
-                                std::auto_ptr<std::vector<byte> > classDefBytes (new std::vector<byte> (classDefSize));
-                                source.writeTo(*(classDefBytes.get()));
-                                data.cd = context.createClassDefinition(factoryId, classDefBytes);
-                            }
-                            setStatus(ST_CLASS_DEF);
-                        }
-                    }
-                    if (!isStatusSet(ST_SIZE)) {
-                        if (source.remaining() < 4) {
-                            return false;
-                        }
-                        int valueSize = source.readInt();
-                        data.buffer.reset(new std::vector<byte>(valueSize));
-                        setStatus(ST_SIZE);
-                    }
-                    if (!isStatusSet(ST_VALUE)) {
-                        bytesRead += source.writeTo((*(data.buffer)), bytesRead);
-                        if (bytesRead != data.buffer->size()) {
-                            return false;
-                        }
-                        setStatus(ST_VALUE);
+                        delete classDefinitionAdapter;
                     }
 
                     if (!isStatusSet(ST_HASH)) {
@@ -221,17 +137,35 @@ namespace hazelcast {
                         data.setPartitionHash(source.readInt());
                         setStatus(ST_HASH);
                     }
+
+                    if (!isStatusSet(ST_SIZE)) {
+                        if (source.remaining() < 4) {
+                            return false;
+                        }
+                        int valueSize = source.readInt();
+                        data.data.reset(new std::vector<byte>(valueSize));
+                        setStatus(ST_SIZE);
+                    }
+                    if (!isStatusSet(ST_VALUE)) {
+                        bytesRead += source.writeTo((*(data.data)), bytesRead);
+                        if (bytesRead != data.data->size()) {
+                            return false;
+                        }
+                        setStatus(ST_VALUE);
+                    }
+
                     setStatus(ST_ALL);
                     return true;
                 }
 
                 void DataAdapter::setStatus(int bit) {
-                    status |= 1 << bit;
+                    status = util::setBit(status, bit);
                 }
 
                 bool DataAdapter::isStatusSet(int bit) const {
-                    return (status & 1 << bit) != 0;
+                    return util::isBitSet(status, bit);
                 }
+
             }
         }
     }

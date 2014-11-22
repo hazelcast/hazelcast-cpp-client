@@ -33,7 +33,7 @@ namespace hazelcast {
                 eventType = reader.readInt("e");;
                 uuid = reader.readUTF("u");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
-                util::readNullableData(in, &item);
+                item = in.readData();
             }
 
         }

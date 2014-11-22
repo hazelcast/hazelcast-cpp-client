@@ -32,12 +32,8 @@ namespace hazelcast {
                 int size = reader.readInt("s");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 for (int i = 0; i < size; ++i) {
-                    serialization::pimpl::Data keyData;
-                    keyData.readData(in);
-
-                    serialization::pimpl::Data valueData;
-                    valueData.readData(in);
-
+                    serialization::pimpl::Data keyData = in.readData();
+                    serialization::pimpl::Data valueData = in.readData();
                     entrySet.push_back(std::make_pair(keyData, valueData));
                 }
             }

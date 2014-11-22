@@ -23,6 +23,8 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 class DataOutput;
+
+                class Data;
             }
 
             /**
@@ -35,7 +37,7 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::PortableContext &portableContext);
+                ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext);
 
                 /**
                 * Internal API Constructor
@@ -51,7 +53,7 @@ namespace hazelcast {
                 * Writes all the bytes in array to stream
                 * @param bytes to be written
                 */
-                void write(const std::vector<byte> &bytes);
+                void write(const std::vector<byte>& bytes);
 
                 /**
                 * @param value the bool value to be written
@@ -96,42 +98,47 @@ namespace hazelcast {
                 /**
                 * @param value the utf string value to be written
                 */
-                void writeUTF(const std::string &value);
+                void writeUTF(const std::string& value);
 
                 /**
                 * @param value the utf string value to be written
                 */
-                void writeByteArray(const std::vector<byte> &value);
+                void writeByteArray(const std::vector<byte>& value);
 
                 /**
                 * @param value the utf string value to be written
                 */
-                void writeCharArray(const std::vector<char> &value);
+                void writeCharArray(const std::vector<char>& value);
 
                 /**
                 * @param value the short array value to be written
                 */
-                void writeShortArray(const std::vector<short> &value);
+                void writeShortArray(const std::vector<short>& value);
 
                 /**
                 * @param value the int array value to be written
                 */
-                void writeIntArray(const std::vector<int> &value);
+                void writeIntArray(const std::vector<int>& value);
 
                 /**
                 * @param value the short array value to be written
                 */
-                void writeLongArray(const std::vector<long> &value);
+                void writeLongArray(const std::vector<long>& value);
 
                 /**
                 * @param value the float array value to be written
                 */
-                void writeFloatArray(const std::vector<float> &value);
+                void writeFloatArray(const std::vector<float>& value);
 
                 /**
                 * @param value the double array value to be written
                 */
-                void writeDoubleArray(const std::vector<double> &value);
+                void writeDoubleArray(const std::vector<double>& value);
+
+                /**
+                * @param value the data value to be written
+                */
+                void writeData(const pimpl::Data *value);
 
                 /**
                 * @param object Portable object to be written
@@ -141,7 +148,7 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const Portable *object) {
                     if (isEmpty) return;
-                    if(object == NULL){
+                    if (object == NULL) {
                         writeBoolean(true);
                         return;
                     }
@@ -156,7 +163,7 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const IdentifiedDataSerializable *object) {
                     if (isEmpty) return;
-                    if(object == NULL){
+                    if (object == NULL) {
                         writeBoolean(true);
                         return;
                     }
@@ -171,7 +178,7 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const void *object) {
                     if (isEmpty) return;
-                    if(object == NULL){
+                    if (object == NULL) {
                         writeBoolean(true);
                         return;
                     }
@@ -184,9 +191,9 @@ namespace hazelcast {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
                         s->write(*this, *serializable);
                     } else {
-                        const std::string &message = "No serializer found for serializerId :"
-                                + util::IOUtil::to_string(type)
-                                + ", typename :" + typeid(T).name();
+                        const std::string& message = "No serializer found for serializerId :"
+                        + util::IOUtil::to_string(type)
+                        + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
                     }
                 };
@@ -205,9 +212,11 @@ namespace hazelcast {
 
                 void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
 
-                ObjectDataOutput(const ObjectDataOutput &);
+                void writePortableHeader(const pimpl::Data& data);
 
-                void operator=(const ObjectDataOutput &);
+                ObjectDataOutput(const ObjectDataOutput&);
+
+                void operator=(const ObjectDataOutput&);
             };
 
         }

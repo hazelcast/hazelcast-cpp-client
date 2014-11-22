@@ -35,7 +35,7 @@ namespace hazelcast {
                 publishTime = reader.readLong("pt");
                 uuid = reader.readUTF("u");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
-                message.readData(in);
+                message = in.readData();
             }
         }
     }

@@ -22,7 +22,7 @@ namespace hazelcast {
                 CollectionRequest::write(writer);
                 writer.writeBoolean("l", last);
                 serialization::ObjectDataOutput &output = writer.getRawDataOutput();
-                data.writeData(output);
+                output.writeData(&data);
             }
 
             int ListIndexOfRequest::getClassId() const {
