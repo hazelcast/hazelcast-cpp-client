@@ -15,13 +15,8 @@ namespace hazelcast {
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
-        , credentials(NULL) {
-        }
-
-
-        ClientConfig::~ClientConfig() {
-            if (credentials != NULL)
-                delete credentials;
+        , credentials(NULL)
+        , defaultCredentials(NULL) {
         }
 
         ClientConfig& ClientConfig::addAddress(const Address& address) {
@@ -136,10 +131,13 @@ namespace hazelcast {
         }
 
         Credentials& ClientConfig::getCredentials() {
-            if (credentials == NULL) {
-                credentials = new protocol::UsernamePasswordCredentials(groupConfig.getName(), groupConfig.getPassword());
+            if (credentials != NULL) {
+                return *credentials;
             }
-            return *credentials;
+            if (defaultCredentials.get() == NULL) {
+                defaultCredentials.reset(new protocol::UsernamePasswordCredentials(groupConfig.getName(), groupConfig.getPassword()));
+            }
+            return *defaultCredentials;
         }
 
         ClientConfig& ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
