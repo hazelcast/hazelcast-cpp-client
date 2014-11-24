@@ -192,8 +192,8 @@ namespace hazelcast {
 
                 checkLive();
                 conn->connect(clientContext.getClientConfig().getConnectionTimeout());
-                if (socketInterceptor.get() != NULL) {
-                    socketInterceptor.get()->onConnect(conn->getSocket());
+                if (socketInterceptor != NULL) {
+                    socketInterceptor->onConnect(conn->getSocket());
                 }
                 authenticate(*conn, ownerConnection);
                 return conn.release();

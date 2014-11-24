@@ -16,7 +16,7 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -193,7 +193,7 @@ namespace hazelcast {
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             */
-            std::auto_ptr<SocketInterceptor> getSocketInterceptor();
+            SocketInterceptor* getSocketInterceptor();
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -298,7 +298,7 @@ namespace hazelcast {
             *
             * @return properties map
             */
-            std::map<std::string, std::string >& getProperties();
+            std::map<std::string, std::string>& getProperties();
 
             /**
             * Sets the value of a named property
@@ -329,7 +329,7 @@ namespace hazelcast {
 
             std::set<LifecycleListener *> lifecycleListeners;
 
-            std::map<std::string, std::string > properties;
+            std::map<std::string, std::string> properties;
 
             bool smart;
 
@@ -341,7 +341,7 @@ namespace hazelcast {
 
             int attemptPeriod;
 
-            std::auto_ptr<SocketInterceptor> socketInterceptor;
+            SocketInterceptor *socketInterceptor;
 
             Credentials *credentials;
 
@@ -354,6 +354,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif /* HAZELCAST_CLIENT_CONFIG */

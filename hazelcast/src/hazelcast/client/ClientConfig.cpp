@@ -141,11 +141,11 @@ namespace hazelcast {
         }
 
         ClientConfig& ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
-            this->socketInterceptor.reset(socketInterceptor);
+            this->socketInterceptor = socketInterceptor;
             return *this;
         }
 
-        std::auto_ptr<SocketInterceptor> ClientConfig::getSocketInterceptor() {
+        SocketInterceptor* ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
         }
 
