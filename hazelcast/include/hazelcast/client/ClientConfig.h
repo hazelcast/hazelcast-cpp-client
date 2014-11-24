@@ -44,11 +44,6 @@ namespace hazelcast {
             ClientConfig();
 
             /**
-            * Destructor
-            */
-            ~ClientConfig();
-
-            /**
             * Adds an address to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
@@ -349,6 +344,8 @@ namespace hazelcast {
             std::auto_ptr<SocketInterceptor> socketInterceptor;
 
             Credentials *credentials;
+
+            std::auto_ptr<Credentials> defaultCredentials;
 
         };
 
