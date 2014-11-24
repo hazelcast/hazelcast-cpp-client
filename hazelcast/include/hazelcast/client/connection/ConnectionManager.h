@@ -154,7 +154,7 @@ namespace hazelcast {
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext& clientContext;
-                std::auto_ptr<SocketInterceptor> socketInterceptor;
+                SocketInterceptor* socketInterceptor;
                 InSelector inSelector;
                 OutSelector outSelector;
                 std::auto_ptr<util::Thread> inSelectorThread;
