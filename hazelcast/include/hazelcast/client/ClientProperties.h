@@ -19,6 +19,11 @@ namespace hazelcast {
     namespace client {
         class ClientConfig;
 
+        /**
+        * A client property is a configuration for hazelcast client. For available configurations
+        * see ClientProperties class.
+        *
+        */
         class HAZELCAST_API ClientProperty {
         public:
             ClientProperty(ClientConfig& config, const std::string& name, const std::string& defaultValue);
@@ -43,6 +48,11 @@ namespace hazelcast {
         };
 
 
+        /**
+        * Client Properties is an internal class. Only use properties documentations as references to be used
+        * in ClientConfig#setProperty
+        *
+        */
         class HAZELCAST_API ClientProperties {
         public:
             ClientProperties(ClientConfig& clientConfig);
