@@ -11,7 +11,7 @@
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/spi/ClientProperties.h"
+#include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
@@ -83,7 +83,8 @@ namespace hazelcast {
  * C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.
  * For each of the headers above, it is assumed that you are in correct folder for your platform.
  * Binaries that are distributed with enterprise zip are for following platforms:
- * Windows_32 (Visual Studio 2012), Windows_64 (Visual Studio 2012), Linux_32 or Linux_64.
+ * Windows_32 (Visual Studio 2012), Windows_64 (Visual Studio 2012), Linux_32(gcc 3.4+ , libc 2.5+)
+ * or Linux_64(gcc 3.4+ , libc 2.5+).
  * For other platforms are specific compiler versions, please contact support@hazelcast.com
  *
  *
@@ -607,7 +608,7 @@ namespace hazelcast {
 
         private:
             ClientConfig clientConfig;
-            spi::ClientProperties clientProperties;
+            ClientProperties clientProperties;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
