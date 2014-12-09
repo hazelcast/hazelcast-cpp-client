@@ -11,7 +11,7 @@
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/spi/ClientProperties.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
@@ -59,7 +59,6 @@ namespace hazelcast {
  * Dependencies are zlib and shared_ptr from the boost library.
  *
  *  Downloaded release folder consist of
- *  * Mac_64/
  *  * Windows_32/
  *  * Windows_64/
  *  * Linux_32/
@@ -83,7 +82,10 @@ namespace hazelcast {
  *
  * C++ client is tested on Linux 32/64, Mac 64 and Windows 32/64 bit machines.
  * For each of the headers above, it is assumed that you are in correct folder for your platform.
- * Folders are Mac_64, Windows_32, Windows_64, Linux_32 or Linux_64.
+ * Binaries that are distributed with enterprise zip are for following platforms:
+ * Windows_32 (Visual Studio 2012), Windows_64 (Visual Studio 2012), Linux_32 or Linux_64.
+ * For other platforms are specific compiler versions, please contact support@hazelcast.com
+ *
  *
  * \subsection Linux
  *
@@ -99,7 +101,7 @@ namespace hazelcast {
  *
  * \subsection Mac
  *
- * For Mac, there is only one  distribution which is 64 bit.
+ * For Mac binaries, please contact support@hazelcast.com
  *
  * Sample script to build with static library:
  *
@@ -112,7 +114,7 @@ namespace hazelcast {
  * \subsection Windows
  *
  * For Windows, there are two distributions one is 32bit the other is 64bit.
- * Currently release have only Visual Studio 2010 compatible libraries. For others please contact with support@hazelcast.com
+ * Currently release have only Visual Studio 2012 compatible libraries in the distributed zip. For others please contact with support@hazelcast.com
  *
  *
  *
@@ -605,7 +607,7 @@ namespace hazelcast {
 
         private:
             ClientConfig clientConfig;
-            ClientProperties clientProperties;
+            spi::ClientProperties clientProperties;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
