@@ -115,7 +115,7 @@ namespace hazelcast {
 
                     size_t count = getClassDefinitionCount();
                     std::vector<boost::shared_ptr<ClassDefinition> > definitions(count);
-                    for (int i = 0; i < count; i++) {
+                    for (size_t i = 0; i < count; i++) {
                         definitions[i] = readClassDefinition(context, i * Data::HEADER_ENTRY_LENGTH);
                     }
                     return definitions;

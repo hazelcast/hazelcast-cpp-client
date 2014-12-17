@@ -14,7 +14,7 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API IdentifiedDataSerializableResponse : public serialization::IdentifiedDataSerializable {
             public:
-                ~IdentifiedDataSerializableResponse();
+                virtual ~IdentifiedDataSerializableResponse();
 
                 /* final */ void writeData(serialization::ObjectDataOutput &writer) const;
             };

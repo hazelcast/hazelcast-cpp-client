@@ -50,7 +50,7 @@ message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror -g -rdynamic  ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 
@@ -72,7 +72,25 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	ENDIF(${HZ_BIT} MATCHES "32")
 
-	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} asan pthread rt ${Hz_ZLIB_LIBRARIES})
+
+
+	IF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
+	  message(STATUS "Address Sanitizer is on")
+	  set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=address -fno-omit-frame-pointer " LINK_FLAGS "-O1 -fsanitize=address -fno-omit-frame-pointer ")
+
+	  # use, i.e. don't skip the full RPATH for the build tree
+	  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+	  # when building, don't use the install RPATH already
+	  # (but later on when installing)
+	  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+	  SET(CMAKE_INSTALL_RPATH "/usr/lib/gcc/x86_64-linux-gnu/4.8/")
+
+	  target_link_libraries(${HZ_LIB_NAME} asan)	
+	ENDIF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
+
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

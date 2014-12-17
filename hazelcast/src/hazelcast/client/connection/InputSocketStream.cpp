@@ -81,7 +81,7 @@ namespace hazelcast {
                 if(hasClassDefinition){
                     size_t classDefCount = (size_t) readInt();
                     std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(classDefCount * (size_t)serialization::pimpl::Data::HEADER_ENTRY_LENGTH));
-                    for (int classDefIndex = 0; classDefIndex < classDefCount; classDefIndex++) {
+                    for (size_t classDefIndex = 0; classDefIndex < classDefCount; classDefIndex++) {
                                               //read header
                         int factoryId = readInt();
                         int classId = readInt();
