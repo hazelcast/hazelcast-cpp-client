@@ -6,6 +6,7 @@ project (HazelcastClient)
 #  -DHZ_BIT=[32 | 64]
 #  -DHZ_CODE_COVERAGE=ON
 #  -DHZ_VALGRIND=ON
+#  -DHZ_ADDRESS_SANITIZER=ON
 
 SET(HZ_VERSION 3.4-RC1-SNAPSHOT)
 
@@ -44,6 +45,13 @@ IF(${HZ_VALGRIND} MATCHES "ON")
 	message(STATUS "Valgrind is on")
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
 ENDIF(${HZ_VALGRIND} MATCHES "ON")
+
+
+IF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
+  message(STATUS "Address Sanitizer is on")
+  set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=address -fno-omit-frame-pointer " LINK_FLAGS "-O1")#for valgrind
+ENDIF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
+
 
 
 message(STATUS "${CMAKE_SYSTEM}")
