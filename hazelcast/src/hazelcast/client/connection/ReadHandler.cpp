@@ -22,11 +22,11 @@ namespace hazelcast {
             , byteBuffer(buffer, bufferSize)
             , lastData(NULL)
             , clientContext(clientContext){
-
+		connection.lastRead = (int)time(NULL);
             }
 
             ReadHandler::~ReadHandler() {
-                delete buffer;
+                delete [] buffer;
             }
 
             void ReadHandler::run() {

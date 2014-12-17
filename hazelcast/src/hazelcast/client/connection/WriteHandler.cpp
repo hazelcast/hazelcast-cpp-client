@@ -22,8 +22,8 @@ namespace hazelcast {
             , ready(false)
             , informSelector(true)
             {
-
-            }
+		connection.lastWrite = (int)time(NULL);
+	    }
 
 
             WriteHandler::~WriteHandler() {
@@ -31,7 +31,7 @@ namespace hazelcast {
                 while ((packet = writeQueue.poll()) != NULL) {
                     delete packet;
                 }
-                delete buffer;
+                delete [] buffer;
             }
 
             void WriteHandler::run() {

@@ -24,7 +24,7 @@ namespace hazelcast {
 
 
                 DataOutput::~DataOutput() {
-                    delete headerBuffer;
+                    delete [] headerBuffer;
                 }
 
                 DataOutput::DataOutput(DataOutput const& rhs)

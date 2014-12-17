@@ -11,9 +11,13 @@
 
   	cmake .. -G Xcode -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
 
-# For mac Xcode Address Sanitizer
+# For Linux Address Sanitizer
 
-        cmake .. -G Xcode -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_ADDRESS_SANITIZER=ON
+        cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_ADDRESS_SANITIZER=ON
+
+# valgrind sample run with suppresions
+
+        valgrind --leak-check=yes  --gen-suppressions=all --suppressions=../test.sup  ./hazelcast/test/clientTest_STATIC_64.exe  > log.t
 
 # For linux release
 
