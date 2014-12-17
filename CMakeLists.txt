@@ -8,7 +8,7 @@ project (HazelcastClient)
 #  -DHZ_VALGRIND=ON
 #  -DHZ_ADDRESS_SANITIZER=ON
 
-SET(HZ_VERSION 3.4-RC1-SNAPSHOT)
+SET(HZ_VERSION 3.5-SNAPSHOT)
 
 message(STATUS "Preparing hazelcast client ..... ")
 
