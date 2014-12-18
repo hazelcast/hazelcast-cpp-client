@@ -12,7 +12,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
 
-                const int ClassDefinitionAdapter::CLASS_DEF_HEADER_SIZE = 16;
+                const size_t ClassDefinitionAdapter::CLASS_DEF_HEADER_SIZE = 16;
                 const int ClassDefinitionAdapter::ST_PREPARED = 1;
                 const int ClassDefinitionAdapter::ST_HEADER = 2;
                 const int ClassDefinitionAdapter::ST_DATA = 3;
@@ -222,3 +222,4 @@ namespace hazelcast {
         }
     }
 }
+
