@@ -78,6 +78,7 @@ namespace hazelcast {
                 int typeId = readInt();
                 int partitionHash = readInt();
                 std::auto_ptr<std::vector<byte> > header = readPortableHeader();
+                data.setHeader(header);
 
                 int dataSize = readInt();
                 std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>);
@@ -89,21 +90,21 @@ namespace hazelcast {
                 data.setType(typeId);
                 data.setBuffer(buffer);
                 data.setPartitionHash(partitionHash);
-                data.setHeader(header);
                 return data;
             }
 
 
             std::auto_ptr<std::vector<byte> > ObjectDataInput::readPortableHeader() {
                 int len = readInt();
-                std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(len));
                 if (len > 0) {
+                    std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(len));
                     hazelcast::util::ByteBuffer& headerBuffer = dataInput.getHeaderBuffer();
                     int pos = readInt();
                     headerBuffer.position(pos);
                     headerBuffer.writeTo(*header);
+                    return header;
                 }
-                return header;
+                return std::auto_ptr<std::vector<byte> >();
             }
 
             int ObjectDataInput::position() {
