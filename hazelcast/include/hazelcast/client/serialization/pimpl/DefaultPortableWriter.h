@@ -99,7 +99,7 @@ namespace hazelcast {
                         if (len > 0) {
                             int offset = dataOutput.position();
                             dataOutput.position(offset + len * sizeof(int));
-                            for (int i = 0; i < len; i++) {
+                            for (size_t i = 0; i < len; i++) {
                                 dataOutput.writeInt(offset + i * sizeof(int), dataOutput.position());
                                 Portable const& portable = values[i];
                                 checkPortableAttributes(fieldDefinition, portable);

@@ -35,7 +35,7 @@ namespace hazelcast {
                     bool read(util::ByteBuffer& source);
 
                 private:
-                    static const int CLASS_DEF_HEADER_SIZE;
+                    static const size_t CLASS_DEF_HEADER_SIZE;
                     static const int ST_PREPARED;
                     static const int ST_HEADER;
                     static const int ST_DATA;
