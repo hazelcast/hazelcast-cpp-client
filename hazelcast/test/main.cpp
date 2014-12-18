@@ -22,6 +22,40 @@
 #include "cluster/MemberAttributeTest.h"
 #include "issues/IssueTest.h"
 #include "util/ClientUtilTest.h"
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+
+
+void handler(int sig) {
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    exit(1);
+}
+
+#else
+
+
+#include <execinfo.h>
+#include <unistd.h>
+
+
+void handler(int sig) {
+    void *array[20];
+    size_t size;
+
+    // get void*'s for all entries on the stack
+    size = backtrace(array, 20);
+
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    exit(1);
+}
+
+#endif
 
 using namespace hazelcast::client::test;
 
@@ -63,6 +97,9 @@ int unitTests() {
 }
 
 int main() {
+    signal(SIGABRT , handler);   // install our handler
+    signal(SIGSEGV, handler);   // install our handler
+
 //    testSpeed();
     return unitTests();
 }
