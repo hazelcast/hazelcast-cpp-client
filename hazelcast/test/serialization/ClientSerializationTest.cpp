@@ -31,8 +31,8 @@ namespace hazelcast {
                 serialization::pimpl::PortableContext& contextOut = ss2.getPortableContext();
                 serialization::pimpl::Packet packet(contextIn, data);
 
-                char buf[1024 * 1024 * 2];
-                util::ByteBuffer buffer(buf, 1024 * 1024 * 2);
+                std::auto_ptr<char> buf(new char[1024 * 1024 * 2]);
+                util::ByteBuffer buffer(buf.get(), 1024 * 1024 * 2);
                 iTest::assertTrue(packet.writeTo(buffer));
                 buffer.flip();
 

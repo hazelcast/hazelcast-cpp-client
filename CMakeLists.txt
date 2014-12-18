@@ -51,7 +51,7 @@ message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror -g -rdynamic  ")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 
@@ -85,11 +85,11 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	  # when building, don't use the install RPATH already
 	  # (but later on when installing)
-	  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+	  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 	  SET(CMAKE_INSTALL_RPATH "/usr/lib/gcc/x86_64-linux-gnu/4.8/")
 
-	  target_link_libraries(${HZ_LIB_NAME} asan)	
+	  target_link_libraries(${HZ_LIB_NAME} asan)
 	ENDIF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
