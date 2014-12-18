@@ -21,7 +21,6 @@ namespace hazelcast {
 
                 Data::Data()
                 : data(new std::vector<byte>)
-                , header(new std::vector<byte>)
                 , partitionHash(0)
                 , type(SerializationConstants::CONSTANT_TYPE_DATA) {
 
@@ -98,7 +97,7 @@ namespace hazelcast {
                     if (isPortable()) {
                         return true;
                     }
-                    return headerSize() > 0;
+                    return header.get() != NULL;
                 }
 
 
@@ -109,7 +108,7 @@ namespace hazelcast {
                 }
 
                 std::vector<boost::shared_ptr<ClassDefinition> > Data::getClassDefinitions(PortableContext& context) const{
-                    if (headerSize() == 0) {
+                    if (!hasClassDefinition()) {
                         return std::vector<boost::shared_ptr<ClassDefinition> >();
                     }
 

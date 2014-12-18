@@ -109,10 +109,15 @@ namespace hazelcast {
                         if (data.bufferSize() == 0) return boost::shared_ptr<T>();
                         checkClassType(SerializationConstants::CONSTANT_TYPE_PORTABLE, data.getType());
                         boost::shared_ptr<T> object(new T);
-                        DataInput dataInput(*(data.data.get()) , *(data.header.get()));
-
-                        getSerializerHolder().getPortableSerializer().read(dataInput, *object);
-                        return object;
+                        if(data.header.get() == NULL){
+                            DataInput dataInput(*(data.data.get()));
+                            getSerializerHolder().getPortableSerializer().read(dataInput, *object);
+                            return object;
+                        } else{
+                            DataInput dataInput(*(data.data.get()) , *(data.header.get()));
+                            getSerializerHolder().getPortableSerializer().read(dataInput, *object);
+                            return object;
+                        }
                     };
 
                     template<typename T>
@@ -120,10 +125,17 @@ namespace hazelcast {
                         if (data.bufferSize() == 0) return boost::shared_ptr<T>();
                         checkClassType(SerializationConstants::CONSTANT_TYPE_DATA, data.getType());
                         boost::shared_ptr<T> object(new T);
-                        DataInput dataInput(*(data.data.get()), *(data.header.get()));
-                        ObjectDataInput objectDataInput(dataInput, portableContext);
-                        getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
-                        return object;
+                        if(data.header.get() == NULL){
+                            DataInput dataInput(*(data.data.get()));
+                            ObjectDataInput objectDataInput(dataInput, portableContext);
+                            getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
+                            return object;
+                        } else{
+                            DataInput dataInput(*(data.data.get()) , *(data.header.get()));
+                            ObjectDataInput objectDataInput(dataInput, portableContext);
+                            getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
+                            return object;
+                        }
                     };
 
                     template<typename T>

@@ -138,7 +138,7 @@ namespace hazelcast {
             }
 
             void ObjectDataOutput::writePortableHeader(const pimpl::Data& data) {
-                if (data.headerSize() == 0) {
+                if (!data.hasClassDefinition()) {
                     writeInt(0);
                 } else {
                     util::ByteBuffer& headerBuffer = dataOutput->getHeaderBuffer();
