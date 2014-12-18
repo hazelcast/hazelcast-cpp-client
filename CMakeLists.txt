@@ -72,7 +72,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	ENDIF(${HZ_BIT} MATCHES "32")
 
-	target_link_libraries(${HZ_LIB_NAME} asan pthread rt ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_ZLIB_LIBRARIES})
 
 
 	IF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
