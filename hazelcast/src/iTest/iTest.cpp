@@ -61,12 +61,34 @@ namespace iTest {
         }
     }
 
+    void assertNull(const void *expected, const char *message) {
+        assertNumber++;
+        if (expected != NULL) {
+            iTestException e;
+            std::stringstream s;
+            s << "Assert[ "<< assertNumber << " ] is failed. Message : " << message << std::endl;
+            e.message = s.str();
+            throw e;
+        }
+    }
+
     void assertNotNull(const void *expected) {
         assertNumber++;
         if (expected == NULL) {
             iTestException e;
             std::stringstream s;
             s << "Assert[ "<< assertNumber << " ] is failed." << std::endl;
+            e.message = s.str();
+            throw e;
+        }
+    }
+
+    void assertNotNull(const void *expected, const char *message) {
+        assertNumber++;
+        if (expected == NULL) {
+            iTestException e;
+            std::stringstream s;
+            s << "Assert[ "<< assertNumber << " ] is failed. Message : " << message  << std::endl;
             e.message = s.str();
             throw e;
         }

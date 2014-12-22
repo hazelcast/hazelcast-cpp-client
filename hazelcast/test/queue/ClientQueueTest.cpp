@@ -94,6 +94,7 @@ namespace hazelcast {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
+		std::cout << "item1 is offered" << std::endl;
             }
 
             void ClientQueueTest::testOfferPoll() {
@@ -112,8 +113,10 @@ namespace hazelcast {
                 assertEqual(0, q->size());
 
                 util::Thread t2(testOfferPollThread2, q.get());
-
-                assertEqual("item1", *(q->poll(5 * 1000)));
+		
+		boost::shared_ptr<std::string> item = q->poll(30 * 1000);	
+		assertNotNull(item.get(), "item should not be null");
+                assertEqual("item1", *item, "item1 is missing");
                 t2.join();
             }
 

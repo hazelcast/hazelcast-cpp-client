@@ -19,7 +19,11 @@ namespace iTest {
 
     HAZELCAST_API void assertNull(const void *expected);
 
+    HAZELCAST_API void assertNull(const void *expected, const char *message);
+    
     HAZELCAST_API void assertNotNull(const void *expected);
+    
+    HAZELCAST_API void assertNotNull(const void *expected, const char *message);
 
     template<typename Expected, typename Actual>
     HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
