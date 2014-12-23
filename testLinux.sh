@@ -11,4 +11,4 @@ mvn exec:java -Dexec.mainClass="CppClientListener" &
 sleep 20
 cd ..
 ./build/hazelcast/test/clientTest_STATIC_64.exe
-#lsof | grep IPv | grep 6543 | awk '{print $2}' | xargs -l -i kill -9 {}
+kill -9 $( jps | grep  Launcher | awk '{print $1;}' ) || true
