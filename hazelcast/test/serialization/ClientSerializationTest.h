@@ -46,6 +46,16 @@ namespace hazelcast {
                 void testTemplatedPortable_whenMultipleTypesAreUsed();
 
                 void testDataHash();
+
+                void testPrimitives();
+
+                void testPrimitiveArrays();
+
+                template<typename T>
+                T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {
+                    serialization::pimpl::Data data = ss.toData<T>(&value);
+                    return *(ss.toObject<T>(data));
+                }
             };
         }
     }

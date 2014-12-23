@@ -71,6 +71,8 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
                 addTest(&ClientSerializationTest::testTemplatedPortable_whenMultipleTypesAreUsed, "testTemplatedPortable_whenMultipleTypesAreUsed");
                 addTest(&ClientSerializationTest::testDataHash, "testDataHash");
+                addTest(&ClientSerializationTest::testPrimitives, "testPrimitives");
+                addTest(&ClientSerializationTest::testPrimitiveArrays, "testPrimitiveArrays");
             }
 
             void ClientSerializationTest::testCustomSerialization() {
@@ -387,6 +389,55 @@ namespace hazelcast {
                 serialization::pimpl::Data data2 = serializationService.toData<std::string>(&serializable);
                 iTest::assertEqual(data.getPartitionHash(), data2.getPartitionHash());
 
+            }
+
+            void ClientSerializationTest::testPrimitives() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                byte by = 2;
+                bool boolean = true;
+                char c = 'c';
+                short s = 4;
+                int i = 2000;
+                long l = 321324141;
+                float f = 3.14;
+                double d = 3.14334;
+                std::string str = "Hello world";
+
+                iTest::assertEqual(by,toDataAndBackToObject(serializationService, by));
+                iTest::assertEqual(boolean,toDataAndBackToObject(serializationService, boolean));
+                iTest::assertEqual(c,toDataAndBackToObject(serializationService, c));
+                iTest::assertEqual(s,toDataAndBackToObject(serializationService, s));
+                iTest::assertEqual(i,toDataAndBackToObject(serializationService, i));
+                iTest::assertEqual(l,toDataAndBackToObject(serializationService, l));
+                iTest::assertEqual(f,toDataAndBackToObject(serializationService, f));
+                iTest::assertEqual(d,toDataAndBackToObject(serializationService, d));
+                iTest::assertEqual(str,toDataAndBackToObject(serializationService, str));
+            }
+
+            void ClientSerializationTest::testPrimitiveArrays() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                char charArray[] = {'c', 'h', 'a', 'r'};
+                std::vector<char> cc(charArray, charArray + 4);
+                short shortArray[] = {3, 4, 5};
+                std::vector<short> ss(shortArray, shortArray + 3);
+                int integerArray[] = {9, 8, 7, 6};
+                std::vector<int> ii(integerArray, integerArray + 4);
+                long longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<long> ll(longArray, longArray + 6);
+                float floatArray[] = {0.6543f, -3.56f, 45.67f};
+                std::vector<float> ff(floatArray, floatArray + 3);
+                double doubleArray[] = {456.456, 789.789, 321.321};
+                std::vector<double> dd(doubleArray, doubleArray + 3);
+
+                iTest::assertEqual(cc,toDataAndBackToObject(serializationService, cc));
+                iTest::assertEqual(ss,toDataAndBackToObject(serializationService, ss));
+                iTest::assertEqual(ii,toDataAndBackToObject(serializationService, ii));
+                iTest::assertEqual(ll,toDataAndBackToObject(serializationService, ll));
+                iTest::assertEqual(ff,toDataAndBackToObject(serializationService, ff));
+                iTest::assertEqual(dd,toDataAndBackToObject(serializationService, dd));
             }
         }
     }
