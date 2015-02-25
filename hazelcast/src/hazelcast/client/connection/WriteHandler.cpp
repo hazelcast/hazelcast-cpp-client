@@ -22,8 +22,8 @@ namespace hazelcast {
             , ready(false)
             , informSelector(true)
             {
-		connection.lastWrite = (int)time(NULL);
-	    }
+                connection.lastWrite = (int)time(NULL);
+            }
 
 
             WriteHandler::~WriteHandler() {

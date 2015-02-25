@@ -12,7 +12,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include <string>
 
-#define DESERIALIZE(data, RETURN_TYPE) boost::shared_ptr<RETURN_TYPE> result = context->getSerializationService().toObject<RETURN_TYPE>(data);
+#define DESERIALIZE(data, RETURN_TYPE) boost::shared_ptr<RETURN_TYPE> result = toObject<RETURN_TYPE>(data);
 
 namespace hazelcast {
     namespace client {

@@ -23,7 +23,7 @@ namespace hazelcast {
                 if (count == 0) {
                     return true;
                 }
-                sleep(1);
+                util::sleep(1);
             }
             if (count == 0) {
                 return true;
