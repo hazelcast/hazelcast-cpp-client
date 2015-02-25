@@ -6,7 +6,7 @@ MSBuild.exe HazelcastClient.sln /property:Configuration=Release /p:VisualStudioV
 cd ..
 cd java
 start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener"
-ping 1.1.1.1 -n 1 -w 3000 > nul
+ping 1.1.1.1 -n 1 -w 20000 > nul
 cd ..
 build\hazelcast\test\Release\clientTest_STATIC_64.exe.exe || exit /b 1
 taskkill /F /FI "WINDOWTITLE eq cpp-java"
