@@ -21,13 +21,15 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
-  message( FATAL_ERROR "Build needs HZ_BIT. set -DHZ_BIT=32 or -DHZ_BIT=64" )
+  message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=32 (other option -DHZ_BIT=64)" )
+  set(HZ_BIT 32)
 ENDIF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
 
 message(STATUS "${HZ_BIT} Bit")
 
 IF(NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED") )
-	message( FATAL_ERROR "Build needs HZ_LIB_TYPE. set -DHZ_LIB_TYPE=STATIC or -DHZ_LIB_TYPE=SHARED" )
+	message( STATUS "Build needs HZ_LIB_TYPE. Setting default as -DHZ_LIB_TYPE=STATIC (other option -DHZ_LIB_TYPE=SHARED)" )
+	set(HZ_LIB_TYPE STATIC)
 ENDIF(NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED") )
 
 message(STATUS "Generating ${HZ_LIB_TYPE} Library")
@@ -96,7 +98,7 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
-	add_definitions(-D__WIN${HZ_BIT}__ -DWIN${HZ_BIT} -D_WIN${HZ_BIT} -DHAZELCAST_EXPORTS)
+	add_definitions(-DHAZELCAST_EXPORTS)
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/zlibstaticd.lib)
 
