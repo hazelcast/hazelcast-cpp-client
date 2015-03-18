@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
+#include <signal.h>
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
@@ -34,7 +35,11 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
+                    if (errno != EINTR) {
+                        util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
+                    } else{
+                        util::ILogger::getLogger().finest(std::string("Exception InSelector::listen => ") + strerror(errno));
+                    }
                     return;
                 }
 
