@@ -41,7 +41,11 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    util::ILogger::getLogger().severe(std::string("exception in OutSelector::listen =>") + strerror(errno));
+                    if (errno != EINTR) {
+                        util::ILogger::getLogger().severe(std::string("Exception OutSelector::listen => ") + strerror(errno));
+                    } else{
+                        util::ILogger::getLogger().finest(std::string("Exception OutSelector::listen => ") + strerror(errno));
+                    }
                     return;
                 }
                 std::set<Socket const *, client::socketPtrComp>::iterator it;
