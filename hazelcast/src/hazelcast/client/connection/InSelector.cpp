@@ -30,6 +30,7 @@ namespace hazelcast {
                 int n = util::SocketSet::getHighestSocketId(currentSockets);
                 fd_set read_fds = util::SocketSet::get_fd_set(currentSockets);
 
+                errno = 0;
                 int err = select(n + 1, &read_fds, NULL, NULL, &t);
                 if (err == 0) {
                     return;

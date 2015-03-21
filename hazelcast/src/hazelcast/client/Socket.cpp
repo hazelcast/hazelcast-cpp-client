@@ -70,6 +70,7 @@ namespace hazelcast {
             FD_ZERO(&err);
             FD_SET(socketId, &mySet);
             FD_SET(socketId, &err);
+            errno = 0;
             if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
                 setBlocking(true);
                 return 0;
@@ -107,6 +108,7 @@ namespace hazelcast {
         }
 
         int Socket::send(const void *buffer, int len) const {
+            errno = 0;
             int bytesSend = 0;
             if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, 0)) == -1)
                 throw client::exception::IOException("Socket::send ", "Error socket send " + std::string(strerror(errno)));
@@ -114,6 +116,7 @@ namespace hazelcast {
         }
 
         int Socket::receive(void *buffer, int len, int flag) const {
+            errno = 0;
             int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
 
             if (size == -1)
