@@ -36,6 +36,7 @@ namespace hazelcast {
                 fd_set write_fds = util::SocketSet::get_fd_set(currentSockets);
                 fd_set wakeUp_fd =  util::SocketSet::get_fd_set(currentWakeUpSockets);
 
+                errno = 0;
                 int err = select(n + 1, &wakeUp_fd, &write_fds, NULL, &t);
                 if (err == 0) {
                     return;
