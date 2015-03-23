@@ -6,6 +6,7 @@
 # For mac code coverage
 
 	cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_CODE_COVERAGE=ON
+	gcovr -u -e .*external.* -e SimpleMapTest.h --html --html-details -o coverage.html 
 
 # For mac Xcode development
 
