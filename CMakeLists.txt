@@ -25,6 +25,11 @@ IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   set(HZ_BIT 32)
 ENDIF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
 
+SET(HZ_BIT_FLAG " ")
+IF(${HZ_BIT} MATCHES "32") 
+  SET(HZ_BIT_FLAG " -m32 ")
+ENDIF(${HZ_BIT} MATCHES "32")
+
 message(STATUS "${HZ_BIT} Bit")
 
 IF(NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED") )
@@ -38,16 +43,22 @@ SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
 
 add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_HEADERS})
 
+set(HZ_CODE_COVERAGE_COMPILE_FLAGS " ")
+set(HZ_CODE_COVERAGE_LINK_FLAGS " ") 
+
 IF(${HZ_CODE_COVERAGE} MATCHES "ON")
 	message(STATUS "Code coverage is on")
-	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage -fPIC -O0" LINK_FLAGS "-fprofile-arcs") #for code coverage tool
+	set(HZ_CODE_COVERAGE_COMPILE_FLAGS " -fprofile-arcs -ftest-coverage -fPIC -O0 ")
+	set(HZ_CODE_COVERAGE_LINK_FLAGS " -lgcov -fprofile-arcs -ftest-coverage -fPIC -O0 ") 
 ENDIF(${HZ_CODE_COVERAGE} MATCHES "ON")
 
+set(HZ_VALGRIND_COMPILE_FLAGS " ")
+set(HZ_VALGRIND_LINK_FLAGS " ") 
 IF(${HZ_VALGRIND} MATCHES "ON")
 	message(STATUS "Valgrind is on")
-	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-O0" LINK_FLAGS "-O0")#for valgrind
+	set(HZ_VALGRIND_COMPILE_FLAGS " -O0 ")
+	set(HZ_VALGRIND_LINK_FLAGS " -O0 ") 
 ENDIF(${HZ_VALGRIND} MATCHES "ON")
-
 
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -63,6 +74,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	message(STATUS "LINUX ENVIRONMENT DETECTED")
 
@@ -70,48 +82,21 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libz.a)
-
-	IF(${HZ_BIT} MATCHES "32")
-		set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-	ENDIF(${HZ_BIT} MATCHES "32")
-
+	
+	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}" LINK_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_LINK_FLAGS} ${HZ_VALGRIND_LINK_FLAGS}")
+	
 	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_ZLIB_LIBRARIES})
-
-
-	IF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
-	  message(STATUS "Address Sanitizer is on")
-	  set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=address -fno-omit-frame-pointer " LINK_FLAGS "-O1 -fsanitize=address -fno-omit-frame-pointer ")
-
-	  # use, i.e. don't skip the full RPATH for the build tree
-	  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-	  # when building, don't use the install RPATH already
-	  # (but later on when installing)
-	  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-	  SET(CMAKE_INSTALL_RPATH "/usr/lib/gcc/x86_64-linux-gnu/4.8/")
-
-	  target_link_libraries(${HZ_LIB_NAME} asan)
-	ENDIF(${HZ_ADDRESS_SANITIZER} MATCHES "ON")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
-	add_definitions(-DHAZELCAST_EXPORTS)
+	message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
+	add_definitions(-D__WIN${HZ_BIT}__ -DWIN${HZ_BIT} -D_WIN${HZ_BIT} -DHAZELCAST_EXPORTS)
 
 	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/zlibstaticd.lib)
-
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS " /EHsc " )
-
-	IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
-	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-
-	IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-		target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
-	ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-
+	target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
+	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ADD_SUBDIRECTORY(hazelcast/test)
