@@ -74,10 +74,10 @@ namespace hazelcast {
                 std::map<Address, Member, addressComparator > members;
                 std::set< MembershipListener *> listeners;
                 std::set< InitialMembershipListener *> initialListeners;
-                util::Mutex listenerLock;
-                util::Mutex membersLock;
+                hazelcast::util::Mutex listenerLock;
+                hazelcast::util::Mutex membersLock;
 
-                util::AtomicBoolean active;
+                hazelcast::util::AtomicBoolean active;
 
                 void initMembershipListeners();
 

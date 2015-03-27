@@ -50,8 +50,8 @@ namespace hazelcast {
 
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
-                util::Mutex listenerLock;
-                util::AtomicBoolean active;
+                hazelcast::util::Mutex listenerLock;
+                hazelcast::util::AtomicBoolean active;
 
             };
 

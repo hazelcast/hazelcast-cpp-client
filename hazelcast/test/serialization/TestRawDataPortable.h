@@ -12,6 +12,7 @@
 
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 
 namespace hazelcast {
@@ -30,14 +31,14 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader &reader);
 
-                TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
+                TestRawDataPortable(long l, hazelcast::util::CharVector_ptr c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
 
                 bool operator ==(const TestRawDataPortable &m) const;
 
                 bool operator !=(const TestRawDataPortable &m) const;
 
                 long l;
-                std::vector<char> c;
+                hazelcast::util::CharVector_ptr c;
                 TestNamedPortable p;
                 int k;
                 std::string s;

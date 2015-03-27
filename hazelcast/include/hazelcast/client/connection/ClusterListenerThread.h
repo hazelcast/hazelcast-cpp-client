@@ -41,25 +41,25 @@ namespace hazelcast {
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
 
-                void setThread(util::Thread *);
+                void setThread(hazelcast::util::Thread *);
 
-                static void staticRun(util::ThreadArgs &args);
+                static void staticRun(hazelcast::util::ThreadArgs &args);
 
-                void run(util::Thread *currentThread);
+                void run(hazelcast::util::Thread *currentThread);
 
                 void stop();
 
                 std::vector<Address> getSocketAddresses();
 
-                util::CountDownLatch startLatch;
+                hazelcast::util::CountDownLatch startLatch;
                 bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
                 boost::shared_ptr<Connection> conn;
-                util::AtomicBoolean deletingConnection;
+                hazelcast::util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
 
-                std::auto_ptr<util::Thread> clusterListenerThread;
+                std::auto_ptr<hazelcast::util::Thread> clusterListenerThread;
 
                 void loadInitialMemberList();
 

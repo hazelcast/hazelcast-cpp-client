@@ -43,7 +43,7 @@ namespace hazelcast {
             /**
             * InternalAPI. constructor
             */
-            MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id);
+            MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, hazelcast::util::IOUtil::PRIMITIVE_ID primitive_id);
 
             /**
              *
@@ -77,7 +77,7 @@ namespace hazelcast {
             MemberAttributeOperationType operationType;
             std::string key;
             std::string value;
-            util::IOUtil::PRIMITIVE_ID primitive_id;
+            hazelcast::util::IOUtil::PRIMITIVE_ID primitive_id;
 
             int *getValueResolved(int *tag) const;
 

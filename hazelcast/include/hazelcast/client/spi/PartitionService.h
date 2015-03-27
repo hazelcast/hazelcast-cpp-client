@@ -54,19 +54,19 @@ namespace hazelcast {
 
                 spi::ClientContext &clientContext;
 
-                util::AtomicBoolean updating;
+                hazelcast::util::AtomicBoolean updating;
 
-                std::auto_ptr<util::Thread> partitionListenerThread;
+                std::auto_ptr<hazelcast::util::Thread> partitionListenerThread;
 
-                util::AtomicInt partitionCount;
+                hazelcast::util::AtomicInt partitionCount;
 
-                util::SynchronizedMap<int, Address> partitions;
+                hazelcast::util::SynchronizedMap<int, Address> partitions;
 
-                util::Mutex startLock;
+                hazelcast::util::Mutex startLock;
 
-                static void staticRunListener(util::ThreadArgs& args);
+                static void staticRunListener(hazelcast::util::ThreadArgs& args);
 
-                void runListener(util::Thread* currentThread);
+                void runListener(hazelcast::util::Thread* currentThread);
 
                 void runRefresher();
 

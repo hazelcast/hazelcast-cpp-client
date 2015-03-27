@@ -12,8 +12,8 @@ namespace hazelcast {
                 *this = rhs;
             }
 
-            TestInnerPortable::TestInnerPortable(std::vector<byte> b,
-                    std::vector<char> c,
+            TestInnerPortable::TestInnerPortable(hazelcast::util::ByteVector_ptr b,
+                    hazelcast::util::CharVector_ptr c,
                     std::vector<short> s,
                     std::vector<int> i,
                     std::vector<long> l,
@@ -46,8 +46,8 @@ namespace hazelcast {
             }
 
             bool TestInnerPortable::operator ==(const TestInnerPortable& m) const {
-                if (bb != m.bb) return false;
-                if (cc != m.cc) return false;
+                if (*bb != *m.bb) return false;
+                if (*cc != *m.cc) return false;
                 if (ss != m.ss) return false;
                 if (ii != m.ii) return false;
                 if (ll != m.ll) return false;
@@ -67,8 +67,8 @@ namespace hazelcast {
 
 
             void TestInnerPortable::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeByteArray("b", bb);
-                writer.writeCharArray("c", cc);
+                writer.writeByteArray("b", *bb);
+                writer.writeCharArray("c", *cc);
                 writer.writeShortArray("s", ss);
                 writer.writeIntArray("i", ii);
                 writer.writeLongArray("l", ll);

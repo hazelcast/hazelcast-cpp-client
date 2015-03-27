@@ -47,15 +47,21 @@ namespace hazelcast {
 
                 boost::shared_ptr<ClassDefinition> SerializationService::lookupClassDefinition(const Portable *portable) {
                     int version = PortableVersionHelper::getVersion(portable, portableContext.getVersion());
-                    return portableContext.lookup(portable->getFactoryId(), portable->getClassId(), version);
+                    return portableContext.lookupClassDefinition(portable->getFactoryId(), portable->getClassId(), version);
                 }
 
                 void SerializationService::checkClassType(int expectedType, int currentType) {
                     if (expectedType != currentType) {
-                        std::string source = "SerializationService:toObject<" + constants.typeIdToName(expectedType) + "> ";
-                        std::string message = "recevied data of type " + constants.typeIdToName(currentType);
-                        util::ILogger::getLogger().severe(source + message);
-                        throw exception::IClassCastException(source, message);
+/*                        std::string source = "SerializationService:toObject<" + constants.typeIdToName(expectedType) + "> ";
+                        std::string message = "recevied data of type " + constants.typeIdToName(currentType);*/
+
+                        char message[70 + 1];
+                        snprintf(message, 70, "Received data of type %d but expected data type %d",
+                                               currentType, expectedType);
+
+                        util::ILogger::getLogger().severe(message);
+                        throw exception::IClassCastException("SerializationService::checkClassType",
+                                message);
                     }
                 }
             }

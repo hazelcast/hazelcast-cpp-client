@@ -44,25 +44,25 @@ namespace hazelcast {
                 l->forceUnlock();
             }
 
-            void testLockLockThread(util::ThreadArgs &args) {
+            void testLockLockThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (!l->tryLock())
                     latch->countDown();
             }
 
             void ClientLockTest::testLock() {
                 l->lock();
-                util::CountDownLatch latch(1);
-                util::Thread t(testLockLockThread, l.get(), &latch);
+                hazelcast::util::CountDownLatch latch(1);
+                hazelcast::util::Thread t(testLockLockThread, l.get(), &latch);
 
                 assertTrue(latch.await(5));
                 l->forceUnlock();
             }
 
-            void testLockTtlThread(util::ThreadArgs &args) {
+            void testLockTtlThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (!l->tryLock()) {
                     latch->countDown();
                 }
@@ -73,23 +73,23 @@ namespace hazelcast {
 
             void ClientLockTest::testLockTtl() {
                 l->lock(3 * 1000);
-                util::CountDownLatch latch(2);
-                util::Thread t(testLockTtlThread, l.get(), &latch);
+                hazelcast::util::CountDownLatch latch(2);
+                hazelcast::util::Thread t(testLockTtlThread, l.get(), &latch);
                 assertTrue(latch.await(10));
                 l->forceUnlock();
             }
 
-            void testLockTryLockThread1(util::ThreadArgs &args) {
+            void testLockTryLockThread1(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (!l->tryLock(2 * 1000)) {
                     latch->countDown();
                 }
             }
 
-            void testLockTryLockThread2(util::ThreadArgs &args) {
+            void testLockTryLockThread2(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (l->tryLock(20 * 1000)) {
                     latch->countDown();
                 }
@@ -98,40 +98,40 @@ namespace hazelcast {
             void ClientLockTest::testTryLock() {
 
                 assertTrue(l->tryLock(2 * 1000));
-                util::CountDownLatch latch(1);
-                util::Thread t1(testLockTryLockThread1, l.get(), &latch);
+                hazelcast::util::CountDownLatch latch(1);
+                hazelcast::util::Thread t1(testLockTryLockThread1, l.get(), &latch);
                 assertTrue(latch.await(100));
 
                 assertTrue(l->isLocked());
 
-                util::CountDownLatch latch2(1);
-                util::Thread t2(testLockTryLockThread2, l.get(), &latch2);
-                util::sleep(1);
+                hazelcast::util::CountDownLatch latch2(1);
+                hazelcast::util::Thread t2(testLockTryLockThread2, l.get(), &latch2);
+                hazelcast::util::sleep(1);
                 l->unlock();
                 assertTrue(latch2.await(100));
                 assertTrue(l->isLocked());
                 l->forceUnlock();
             }
 
-            void testLockForceUnlockThread(util::ThreadArgs &args) {
+            void testLockForceUnlockThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 l->forceUnlock();
                 latch->countDown();
             }
 
             void ClientLockTest::testForceUnlock() {
                 l->lock();
-                util::CountDownLatch latch(1);
-                util::Thread t(testLockForceUnlockThread, l.get(), &latch);
+                hazelcast::util::CountDownLatch latch(1);
+                hazelcast::util::Thread t(testLockForceUnlockThread, l.get(), &latch);
                 assertTrue(latch.await(100));
                 assertFalse(l->isLocked());
             }
 
 
-            void testStatsThread(util::ThreadArgs &args) {
+            void testStatsThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 try {
                     assertTrue(l->isLocked(), "l->isLocked()");
                     assertFalse(l->isLockedByCurrentThread(), "isLockedByCurrentThread");
@@ -160,8 +160,8 @@ namespace hazelcast {
                 assertEqual(1, l->getLockCount());
                 assertTrue(l->getRemainingLeaseTime() > 1000 * 30);
 
-                util::CountDownLatch latch(1);
-                util::Thread t(testStatsThread, l.get(), &latch);
+                hazelcast::util::CountDownLatch latch(1);
+                hazelcast::util::Thread t(testStatsThread, l.get(), &latch);
                 assertTrue(latch.await(60));
             }
         }

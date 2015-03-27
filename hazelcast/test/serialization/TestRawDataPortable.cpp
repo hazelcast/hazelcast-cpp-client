@@ -20,7 +20,7 @@ namespace hazelcast {
 
             void TestRawDataPortable::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeLong("l", l);
-                writer.writeCharArray("c", c);
+                writer.writeCharArray("c", *c);
                 writer.writePortable("p", p);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 out.writeInt(k);
@@ -41,7 +41,7 @@ namespace hazelcast {
                 ds.readData(in);
             }
 
-            TestRawDataPortable::TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
+            TestRawDataPortable::TestRawDataPortable(long l, hazelcast::util::CharVector_ptr c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
                 this->l = l;
                 this->c = c;
                 this->p = p;
@@ -54,7 +54,7 @@ namespace hazelcast {
                 if (this == &m)
                     return true;
                 if (l != m.l) return false;
-                if (c != m.c) return false;
+                if (*c != *m.c) return false;
                 if (p != m.p) return false;
                 if (k != m.k) return false;
                 if (ds != m.ds) return false;

@@ -34,17 +34,22 @@ namespace hazelcast {
                 class ClassDefinitionContext;
 
                 class HAZELCAST_API PortableContext {
+                friend class PortableSerializer;
                 public:
 
                     PortableContext(int);
+
+                    int getVersion();
 
                     int getClassVersion(int factoryId, int classId);
 
                     void setClassVersion(int factoryId, int classId, int version);
 
-                    bool isClassDefinitionExists(int, int, int);
+                    //bool isClassDefinitionExists(int, int, int);
 
-                    boost::shared_ptr<ClassDefinition> lookup(int, int, int);
+                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
+
+                    //boost::shared_ptr<ClassDefinition> lookupClassDefinition(Data &data);
 
                     boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
@@ -52,9 +57,15 @@ namespace hazelcast {
 
                     boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
 
-                    int getVersion();
+                    /*
+                    FieldDefinition getFieldDefinition(ClassDefinition cd, String name);
+
+                    ManagedContext getManagedContext();
+                    */
 
                     SerializerHolder &getSerializerHolder();
+
+                    //ByteOrder getByteOrder();
 
                 private:
 
@@ -65,9 +76,10 @@ namespace hazelcast {
                     void operator = (const PortableContext &);
 
                     int contextVersion;
-                    util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
+                    hazelcast::util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     SerializerHolder serializerHolder;
 
+                    boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
                 };
             }
         }

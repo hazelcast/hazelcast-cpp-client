@@ -72,40 +72,14 @@ namespace hazelcast {
                 bool isNull = readBoolean();
                 pimpl::Data data;
                 if (isNull) {
+                    pimpl::Data data;
                     return data;
-                }
-
-                int typeId = readInt();
-                int partitionHash = readInt();
-                std::auto_ptr<std::vector<byte> > header = readPortableHeader();
-                data.setHeader(header);
-
-                int dataSize = readInt();
-                std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>);
-                if (dataSize > 0) {
-                    buffer->resize(dataSize);
-                    readFully(*buffer);
-                }
-
-                data.setType(typeId);
-                data.setBuffer(buffer);
-                data.setPartitionHash(partitionHash);
-                return data;
+                } else {
+                    pimpl::Data result(readByteArray());
+                    return result;
+                };
             }
 
-
-            std::auto_ptr<std::vector<byte> > ObjectDataInput::readPortableHeader() {
-                int len = readInt();
-                if (len > 0) {
-                    std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(len));
-                    hazelcast::util::ByteBuffer& headerBuffer = dataInput.getHeaderBuffer();
-                    int pos = readInt();
-                    headerBuffer.position(pos);
-                    headerBuffer.writeTo(*header);
-                    return header;
-                }
-                return std::auto_ptr<std::vector<byte> >();
-            }
 
             int ObjectDataInput::position() {
                 return dataInput.position();
@@ -115,11 +89,11 @@ namespace hazelcast {
                 dataInput.position(newPos);
             }
 
-            std::vector<byte> ObjectDataInput::readByteArray() {
+            hazelcast::util::ByteVector_ptr ObjectDataInput::readByteArray() {
                 return dataInput.readByteArray();
             }
 
-            std::vector<char> ObjectDataInput::readCharArray() {
+            hazelcast::util::CharVector_ptr ObjectDataInput::readCharArray() {
                 return dataInput.readCharArray();
             }
 

@@ -45,7 +45,7 @@ namespace hazelcast {
                 Socket &socket;
                 serialization::pimpl::PortableContext *context;
 
-                void readData(serialization::pimpl::Data &data);
+                void readValue(serialization::pimpl::Data &data);
 
                 void readFully(std::vector<byte> &);
 
@@ -55,6 +55,7 @@ namespace hazelcast {
 
                 int skipBytes(int i);
 
+                bool readBoolean();
             };
 
         }

@@ -46,11 +46,11 @@ namespace hazelcast {
 
             private:
                 char* buffer;
-                util::ByteBuffer byteBuffer;
-                util::ConcurrentQueue<serialization::pimpl::Packet> writeQueue;
+                ::hazelcast::util::ByteBuffer byteBuffer;
+                ::hazelcast::util::ConcurrentQueue<serialization::pimpl::Packet> writeQueue;
                 serialization::pimpl::Packet *lastData;
                 bool ready;
-                util::AtomicBoolean informSelector;
+                ::hazelcast::util::AtomicBoolean informSelector;
 
 
             };

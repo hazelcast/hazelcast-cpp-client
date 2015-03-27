@@ -4,7 +4,6 @@
 
 
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
@@ -14,18 +13,13 @@ namespace hazelcast {
 
                 int const DataInput::STRING_CHUNK_SIZE = 16 * 1024;
 
-                DataInput::DataInput(const std::vector<byte> &buffer)
-                :buffer(buffer)
-                , headerBuffer(NULL, 0)  //MTODO_S
+                DataInput::DataInput(const std::vector<byte> &buf)
+                :buffer(buf)
                 , pos(0) {
                 }
 
-
-                DataInput::DataInput(const std::vector<byte>& buffer, std::vector<byte>& header)
-                :buffer(buffer)
-                , headerBuffer((char*)&(header[0]), header.size()) //MTODO_S
-                , pos(0) {
-
+                DataInput::DataInput(const std::vector<byte> &buf, int offset)
+                        : buffer(buf), pos(offset) {
                 }
 
                 void DataInput::readFully(std::vector<byte> &bytes) {
@@ -193,18 +187,28 @@ namespace hazelcast {
                     return std::string(&chararr[0]);
                 }
 
-                std::vector <byte> DataInput::readByteArray() {
+                hazelcast::util::ByteVector_ptr DataInput::readByteArray() {
                     int len = readInt();
-                    std::vector <byte> values(buffer.begin() + pos, buffer.begin() + pos + len);
+                    util::ByteVector_ptr values(
+                            new util::ByteVector(buffer.begin() + pos, buffer.begin() + pos + len));
                     pos += len;
                     return values;
                 }
 
-                std::vector<char> DataInput::readCharArray() {
+                /**
+                *
+                */
+                void DataInput::readByteArray(char destinationBuffer[], short length) {
+                    checkBoundary(length);
+                    memcpy(destinationBuffer, &buffer[0] + pos, length);
+                    pos += length;
+                }
+
+                hazelcast::util::CharVector_ptr DataInput::readCharArray() {
                     int len = readInt();
-                    std::vector<char> values(len);
+                    util::CharVector_ptr values(new util::CharVector(len));
                     for (int i = 0; i < len; i++) {
-                        values[i] = readChar();
+                        (*values)[i] = readChar();
                     }
                     return values;
                 }
@@ -254,9 +258,19 @@ namespace hazelcast {
                     return values;
                 }
 
+                int DataInput::readInt(int newPositionToReadFrom) {
+                    position(newPositionToReadFrom);
+                    return readInt();
+                }
 
-                hazelcast::util::ByteBuffer& DataInput::getHeaderBuffer() {
-                    return headerBuffer;
+                void DataInput::checkBoundary(short requestedLength) throw (IOException) {
+                    int available = buffer.size() - pos;
+
+                    if (requestedLength > available) {
+                        char msg[100];
+                        snprintf(msg, 100, "Not enough bytes in internal buffer. Available:%d bytes but needed %d bytes", available, requestedLength);
+                        throw IOException("DataInput::checkBoundary", msg);
+                    }
                 }
             }
         }

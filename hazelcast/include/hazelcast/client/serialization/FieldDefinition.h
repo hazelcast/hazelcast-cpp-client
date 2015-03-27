@@ -45,7 +45,7 @@ namespace hazelcast {
                 /**
                 * Constructor
                 */
-                FieldDefinition(int, const std::string&, FieldType const&, int, int, int);
+                FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId);
 
                 /**
                 * @return field type
@@ -63,11 +63,6 @@ namespace hazelcast {
                 int getIndex() const;
 
                 /**
-                * @return version of this field's class
-                */
-                int getVersion() const;
-
-                /**
                 * @return factory id of this field's class
                 */
                 int getFactoryId() const;
@@ -77,11 +72,6 @@ namespace hazelcast {
                 */
                 int getClassId() const;
 
-                /**
-                * sets version if not set
-                * @param version
-                */
-                void setVersionIfNotSet(int version);
 
                 /**
                 * @param dataOutput writes fieldDefinition to given dataOutput
@@ -99,7 +89,6 @@ namespace hazelcast {
                 FieldType type;
                 int classId;
                 int factoryId;
-                int version;
             };
         }
     }

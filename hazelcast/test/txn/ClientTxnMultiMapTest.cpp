@@ -44,12 +44,12 @@ namespace hazelcast {
             void ClientTxnMultiMapTest::afterTest() {
             }
 
-            void putGetRemoveTestThread(util::ThreadArgs& args) {
+            void putGetRemoveTestThread(hazelcast::util::ThreadArgs& args) {
                 MultiMap<std::string, std::string > *mm = (MultiMap<std::string, std::string > *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
-                util::AtomicInt *error = (util::AtomicInt *)args.arg3;
-                std::string key = util::IOUtil::to_string(util::Thread::getThreadID());
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg2;
+                hazelcast::util::AtomicInt *error = (hazelcast::util::AtomicInt *)args.arg3;
+                std::string key = hazelcast::util::IOUtil::to_string(hazelcast::util::Thread::getThreadID());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 try {
@@ -77,11 +77,11 @@ namespace hazelcast {
 
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
                 int n = 10;
-                util::CountDownLatch latch(n);
-                util::AtomicInt error(0);
-                std::vector<util::Thread*> threads(n);
+                hazelcast::util::CountDownLatch latch(n);
+                hazelcast::util::AtomicInt error(0);
+                std::vector<hazelcast::util::Thread*> threads(n);
                 for (int i = 0; i < n; i++) {
-                    threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
+                    threads[i] = new hazelcast::util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch, &error);
                 }
                 assertTrue(latch.await(1));
                 assertEqual(0, (int)error);

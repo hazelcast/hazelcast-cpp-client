@@ -11,6 +11,7 @@
 
 
 #include "hazelcast/client/serialization/FieldDefinition.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -106,13 +107,6 @@ namespace hazelcast {
                 int getFieldClassId(const char *fieldName) const;
 
                 /**
-                * @param fieldName name of the field
-                * @return version of given field
-                * @throws IllegalArgumentException
-                */
-                int getFieldVersion(const char *fieldName) const;
-
-                /**
                 * @return total field count
                 */
                 int getFieldCount() const;
@@ -149,7 +143,7 @@ namespace hazelcast {
                 *  Set internal byte compressed byte array
                 *  @param binary compressed binary
                 */
-                void setBinary(std::auto_ptr<std::vector<byte> > binary);
+                void setBinary(hazelcast::util::ByteVector_ptr compressedBinary);
 
                 /**
                 * Internal API
@@ -182,7 +176,7 @@ namespace hazelcast {
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
                 std::vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
 
-                std::auto_ptr<std::vector<byte> > binary;
+                hazelcast::util::ByteVector_ptr binary;
 
             };
         }

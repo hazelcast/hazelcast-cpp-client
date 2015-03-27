@@ -13,6 +13,7 @@
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -27,57 +28,49 @@ namespace hazelcast {
 
                 class HAZELCAST_API Data {
                 public:
+                    typedef hazelcast::util::ByteVector BufferType;
+                    typedef hazelcast::util::ByteVector_ptr BufferType_ptr;
+
+                    // type and partition_hash are always written with BIG_ENDIAN byte-order
+                    static unsigned int TYPE_OFFSET;
+                    // will use a byte to store partition_hash bit
+                    static unsigned int PARTITION_HASH_BIT_OFFSET;
+                    static unsigned int DATA_OFFSET;
+
+                    // array (12: array header, 4: length)
+                    static unsigned int ARRAY_HEADER_SIZE_IN_BYTES;
 
                     Data();
+
+                    Data(BufferType_ptr buffer);
 
                     Data(const Data&);
 
                     Data& operator=(const Data&);
 
-                    int bufferSize() const;
+                    unsigned long dataSize() const;
 
-                    size_t headerSize() const;
+                    unsigned long totalSize() const;
 
                     int getPartitionHash() const;
 
-                    void setPartitionHash(int);
+                    bool hasPartitionHash() const;
+
+                    Data::BufferType &toByteArray() const;
 
                     int getType() const;
 
-                    void setType(int type);
-
-                    void setBuffer(std::auto_ptr<std::vector<byte> > buffer);
-
-                    void setHeader(std::auto_ptr<std::vector<byte> > header);
-
-                    bool hasPartitionHash()  const;
+                    unsigned long getHeapCost() const;
 
                     bool isPortable() const;
 
-                    bool hasClassDefinition() const;
+                    void setBuffer(BufferType_ptr buffer);
 
-                    size_t getClassDefinitionCount() const;
-
-                    std::vector<boost::shared_ptr<ClassDefinition> > getClassDefinitions(PortableContext& context) const;
-
-                    mutable std::auto_ptr<std::vector<byte> > data;
-
-                    mutable std::auto_ptr<std::vector<byte> > header;
-                    static int HEADER_ENTRY_LENGTH;
-
-                    static int HEADER_FACTORY_OFFSET;
-                    static int HEADER_CLASS_OFFSET;
-                    static int HEADER_VERSION_OFFSET;
                 private:
-
-                    mutable int partitionHash;
-                    int type;
-
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(PortableContext& context, int start) const;
-
-                    int readIntHeader(int offset) const;
+                    mutable BufferType_ptr data;
 
                     int hashCode() const;
+
                 };
             }
         }

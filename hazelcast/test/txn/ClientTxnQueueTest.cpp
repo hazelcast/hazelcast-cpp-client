@@ -58,8 +58,8 @@ namespace hazelcast {
                 assertEqual(0, client->getQueue<std::string>(name).size());
             }
 
-            void testTransactionalOfferPoll2Thread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
+            void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs& args) {
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;                
                 latch->await();
                 client->getQueue<std::string>("defQueue0").offer("item0");
@@ -67,8 +67,8 @@ namespace hazelcast {
 
             void ClientTxnQueueTest::testTransactionalOfferPoll2() {
 
-                util::CountDownLatch latch(1);
-                util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
+                hazelcast::util::CountDownLatch latch(1);
+                hazelcast::util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");

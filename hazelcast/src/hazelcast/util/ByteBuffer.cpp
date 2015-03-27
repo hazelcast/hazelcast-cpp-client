@@ -108,6 +108,13 @@ namespace hazelcast {
             safeIncrementPosition(len);
         }
 
+        ByteBuffer &ByteBuffer::get(std::vector<byte> &dstBytesVector, int offset, int length) {
+            for (int i=0;i < length;++i) {
+                dstBytesVector.push_back(readByte());
+            }
+
+            return *this;
+        }
 
         void ByteBuffer::readFrom(std::vector<byte> const& source) {
             size_t len = source.size();
@@ -120,6 +127,13 @@ namespace hazelcast {
             std::memcpy(ix(), (void *)(&source[offset]), m);
             safeIncrementPosition(m);
             return m;
+        }
+
+        ByteBuffer &ByteBuffer::put(const byte *src, int offset, int length) {
+            std::memcpy(ix(), (void *)(src + offset), length);
+            safeIncrementPosition(length);
+
+            return *this;
         }
 
         void ByteBuffer::skip(int l) {
@@ -154,6 +168,7 @@ namespace hazelcast {
             assert(pos + t <= capacity);
             pos += t;
         }
+
     }
 }
 

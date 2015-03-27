@@ -39,7 +39,9 @@ namespace hazelcast {
                 if (it != fieldDefinitionsMap.end()) {
                     return fieldDefinitionsMap.find(name)->second;
                 }
-                throw exception::IllegalArgumentException("ClassDefinition::getField", "field does not exist");
+                char msg[100 + 1];
+                std::snprintf(msg, 100, "Field (%s) does not exist", 0 != name ? name : "");
+                throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
             }
 
             const FieldDefinition& ClassDefinition::getField(int fieldIndex) const {
@@ -97,24 +99,15 @@ namespace hazelcast {
             void ClassDefinition::setVersionIfNotSet(int version) {
                 if (getVersion() < 0) {
                     this->version = version;
-                    std::vector<FieldDefinition>::iterator it;
-                    for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
-                        it->setVersionIfNotSet(version);
-                    }
                 }
-            }
-
-            int ClassDefinition::getFieldVersion(const char *fieldName) const {
-                FieldDefinition const& fd = getField(fieldName);
-                return fd.getVersion();
             }
 
             const std::vector<byte>& ClassDefinition::getBinary() const {
                 return *(binary.get());
             }
 
-            void ClassDefinition::setBinary(std::auto_ptr<std::vector<byte> > binary) {
-                this->binary.reset(binary.release());
+            void ClassDefinition::setBinary(hazelcast::util::ByteVector_ptr compressedBinary) {
+                this->binary = compressedBinary;
             }
 
             void ClassDefinition::writeData(pimpl::DataOutput& dataOutput) {

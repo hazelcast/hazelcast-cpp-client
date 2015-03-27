@@ -111,9 +111,9 @@ namespace hazelcast {
                 int retryWaitTime;
                 int retryCount;
                 spi::ClientContext& clientContext;
-                util::AtomicInt callIdGenerator;
-                util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int, connection::CallPromise > > callPromises;
-                util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int, connection::CallPromise > > eventHandlerPromises;
+                hazelcast::util::AtomicInt callIdGenerator;
+                hazelcast::util::SynchronizedMap<connection::Connection* , hazelcast::util::SynchronizedMap<int, connection::CallPromise > > callPromises;
+                hazelcast::util::SynchronizedMap<connection::Connection* , hazelcast::util::SynchronizedMap<int, connection::CallPromise > > eventHandlerPromises;
 
                 int getNextCallId();
 
@@ -148,11 +148,11 @@ namespace hazelcast {
 
                 /** CallPromise Map **/
 
-                boost::shared_ptr< util::SynchronizedMap<int, connection::CallPromise> > getCallPromiseMap(connection::Connection& connection);
+                boost::shared_ptr< hazelcast::util::SynchronizedMap<int, connection::CallPromise> > getCallPromiseMap(connection::Connection& connection);
 
                 /** EventHandler Map **/
 
-                boost::shared_ptr< util::SynchronizedMap<int, connection::CallPromise> > getEventHandlerPromiseMap(connection::Connection& connection);
+                boost::shared_ptr< hazelcast::util::SynchronizedMap<int, connection::CallPromise> > getEventHandlerPromiseMap(connection::Connection& connection);
 
                 boost::shared_ptr<connection::CallPromise> getEventHandlerPromise(connection::Connection& , int callId);
             };

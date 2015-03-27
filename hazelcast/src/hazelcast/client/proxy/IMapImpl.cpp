@@ -59,7 +59,7 @@ namespace hazelcast {
 
             bool IMapImpl::containsKey(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::ContainsKeyRequest *request = new map::ContainsKeyRequest(getName(), key, util::getThreadId());
+                map::ContainsKeyRequest *request = new map::ContainsKeyRequest(getName(), key, hazelcast::util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -74,25 +74,25 @@ namespace hazelcast {
 
             serialization::pimpl::Data IMapImpl::get(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::GetRequest *request = new map::GetRequest(getName(), key, util::getThreadId());
+                map::GetRequest *request = new map::GetRequest(getName(), key, hazelcast::util::getThreadId());
                 return invoke(request, partitionId);
             }
 
             serialization::pimpl::Data IMapImpl::put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 int partitionId = getPartitionId(key);
-                map::PutRequest *request = new map::PutRequest(getName(), key, value, util::getThreadId(), 0);
+                map::PutRequest *request = new map::PutRequest(getName(), key, value, hazelcast::util::getThreadId(), 0);
                 return invoke(request, partitionId);
             }
 
             serialization::pimpl::Data IMapImpl::remove(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::RemoveRequest *request = new map::RemoveRequest(getName(), key, util::getThreadId());
+                map::RemoveRequest *request = new map::RemoveRequest(getName(), key, hazelcast::util::getThreadId());
                 return invoke(request, partitionId);
             }
 
             bool IMapImpl::remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 int partitionId = getPartitionId(key);
-                map::RemoveIfSameRequest *request = new map::RemoveIfSameRequest(getName(), key, value, util::getThreadId());
+                map::RemoveIfSameRequest *request = new map::RemoveIfSameRequest(getName(), key, value, hazelcast::util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -100,7 +100,7 @@ namespace hazelcast {
 
             void IMapImpl::deleteEntry(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::DeleteRequest *request = new map::DeleteRequest(getName(), key, util::getThreadId());
+                map::DeleteRequest *request = new map::DeleteRequest(getName(), key, hazelcast::util::getThreadId());
                 invoke(request, partitionId);
             }
 
@@ -111,7 +111,7 @@ namespace hazelcast {
 
             bool IMapImpl::tryRemove(const serialization::pimpl::Data& key, long timeoutInMillis) {
                 int partitionId = getPartitionId(key);
-                map::TryRemoveRequest *request = new map::TryRemoveRequest(getName(), key, util::getThreadId(), timeoutInMillis);
+                map::TryRemoveRequest *request = new map::TryRemoveRequest(getName(), key, hazelcast::util::getThreadId(), timeoutInMillis);
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -119,7 +119,7 @@ namespace hazelcast {
 
             bool IMapImpl::tryPut(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long timeoutInMillis) {
                 int partitionId = getPartitionId(key);
-                map::TryPutRequest *request = new map::TryPutRequest(getName(), key, value, util::getThreadId(), timeoutInMillis);
+                map::TryPutRequest *request = new map::TryPutRequest(getName(), key, value, hazelcast::util::getThreadId(), timeoutInMillis);
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -127,25 +127,25 @@ namespace hazelcast {
 
             serialization::pimpl::Data IMapImpl::put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long ttlInMillis) {
                 int partitionId = getPartitionId(key);
-                map::PutRequest *request = new map::PutRequest(getName(), key, value, util::getThreadId(), ttlInMillis);
+                map::PutRequest *request = new map::PutRequest(getName(), key, value, hazelcast::util::getThreadId(), ttlInMillis);
                 return invoke(request, partitionId);
             }
 
             void IMapImpl::putTransient(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long ttlInMillis) {
                 int partitionId = getPartitionId(key);
-                map::PutTransientRequest *request = new map::PutTransientRequest(getName(), key, value, util::getThreadId(), ttlInMillis);
+                map::PutTransientRequest *request = new map::PutTransientRequest(getName(), key, value, hazelcast::util::getThreadId(), ttlInMillis);
                 invoke(request, partitionId);
             }
 
             serialization::pimpl::Data IMapImpl::putIfAbsent(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long ttlInMillis) {
                 int partitionId = getPartitionId(key);
-                map::PutIfAbsentRequest *request = new map::PutIfAbsentRequest(getName(), key, value, util::getThreadId(), ttlInMillis);
+                map::PutIfAbsentRequest *request = new map::PutIfAbsentRequest(getName(), key, value, hazelcast::util::getThreadId(), ttlInMillis);
                 return invoke(request, partitionId);
             }
 
             bool IMapImpl::replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& oldValue, const serialization::pimpl::Data& newValue) {
                 int partitionId = getPartitionId(key);
-                map::ReplaceIfSameRequest *request = new map::ReplaceIfSameRequest(getName(), key, oldValue, newValue, util::getThreadId());
+                map::ReplaceIfSameRequest *request = new map::ReplaceIfSameRequest(getName(), key, oldValue, newValue, hazelcast::util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -153,25 +153,25 @@ namespace hazelcast {
 
             serialization::pimpl::Data IMapImpl::replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 int partitionId = getPartitionId(key);
-                map::ReplaceRequest *request = new map::ReplaceRequest(getName(), key, value, util::getThreadId());
+                map::ReplaceRequest *request = new map::ReplaceRequest(getName(), key, value, hazelcast::util::getThreadId());
                 return invoke(request, partitionId);
             }
 
             void IMapImpl::set(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value, long ttl) {
                 int partitionId = getPartitionId(key);
-                map::SetRequest *request = new map::SetRequest(getName(), key, value, util::getThreadId(), ttl);
+                map::SetRequest *request = new map::SetRequest(getName(), key, value, hazelcast::util::getThreadId(), ttl);
                 invoke(request, partitionId);
             }
 
             void IMapImpl::lock(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::LockRequest *request = new map::LockRequest(getName(), key, util::getThreadId());
+                map::LockRequest *request = new map::LockRequest(getName(), key, hazelcast::util::getThreadId());
                 invoke(request, partitionId);
             }
 
             void IMapImpl::lock(const serialization::pimpl::Data& key, long leaseTime) {
                 int partitionId = getPartitionId(key);
-                map::LockRequest *request = new map::LockRequest(getName(), key, util::getThreadId(), leaseTime, -1);
+                map::LockRequest *request = new map::LockRequest(getName(), key, hazelcast::util::getThreadId(), leaseTime, -1);
                 invoke(request, partitionId);
             }
 
@@ -185,7 +185,7 @@ namespace hazelcast {
 
             bool IMapImpl::tryLock(const serialization::pimpl::Data& key, long timeInMillis) {
                 int partitionId = getPartitionId(key);
-                map::LockRequest *request = new map::LockRequest(getName(), key, util::getThreadId(), LONG_MAX, timeInMillis);
+                map::LockRequest *request = new map::LockRequest(getName(), key, hazelcast::util::getThreadId(), LONG_MAX, timeInMillis);
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;
@@ -193,13 +193,13 @@ namespace hazelcast {
 
             void IMapImpl::unlock(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::UnlockRequest *request = new map::UnlockRequest(getName(), key, util::getThreadId(), false);
+                map::UnlockRequest *request = new map::UnlockRequest(getName(), key, hazelcast::util::getThreadId(), false);
                 invoke(request, partitionId);
             }
 
             void IMapImpl::forceUnlock(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::UnlockRequest *request = new map::UnlockRequest(getName(), key, util::getThreadId(), true);
+                map::UnlockRequest *request = new map::UnlockRequest(getName(), key, hazelcast::util::getThreadId(), true);
                 invoke(request, partitionId);
             }
 
@@ -221,7 +221,7 @@ namespace hazelcast {
 
             map::DataEntryView IMapImpl::getEntryView(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), key, util::getThreadId());
+                map::GetEntryViewRequest *request = new map::GetEntryViewRequest(getName(), key, hazelcast::util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, map::DataEntryView);
                 return *result;
@@ -229,7 +229,7 @@ namespace hazelcast {
 
             bool IMapImpl::evict(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
-                map::EvictRequest *request = new map::EvictRequest(getName(), key, util::getThreadId());
+                map::EvictRequest *request = new map::EvictRequest(getName(), key, hazelcast::util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
                 DESERIALIZE(data, bool);
                 return *result;

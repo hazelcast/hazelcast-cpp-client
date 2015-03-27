@@ -11,7 +11,8 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext)
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput,
+                    pimpl::PortableContext& portableContext)
             : dataOutput(&dataOutput)
             , context(&portableContext)
             , serializerHolder(&portableContext.getSerializerHolder())
@@ -27,9 +28,9 @@ namespace hazelcast {
 
             }
 
-            std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
+            hazelcast::util::ByteVector_ptr ObjectDataOutput::toByteArray() {
                 if (isEmpty)
-                    return std::auto_ptr<std::vector<byte> >(NULL);
+                    return hazelcast::util::ByteVector_ptr();
                 return dataOutput->toByteArray();
             }
 
@@ -120,32 +121,12 @@ namespace hazelcast {
 
 
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
-                if (isEmpty) return;
-                bool isNull = data == NULL;
+                bool isNull = (0 == data || 0 == data->totalSize());
                 writeBoolean(isNull);
                 if (isNull) {
                     return;
                 }
-                writeInt(data->getType());
-                writeInt(data->hasPartitionHash() ? data->getPartitionHash() : 0);
-                writePortableHeader(*data);
-
-                int size = data->bufferSize();
-                writeInt(size);
-                if (size > 0) {
-                    dataOutput->write(*(data->data));
-                }
-            }
-
-            void ObjectDataOutput::writePortableHeader(const pimpl::Data& data) {
-                if (!data.hasClassDefinition()) {
-                    writeInt(0);
-                } else {
-                    util::ByteBuffer& headerBuffer = dataOutput->getHeaderBuffer();
-                    writeInt(data.header->size());
-                    writeInt(headerBuffer.position());
-                    headerBuffer.readFrom(*data.header);
-                }
+                writeByteArray(data->toByteArray());
             }
 
 
@@ -171,6 +152,11 @@ namespace hazelcast {
                 dataOutput->position(newPos);
             }
 
+            void ObjectDataOutput::writeZeroBytes(int numberOfBytes) {
+                for (int k = 0; k < numberOfBytes; k++) {
+                    writeByte(0);
+                }
+            }
         }
     }
 }

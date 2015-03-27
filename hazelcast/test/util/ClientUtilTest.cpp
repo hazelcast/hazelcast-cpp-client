@@ -64,9 +64,9 @@ namespace hazelcast {
             }
 
 
-            void wakeTheConditionUp(util::ThreadArgs& args) {
-                util::Mutex *mutex = (util::Mutex *)args.arg0;
-                util::ConditionVariable *cv = (util::ConditionVariable *)args.arg1;
+            void wakeTheConditionUp(hazelcast::util::ThreadArgs& args) {
+                util::Mutex *mutex = (hazelcast::util::Mutex *)args.arg0;
+                util::ConditionVariable *cv = (hazelcast::util::ConditionVariable *)args.arg1;
                 int wakeUpTime = *(int *)args.arg2;
                 util::sleep(wakeUpTime);
 
@@ -129,16 +129,16 @@ namespace hazelcast {
                 assertEqual(true, gotException);
             }
 
-            void setValueToFuture(util::ThreadArgs& args) {
-                util::Future<int> *future = (util::Future<int> *)args.arg0;
+            void setValueToFuture(hazelcast::util::ThreadArgs& args) {
+                util::Future<int> *future = (hazelcast::util::Future<int> *)args.arg0;
                 int value = *(int *)args.arg1;
                 int wakeUpTime = *(int *)args.arg2;
                 util::sleep(wakeUpTime);
                 future->set_value(value);
             }
 
-            void setExceptionToFuture(util::ThreadArgs& args) {
-                util::Future<int> *future = (util::Future<int> *)args.arg0;
+            void setExceptionToFuture(hazelcast::util::ThreadArgs& args) {
+                util::Future<int> *future = (hazelcast::util::Future<int> *)args.arg0;
                 int wakeUpTime = *(int *)args.arg1;
                 util::sleep(wakeUpTime);
                 future->set_exception("exceptionName", "details");
@@ -169,7 +169,7 @@ namespace hazelcast {
                 assertEqual(true, gotException);
             }
 
-            void dummyThread(util::ThreadArgs& args) {
+            void dummyThread(hazelcast::util::ThreadArgs& args) {
 
             }
 
@@ -179,7 +179,7 @@ namespace hazelcast {
                 assertEqual(threadName, thread.getThreadName());
             }
 
-            void sleepyThread(util::ThreadArgs& args) {
+            void sleepyThread(hazelcast::util::ThreadArgs& args) {
                 int sleepTime = *(int *)args.arg0;
                 args.currentThread->interruptibleSleep(sleepTime);
             }

@@ -33,7 +33,7 @@ namespace hazelcast {
                 const Member next();
 
             private:
-                util::AtomicInt index;
+                hazelcast::util::AtomicInt index;
             };
         }
     }

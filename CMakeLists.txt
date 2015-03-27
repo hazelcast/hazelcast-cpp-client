@@ -14,6 +14,11 @@ message(STATUS "Preparing hazelcast client ..... ")
 
 include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
+#detec endianness
+TEST_BIG_ENDIAN(IS_BIGENDIAN)
+if (${BIG_ENDIAN})
+
+
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")

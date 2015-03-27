@@ -30,7 +30,7 @@ namespace hazelcast {
 
                     virtual ~DataOutput();
 
-                    std::auto_ptr< std::vector<byte> > toByteArray();
+                    hazelcast::util::ByteVector_ptr toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 
@@ -42,7 +42,7 @@ namespace hazelcast {
 
                     void writeChar(int i);
 
-                    void writeInt(int i);
+                    void writeInt(int i, bool writeBigEndian = true);
 
                     void writeLong(long long l);
 
@@ -51,6 +51,8 @@ namespace hazelcast {
                     void writeDouble(double v);
 
                     void writeUTF(const std::string &s);
+
+                    void writeBytes(const byte *bytes, unsigned int len);
 
                     void writeByteArray(const std::vector<byte> &data);
 
@@ -74,7 +76,7 @@ namespace hazelcast {
 
                     void position(size_t newPos);
 
-                    util::ByteBuffer& getHeaderBuffer();
+                    hazelcast::util::ByteBuffer& getHeaderBuffer();
 
                     std::auto_ptr< std::vector<byte> > getPortableHeader();
 
@@ -84,7 +86,7 @@ namespace hazelcast {
                 private:
                     std::auto_ptr< std::vector<byte> > outputStream;
                     char* headerBuffer;
-                    util::ByteBuffer headerByteBuffer;
+                    hazelcast::util::ByteBuffer headerByteBuffer;
 
                     void writeShortUTF(const std::string &);
 

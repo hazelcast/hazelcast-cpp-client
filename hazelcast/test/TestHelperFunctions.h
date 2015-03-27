@@ -8,7 +8,7 @@
 
 #define ASSERT_EVENTUALLY( CONDITION, ... ) do{     \
             for(int i = 0 ; i < 60 ; i++ ) {        \
-                util::sleep(2);                     \
+                hazelcast::util::sleep(2);                     \
                 if(i == 59){                        \
                     CONDITION(__VA_ARGS__);         \
                 }                                   \

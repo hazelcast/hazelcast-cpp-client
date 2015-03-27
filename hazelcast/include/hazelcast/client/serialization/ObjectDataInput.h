@@ -15,6 +15,7 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -130,13 +131,13 @@ namespace hazelcast {
                 * @return the byte array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<byte> readByteArray();
+                hazelcast::util::ByteVector_ptr readByteArray();
 
                 /**
                 * @return the char array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<char> readCharArray();
+                hazelcast::util::CharVector_ptr readCharArray();
 
                 /**
                 * @return the int array read
@@ -212,11 +213,11 @@ namespace hazelcast {
 
                     boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
                     classDefinition->readData(dataInput);
-                    int factoryId = classDefinition->getFactoryId();
+/*                    int factoryId = classDefinition->getFactoryId();
                     int classId = classDefinition->getClassId();
-                    int version = classDefinition->getVersion();
+                    int version = classDefinition->getVersion();*/
                     portableContext.registerClassDefinition(classDefinition);
-                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
+                    serializerHolder.getPortableSerializer().read(dataInput, *object);
                     return object;
                 };
 
@@ -249,7 +250,7 @@ namespace hazelcast {
                         return object;
                     } else {
                         const std::string& message = "No serializer found for serializerId :"
-                        + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
+                        + hazelcast::util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 
@@ -263,7 +264,6 @@ namespace hazelcast {
 
                 void operator=(const ObjectDataInput&);
 
-                std::auto_ptr<std::vector<byte> > readPortableHeader();
             };
         }
     }

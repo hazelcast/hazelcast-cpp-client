@@ -11,12 +11,13 @@
 #define HAZELCAST_OUTPUT_SOCKET_STREAM
 
 #include "hazelcast/util/HazelcastDll.h"
+#include <hazelcast/client/Socket.h>
+
 #include <string>
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        class Socket;
         namespace serialization {
             namespace pimpl {
                 class Packet;
@@ -41,7 +42,7 @@ namespace hazelcast {
                 void writePacket(const serialization::pimpl::Packet&);
 
             private:
-                void writeData(const serialization::pimpl::Data& , serialization::pimpl::PortableContext& context);
+                void writeValue(const serialization::pimpl::Data &data);
 
                 Socket& socket;
 

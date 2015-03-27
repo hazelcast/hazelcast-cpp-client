@@ -46,7 +46,7 @@ namespace hazelcast {
 
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::createClassDefinition(std::auto_ptr<std::vector<byte> > compressedBinary) {
+                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::createClassDefinition(hazelcast::util::ByteVector_ptr compressedBinary) {
                     if (compressedBinary.get() == NULL || compressedBinary.get()->size() == 0) {
                         throw exception::IOException("ClassDefinitionContext::createClassDefinition", "Illegal class-definition binary! ");
                     }
@@ -133,7 +133,7 @@ namespace hazelcast {
                     if (cd->getBinary().size() == 0) {
                         DataOutput output;
                         cd->writeData(output);
-                        std::auto_ptr<std::vector<byte> > binary = output.toByteArray();
+                        hazelcast::util::ByteVector_ptr binary = output.toByteArray();
                         compress(*(binary.get()));
                         cd->setBinary(binary);
                     }

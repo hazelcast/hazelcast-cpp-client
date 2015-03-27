@@ -24,6 +24,7 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationConstants {
                 public:
+                    static int const CONSTANT_TYPE_NULL;
                     static int const CONSTANT_TYPE_PORTABLE;
                     static int const CONSTANT_TYPE_DATA;
                     static int const CONSTANT_TYPE_BYTE;
@@ -52,6 +53,25 @@ namespace hazelcast {
                     static int const DEFAULT_TYPE_EXTERNALIZABLE;
                     static int const DEFAULT_TYPE_ENUM;
 
+                    // ------------------------------------------------------------
+                    // AUTOMATICALLY REGISTERED SERIALIZERS
+
+                    static int const AUTO_TYPE_ARRAY_LIST;
+
+                    static int const AUTO_TYPE_JOB_PARTITION_STATE;
+
+                    static int const AUTO_TYPE_JOB_PARTITION_STATE_ARRAY;
+
+                    static int const AUTO_TYPE_LINKED_LIST;
+                    // ------------------------------------------------------------
+                    // HIBERNATE SERIALIZERS
+
+                    static int const HIBERNATE3_TYPE_HIBERNATE_CACHE_KEY;
+                    static int const HIBERNATE3_TYPE_HIBERNATE_CACHE_ENTRY;
+
+                    static int const HIBERNATE4_TYPE_HIBERNATE_CACHE_KEY;
+                    static int const HIBERNATE4_TYPE_HIBERNATE_CACHE_ENTRY;
+/*
                     SerializationConstants();
 
                     std::string typeIdToName(int typeId);
@@ -60,7 +80,7 @@ namespace hazelcast {
                     int size;
                     std::vector<std::string> typeIdNameVector;
 
-                    int idToIndex(int id);
+                    int idToIndex(int id);*/
 
                 };
             }

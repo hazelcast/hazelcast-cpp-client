@@ -77,7 +77,7 @@ namespace hazelcast {
                         T portable;
                         int factoryId = portable.getFactoryId();
                         int classId = portable.getClassId();
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookup(factoryId, classId, context.getVersion());
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId, classId, context.getVersion());
                         if (nestedClassDef == NULL) {
                             throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable", "Cannot write null portable without explicitly registering class definition!");
                         }

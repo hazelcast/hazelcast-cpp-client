@@ -17,7 +17,7 @@ namespace hazelcast {
             : options(txnOptions)
             , clientContext(clientContext)
             , connection(connection)
-            , threadId(util::getThreadId())
+            , threadId(hazelcast::util::getThreadId())
             , state(TxnState::NO_TXN)
             , startTime(0) {
 

@@ -56,7 +56,7 @@ namespace hazelcast {
 
             class QueueTestItemListener : public ItemListener<std::string>  {
             public:
-                QueueTestItemListener(util::CountDownLatch &latch)
+                QueueTestItemListener(hazelcast::util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -69,30 +69,30 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch &latch;
+                hazelcast::util::CountDownLatch &latch;
             };
 
             void ClientQueueTest::testListener() {
                 assertEqual(0, q->size());
 
-                util::CountDownLatch latch(5);
+                hazelcast::util::CountDownLatch latch(5);
 
                 QueueTestItemListener listener(latch);
                 std::string id = q->addItemListener(listener, true);
 
-                util::sleep(1);
+                hazelcast::util::sleep(1);
 
                 for (int i = 0; i < 5; i++) {
-                    assertTrue(q->offer(std::string("event_item") + util::IOUtil::to_string(i)));
+                    assertTrue(q->offer(std::string("event_item") + hazelcast::util::IOUtil::to_string(i)));
                 }
 
                 assertTrue(latch.await(5));
                 assertTrue(q->removeItemListener(id));
             }
 
-            void testOfferPollThread2(util::ThreadArgs &args) {
+            void testOfferPollThread2(hazelcast::util::ThreadArgs &args) {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
-                util::sleep(2);
+                hazelcast::util::sleep(2);
                 q->offer("item1");
 		std::cout << "item1 is offered" << std::endl;
             }
@@ -112,7 +112,7 @@ namespace hazelcast {
                 }
                 assertEqual(0, q->size());
 
-                util::Thread t2(testOfferPollThread2, q.get());
+                hazelcast::util::Thread t2(testOfferPollThread2, q.get());
 		
 		boost::shared_ptr<std::string> item = q->poll(30 * 1000);	
 		assertNotNull(item.get(), "item should not be null");
@@ -198,7 +198,7 @@ namespace hazelcast {
                 std::vector<std::string> array = q->toArray();
                 int size = array.size();
                 for (int i = 0; i < size; i++) {
-                    assertEqual(std::string("item") + util::IOUtil::to_string(i + 1), array[i]);
+                    assertEqual(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1), array[i]);
                 }
 
             }

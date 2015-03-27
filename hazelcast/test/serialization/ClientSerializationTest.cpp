@@ -32,7 +32,7 @@ namespace hazelcast {
                 serialization::pimpl::Packet packet(contextIn, data);
 
                 std::auto_ptr<char> buf(new char[1024 * 1024 * 2]);
-                util::ByteBuffer buffer(buf.get(), 1024 * 1024 * 2);
+                ::hazelcast::util::ByteBuffer buffer(buf.get(), 1024 * 1024 * 2);
                 iTest::assertTrue(packet.writeTo(buffer));
                 buffer.flip();
 
@@ -105,7 +105,7 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
-                std::vector<char> chars(charA, charA + 10);
+                hazelcast::util::CharVector_ptr chars(new hazelcast::util::CharVector(charA, charA + 10));
                 std::vector<byte> bytes;
                 bytes.resize(5, 0);
                 TestDataSerializable ds(123, 's');
@@ -142,7 +142,7 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
-                std::vector<char> chars(charA, charA + 10);
+                hazelcast::util::CharVector_ptr chars(new hazelcast::util::CharVector(charA, charA + 10));
                 std::vector<byte> bytes;
                 bytes.resize(5, 0);
                 TestNamedPortable np("named portable", 34567);
@@ -242,9 +242,9 @@ namespace hazelcast {
                 iTest::assertEqual(np, *tnp2);
 
                 byte byteArray[] = {0, 1, 2};
-                std::vector<byte> bb(byteArray, byteArray + 3);
+                hazelcast::util::ByteVector_ptr bb(new hazelcast::util::ByteVector(byteArray, byteArray + 3));
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                std::vector<char> cc(charArray, charArray + 4);
+                hazelcast::util::CharVector_ptr cc(new hazelcast::util::CharVector(charArray, charArray + 4));
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
@@ -257,7 +257,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
+                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
@@ -319,9 +319,9 @@ namespace hazelcast {
                 iTest::assertEqual(np, *tnp2);
 
                 byte byteArray[] = {0, 1, 2};
-                std::vector<byte> bb(byteArray, byteArray + 3);
+                hazelcast::util::ByteVector_ptr bb(new hazelcast::util::ByteVector(byteArray, byteArray + 3));
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                std::vector<char> cc(charArray, charArray + 4);
+                hazelcast::util::CharVector_ptr cc(new hazelcast::util::CharVector(charArray, charArray + 4));
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
@@ -334,7 +334,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
+                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);

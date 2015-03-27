@@ -28,43 +28,43 @@ namespace hazelcast {
         int *MemberAttributeEvent::getValueResolved(int *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_INTEGER)
                 return NULL;
-            return new int(util::IOUtil::to_value<int>(value));
+            return new int(hazelcast::util::IOUtil::to_value<int>(value));
         }
 
         float *MemberAttributeEvent::getValueResolved(float *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_FLOAT)
                 return NULL;
-            return new float(util::IOUtil::to_value<float>(value));
+            return new float(hazelcast::util::IOUtil::to_value<float>(value));
         }
 
         short *MemberAttributeEvent::getValueResolved(short *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_SHORT)
                 return NULL;
-            return new short(util::IOUtil::to_value<short>(value));
+            return new short(hazelcast::util::IOUtil::to_value<short>(value));
         }
 
         long *MemberAttributeEvent::getValueResolved(long *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_LONG)
                 return NULL;
-            return new long(util::IOUtil::to_value<long>(value));
+            return new long(hazelcast::util::IOUtil::to_value<long>(value));
         }
 
         byte *MemberAttributeEvent::getValueResolved(byte *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_BYTE)
                 return NULL;
-            return new byte(util::IOUtil::to_value<byte>(value));
+            return new byte(hazelcast::util::IOUtil::to_value<byte>(value));
         }
 
         bool *MemberAttributeEvent::getValueResolved(bool *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_BOOLEAN)
                 return NULL;
-            return new bool(util::IOUtil::to_value<bool>(value));
+            return new bool(hazelcast::util::IOUtil::to_value<bool>(value));
         }
 
         double *MemberAttributeEvent::getValueResolved(double *tag) const {
             if (primitive_id != util::IOUtil::PRIMITIVE_TYPE_DOUBLE)
                 return NULL;
-            return new double(util::IOUtil::to_value<double>(value));
+            return new double(hazelcast::util::IOUtil::to_value<double>(value));
         }
 
         std::string *MemberAttributeEvent::getValueResolved(std::string *tag) const {

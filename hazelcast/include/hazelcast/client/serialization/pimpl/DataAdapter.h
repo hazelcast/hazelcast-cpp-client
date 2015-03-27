@@ -33,10 +33,6 @@ namespace hazelcast {
 
                     PortableContext& getPortableContext() const;
 
-                    virtual bool readFrom(util::ByteBuffer& buffer);
-
-                    virtual bool writeTo(util::ByteBuffer& destination);
-
                 protected:
                     void setStatus(int statusBit);
 
@@ -49,11 +45,8 @@ namespace hazelcast {
                     static const int ST_ALL;
                 private:
                     int status;
-                    size_t bytesRead;
-                    size_t bytesWritten;
                     Data data;
                     PortableContext& context;
-                    ClassDefinitionAdapter* classDefinitionAdapter;
                 };
             }
         }

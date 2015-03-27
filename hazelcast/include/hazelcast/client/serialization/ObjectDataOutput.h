@@ -12,6 +12,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/ByteBuffer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,7 +48,7 @@ namespace hazelcast {
                 /**
                 * @return copy of internal byte array
                 */
-                std::auto_ptr<std::vector<byte> > toByteArray();
+                hazelcast::util::ByteVector_ptr toByteArray();
 
                 /**
                 * Writes all the bytes in array to stream
@@ -192,11 +193,13 @@ namespace hazelcast {
                         s->write(*this, *serializable);
                     } else {
                         const std::string& message = "No serializer found for serializerId :"
-                        + util::IOUtil::to_string(type)
+                        + hazelcast::util::IOUtil::to_string(type)
                         + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
                     }
                 };
+
+                void writeZeroBytes(int numberOfBytes);
 
             private:
                 pimpl::DataOutput *dataOutput;

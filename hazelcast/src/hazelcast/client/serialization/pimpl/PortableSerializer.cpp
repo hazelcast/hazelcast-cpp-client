@@ -22,53 +22,51 @@ namespace hazelcast {
 
                 }
 
-                void PortableSerializer::write(DataOutput& dataOutput, const Portable& p) {
+                void PortableSerializer::write(DataOutput& out, const Portable& p) {
+                    out.writeInt(p.getFactoryId());
+                    out.writeInt(p.getClassId());
+                    writeInternal(out, p);
+                }
+
+                void PortableSerializer::writeInternal(DataOutput &out, const Portable &p) {
                     boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
+                    out.writeInt(cd->getVersion());
 
-
-                    util::ByteBuffer& headerBuffer = dataOutput.getHeaderBuffer();
-                    int pos = headerBuffer.position();
-                    dataOutput.writeInt(pos);
-
-                    headerBuffer.writeInt(cd->getFactoryId());
-                    headerBuffer.writeInt(cd->getClassId());
-                    headerBuffer.writeInt(cd->getVersion());
-
-                    DefaultPortableWriter dpw(context, cd, dataOutput);
+                    DefaultPortableWriter dpw(context, cd, out);
                     PortableWriter portableWriter(&dpw);
                     p.writePortable(portableWriter);
                     portableWriter.end();
                 }
 
-                void PortableSerializer::read(DataInput& dataInput, Portable& portable) {
+                void PortableSerializer::read(DataInput& in, Portable& portable) {
+                    int factoryId = in.readInt();
+                    int classId = in.readInt();
+                    return read(in, portable, factoryId, classId);
+                }
 
-                    util::ByteBuffer& byteBuffer = dataInput.getHeaderBuffer();
-                    int headerBufferPos = dataInput.readInt();
-                    byteBuffer.position((size_t)headerBufferPos);
 
-                    int factoryId = byteBuffer.readInt();
-                    int classId = byteBuffer.readInt();
-                    int version = byteBuffer.readInt();
+                void PortableSerializer::read(DataInput &in, Portable &p, int factoryId, int classId) const {
+                    int version = in.readInt();
 
-                    int portableVersion = findPortableVersion(factoryId, classId, portable);
-                    PortableReader reader = createReader(dataInput, factoryId, classId, version, portableVersion);
-                    portable.readPortable(reader);
+                    int portableVersion = findPortableVersion(factoryId, classId, p);
+
+                    PortableReader reader = createReader(in, factoryId, classId, version, portableVersion);
+                    p.readPortable(reader);
                     reader.end();
                 }
 
-                PortableReader PortableSerializer::createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) {
+                PortableReader PortableSerializer::createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const {
 
                     int effectiveVersion = version;
                     if (version < 0) {
                         effectiveVersion = context.getVersion();
                     }
 
-                    boost::shared_ptr<ClassDefinition> cd = context.lookup(factoryId, classId, effectiveVersion);
+                    boost::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
                     if (cd == NULL) {
-                        std::stringstream s;
-                        s << "Could not find class-definition for ";
-                        s << "factory-id: " << factoryId << ", class-id: " << classId << ", version: " << effectiveVersion;
-                        throw  exception::HazelcastSerializationException("PortableSerializer::createReader", s.str());
+                        int begin = input.position();
+                        cd = context.readClassDefinition(input, factoryId, classId, effectiveVersion);
+                        input.position(begin);
                     }
 
                     if (portableVersion == effectiveVersion) {
@@ -80,7 +78,7 @@ namespace hazelcast {
                     }
                 }
 
-                int PortableSerializer::findPortableVersion(int factoryId, int classId, const Portable& portable) {
+                int PortableSerializer::findPortableVersion(int factoryId, int classId, const Portable& portable) const {
                     int currentVersion = context.getClassVersion(factoryId, classId);
                     if (currentVersion < 0) {
                         currentVersion = PortableVersionHelper::getVersion(&portable, context.getVersion());

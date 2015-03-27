@@ -9,6 +9,8 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "Data.h"
+#include <hazelcast/client/exception/IOException.h>
 #include <vector>
 #include <string>
 
@@ -17,6 +19,8 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
+using namespace hazelcast::client::exception;
+
 namespace hazelcast {
     namespace util{
         class ByteBuffer;
@@ -24,11 +28,14 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+            /**
+             * TODO: Make reads safe by checking on the array boundary, throw HazelcastSerializationException
+             */
                 class HAZELCAST_API DataInput {
                 public:
                     DataInput(const std::vector<byte> &buffer);
 
-                    DataInput(const std::vector<byte> &buffer, std::vector<byte>& header);
+                    DataInput(const std::vector<byte> &buffer, int offset);
 
                     void readFully(std::vector<byte> &);
 
@@ -52,9 +59,9 @@ namespace hazelcast {
 
                     std::string readUTF();
 
-                    std::vector<byte> readByteArray();
+                    hazelcast::util::ByteVector_ptr readByteArray();
 
-                    std::vector<char> readCharArray();
+                    hazelcast::util::CharVector_ptr readCharArray();
 
                     std::vector<int> readIntArray();
 
@@ -70,11 +77,12 @@ namespace hazelcast {
 
                     void position(int newPos);
 
-                    hazelcast::util::ByteBuffer& getHeaderBuffer();
+                    int readInt(int newPositionToReadFrom);
+
+                    void readByteArray(char buffer[], short length);
 
                 private:
                     const std::vector<byte> &buffer;
-                    util::ByteBuffer headerBuffer;
 
                     int pos;
 
@@ -86,6 +94,7 @@ namespace hazelcast {
 
                     DataInput &operator = (const DataInput &);
 
+                    void checkBoundary(short requestedLength) throw (IOException);
                 };
             }
         }

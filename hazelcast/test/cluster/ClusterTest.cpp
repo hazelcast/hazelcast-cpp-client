@@ -53,7 +53,7 @@ namespace hazelcast {
 
             class SampleInitialListener : public InitialMembershipListener {
             public:
-                SampleInitialListener(util::CountDownLatch& _memberAdded, util::CountDownLatch& _attributeLatch, util::CountDownLatch& _memberRemoved)
+                SampleInitialListener(hazelcast::util::CountDownLatch& _memberAdded, hazelcast::util::CountDownLatch& _attributeLatch, hazelcast::util::CountDownLatch& _memberRemoved)
                 : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 }
@@ -79,15 +79,15 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& _memberAdded;
-                util::CountDownLatch& _attributeLatch;
-                util::CountDownLatch& _memberRemoved;
+                hazelcast::util::CountDownLatch& _memberAdded;
+                hazelcast::util::CountDownLatch& _attributeLatch;
+                hazelcast::util::CountDownLatch& _memberRemoved;
             };
 
 
             class SampleListenerInClusterTest : public MembershipListener {
             public:
-                SampleListenerInClusterTest(util::CountDownLatch& _memberAdded, util::CountDownLatch& _attributeLatch, util::CountDownLatch& _memberRemoved)
+                SampleListenerInClusterTest(hazelcast::util::CountDownLatch& _memberAdded, hazelcast::util::CountDownLatch& _attributeLatch, hazelcast::util::CountDownLatch& _memberRemoved)
                 : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
 
                 }
@@ -106,9 +106,9 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& _memberAdded;
-                util::CountDownLatch& _attributeLatch;
-                util::CountDownLatch& _memberRemoved;
+                hazelcast::util::CountDownLatch& _memberAdded;
+                hazelcast::util::CountDownLatch& _attributeLatch;
+                hazelcast::util::CountDownLatch& _memberRemoved;
             };
 
             void ClusterTest::testClusterListeners() {
@@ -117,12 +117,12 @@ namespace hazelcast {
                 Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
                 HazelcastClient hazelcastClient(clientConfig.addAddress(address));
                 Cluster cluster = hazelcastClient.getCluster();
-                util::CountDownLatch memberAdded(1);
-                util::CountDownLatch memberAddedInit(2);
-                util::CountDownLatch memberRemoved(1);
-                util::CountDownLatch memberRemovedInit(1);
-                util::CountDownLatch attributeLatch(7);
-                util::CountDownLatch attributeLatchInit(7);
+                hazelcast::util::CountDownLatch memberAdded(1);
+                hazelcast::util::CountDownLatch memberAddedInit(2);
+                hazelcast::util::CountDownLatch memberRemoved(1);
+                hazelcast::util::CountDownLatch memberRemovedInit(1);
+                hazelcast::util::CountDownLatch attributeLatch(7);
+                hazelcast::util::CountDownLatch attributeLatchInit(7);
 
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInClusterTest sampleListener(memberAdded, attributeLatch, memberRemoved);
@@ -149,12 +149,12 @@ namespace hazelcast {
             }
 
             void ClusterTest::testClusterListenersFromConfig() {
-                util::CountDownLatch memberAdded(2);
-                util::CountDownLatch memberAddedInit(3);
-                util::CountDownLatch memberRemoved(1);
-                util::CountDownLatch memberRemovedInit(1);
-                util::CountDownLatch attributeLatch(7);
-                util::CountDownLatch attributeLatchInit(7);
+                hazelcast::util::CountDownLatch memberAdded(2);
+                hazelcast::util::CountDownLatch memberAddedInit(3);
+                hazelcast::util::CountDownLatch memberRemoved(1);
+                hazelcast::util::CountDownLatch memberRemovedInit(1);
+                hazelcast::util::CountDownLatch attributeLatch(7);
+                hazelcast::util::CountDownLatch attributeLatchInit(7);
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInClusterTest sampleListener(memberAdded, attributeLatch, memberRemoved);
 
@@ -183,7 +183,7 @@ namespace hazelcast {
 
             class DummyListenerClusterTest : public EntryAdapter<std::string, std::string> {
             public:
-                DummyListenerClusterTest(util::CountDownLatch& addLatch)
+                DummyListenerClusterTest(hazelcast::util::CountDownLatch& addLatch)
                 : addLatch(addLatch) {
                 }
 
@@ -192,12 +192,12 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& addLatch;
+                hazelcast::util::CountDownLatch& addLatch;
             };
 
             class LclForClusterTest : public LifecycleListener {
             public:
-                LclForClusterTest(util::CountDownLatch& latch)
+                LclForClusterTest(hazelcast::util::CountDownLatch& latch)
                 : latch(latch) {
 
                 }
@@ -209,7 +209,7 @@ namespace hazelcast {
                 }
 
             private:
-                util::CountDownLatch& latch;
+                hazelcast::util::CountDownLatch& latch;
             };
 
             void ClusterTest::testListenersWhenClusterDown() {
@@ -220,13 +220,13 @@ namespace hazelcast {
                 Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
                 HazelcastClient hazelcastClient(clientConfig.addAddress(address));
 
-                util::CountDownLatch countDownLatch(1);
+                hazelcast::util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);
                 IMap<std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>("testListenersWhenClusterDown");
                 m.addEntryListener(listener, true);
                 instance.shutdown();
 
-                util::CountDownLatch lifecycleLatch(1);
+                hazelcast::util::CountDownLatch lifecycleLatch(1);
                 LclForClusterTest lifecycleListener(lifecycleLatch);
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 

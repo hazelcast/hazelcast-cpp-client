@@ -40,7 +40,7 @@ namespace hazelcast {
 
             private:
                 char* buffer;
-                util::ByteBuffer byteBuffer;
+                ::hazelcast::util::ByteBuffer byteBuffer;
                 serialization::pimpl::Packet *lastData;
                 spi::ClientContext& clientContext;
 

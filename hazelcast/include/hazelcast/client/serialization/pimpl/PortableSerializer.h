@@ -39,6 +39,7 @@ namespace hazelcast {
                 class PortableContext;
 
                 class HAZELCAST_API PortableSerializer {
+                    friend class DefaultPortableWriter;
                 public:
 
                     PortableSerializer(PortableContext& portableContext);
@@ -47,12 +48,17 @@ namespace hazelcast {
 
                     void read(DataInput& dataInput, Portable& portable);
 
+                    void read(DataInput &in, Portable &p, int factoryId, int classId) const;
+
                 private:
                     PortableContext& context;
 
-                    int findPortableVersion(int factoryId, int classId, const Portable& portable);
+                    int findPortableVersion(int factoryId, int classId, const Portable& portable) const;
 
-                    PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion);
+                    PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+
+                    void writeInternal(DataOutput &out, const Portable &p);
+
                 };
 
             }

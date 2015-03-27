@@ -115,14 +115,14 @@ namespace hazelcast {
                 * @return the byte array value read
                 * @throws IOException
                 */
-                std::vector<byte> readByteArray(const char *fieldName);
+                pimpl::Data::BufferType_ptr readByteArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the char array value read
                 * @throws IOException
                 */
-                std::vector<char> readCharArray(const char *fieldName);
+                hazelcast::util::CharVector_ptr readCharArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field

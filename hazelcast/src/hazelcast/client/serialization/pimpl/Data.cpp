@@ -8,133 +8,95 @@
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/MurmurHash3.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include <hazelcast/util/Bits.h>
+
+using namespace hazelcast::client::util;
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
 
-                int Data::HEADER_ENTRY_LENGTH = 12;
-                int Data::HEADER_FACTORY_OFFSET = 0;
-                int Data::HEADER_CLASS_OFFSET = 4;
-                int Data::HEADER_VERSION_OFFSET = 8;
+                // type and partition_hash are always written with BIG_ENDIAN byte-order
+                unsigned int Data::TYPE_OFFSET = 0;
+                // will use a byte to store partition_hash bit
+                unsigned int Data::PARTITION_HASH_BIT_OFFSET = 4;
+                unsigned int Data::DATA_OFFSET = 5;
+
+                // array (12: array header, 4: length)
+                unsigned int Data::ARRAY_HEADER_SIZE_IN_BYTES = 16;
 
                 Data::Data()
-                : data(new std::vector<byte>)
-                , partitionHash(0)
-                , type(SerializationConstants::CONSTANT_TYPE_DATA) {
+                : data(new BufferType){
+                }
 
+                Data::Data(BufferType_ptr buffer) : data(buffer) {
+                    if (buffer.get() != 0 && buffer->size() > 0 && buffer->size() < DATA_OFFSET) {
+                        char msg[100 + 1];
+                        snprintf(msg, 100, "Provided buffer should be either empty or "
+                                "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, buffer->size());
+                        throw hazelcast::client::exception::IllegalArgumentException("Data::setBuffer", msg);
+                    }
+                    this->data = buffer;
                 }
 
                 Data::Data(const Data& rhs)
-                : data(rhs.data.release())
-                , header(rhs.header.release())
-                , partitionHash(rhs.partitionHash)
-                , type(rhs.type) {
+                : data(rhs.data) {
 
                 }
 
                 Data& Data::operator=(const Data& rhs) {
-                    partitionHash = rhs.partitionHash;
-                    type = rhs.type;
                     data = rhs.data;
-                    header = rhs.header;
                     return (*this);
                 }
 
-                int Data::bufferSize() const {
-                    return data->size();
+
+                unsigned long Data::dataSize() const {
+                    return std::max(totalSize() - DATA_OFFSET, (unsigned long)0);
                 }
 
-
-                size_t Data::headerSize() const {
-                    return header->size();
-                }
-
-                int Data::hashCode() const {
-                    return hazelcast::util::MurmurHash3_x86_32((void*)&((*data)[0]) , data->size());
-                }
-
-
-                bool Data::hasPartitionHash() const {
-                    return partitionHash != 0;
+                unsigned long Data::totalSize() const {
+                    return data.get() != 0 ? (int)data->size() : 0;
                 }
 
                 int Data::getPartitionHash() const {
-                    if (partitionHash == 0) {
-                        partitionHash = hashCode();
+                    if (hasPartitionHash()) {
+                        return Bits::readIntB(data.get(), data->size() - Bits::INT_SIZE_IN_BYTES);
                     }
-                    return partitionHash;
+                    return hashCode();
                 }
 
+                bool Data::hasPartitionHash() const {
+                    return totalSize() != 0 && (*data)[PARTITION_HASH_BIT_OFFSET] != 0;
+                }
 
-                void Data::setPartitionHash(int partitionHash) {
-                    this->partitionHash = partitionHash;
+                Data::BufferType &Data::toByteArray() const {
+                    return *data;
                 }
 
                 int Data::getType() const {
-                    return type;
+                    if (totalSize() == 0) {
+                        return SerializationConstants::CONSTANT_TYPE_NULL;
+                    }
+                    return Bits::readIntB(data.get(), TYPE_OFFSET);
                 }
 
-                void Data::setType(int type) {
-                    this->type = type;
+                unsigned long Data::getHeapCost() const {
+                    // reference (assuming compressed oops)
+                    int objectRef = Bits::INT_SIZE_IN_BYTES;
+                    return objectRef + (data.get() != 0 ? ARRAY_HEADER_SIZE_IN_BYTES + data->size() : 0);
                 }
 
-                void Data::setBuffer(std::auto_ptr<std::vector<byte> > buffer) {
-                    this->data = buffer;
-                }
-
-                void Data::setHeader(std::auto_ptr<std::vector<byte> > header) {
-                    this->header = header;
+                int Data::hashCode() const {
+                    return hazelcast::util::MurmurHash3_x86_32((void*)&((*data)[0]) , (int)data->size());
                 }
 
                 bool Data::isPortable() const {
-                    return SerializationConstants::CONSTANT_TYPE_PORTABLE == type;
+                    return SerializationConstants::CONSTANT_TYPE_PORTABLE == getType();
                 }
 
 
-                bool Data::hasClassDefinition() const {
-                    if (isPortable()) {
-                        return true;
-                    }
-                    return header.get() != NULL;
-                }
-
-
-                size_t Data::getClassDefinitionCount() const {
-                    size_t len = headerSize();
-                    assert(len % HEADER_ENTRY_LENGTH == 0 && "Header length should be factor of HEADER_ENTRY_LENGTH");
-                    return len / HEADER_ENTRY_LENGTH;
-                }
-
-                std::vector<boost::shared_ptr<ClassDefinition> > Data::getClassDefinitions(PortableContext& context) const{
-                    if (!hasClassDefinition()) {
-                        return std::vector<boost::shared_ptr<ClassDefinition> >();
-                    }
-
-                    size_t count = getClassDefinitionCount();
-                    std::vector<boost::shared_ptr<ClassDefinition> > definitions(count);
-                    for (size_t i = 0; i < count; i++) {
-                        definitions[i] = readClassDefinition(context, i * Data::HEADER_ENTRY_LENGTH);
-                    }
-                    return definitions;
-                }
-
-                boost::shared_ptr<ClassDefinition> Data::readClassDefinition(PortableContext& context, int start) const{
-                    int factoryId = readIntHeader(start + Data::HEADER_FACTORY_OFFSET);
-                    int classId = readIntHeader(start + Data::HEADER_CLASS_OFFSET);
-                    int version = readIntHeader(start + Data::HEADER_VERSION_OFFSET);
-                    return context.lookup(factoryId, classId, version);
-                }
-
-                int Data::readIntHeader(int offset) const{
-                    std::vector<byte>& b = *header;
-                    int byte3 = (b[offset] & 0xFF) << 24;
-                    int byte2 = (b[offset + 1] & 0xFF) << 16;
-                    int byte1 = (b[offset + 2] & 0xFF) << 8;
-                    int byte0 = b[offset + 3] & 0xFF;
-                    return byte3 + byte2 + byte1 + byte0;
-                }
             }
         }
     }

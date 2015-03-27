@@ -44,7 +44,7 @@ namespace hazelcast {
                 virtual ~AbstractLoadBalancer();
 
             private:
-                util::Mutex membersLock;
+                hazelcast::util::Mutex membersLock;
                 std::vector<Member> membersRef;
                 Cluster *cluster;
             };

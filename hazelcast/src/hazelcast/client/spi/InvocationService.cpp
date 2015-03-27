@@ -188,7 +188,6 @@ namespace hazelcast {
                 serialization::pimpl::Data data = ss.toData<impl::ClientRequest>(&(promise->getRequest()));
                 serialization::pimpl::PortableContext& portableContext = ss.getPortableContext();
                 serialization::pimpl::Packet *packet = new serialization::pimpl::Packet(portableContext, data);
-                packet->setPartitionId(partitionId);
                 connection->write(packet);
                 return connection;
             }

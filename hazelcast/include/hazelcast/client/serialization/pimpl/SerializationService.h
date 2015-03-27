@@ -51,47 +51,68 @@ namespace hazelcast {
 
                     template<typename T>
                     Data toData(const Portable *portable) {
-                        const T *object = static_cast<const T *>(portable);
                         DataOutput output;
+
+                        // write type
+                        output.writeInt(SerializationConstants::CONSTANT_TYPE_PORTABLE);
+
+                        // write false (i.e. 0) for hasPartitionHash, since this has no use
+                        // in terms of c++ client impl.
+                        output.writeBoolean(false);
+
+                        const T *object = static_cast<const T *>(portable);
                         getSerializerHolder().getPortableSerializer().write(output, *object);
 
-                        Data data;
-                        data.setType(SerializationConstants::CONSTANT_TYPE_PORTABLE);
-                        data.setBuffer(output.toByteArray());
-                        data.setHeader(output.getPortableHeader());
+                        Data data(output.toByteArray());
                         return data;
                     };
 
                     template<typename T>
                     Data toData(const IdentifiedDataSerializable *dataSerializable) {
+                        DataOutput output;
+
+                        // write type
+                        output.writeInt(SerializationConstants::CONSTANT_TYPE_DATA);
+
+                        // write false (i.e. 0) for hasPartitionHash, since this has no use
+                        // in terms of c++ client impl.
+                        output.writeBoolean(false);
+
                         const T *object = static_cast<const T *>(dataSerializable);
-                        Data data;
-                        DataOutput dataOutput;
-                        ObjectDataOutput output(dataOutput, portableContext);
-                        getSerializerHolder().getDataSerializer().write(output, *object);
-                        data.setType(SerializationConstants::CONSTANT_TYPE_DATA);
-                        data.setBuffer(output.toByteArray());
+                        ObjectDataOutput dataOutput(output, portableContext);
+                        getSerializerHolder().getDataSerializer().write(dataOutput, *object);
+
+                        Data data(output.toByteArray());
                         return data;
                     };
 
                     template<typename T>
                     Data toData(const void *serializable) {
+                        DataOutput output;
+
                         const T *object = static_cast<const T *>(serializable);
-                        Data data;
-                        DataOutput dataOutput;
-                        ObjectDataOutput output(dataOutput, portableContext);
+
+                        // write type
                         int type = object->getTypeId();
+                        output.writeInt(type);
+
+                        // write false (i.e. 0) for hasPartitionHash, since this has no use
+                        // in terms of c++ client impl.
+                        output.writeBoolean(false);
+
+                        ObjectDataOutput dataOutput(output, portableContext);
+
                         boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                            s->write(output, *object);
+                            s->write(dataOutput, *object);
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                                    + ::hazelcast::util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
-                        data.setType(type);
-                        data.setBuffer(output.toByteArray());
+
+                        Data data(output.toByteArray());
                         return data;
                     };
 
@@ -106,55 +127,64 @@ namespace hazelcast {
                 private:
                     template<typename T>
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, Portable *tag) {
-                        if (data.bufferSize() == 0) return boost::shared_ptr<T>();
-                        checkClassType(SerializationConstants::CONSTANT_TYPE_PORTABLE, data.getType());
-                        boost::shared_ptr<T> object(new T);
-                        if(data.header.get() == NULL){
-                            DataInput dataInput(*(data.data.get()));
-                            getSerializerHolder().getPortableSerializer().read(dataInput, *object);
-                            return object;
-                        } else{
-                            DataInput dataInput(*(data.data.get()) , *(data.header.get()));
-                            getSerializerHolder().getPortableSerializer().read(dataInput, *object);
-                            return object;
+                        if (isNullData(data)) {
+                            return boost::shared_ptr<T>();
                         }
+
+                        DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                        int typeId = data.getType();
+
+                        checkClassType(SerializationConstants::CONSTANT_TYPE_PORTABLE, typeId);
+
+                        boost::shared_ptr<T> object(new T);
+                        getSerializerHolder().getPortableSerializer().read(dataInput, *object);
+
+                        return object;
                     };
 
                     template<typename T>
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, IdentifiedDataSerializable *tag) {
-                        if (data.bufferSize() == 0) return boost::shared_ptr<T>();
-                        checkClassType(SerializationConstants::CONSTANT_TYPE_DATA, data.getType());
-                        boost::shared_ptr<T> object(new T);
-                        if(data.header.get() == NULL){
-                            DataInput dataInput(*(data.data.get()));
-                            ObjectDataInput objectDataInput(dataInput, portableContext);
-                            getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
-                            return object;
-                        } else{
-                            DataInput dataInput(*(data.data.get()) , *(data.header.get()));
-                            ObjectDataInput objectDataInput(dataInput, portableContext);
-                            getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
-                            return object;
+                        if (isNullData(data)) {
+                            return boost::shared_ptr<T>();
                         }
+
+                        DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                        int typeId = data.getType();
+
+                        checkClassType(SerializationConstants::CONSTANT_TYPE_DATA, typeId);
+
+                        boost::shared_ptr<T> object(new T);
+                        ObjectDataInput objectDataInput(dataInput, portableContext);
+                        getSerializerHolder().getDataSerializer().read(objectDataInput, *object);
+
+                        return object;
                     };
 
                     template<typename T>
                     inline boost::shared_ptr<T> toObjectResolved(const Data &data, void *tag) {
-                        if (data.bufferSize() == 0) return boost::shared_ptr<T>();
+                        if (isNullData(data)) {
+                            return boost::shared_ptr<T>();
+                        }
+
+                        DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
                         boost::shared_ptr<T> object(new T);
-                        checkClassType(object->getTypeId(), data.getType());
-                        DataInput dataInput(*(data.data.get()));
+                        int typeId = object->getTypeId();
+
                         ObjectDataInput objectDataInput(dataInput, portableContext);
-                        boost::shared_ptr<SerializerBase> serializer = serializerFor(object->getTypeId());
+                        boost::shared_ptr<SerializerBase> serializer = serializerFor(typeId);
                         if (serializer.get() != NULL) {
                             Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                             s->read(objectDataInput, *object);
-                            return object;
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
+                                    + ::hazelcast::util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toObject", message);
                         }
+
+                        return object;
                     };
 
                     SerializerHolder &getSerializerHolder();
@@ -173,6 +203,10 @@ namespace hazelcast {
 
                     void checkClassType(int expectedType, int currentType);
 
+                    inline static bool isNullData(const Data &data) {
+                        return data.dataSize() == 0 || data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
+                    }
+
                     boost::shared_ptr<ClassDefinition> lookupClassDefinition(const Portable* portable) ;
 
                 };
@@ -181,11 +215,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<byte >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BYTE);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const byte *object = static_cast<const byte *>(serializable);
                     output.writeByte(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_BYTE);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -193,11 +234,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<bool>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BOOLEAN);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const bool *object = static_cast<const bool *>(serializable);
                     output.writeBoolean(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_BOOLEAN);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -205,11 +253,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<char>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const char *object = static_cast<const char *>(serializable);
                     output.writeChar(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_CHAR);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -217,11 +272,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<short>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const short *object = static_cast<const short *>(serializable);
                     output.writeShort(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_SHORT);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -229,11 +291,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<int>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const int *object = static_cast<const int *>(serializable);
                     output.writeInt(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_INTEGER);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -241,11 +310,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<long>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const long *object = static_cast<const long *>(serializable);
                     output.writeLong(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_LONG);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -253,11 +329,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<float>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const float *object = static_cast<const float *>(serializable);
                     output.writeFloat(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_FLOAT);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -265,22 +348,36 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<double>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const double *object = static_cast<const double *>(serializable);
                     output.writeDouble(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_DOUBLE);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
                 template<>
                 inline Data SerializationService::toData<std::vector<char> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<char> *object = static_cast<const std::vector<char> *>(serializable);
                     output.writeCharArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -288,11 +385,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::vector<short> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<short> *object = static_cast<const std::vector<short> *>(serializable);
                     output.writeShortArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -300,11 +404,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::vector<int> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<int> *object = static_cast<const std::vector<int> *>(serializable);
                     output.writeIntArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -312,11 +423,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::vector<long> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<long> *object = static_cast<const std::vector<long> *>(serializable);
                     output.writeLongArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -324,11 +442,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::vector<float> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<float> *object = static_cast<const std::vector<float> *>(serializable);
                     output.writeFloatArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -336,11 +461,18 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::vector<double> >(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::vector<double> *object = static_cast<const std::vector<double> *>(serializable);
                     output.writeDoubleArray(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
@@ -348,163 +480,302 @@ namespace hazelcast {
                 template<>
                 inline Data SerializationService::toData<std::string>(const void *serializable) {
                     DataOutput output;
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_STRING);
+
+                    // write false (i.e. 0) for hasPartitionHash, since this has no use
+                    // in terms of c++ client impl.
+                    output.writeBoolean(false);
+
                     const std::string *object = static_cast<const std::string *>(serializable);
                     output.writeUTF(*object);
-                    Data data;
-                    data.setBuffer(output.toByteArray());
-                    data.setType(SerializationConstants::CONSTANT_TYPE_STRING);
+
+                    Data data(output.toByteArray());
                     return data;
                 };
 
                 template<>
                 inline boost::shared_ptr<byte> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<byte>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<byte>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, typeId);
+
                     boost::shared_ptr<byte> object(new byte);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readByte();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<bool> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<bool>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<bool>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN, typeId);
+
                     boost::shared_ptr<bool> object(new bool);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readBoolean();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<char> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<char>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<char>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR, typeId);
+
                     boost::shared_ptr<char> object(new char);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readChar();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<short> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<short>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<short>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT, typeId);
+
                     boost::shared_ptr<short> object(new short);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readShort();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<int> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<int>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<int>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER, typeId);
+
                     boost::shared_ptr<int> object(new int);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readInt();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<long> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<long>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<long>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, typeId);
+
                     boost::shared_ptr<long> object(new long);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = (long)dataInput.readLong();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<float> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<float>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<float>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT, typeId);
+
                     boost::shared_ptr<float> object(new float);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readFloat();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<double> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<double>();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<double>();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE, typeId);
+
                     boost::shared_ptr<double> object(new double);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readDouble();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<std::vector<char> > SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<char> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, data.getType());
-                    boost::shared_ptr<std::vector<char> > object(new std::vector<char>);
-                    DataInput dataInput(*(data.data.get()));
-                    *object = dataInput.readCharArray();
-                    return object;
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<char> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
+
+                    return dataInput.readCharArray();
                 };
 
                 template<>
                 inline boost::shared_ptr<std::vector<short> >  SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<short> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<short> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, typeId);
+
                     boost::shared_ptr<std::vector<short> > object(new std::vector<short>);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readShortArray();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<std::vector<int> > SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<int> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<int> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, typeId);
+
                     boost::shared_ptr<std::vector<int> > object(new std::vector<int>);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readIntArray();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<std::vector<long> > SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<long> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<long> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, typeId);
+
                     boost::shared_ptr<std::vector<long> > object(new std::vector<long>);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readLongArray();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr< std::vector<float> >  SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<float> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<float> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, typeId);
+
                     boost::shared_ptr<std::vector<float> > object(new std::vector<float>);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readFloatArray();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<std::vector<double> > SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::vector<double> >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::vector<double> >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
+
                     boost::shared_ptr<std::vector<double> > object(new std::vector<double>);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readDoubleArray();
+
                     return object;
                 };
 
                 template<>
                 inline boost::shared_ptr<std::string> SerializationService::toObject(const Data &data) {
-                    if (data.bufferSize() == 0) return boost::shared_ptr<std::string >();
-                    checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, data.getType());
+                    if (isNullData(data)) {
+                        return boost::shared_ptr<std::string >();
+                    }
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int typeId = data.getType();
+
+                    checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, typeId);
+
                     boost::shared_ptr<std::string > object(new std::string);
-                    DataInput dataInput(*(data.data.get()));
+
                     *object = dataInput.readUTF();
+
                     return object;
                 };
+
             }
         }
     }

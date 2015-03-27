@@ -69,48 +69,22 @@ namespace hazelcast {
                 }
                 packet.setHeader(readShort());
                 packet.setPartitionId(readInt());
-                serialization::pimpl::Data data;
-                readData(data);
-                packet.setData(data);
+
+                readValue(packet.getDataAsModifiable());
             }
 
-            void InputSocketStream::readData(serialization::pimpl::Data& data) {
-                data.setType(readInt());
-
-                int hasClassDefinition = readByte();
-                if(hasClassDefinition){
-                    size_t classDefCount = (size_t) readInt();
-                    std::auto_ptr<std::vector<byte> > header(new std::vector<byte>(classDefCount * (size_t)serialization::pimpl::Data::HEADER_ENTRY_LENGTH));
-                    for (size_t classDefIndex = 0; classDefIndex < classDefCount; classDefIndex++) {
-                                              //read header
-                        int factoryId = readInt();
-                        int classId = readInt();
-                        int version = readInt();
-
-                        int classDefSize = readInt();
-                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_FACTORY_OFFSET, factoryId);
-                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_CLASS_OFFSET, classId);
-                        util::writeIntToPos(*header, classDefIndex * serialization::pimpl::Data::HEADER_ENTRY_LENGTH + serialization::pimpl::Data::HEADER_VERSION_OFFSET, version);
-
-                        boost::shared_ptr<serialization::ClassDefinition> cd = context->lookup(factoryId, classId, version);
-                        if(cd.get() == NULL){
-                            std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>(classDefSize));
-                            readFully(*buffer);
-                            boost::shared_ptr<serialization::ClassDefinition> cdProxy(new serialization::ClassDefinition(factoryId, classId, version));
-                            context->registerClassDefinition(cdProxy);
-                        }
-                        skipBytes(classDefSize);
-                        // read data 
-                    }
-                    data.setHeader(header);
-                }
-                data.setPartitionHash(readInt());
+            void InputSocketStream::readValue(serialization::pimpl::Data &data) {
                 size_t size = (size_t)readInt();
                 if (size > 0) {
-                    data.data->resize(size);
-                    readFully(*(data.data.get()));
+                    serialization::pimpl::Data::BufferType &buffer =  data.toByteArray();
+                    buffer.resize(size);
+                    readFully(buffer);
                 }
                 
+            }
+
+            bool InputSocketStream::readBoolean() {
+                return (bool)readByte();
             }
         }
     }

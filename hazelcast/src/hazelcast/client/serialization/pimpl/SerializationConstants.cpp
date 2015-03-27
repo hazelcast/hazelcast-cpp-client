@@ -9,6 +9,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
 
+            	int const SerializationConstants::CONSTANT_TYPE_NULL = 0;
                 int const SerializationConstants::CONSTANT_TYPE_PORTABLE = -1;
                 int const SerializationConstants::CONSTANT_TYPE_DATA = -2;
                 int const SerializationConstants::CONSTANT_TYPE_BYTE = -3;
@@ -37,9 +38,29 @@ namespace hazelcast {
                 int const SerializationConstants::DEFAULT_TYPE_EXTERNALIZABLE = -24;
                 int const SerializationConstants::DEFAULT_TYPE_ENUM = -25;
 
-                SerializationConstants::SerializationConstants()
-                :size(25)
+                // ------------------------------------------------------------
+                // AUTOMATICALLY REGISTERED SERIALIZERS
+
+                int const SerializationConstants::AUTO_TYPE_ARRAY_LIST = -100;
+
+                int const SerializationConstants::AUTO_TYPE_JOB_PARTITION_STATE = -101;
+
+                int const SerializationConstants::AUTO_TYPE_JOB_PARTITION_STATE_ARRAY = -102;
+
+                int const SerializationConstants::AUTO_TYPE_LINKED_LIST = -103;
+                // ------------------------------------------------------------
+                // HIBERNATE SERIALIZERS
+
+                int const SerializationConstants::HIBERNATE3_TYPE_HIBERNATE_CACHE_KEY = -200;
+                int const SerializationConstants::HIBERNATE3_TYPE_HIBERNATE_CACHE_ENTRY = -201;
+
+                int const SerializationConstants::HIBERNATE4_TYPE_HIBERNATE_CACHE_KEY = -202;
+                int const SerializationConstants::HIBERNATE4_TYPE_HIBERNATE_CACHE_ENTRY = -203;
+
+/*                SerializationConstants::SerializationConstants()
+                :size(34)
                 , typeIdNameVector(size) {
+                	typeIdNameVector[idToIndex(CONSTANT_TYPE_NULL)] = "null";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DATA)] = "data";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_BYTE)] = "byte";
@@ -65,9 +86,19 @@ namespace hazelcast {
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_OBJECT)] = "object";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_EXTERNALIZABLE)] = "externalizable";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_ENUM)] = "enum";
-                }
 
-                std::string SerializationConstants::typeIdToName(int typeId) {
+                    typeIdNameVector[idToIndex(AUTO_TYPE_ARRAY_LIST)] = "autoArrayList";
+                    typeIdNameVector[idToIndex(AUTO_TYPE_JOB_PARTITION_STATE)] = "autoJobPartitionState";
+                    typeIdNameVector[idToIndex(AUTO_TYPE_JOB_PARTITION_STATE_ARRAY)] = "autoJobPartitionStateArray";
+                    typeIdNameVector[idToIndex(AUTO_TYPE_LINKED_LIST)] = "autoLinkedList";
+
+                    typeIdNameVector[idToIndex(HIBERNATE3_TYPE_HIBERNATE_CACHE_KEY)] = "hibernate3CacheKey";
+                    typeIdNameVector[idToIndex(HIBERNATE3_TYPE_HIBERNATE_CACHE_ENTRY)] = "hibernate3CacheEntry";
+                    typeIdNameVector[idToIndex(HIBERNATE4_TYPE_HIBERNATE_CACHE_KEY)] = "hibernate4CacheKey";
+                    typeIdNameVector[idToIndex(HIBERNATE4_TYPE_HIBERNATE_CACHE_ENTRY)] = "hibernate4CacheEntry";
+                }*/
+
+/*                std::string SerializationConstants::typeIdToName(int typeId) {
                     int i = idToIndex(typeId);
                     if (i < 0 || i >= size)
                         return "custom";
@@ -76,7 +107,7 @@ namespace hazelcast {
 
                 int SerializationConstants::idToIndex(int id) {
                     return id + size;
-                }
+                }*/
             }
         }
     }

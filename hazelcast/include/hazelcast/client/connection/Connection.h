@@ -49,7 +49,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class Connection : public util::Closeable {
+            class Connection : public ::hazelcast::util::Closeable {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
 
@@ -87,9 +87,9 @@ namespace hazelcast {
 
                 void heartBeatingSucceed();
 
-                util::AtomicInt lastRead;
-                util::AtomicInt lastWrite;
-                util::AtomicBoolean live;
+                ::hazelcast::util::AtomicInt lastRead;
+                ::hazelcast::util::AtomicInt lastWrite;
+                ::hazelcast::util::AtomicBoolean live;
             private:
                 spi::ClientContext& clientContext;
                 spi::InvocationService& invocationService;
@@ -97,9 +97,9 @@ namespace hazelcast {
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
-                util::AtomicBoolean heartBeating;
+                ::hazelcast::util::AtomicBoolean heartBeating;
                 char* receiveBuffer;
-                util::ByteBuffer receiveByteBuffer;
+                ::hazelcast::util::ByteBuffer receiveByteBuffer;
             };
 
         }

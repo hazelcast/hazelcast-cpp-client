@@ -38,8 +38,8 @@ namespace hazelcast {
                     return *this;
                 }
 
-                std::auto_ptr<std::vector<byte> > DataOutput::toByteArray() {
-                    std::auto_ptr<std::vector<byte> > byteArrayPtr(new std::vector<byte>(*outputStream));
+                hazelcast::util::ByteVector_ptr DataOutput::toByteArray() {
+                    hazelcast::util::ByteVector_ptr byteArrayPtr(new hazelcast::util::ByteVector(*outputStream));
                     return byteArrayPtr;
                 }
 
@@ -69,7 +69,7 @@ namespace hazelcast {
                     writeByte(i);
                 }
 
-                void DataOutput::writeInt(int v) {
+                void DataOutput::writeInt(int v, bool writeBigEndian) {
                     writeByte((v >> 24));
                     writeByte((v >> 16));
                     writeByte((v >> 8));
@@ -128,6 +128,12 @@ namespace hazelcast {
                     writeByte(index++, (v >> 16));
                     writeByte(index++, (v >> 8));
                     writeByte(index, v);
+                }
+
+                void DataOutput::writeBytes(const byte *bytes, unsigned int len) {
+                    for (unsigned int i = 0; i < len; i++) {
+                        writeByte(bytes[i]);
+                    }
                 }
 
                 void DataOutput::writeByteArray(const std::vector<byte>& data) {
@@ -252,6 +258,7 @@ namespace hazelcast {
                     headerByteBuffer.clear();
                     return buff;
                 }
+
             }
 
         }

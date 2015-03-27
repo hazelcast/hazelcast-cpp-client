@@ -152,19 +152,19 @@ namespace hazelcast {
                 void checkLive();
 
                 std::vector<byte> PROTOCOL;
-                util::SynchronizedMap<Address, Connection, addressComparator> connections;
+                hazelcast::util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 spi::ClientContext& clientContext;
                 SocketInterceptor* socketInterceptor;
                 InSelector inSelector;
                 OutSelector outSelector;
-                std::auto_ptr<util::Thread> inSelectorThread;
-                std::auto_ptr<util::Thread> outSelectorThread;
-                util::AtomicBoolean live;
-                util::Mutex lockMutex;
+                std::auto_ptr<hazelcast::util::Thread> inSelectorThread;
+                std::auto_ptr<hazelcast::util::Thread> outSelectorThread;
+                hazelcast::util::AtomicBoolean live;
+                hazelcast::util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
 
                 connection::HeartBeater heartBeater;
-                std::auto_ptr<util::Thread> heartBeatThread;
+                std::auto_ptr<hazelcast::util::Thread> heartBeatThread;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;
