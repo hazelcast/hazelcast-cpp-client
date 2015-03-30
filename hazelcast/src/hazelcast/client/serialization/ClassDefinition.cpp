@@ -5,6 +5,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include <stdio.h>
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
@@ -40,8 +41,18 @@ namespace hazelcast {
                     return fieldDefinitionsMap.find(name)->second;
                 }
                 char msg[100 + 1];
-                std::snprintf(msg, 100, "Field (%s) does not exist", 0 != name ? name : "");
+                snprintf(msg, 100, "Field (%s) does not exist", 0 != name ? name : "");
                 throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
+            }
+
+            const FieldDefinition* ClassDefinition::getFieldIfExist(const char *fieldName) const {
+                const FieldDefinition *result = 0;
+                std::map<std::string, FieldDefinition>::const_iterator it;
+                it = fieldDefinitionsMap.find(fieldName);
+                if (it != fieldDefinitionsMap.end()) {
+                    result = &fieldDefinitionsMap.find(fieldName)->second;
+                }
+                return result;
             }
 
             const FieldDefinition& ClassDefinition::getField(int fieldIndex) const {
@@ -72,6 +83,15 @@ namespace hazelcast {
             FieldType ClassDefinition::getFieldType(const char *fieldName) const {
                 FieldDefinition const& fd = getField(fieldName);
                 return fd.getType();
+            }
+
+            const FieldType *ClassDefinition::getFieldTypeIfExists(const char *fieldName) const {
+                const FieldType *result = 0;
+                const FieldDefinition *fd = getFieldIfExist(fieldName);
+                if (0 != fd) {
+                    result = &fd->getType();
+                }
+                return result;
             }
 
             int ClassDefinition::getFieldClassId(const char *fieldName) const {

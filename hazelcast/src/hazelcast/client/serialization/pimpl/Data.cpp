@@ -10,6 +10,7 @@
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include <hazelcast/util/Bits.h>
+#include <stdio.h>
 
 using namespace hazelcast::client::util;
 

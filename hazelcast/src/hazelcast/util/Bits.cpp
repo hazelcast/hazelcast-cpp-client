@@ -44,10 +44,10 @@ namespace hazelcast {
 
             int Bits::readIntB(std::vector<byte> *buffer, unsigned long pos) {
                 #ifdef HZ_BIG_ENDIAN
-                    return *((int *) (start + pos));
+                    return *((int *) (&buffer[0] + pos));
                 #else
                     int result;
-                    swap_4(&buffer[0] + pos, &result);
+                    swap_4(&((*buffer)[0]) + pos, &result);
                     return result;
                 #endif
             }

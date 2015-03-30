@@ -8,16 +8,20 @@ project (HazelcastClient)
 #  -DHZ_VALGRIND=ON
 #  -DHZ_ADDRESS_SANITIZER=ON
 
+INCLUDE(TestBigEndian)
+
 SET(HZ_VERSION 3.5-SNAPSHOT)
 
 message(STATUS "Preparing hazelcast client ..... ")
 
 include_directories( ${CMAKE_SOURCE_DIR}/external/include/)
 
-#detec endianness
-TEST_BIG_ENDIAN(IS_BIGENDIAN)
-if (${BIG_ENDIAN})
-
+#detect endianness
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if (${IS_BIG_ENDIAN})
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BIG_ENDIAN")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BIG_ENDIAN")
+ENDIF (${IS_BIG_ENDIAN})
 
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")

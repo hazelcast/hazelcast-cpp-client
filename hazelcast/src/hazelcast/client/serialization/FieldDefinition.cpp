@@ -37,7 +37,7 @@ namespace hazelcast {
             , factoryId(factoryId) {
             }
 
-            FieldType FieldDefinition::getType() const {
+            const FieldType &FieldDefinition::getType() const {
                 return type;
             }
 

@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include <string.h>
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
@@ -133,7 +134,7 @@ namespace hazelcast {
                         int pos = dataOutput.position();
                         int index = fd.getIndex();
                         dataOutput.writeInt(offset + index * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES, pos);
-                        size_t nameLen = std::strlen(fieldName);
+                        size_t nameLen = strlen(fieldName);
                         dataOutput.writeShort((short)nameLen);
                         dataOutput.writeBytes((byte *)fieldName, nameLen);
                         dataOutput.writeByte(fieldType.getId());

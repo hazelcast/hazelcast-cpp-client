@@ -3,6 +3,8 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include <string.h>
+#include <stdio.h>
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
 

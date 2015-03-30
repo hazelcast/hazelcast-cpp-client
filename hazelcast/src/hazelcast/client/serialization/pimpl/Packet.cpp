@@ -24,6 +24,7 @@
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Bits.h"
 #include <sstream>
+#include <limits.h>
 
 namespace hazelcast {
     namespace client {

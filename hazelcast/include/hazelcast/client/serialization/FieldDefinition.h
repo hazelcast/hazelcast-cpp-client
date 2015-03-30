@@ -50,7 +50,7 @@ namespace hazelcast {
                 /**
                 * @return field type
                 */
-                FieldType getType() const;
+                const FieldType &getType() const;
 
                 /**
                 * @return field name

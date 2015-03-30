@@ -81,6 +81,12 @@ namespace hazelcast {
                 const FieldDefinition& getField(const char *fieldName) const;
 
                 /**
+                * @param fieldName name of the field
+                * @return field definition pointer by given name or null if the field does not exist
+                */
+                const FieldDefinition* getFieldIfExist(const char *fieldName) const;
+
+                /**
                 * @param fieldIndex index of the field
                 * @return field definition by given index
                 * @throws IllegalArgumentException when field not found
@@ -98,6 +104,12 @@ namespace hazelcast {
                 * @throws IllegalArgumentException
                 */
                 FieldType getFieldType(const char *fieldName) const;
+
+                /**
+                * @param fieldName name of the field
+                * @return type of given field type pointer or null if field does not exist.
+                */
+                const FieldType *getFieldTypeIfExists(const char *fieldName) const;
 
                 /**
                 * @param fieldName name of the field

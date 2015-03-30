@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 22/07/14.
 //
 
+#include <stdio.h>
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"

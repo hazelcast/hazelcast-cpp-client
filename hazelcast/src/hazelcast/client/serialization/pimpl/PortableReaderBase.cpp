@@ -2,6 +2,7 @@
 // Created by İhsan Demir on 25/03/15.
 //
 
+#include <stdio.h>
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Bits.h"
