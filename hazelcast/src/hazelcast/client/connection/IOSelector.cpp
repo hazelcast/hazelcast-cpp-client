@@ -26,7 +26,7 @@ namespace hazelcast {
                 isAlive = true;
             }
 
-            void IOSelector::staticListen(hazelcast::util::ThreadArgs &args) {
+            void IOSelector::staticListen(util::ThreadArgs &args) {
                 IOSelector *inSelector = (IOSelector *) args.arg0;
                 inSelector->listen();
             }
@@ -56,7 +56,7 @@ namespace hazelcast {
                 }
             }
 
-            bool IOSelector::initListenSocket(hazelcast::util::SocketSet &wakeUpSocketSet) {
+            bool IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
                 hazelcast::util::ServerSocket serverSocket(0);
                 int p = serverSocket.getPort();
                 std::string localAddress;

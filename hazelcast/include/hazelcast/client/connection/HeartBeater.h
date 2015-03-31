@@ -30,14 +30,14 @@ namespace hazelcast {
             public:
                 HeartBeater(spi::ClientContext& clientContext);
 
-                static void staticStart(hazelcast::util::ThreadArgs& args);
+                static void staticStart(util::ThreadArgs& args);
 
                 void shutdown();
 
             private:
-                void run(hazelcast::util::Thread *currentThread);
+                void run(util::Thread *currentThread);
 
-                hazelcast::util::AtomicBoolean live;
+                util::AtomicBoolean live;
                 spi::ClientContext& clientContext;
                 int heartBeatIntervalSeconds;
                 int heartBeatTimeoutSeconds;

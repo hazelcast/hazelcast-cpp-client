@@ -11,7 +11,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 using namespace hazelcast::client::exception;
-using namespace hazelcast::client::util;
+using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
 using namespace std;
 

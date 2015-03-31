@@ -87,7 +87,7 @@ namespace hazelcast {
 
             class AttributeListener : public MembershipListener {
             public:
-                AttributeListener(hazelcast::util::CountDownLatch &_attributeLatch)
+                AttributeListener(util::CountDownLatch &_attributeLatch)
                   : _attributeLatch(_attributeLatch){
 
                 }
@@ -141,11 +141,11 @@ namespace hazelcast {
                     }
                 }
             private:
-                hazelcast::util::CountDownLatch &_attributeLatch;
+                util::CountDownLatch &_attributeLatch;
             };
 
             void MemberAttributeTest::testChangeWithListeners(){
-                hazelcast::util::CountDownLatch attributeLatch(7);
+                util::CountDownLatch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
                 ClientConfig clientConfig;

@@ -49,7 +49,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class Connection : public ::hazelcast::util::Closeable {
+            class Connection : public util::Closeable {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
 

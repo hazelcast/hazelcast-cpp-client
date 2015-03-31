@@ -34,7 +34,7 @@ namespace hazelcast {
                 bool start();
 
             private:
-                hazelcast::util::SocketSet wakeUpSocketSet;
+                util::SocketSet wakeUpSocketSet;
             };
         }
     }

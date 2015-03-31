@@ -3,9 +3,8 @@
 
 #include "TestMainPortable.h"
 
-//#define SERVER_ADDRESS "192.168.2.201"
-#define SERVER_ADDRESS "19192.168.2.53"
-#define SERVER_PORT 5701
+#define SERVER_ADDRESS "192.168.2.129"
+#define SERVER_PORT 6543
 
 
 namespace hazelcast {

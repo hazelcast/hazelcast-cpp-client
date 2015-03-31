@@ -43,7 +43,7 @@ namespace hazelcast {
 
             serialization::pimpl::Data TransactionalObject::invoke(txn::BaseTxnRequest *request) {
                 request->setTxnId(context->getTxnId());
-                request->setThreadId(hazelcast::util::getThreadId());
+                request->setThreadId(util::getThreadId());
                 spi::InvocationService& invocationService = context->getInvocationService();
                 connection::CallFuture future = invocationService.invokeOnConnection(request, context->getConnection());
                 return future.get();

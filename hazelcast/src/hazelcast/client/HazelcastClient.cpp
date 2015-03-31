@@ -27,7 +27,7 @@ namespace hazelcast {
         , cluster(clusterService) {
             std::stringstream prefix;
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
-            hazelcast::util::ILogger::getLogger().setPrefix(prefix.str());
+            util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
             if (!lifecycleService.start()) {
                 lifecycleService.shutdown();

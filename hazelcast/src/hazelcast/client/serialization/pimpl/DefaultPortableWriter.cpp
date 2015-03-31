@@ -15,6 +15,7 @@
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 
 using namespace hazelcast::client::serialization;
+using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -34,7 +35,7 @@ namespace hazelcast {
 
                     offset = dataOutput.position();
                     // one additional for raw data
-                    int fieldIndexesLength = (cd->getFieldCount() + 1) * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES;
+                    int fieldIndexesLength = (cd->getFieldCount() + 1) * Bits::INT_SIZE_IN_BYTES;
                     objectDataOutput.writeZeroBytes(fieldIndexesLength);
                 }
 
@@ -133,7 +134,7 @@ namespace hazelcast {
                         writtenFields.insert(fieldName);
                         int pos = dataOutput.position();
                         int index = fd.getIndex();
-                        dataOutput.writeInt(offset + index * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES, pos);
+                        dataOutput.writeInt(offset + index * Bits::INT_SIZE_IN_BYTES, pos);
                         size_t nameLen = strlen(fieldName);
                         dataOutput.writeShort((short)nameLen);
                         dataOutput.writeBytes((byte *)fieldName, nameLen);
@@ -158,7 +159,7 @@ namespace hazelcast {
                     if (!raw) {
                         int pos = dataOutput.position();
                         int index = cd->getFieldCount(); // last index
-                        dataOutput.writeInt(offset + index * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES, pos);
+                        dataOutput.writeInt(offset + index * Bits::INT_SIZE_IN_BYTES, pos);
                     }
                     raw = true;
                     return objectDataOutput;

@@ -56,11 +56,11 @@ namespace hazelcast {
 
             private:
 
-                hazelcast::util::Mutex failedListenerLock;
+                util::Mutex failedListenerLock;
                 std::vector< boost::shared_ptr<connection::CallPromise> > failedListeners;
 
-                hazelcast::util::SynchronizedMap<std::string, int > registrationIdMap;
-                hazelcast::util::SynchronizedMap<std::string, const std::string > registrationAliasMap;
+                util::SynchronizedMap<std::string, int > registrationIdMap;
+                util::SynchronizedMap<std::string, const std::string > registrationAliasMap;
                 spi::ClientContext &clientContext;
 
                 void registerListener(boost::shared_ptr<std::string> registrationId, int callId);

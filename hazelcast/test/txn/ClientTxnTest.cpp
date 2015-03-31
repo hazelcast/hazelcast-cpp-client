@@ -36,7 +36,7 @@ namespace hazelcast {
 
             class MyLifecycleListener : public MembershipListener {
             public:
-                MyLifecycleListener(hazelcast::util::CountDownLatch& countDownLatch)
+                MyLifecycleListener(util::CountDownLatch& countDownLatch)
                 : countDownLatch(countDownLatch) {
 
                 }
@@ -54,7 +54,7 @@ namespace hazelcast {
                 }
 
             private:
-                hazelcast::util::CountDownLatch& countDownLatch;
+                util::CountDownLatch& countDownLatch;
             };
 
             ClientTxnTest::ClientTxnTest(HazelcastServerFactory& hazelcastInstanceFactory)
@@ -97,7 +97,7 @@ namespace hazelcast {
 
 
             void ClientTxnTest::testTxnRollback() {
-                hazelcast::util::CountDownLatch memberRemovedLatch(1);
+                util::CountDownLatch memberRemovedLatch(1);
                 std::string queueName = "testTxnRollback";
                 MyLifecycleListener myLifecycleListener(memberRemovedLatch);
                 client->getCluster().addMembershipListener(&myLifecycleListener);
@@ -133,7 +133,7 @@ namespace hazelcast {
                 std::string queueName = "testTxnRollbackOnServerCrash";
                 TransactionContext context = client->newTransactionContext();
                 bool rollbackSuccessful = false;
-                hazelcast::util::CountDownLatch memberRemovedLatch(1);
+                util::CountDownLatch memberRemovedLatch(1);
                 context.beginTransaction();
                 TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
                 queue.offer("str");

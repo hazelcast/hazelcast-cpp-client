@@ -36,9 +36,9 @@ namespace hazelcast {
 
                 virtual bool start() = 0;
 
-                bool initListenSocket(hazelcast::util::SocketSet &wakeUpSocketSet);
+                bool initListenSocket(util::SocketSet &wakeUpSocketSet);
 
-                static void staticListen(hazelcast::util::ThreadArgs& args);
+                static void staticListen(util::ThreadArgs& args);
 
                 void listen();
 
@@ -65,8 +65,8 @@ namespace hazelcast {
 
                 std::auto_ptr<Socket> wakeUpSocket;
                 std::auto_ptr<Socket> sleepingSocket;
-                hazelcast::util::ConcurrentQueue<ListenerTask> listenerTasks;
-                hazelcast::util::AtomicBoolean isAlive;
+                util::ConcurrentQueue<ListenerTask> listenerTasks;
+                util::AtomicBoolean isAlive;
             };
         }
     }

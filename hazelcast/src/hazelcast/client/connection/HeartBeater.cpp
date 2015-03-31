@@ -31,12 +31,12 @@ namespace hazelcast {
                 }
             }
 
-            void HeartBeater::staticStart(hazelcast::util::ThreadArgs& args) {
+            void HeartBeater::staticStart(util::ThreadArgs& args) {
                 HeartBeater *heartBeater = (HeartBeater *)args.arg0;
                 heartBeater->run(args.currentThread);
             }
 
-            void HeartBeater::run(hazelcast::util::Thread *currentThread) {
+            void HeartBeater::run(util::Thread *currentThread) {
                 currentThread->interruptibleSleep(heartBeatIntervalSeconds);
                 spi::InvocationService& invocationService = clientContext.getInvocationService();
                 connection::ConnectionManager& connectionManager = clientContext.getConnectionManager();

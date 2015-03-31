@@ -50,9 +50,9 @@ namespace hazelcast {
                 s->release(10);
             }
 
-            void testAcquireThread(hazelcast::util::ThreadArgs& args) {
+            void testAcquireThread(util::ThreadArgs& args) {
                 ISemaphore *s = (ISemaphore *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 s->acquire();
                 latch->countDown();
             }
@@ -60,10 +60,10 @@ namespace hazelcast {
             void ClientSemaphoreTest::testAcquire() {
                 assertEqual(10, s->drainPermits());
 
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::Thread t(testAcquireThread, s.get(), &latch);
+                util::CountDownLatch latch(1);
+                util::Thread t(testAcquireThread, s.get(), &latch);
 
-                hazelcast::util::sleep(1);
+                util::sleep(1);
 
                 s->release(2);
                 assertTrue(latch.await(10 ));
@@ -71,9 +71,9 @@ namespace hazelcast {
 
             }
 
-            void testTryAcquireThread(hazelcast::util::ThreadArgs& args) {
+            void testTryAcquireThread(util::ThreadArgs& args) {
                 ISemaphore *s = (ISemaphore *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                 if (s->tryAcquire(2, 5 * 1000)) {
                     latch->countDown();
                 }
@@ -86,9 +86,9 @@ namespace hazelcast {
                 assertFalse(s->tryAcquire(1 * 1000));
                 assertFalse(s->tryAcquire(2, 1 * 1000));
 
-                hazelcast::util::CountDownLatch latch(1);
+                util::CountDownLatch latch(1);
 
-                hazelcast::util::Thread t(testTryAcquireThread, s.get(), &latch);
+                util::Thread t(testTryAcquireThread, s.get(), &latch);
 
                 s->release(2);
                 assertTrue(latch.await(10 ));

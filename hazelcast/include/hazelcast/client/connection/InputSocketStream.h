@@ -53,8 +53,6 @@ namespace hazelcast {
 
                 int readByte();
 
-                int skipBytes(int i);
-
                 bool readBoolean();
             };
 

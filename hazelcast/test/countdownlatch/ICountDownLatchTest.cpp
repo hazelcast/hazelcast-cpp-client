@@ -46,7 +46,7 @@ namespace hazelcast {
             void ICountDownLatchTest::afterTest() {
             }
 
-            void testLatchThread(hazelcast::util::ThreadArgs &args) {
+            void testLatchThread(util::ThreadArgs &args) {
                 ICountDownLatch *l = (ICountDownLatch *) args.arg0;
                 for (int i = 0; i < 20; i++) {
                     l->countDown();
@@ -58,7 +58,7 @@ namespace hazelcast {
                 assertFalse(l->trySetCount(10));
                 assertEqual(20, l->getCount());
 
-                hazelcast::util::Thread t(testLatchThread, l.get());
+                util::Thread t(testLatchThread, l.get());
 
                 assertTrue(l->await(10 * 1000));
             }

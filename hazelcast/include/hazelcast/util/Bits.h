@@ -11,81 +11,46 @@
 #include <memory>
 
 namespace hazelcast {
-    namespace client {
-        namespace util {
-
+    namespace util {
+        class Bits {
+        public:
             /**
-            * Sets n-th bit of the byte value
-            *
-            * @param value byte value
-            * @param bit n-th bit
-            * @return value
+            * Short size in bytes
             */
-            byte setBit(byte value, int bit);
-
+            static const int SHORT_SIZE_IN_BYTES = 2;
             /**
-            * Clears n-th bit of the byte value
-            *
-            * @param value byte value
-            * @param bit n-th bit
-            * @return value
+            * Char size in bytes
             */
-            byte clearBit(byte value, int bit);
-
+            static const int CHAR_SIZE_IN_BYTES = 2;
             /**
-            * Returns true if n-th bit of the value is set, false otherwise
+            * Integer size in bytes
             */
-            bool isBitSet(byte value, int bit);
-
+            static const int INT_SIZE_IN_BYTES = 4;
             /**
-            *
-            * @param buffer to which integer value will be written
-            * @pram pos position of the buffer to write integer value
-            * @param value integer value that will be written to buffer
+            * Float size in bytes
             */
-            void writeIntToPos(std::vector<byte> & buffer, int pos, int value);
+            static const int FLOAT_SIZE_IN_BYTES = 4;
+            /**
+            * Long size in bytes
+            */
+            static const int LONG_SIZE_IN_BYTES = 8;
+            /**
+            * Double size in bytes
+            */
+            static const int DOUBLE_SIZE_IN_BYTES = 8;
 
-            class Bits {
-            public:
-				/**
-				 * Short size in bytes
-				 */
-				static const int SHORT_SIZE_IN_BYTES = 2;
-				/**
-				 * Char size in bytes
-				 */
-				static const int CHAR_SIZE_IN_BYTES = 2;
-				/**
-				 * Integer size in bytes
-				 */
-				static const int INT_SIZE_IN_BYTES = 4;
-				/**
-				 * Float size in bytes
-				 */
-				static const int FLOAT_SIZE_IN_BYTES = 4;
-				/**
-				 * Long size in bytes
-				 */
-				static const int LONG_SIZE_IN_BYTES = 8;
-				/**
-				 * Double size in bytes
-				 */
-				static const int DOUBLE_SIZE_IN_BYTES = 8;
+            static int readIntB(std::vector<byte> *buffer, unsigned long pos);
 
-                static int readIntB(std::vector<byte> *buffer, unsigned long pos);
+        private :
+            /**
+            * Make the default constructor and the destructor inaccessible from public.
+            */
+            Bits();
 
-            private :
-            	/**
-            	 * Make the default constructor and the destructor inaccessible from public.
-            	 */
-            	Bits();
+            virtual ~Bits();
 
-            	virtual ~Bits();
-
-                static void swap_4(void *orig, void *target);
-            };
-
-        }
+            static void swap_4(void *orig, void *target);
+        };
     }
 }
 

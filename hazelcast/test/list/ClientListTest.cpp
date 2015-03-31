@@ -169,7 +169,7 @@ namespace hazelcast {
 
             class MyListItemListener : public ItemListener<std::string> {
             public:
-                MyListItemListener(hazelcast::util::CountDownLatch& latch)
+                MyListItemListener(util::CountDownLatch& latch)
                 : latch(latch) {
 
                 }
@@ -182,17 +182,17 @@ namespace hazelcast {
                 }
 
             private:
-                hazelcast::util::CountDownLatch& latch;
+                util::CountDownLatch& latch;
             };
 
             void ClientListTest::testListener() {
-                hazelcast::util::CountDownLatch latch(5);
+                util::CountDownLatch latch(5);
 
                 MyListItemListener listener(latch);
                 std::string registrationId = list->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
-                    list->add(std::string("item") + hazelcast::util::IOUtil::to_string(i));
+                    list->add(std::string("item") + util::IOUtil::to_string(i));
                 }
 
                 assertTrue(latch.await(20));

@@ -12,7 +12,7 @@
 #include <hazelcast/util/Bits.h>
 #include <stdio.h>
 
-using namespace hazelcast::client::util;
+using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -81,7 +81,7 @@ namespace hazelcast {
                 }
 
                 int Data::hashCode() const {
-                    return hazelcast::util::MurmurHash3_x86_32((void*)&((*data)[0]) , (int)data->size());
+                    return MurmurHash3_x86_32((void*)&((*data)[0]) , (int)data->size());
                 }
 
             }

@@ -61,7 +61,9 @@ namespace hazelcast {
 
             void ClientSerializationTest::addTests() {
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
+/*
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithLargeData, "testBasicFunctionalityWithLargeData");
+*/
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithDifferentVersions, "testBasicFunctionalityWithDifferentVersions");
                 addTest(&ClientSerializationTest::testCustomSerialization, "testCustomSerialization");
                 addTest(&ClientSerializationTest::testRawData, "testRawData");

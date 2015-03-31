@@ -139,7 +139,7 @@ namespace hazelcast {
                 int attempt = 0;
                 exception::IException lastError;
                 while (true) {
-                    if(hazelcast::util::ILogger::getLogger().isEnabled(FINEST)){
+                    if(util::ILogger::getLogger().isEnabled(FINEST)){
                         std::stringstream message;
                         message << " Trying to connect to owner node " << attempt << ". attempt ";
                         util::ILogger::getLogger().finest(message.str());

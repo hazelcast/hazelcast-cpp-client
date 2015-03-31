@@ -38,7 +38,7 @@ namespace hazelcast {
 
             class MyMessageListener {
             public:
-                MyMessageListener(hazelcast::util::CountDownLatch &latch)
+                MyMessageListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -48,17 +48,17 @@ namespace hazelcast {
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                util::CountDownLatch &latch;
             };
 
             void ClientTopicTest::testTopicListeners() {
 
-                hazelcast::util::CountDownLatch latch(10);
+                util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
                 std::string id = topic->addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
-                    topic->publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
+                    topic->publish(std::string("naber") + util::IOUtil::to_string(i));
                 }
                 assertTrue(latch.await(20 ));
                 topic->removeMessageListener(id);

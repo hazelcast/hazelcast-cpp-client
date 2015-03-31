@@ -28,12 +28,6 @@ namespace hazelcast {
                 socket.receive(&(bytes[0]), bytes.size(), MSG_WAITALL);
             }
 
-            int InputSocketStream::skipBytes(int i) {
-                std::vector<byte> temp(i);
-                socket.receive((void *)&(temp[0]), i, MSG_WAITALL);
-                return i;
-            }
-
             int InputSocketStream::readInt() {
                 byte s[4];
                 socket.receive(s, sizeof(byte) * 4, MSG_WAITALL);

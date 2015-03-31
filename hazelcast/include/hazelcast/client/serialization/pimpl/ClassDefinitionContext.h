@@ -52,8 +52,8 @@ namespace hazelcast {
 
                     void setClassDefBinary(boost::shared_ptr<ClassDefinition> shared_ptr);
 
-                    hazelcast::util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
-                    hazelcast::util::SynchronizedMap<int, int> currentClassVersions;
+                    util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
+                    util::SynchronizedMap<int, int> currentClassVersions;
                     PortableContext *portableContext;
                 };
             }

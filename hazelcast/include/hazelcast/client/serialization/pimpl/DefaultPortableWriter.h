@@ -25,6 +25,7 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
+using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -118,12 +119,12 @@ namespace hazelcast {
 
                         if (len > 0) {
                             int offset = dataOutput.position();
-                            dataOutput.position(offset + len * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES);
+                            dataOutput.position(offset + len * Bits::INT_SIZE_IN_BYTES);
                             for (size_t i = 0; i < len; i++) {
                                 Portable const& portable = values[i];
                                 checkPortableAttributes(fd, portable);
                                 int position = dataOutput.position();
-                                dataOutput.writeInt(offset + i * hazelcast::client::util::Bits::INT_SIZE_IN_BYTES, position);
+                                dataOutput.writeInt(offset + i * Bits::INT_SIZE_IN_BYTES, position);
                                 write(portable);
                             }
                         }

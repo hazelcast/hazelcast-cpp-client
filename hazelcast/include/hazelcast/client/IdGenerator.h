@@ -52,9 +52,9 @@ namespace hazelcast {
         private:
 
             IAtomicLong atomicLong;
-            boost::shared_ptr< hazelcast::util::AtomicInt > local;
-            boost::shared_ptr< hazelcast::util::AtomicInt > residue;
-            boost::shared_ptr< hazelcast::util::Mutex > localLock;
+            boost::shared_ptr< util::AtomicInt > local;
+            boost::shared_ptr< util::AtomicInt > residue;
+            boost::shared_ptr< util::Mutex > localLock;
             IdGenerator(const std::string &instanceName, spi::ClientContext *context);
 
             void onDestroy();

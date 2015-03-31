@@ -53,12 +53,12 @@ namespace hazelcast {
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             }
 
-            void PartitionService::staticRunListener(hazelcast::util::ThreadArgs& args) {
+            void PartitionService::staticRunListener(util::ThreadArgs& args) {
                 PartitionService *partitionService = (PartitionService *)args.arg0;
                 partitionService->runListener(args.currentThread);
             }
 
-            void PartitionService::runListener(hazelcast::util::Thread *currentThread) {
+            void PartitionService::runListener(util::Thread *currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         currentThread->interruptibleSleep(10);

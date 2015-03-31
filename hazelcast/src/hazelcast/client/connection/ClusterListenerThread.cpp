@@ -27,16 +27,16 @@ namespace hazelcast {
 
             }
 
-            void ClusterListenerThread::staticRun(hazelcast::util::ThreadArgs& args) {
+            void ClusterListenerThread::staticRun(util::ThreadArgs& args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *)args.arg0;
                 clusterListenerThread->run(args.currentThread);
             }
 
-            void ClusterListenerThread::setThread(hazelcast::util::Thread *thread) {
+            void ClusterListenerThread::setThread(util::Thread *thread) {
                 clusterListenerThread.reset(thread);
             }
 
-            void ClusterListenerThread::run(hazelcast::util::Thread *currentThread) {
+            void ClusterListenerThread::run(util::Thread *currentThread) {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         if (conn.get() == NULL) {

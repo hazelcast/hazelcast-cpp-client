@@ -123,7 +123,7 @@ namespace hazelcast {
 
             class MySetItemListener : public ItemListener<std::string> {
             public:
-                MySetItemListener(hazelcast::util::CountDownLatch &latch)
+                MySetItemListener(util::CountDownLatch &latch)
                 :latch(latch) {
 
                 }
@@ -136,18 +136,18 @@ namespace hazelcast {
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                util::CountDownLatch &latch;
             };
 
 
             void ClientSetTest::testListener() {
-                hazelcast::util::CountDownLatch latch(6);
+                util::CountDownLatch latch(6);
 
                 MySetItemListener listener(latch);
                 std::string registrationId = set->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
-                    set->add(std::string("item") + hazelcast::util::IOUtil::to_string(i));
+                    set->add(std::string("item") + util::IOUtil::to_string(i));
                 }
                 set->add("done");
 

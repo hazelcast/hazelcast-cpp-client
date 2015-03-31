@@ -42,7 +42,7 @@ namespace hazelcast {
 
             }
 
-            void threadTerminateNode(hazelcast::util::ThreadArgs &args) {
+            void threadTerminateNode(util::ThreadArgs &args) {
                 HazelcastServer *node = (HazelcastServer *) args.arg0;
                 node->shutdown();
             }
@@ -60,11 +60,11 @@ namespace hazelcast {
                 HazelcastClient client(clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
-                hazelcast::util::Thread* thread = NULL;
+                util::Thread* thread = NULL;
                 int expected = 1000;
                 for (int i = 0; i < expected; i++) {
                     if(i == 5){
-                        thread = new hazelcast::util::Thread(threadTerminateNode, &hz1);
+                        thread = new util::Thread(threadTerminateNode, &hz1);
                     }
                     map.put(i, i);
                 }
