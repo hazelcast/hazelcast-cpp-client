@@ -197,8 +197,6 @@ namespace hazelcast {
 
                     PortableContext portableContext;
 
-                    SerializationConstants constants;
-
                     const SerializationConfig& serializationConfig;
 
                     void checkClassType(int expectedType, int currentType);
@@ -206,9 +204,6 @@ namespace hazelcast {
                     inline static bool isNullData(const Data &data) {
                         return data.dataSize() == 0 || data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
                     }
-
-                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(const Portable* portable) ;
-
                 };
 
 
@@ -659,7 +654,7 @@ namespace hazelcast {
 
                     checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
 
-                    return dataInput.readCharArray();
+                    return dataInput.readCharArrayAsPtr();
                 };
 
                 template<>

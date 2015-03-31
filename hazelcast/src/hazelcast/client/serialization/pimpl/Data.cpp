@@ -25,9 +25,6 @@ namespace hazelcast {
                 unsigned int Data::PARTITION_HASH_BIT_OFFSET = 4;
                 unsigned int Data::DATA_OFFSET = 5;
 
-                // array (12: array header, 4: length)
-                unsigned int Data::ARRAY_HEADER_SIZE_IN_BYTES = 16;
-
                 Data::Data()
                 : data(new BufferType){
                 }
@@ -83,20 +80,9 @@ namespace hazelcast {
                     return Bits::readIntB(data.get(), TYPE_OFFSET);
                 }
 
-                unsigned long Data::getHeapCost() const {
-                    // reference (assuming compressed oops)
-                    int objectRef = Bits::INT_SIZE_IN_BYTES;
-                    return objectRef + (data.get() != 0 ? ARRAY_HEADER_SIZE_IN_BYTES + data->size() : 0);
-                }
-
                 int Data::hashCode() const {
                     return hazelcast::util::MurmurHash3_x86_32((void*)&((*data)[0]) , (int)data->size());
                 }
-
-                bool Data::isPortable() const {
-                    return SerializationConstants::CONSTANT_TYPE_PORTABLE == getType();
-                }
-
 
             }
         }

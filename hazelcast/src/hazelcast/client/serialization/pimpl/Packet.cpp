@@ -20,9 +20,7 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/Packet.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/util/Bits.h"
 #include <sstream>
 #include <limits.h>
 
@@ -32,13 +30,9 @@ namespace hazelcast {
             namespace pimpl {
 
                 byte const Packet::VERSION = 4;
-                
-                int const Packet::HEADER_OP = 0;
-                int const Packet::HEADER_RESPONSE = 1;
+
                 int const Packet::HEADER_EVENT = 2;
-                int const Packet::HEADER_WAN_REPLICATION = 3;
                 int const Packet::HEADER_URGENT = 4;
-                int const Packet::HEADER_BIND = 5;
 
                 // The value of these constants is important. The order needs to match the order in the read/write process
                 short const Packet::PERSIST_VERSION = 1;
@@ -52,21 +46,10 @@ namespace hazelcast {
 			    const size_t Packet::SHORT_SIZE_IN_BYTES = sizeof(short);
 			    const size_t Packet::INT_SIZE_IN_BYTES = sizeof(int);
 
-                Data data;
-                int partitionId;
-                short header;
-                Connection *conn;
-
-                int persistStatus;
-
-                int persistedSize;
-                int valueOffset;
-
                 Packet::Packet(PortableContext &ctx) :
                         context(ctx),
                         partitionId(-1),
                         header(0),
-                        conn(0),
                         persistStatus(0),
                         persistedSize(0),
                         valueOffset(0)
@@ -78,7 +61,6 @@ namespace hazelcast {
                         data(packetData),
                         partitionId(-1),
                         header(0),
-                        conn(0),
                         persistStatus(0),
                         persistedSize(0),
                         valueOffset(0) {
@@ -89,34 +71,12 @@ namespace hazelcast {
                         data(packetData),
                         partitionId(partition),
                         header(0),
-                        conn(0),
                         persistStatus(0),
                         persistedSize(0),
                         valueOffset(0) {
                 }
 
                 Packet::~Packet() {
-                }
-
-                /**
-                 * Gets the Connection this Packet was send with.
-                 *
-                 * @return the Connection. Could be null.
-                 */
-                Connection *Packet::getConn() const {
-                    return conn;
-                }
-
-                /**
-                 * Sets the Connection this Packet is send with.
-                 * <p/>
-                 * This is done on the reading side of the Packet to make it possible to retrieve information about
-                 * the sender of the Packet.
-                 *
-                 * @param conn the connection.
-                 */
-                void Packet::setConn(Connection *conn) {
-                    this->conn = conn;
                 }
 
                 void Packet::setHeader(int bit) {
@@ -366,6 +326,7 @@ namespace hazelcast {
 
 			                // read the data from the byte-buffer into the bytes-array.
 			                source.get(byteVector, valueOffset, bytesRead);
+                            valueOffset += bytesRead;
 
 			                if (!done) {
 			                    return false;
@@ -388,10 +349,6 @@ namespace hazelcast {
                 Data &Packet::getDataAsModifiable() {
                     return data;
                 }
-
-			    bool Packet::done() const {
-			        return isPersistStatusSet(PERSIST_COMPLETED);
-			    }
 
 			    void Packet::setPersistStatus(short persistStatus) {
 			        this->persistStatus = persistStatus;

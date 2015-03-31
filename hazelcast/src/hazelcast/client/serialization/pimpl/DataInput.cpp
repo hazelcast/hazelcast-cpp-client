@@ -29,11 +29,6 @@ namespace hazelcast {
                     pos += bytes.size();
                 }
 
-                int DataInput::skipBytes(int i) {
-                    pos += i;
-                    return i;
-                }
-
                 bool DataInput::readBoolean() {
                     return readByte() != 0;
                 }
@@ -189,28 +184,43 @@ namespace hazelcast {
                     return std::string(&chararr[0]);
                 }
 
-                hazelcast::util::ByteVector_ptr DataInput::readByteArray() {
+                hazelcast::util::ByteVector_ptr DataInput::readByteArrayAsPtr() {
                     int len = readInt();
+                    checkBoundary(len);
                     util::ByteVector_ptr values(
                             new util::ByteVector(buffer.begin() + pos, buffer.begin() + pos + len));
                     pos += len;
                     return values;
                 }
 
-                /**
-                *
-                */
+                hazelcast::util::ByteVector DataInput::readByteArray() {
+                    int len = readInt();
+                    checkBoundary(len);
+                    util::ByteVector result(buffer.begin() + pos, buffer.begin() + pos + len);
+                    pos += len;
+                    return result;
+                }
+
                 void DataInput::readByteArray(char destinationBuffer[], short length) {
                     checkBoundary(length);
                     memcpy(destinationBuffer, &buffer[0] + pos, length);
                     pos += length;
                 }
 
-                hazelcast::util::CharVector_ptr DataInput::readCharArray() {
+                hazelcast::util::CharVector_ptr DataInput::readCharArrayAsPtr() {
                     int len = readInt();
                     util::CharVector_ptr values(new util::CharVector(len));
                     for (int i = 0; i < len; i++) {
                         (*values)[i] = readChar();
+                    }
+                    return values;
+                }
+
+                hazelcast::util::CharVector DataInput::readCharArray() {
+                    int len = readInt();
+                    util::CharVector values(len);
+                    for (int i = 0; i < len; i++) {
+                        values[i] = readChar();
                     }
                     return values;
                 }

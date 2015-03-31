@@ -89,13 +89,13 @@ namespace hazelcast {
                 return morphingPortableReader->readUTF(fieldName);
             }
 
-            pimpl::Data::BufferType_ptr PortableReader::readByteArray(const char *fieldName) {
+            std::vector<byte> PortableReader::readByteArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readByteArray(fieldName);
                 return morphingPortableReader->readByteArray(fieldName);
             }
 
-            hazelcast::util::CharVector_ptr PortableReader::readCharArray(const char *fieldName) {
+            std::vector<char> PortableReader::readCharArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readCharArray(fieldName);
                 return morphingPortableReader->readCharArray(fieldName);

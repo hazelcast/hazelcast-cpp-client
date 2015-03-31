@@ -23,7 +23,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-
+            static const unsigned int LARGE_ARRAY_SIZE = 10 * 1024 * 1024; // 10 MB
+            static const unsigned int LARGE_DATA_SIZE_IN_BYTES = 10 * LARGE_ARRAY_SIZE * sizeof(double); // 10 * 10MB * (sizeof(double))
 
             static serialization::pimpl::Data writeAndReadData(serialization::pimpl::Data& data, serialization::pimpl::SerializationService& ss1, serialization::pimpl::SerializationService& ss2) {
 
@@ -31,8 +32,8 @@ namespace hazelcast {
                 serialization::pimpl::PortableContext& contextOut = ss2.getPortableContext();
                 serialization::pimpl::Packet packet(contextIn, data);
 
-                std::auto_ptr<char> buf(new char[1024 * 1024 * 2]);
-                ::hazelcast::util::ByteBuffer buffer(buf.get(), 1024 * 1024 * 2);
+                std::auto_ptr<char> buf(new char[LARGE_DATA_SIZE_IN_BYTES]);
+                ::hazelcast::util::ByteBuffer buffer(buf.get(), LARGE_DATA_SIZE_IN_BYTES);
                 iTest::assertTrue(packet.writeTo(buffer));
                 buffer.flip();
 
@@ -60,6 +61,7 @@ namespace hazelcast {
 
             void ClientSerializationTest::addTests() {
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
+                addTest(&ClientSerializationTest::testBasicFunctionalityWithLargeData, "testBasicFunctionalityWithLargeData");
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithDifferentVersions, "testBasicFunctionalityWithDifferentVersions");
                 addTest(&ClientSerializationTest::testCustomSerialization, "testCustomSerialization");
                 addTest(&ClientSerializationTest::testRawData, "testRawData");
@@ -105,7 +107,7 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
-                hazelcast::util::CharVector_ptr chars(new hazelcast::util::CharVector(charA, charA + 10));
+                std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
                 bytes.resize(5, 0);
                 TestDataSerializable ds(123, 's');
@@ -142,7 +144,7 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
-                hazelcast::util::CharVector_ptr chars(new hazelcast::util::CharVector(charA, charA + 10));
+                std::vector<char> chars(charA, charA + 10);
                 std::vector<byte> bytes;
                 bytes.resize(5, 0);
                 TestNamedPortable np("named portable", 34567);
@@ -242,9 +244,9 @@ namespace hazelcast {
                 iTest::assertEqual(np, *tnp2);
 
                 byte byteArray[] = {0, 1, 2};
-                hazelcast::util::ByteVector_ptr bb(new hazelcast::util::ByteVector(byteArray, byteArray + 3));
+                std::vector<byte> bb(byteArray, byteArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                hazelcast::util::CharVector_ptr cc(new hazelcast::util::CharVector(charArray, charArray + 4));
+                std::vector<char> cc(charArray, charArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
@@ -285,6 +287,56 @@ namespace hazelcast {
                 iTest::assertEqual(main, *tmp2);
             }
 
+            void ClientSerializationTest::testBasicFunctionalityWithLargeData() {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                serialization::pimpl::Data data;
+
+                byte *byteArray = new byte[LARGE_ARRAY_SIZE];
+                std::vector<byte> bb(byteArray, byteArray + LARGE_ARRAY_SIZE);
+                char *charArray;
+                charArray = new char[LARGE_ARRAY_SIZE];
+                std::vector<char> cc(charArray, charArray + LARGE_ARRAY_SIZE);
+                short *shortArray;
+                shortArray = new short[LARGE_ARRAY_SIZE];
+                std::vector<short> ss(shortArray, shortArray + LARGE_ARRAY_SIZE);
+                int *integerArray;
+                integerArray = new int[LARGE_ARRAY_SIZE];
+                std::vector<int> ii(integerArray, integerArray + LARGE_ARRAY_SIZE);
+                long *longArray;
+                longArray = new long[LARGE_ARRAY_SIZE];
+                std::vector<long> ll(longArray, longArray + LARGE_ARRAY_SIZE);
+                float *floatArray;
+                floatArray = new float[LARGE_ARRAY_SIZE];
+                std::vector<float> ff(floatArray, floatArray + LARGE_ARRAY_SIZE);
+                double *doubleArray;
+                doubleArray = new double[LARGE_ARRAY_SIZE];
+                std::vector<double> dd(doubleArray, doubleArray + LARGE_ARRAY_SIZE);
+
+                TestNamedPortable portableArray[5];
+
+                for (int i = 0; i < 5; i++) {
+                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
+                    portableArray[i].k = i;
+                }
+                std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
+
+                TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+
+                data = serializationService.toData<TestInnerPortable>(&inner);
+
+                boost::shared_ptr<TestInnerPortable> tip1, tip2;
+                tip1 = serializationService.toObject<TestInnerPortable>(data);
+                data = writeAndReadData(data, serializationService, serializationService);
+                tip2 = serializationService.toObject<TestInnerPortable>(data);
+
+                iTest::assertEqual(inner, *tip1);
+                iTest::assertEqual(inner, *tip2);
+
+            }
+
+
             void ClientSerializationTest::testBasicFunctionalityWithDifferentVersions() {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
@@ -319,9 +371,9 @@ namespace hazelcast {
                 iTest::assertEqual(np, *tnp2);
 
                 byte byteArray[] = {0, 1, 2};
-                hazelcast::util::ByteVector_ptr bb(new hazelcast::util::ByteVector(byteArray, byteArray + 3));
+                std::vector<byte> bb(byteArray, byteArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                hazelcast::util::CharVector_ptr cc(new hazelcast::util::CharVector(charArray, charArray + 4));
+                std::vector<char> cc(charArray, charArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};

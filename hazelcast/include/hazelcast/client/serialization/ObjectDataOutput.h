@@ -189,7 +189,7 @@ namespace hazelcast {
                     writeInt(type);
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
                     if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->write(*this, *serializable);
                     } else {
                         const std::string& message = "No serializer found for serializerId :"
@@ -214,8 +214,6 @@ namespace hazelcast {
                 void writePortable(const Portable *portable);
 
                 void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
-
-                void writePortableHeader(const pimpl::Data& data);
 
                 ObjectDataOutput(const ObjectDataOutput&);
 

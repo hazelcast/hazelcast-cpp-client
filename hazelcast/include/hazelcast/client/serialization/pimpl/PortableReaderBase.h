@@ -42,9 +42,9 @@ namespace hazelcast {
 
                     virtual std::string readUTF(const char *fieldName);
 
-                    virtual hazelcast::util::ByteVector_ptr readByteArray(const char *fieldName);
+                    virtual hazelcast::util::ByteVector readByteArray(const char *fieldName);
 
-                    virtual hazelcast::util::CharVector_ptr readCharArray(const char *fieldName);
+                    virtual hazelcast::util::CharVector readCharArray(const char *fieldName);
 
                     virtual std::vector<int> readIntArray(const char *fieldName);
 

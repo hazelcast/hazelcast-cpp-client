@@ -42,13 +42,9 @@ namespace hazelcast {
                 class Packet : public SocketWritable , public SocketReadable {
                 public:
                     static byte const VERSION;
-                    
-                    static int const HEADER_OP;
-                    static int const HEADER_RESPONSE;
+
                     static int const HEADER_EVENT;
-                    static int const HEADER_WAN_REPLICATION;
                     static int const HEADER_URGENT;
-                    static int const HEADER_BIND;
 
                     Packet(PortableContext& ctx);
 
@@ -60,22 +56,6 @@ namespace hazelcast {
 
                     PortableContext &getPortableContext() const;
 
-                    /**
-                     * Gets the Connection this Packet was send with.
-                     *
-                     * @return the Connection. Could be null.
-                     */
-                    Connection *getConn() const;
-
-					/**
-					 * Sets the Connection this Packet is send with.
-					 * <p/>
-					 * This is done on the reading side of the Packet to make it possible to retrieve information about
-					 * the sender of the Packet.
-					 *
-					 * @param conn the connection.
-					 */
-					void setConn(Connection *conn);
 
                     void setHeader(int bit);
 
@@ -103,7 +83,6 @@ namespace hazelcast {
                     // SocketReadable interface
                     bool readFrom(ByteBuffer &source);
 
-                    void setHeader(short header);
 
                     void setPartitionId(int partition);
 
@@ -111,15 +90,11 @@ namespace hazelcast {
 
                     Data &getDataAsModifiable();
 
-					bool done() const;
-
-
                 private:
                     PortableContext &context;
                     Data data;
                     int partitionId;
                     short header;
-                    Connection *conn;
 
                     int persistStatus;
 
@@ -138,10 +113,6 @@ namespace hazelcast {
 
     			    static const size_t SHORT_SIZE_IN_BYTES;
     			    static const size_t INT_SIZE_IN_BYTES;
-
-                    void setPersistStatus(int statusBit);
-
-                    bool isPersistStatusSet(int statusBit) const;
 
                     bool readVersion(ByteBuffer& destination);
                     bool writeVersion(ByteBuffer& destination);

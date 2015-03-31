@@ -7,7 +7,6 @@
 //
 #include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
@@ -151,18 +150,18 @@ namespace hazelcast {
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
-                hazelcast::util::ByteVector_ptr MorphingPortableReader::readByteArray(char const *fieldName) {
+                hazelcast::util::ByteVector MorphingPortableReader::readByteArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
                     if (0 == currentFieldType){
-                        return hazelcast::util::ByteVector_ptr(new hazelcast::util::ByteVector(1, 0));
+                        return hazelcast::util::ByteVector(1, 0);
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
-                hazelcast::util::CharVector_ptr MorphingPortableReader::readCharArray(char const *fieldName) {
+                hazelcast::util::CharVector MorphingPortableReader::readCharArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
                     if (0 == currentFieldType){
-                        return hazelcast::util::CharVector_ptr(new hazelcast::util::CharVector(1, 0));
+                        return hazelcast::util::CharVector(1, 0);
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }

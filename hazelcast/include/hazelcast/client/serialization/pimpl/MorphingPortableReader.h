@@ -55,9 +55,9 @@ namespace hazelcast {
 
                     std::string readUTF(const char *fieldName);
 
-                    hazelcast::util::ByteVector_ptr readByteArray(const char *fieldName);
+                    hazelcast::util::ByteVector readByteArray(const char *fieldName);
 
-                    hazelcast::util::CharVector_ptr readCharArray(const char *fieldName);
+                    hazelcast::util::CharVector readCharArray(const char *fieldName);
 
                     std::vector<int> readIntArray(const char *fieldName);
 

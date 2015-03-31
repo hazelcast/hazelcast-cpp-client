@@ -35,29 +35,10 @@ namespace hazelcast {
                     }
                 }
 
-                bool ClassDefinitionContext::isClassDefinitionExists(int classId, int version) const {
-                    long long key = combineToLong(classId, version);
-                    return (versionedDefinitions.containsKey(key));
-                }
-
                 boost::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
                     long long key = combineToLong(classId, version);
                     return versionedDefinitions.get(key);
 
-                }
-
-                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::createClassDefinition(hazelcast::util::ByteVector_ptr compressedBinary) {
-                    if (compressedBinary.get() == NULL || compressedBinary.get()->size() == 0) {
-                        throw exception::IOException("ClassDefinitionContext::createClassDefinition", "Illegal class-definition binary! ");
-                    }
-                    std::vector<byte> decompressed = decompress(*(compressedBinary.get()));
-
-                    DataInput dataInput(decompressed);
-                    boost::shared_ptr<ClassDefinition> cd(new ClassDefinition());
-                    cd->readData(dataInput);
-                    cd->setBinary(compressedBinary);
-
-                    return registerClassDefinition(cd);
                 }
 
                 boost::shared_ptr<ClassDefinition>  ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {

@@ -39,8 +39,6 @@ namespace hazelcast {
 
                     void readFully(std::vector<byte> &);
 
-                    int skipBytes(int i);
-
                     bool readBoolean();
 
                     byte readByte();
@@ -59,9 +57,13 @@ namespace hazelcast {
 
                     std::string readUTF();
 
-                    hazelcast::util::ByteVector_ptr readByteArray();
+                    hazelcast::util::ByteVector_ptr readByteArrayAsPtr();
 
-                    hazelcast::util::CharVector_ptr readCharArray();
+                    hazelcast::util::ByteVector readByteArray();
+
+                    hazelcast::util::CharVector_ptr readCharArrayAsPtr();
+
+                    hazelcast::util::CharVector readCharArray();
 
                     std::vector<int> readIntArray();
 

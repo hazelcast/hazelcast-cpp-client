@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 void testBasicFunctionality();
 
+                void testBasicFunctionalityWithLargeData();
+
                 void testBasicFunctionalityWithDifferentVersions();
 
                 void testCustomSerialization();

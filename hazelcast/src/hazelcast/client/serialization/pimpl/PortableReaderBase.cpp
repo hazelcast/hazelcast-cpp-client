@@ -84,12 +84,12 @@ std::string PortableReaderBase::readUTF(const char *fieldName) {
     return dataInput.readUTF();
 }
 
-hazelcast::util::ByteVector_ptr PortableReaderBase::readByteArray(const char *fieldName) {
+hazelcast::util::ByteVector PortableReaderBase::readByteArray(const char *fieldName) {
     setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
     return dataInput.readByteArray();
 }
 
-hazelcast::util::CharVector_ptr PortableReaderBase::readCharArray(const char *fieldName) {
+hazelcast::util::CharVector PortableReaderBase::readCharArray(const char *fieldName) {
     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
     return dataInput.readCharArray();
 }
@@ -131,9 +131,9 @@ void PortableReaderBase::getPortableInstance(char const *fieldName,
 
     if (isNull) {
         portableInstance = 0;
+    } else {
+        read(dataInput, *portableInstance, factoryId, classId);
     }
-
-    read(dataInput, *portableInstance, factoryId, classId);
 }
 
 void PortableReaderBase::getPortableInstancesArray(char const *fieldName,

@@ -7,7 +7,6 @@
 //
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,10 +25,6 @@ namespace hazelcast {
 
             void ObjectDataInput::readFully(std::vector<byte>& bytes) {
                 dataInput.readFully(bytes);
-            }
-
-            int ObjectDataInput::skipBytes(int i) {
-                return dataInput.skipBytes(i);
             }
 
             bool ObjectDataInput::readBoolean() {
@@ -70,7 +65,6 @@ namespace hazelcast {
 
             pimpl::Data ObjectDataInput::readData() {
                 bool isNull = readBoolean();
-                pimpl::Data data;
                 if (isNull) {
                     pimpl::Data data;
                     return data;
@@ -90,11 +84,11 @@ namespace hazelcast {
             }
 
             hazelcast::util::ByteVector_ptr ObjectDataInput::readByteArray() {
-                return dataInput.readByteArray();
+                return dataInput.readByteArrayAsPtr();
             }
 
             hazelcast::util::CharVector_ptr ObjectDataInput::readCharArray() {
-                return dataInput.readCharArray();
+                return dataInput.readCharArrayAsPtr();
             }
 
             std::vector<int> ObjectDataInput::readIntArray() {

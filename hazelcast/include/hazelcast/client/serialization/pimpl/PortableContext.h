@@ -45,35 +45,16 @@ namespace hazelcast {
 
                     void setClassVersion(int factoryId, int classId, int version);
 
-                    //bool isClassDefinitionExists(int, int, int);
-
                     boost::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
-
-                    //boost::shared_ptr<ClassDefinition> lookupClassDefinition(Data &data);
-
-                    boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
 
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                     boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
 
-                    /*
-                    FieldDefinition getFieldDefinition(ClassDefinition cd, String name);
-
-                    ManagedContext getManagedContext();
-                    */
-
                     SerializerHolder &getSerializerHolder();
 
-                    //ByteOrder getByteOrder();
-
                 private:
-
-                    PortableContext(const PortableContext &);
-
                     ClassDefinitionContext &getClassDefinitionContext(int factoryId);
-
-                    void operator = (const PortableContext &);
 
                     int contextVersion;
                     hazelcast::util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;

@@ -5,9 +5,9 @@ namespace hazelcast {
         namespace test {
             TestMainPortable getTestMainPortable() {
                 byte byteArray[] = {0, 1, 2};
-                hazelcast::util::ByteVector_ptr bb(new hazelcast::util::ByteVector(byteArray, byteArray + 3));
+                std::vector<byte> bb(byteArray, byteArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                hazelcast::util::CharVector_ptr cc(new hazelcast::util::CharVector(charArray, charArray + 4));
+                std::vector<char> cc(charArray, charArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};

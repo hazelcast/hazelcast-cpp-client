@@ -68,12 +68,6 @@ namespace hazelcast {
                 void readFully(std::vector<byte>& byteArray);
 
                 /**
-                *
-                * @param i number of bytes to skip
-                */
-                int skipBytes(int i);
-
-                /**
                 * @return the boolean read
                 * @throws IOException if it reaches end of file before finish reading
                 */
@@ -213,9 +207,6 @@ namespace hazelcast {
 
                     boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
                     classDefinition->readData(dataInput);
-/*                    int factoryId = classDefinition->getFactoryId();
-                    int classId = classDefinition->getClassId();
-                    int version = classDefinition->getVersion();*/
                     portableContext.registerClassDefinition(classDefinition);
                     serializerHolder.getPortableSerializer().read(dataInput, *object);
                     return object;

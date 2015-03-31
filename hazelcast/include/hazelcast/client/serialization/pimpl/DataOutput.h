@@ -42,7 +42,7 @@ namespace hazelcast {
 
                     void writeChar(int i);
 
-                    void writeInt(int i, bool writeBigEndian = true);
+                    void writeInt(int i);
 
                     void writeLong(long long l);
 
@@ -75,10 +75,6 @@ namespace hazelcast {
                     int position();
 
                     void position(size_t newPos);
-
-                    hazelcast::util::ByteBuffer& getHeaderBuffer();
-
-                    std::auto_ptr< std::vector<byte> > getPortableHeader();
 
                     static size_t const STRING_CHUNK_SIZE;
                     static size_t const DEFAULT_SIZE;

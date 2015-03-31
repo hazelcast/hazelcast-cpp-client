@@ -37,9 +37,6 @@ namespace hazelcast {
                     static unsigned int PARTITION_HASH_BIT_OFFSET;
                     static unsigned int DATA_OFFSET;
 
-                    // array (12: array header, 4: length)
-                    static unsigned int ARRAY_HEADER_SIZE_IN_BYTES;
-
                     Data();
 
                     Data(BufferType_ptr buffer);
@@ -59,12 +56,6 @@ namespace hazelcast {
                     Data::BufferType &toByteArray() const;
 
                     int getType() const;
-
-                    unsigned long getHeapCost() const;
-
-                    bool isPortable() const;
-
-                    void setBuffer(BufferType_ptr buffer);
 
                 private:
                     mutable BufferType_ptr data;

@@ -9,9 +9,6 @@
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include <hazelcast/client/exception/IllegalArgumentException.h>
-#include <hazelcast/util/Bits.h>
-#include <hazelcast/client/serialization/FieldType.h>
 
 using namespace hazelcast::client::exception;
 using namespace hazelcast::client::util;
@@ -44,24 +41,6 @@ namespace hazelcast {
                 boost::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
-
-/*                boost::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(Data &data) {
-                    if (!data.isPortable()) {
-                        throw IllegalArgumentException(string("[PortableContext::lookupClassDefinition]"),
-                                string("Provided data is not a Portable type!"));
-                    }
-
-                    DataInput &in =  serializationService.createObjectDataInput(data);
-                    int factoryId = in.readInt();
-                    int classId = in.readInt();
-                    int version = in.readInt();
-
-                    boost::shared_ptr<ClassDefinition> classDefinition = lookupClassDefinition(factoryId, classId, version);
-                    if (0 == classDefinition.get()) {
-                        classDefinition = readClassDefinition(in, factoryId, classId, version);
-                    }
-                    return classDefinition;
-                }*/
 
                 boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput &in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
@@ -125,11 +104,6 @@ namespace hazelcast {
                         }
                         return classDefinition;
                 }
-
-
-               /* boost::shared_ptr<ClassDefinition> PortableContext::createClassDefinition(int factoryId, std::auto_ptr<std::vector<byte> > binary) {
-                    return getClassDefinitionContext(factoryId).createClassDefinition(binary);
-                }*/
 
                 boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
                     return getClassDefinitionContext(cd->getFactoryId()).registerClassDefinition(cd);

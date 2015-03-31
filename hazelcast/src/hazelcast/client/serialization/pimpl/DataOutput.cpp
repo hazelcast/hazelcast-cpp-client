@@ -6,7 +6,6 @@
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
-#include <algorithm>
 
 namespace hazelcast {
     namespace client {
@@ -69,7 +68,7 @@ namespace hazelcast {
                     writeByte(i);
                 }
 
-                void DataOutput::writeInt(int v, bool writeBigEndian) {
+                void DataOutput::writeInt(int v) {
                     writeByte((v >> 24));
                     writeByte((v >> 16));
                     writeByte((v >> 8));
@@ -241,22 +240,6 @@ namespace hazelcast {
 //                    }
                     writeShort(utfLength);
                     write(byteArray);
-                }
-
-
-                util::ByteBuffer& DataOutput::getHeaderBuffer() {
-                    return headerByteBuffer;
-                }
-
-                std::auto_ptr<std::vector<byte> > DataOutput::getPortableHeader() {
-                    headerByteBuffer.flip();
-                    if (!headerByteBuffer.hasRemaining()) {
-                        return std::auto_ptr<std::vector<byte> >();
-                    }
-                    std::auto_ptr<std::vector<byte> > buff(new std::vector<byte>(headerByteBuffer.limit()));
-                    headerByteBuffer.writeTo(*buff);
-                    headerByteBuffer.clear();
-                    return buff;
                 }
 
             }
