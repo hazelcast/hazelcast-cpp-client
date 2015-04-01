@@ -48,7 +48,7 @@ namespace hazelcast {
             /**
              * @return host address as string
              */
-            std::string getHost() const;
+            const std::string& getHost() const;
 
             /**
              * @see IdentifiedDataSerializable

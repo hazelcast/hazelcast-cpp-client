@@ -114,7 +114,8 @@ namespace hazelcast {
             void ClusterTest::testClusterListeners() {
                 HazelcastServer instance(hazelcastInstanceFactory);
                 ClientConfig clientConfig;
-                HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
+                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
+                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
                 Cluster cluster = hazelcastClient.getCluster();
                 util::CountDownLatch memberAdded(1);
                 util::CountDownLatch memberAddedInit(2);
@@ -162,7 +163,8 @@ namespace hazelcast {
                 clientConfig.addListener(&sampleInitialListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
+                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
+                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
@@ -215,7 +217,8 @@ namespace hazelcast {
 
                 ClientConfig clientConfig;
                 clientConfig.setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
+                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
+                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
 
                 util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);

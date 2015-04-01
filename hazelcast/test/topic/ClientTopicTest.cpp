@@ -10,10 +10,10 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientTopicTest::ClientTopicTest(HazelcastServerFactory &hazelcastInstanceFactory)
+            ClientTopicTest::ClientTopicTest(HazelcastServerFactory &serverFactory)
             : iTestFixture<ClientTopicTest>("ClientTopicTest")
-            , instance(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
+            , instance(serverFactory)
+            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {
             }
 

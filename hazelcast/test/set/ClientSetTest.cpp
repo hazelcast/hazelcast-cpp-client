@@ -12,10 +12,10 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientSetTest::ClientSetTest(HazelcastServerFactory &hazelcastInstanceFactory)
+            ClientSetTest::ClientSetTest(HazelcastServerFactory &serverFactory)
             : iTestFixture<ClientSetTest>("ClientSetTest")
-            , instance(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
+            , instance(serverFactory)
+            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
             , set(new ISet<std::string >(client->getSet< std::string >("ClientSetTest"))) {
             }
 
