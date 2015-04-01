@@ -15,11 +15,11 @@ namespace hazelcast {
         namespace test {
             using namespace iTest;
 
-            ClientMapTest::ClientMapTest(HazelcastServerFactory& hazelcastInstanceFactory)
+            ClientMapTest::ClientMapTest(HazelcastServerFactory& serverFactory)
             : iTestFixture<ClientMapTest>("ClientMapTest")
-            , instance(hazelcastInstanceFactory)
-            , instance2(hazelcastInstanceFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(HOST, 5701))))
+            , instance(serverFactory)
+            , instance2(serverFactory)
+            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
             , imap(new IMap<string, string>(client->getMap<string, string>("clientMapTest"))) {
             }
 

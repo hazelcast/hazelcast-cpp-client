@@ -54,7 +54,8 @@ namespace hazelcast {
             void MemberAttributeTest::testInitialValues() {
                 HazelcastServer instance(hazelcastInstanceFactory);
                 ClientConfig clientConfig;
-                HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
+                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
+                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
                 Cluster cluster = hazelcastClient.getCluster();
                 std::vector<Member> members = cluster.getMembers();
                 assertEqual(1U,members.size());
@@ -151,7 +152,8 @@ namespace hazelcast {
                 clientConfig.addListener(&sampleListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(Address(HOST, 5701)));
+                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
+                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
