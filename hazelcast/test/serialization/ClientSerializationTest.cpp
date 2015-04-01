@@ -291,19 +291,19 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 SerializationConfig serializationConfig2;
-                serializationConfig.setPortableVersion(1);
+                serializationConfig2.setPortableVersion(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
                 serialization::pimpl::Data data;
 
                 int x = 3;
                 data = serializationService.toData<int>(&x);
-                data = writeAndReadData(data, serializationService, serializationService);
+                data = writeAndReadData(data, serializationService, serializationService2);
                 boost::shared_ptr<int> returnedInt = serializationService.toObject<int>(data);
                 iTest::assertEqual(x, *returnedInt);
 
                 short f = 2;
                 data = serializationService.toData<short>(&f);
-                data = writeAndReadData(data, serializationService, serializationService);
+                data = writeAndReadData(data, serializationService, serializationService2);
                 boost::shared_ptr<short> temp = serializationService.toObject<short>(data);
                 iTest::assertEqual(f, *temp);
 
