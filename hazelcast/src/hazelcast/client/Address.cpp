@@ -34,7 +34,7 @@ namespace hazelcast {
             return port;
         }
 
-        std::string Address::getHost() const {
+        const std::string& Address::getHost() const {
             return host;
         }
 

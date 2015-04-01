@@ -16,17 +16,15 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            HazelcastServerFactory::HazelcastServerFactory()
-            : address(HOST, 6543)
+            HazelcastServerFactory::HazelcastServerFactory(const char* hostAddress)
+            : address(hostAddress, 6543)
             , socket(address)
             , outputSocketStream(socket)
             , inputSocketStream(socket) {
-                //system("java -cp ./hazelcast-3.2-SNAPSHOT.jar:.  ClientTCPIPListener & ");
                 if (int error = socket.connect(5000))
                     std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
 
             }
-
 
             HazelcastServerFactory::~HazelcastServerFactory() {
                 try {
@@ -67,6 +65,9 @@ namespace hazelcast {
             }
 
 
+            const std::string& HazelcastServerFactory::getServerAddress() const{
+                return address.getHost();
+            }
         }
     }
 }
