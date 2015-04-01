@@ -13,7 +13,6 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-			#define HOST "127.0.0.1"
 
             class HazelcastServer;
 
@@ -28,7 +27,9 @@ namespace hazelcast {
                     SHUTDOWN_ALL = 4
                 };
             public:
-                HazelcastServerFactory();
+                HazelcastServerFactory(const char* hostAddress);
+
+                const std::string& getServerAddress() const;
 
                 void shutdownAll();
 

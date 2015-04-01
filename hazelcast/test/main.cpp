@@ -59,16 +59,16 @@ void handler(int sig) {
 
 using namespace hazelcast::client::test;
 
-void testSpeed() {
-    SimpleMapTest s(HOST, 5701);
+void testSpeed(const char* address) {
+    SimpleMapTest s(address, 5701);
     s.run();
 }
 
-int unitTests() {
+int unitTests(const char* address) {
     try {
         RUN_TEST(ClientUtilTest, 1);
         RUN_TEST(ClientSerializationTest, 1);
-        HazelcastServerFactory factory;
+        HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);
         RUN_TEST(IssueTest, factory);
         RUN_TEST(MemberAttributeTest, factory);
@@ -96,12 +96,19 @@ int unitTests() {
     }
 }
 
-int main() {
+int main(int argc, char** argv) {
+    const char* address;
+    if(argc == 2){
+        address = argv[1];
+    } else {
+        address = "127.0.0.1";
+    }
+    std::cout << "Server address : "  << address << std::endl;
     signal(SIGABRT , handler);   // install our handler
     signal(SIGSEGV, handler);   // install our handler
 
-//    testSpeed();
-    return unitTests();
+//    testSpeed(address);
+    return unitTests(address);
 }
 
 
