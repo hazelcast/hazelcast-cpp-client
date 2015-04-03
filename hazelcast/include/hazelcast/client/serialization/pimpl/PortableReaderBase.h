@@ -6,14 +6,16 @@
 #ifndef HAZELCAST_PortableReaderBase_H_
 #define HAZELCAST_PortableReaderBase_H_
 
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/ClassDefinition.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class ClassDefinition;
+
             namespace pimpl {
+
+                class DataInput;
 
                 class PortableReaderBase {
 

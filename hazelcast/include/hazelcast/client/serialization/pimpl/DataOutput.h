@@ -10,10 +10,10 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
+
 #include <memory>
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,7 +31,7 @@ namespace hazelcast {
 
                     virtual ~DataOutput();
 
-                    boost::shared_ptr<std::vector<byte> > toByteArray();
+                    std::auto_ptr<std::vector<byte> > toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 

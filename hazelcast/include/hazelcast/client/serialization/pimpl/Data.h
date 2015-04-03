@@ -13,7 +13,7 @@
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/ByteBuffer.h"
+
 #include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -36,7 +36,7 @@ namespace hazelcast {
 
                     Data();
 
-                    Data(boost::shared_ptr<std::vector<byte> > buffer);
+                    Data(std::auto_ptr<std::vector<byte> > buffer);
 
                     Data(const Data&);
 
@@ -55,7 +55,7 @@ namespace hazelcast {
                     int getType() const;
 
                 private:
-                    mutable boost::shared_ptr<std::vector<byte> > data;
+                    mutable std::auto_ptr<std::vector<byte> > data;
 
                     int hashCode() const;
 

@@ -27,36 +27,6 @@ namespace hazelcast {
                     }
                 }
 
-                void SerializationService::writeObject(DataOutput &out, const Portable *obj) {
-                    const bool isNull = obj == 0;
-
-                    out.writeBoolean(isNull);
-                    if (isNull) {
-                        return;
-                    }
-
-                    // write type
-                    out.writeInt(SerializationConstants::CONSTANT_TYPE_PORTABLE);
-
-                    getSerializerHolder().getPortableSerializer().write(out, *obj);
-                }
-
-                void SerializationService::writeObject(DataOutput &out, const IdentifiedDataSerializable *obj) {
-                    const bool isNull = obj == 0;
-
-                    out.writeBoolean(isNull);
-                    if (isNull) {
-                        return;
-                    }
-
-                    ObjectDataOutput dataOutput(out, portableContext);
-
-                    // write type
-                    dataOutput.writeInt(SerializationConstants::CONSTANT_TYPE_DATA);
-
-                    getSerializerHolder().getDataSerializer().write(dataOutput, *obj);
-                }
-
                 PortableContext& SerializationService::getPortableContext() {
                     return portableContext;
                 }

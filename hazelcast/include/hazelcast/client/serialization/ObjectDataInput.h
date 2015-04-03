@@ -14,11 +14,12 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/util/IOUtil.h"
+
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
-#include <hazelcast/client/exception/HazelcastSerializationException.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

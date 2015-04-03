@@ -42,7 +42,7 @@ namespace hazelcast {
             }
 
             const FieldDefinition* ClassDefinition::getFieldIfExist(const char *fieldName) const {
-                const FieldDefinition *result = 0;
+                const FieldDefinition *result = NULL;
                 std::map<std::string, FieldDefinition>::const_iterator it;
                 it = fieldDefinitionsMap.find(fieldName);
                 if (it != fieldDefinitionsMap.end()) {
@@ -61,7 +61,7 @@ namespace hazelcast {
             }
 
             const FieldType *ClassDefinition::getFieldTypeIfExists(const char *fieldName) const {
-                const FieldType *result = 0;
+                const FieldType *result = NULL;
                 const FieldDefinition *fd = getFieldIfExist(fieldName);
                 if (NULL != fd) {
                     result = &(fd->getType());

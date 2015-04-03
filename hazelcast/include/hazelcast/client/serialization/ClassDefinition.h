@@ -143,7 +143,7 @@ namespace hazelcast {
                 std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
 
-                boost::shared_ptr<std::vector<byte> >  binary;
+                std::auto_ptr<std::vector<byte> >  binary;
 
             };
         }

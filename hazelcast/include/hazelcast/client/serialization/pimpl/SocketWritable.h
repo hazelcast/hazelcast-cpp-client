@@ -24,11 +24,10 @@
 #ifndef HAZELCAST_CLIENT_SERIALIZATION_PIMPL_SOCKETWRITABLE_H_
 #define HAZELCAST_CLIENT_SERIALIZATION_PIMPL_SOCKETWRITABLE_H_
 
-#include <hazelcast/util/ByteBuffer.h>
-
-using namespace hazelcast::util;
-
 namespace hazelcast {
+    namespace util {
+        class ByteBuffer;
+    }
     namespace client {
         namespace serialization {
             namespace pimpl {
@@ -39,7 +38,7 @@ namespace hazelcast {
                      * @param destination the ByteBuffer to write to.
                      * @return todo: unclear what return value means.
                      */
-                    virtual bool writeTo(ByteBuffer &destination) = 0;
+                    virtual bool writeTo(util::ByteBuffer &destination) = 0;
                 };
             }
         }

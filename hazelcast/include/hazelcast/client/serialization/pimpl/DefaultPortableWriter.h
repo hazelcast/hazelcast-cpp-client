@@ -15,6 +15,7 @@
 #include "hazelcast/client/serialization/FieldType.h"
 #include "hazelcast/client/serialization/FieldDefinition.h"
 #include "hazelcast/client/serialization/Portable.h"
+
 #include <string>
 #include <set>
 #include <vector>
@@ -30,15 +31,11 @@ namespace hazelcast {
 
             class ClassDefinition;
 
-            class ObjectDataOutput;
-
             namespace pimpl {
 
                 class SerializerHolder;
 
                 class PortableContext;
-
-                class DataOutput;
 
                 class HAZELCAST_API DefaultPortableWriter  {
                 public:

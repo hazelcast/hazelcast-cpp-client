@@ -11,7 +11,7 @@
 
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "PortableReaderBase.h"
+#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
 
 #include <string>
 #include <vector>
@@ -30,8 +30,6 @@ namespace hazelcast {
 
             namespace pimpl {
                 class PortableContext;
-
-                class PortableReaderBase;
 
                 class HAZELCAST_API DefaultPortableReader : public PortableReaderBase {
                 public:

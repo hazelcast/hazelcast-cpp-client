@@ -19,7 +19,7 @@ namespace hazelcast {
 
                 int MorphingPortableReader::readInt(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0;
                     }
 
@@ -38,7 +38,7 @@ namespace hazelcast {
 
                 long MorphingPortableReader::readLong(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0;
                     }
 
@@ -59,7 +59,7 @@ namespace hazelcast {
 
                 bool MorphingPortableReader::readBoolean(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return false;
                     }
                     return PortableReaderBase::readBoolean(fieldName);
@@ -67,7 +67,7 @@ namespace hazelcast {
 
                 byte MorphingPortableReader::readByte(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0;
                     }
                     return PortableReaderBase::readByte(fieldName);
@@ -75,7 +75,7 @@ namespace hazelcast {
 
                 char MorphingPortableReader::readChar(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0;
                     }
                     return PortableReaderBase::readChar(fieldName);
@@ -83,7 +83,7 @@ namespace hazelcast {
 
                 double MorphingPortableReader::readDouble(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0.0;
                     }
 
@@ -108,7 +108,7 @@ namespace hazelcast {
 
                 float MorphingPortableReader::readFloat(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0.0;
                     }
 
@@ -129,7 +129,7 @@ namespace hazelcast {
 
                 short MorphingPortableReader::readShort(char const *fieldName, bool skipTypeCheck) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return 0;
                     }
 
@@ -144,7 +144,7 @@ namespace hazelcast {
 
                 std::string MorphingPortableReader::readUTF(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return "";
                     }
                     return PortableReaderBase::readUTF(fieldName);
@@ -152,7 +152,7 @@ namespace hazelcast {
 
                 std::vector<byte> MorphingPortableReader::readByteArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<byte>(1, 0);
                     }
                     return PortableReaderBase::readByteArray(fieldName);
@@ -160,7 +160,7 @@ namespace hazelcast {
 
                 std::vector<char> MorphingPortableReader::readCharArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<char>(1, 0);
                     }
                     return PortableReaderBase::readCharArray(fieldName);
@@ -168,7 +168,7 @@ namespace hazelcast {
 
                 std::vector<int> MorphingPortableReader::readIntArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<int>(1, 0);
                     }
                     return PortableReaderBase::readIntArray(fieldName);
@@ -176,7 +176,7 @@ namespace hazelcast {
 
                 std::vector<long> MorphingPortableReader::readLongArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<long>(1, 0);
                     }
                     return PortableReaderBase::readLongArray(fieldName);
@@ -184,7 +184,7 @@ namespace hazelcast {
 
                 std::vector<double> MorphingPortableReader::readDoubleArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<double>(1, 0);
                     }
                     return PortableReaderBase::readDoubleArray(fieldName);
@@ -192,7 +192,7 @@ namespace hazelcast {
 
                 std::vector<float> MorphingPortableReader::readFloatArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<float>(1, 0);
                     }
                     return PortableReaderBase::readFloatArray(fieldName);
@@ -200,7 +200,7 @@ namespace hazelcast {
 
                 std::vector<short> MorphingPortableReader::readShortArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (0 == currentFieldType){
+                    if (NULL == currentFieldType){
                         return std::vector<short>(1, 0);
                     }
                     return PortableReaderBase::readShortArray(fieldName);

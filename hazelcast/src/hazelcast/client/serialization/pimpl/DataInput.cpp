@@ -5,6 +5,7 @@
 
 #include <string.h>
 #include <stdio.h>
+
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
 #include <hazelcast/client/exception/IOException.h>
@@ -190,10 +191,10 @@ namespace hazelcast {
                     return std::string(&chararr[0]);
                 }
 
-                boost::shared_ptr<std::vector<byte> > DataInput::readByteArrayAsPtr() {
+                std::auto_ptr<std::vector<byte> > DataInput::readByteArrayAsPtr() {
                     int len = readInt();
                     checkBoundary((size_t)len);
-                    boost::shared_ptr<std::vector<byte> >  values(
+                    std::auto_ptr<std::vector<byte> >   values(
                             new std::vector<byte>(buffer.begin() + pos, buffer.begin() + pos + len));
                     pos += len;
                     return values;
@@ -211,15 +212,6 @@ namespace hazelcast {
                     checkBoundary((size_t)length);
                     memcpy(destinationBuffer, &buffer[0] + pos, (size_t)length);
                     pos += length;
-                }
-
-                boost::shared_ptr<std::vector<char> > DataInput::readCharArrayAsPtr() {
-                    int len = readInt();
-                    boost::shared_ptr<std::vector<char> > values(new std::vector<char>(len));
-                    for (int i = 0; i < len; i++) {
-                        (*values)[i] = readChar();
-                    }
-                    return values;
                 }
 
                 std::vector<char> DataInput::readCharArray() {

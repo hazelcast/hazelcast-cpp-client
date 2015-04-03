@@ -131,7 +131,7 @@ void PortableReaderBase::getPortableInstance(char const *fieldName,
     checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
 
     if (isNull) {
-        portableInstance = 0;
+        portableInstance = NULL;
     } else {
         read(dataInput, *portableInstance, factoryId, classId);
     }

@@ -22,6 +22,7 @@
 #include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Bits.h"
+
 #include <sstream>
 #include <limits.h>
 
@@ -103,7 +104,7 @@ namespace hazelcast {
                     return partitionId;
                 }
 
-                bool Packet::writeTo(ByteBuffer &destination) {
+                bool Packet::writeTo(util::ByteBuffer &destination) {
                     if (!writeVersion(destination)) {
                         return false;
                     }
@@ -128,7 +129,7 @@ namespace hazelcast {
                     return true;
                 }
 
-                bool Packet::readFrom(ByteBuffer &source) {
+                bool Packet::readFrom(util::ByteBuffer &source) {
                     if (!readVersion(source)) {
                         return false;
                     }
@@ -154,7 +155,7 @@ namespace hazelcast {
                 }
 
                 // ========================= version =================================================
-                bool Packet::readVersion(ByteBuffer &source) {
+                bool Packet::readVersion(util::ByteBuffer &source) {
                     if (!isPersistStatusSet(PERSIST_VERSION)) {
                         if (!source.hasRemaining()) {
                             return false;
@@ -172,7 +173,7 @@ namespace hazelcast {
                 }
 
 
-				bool Packet::writeVersion(ByteBuffer &destination) {
+				bool Packet::writeVersion(util::ByteBuffer &destination) {
 					if (!isPersistStatusSet(PERSIST_VERSION)) {
 						if (!destination.hasRemaining()) {
 							return false;
@@ -186,9 +187,9 @@ namespace hazelcast {
 
 			    // ========================= header =================================================
 
-			    bool Packet::readHeader(ByteBuffer &source) {
+			    bool Packet::readHeader(util::ByteBuffer &source) {
 			        if (!isPersistStatusSet(PERSIST_HEADER)) {
-			            if (source.remaining() < Bits::SHORT_SIZE_IN_BYTES) {
+			            if (source.remaining() < util::Bits::SHORT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 			            header = source.readShort();
@@ -197,9 +198,9 @@ namespace hazelcast {
 			        return true;
 			    }
 
-			    bool Packet::writeHeader(ByteBuffer &destination) {
+			    bool Packet::writeHeader(util::ByteBuffer &destination) {
 			        if (!isPersistStatusSet(PERSIST_HEADER)) {
-			            if (destination.remaining() < Bits::SHORT_SIZE_IN_BYTES) {
+			            if (destination.remaining() < util::Bits::SHORT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 			            destination.writeShort(header);
@@ -210,9 +211,9 @@ namespace hazelcast {
 
 			    // ========================= partition =================================================
 
-			    bool Packet::readPartition(ByteBuffer &source) {
+			    bool Packet::readPartition(util::ByteBuffer &source) {
 			        if (!isPersistStatusSet(PERSIST_PARTITION)) {
-			            if (source.remaining() < Bits::INT_SIZE_IN_BYTES) {
+			            if (source.remaining() < util::Bits::INT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 			            partitionId = source.readInt();
@@ -222,9 +223,9 @@ namespace hazelcast {
 			    }
 
 
-			    bool Packet::writePartition(ByteBuffer &destination) {
+			    bool Packet::writePartition(util::ByteBuffer &destination) {
 			        if (!isPersistStatusSet(PERSIST_PARTITION)) {
-			            if (destination.remaining() < Bits::INT_SIZE_IN_BYTES) {
+			            if (destination.remaining() < util::Bits::INT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 			            destination.writeInt(partitionId);
@@ -236,9 +237,9 @@ namespace hazelcast {
 
 			    // ========================= size =================================================
 
-			    bool Packet::readSize(ByteBuffer &source) {
+			    bool Packet::readSize(util::ByteBuffer &source) {
 			        if (!isPersistStatusSet(PERSIST_SIZE)) {
-			            if (source.remaining() < Bits::INT_SIZE_IN_BYTES) {
+			            if (source.remaining() < util::Bits::INT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 
@@ -248,13 +249,13 @@ namespace hazelcast {
 			        return true;
 			    }
 
-			    bool Packet::writeSize(ByteBuffer &destination) {
+			    bool Packet::writeSize(util::ByteBuffer &destination) {
 			        if (!isPersistStatusSet(PERSIST_SIZE)) {
-			            if (destination.remaining() < Bits::INT_SIZE_IN_BYTES) {
+			            if (destination.remaining() < util::Bits::INT_SIZE_IN_BYTES) {
 			                return false;
 			            }
 
-			            persistedSize = data.toByteArray().size();
+			            persistedSize = data.totalSize();
 			            destination.writeInt((int)persistedSize);
 			            setPersistStatus(PERSIST_SIZE);
 			        }
@@ -263,7 +264,7 @@ namespace hazelcast {
 
 			    // ========================= value =================================================
 
-			    bool Packet::writeValue(ByteBuffer &destination) {
+			    bool Packet::writeValue(util::ByteBuffer &destination) {
 			        if (!isPersistStatusSet(PERSIST_VALUE)) {
 			            if (persistedSize > 0) {
 			                // the number of bytes that can be written to the bb.
@@ -299,7 +300,7 @@ namespace hazelcast {
 			        return true;
 			    }
 
-			    bool Packet::readValue(ByteBuffer &source) {
+			    bool Packet::readValue(util::ByteBuffer &source) {
 			        if (!isPersistStatusSet(PERSIST_VALUE)) {
                         std::vector<byte> &byteVector = data.toByteArray();
 

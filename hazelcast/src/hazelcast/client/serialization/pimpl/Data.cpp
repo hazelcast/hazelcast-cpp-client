@@ -29,12 +29,12 @@ namespace hazelcast {
                 : data(new std::vector<byte>()){
                 }
 
-                Data::Data(boost::shared_ptr<std::vector<byte> > buffer) : data(buffer) {
+                Data::Data(std::auto_ptr<std::vector<byte> > buffer) {
                     if (buffer.get() != 0 && buffer->size() > 0 && buffer->size() < DATA_OFFSET) {
                         char msg[100];
                         sprintf(msg, "Provided buffer should be either empty or "
                                 "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, buffer->size());
-                        throw hazelcast::client::exception::IllegalArgumentException("Data::setBuffer", msg);
+                        throw exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
                     this->data = buffer;
                 }

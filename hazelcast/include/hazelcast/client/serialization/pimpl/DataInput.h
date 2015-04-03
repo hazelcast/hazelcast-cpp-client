@@ -9,7 +9,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include "Data.h"
+
 #include <vector>
 #include <string>
 
@@ -56,11 +56,9 @@ namespace hazelcast {
 
                     std::string readUTF();
 
-                    boost::shared_ptr<std::vector<byte> > readByteArrayAsPtr();
+                    std::auto_ptr<std::vector<byte> > readByteArrayAsPtr();
 
                     std::vector<byte> readByteArray();
-
-                    boost::shared_ptr<std::vector<char> > readCharArrayAsPtr();
 
                     std::vector<char> readCharArray();
 

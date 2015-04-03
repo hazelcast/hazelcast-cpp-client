@@ -34,8 +34,8 @@ namespace hazelcast {
                     return *this;
                 }
 
-                boost::shared_ptr<std::vector<byte> > DataOutput::toByteArray() {
-                    boost::shared_ptr<std::vector<byte> > byteArrayPtr(new std::vector<byte>(*outputStream));
+                std::auto_ptr<std::vector<byte> > DataOutput::toByteArray() {
+                    std::auto_ptr<std::vector<byte> > byteArrayPtr(new std::vector<byte>(*outputStream));
                     return byteArrayPtr;
                 }
 

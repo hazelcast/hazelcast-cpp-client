@@ -23,14 +23,14 @@
 #ifndef HAZELCAST_Packet
 #define HAZELCAST_Packet
 
-#include "SocketWritable.h"
-#include "SocketReadable.h"
-#include "Data.h"
-#include <hazelcast/client/connection/Connection.h>
-
-using namespace hazelcast::client::connection;
+#include "hazelcast/client/serialization/pimpl/SocketWritable.h"
+#include "hazelcast/client/serialization/pimpl/SocketReadable.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
+    namespace util {
+        class ByteBuffer;
+    }
     namespace client {
         namespace connection {
             class Connection;
@@ -38,6 +38,8 @@ namespace hazelcast {
 
         namespace serialization {
             namespace pimpl {
+
+                class PortableContext;
 
                 class Packet : public SocketWritable , public SocketReadable {
                 public:
@@ -76,10 +78,10 @@ namespace hazelcast {
                     int getPartitionId() const;
 
                     // SocketWritable interface
-                    bool writeTo(ByteBuffer &destination);
+                    bool writeTo(util::ByteBuffer &destination);
 
                     // SocketReadable interface
-                    bool readFrom(ByteBuffer &source);
+                    bool readFrom(util::ByteBuffer &source);
 
 
                     void setPartitionId(int partition);
@@ -109,20 +111,20 @@ namespace hazelcast {
 
                     static short const PERSIST_COMPLETED;
 
-                    bool readVersion(ByteBuffer& destination);
-                    bool writeVersion(ByteBuffer& destination);
+                    bool readVersion(util::ByteBuffer& destination);
+                    bool writeVersion(util::ByteBuffer& destination);
 
-                    bool readHeader(ByteBuffer& destination);
-                    bool writeHeader(ByteBuffer& destination);
+                    bool readHeader(util::ByteBuffer& destination);
+                    bool writeHeader(util::ByteBuffer& destination);
 
-                    bool readPartition(ByteBuffer& destination);
-                    bool writePartition(ByteBuffer& destination);
+                    bool readPartition(util::ByteBuffer& destination);
+                    bool writePartition(util::ByteBuffer& destination);
 
-                    bool readSize(ByteBuffer& destination);
-                    bool writeSize(ByteBuffer& destination);
+                    bool readSize(util::ByteBuffer& destination);
+                    bool writeSize(util::ByteBuffer& destination);
 
-                    bool readValue(ByteBuffer& destination);
-                    bool writeValue(ByteBuffer& destination);
+                    bool readValue(util::ByteBuffer& destination);
+                    bool writeValue(util::ByteBuffer& destination);
 
                     void setPersistStatus(short persistStatus);
 

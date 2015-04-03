@@ -24,11 +24,10 @@
 #ifndef HAZELCAST_CLIENT_SERIALIZATION_PIMPL_SOCKETREADABLE_H_
 #define HAZELCAST_CLIENT_SERIALIZATION_PIMPL_SOCKETREADABLE_H_
 
-#include <hazelcast/util/ByteBuffer.h>
-
-using namespace hazelcast::util;
-
 namespace hazelcast {
+    namespace util {
+        class ByteBuffer;
+    }
     namespace client {
         namespace serialization {
             namespace pimpl {
@@ -37,7 +36,7 @@ namespace hazelcast {
                 	 * Represents something where data can be read from.
                 	 */
                 	public:
-                		virtual bool readFrom(ByteBuffer &source) = 0;
+                		virtual bool readFrom(util::ByteBuffer &source) = 0;
                 };
             }
         }

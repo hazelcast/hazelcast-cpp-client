@@ -7,6 +7,7 @@
 //
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {

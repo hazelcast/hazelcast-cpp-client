@@ -39,6 +39,7 @@ namespace hazelcast {
         class SerializationConfig;
 
         namespace serialization {
+
             namespace pimpl {
                 class HAZELCAST_API SerializationService {
                 public:
@@ -51,41 +52,9 @@ namespace hazelcast {
                     */
                     bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
-                    void writeObject(DataOutput &out, const Portable *obj);
-
-                    void writeObject(DataOutput &out, const IdentifiedDataSerializable *obj);
-
-                    template<typename T>
-                    void writeObject(DataOutput &out, const void *obj) {
-                        const bool isNull = obj == 0;
-
-                        out.writeBoolean(isNull);
-                        if (isNull) {
-                            return;
-                        }
-
-                        ObjectDataOutput dataOutput(out, portableContext);
-
-                        const T *object = static_cast<const T *>(obj);
-
-                        // write type
-                        int type = object->getTypeId();
-                        dataOutput.writeInt(type);
-
-                        boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
-                        if (serializer.get() != NULL) {
-                            Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                            s->write(dataOutput, *object);
-                        } else {
-                            const std::string &message = "No serializer found for serializerId :"
-                                    + ::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
-                            throw exception::HazelcastSerializationException("SerializationService::writeObject", message);
-                        }
-                    };
-
                     template<typename T>
                     Data toData(const Portable *portable) {
-                        if (0 == portable) {
+                        if (NULL == portable) {
                             return Data();
                         }
 
@@ -106,7 +75,7 @@ namespace hazelcast {
 
                     template<typename T>
                     Data toData(const IdentifiedDataSerializable *dataSerializable) {
-                        if (0 == dataSerializable) {
+                        if (NULL == dataSerializable) {
                             return Data();
                         }
 
@@ -128,7 +97,7 @@ namespace hazelcast {
 
                     template<typename T>
                     Data toData(const void *serializable) {
-                        if (0 == serializable) {
+                        if (NULL == serializable) {
                             return Data();
                         }
 
@@ -156,7 +125,7 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
 
-                        Data data(output.toByteArray());
+                        Data data(dataOutput.toByteArray());
                         return data;
                     };
 
@@ -698,7 +667,9 @@ namespace hazelcast {
 
                     checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
 
-                    return dataInput.readCharArrayAsPtr();
+                    boost::shared_ptr<std::vector<char> > object(new std::vector<char>);
+                    *object = dataInput.readCharArray();
+                    return object;
                 };
 
                 template<>

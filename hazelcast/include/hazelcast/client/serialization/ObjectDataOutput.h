@@ -11,6 +11,8 @@
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/IOUtil.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -22,11 +24,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class DataOutput;
 
                 class Data;
-
-                class SerializationService;
             }
 
             /**
@@ -49,7 +48,7 @@ namespace hazelcast {
                 /**
                 * @return copy of internal byte array
                 */
-                boost::shared_ptr<std::vector<byte> > toByteArray();
+                std::auto_ptr<std::vector<byte> > toByteArray();
 
                 /**
                 * Writes all the bytes in array to stream
@@ -148,7 +147,19 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const Portable *object);
+                void writeObject(const Portable *obj) {
+                    const bool isNull = (NULL == obj);
+
+                    dataOutput->writeBoolean(isNull);
+                    if (isNull) {
+                        return;
+                    }
+
+                    // write type
+                    dataOutput->writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE);
+
+                    serializerHolder->getPortableSerializer().write(*dataOutput, *obj);
+                }
 
                 /**
                 * @param object IdentifiedDataSerializable object to be written
@@ -156,7 +167,21 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const IdentifiedDataSerializable *object);
+                void writeObject(const IdentifiedDataSerializable *obj) {
+                    const bool isNull = (NULL == obj);
+
+                    dataOutput->writeBoolean(isNull);
+                    if (isNull) {
+                        return;
+                    }
+
+                    ObjectDataOutput out(*dataOutput, *context);
+
+                    // write type
+                    out.writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
+
+                    serializerHolder->getDataSerializer().write(out, *obj);
+                }
 
                 /**
                 * @param object custom serializable object to be written
@@ -164,8 +189,32 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const void *object);
+                void writeObject(const void *obj) {
+                    const bool isNull = (NULL == obj);
 
+                    dataOutput->writeBoolean(isNull);
+                    if (isNull) {
+                        return;
+                    }
+
+                    ObjectDataOutput out(*dataOutput, *context);
+
+                    const T *object = static_cast<const T *>(obj);
+
+                    // write type
+                    int type = object->getTypeId();
+                    out.writeInt(type);
+
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
+                    if (serializer.get() != NULL) {
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+                        s->write(out, *object);
+                    } else {
+                        const std::string &message = "No serializer found for serializerId :"
+                                + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                        throw exception::HazelcastSerializationException("SerializationService::writeObject", message);
+                    }
+                }
 
                 /**
                 * @param object IdentifiedDataSerializable object to be written
@@ -178,7 +227,6 @@ namespace hazelcast {
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;
                 pimpl::SerializerHolder *serializerHolder;
-                pimpl::SerializationService *serializationSrv;
                 bool isEmpty;
 
                 size_t position();
@@ -186,8 +234,6 @@ namespace hazelcast {
                 void position(size_t newPos);
 
                 void writePortable(const Portable *portable);
-
-                void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
 
                 ObjectDataOutput(const ObjectDataOutput&);
 
