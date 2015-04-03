@@ -10,7 +10,6 @@
 #define Hazelcast_TestInnerPortable_h
 
 #include "TestNamedPortable.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 
 namespace hazelcast {

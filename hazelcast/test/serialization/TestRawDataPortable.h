@@ -12,7 +12,6 @@
 
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 
 namespace hazelcast {

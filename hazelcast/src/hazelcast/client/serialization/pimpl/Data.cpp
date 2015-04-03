@@ -26,13 +26,13 @@ namespace hazelcast {
                 unsigned int Data::DATA_OFFSET = 5;
 
                 Data::Data()
-                : data(new BufferType){
+                : data(new std::vector<byte>()){
                 }
 
-                Data::Data(BufferType_ptr buffer) : data(buffer) {
+                Data::Data(boost::shared_ptr<std::vector<byte> > buffer) : data(buffer) {
                     if (buffer.get() != 0 && buffer->size() > 0 && buffer->size() < DATA_OFFSET) {
-                        char msg[100 + 1];
-                        snprintf(msg, 100, "Provided buffer should be either empty or "
+                        char msg[100];
+                        sprintf(msg, "Provided buffer should be either empty or "
                                 "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, buffer->size());
                         throw hazelcast::client::exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
@@ -50,17 +50,17 @@ namespace hazelcast {
                 }
 
 
-                unsigned long Data::dataSize() const {
-                    return std::max(totalSize() - DATA_OFFSET, (unsigned long)0);
+                size_t Data::dataSize() const {
+                    return std::max((unsigned int)totalSize() - DATA_OFFSET, (unsigned int)0);
                 }
 
-                unsigned long Data::totalSize() const {
-                    return data.get() != 0 ? (int)data->size() : 0;
+                size_t Data::totalSize() const {
+                    return data.get() != 0 ? data->size() : 0;
                 }
 
                 int Data::getPartitionHash() const {
                     if (hasPartitionHash()) {
-                        return Bits::readIntB(data.get(), data->size() - Bits::INT_SIZE_IN_BYTES);
+                        return Bits::readIntB(*data, data->size() - Bits::INT_SIZE_IN_BYTES);
                     }
                     return hashCode();
                 }
@@ -69,7 +69,7 @@ namespace hazelcast {
                     return totalSize() != 0 && (*data)[PARTITION_HASH_BIT_OFFSET] != 0;
                 }
 
-                Data::BufferType &Data::toByteArray() const {
+                std::vector<byte>  &Data::toByteArray() const {
                     return *data;
                 }
 
@@ -77,11 +77,11 @@ namespace hazelcast {
                     if (totalSize() == 0) {
                         return SerializationConstants::CONSTANT_TYPE_NULL;
                     }
-                    return Bits::readIntB(data.get(), TYPE_OFFSET);
+                    return Bits::readIntB(*data, TYPE_OFFSET);
                 }
 
                 int Data::hashCode() const {
-                    return MurmurHash3_x86_32((void*)&((*data)[0]) , (int)data->size());
+                    return MurmurHash3_x86_32((void*)&((*data)[DATA_OFFSET]) , (int)dataSize());
                 }
 
             }

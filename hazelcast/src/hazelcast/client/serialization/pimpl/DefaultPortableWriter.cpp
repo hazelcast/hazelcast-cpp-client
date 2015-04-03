@@ -11,11 +11,7 @@
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-
-using namespace hazelcast::client::serialization;
-using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +31,7 @@ namespace hazelcast {
 
                     offset = dataOutput.position();
                     // one additional for raw data
-                    int fieldIndexesLength = (cd->getFieldCount() + 1) * Bits::INT_SIZE_IN_BYTES;
+                    int fieldIndexesLength = (cd->getFieldCount() + 1) * util::Bits::INT_SIZE_IN_BYTES;
                     objectDataOutput.writeZeroBytes(fieldIndexesLength);
                 }
 
@@ -61,7 +57,7 @@ namespace hazelcast {
 
                 void DefaultPortableWriter::writeChar(const char *fieldName, int value) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR);
-                    dataOutput.writeChar(value);
+                    dataOutput.writeChar((short)value);
                 }
 
                 void DefaultPortableWriter::writeDouble(const char *fieldName, double value) {
@@ -132,9 +128,9 @@ namespace hazelcast {
                         }
 
                         writtenFields.insert(fieldName);
-                        int pos = dataOutput.position();
+                        size_t pos = dataOutput.position();
                         int index = fd.getIndex();
-                        dataOutput.writeInt(offset + index * Bits::INT_SIZE_IN_BYTES, pos);
+                        dataOutput.writeInt((int)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int)pos);
                         size_t nameLen = strlen(fieldName);
                         dataOutput.writeShort((short)nameLen);
                         dataOutput.writeBytes((byte *)fieldName, nameLen);
@@ -142,12 +138,12 @@ namespace hazelcast {
 
                         return fd;
 
-                    } catch (hazelcast::client::exception::IllegalArgumentException &iae) {
+                    } catch (exception::IllegalArgumentException &iae) {
                         std::stringstream error;
                         error << "HazelcastSerializationException( Invalid field name: '" << fieldName;
-                        error << "' for ClassDefinition {class id: " << hazelcast::util::IOUtil::to_string(cd->getClassId());
-                        error << ", factoryId:" + hazelcast::util::IOUtil::to_string(cd->getFactoryId());
-                        error << ", version: " << hazelcast::util::IOUtil::to_string(cd->getVersion()) << "}";
+                        error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd->getClassId());
+                        error << ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
+                        error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}";
 
                         throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
                     }
@@ -157,16 +153,16 @@ namespace hazelcast {
 
                 ObjectDataOutput& DefaultPortableWriter::getRawDataOutput() {
                     if (!raw) {
-                        int pos = dataOutput.position();
+                        size_t pos = dataOutput.position();
                         int index = cd->getFieldCount(); // last index
-                        dataOutput.writeInt(offset + index * Bits::INT_SIZE_IN_BYTES, pos);
+                        dataOutput.writeInt((int)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int)pos);
                     }
                     raw = true;
                     return objectDataOutput;
                 }
 
                 void DefaultPortableWriter::end() {
-                    dataOutput.writeInt(begin, dataOutput.position()); // write final offset
+                    dataOutput.writeInt((int)begin, (int)dataOutput.position()); // write final offset
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {

@@ -32,6 +32,8 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
+using namespace hazelcast::util;
+
 namespace hazelcast {
     namespace client {
         class SerializationConfig;
@@ -49,8 +51,44 @@ namespace hazelcast {
                     */
                     bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
+                    void writeObject(DataOutput &out, const Portable *obj);
+
+                    void writeObject(DataOutput &out, const IdentifiedDataSerializable *obj);
+
+                    template<typename T>
+                    void writeObject(DataOutput &out, const void *obj) {
+                        const bool isNull = obj == 0;
+
+                        out.writeBoolean(isNull);
+                        if (isNull) {
+                            return;
+                        }
+
+                        ObjectDataOutput dataOutput(out, portableContext);
+
+                        const T *object = static_cast<const T *>(obj);
+
+                        // write type
+                        int type = object->getTypeId();
+                        dataOutput.writeInt(type);
+
+                        boost::shared_ptr<SerializerBase> serializer = serializerFor(type);
+                        if (serializer.get() != NULL) {
+                            Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+                            s->write(dataOutput, *object);
+                        } else {
+                            const std::string &message = "No serializer found for serializerId :"
+                                    + ::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                            throw exception::HazelcastSerializationException("SerializationService::writeObject", message);
+                        }
+                    };
+
                     template<typename T>
                     Data toData(const Portable *portable) {
+                        if (0 == portable) {
+                            return Data();
+                        }
+
                         DataOutput output;
 
                         // write type
@@ -60,8 +98,7 @@ namespace hazelcast {
                         // in terms of c++ client impl.
                         output.writeBoolean(false);
 
-                        const T *object = static_cast<const T *>(portable);
-                        getSerializerHolder().getPortableSerializer().write(output, *object);
+                        getSerializerHolder().getPortableSerializer().write(output, *portable);
 
                         Data data(output.toByteArray());
                         return data;
@@ -69,6 +106,10 @@ namespace hazelcast {
 
                     template<typename T>
                     Data toData(const IdentifiedDataSerializable *dataSerializable) {
+                        if (0 == dataSerializable) {
+                            return Data();
+                        }
+
                         DataOutput output;
 
                         // write type
@@ -78,9 +119,8 @@ namespace hazelcast {
                         // in terms of c++ client impl.
                         output.writeBoolean(false);
 
-                        const T *object = static_cast<const T *>(dataSerializable);
                         ObjectDataOutput dataOutput(output, portableContext);
-                        getSerializerHolder().getDataSerializer().write(dataOutput, *object);
+                        getSerializerHolder().getDataSerializer().write(dataOutput, *dataSerializable);
 
                         Data data(output.toByteArray());
                         return data;
@@ -88,6 +128,10 @@ namespace hazelcast {
 
                     template<typename T>
                     Data toData(const void *serializable) {
+                        if (0 == serializable) {
+                            return Data();
+                        }
+
                         DataOutput output;
 
                         const T *object = static_cast<const T *>(serializable);
@@ -108,7 +152,7 @@ namespace hazelcast {
                             s->write(dataOutput, *object);
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + ::hazelcast::util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                                    + ::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
 
@@ -180,7 +224,7 @@ namespace hazelcast {
                             s->read(objectDataInput, *object);
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + ::hazelcast::util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
+                                    + ::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toObject", message);
                         }
 

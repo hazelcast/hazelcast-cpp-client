@@ -24,11 +24,11 @@ namespace hazelcast {
                     return serializers.get(typeId);
                 }
 
-                PortableSerializer &SerializerHolder::getPortableSerializer() {
+                const PortableSerializer &SerializerHolder::getPortableSerializer() const {
                     return portableSerializer;
                 }
 
-                DataSerializer &SerializerHolder::getDataSerializer() {
+                const DataSerializer &SerializerHolder::getDataSerializer() const {
                     return dataSerializer;
                 }
             }

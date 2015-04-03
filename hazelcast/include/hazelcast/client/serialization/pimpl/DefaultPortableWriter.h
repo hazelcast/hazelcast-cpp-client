@@ -18,14 +18,11 @@
 #include <string>
 #include <set>
 #include <vector>
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
 #endif
-
-using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -112,19 +109,19 @@ namespace hazelcast {
                     void writePortableArray(const char *fieldName, const std::vector<T>& values) {
                         FieldDefinition const& fd = setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
                         size_t len = values.size();
-                        dataOutput.writeInt(len);
+                        dataOutput.writeInt((int)len);
 
                         dataOutput.writeInt(fd.getFactoryId());
                         dataOutput.writeInt(fd.getClassId());
 
                         if (len > 0) {
-                            int offset = dataOutput.position();
-                            dataOutput.position(offset + len * Bits::INT_SIZE_IN_BYTES);
+                            size_t offset = dataOutput.position();
+                            dataOutput.position(offset + len * util::Bits::INT_SIZE_IN_BYTES);
                             for (size_t i = 0; i < len; i++) {
                                 Portable const& portable = values[i];
                                 checkPortableAttributes(fd, portable);
-                                int position = dataOutput.position();
-                                dataOutput.writeInt(offset + i * Bits::INT_SIZE_IN_BYTES, position);
+                                size_t position = dataOutput.position();
+                                dataOutput.writeInt((int)(offset + i * util::Bits::INT_SIZE_IN_BYTES), (int)position);
                                 write(portable);
                             }
                         }
@@ -144,8 +141,8 @@ namespace hazelcast {
                     SerializerHolder& serializerHolder;
                     DataOutput& dataOutput;
                     ObjectDataOutput objectDataOutput;
-                    int begin;
-                    int offset;
+                    size_t begin;
+                    size_t offset;
                     std::set<std::string> writtenFields;
                     boost::shared_ptr<ClassDefinition> cd;
 

@@ -8,11 +8,11 @@
 #include "hazelcast/util/Bits.h"
 
 using namespace hazelcast::client::serialization::pimpl;
-using namespace hazelcast::util;
+using namespace hazelcast::client::serialization;
 
 PortableReaderBase::PortableReaderBase(PortableContext &portableContext,
         DataInput &input,
-        boost::shared_ptr<hazelcast::client::serialization::ClassDefinition> cd)
+        boost::shared_ptr<ClassDefinition> cd)
         : cd(cd)
         , dataInput(input)
         , serializerHolder(portableContext.getSerializerHolder())
@@ -25,13 +25,13 @@ PortableReaderBase::PortableReaderBase(PortableContext &portableContext,
         finalPosition = input.readInt();
         // field count
         fieldCount = input.readInt();
-    } catch (IException &e) {
-        throw HazelcastSerializationException("[DefaultPortableReader::DefaultPortableReader]", e.what());
+    } catch (exception::IException &e) {
+        throw exception::HazelcastSerializationException("[DefaultPortableReader::DefaultPortableReader]", e.what());
     }
     if (fieldCount != cd->getFieldCount()) {
         char msg[50];
-        snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
-        throw new IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
+        sprintf(msg, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
+        throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
     }
     this->offset = input.position();
 }
@@ -85,12 +85,12 @@ std::string PortableReaderBase::readUTF(const char *fieldName) {
     return dataInput.readUTF();
 }
 
-hazelcast::util::ByteVector PortableReaderBase::readByteArray(const char *fieldName) {
+std::vector<hazelcast::byte> PortableReaderBase::readByteArray(const char *fieldName) {
     setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
     return dataInput.readByteArray();
 }
 
-hazelcast::util::CharVector PortableReaderBase::readCharArray(const char *fieldName) {
+std::vector<char> PortableReaderBase::readCharArray(const char *fieldName) {
     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
     return dataInput.readCharArray();
 }
@@ -168,16 +168,16 @@ void PortableReaderBase::setPosition(char const *fieldName, FieldType const& fie
 int PortableReaderBase::readPosition(const char *fieldName,
         FieldType const& fieldType, bool skipTypeCheck) {
     if (raw) {
-        throw HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
+        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
     }
     if (!cd->hasField(fieldName)) {
         // TODO: if no field def found, java client reads nested position:
         // readNestedPosition(fieldName, type);
-        throw HazelcastSerializationException("PortableReader::getPosition ", "Don't have a field named " + std::string(fieldName));
+        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Don't have a field named " + std::string(fieldName));
     }
 
     if (!skipTypeCheck && cd->getFieldType(fieldName) != fieldType) {
-        throw HazelcastSerializationException("PortableReader::getPosition ", "Field type did not matched for " + std::string(fieldName));
+        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Field type did not matched for " + std::string(fieldName));
     }
 
     dataInput.position(offset + cd->getField(fieldName).getIndex() * Bits::INT_SIZE_IN_BYTES);
@@ -210,16 +210,14 @@ void PortableReaderBase::end() {
 
 void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const {
     if (factoryId != fd.getFactoryId()) {
-        const int bufLen = 100;
-        char msg[bufLen];
-        snprintf(msg, bufLen, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
-        throw HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
+        char msg[100];
+        sprintf(msg, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
+        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
     }
     if (classId != fd.getClassId()) {
-        const int bufLen = 100;
-        char msg[bufLen];
-        snprintf(msg, bufLen, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
-        throw HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
+        char msg[100];
+        sprintf(msg, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
+        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
     }
 }
 

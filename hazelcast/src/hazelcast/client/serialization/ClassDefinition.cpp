@@ -30,18 +30,14 @@ namespace hazelcast {
                 fieldDefinitionsMap[fd.getName()] = fd;
             }
 
-            void ClassDefinition::addClassDef(boost::shared_ptr<ClassDefinition> cd) {
-                nestedClassDefinitions.push_back(cd);
-            }
-
             const FieldDefinition& ClassDefinition::getField(const char *name) const {
                 std::map<std::string, FieldDefinition>::const_iterator it;
                 it = fieldDefinitionsMap.find(name);
                 if (it != fieldDefinitionsMap.end()) {
                     return fieldDefinitionsMap.find(name)->second;
                 }
-                char msg[100 + 1];
-                snprintf(msg, 100, "Field (%s) does not exist", 0 != name ? name : "");
+                char msg[200];
+                sprintf(msg, "Field (%s) does not exist", 0 != name ? name : "");
                 throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
             }
 
@@ -53,27 +49,6 @@ namespace hazelcast {
                     result = &fieldDefinitionsMap.find(fieldName)->second;
                 }
                 return result;
-            }
-
-            const FieldDefinition& ClassDefinition::getField(int fieldIndex) const {
-                if (fieldDefinitions.size() <= (size_t)fieldIndex) {
-                    return fieldDefinitions[fieldIndex];
-                }
-                throw exception::IllegalArgumentException("ClassDefinition::getField", "index out of bound");
-            }
-
-            std::vector<std::string> ClassDefinition::getFieldNames() const {
-                std::vector<std::string> names(fieldDefinitions.size());
-                std::map<std::string, FieldDefinition>::const_iterator it;
-                int index = 0;
-                for (it = fieldDefinitionsMap.begin(); it != fieldDefinitionsMap.end(); ++it) {
-                    names[index++] = it->second.getName();
-                }
-                return names;
-            }
-
-            std::vector<boost::shared_ptr<ClassDefinition> >& ClassDefinition::getNestedClassDefinitions() {
-                return nestedClassDefinitions;
             }
 
             bool ClassDefinition::hasField(const char *fieldName) const {
@@ -88,15 +63,10 @@ namespace hazelcast {
             const FieldType *ClassDefinition::getFieldTypeIfExists(const char *fieldName) const {
                 const FieldType *result = 0;
                 const FieldDefinition *fd = getFieldIfExist(fieldName);
-                if (0 != fd) {
-                    result = &fd->getType();
+                if (NULL != fd) {
+                    result = &(fd->getType());
                 }
                 return result;
-            }
-
-            int ClassDefinition::getFieldClassId(const char *fieldName) const {
-                FieldDefinition const& fd = getField(fieldName);
-                return fd.getClassId();
             }
 
             int ClassDefinition::getFieldCount() const {
@@ -122,19 +92,11 @@ namespace hazelcast {
                 }
             }
 
-            const std::vector<byte>& ClassDefinition::getBinary() const {
-                return *(binary.get());
-            }
-
-            void ClassDefinition::setBinary(hazelcast::util::ByteVector_ptr compressedBinary) {
-                this->binary = compressedBinary;
-            }
-
             void ClassDefinition::writeData(pimpl::DataOutput& dataOutput) {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
-                dataOutput.writeShort(fieldDefinitions.size());
+                dataOutput.writeShort((short)fieldDefinitions.size());
                 std::vector<FieldDefinition>::iterator it;
                 for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
                     it->writeData(dataOutput);

@@ -44,9 +44,9 @@ namespace hazelcast {
 
                     PortableSerializer(PortableContext& portableContext);
 
-                    void write(DataOutput& dataOutput, const Portable& p);
+                    void write(DataOutput& dataOutput, const Portable& p) const;
 
-                    void read(DataInput& dataInput, Portable& portable);
+                    void read(DataInput& dataInput, Portable& portable) const;
 
                     void read(DataInput &in, Portable &p, int factoryId, int classId) const;
 
@@ -57,7 +57,7 @@ namespace hazelcast {
 
                     PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const;
 
-                    void writeInternal(DataOutput &out, const Portable &p);
+                    void writeInternal(DataOutput &out, const Portable &p) const;
 
                 };
 

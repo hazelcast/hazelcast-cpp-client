@@ -20,7 +20,7 @@ namespace hazelcast {
                 public:
                     PortableReaderBase(PortableContext &portableContext,
                             DataInput &input,
-                            boost::shared_ptr<hazelcast::client::serialization::ClassDefinition> cd);
+                            boost::shared_ptr<ClassDefinition> cd);
 
                     virtual ~PortableReaderBase();
 
@@ -42,9 +42,9 @@ namespace hazelcast {
 
                     virtual std::string readUTF(const char *fieldName);
 
-                    virtual hazelcast::util::ByteVector readByteArray(const char *fieldName);
+                    virtual std::vector<byte> readByteArray(const char *fieldName);
 
-                    virtual hazelcast::util::CharVector readCharArray(const char *fieldName);
+                    virtual std::vector<char> readCharArray(const char *fieldName);
 
                     virtual std::vector<int> readIntArray(const char *fieldName);
 
@@ -72,7 +72,7 @@ namespace hazelcast {
                     boost::shared_ptr<ClassDefinition> cd;
                     DataInput &dataInput;
                 private:
-                    SerializerHolder &serializerHolder;
+                    const SerializerHolder &serializerHolder;
                     int finalPosition;
                     ObjectDataInput objectDataInput;
                     int offset;

@@ -28,9 +28,6 @@ namespace hazelcast {
 
                 class HAZELCAST_API Data {
                 public:
-                    typedef hazelcast::util::ByteVector BufferType;
-                    typedef hazelcast::util::ByteVector_ptr BufferType_ptr;
-
                     // type and partition_hash are always written with BIG_ENDIAN byte-order
                     static unsigned int TYPE_OFFSET;
                     // will use a byte to store partition_hash bit
@@ -39,26 +36,26 @@ namespace hazelcast {
 
                     Data();
 
-                    Data(BufferType_ptr buffer);
+                    Data(boost::shared_ptr<std::vector<byte> > buffer);
 
                     Data(const Data&);
 
                     Data& operator=(const Data&);
 
-                    unsigned long dataSize() const;
+                    size_t dataSize() const;
 
-                    unsigned long totalSize() const;
+                    size_t totalSize() const;
 
                     int getPartitionHash() const;
 
                     bool hasPartitionHash() const;
 
-                    Data::BufferType &toByteArray() const;
+                    std::vector<byte> &toByteArray() const;
 
                     int getType() const;
 
                 private:
-                    mutable BufferType_ptr data;
+                    mutable boost::shared_ptr<std::vector<byte> > data;
 
                     int hashCode() const;
 

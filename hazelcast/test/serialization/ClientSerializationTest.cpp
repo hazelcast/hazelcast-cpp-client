@@ -33,7 +33,7 @@ namespace hazelcast {
                 serialization::pimpl::Packet packet(contextIn, data);
 
                 std::auto_ptr<char> buf(new char[LARGE_DATA_SIZE_IN_BYTES]);
-                ::hazelcast::util::ByteBuffer buffer(buf.get(), LARGE_DATA_SIZE_IN_BYTES);
+                util::ByteBuffer buffer(buf.get(), LARGE_DATA_SIZE_IN_BYTES);
                 iTest::assertTrue(packet.writeTo(buffer));
                 buffer.flip();
 
@@ -61,9 +61,7 @@ namespace hazelcast {
 
             void ClientSerializationTest::addTests() {
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
-/*
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithLargeData, "testBasicFunctionalityWithLargeData");
-*/
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithDifferentVersions, "testBasicFunctionalityWithDifferentVersions");
                 addTest(&ClientSerializationTest::testCustomSerialization, "testCustomSerialization");
                 addTest(&ClientSerializationTest::testRawData, "testRawData");
@@ -261,7 +259,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
@@ -319,7 +317,7 @@ namespace hazelcast {
                 TestNamedPortable portableArray[5];
 
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
@@ -388,7 +386,7 @@ namespace hazelcast {
                 std::vector<double> dd(doubleArray, doubleArray + 3);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
-                    portableArray[i].name = "named-portable-" + ::hazelcast::util::IOUtil::to_string(i);
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
                     portableArray[i].k = i;
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);

@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,7 +31,7 @@ namespace hazelcast {
 
                     virtual ~DataOutput();
 
-                    hazelcast::util::ByteVector_ptr toByteArray();
+                    boost::shared_ptr<std::vector<byte> > toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 
@@ -38,9 +39,9 @@ namespace hazelcast {
 
                     void writeByte(byte i);
 
-                    void writeShort(int i);
+                    void writeShort(short i);
 
-                    void writeChar(int i);
+                    void writeChar(short i);
 
                     void writeInt(int i);
 
@@ -72,7 +73,7 @@ namespace hazelcast {
 
                     void writeInt(int index, int v);
 
-                    int position();
+                    size_t position();
 
                     void position(size_t newPos);
 
@@ -81,8 +82,6 @@ namespace hazelcast {
 
                 private:
                     std::auto_ptr< std::vector<byte> > outputStream;
-                    char* headerBuffer;
-                    hazelcast::util::ByteBuffer headerByteBuffer;
 
                     void writeShortUTF(const std::string &);
 

@@ -40,17 +40,6 @@ namespace hazelcast {
                      * @return todo: unclear what return value means.
                      */
                     virtual bool writeTo(ByteBuffer &destination) = 0;
-
-                    /**
-                     * Checks if this SocketWritable is urgent.
-                     *
-                     * SocketWritable that are urgent, have priority above regular SocketWritable. This is useful to implement
-                     * System Operations so that they can be send faster than regular operations; especially when the system is
-                     * under load you want these operations have precedence.
-                     *
-                     * @return true if urgent, false otherwise.
-                     */
-                    virtual bool isUrgent() const = 0;
                 };
             }
         }

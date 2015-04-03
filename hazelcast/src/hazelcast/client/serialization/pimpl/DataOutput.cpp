@@ -16,19 +16,16 @@ namespace hazelcast {
                 size_t const DataOutput::DEFAULT_SIZE = 4 * 1024;
 
                 DataOutput::DataOutput()
-                : outputStream(new std::vector<byte>()) 
-                , headerBuffer(new char[256])
-                , headerByteBuffer(headerBuffer, 256){ //MTODO_S Default header size || Dynamic byte buffer
+                : outputStream(new std::vector<byte>()) {
                     outputStream->reserve(DEFAULT_SIZE);
                 }
 
 
                 DataOutput::~DataOutput() {
-                    delete [] headerBuffer;
                 }
 
                 DataOutput::DataOutput(DataOutput const& rhs)
-                : headerByteBuffer(rhs.headerByteBuffer){
+                {
                     //private
                 }
 
@@ -37,8 +34,8 @@ namespace hazelcast {
                     return *this;
                 }
 
-                hazelcast::util::ByteVector_ptr DataOutput::toByteArray() {
-                    hazelcast::util::ByteVector_ptr byteArrayPtr(new hazelcast::util::ByteVector(*outputStream));
+                boost::shared_ptr<std::vector<byte> > DataOutput::toByteArray() {
+                    boost::shared_ptr<std::vector<byte> > byteArrayPtr(new std::vector<byte>(*outputStream));
                     return byteArrayPtr;
                 }
 
@@ -47,7 +44,7 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeBoolean(bool i) {
-                    writeByte(i);
+                    writeByte((byte)i);
                 }
 
                 void DataOutput::writeByte(int index, int i) {
@@ -58,21 +55,21 @@ namespace hazelcast {
                     outputStream->push_back(i);
                 }
 
-                void DataOutput::writeShort(int v) {
-                    writeByte((v >> 8));
-                    writeByte(v);
+                void DataOutput::writeShort(short v) {
+                    writeByte((byte)(v >> 8));
+                    writeByte((byte)v);
                 }
 
-                void DataOutput::writeChar(int i) {
-                    writeByte((i >> 8));
-                    writeByte(i);
+                void DataOutput::writeChar(short i) {
+                    writeByte((byte)(i >> 8));
+                    writeByte((byte)i);
                 }
 
                 void DataOutput::writeInt(int v) {
-                    writeByte((v >> 24));
-                    writeByte((v >> 16));
-                    writeByte((v >> 8));
-                    writeByte(v);
+                    writeByte((byte)(v >> 24));
+                    writeByte((byte)(v >> 16));
+                    writeByte((byte)(v >> 8));
+                    writeByte((byte)v);
                 }
 
                 void DataOutput::writeLong(long long l) {
@@ -111,8 +108,8 @@ namespace hazelcast {
                         return;
 
                     size_t length = str.length();
-                    writeInt(length);
-                    writeInt(length);
+                    writeInt((int)length);
+                    writeInt((int)length);
                     size_t chunkSize = length / STRING_CHUNK_SIZE + 1;
                     for (size_t i = 0; i < chunkSize; i++) {
                         using namespace std;
@@ -136,59 +133,59 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeByteArray(const std::vector<byte>& data) {
-                    writeInt(data.size());
+                    writeInt((int)data.size());
                     outputStream->insert(outputStream->end(), data.begin(), data.end());
                 }
 
                 void DataOutput::writeCharArray(const std::vector<char>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeChar(data[i]);
                     }
                 }
 
                 void DataOutput::writeShortArray(const std::vector<short>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeShort(data[i]);
                     }
                 }
 
                 void DataOutput::writeIntArray(const std::vector<int>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeInt(data[i]);
                     }
                 }
 
                 void DataOutput::writeLongArray(const std::vector<long>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeLong(data[i]);
                     }
                 }
 
                 void DataOutput::writeFloatArray(const std::vector<float>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeFloat(data[i]);
                     }
                 }
 
                 void DataOutput::writeDoubleArray(const std::vector<double>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeDouble(data[i]);
                     }
                 }
 
-                int DataOutput::position() {
+                size_t DataOutput::position() {
                     return outputStream->size();
                 }
 
@@ -219,7 +216,7 @@ namespace hazelcast {
                         util::IOUtil::to_string(utfLength) + " bytes";
                         throw exception::IOException("BufferedDataOutput::writeShortUTF", message);
                     }
-                    std::vector<byte> byteArray(utfLength);
+                    std::vector<byte> byteArray((size_t)utfLength);
                     int i;
                     for (i = 0; i < stringLen; i++) {
 //                        if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -238,7 +235,7 @@ namespace hazelcast {
 //                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
 //                        }
 //                    }
-                    writeShort(utfLength);
+                    writeShort((short)utfLength);
                     write(byteArray);
                 }
 

@@ -14,6 +14,7 @@
 #include "PortableReaderBase.h"
 
 #include <string>
+#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,6 +30,8 @@ namespace hazelcast {
 
             namespace pimpl {
                 class PortableContext;
+
+                class PortableReaderBase;
 
                 class HAZELCAST_API DefaultPortableReader : public PortableReaderBase {
                 public:

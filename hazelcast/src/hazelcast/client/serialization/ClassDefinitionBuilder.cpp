@@ -135,8 +135,8 @@ namespace hazelcast {
                 check();
                 int defIndex = fieldDefinition.getIndex();
                 if (index != defIndex) {
-                    char buf[50];
-                    snprintf(buf, 50, "Invlid field index. Index in definition:%d, being added at index:%d",
+                    char buf[100];
+                    sprintf(buf, "Invalid field index. Index in definition:%d, being added at index:%d",
                             defIndex, index);
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf);
                 }

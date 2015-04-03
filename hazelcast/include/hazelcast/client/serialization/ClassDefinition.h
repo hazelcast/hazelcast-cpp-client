@@ -62,12 +62,6 @@ namespace hazelcast {
                 void addFieldDef(FieldDefinition& fieldDefinition);
 
                 /**
-                * Internal API
-                * @param classDefinition to be added
-                */
-                void addClassDef(boost::shared_ptr<ClassDefinition> classDefinition);
-
-                /**
                 * @param fieldName field name
                 * @return true if this class definition contains a field named by given name
                 */
@@ -87,18 +81,6 @@ namespace hazelcast {
                 const FieldDefinition* getFieldIfExist(const char *fieldName) const;
 
                 /**
-                * @param fieldIndex index of the field
-                * @return field definition by given index
-                * @throws IllegalArgumentException when field not found
-                */
-                const FieldDefinition& getField(int fieldIndex) const;
-
-                /**
-                * @return all field names contained in this class definition
-                */
-                std::vector<std::string> getFieldNames() const;
-
-                /**
                 * @param fieldName name of the field
                 * @return type of given field
                 * @throws IllegalArgumentException
@@ -112,22 +94,9 @@ namespace hazelcast {
                 const FieldType *getFieldTypeIfExists(const char *fieldName) const;
 
                 /**
-                * @param fieldName name of the field
-                * @return class id of given field
-                * @throws IllegalArgumentException
-                */
-                int getFieldClassId(const char *fieldName) const;
-
-                /**
                 * @return total field count
                 */
                 int getFieldCount() const;
-
-                /**
-                * Internal API.
-                * @return nested class definition vector
-                */
-                std::vector<boost::shared_ptr<ClassDefinition> >& getNestedClassDefinitions();
 
                 /**
                 * @return factory id
@@ -143,19 +112,6 @@ namespace hazelcast {
                 * @return version
                 */
                 int getVersion() const;
-
-                /**
-                * Internal API.
-                * Returns byte array of class definition
-                */
-                const std::vector<byte>& getBinary() const;
-
-                /**
-                *  Internal API.
-                *  Set internal byte compressed byte array
-                *  @param binary compressed binary
-                */
-                void setBinary(hazelcast::util::ByteVector_ptr compressedBinary);
 
                 /**
                 * Internal API
@@ -186,9 +142,8 @@ namespace hazelcast {
 
                 std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
-                std::vector<boost::shared_ptr<ClassDefinition> > nestedClassDefinitions;
 
-                hazelcast::util::ByteVector_ptr binary;
+                boost::shared_ptr<std::vector<byte> >  binary;
 
             };
         }

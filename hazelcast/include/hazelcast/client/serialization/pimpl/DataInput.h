@@ -10,7 +10,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "Data.h"
-#include <hazelcast/client/exception/IOException.h>
 #include <vector>
 #include <string>
 
@@ -18,8 +17,6 @@
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
 #endif
-
-using namespace hazelcast::client::exception;
 
 namespace hazelcast {
     namespace util{
@@ -39,6 +36,8 @@ namespace hazelcast {
 
                     void readFully(std::vector<byte> &);
 
+                    int skipBytes(int i);
+
                     bool readBoolean();
 
                     byte readByte();
@@ -57,13 +56,13 @@ namespace hazelcast {
 
                     std::string readUTF();
 
-                    hazelcast::util::ByteVector_ptr readByteArrayAsPtr();
+                    boost::shared_ptr<std::vector<byte> > readByteArrayAsPtr();
 
-                    hazelcast::util::ByteVector readByteArray();
+                    std::vector<byte> readByteArray();
 
-                    hazelcast::util::CharVector_ptr readCharArrayAsPtr();
+                    boost::shared_ptr<std::vector<char> > readCharArrayAsPtr();
 
-                    hazelcast::util::CharVector readCharArray();
+                    std::vector<char> readCharArray();
 
                     std::vector<int> readIntArray();
 
@@ -96,7 +95,7 @@ namespace hazelcast {
 
                     DataInput &operator = (const DataInput &);
 
-                    void checkBoundary(short requestedLength) throw (IOException);
+                    void checkBoundary(size_t requestedLength);
                 };
             }
         }

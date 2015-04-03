@@ -7,9 +7,7 @@
 //
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-
-using namespace hazelcast::client::exception;
+#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
 
 namespace hazelcast {
     namespace client {

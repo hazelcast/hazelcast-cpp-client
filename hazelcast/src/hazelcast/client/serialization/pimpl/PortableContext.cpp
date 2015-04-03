@@ -10,7 +10,6 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
-using namespace hazelcast::client::exception;
 using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
 using namespace std;
@@ -24,9 +23,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(int version)
-                : contextVersion(version)
-                , serializerHolder(*this) {
+                PortableContext::PortableContext(int version, SerializationService &serializationSvc)
+                : contextVersion(version),
+                  serializerHolder(*this),
+                  serializationSrv(serializationSvc) {
                 }
 
 
@@ -143,7 +143,9 @@ namespace hazelcast {
                 }
 
 
-
+                SerializationService &PortableContext::getSerializationService() const {
+                    return serializationSrv;
+                }
             }
         }
     }

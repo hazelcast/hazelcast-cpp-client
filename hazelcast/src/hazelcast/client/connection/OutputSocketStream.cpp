@@ -1,6 +1,5 @@
 #include <hazelcast/client/serialization/pimpl/Packet.h>
 #include "hazelcast/client/connection/OutputSocketStream.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {

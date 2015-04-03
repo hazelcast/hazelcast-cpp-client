@@ -15,7 +15,6 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -25,6 +24,8 @@
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
 #endif
+
+using namespace hazelcast::util;
 
 namespace hazelcast {
     namespace client {
@@ -66,6 +67,12 @@ namespace hazelcast {
                 * @param byteArray to fill the data in
                 */
                 void readFully(std::vector<byte>& byteArray);
+
+                /**
+                *
+                * @param i number of bytes to skip
+                */
+                int skipBytes(int i);
 
                 /**
                 * @return the boolean read
@@ -125,13 +132,13 @@ namespace hazelcast {
                 * @return the byte array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                hazelcast::util::ByteVector_ptr readByteArray();
+                std::vector<byte> readByteArray();
 
                 /**
                 * @return the char array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                hazelcast::util::CharVector_ptr readCharArray();
+                std::vector<char> readCharArray();
 
                 /**
                 * @return the int array read
@@ -236,12 +243,12 @@ namespace hazelcast {
                     const int typeId = readInt();
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getSerializerId());
                     if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->read(*this, *object);
                         return object;
                     } else {
                         const std::string& message = "No serializer found for serializerId :"
-                        + hazelcast::util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
+                        + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
                     }
 

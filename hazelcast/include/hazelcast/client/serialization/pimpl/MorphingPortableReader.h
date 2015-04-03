@@ -12,7 +12,7 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "PortableReaderBase.h"
+#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
 #include <string>
 #include <memory>
 
@@ -30,7 +30,6 @@ namespace hazelcast {
             namespace pimpl {
 
                 class SerializerHolder;
-
 
                 class HAZELCAST_API MorphingPortableReader : public PortableReaderBase {
                 public:
@@ -55,9 +54,9 @@ namespace hazelcast {
 
                     std::string readUTF(const char *fieldName);
 
-                    hazelcast::util::ByteVector readByteArray(const char *fieldName);
+                    std::vector<byte> readByteArray(const char *fieldName);
 
-                    hazelcast::util::CharVector readCharArray(const char *fieldName);
+                    std::vector<char> readCharArray(const char *fieldName);
 
                     std::vector<int> readIntArray(const char *fieldName);
 

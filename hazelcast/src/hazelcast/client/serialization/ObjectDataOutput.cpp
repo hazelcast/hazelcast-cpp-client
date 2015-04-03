@@ -7,6 +7,7 @@
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -15,7 +16,8 @@ namespace hazelcast {
                     pimpl::PortableContext& portableContext)
             : dataOutput(&dataOutput)
             , context(&portableContext)
-            , serializerHolder(&portableContext.getSerializerHolder())
+            , serializerHolder(&portableContext.getSerializerHolder()),
+              serializationSrv(&portableContext.getSerializationService())
             , isEmpty(false) {
 
             }
@@ -28,9 +30,9 @@ namespace hazelcast {
 
             }
 
-            hazelcast::util::ByteVector_ptr ObjectDataOutput::toByteArray() {
+            boost::shared_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
                 if (isEmpty)
-                    return hazelcast::util::ByteVector_ptr();
+                    return boost::shared_ptr<std::vector<byte> >((std::vector<byte> *)0);
                 return dataOutput->toByteArray();
             }
 
@@ -46,17 +48,17 @@ namespace hazelcast {
 
             void ObjectDataOutput::writeByte(int i) {
                 if (isEmpty) return;
-                dataOutput->writeByte(i);
+                dataOutput->writeByte((byte) i);
             }
 
             void ObjectDataOutput::writeShort(int v) {
                 if (isEmpty) return;
-                dataOutput->writeShort(v);
+                dataOutput->writeShort((short) v);
             }
 
             void ObjectDataOutput::writeChar(int i) {
                 if (isEmpty) return;
-                dataOutput->writeChar(i);
+                dataOutput->writeChar((short) i);
             }
 
             void ObjectDataOutput::writeInt(int v) {
@@ -143,12 +145,11 @@ namespace hazelcast {
                 serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             }
 
-
-            int ObjectDataOutput::position() {
+            size_t ObjectDataOutput::position() {
                 return dataOutput->position();
             }
 
-            void ObjectDataOutput::position(int newPos) {
+            void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
             }
 
@@ -156,6 +157,21 @@ namespace hazelcast {
                 for (int k = 0; k < numberOfBytes; k++) {
                     writeByte(0);
                 }
+            }
+
+            template<typename T>
+            void ObjectDataOutput::writeObject(const Portable *object) {
+                serializationSrv->writeObject(*dataOutput, object);
+            }
+
+            template<typename T>
+            void ObjectDataOutput::writeObject(const IdentifiedDataSerializable *object) {
+                serializationSrv->writeObject(*dataOutput, object);
+            }
+
+            template<typename T>
+            void ObjectDataOutput::writeObject(const void *object) {
+                serializationSrv->writeObject<T>(*dataOutput, object);
             }
         }
     }

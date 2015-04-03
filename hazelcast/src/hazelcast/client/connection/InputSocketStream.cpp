@@ -70,7 +70,7 @@ namespace hazelcast {
             void InputSocketStream::readValue(serialization::pimpl::Data &data) {
                 size_t size = (size_t)readInt();
                 if (size > 0) {
-                    serialization::pimpl::Data::BufferType &buffer =  data.toByteArray();
+                    std::vector<byte> &buffer =  data.toByteArray();
                     buffer.resize(size);
                     readFully(buffer);
                 }

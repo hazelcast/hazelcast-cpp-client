@@ -27,6 +27,10 @@ namespace hazelcast {
                 dataInput.readFully(bytes);
             }
 
+            int ObjectDataInput::skipBytes(int i) {
+                return dataInput.skipBytes(i);
+            }
+
             bool ObjectDataInput::readBoolean() {
                 return dataInput.readBoolean();
             }
@@ -69,7 +73,7 @@ namespace hazelcast {
                     pimpl::Data data;
                     return data;
                 } else {
-                    pimpl::Data result(readByteArray());
+                    pimpl::Data result(dataInput.readByteArrayAsPtr());
                     return result;
                 };
             }
@@ -83,12 +87,12 @@ namespace hazelcast {
                 dataInput.position(newPos);
             }
 
-            hazelcast::util::ByteVector_ptr ObjectDataInput::readByteArray() {
-                return dataInput.readByteArrayAsPtr();
+            std::vector<byte> ObjectDataInput::readByteArray() {
+                return dataInput.readByteArray();
             }
 
-            hazelcast::util::CharVector_ptr ObjectDataInput::readCharArray() {
-                return dataInput.readCharArrayAsPtr();
+            std::vector<char> ObjectDataInput::readCharArray() {
+                return dataInput.readCharArray();
             }
 
             std::vector<int> ObjectDataInput::readIntArray() {

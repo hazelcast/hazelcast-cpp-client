@@ -11,10 +11,6 @@
 #define HAZELCAST_PORTABLE_CONTEXT
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/ByteBuffer.h"
-#include <vector>
-#include <map>
-
 
 namespace hazelcast {
     namespace client {
@@ -35,22 +31,12 @@ namespace hazelcast {
 
                     void setClassVersion(int classId, int version);
 
-                    bool isClassDefinitionExists(int, int) const;
-
                     boost::shared_ptr<ClassDefinition> lookup(int, int);
-
-                    boost::shared_ptr<ClassDefinition> createClassDefinition(hazelcast::util::ByteVector_ptr compressedBinary);
 
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                 private:
-                    void compress(std::vector<byte>&);
-
                     long long combineToLong(int x, int y) const;
-
-                    std::vector<byte> decompress(std::vector<byte> const&) const;
-
-                    void setClassDefBinary(boost::shared_ptr<ClassDefinition> shared_ptr);
 
                     util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
                     util::SynchronizedMap<int, int> currentClassVersions;

@@ -87,9 +87,8 @@ namespace hazelcast {
 
                 void heartBeatingSucceed();
 
-                ::hazelcast::util::AtomicInt lastRead;
-                ::hazelcast::util::AtomicInt lastWrite;
-                ::hazelcast::util::AtomicBoolean live;
+                util::AtomicInt lastRead;
+                util::AtomicBoolean live;
             private:
                 spi::ClientContext& clientContext;
                 spi::InvocationService& invocationService;
@@ -97,9 +96,9 @@ namespace hazelcast {
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;
-                ::hazelcast::util::AtomicBoolean heartBeating;
+                util::AtomicBoolean heartBeating;
                 char* receiveBuffer;
-                ::hazelcast::util::ByteBuffer receiveByteBuffer;
+                util::ByteBuffer receiveByteBuffer;
             };
 
         }

@@ -22,13 +22,13 @@ namespace hazelcast {
 
                 }
 
-                void PortableSerializer::write(DataOutput& out, const Portable& p) {
+                void PortableSerializer::write(DataOutput& out, const Portable& p) const {
                     out.writeInt(p.getFactoryId());
                     out.writeInt(p.getClassId());
                     writeInternal(out, p);
                 }
 
-                void PortableSerializer::writeInternal(DataOutput &out, const Portable &p) {
+                void PortableSerializer::writeInternal(DataOutput &out, const Portable &p) const {
                     boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
                     out.writeInt(cd->getVersion());
 
@@ -38,7 +38,7 @@ namespace hazelcast {
                     portableWriter.end();
                 }
 
-                void PortableSerializer::read(DataInput& in, Portable& portable) {
+                void PortableSerializer::read(DataInput& in, Portable& portable) const {
                     int factoryId = in.readInt();
                     int classId = in.readInt();
                     return read(in, portable, factoryId, classId);

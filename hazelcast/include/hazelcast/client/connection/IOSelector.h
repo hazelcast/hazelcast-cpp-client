@@ -57,7 +57,7 @@ namespace hazelcast {
             protected:
 
                 struct timeval t;
-                hazelcast::util::SocketSet socketSet;
+                util::SocketSet socketSet;
                 int wakeUpListenerSocketId;
                 ConnectionManager &connectionManager;
             private:

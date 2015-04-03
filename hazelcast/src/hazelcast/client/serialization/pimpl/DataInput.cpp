@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
+#include <hazelcast/client/exception/IOException.h>
 
 namespace hazelcast {
     namespace client {
@@ -29,6 +30,11 @@ namespace hazelcast {
                     pos += bytes.size();
                 }
 
+                int DataInput::skipBytes(int i) {
+                    pos += i;
+                    return i;
+                }
+
                 bool DataInput::readBoolean() {
                     return readByte() != 0;
                 }
@@ -40,8 +46,8 @@ namespace hazelcast {
                 short DataInput::readShort() {
                     byte a = readByte();
                     byte b = readByte();
-                    return (0xff00 & (a << 8)) |
-                            (0x00ff & b);
+                    return (short)((0xff00 & (a << 8)) |
+                            (0x00ff & b));
                 }
 
                 char DataInput::readChar() {
@@ -127,8 +133,8 @@ namespace hazelcast {
 
                 std::string DataInput::readShortUTF() {
                     short utflen = readShort();
-                    std::vector<byte> bytearr(utflen);
-                    std::vector<char> chararr(utflen + 1);
+                    std::vector<byte> bytearr((size_t)utflen);
+                    std::vector<char> chararr((size_t)utflen + 1);
                     int c, char2, char3;
                     int count = 0;
                     int chararr_count = 0;
@@ -184,41 +190,41 @@ namespace hazelcast {
                     return std::string(&chararr[0]);
                 }
 
-                hazelcast::util::ByteVector_ptr DataInput::readByteArrayAsPtr() {
+                boost::shared_ptr<std::vector<byte> > DataInput::readByteArrayAsPtr() {
                     int len = readInt();
-                    checkBoundary(len);
-                    util::ByteVector_ptr values(
-                            new util::ByteVector(buffer.begin() + pos, buffer.begin() + pos + len));
+                    checkBoundary((size_t)len);
+                    boost::shared_ptr<std::vector<byte> >  values(
+                            new std::vector<byte>(buffer.begin() + pos, buffer.begin() + pos + len));
                     pos += len;
                     return values;
                 }
 
-                hazelcast::util::ByteVector DataInput::readByteArray() {
+                std::vector<byte> DataInput::readByteArray() {
                     int len = readInt();
-                    checkBoundary(len);
-                    util::ByteVector result(buffer.begin() + pos, buffer.begin() + pos + len);
+                    checkBoundary((size_t)len);
+                    std::vector<byte> result(buffer.begin() + pos, buffer.begin() + pos + len);
                     pos += len;
                     return result;
                 }
 
                 void DataInput::readByteArray(char destinationBuffer[], short length) {
-                    checkBoundary(length);
-                    memcpy(destinationBuffer, &buffer[0] + pos, length);
+                    checkBoundary((size_t)length);
+                    memcpy(destinationBuffer, &buffer[0] + pos, (size_t)length);
                     pos += length;
                 }
 
-                hazelcast::util::CharVector_ptr DataInput::readCharArrayAsPtr() {
+                boost::shared_ptr<std::vector<char> > DataInput::readCharArrayAsPtr() {
                     int len = readInt();
-                    util::CharVector_ptr values(new util::CharVector(len));
+                    boost::shared_ptr<std::vector<char> > values(new std::vector<char>(len));
                     for (int i = 0; i < len; i++) {
                         (*values)[i] = readChar();
                     }
                     return values;
                 }
 
-                hazelcast::util::CharVector DataInput::readCharArray() {
+                std::vector<char> DataInput::readCharArray() {
                     int len = readInt();
-                    util::CharVector values(len);
+                    std::vector<char> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = readChar();
                     }
@@ -227,7 +233,7 @@ namespace hazelcast {
 
                 std::vector<int> DataInput::readIntArray() {
                     int len = readInt();
-                    std::vector<int> values(len);
+                    std::vector<int> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = readInt();
                     }
@@ -236,7 +242,7 @@ namespace hazelcast {
 
                 std::vector<long> DataInput::readLongArray() {
                     int len = readInt();
-                    std::vector<long> values(len);
+                    std::vector<long> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = (long)readLong();
                     }
@@ -245,7 +251,7 @@ namespace hazelcast {
 
                 std::vector<double> DataInput::readDoubleArray() {
                     int len = readInt();
-                    std::vector<double> values(len);
+                    std::vector<double> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = readDouble();
                     }
@@ -254,7 +260,7 @@ namespace hazelcast {
 
                 std::vector<float> DataInput::readFloatArray() {
                     int len = readInt();
-                    std::vector<float> values(len);
+                    std::vector<float> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = readFloat();
                     }
@@ -263,7 +269,7 @@ namespace hazelcast {
 
                 std::vector<short> DataInput::readShortArray() {
                     int len = readInt();
-                    std::vector<short> values(len);
+                    std::vector<short> values((size_t)len);
                     for (int i = 0; i < len; i++) {
                         values[i] = readShort();
                     }
@@ -275,13 +281,13 @@ namespace hazelcast {
                     return readInt();
                 }
 
-                void DataInput::checkBoundary(short requestedLength) throw (IOException) {
-                    int available = buffer.size() - pos;
+                void DataInput::checkBoundary(size_t requestedLength) {
+                    size_t available = buffer.size() - pos;
 
                     if (requestedLength > available) {
                         char msg[100];
-                        snprintf(msg, 100, "Not enough bytes in internal buffer. Available:%d bytes but needed %d bytes", available, requestedLength);
-                        throw IOException("DataInput::checkBoundary", msg);
+                        sprintf(msg, "Not enough bytes in internal buffer. Available:%ld bytes but needed %ld bytes", available, requestedLength);
+                        throw exception::IOException("DataInput::checkBoundary", msg);
                     }
                 }
             }

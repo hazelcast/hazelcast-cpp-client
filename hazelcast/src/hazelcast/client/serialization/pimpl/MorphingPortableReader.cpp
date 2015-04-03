@@ -150,18 +150,18 @@ namespace hazelcast {
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
-                hazelcast::util::ByteVector MorphingPortableReader::readByteArray(char const *fieldName) {
+                std::vector<byte> MorphingPortableReader::readByteArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
                     if (0 == currentFieldType){
-                        return hazelcast::util::ByteVector(1, 0);
+                        return std::vector<byte>(1, 0);
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
-                hazelcast::util::CharVector MorphingPortableReader::readCharArray(char const *fieldName) {
+                std::vector<char> MorphingPortableReader::readCharArray(char const *fieldName) {
                     const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
                     if (0 == currentFieldType){
-                        return hazelcast::util::CharVector(1, 0);
+                        return std::vector<char>(1, 0);
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }

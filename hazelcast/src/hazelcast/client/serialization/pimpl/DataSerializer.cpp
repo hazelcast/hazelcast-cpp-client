@@ -16,14 +16,14 @@ namespace hazelcast {
 
                 }
 
-                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) {
+                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const {
                     out.writeBoolean(true);
                     out.writeInt(object.getFactoryId());
                     out.writeInt(object.getClassId());
                     object.writeData(out);
                 }
 
-                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) {
+                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) const {
                     bool identified = in.readBoolean();
                     if (!identified) {
                         throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");

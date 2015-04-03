@@ -12,7 +12,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ByteBuffer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,6 +25,8 @@ namespace hazelcast {
                 class DataOutput;
 
                 class Data;
+
+                class SerializationService;
             }
 
             /**
@@ -48,7 +49,7 @@ namespace hazelcast {
                 /**
                 * @return copy of internal byte array
                 */
-                hazelcast::util::ByteVector_ptr toByteArray();
+                boost::shared_ptr<std::vector<byte> > toByteArray();
 
                 /**
                 * Writes all the bytes in array to stream
@@ -147,14 +148,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const Portable *object) {
-                    if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
-                        return;
-                    }
-                    writePortable(object);
-                };
+                void writeObject(const Portable *object);
 
                 /**
                 * @param object IdentifiedDataSerializable object to be written
@@ -162,14 +156,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const IdentifiedDataSerializable *object) {
-                    if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
-                        return;
-                    }
-                    writeIdentifiedDataSerializable(object);
-                };
+                void writeObject(const IdentifiedDataSerializable *object);
 
                 /**
                 * @param object custom serializable object to be written
@@ -177,39 +164,26 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writeObject(const void *object) {
-                    if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
-                        return;
-                    }
-                    const T *serializable = static_cast<const T *>(object);
-                    int type = serializable->getSerializerId();
-                    writeBoolean(false);
-                    writeInt(type);
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
-                    if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                        s->write(*this, *serializable);
-                    } else {
-                        const std::string& message = "No serializer found for serializerId :"
-                        + hazelcast::util::IOUtil::to_string(type)
-                        + ", typename :" + typeid(T).name();
-                        throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
-                    }
-                };
+                void writeObject(const void *object);
 
+
+                /**
+                * @param object IdentifiedDataSerializable object to be written
+                * @see IdentifiedDataSerializable
+                * @throws IOException
+                */
                 void writeZeroBytes(int numberOfBytes);
 
             private:
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;
                 pimpl::SerializerHolder *serializerHolder;
+                pimpl::SerializationService *serializationSrv;
                 bool isEmpty;
 
-                int position();
+                size_t position();
 
-                void position(int newPos);
+                void position(size_t newPos);
 
                 void writePortable(const Portable *portable);
 

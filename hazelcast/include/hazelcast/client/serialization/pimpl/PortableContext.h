@@ -33,11 +33,13 @@ namespace hazelcast {
 
                 class ClassDefinitionContext;
 
+                class SerializationService;
+
                 class HAZELCAST_API PortableContext {
                 friend class PortableSerializer;
                 public:
 
-                    PortableContext(int);
+                    PortableContext(int version, SerializationService &serializationSvc);
 
                     int getVersion();
 
@@ -53,12 +55,16 @@ namespace hazelcast {
 
                     SerializerHolder &getSerializerHolder();
 
+                    SerializationService &getSerializationService() const;
+
                 private:
                     ClassDefinitionContext &getClassDefinitionContext(int factoryId);
 
                     int contextVersion;
-                    hazelcast::util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
+                    util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     SerializerHolder serializerHolder;
+
+                    SerializationService &serializationSrv;
 
                     boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
                 };

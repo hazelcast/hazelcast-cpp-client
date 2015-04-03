@@ -39,7 +39,7 @@ namespace hazelcast {
             */
             static const int DOUBLE_SIZE_IN_BYTES = 8;
 
-            static int readIntB(std::vector<byte> *buffer, unsigned long pos);
+            static int readIntB(std::vector<byte> &buffer, unsigned long pos);
 
         private :
             /**

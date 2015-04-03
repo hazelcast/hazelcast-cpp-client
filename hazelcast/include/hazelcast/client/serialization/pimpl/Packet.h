@@ -44,7 +44,6 @@ namespace hazelcast {
                     static byte const VERSION;
 
                     static int const HEADER_EVENT;
-                    static int const HEADER_URGENT;
 
                     Packet(PortableContext& ctx);
 
@@ -78,7 +77,6 @@ namespace hazelcast {
 
                     // SocketWritable interface
                     bool writeTo(ByteBuffer &destination);
-                    bool isUrgent() const;
 
                     // SocketReadable interface
                     bool readFrom(ByteBuffer &source);
@@ -98,8 +96,8 @@ namespace hazelcast {
 
                     int persistStatus;
 
-                    int persistedSize;
-                    int valueOffset;
+                    size_t persistedSize;
+                    size_t valueOffset;
 
                     // The value of these constants is important. The order needs to
                     // match the order in the read/write process
@@ -110,9 +108,6 @@ namespace hazelcast {
                     static short const PERSIST_VALUE;
 
                     static short const PERSIST_COMPLETED;
-
-    			    static const size_t SHORT_SIZE_IN_BYTES;
-    			    static const size_t INT_SIZE_IN_BYTES;
 
                     bool readVersion(ByteBuffer& destination);
                     bool writeVersion(ByteBuffer& destination);
