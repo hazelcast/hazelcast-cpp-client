@@ -57,12 +57,12 @@ namespace hazelcast {
                         in.position(pos);
 
                         short len = in.readShort();
-                        char chars[len + 1];
-                        in.readByteArray(chars, len);
+                        vector<char> chars(len + 1);
+                        in.readCharArray(&(chars[0]), len);
                         chars[len] = '\0';
 
                             FieldType type(in.readByte());
-                            std::string name(chars);
+                            std::string name(&(chars[0]));
                             int fieldFactoryId = 0;
                             int fieldClassId = 0;
                             if (type == FieldTypes::TYPE_PORTABLE) {

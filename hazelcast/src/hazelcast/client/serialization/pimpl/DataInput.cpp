@@ -208,7 +208,7 @@ namespace hazelcast {
                     return result;
                 }
 
-                void DataInput::readByteArray(char destinationBuffer[], short length) {
+                void DataInput::readCharArray(char destinationBuffer[], short length) {
                     checkBoundary((size_t)length);
                     memcpy(destinationBuffer, &buffer[0] + pos, (size_t)length);
                     pos += length;

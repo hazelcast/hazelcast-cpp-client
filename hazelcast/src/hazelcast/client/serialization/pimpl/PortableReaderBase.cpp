@@ -138,7 +138,7 @@ void PortableReaderBase::getPortableInstance(char const *fieldName,
 }
 
 void PortableReaderBase::getPortableInstancesArray(char const *fieldName,
-        Portable *portableInstances[]) {
+        std::vector<Portable *> &portableInstances) {
     setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
     int len = dataInput.readInt();
@@ -154,7 +154,7 @@ void PortableReaderBase::getPortableInstancesArray(char const *fieldName,
             int start = dataInput.readInt();
             dataInput.position(start);
 
-            read(dataInput, *portableInstances[i], factoryId, classId);
+            read(dataInput, *(portableInstances[i]), factoryId, classId);
         }
     }
 }

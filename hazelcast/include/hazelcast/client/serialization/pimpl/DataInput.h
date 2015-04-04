@@ -78,7 +78,7 @@ namespace hazelcast {
 
                     int readInt(int newPositionToReadFrom);
 
-                    void readByteArray(char buffer[], short length);
+                    void readCharArray(char buffer[], short length);
 
                 private:
                     const std::vector<byte> &buffer;

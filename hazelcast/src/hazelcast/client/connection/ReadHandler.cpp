@@ -5,6 +5,7 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/pimpl/Packet.h"

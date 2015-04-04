@@ -5,6 +5,7 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/Socket.h"
 #include <cassert>
+#include <algorithm>
 
 namespace hazelcast {
     namespace util {
@@ -96,7 +97,7 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::writeTo(std::vector<byte>& destination, size_t offset, size_t len) {
-            size_t m = std::min(len, remaining());
+            size_t m = std::min<size_t>(len, remaining());
             if (destination.size() < offset + m) {
                 // resize the destination vector to the size of the memory needed
                 destination.resize(offset + m);
@@ -108,9 +109,9 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::readFrom(std::vector<byte> const& source, size_t offset, size_t len) {
-            size_t minLen = std::min(source.size() - offset, len);
-            size_t m = std::min(minLen, remaining());
-            std::memcpy(ix(), (void *)(&source[offset]), m);
+            size_t minLen = std::min<size_t>(source.size() - offset, len);
+            size_t m = std::min<size_t>(minLen, remaining());
+            memcpy(ix(), (void *)(&source[offset]), m);
             safeIncrementPosition(m);
             return m;
         }

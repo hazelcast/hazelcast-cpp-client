@@ -9,8 +9,11 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include <hazelcast/util/Bits.h>
+#include "hazelcast/util/Bits.h"
+
 #include <stdio.h>
+#include <algorithm>
+
 
 using namespace hazelcast::util;
 
@@ -51,7 +54,7 @@ namespace hazelcast {
 
 
                 size_t Data::dataSize() const {
-                    return std::max((unsigned int)totalSize() - DATA_OFFSET, (unsigned int)0);
+                    return std::max<size_t>(totalSize() - DATA_OFFSET, (size_t)0);
                 }
 
                 size_t Data::totalSize() const {

@@ -85,7 +85,7 @@ namespace hazelcast {
                         int len = dataInput.readInt();
                         std::vector<T> portables(len);
 
-                        Portable *baseArray[len];
+                        std::vector<Portable *> baseArray(len);
                         int i = 0;
                         for (typename std::vector<T>::iterator it = portables.begin();
                              portables.end() != it; ++it) {

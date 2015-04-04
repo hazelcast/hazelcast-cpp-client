@@ -8,6 +8,11 @@
 
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -17,7 +22,7 @@ namespace hazelcast {
 
                 class DataInput;
 
-                class PortableReaderBase {
+				class HAZELCAST_API PortableReaderBase {
 
                 public:
                     PortableReaderBase(PortableContext &portableContext,
@@ -67,7 +72,7 @@ namespace hazelcast {
                             Portable * &portableInstance);
 
                     void getPortableInstancesArray(char const *fieldName,
-                            Portable *portableInstances[]);
+                            std::vector<Portable *> &portableInstances);
 
                     void setPosition(char const * , FieldType const& fieldType, bool skipTypeCheck = false);
 
@@ -92,5 +97,8 @@ namespace hazelcast {
     }
 }
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_PortableReaderBase_H_
