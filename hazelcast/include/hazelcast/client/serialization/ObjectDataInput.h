@@ -26,8 +26,6 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
-using namespace hazelcast::util;
-
 namespace hazelcast {
     namespace client {
         class Portable;

@@ -150,7 +150,7 @@ void PortableReaderBase::getPortableInstancesArray(char const *fieldName,
     if (len > 0) {
         int offset = dataInput.position();
         for (int i = 0; i < len; i++) {
-            dataInput.position(offset + i * Bits::INT_SIZE_IN_BYTES);
+            dataInput.position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
             int start = dataInput.readInt();
             dataInput.position(start);
 
@@ -180,19 +180,19 @@ int PortableReaderBase::readPosition(const char *fieldName,
         throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Field type did not matched for " + std::string(fieldName));
     }
 
-    dataInput.position(offset + cd->getField(fieldName).getIndex() * Bits::INT_SIZE_IN_BYTES);
+    dataInput.position(offset + cd->getField(fieldName).getIndex() * util::Bits::INT_SIZE_IN_BYTES);
     int pos = dataInput.readInt();
 
     dataInput.position(pos);
     short len = dataInput.readShort();
 
     // name + len + type
-    return pos + Bits::SHORT_SIZE_IN_BYTES + len + 1;
+    return pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1;
 }
 
 hazelcast::client::serialization::ObjectDataInput&PortableReaderBase::getRawDataInput() {
     if (!raw) {
-        dataInput.position(offset + cd->getFieldCount() * Bits::INT_SIZE_IN_BYTES);
+        dataInput.position(offset + cd->getFieldCount() * util::Bits::INT_SIZE_IN_BYTES);
         int pos = dataInput.readInt();
         dataInput.position(pos);
     }

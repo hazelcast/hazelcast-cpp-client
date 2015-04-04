@@ -32,8 +32,6 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
-using namespace hazelcast::util;
-
 namespace hazelcast {
     namespace client {
         class SerializationConfig;
@@ -121,7 +119,7 @@ namespace hazelcast {
                             s->write(dataOutput, *object);
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + ::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
+                                    + util::IOUtil::to_string(type) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toData", message);
                         }
 
@@ -193,7 +191,7 @@ namespace hazelcast {
                             s->read(objectDataInput, *object);
                         } else {
                             const std::string &message = "No serializer found for serializerId :"
-                                    + ::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
+                                    + util::IOUtil::to_string(object->getTypeId()) + ", typename :" + typeid(T).name();
                             throw exception::HazelcastSerializationException("SerializationService::toObject", message);
                         }
 
