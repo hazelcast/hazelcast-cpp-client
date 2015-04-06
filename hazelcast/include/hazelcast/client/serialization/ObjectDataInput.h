@@ -14,11 +14,11 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/util/IOUtil.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
-#include <hazelcast/client/exception/HazelcastSerializationException.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -209,14 +209,9 @@ namespace hazelcast {
                     object.reset(new T);
 
                     readInt();
-
-                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
-                    classDefinition->readData(dataInput);
-                    int factoryId = classDefinition->getFactoryId();
-                    int classId = classDefinition->getClassId();
-                    int version = classDefinition->getVersion();
-                    portableContext.registerClassDefinition(classDefinition);
-                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId, version);
+                    int factoryId = readInt();
+                    int classId = readInt();
+                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
                     return object;
                 };
 
@@ -242,9 +237,9 @@ namespace hazelcast {
                     }
                     object.reset(new T);
                     const int typeId = readInt();
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getSerializerId());
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getTypeId());
                     if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->read(*this, *object);
                         return object;
                     } else {
@@ -263,7 +258,6 @@ namespace hazelcast {
 
                 void operator=(const ObjectDataInput&);
 
-                std::auto_ptr<std::vector<byte> > readPortableHeader();
             };
         }
     }

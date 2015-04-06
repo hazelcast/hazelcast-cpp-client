@@ -12,6 +12,8 @@
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
+
 #include <string>
 #include <memory>
 
@@ -30,8 +32,7 @@ namespace hazelcast {
 
                 class SerializerHolder;
 
-
-                class HAZELCAST_API MorphingPortableReader {
+                class HAZELCAST_API MorphingPortableReader : public PortableReaderBase {
                 public:
 
                     MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
@@ -70,56 +71,31 @@ namespace hazelcast {
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
-                        boost::shared_ptr<T> portable;
-                        if (setPosition(fieldName))
-                            return portable;
-                        bool isNull = dataInput.readBoolean();
-                        if (isNull) {
-                            return portable;
-                        }
-                        portable.reset(new T);
-                        read(dataInput, *portable);
-                        return portable;
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
+                        boost::shared_ptr<T> portableInstance(new T);
+
+                        Portable * p = portableInstance.get();
+                        getPortableInstance(fieldName, p);
+                        return portableInstance;
                     };
 
                     template<typename T>
-                    std::vector< T > readPortableArray(const char *fieldName) {
-                        std::vector< T > portables;
-                        if (setPosition(fieldName))
-                            return portables;
+                    std::vector<T> readPortableArray(const char *fieldName) {
+                        PortableReaderBase::setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
+
                         int len = dataInput.readInt();
-                        portables.resize(len, T());
-                        if (len > 0) {
-                            int offset = dataInput.position();
-                            for (int i = 0; i < len; i++) {
-                                dataInput.position(offset + i * sizeof (int));
-                                int start = dataInput.readInt();
-                                dataInput.position(start);
-                                serializerHolder.getPortableSerializer().read(dataInput, portables[i]);
-                            }
+                        std::vector<T> portables(len);
+
+                        std::vector<Portable *> baseArray(len);
+                        int i = 0;
+                        for (typename std::vector<T>::iterator it = portables.begin();
+                             portables.end() != it; ++it) {
+                            baseArray[i++] = (Portable *)(&(*it));
                         }
+
+                        getPortableInstancesArray(fieldName, baseArray);
                         return portables;
                     };
-
-                    void end();
-
-                    ObjectDataInput &getRawDataInput();
-
-                private:
-                    void read(DataInput &dataInput, Portable &object);
-
-                    int getPosition(const char *);
-
-                    bool setPosition(const char *);
-
-                    SerializerHolder &serializerHolder;
-                    DataInput &dataInput;
-                    ObjectDataInput objectDataInput;
-                    int const finalPosition;
-                    int offset;
-                    bool raw;
-                    boost::shared_ptr<ClassDefinition> cd;
-                    FieldType currentFieldType;
                 };
 
             }

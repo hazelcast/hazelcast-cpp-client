@@ -10,20 +10,24 @@
 #include "serialization/TestRawDataPortable.h"
 #include "serialization/TestInvalidReadPortable.h"
 #include "serialization/TestInvalidWritePortable.h"
-#include "serialization/testUtil.h"
 #include "serialization/ChildTemplatedPortable2.h"
 #include "serialization/ParentTemplatedPortable.h"
 #include "serialization/ChildTemplatedPortable1.h"
+#include "serialization/ObjectCarryingPortable.h"
+#include "serialization/TestInnerPortable.h"
+#include "serialization/TestMainPortable.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "serialization/ClientSerializationTest.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/util/MurmurHash3.h"
+#include "TestNamedPortableV3.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-
+            static const unsigned int LARGE_ARRAY_SIZE = 10 * 1024 * 1024; // 10 MB
+            static const unsigned int LARGE_DATA_SIZE_IN_BYTES = 10 * LARGE_ARRAY_SIZE * sizeof(double); // 10 * 10MB * (sizeof(double))
 
             static serialization::pimpl::Data writeAndReadData(serialization::pimpl::Data& data, serialization::pimpl::SerializationService& ss1, serialization::pimpl::SerializationService& ss2) {
 
@@ -31,8 +35,8 @@ namespace hazelcast {
                 serialization::pimpl::PortableContext& contextOut = ss2.getPortableContext();
                 serialization::pimpl::Packet packet(contextIn, data);
 
-                std::auto_ptr<char> buf(new char[1024 * 1024 * 2]);
-                util::ByteBuffer buffer(buf.get(), 1024 * 1024 * 2);
+                std::auto_ptr<char> buf(new char[LARGE_DATA_SIZE_IN_BYTES]);
+                util::ByteBuffer buffer(buf.get(), LARGE_DATA_SIZE_IN_BYTES);
                 iTest::assertTrue(packet.writeTo(buffer));
                 buffer.flip();
 
@@ -60,6 +64,7 @@ namespace hazelcast {
 
             void ClientSerializationTest::addTests() {
                 addTest(&ClientSerializationTest::testBasicFunctionality, "testBasicFunctionality");
+                addTest(&ClientSerializationTest::testBasicFunctionalityWithLargeData, "testBasicFunctionalityWithLargeData");
                 addTest(&ClientSerializationTest::testBasicFunctionalityWithDifferentVersions, "testBasicFunctionalityWithDifferentVersions");
                 addTest(&ClientSerializationTest::testCustomSerialization, "testCustomSerialization");
                 addTest(&ClientSerializationTest::testRawData, "testRawData");
@@ -73,6 +78,12 @@ namespace hazelcast {
                 addTest(&ClientSerializationTest::testDataHash, "testDataHash");
                 addTest(&ClientSerializationTest::testPrimitives, "testPrimitives");
                 addTest(&ClientSerializationTest::testPrimitiveArrays, "testPrimitiveArrays");
+                addTest(&ClientSerializationTest::testWriteObjectWithPortable, "testWriteObjectWithPortable");
+                addTest(&ClientSerializationTest::testWriteObjectWithIdentifiedDataSerializable, "testWriteObjectWithIdentifiedDataSerilizable");
+                addTest(&ClientSerializationTest::testWriteObjectWithCustomXSerializable, "testWriteObjectWithCustomXSerializable");
+                addTest(&ClientSerializationTest::testWriteObjectWithCustomPersonSerializable, "testWriteObjectWithCustomPersonSerializable");
+                addTest(&ClientSerializationTest::testNullData, "testNullData");
+                addTest(&ClientSerializationTest::testMorphingWithDifferentTypes_differentVersions, "testMorphingWithDifferentTypes_differentVersions");
             }
 
             void ClientSerializationTest::testCustomSerialization() {
@@ -86,17 +97,15 @@ namespace hazelcast {
                 serializationService.registerSerializer(serializer1);
                 serializationService.registerSerializer(serializer2);
 
-                TestCustomXSerializable a;
-                a.id = 131321;
+                TestCustomXSerializable a(131321);
                 serialization::pimpl::Data data = serializationService.toData<TestCustomXSerializable>(&a);
                 boost::shared_ptr<TestCustomXSerializable> a2 = serializationService.toObject<TestCustomXSerializable>(data);
-                iTest::assertEqual(a.id, a2->id);
+                iTest::assertEqual(a, *a2);
 
-                TestCustomPerson b;
-                b.setName("TestCustomPerson");
+                TestCustomPerson b("TestCustomPerson");
                 serialization::pimpl::Data data1 = serializationService.toData<TestCustomPerson>(&b);
                 boost::shared_ptr<TestCustomPerson> b2 = serializationService.toObject<TestCustomPerson>(data1);
-                iTest::assertEqual(std::string("TestCustomPerson"), b2->getName());
+                iTest::assertEqual(b, *b2);
             }
 
 
@@ -285,6 +294,56 @@ namespace hazelcast {
                 iTest::assertEqual(main, *tmp2);
             }
 
+            void ClientSerializationTest::testBasicFunctionalityWithLargeData() {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                serialization::pimpl::Data data;
+
+                byte *byteArray = new byte[LARGE_ARRAY_SIZE];
+                std::vector<byte> bb(byteArray, byteArray + LARGE_ARRAY_SIZE);
+                char *charArray;
+                charArray = new char[LARGE_ARRAY_SIZE];
+                std::vector<char> cc(charArray, charArray + LARGE_ARRAY_SIZE);
+                short *shortArray;
+                shortArray = new short[LARGE_ARRAY_SIZE];
+                std::vector<short> ss(shortArray, shortArray + LARGE_ARRAY_SIZE);
+                int *integerArray;
+                integerArray = new int[LARGE_ARRAY_SIZE];
+                std::vector<int> ii(integerArray, integerArray + LARGE_ARRAY_SIZE);
+                long *longArray;
+                longArray = new long[LARGE_ARRAY_SIZE];
+                std::vector<long> ll(longArray, longArray + LARGE_ARRAY_SIZE);
+                float *floatArray;
+                floatArray = new float[LARGE_ARRAY_SIZE];
+                std::vector<float> ff(floatArray, floatArray + LARGE_ARRAY_SIZE);
+                double *doubleArray;
+                doubleArray = new double[LARGE_ARRAY_SIZE];
+                std::vector<double> dd(doubleArray, doubleArray + LARGE_ARRAY_SIZE);
+
+                TestNamedPortable portableArray[5];
+
+                for (int i = 0; i < 5; i++) {
+                    portableArray[i].name = "named-portable-" + util::IOUtil::to_string(i);
+                    portableArray[i].k = i;
+                }
+                std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
+
+                TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+
+                data = serializationService.toData<TestInnerPortable>(&inner);
+
+                boost::shared_ptr<TestInnerPortable> tip1, tip2;
+                tip1 = serializationService.toObject<TestInnerPortable>(data);
+                data = writeAndReadData(data, serializationService, serializationService);
+                tip2 = serializationService.toObject<TestInnerPortable>(data);
+
+                iTest::assertEqual(inner, *tip1);
+                iTest::assertEqual(inner, *tip2);
+
+            }
+
+
             void ClientSerializationTest::testBasicFunctionalityWithDifferentVersions() {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
@@ -432,12 +491,95 @@ namespace hazelcast {
                 double doubleArray[] = {456.456, 789.789, 321.321};
                 std::vector<double> dd(doubleArray, doubleArray + 3);
 
-                iTest::assertEqual(cc,toDataAndBackToObject(serializationService, cc));
-                iTest::assertEqual(ss,toDataAndBackToObject(serializationService, ss));
-                iTest::assertEqual(ii,toDataAndBackToObject(serializationService, ii));
-                iTest::assertEqual(ll,toDataAndBackToObject(serializationService, ll));
-                iTest::assertEqual(ff,toDataAndBackToObject(serializationService, ff));
-                iTest::assertEqual(dd,toDataAndBackToObject(serializationService, dd));
+                iTest::assertEqual(cc, toDataAndBackToObject(serializationService, cc));
+                iTest::assertEqual(ss, toDataAndBackToObject(serializationService, ss));
+                iTest::assertEqual(ii, toDataAndBackToObject(serializationService, ii));
+                iTest::assertEqual(ll, toDataAndBackToObject(serializationService, ll));
+                iTest::assertEqual(ff, toDataAndBackToObject(serializationService, ff));
+                iTest::assertEqual(dd, toDataAndBackToObject(serializationService, dd));
+            }
+
+
+            void ClientSerializationTest::testWriteObjectWithPortable() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+
+                TestNamedPortable *namedPortable = new TestNamedPortable("name", 2);
+                ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable(namedPortable);
+                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestNamedPortable> >(&objectCarryingPortable);
+                boost::shared_ptr<ObjectCarryingPortable<TestNamedPortable> > ptr = ss.toObject<ObjectCarryingPortable<TestNamedPortable> >(data);
+                iTest::assertEqual(objectCarryingPortable, *ptr);
+            }
+
+            void ClientSerializationTest::testWriteObjectWithIdentifiedDataSerializable() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+
+                TestDataSerializable *testDataSerializable = new TestDataSerializable(2, 'c');
+                ObjectCarryingPortable<TestDataSerializable> objectCarryingPortable(testDataSerializable);
+                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestDataSerializable> >(&objectCarryingPortable);
+                boost::shared_ptr<ObjectCarryingPortable<TestDataSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestDataSerializable> >(data);
+                iTest::assertEqual(objectCarryingPortable, *ptr);
+            }
+
+            void ClientSerializationTest::testWriteObjectWithCustomXSerializable() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+                boost::shared_ptr<serialization::SerializerBase> serializer(new TestCustomSerializerX<TestCustomXSerializable>());
+
+                ss.registerSerializer(serializer);
+
+                TestCustomXSerializable* customXSerializable = new TestCustomXSerializable(131321);
+                ObjectCarryingPortable<TestCustomXSerializable> objectCarryingPortable(customXSerializable);
+                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomXSerializable> >(&objectCarryingPortable);
+                boost::shared_ptr<ObjectCarryingPortable<TestCustomXSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomXSerializable> >(data);
+                iTest::assertEqual(objectCarryingPortable, *ptr);
+
+
+            }
+
+            void ClientSerializationTest::testWriteObjectWithCustomPersonSerializable() {
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+                boost::shared_ptr<serialization::SerializerBase> serializer(new TestCustomPersonSerializer());
+
+                ss.registerSerializer(serializer);
+
+                TestCustomPerson* testCustomPerson = new TestCustomPerson("TestCustomPerson");
+
+                ObjectCarryingPortable<TestCustomPerson> objectCarryingPortable(testCustomPerson);
+                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomPerson> >(&objectCarryingPortable);
+                boost::shared_ptr<ObjectCarryingPortable<TestCustomPerson> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomPerson> >(data);
+                iTest::assertEqual(objectCarryingPortable, *ptr);
+            }
+
+
+            void ClientSerializationTest::testNullData() {
+                serialization::pimpl::Data data;
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService ss(serializationConfig);
+                boost::shared_ptr<int> ptr = ss.toObject<int>(data);
+                iTest::assertNull(ptr.get());
+            }
+
+            void ClientSerializationTest::testMorphingWithDifferentTypes_differentVersions() {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                SerializationConfig serializationConfig2;
+                serializationConfig.setPortableVersion(2);
+                serialization::pimpl::SerializationService serializationService2(serializationConfig2);
+
+                TestNamedPortableV3 p2("portable-v2", 123);
+                serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV3>(&p2);
+
+                data2 = writeAndReadData(data2, serializationService2, serializationService);
+                boost::shared_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
+                iTest::assertEqual(std::string("portable-v2"), t1->name);
+                iTest::assertEqual(123, t1->k);
+
+
             }
         }
     }

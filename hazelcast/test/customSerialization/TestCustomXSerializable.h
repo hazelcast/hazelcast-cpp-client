@@ -13,19 +13,35 @@ namespace hazelcast {
         namespace test {
             class TestCustomXSerializable {
             public:
-                int id;
+                TestCustomXSerializable();
+
+                TestCustomXSerializable(int id);
 
                 int getTypeId() const;
+
+                bool operator ==(const TestCustomXSerializable & rhs) const;
+
+                bool operator !=(const TestCustomXSerializable& m) const;
+
+                int id;
             };
 
             class TestCustomPerson {
             public:
+                TestCustomPerson();
+
+                TestCustomPerson(const std::string & param);
 
                 std::string getName() const;
 
-                void setName(const std::string & param);
+                void setName(const std::string & name);
 
                 int getTypeId() const;
+
+                bool operator ==(const TestCustomPerson & rhs) const;
+
+                bool operator !=(const TestCustomPerson& m) const;
+
 
             private:
                 std::string name;

@@ -39,32 +39,22 @@ namespace hazelcast {
 
             int readInt();
 
-            int readShort();
+            short readShort();
 
             void writeInt(int v);
 
-            void writeShort(int v);
+            void writeShort(short v);
 
-            size_t writeTo(std::vector<byte> &destination, size_t offset);
+            size_t writeTo(std::vector<byte> &destination, size_t offset, size_t len);
 
-            void writeTo(std::vector<byte> &destination);
+            size_t readFrom(std::vector<byte> const &source, size_t offset, size_t len);
 
-            void readFrom(std::vector<byte> const &source);
-
-            size_t readFrom(std::vector<byte> const &source, size_t offset);
-
-            void skip(int l);
-
-            char readByte();
-
-            size_t limit() const;
+            byte readByte();
 
             void writeByte(char c);
         private:
 
             void *ix() const;
-
-            size_t minimum(size_t a, size_t b) const;
 
             void safeIncrementPosition(size_t );
 

@@ -6,9 +6,7 @@
 #include "hazelcast/client/proxy/TransactionalObject.h"
 #include "hazelcast/client/impl/ClientDestroyRequest.h"
 #include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {

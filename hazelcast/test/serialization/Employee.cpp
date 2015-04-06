@@ -6,6 +6,7 @@
 #include "Employee.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,11 +35,11 @@ namespace hazelcast {
             }
 
             int Employee::getFactoryId() const {
-                return 666;
+                return TestSerializationConstants::EMPLOYEE_FACTORY;
             }
 
             int Employee::getClassId() const {
-                return 2;
+                return TestSerializationConstants::EMPLOYEE;
             }
 
             void Employee::writePortable(serialization::PortableWriter &writer) const {

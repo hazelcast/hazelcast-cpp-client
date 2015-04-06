@@ -9,6 +9,7 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/impl/ClientPingRequest.h"
 #include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/util/IOUtil.h"
 #include <ctime>

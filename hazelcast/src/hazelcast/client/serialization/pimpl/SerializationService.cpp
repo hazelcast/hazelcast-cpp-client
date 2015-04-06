@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include <stdio.h>
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
@@ -26,7 +27,6 @@ namespace hazelcast {
                     }
                 }
 
-
                 PortableContext& SerializationService::getPortableContext() {
                     return portableContext;
                 }
@@ -45,19 +45,20 @@ namespace hazelcast {
                 }
 
 
-                boost::shared_ptr<ClassDefinition> SerializationService::lookupClassDefinition(const Portable *portable) {
-                    int version = PortableVersionHelper::getVersion(portable, portableContext.getVersion());
-                    return portableContext.lookup(portable->getFactoryId(), portable->getClassId(), version);
-                }
-
                 void SerializationService::checkClassType(int expectedType, int currentType) {
                     if (expectedType != currentType) {
-                        std::string source = "SerializationService:toObject<" + constants.typeIdToName(expectedType) + "> ";
-                        std::string message = "recevied data of type " + constants.typeIdToName(currentType);
-                        util::ILogger::getLogger().severe(source + message);
-                        throw exception::IClassCastException(source, message);
+                        char message[200];
+                        SerializationConstants sc;
+                        sprintf(message, "Received data of type %s(%d) but expected data type %s(%d)",
+                                sc.typeIdToName(currentType).c_str(), currentType,
+                                sc.typeIdToName(expectedType).c_str(), expectedType);
+
+                        util::ILogger::getLogger().severe(message);
+                        throw exception::IClassCastException("SerializationService::checkClassType",
+                                message);
                     }
                 }
+
             }
         }
     }

@@ -27,6 +27,8 @@ namespace hazelcast {
 
                 void testBasicFunctionality();
 
+                void testBasicFunctionalityWithLargeData();
+
                 void testBasicFunctionalityWithDifferentVersions();
 
                 void testCustomSerialization();
@@ -50,6 +52,18 @@ namespace hazelcast {
                 void testPrimitives();
 
                 void testPrimitiveArrays();
+
+                void testWriteObjectWithPortable();
+
+                void testWriteObjectWithIdentifiedDataSerializable();
+
+                void testWriteObjectWithCustomXSerializable();
+
+                void testWriteObjectWithCustomPersonSerializable();
+
+                void testNullData();
+
+                void testMorphingWithDifferentTypes_differentVersions();
 
                 template<typename T>
                 T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {

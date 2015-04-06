@@ -69,7 +69,15 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def);
 
+                ClassDefinitionBuilder& addField(FieldDefinition &fieldDefinition);
+
                 boost::shared_ptr<ClassDefinition> build();
+
+                int getFactoryId();
+
+                int getClassId();
+
+                int getVersion();
 
             private:
                 int factoryId;

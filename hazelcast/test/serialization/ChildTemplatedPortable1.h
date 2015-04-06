@@ -10,6 +10,7 @@
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "TestSerializationConstants.h"
 #include <string>
 
 namespace hazelcast {
@@ -29,11 +30,11 @@ namespace hazelcast {
                 }
 
                 int getFactoryId() const {
-                    return 1;
+                    return TestSerializationConstants::TEST_DATA_FACTORY;
                 }
 
                 int getClassId() const {
-                    return 2;
+                    return TestSerializationConstants::CHILD_TEMPLATED_PORTABLE_1;
                 }
 
                 void writePortable(serialization::PortableWriter& writer) const {

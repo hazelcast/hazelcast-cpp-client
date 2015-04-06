@@ -5,6 +5,7 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/Socket.h"
 #include <cassert>
+#include <algorithm>
 
 namespace hazelcast {
     namespace util {
@@ -52,16 +53,16 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::readFrom(const client::Socket& socket, int flag) {
-            int rm = remaining();
-            size_t bytesReceived = (size_t)socket.receive(ix(), rm, flag);
+            size_t rm = remaining();
+            size_t bytesReceived = (size_t)socket.receive(ix(), (int)rm, flag);
             safeIncrementPosition(bytesReceived);
             return bytesReceived;
         }
 
         void ByteBuffer::writeTo(const client::Socket& socket) {
-            int rm = remaining();
-            int bytesSend = socket.send(ix(), rm);
-            safeIncrementPosition(bytesSend);
+            size_t rm = remaining();
+            int bytesSend = socket.send(ix(), (int)rm);
+            safeIncrementPosition((size_t)bytesSend);
         }
 
         int ByteBuffer::readInt() {
@@ -83,51 +84,40 @@ namespace hazelcast {
         }
 
 
-        int ByteBuffer::readShort() {
+        short ByteBuffer::readShort() {
             byte a = readByte();
             byte b = readByte();
-            return (0xff00 & (a << 8)) |
-            (0x00ff & b);
+            return (short)((0xff00 & (a << 8)) |
+            (0x00ff & b));
         }
 
-        void ByteBuffer::writeShort(int v) {
+        void ByteBuffer::writeShort(short v) {
             writeByte(char(v >> 8));
             writeByte(char(v));
         }
 
-        size_t ByteBuffer::writeTo(std::vector<byte>& destination, size_t offset) {
-            size_t m = minimum(destination.size() - offset, remaining());
+        size_t ByteBuffer::writeTo(std::vector<byte>& destination, size_t offset, size_t len) {
+            size_t m = std::min<size_t>(len, remaining());
+            if (destination.size() < offset + m) {
+                // resize the destination vector to the size of the memory needed
+                destination.resize(offset + m);
+            }
+
             std::memcpy((void *)(&destination[offset]), ix(), m);
             safeIncrementPosition(m);
             return m;
         }
 
-        void ByteBuffer::writeTo(std::vector<byte>& destination) {
-            size_t len = destination.size();
-            std::memcpy((void *)(&destination[0]), ix(), len);
-            safeIncrementPosition(len);
-        }
-
-
-        void ByteBuffer::readFrom(std::vector<byte> const& source) {
-            size_t len = source.size();
-            std::memcpy(ix(), (void *)(&source[0]), len);
-            safeIncrementPosition(len);
-        }
-
-        size_t ByteBuffer::readFrom(std::vector<byte> const& source, size_t offset) {
-            size_t m = minimum(source.size() - offset, remaining());
-            std::memcpy(ix(), (void *)(&source[offset]), m);
+        size_t ByteBuffer::readFrom(std::vector<byte> const& source, size_t offset, size_t len) {
+            size_t minLen = std::min<size_t>(source.size() - offset, len);
+            size_t m = std::min<size_t>(minLen, remaining());
+            memcpy(ix(), (void *)(&source[offset]), m);
             safeIncrementPosition(m);
             return m;
         }
 
-        void ByteBuffer::skip(int l) {
-            safeIncrementPosition(l);
-        }
-
-        char ByteBuffer::readByte() {
-            char b = buffer[pos];
+        byte ByteBuffer::readByte() {
+            byte b = (byte)buffer[pos];
             safeIncrementPosition(1);
             return b;
         }
@@ -140,15 +130,6 @@ namespace hazelcast {
         void *ByteBuffer::ix() const {
             return (void *)(buffer + pos);
         }
-
-        size_t ByteBuffer::minimum(size_t a, size_t b) const {
-            return a < b ? a : b;
-        }
-
-        size_t ByteBuffer::limit() const {
-            return lim;
-        }
-
 
         void ByteBuffer::safeIncrementPosition(size_t t) {
             assert(pos + t <= capacity);

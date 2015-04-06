@@ -27,57 +27,37 @@ namespace hazelcast {
 
                 class HAZELCAST_API Data {
                 public:
+                    // type and partition_hash are always written with BIG_ENDIAN byte-order
+                    static unsigned int TYPE_OFFSET;
+                    // will use a byte to store partition_hash bit
+                    static unsigned int PARTITION_HASH_BIT_OFFSET;
+                    static unsigned int DATA_OFFSET;
 
                     Data();
+
+                    Data(std::auto_ptr<std::vector<byte> > buffer);
 
                     Data(const Data&);
 
                     Data& operator=(const Data&);
 
-                    int bufferSize() const;
+                    size_t dataSize() const;
 
-                    size_t headerSize() const;
+                    size_t totalSize() const;
 
                     int getPartitionHash() const;
 
-                    void setPartitionHash(int);
+                    bool hasPartitionHash() const;
+
+                    std::vector<byte> &toByteArray() const;
 
                     int getType() const;
 
-                    void setType(int type);
-
-                    void setBuffer(std::auto_ptr<std::vector<byte> > buffer);
-
-                    void setHeader(std::auto_ptr<std::vector<byte> > header);
-
-                    bool hasPartitionHash()  const;
-
-                    bool isPortable() const;
-
-                    bool hasClassDefinition() const;
-
-                    size_t getClassDefinitionCount() const;
-
-                    std::vector<boost::shared_ptr<ClassDefinition> > getClassDefinitions(PortableContext& context) const;
-
+                private:
                     mutable std::auto_ptr<std::vector<byte> > data;
 
-                    mutable std::auto_ptr<std::vector<byte> > header;
-                    static int HEADER_ENTRY_LENGTH;
-
-                    static int HEADER_FACTORY_OFFSET;
-                    static int HEADER_CLASS_OFFSET;
-                    static int HEADER_VERSION_OFFSET;
-                private:
-
-                    mutable int partitionHash;
-                    int type;
-
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(PortableContext& context, int start) const;
-
-                    int readIntHeader(int offset) const;
-
                     int hashCode() const;
+
                 };
             }
         }

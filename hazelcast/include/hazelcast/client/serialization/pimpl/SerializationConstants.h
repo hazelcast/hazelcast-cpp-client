@@ -24,6 +24,7 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationConstants {
                 public:
+                    static int const CONSTANT_TYPE_NULL;
                     static int const CONSTANT_TYPE_PORTABLE;
                     static int const CONSTANT_TYPE_DATA;
                     static int const CONSTANT_TYPE_BYTE;
@@ -57,7 +58,7 @@ namespace hazelcast {
                     std::string typeIdToName(int typeId);
 
                 private:
-                    int size;
+                    const int size;
                     std::vector<std::string> typeIdNameVector;
 
                     int idToIndex(int id);

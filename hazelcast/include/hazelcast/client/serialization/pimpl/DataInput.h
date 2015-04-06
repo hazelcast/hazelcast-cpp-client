@@ -28,9 +28,11 @@ namespace hazelcast {
                 public:
                     DataInput(const std::vector<byte> &buffer);
 
-                    DataInput(const std::vector<byte> &buffer, std::vector<byte>& header);
+                    DataInput(const std::vector<byte> &buffer, int offset);
 
                     void readFully(std::vector<byte> &);
+
+                    void readFully(std::vector<char> &);
 
                     int skipBytes(int i);
 
@@ -52,6 +54,8 @@ namespace hazelcast {
 
                     std::string readUTF();
 
+                    std::auto_ptr<std::vector<byte> > readByteArrayAsPtr();
+
                     std::vector<byte> readByteArray();
 
                     std::vector<char> readCharArray();
@@ -68,13 +72,10 @@ namespace hazelcast {
 
                     int position();
 
-                    void position(int newPos);
-
-                    hazelcast::util::ByteBuffer& getHeaderBuffer();
+                    void position(int position);
 
                 private:
                     const std::vector<byte> &buffer;
-                    util::ByteBuffer headerBuffer;
 
                     int pos;
 
@@ -86,6 +87,7 @@ namespace hazelcast {
 
                     DataInput &operator = (const DataInput &);
 
+                    void checkAvailable(size_t requestedLength);
                 };
             }
         }

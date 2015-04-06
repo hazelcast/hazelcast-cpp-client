@@ -41,7 +41,7 @@ namespace hazelcast {
                 void writePacket(const serialization::pimpl::Packet&);
 
             private:
-                void writeData(const serialization::pimpl::Data& , serialization::pimpl::PortableContext& context);
+                void writeValue(const serialization::pimpl::Data &data);
 
                 Socket& socket;
 

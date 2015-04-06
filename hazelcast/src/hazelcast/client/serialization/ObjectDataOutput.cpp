@@ -4,14 +4,14 @@
 
 
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext)
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput,
+                    pimpl::PortableContext& portableContext)
             : dataOutput(&dataOutput)
             , context(&portableContext)
             , serializerHolder(&portableContext.getSerializerHolder())
@@ -29,7 +29,7 @@ namespace hazelcast {
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
                 if (isEmpty)
-                    return std::auto_ptr<std::vector<byte> >(NULL);
+                    return std::auto_ptr<std::vector<byte> >((std::vector<byte> *)NULL);
                 return dataOutput->toByteArray();
             }
 
@@ -121,53 +121,43 @@ namespace hazelcast {
 
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
                 if (isEmpty) return;
-                bool isNull = data == NULL;
+                bool isNull = (NULL == data || 0 == data->totalSize());
                 writeBoolean(isNull);
                 if (isNull) {
                     return;
                 }
-                writeInt(data->getType());
-                writeInt(data->hasPartitionHash() ? data->getPartitionHash() : 0);
-                writePortableHeader(*data);
-
-                int size = data->bufferSize();
-                writeInt(size);
-                if (size > 0) {
-                    dataOutput->write(*(data->data));
-                }
-            }
-
-            void ObjectDataOutput::writePortableHeader(const pimpl::Data& data) {
-                if (!data.hasClassDefinition()) {
-                    writeInt(0);
-                } else {
-                    util::ByteBuffer& headerBuffer = dataOutput->getHeaderBuffer();
-                    writeInt(data.header->size());
-                    writeInt(headerBuffer.position());
-                    headerBuffer.readFrom(*data.header);
-                }
+                writeByteArray(data->toByteArray());
             }
 
 
             void ObjectDataOutput::writePortable(const Portable *portable) {
-                writeBoolean(false);
+                bool isNull = NULL == portable;
+                writeBoolean(isNull);
+                if (isNull) {
+                    return;
+                }
                 writeInt(portable->getSerializerId());
+                writeInt(portable->getFactoryId());
+                writeInt(portable->getClassId());
                 serializerHolder->getPortableSerializer().write(*dataOutput, *portable);
 
             }
 
             void ObjectDataOutput::writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable) {
-                writeBoolean(false);
+                bool isNull = NULL == dataSerializable;
+                writeBoolean(isNull);
+                if (isNull) {
+                    return;
+                }
                 writeInt(dataSerializable->getSerializerId());
                 serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             }
 
-
-            int ObjectDataOutput::position() {
+            size_t ObjectDataOutput::position() {
                 return dataOutput->position();
             }
 
-            void ObjectDataOutput::position(int newPos) {
+            void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
             }
 

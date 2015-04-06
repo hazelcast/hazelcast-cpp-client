@@ -42,17 +42,15 @@ namespace hazelcast {
 
                     void setClassVersion(int factoryId, int classId, int version);
 
-                    bool isClassDefinitionExists(int, int, int);
-
-                    boost::shared_ptr<ClassDefinition> lookup(int, int, int);
-
-                    boost::shared_ptr<ClassDefinition> createClassDefinition(int, std::auto_ptr< std::vector<byte> >);
+                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
 
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                     boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
 
                     int getVersion();
+
+                    boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
 
                     SerializerHolder &getSerializerHolder();
 

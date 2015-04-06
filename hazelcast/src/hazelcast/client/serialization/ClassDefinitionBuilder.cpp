@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 22/07/14.
 //
 
+#include <stdio.h>
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
@@ -115,7 +116,7 @@ namespace hazelcast {
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(), def->getClassId(), def->getVersion());
+                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(), def->getClassId());
                 fieldDefinitions.push_back(fieldDefinition);
                 return *this;
             }
@@ -125,7 +126,21 @@ namespace hazelcast {
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, def->getFactoryId(), def->getClassId(), def->getVersion());
+                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, def->getFactoryId(), def->getClassId());
+                fieldDefinitions.push_back(fieldDefinition);
+                return *this;
+            }
+
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addField(FieldDefinition &fieldDefinition) {
+                check();
+                int defIndex = fieldDefinition.getIndex();
+                if (index != defIndex) {
+                    char buf[100];
+                    sprintf(buf, "Invalid field index. Index in definition:%d, being added at index:%d",
+                            defIndex, index);
+                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf);
+                }
+                index++;
                 fieldDefinitions.push_back(fieldDefinition);
                 return *this;
             }
@@ -151,6 +166,18 @@ namespace hazelcast {
                 check();
                 FieldDefinition fieldDefinition(index++, fieldName, fieldType);
                 fieldDefinitions.push_back(fieldDefinition);
+            }
+
+            int ClassDefinitionBuilder::getFactoryId() {
+                return factoryId;
+            }
+
+            int ClassDefinitionBuilder::getClassId() {
+                return classId;
+            }
+
+            int ClassDefinitionBuilder::getVersion() {
+                return version;
             }
         }
     }

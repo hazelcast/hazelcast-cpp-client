@@ -35,9 +35,9 @@ namespace hazelcast {
 
                     boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
-                    PortableSerializer &getPortableSerializer();
+                    const PortableSerializer &getPortableSerializer() const;
 
-                    DataSerializer &getDataSerializer();
+                    const DataSerializer &getDataSerializer() const;
 
                 private:
                     hazelcast::util::SynchronizedMap<int, SerializerBase> serializers;

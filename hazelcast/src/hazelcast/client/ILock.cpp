@@ -9,6 +9,7 @@
 #include "hazelcast/client/lock/IsLockedRequest.h"
 #include "hazelcast/client/lock/GetLockCountRequest.h"
 #include "hazelcast/client/lock/GetRemainingLeaseRequest.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {

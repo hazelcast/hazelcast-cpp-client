@@ -9,7 +9,6 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include <boost/shared_ptr.hpp>
-#include <hazelcast/client/connection/Connection.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

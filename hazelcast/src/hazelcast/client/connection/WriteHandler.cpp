@@ -8,7 +8,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/pimpl/Packet.h"
-#include <ctime>
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
@@ -22,7 +21,6 @@ namespace hazelcast {
             , ready(false)
             , informSelector(true)
             {
-                connection.lastWrite = (int)time(NULL);
             }
 
 
@@ -56,7 +54,6 @@ namespace hazelcast {
                 if (!connection.live) {
                     return;
                 }
-                connection.lastWrite = (int)time(NULL);
 
                 if (lastData == NULL) {
                     lastData = writeQueue.poll();

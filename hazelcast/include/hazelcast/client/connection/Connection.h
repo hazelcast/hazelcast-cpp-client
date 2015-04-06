@@ -88,7 +88,6 @@ namespace hazelcast {
                 void heartBeatingSucceed();
 
                 util::AtomicInt lastRead;
-                util::AtomicInt lastWrite;
                 util::AtomicBoolean live;
             private:
                 spi::ClientContext& clientContext;

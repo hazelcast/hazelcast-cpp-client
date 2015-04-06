@@ -148,12 +148,8 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const Portable *object) {
                     if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
-                        return;
-                    }
                     writePortable(object);
-                };
+                }
 
                 /**
                 * @param object IdentifiedDataSerializable object to be written
@@ -163,12 +159,8 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const IdentifiedDataSerializable *object) {
                     if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
-                        return;
-                    }
                     writeIdentifiedDataSerializable(object);
-                };
+                }
 
                 /**
                 * @param object custom serializable object to be written
@@ -178,17 +170,22 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const void *object) {
                     if (isEmpty) return;
-                    if (object == NULL) {
-                        writeBoolean(true);
+                    const bool isNull = (NULL == object);
+
+                    writeBoolean(isNull);
+                    if (isNull) {
                         return;
                     }
+
                     const T *serializable = static_cast<const T *>(object);
-                    int type = serializable->getSerializerId();
-                    writeBoolean(false);
+
+                    // write type
+                    int type = serializable->getTypeId();
                     writeInt(type);
+
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
                     if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer);
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->write(*this, *serializable);
                     } else {
                         const std::string& message = "No serializer found for serializerId :"
@@ -196,7 +193,7 @@ namespace hazelcast {
                         + ", typename :" + typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
                     }
-                };
+                }
 
             private:
                 pimpl::DataOutput *dataOutput;
@@ -204,15 +201,13 @@ namespace hazelcast {
                 pimpl::SerializerHolder *serializerHolder;
                 bool isEmpty;
 
-                int position();
+                size_t position();
 
-                void position(int newPos);
+                void position(size_t newPos);
 
                 void writePortable(const Portable *portable);
 
                 void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
-
-                void writePortableHeader(const pimpl::Data& data);
 
                 ObjectDataOutput(const ObjectDataOutput&);
 

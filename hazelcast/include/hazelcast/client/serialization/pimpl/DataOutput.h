@@ -36,7 +36,7 @@ namespace hazelcast {
 
                     void writeBoolean(bool b);
 
-                    void writeByte(byte i);
+                    void writeByte(int i);
 
                     void writeShort(int i);
 
@@ -51,6 +51,8 @@ namespace hazelcast {
                     void writeDouble(double v);
 
                     void writeUTF(const std::string &s);
+
+                    void writeBytes(const byte *bytes, unsigned int len);
 
                     void writeByteArray(const std::vector<byte> &data);
 
@@ -70,21 +72,17 @@ namespace hazelcast {
 
                     void writeInt(int index, int v);
 
-                    int position();
+                    void writeZeroBytes(int numberOfBytes);
+
+                    size_t position();
 
                     void position(size_t newPos);
-
-                    util::ByteBuffer& getHeaderBuffer();
-
-                    std::auto_ptr< std::vector<byte> > getPortableHeader();
 
                     static size_t const STRING_CHUNK_SIZE;
                     static size_t const DEFAULT_SIZE;
 
                 private:
                     std::auto_ptr< std::vector<byte> > outputStream;
-                    char* headerBuffer;
-                    util::ByteBuffer headerByteBuffer;
 
                     void writeShortUTF(const std::string &);
 

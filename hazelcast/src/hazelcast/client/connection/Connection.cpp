@@ -108,7 +108,9 @@ namespace hazelcast {
                 connection::InputSocketStream inputSocketStream(socket);
                 serialization::pimpl::PortableContext& portableContext = clientContext.getSerializationService().getPortableContext();
                 inputSocketStream.setPortableContext(&portableContext);
-                serialization::pimpl::Packet packet(portableContext);
+                std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>());
+                serialization::pimpl::Data data(buffer);
+                serialization::pimpl::Packet packet(portableContext, data);
                 inputSocketStream.readPacket(packet);
                 return packet;
             }

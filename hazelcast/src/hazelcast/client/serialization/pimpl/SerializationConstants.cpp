@@ -8,7 +8,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-
+            	int const SerializationConstants::CONSTANT_TYPE_NULL = 0;
                 int const SerializationConstants::CONSTANT_TYPE_PORTABLE = -1;
                 int const SerializationConstants::CONSTANT_TYPE_DATA = -2;
                 int const SerializationConstants::CONSTANT_TYPE_BYTE = -3;
@@ -38,8 +38,9 @@ namespace hazelcast {
                 int const SerializationConstants::DEFAULT_TYPE_ENUM = -25;
 
                 SerializationConstants::SerializationConstants()
-                :size(25)
+                :size(26)
                 , typeIdNameVector(size) {
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_NULL)] = "null";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DATA)] = "data";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_BYTE)] = "byte";
@@ -70,7 +71,7 @@ namespace hazelcast {
                 std::string SerializationConstants::typeIdToName(int typeId) {
                     int i = idToIndex(typeId);
                     if (i < 0 || i >= size)
-                        return "custom";
+                        return std::string("custom");
                     return typeIdNameVector[i];
                 }
 

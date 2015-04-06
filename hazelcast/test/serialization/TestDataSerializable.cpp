@@ -1,6 +1,7 @@
 #include "TestDataSerializable.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,11 +27,11 @@ namespace hazelcast {
             }
 
             int TestDataSerializable::getFactoryId() const {
-                return 1;
+                return TestSerializationConstants::TEST_DATA_FACTORY;
             }
 
             int TestDataSerializable::getClassId() const {
-                return 1;
+                return TestSerializationConstants::TEST_DATA_SERIALIZABLE;
             }
 
             void TestDataSerializable::writeData(serialization::ObjectDataOutput& writer) const {

@@ -6,7 +6,6 @@
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
-#include <algorithm>
 
 namespace hazelcast {
     namespace client {
@@ -17,19 +16,16 @@ namespace hazelcast {
                 size_t const DataOutput::DEFAULT_SIZE = 4 * 1024;
 
                 DataOutput::DataOutput()
-                : outputStream(new std::vector<byte>()) 
-                , headerBuffer(new char[256])
-                , headerByteBuffer(headerBuffer, 256){ //MTODO_S Default header size || Dynamic byte buffer
+                : outputStream(new std::vector<byte>()) {
                     outputStream->reserve(DEFAULT_SIZE);
                 }
 
 
                 DataOutput::~DataOutput() {
-                    delete [] headerBuffer;
                 }
 
                 DataOutput::DataOutput(DataOutput const& rhs)
-                : headerByteBuffer(rhs.headerByteBuffer){
+                {
                     //private
                 }
 
@@ -48,32 +44,32 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeBoolean(bool i) {
-                    writeByte(i);
+                    writeByte((byte)i);
                 }
 
                 void DataOutput::writeByte(int index, int i) {
                     (*outputStream)[index] = byte(0xff & i);
                 }
 
-                void DataOutput::writeByte(byte i) {
-                    outputStream->push_back(i);
+                void DataOutput::writeByte(int i) {
+                    outputStream->push_back(byte(0xff & i));
                 }
 
                 void DataOutput::writeShort(int v) {
-                    writeByte((v >> 8));
-                    writeByte(v);
+                    writeByte((byte)(v >> 8));
+                    writeByte((byte)v);
                 }
 
                 void DataOutput::writeChar(int i) {
-                    writeByte((i >> 8));
-                    writeByte(i);
+                    writeByte((byte)(i >> 8));
+                    writeByte((byte)i);
                 }
 
                 void DataOutput::writeInt(int v) {
-                    writeByte((v >> 24));
-                    writeByte((v >> 16));
-                    writeByte((v >> 8));
-                    writeByte(v);
+                    writeByte((byte)(v >> 24));
+                    writeByte((byte)(v >> 16));
+                    writeByte((byte)(v >> 8));
+                    writeByte((byte)v);
                 }
 
                 void DataOutput::writeLong(long long l) {
@@ -112,13 +108,13 @@ namespace hazelcast {
                         return;
 
                     size_t length = str.length();
-                    writeInt(length);
-                    writeInt(length);
+                    writeInt((int)length);
+                    writeInt((int)length);
                     size_t chunkSize = length / STRING_CHUNK_SIZE + 1;
                     for (size_t i = 0; i < chunkSize; i++) {
                         using namespace std;
-                        size_t beginIndex = (size_t)max((int)0, (int)STRING_CHUNK_SIZE * (int)i - 1);
-                        size_t endIndex = min(STRING_CHUNK_SIZE * (i + 1) - 1, length);
+                        size_t beginIndex = (size_t)std::max<int>((int)0, (int)STRING_CHUNK_SIZE * (int)i - 1);
+                        size_t endIndex = std::min<int>(STRING_CHUNK_SIZE * (i + 1) - 1, length);
                         writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
                     }
                 }
@@ -130,60 +126,72 @@ namespace hazelcast {
                     writeByte(index, v);
                 }
 
+                void DataOutput::writeBytes(const byte *bytes, unsigned int len) {
+                    for (unsigned int i = 0; i < len; i++) {
+                        writeByte(bytes[i]);
+                    }
+                }
+
                 void DataOutput::writeByteArray(const std::vector<byte>& data) {
-                    writeInt(data.size());
+                    writeInt((int)data.size());
                     outputStream->insert(outputStream->end(), data.begin(), data.end());
                 }
 
                 void DataOutput::writeCharArray(const std::vector<char>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeChar(data[i]);
                     }
                 }
 
                 void DataOutput::writeShortArray(const std::vector<short>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeShort(data[i]);
                     }
                 }
 
                 void DataOutput::writeIntArray(const std::vector<int>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeInt(data[i]);
                     }
                 }
 
                 void DataOutput::writeLongArray(const std::vector<long>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeLong(data[i]);
                     }
                 }
 
                 void DataOutput::writeFloatArray(const std::vector<float>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeFloat(data[i]);
                     }
                 }
 
                 void DataOutput::writeDoubleArray(const std::vector<double>& data) {
-                    int size = data.size();
-                    writeInt(size);
+                    size_t size = data.size();
+                    writeInt((int)size);
                     for (int i = 0; i < size; ++i) {
                         writeDouble(data[i]);
                     }
                 }
 
-                int DataOutput::position() {
+                void DataOutput::writeZeroBytes(int numberOfBytes) {
+                    for (int k = 0; k < numberOfBytes; k++) {
+                        writeByte(0);
+                    }
+                }
+
+                size_t DataOutput::position() {
                     return outputStream->size();
                 }
 
@@ -214,7 +222,7 @@ namespace hazelcast {
                         util::IOUtil::to_string(utfLength) + " bytes";
                         throw exception::IOException("BufferedDataOutput::writeShortUTF", message);
                     }
-                    std::vector<byte> byteArray(utfLength);
+                    std::vector<byte> byteArray((size_t)utfLength);
                     int i;
                     for (i = 0; i < stringLen; i++) {
 //                        if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
@@ -237,21 +245,6 @@ namespace hazelcast {
                     write(byteArray);
                 }
 
-
-                util::ByteBuffer& DataOutput::getHeaderBuffer() {
-                    return headerByteBuffer;
-                }
-
-                std::auto_ptr<std::vector<byte> > DataOutput::getPortableHeader() {
-                    headerByteBuffer.flip();
-                    if (!headerByteBuffer.hasRemaining()) {
-                        return std::auto_ptr<std::vector<byte> >();
-                    }
-                    std::auto_ptr<std::vector<byte> > buff(new std::vector<byte>(headerByteBuffer.limit()));
-                    headerByteBuffer.writeTo(*buff);
-                    headerByteBuffer.clear();
-                    return buff;
-                }
             }
 
         }

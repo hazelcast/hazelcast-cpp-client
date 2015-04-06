@@ -17,8 +17,7 @@ namespace hazelcast {
             FieldDefinition::FieldDefinition()
             : index(0)
             , classId(0)
-            , factoryId(0)
-            , version(-1) {
+            , factoryId(0) {
 
             }
 
@@ -27,20 +26,18 @@ namespace hazelcast {
             , fieldName(fieldName)
             , type(type)
             , classId(0)
-            , factoryId(0)
-            , version(-1) {
+            , factoryId(0) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId, int version)
+            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId)
             : index(index)
             , fieldName(fieldName)
             , type(type)
             , classId(classId)
-            , factoryId(factoryId)
-            , version(-1) {
+            , factoryId(factoryId) {
             }
 
-            FieldType FieldDefinition::getType() const {
+            const FieldType &FieldDefinition::getType() const {
                 return type;
             }
 
@@ -60,18 +57,6 @@ namespace hazelcast {
                 return classId;
             }
 
-
-            int FieldDefinition::getVersion() const {
-                return version;
-            }
-
-            void FieldDefinition::setVersionIfNotSet(int version) {
-                if (getVersion() < 0) {
-                    if (type == FieldTypes::TYPE_PORTABLE || type == FieldTypes::TYPE_PORTABLE_ARRAY) {
-                        this->version = version;
-                    }
-                }
-            }
 
             void FieldDefinition::writeData(pimpl::DataOutput& dataOutput) {
                 dataOutput.writeInt(index);
