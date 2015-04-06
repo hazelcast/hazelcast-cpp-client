@@ -2,6 +2,7 @@
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,11 +18,11 @@ namespace hazelcast {
             }
 
             int TestInvalidWritePortable::getFactoryId() const {
-                return 1;
+                return TestSerializationConstants::TEST_PORTABLE_FACTORY;
             }
 
             int TestInvalidWritePortable::getClassId() const {
-                return 5;
+                return TestSerializationConstants::TEST_INVALID_WRITE_PORTABLE;
             }
 
             void TestInvalidWritePortable::writePortable(serialization::PortableWriter& writer) const {

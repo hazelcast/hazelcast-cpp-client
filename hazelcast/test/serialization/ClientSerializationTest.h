@@ -53,6 +53,18 @@ namespace hazelcast {
 
                 void testPrimitiveArrays();
 
+                void testWriteObjectWithPortable();
+
+                void testWriteObjectWithIdentifiedDataSerializable();
+
+                void testWriteObjectWithCustomXSerializable();
+
+                void testWriteObjectWithCustomPersonSerializable();
+
+                void testNullData();
+
+                void testMorphingWithDifferentTypes_differentVersions();
+
                 template<typename T>
                 T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {
                     serialization::pimpl::Data data = ss.toData<T>(&value);

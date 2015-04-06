@@ -7,8 +7,6 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
-#include <algorithm>
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -53,16 +51,16 @@ namespace hazelcast {
                     (*outputStream)[index] = byte(0xff & i);
                 }
 
-                void DataOutput::writeByte(byte i) {
-                    outputStream->push_back(i);
+                void DataOutput::writeByte(int i) {
+                    outputStream->push_back(byte(0xff & i));
                 }
 
-                void DataOutput::writeShort(short v) {
+                void DataOutput::writeShort(int v) {
                     writeByte((byte)(v >> 8));
                     writeByte((byte)v);
                 }
 
-                void DataOutput::writeChar(short i) {
+                void DataOutput::writeChar(int i) {
                     writeByte((byte)(i >> 8));
                     writeByte((byte)i);
                 }
@@ -187,6 +185,12 @@ namespace hazelcast {
                     }
                 }
 
+                void DataOutput::writeZeroBytes(int numberOfBytes) {
+                    for (int k = 0; k < numberOfBytes; k++) {
+                        writeByte(0);
+                    }
+                }
+
                 size_t DataOutput::position() {
                     return outputStream->size();
                 }
@@ -237,7 +241,7 @@ namespace hazelcast {
 //                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
 //                        }
 //                    }
-                    writeShort((short)utfLength);
+                    writeShort(utfLength);
                     write(byteArray);
                 }
 

@@ -11,14 +11,12 @@
 #define HAZELCAST_OUTPUT_SOCKET_STREAM
 
 #include "hazelcast/util/HazelcastDll.h"
-
 #include <string>
 #include <vector>
 
 namespace hazelcast {
     namespace client {
         class Socket;
-
         namespace serialization {
             namespace pimpl {
                 class Packet;

@@ -15,7 +15,6 @@ namespace hazelcast {
         class Socket;
     }
     namespace util {
-
         class HAZELCAST_API ByteBuffer {
         public:
             ByteBuffer(char* buffer, size_t size);

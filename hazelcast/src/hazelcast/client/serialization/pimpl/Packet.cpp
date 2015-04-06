@@ -21,6 +21,7 @@
 
 #include "hazelcast/client/serialization/pimpl/Packet.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 
 #include <sstream>
@@ -46,10 +47,11 @@ namespace hazelcast {
 
                 Packet::Packet(PortableContext &ctx) :
                         context(ctx),
+                        dataNull(true),
                         partitionId(-1),
                         header(0),
                         persistStatus(0),
-                        persistedSize(0),
+                        size(0),
                         valueOffset(0)
 				{
                 }
@@ -57,20 +59,22 @@ namespace hazelcast {
                 Packet::Packet(PortableContext &ctx, const Data &packetData) :
                         context(ctx),
                         data(packetData),
+                        dataNull(false),
                         partitionId(-1),
                         header(0),
                         persistStatus(0),
-                        persistedSize(0),
+                        size(0),
                         valueOffset(0) {
                 }
 
                 Packet::Packet(PortableContext &ctx, const Data &packetData, int partition) :
                         context(ctx),
                         data(packetData),
+                        dataNull(false),
                         partitionId(partition),
                         header(0),
                         persistStatus(0),
-                        persistedSize(0),
+                        size(0),
                         valueOffset(0) {
                 }
 
@@ -243,7 +247,7 @@ namespace hazelcast {
 			                return false;
 			            }
 
-			            persistedSize = (size_t)source.readInt();
+			            size = (size_t)source.readInt();
 			            setPersistStatus(PERSIST_SIZE);
 			        }
 			        return true;
@@ -255,8 +259,8 @@ namespace hazelcast {
 			                return false;
 			            }
 
-			            persistedSize = data.totalSize();
-			            destination.writeInt((int)persistedSize);
+			            size = data.totalSize();
+			            destination.writeInt((int)size);
 			            setPersistStatus(PERSIST_SIZE);
 			        }
 			        return true;
@@ -266,12 +270,12 @@ namespace hazelcast {
 
 			    bool Packet::writeValue(util::ByteBuffer &destination) {
 			        if (!isPersistStatusSet(PERSIST_VALUE)) {
-			            if (persistedSize > 0) {
+			            if (size > 0) {
 			                // the number of bytes that can be written to the bb.
 			                size_t bytesWritable = destination.remaining();
 
 			                // the number of bytes that need to be written.
-			                size_t bytesNeeded = persistedSize - valueOffset;
+			                size_t bytesNeeded = size - valueOffset;
 
 			                size_t bytesWrite;
 			                bool done;
@@ -302,12 +306,18 @@ namespace hazelcast {
 
 			    bool Packet::readValue(util::ByteBuffer &source) {
 			        if (!isPersistStatusSet(PERSIST_VALUE)) {
+                        if (dataNull) {
+                            std::auto_ptr< std::vector<byte> > byteVector(new std::vector<byte>(size));
+                            data = Data(byteVector);
+                            dataNull = false;
+                        } 
+                        
                         std::vector<byte> &byteVector = data.toByteArray();
 
-			            if (persistedSize > 0) {
+			            if (size > 0) {
 			                size_t bytesReadable = source.remaining();
 
-			                size_t bytesNeeded = persistedSize - valueOffset;
+			                size_t bytesNeeded = size - valueOffset;
 
 			                bool done;
 			                size_t bytesRead;

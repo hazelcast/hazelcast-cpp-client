@@ -1,6 +1,7 @@
 #include "TestInvalidReadPortable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -16,11 +17,11 @@ namespace hazelcast {
             }
 
             int TestInvalidReadPortable::getFactoryId() const {
-                return 1;
+                return TestSerializationConstants::TEST_PORTABLE_FACTORY;
             }
 
             int TestInvalidReadPortable::getClassId() const {
-                return 6;
+                return TestSerializationConstants::TEST_INVALID_READ_PORTABLE;
             }
 
             void TestInvalidReadPortable::writePortable(serialization::PortableWriter& writer) const {

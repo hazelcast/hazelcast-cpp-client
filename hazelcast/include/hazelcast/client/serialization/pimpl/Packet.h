@@ -93,12 +93,13 @@ namespace hazelcast {
                 private:
                     PortableContext &context;
                     Data data;
+                    bool dataNull;
                     int partitionId;
                     short header;
 
                     int persistStatus;
 
-                    size_t persistedSize;
+                    size_t size;
                     size_t valueOffset;
 
                     // The value of these constants is important. The order needs to

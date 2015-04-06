@@ -29,17 +29,16 @@ namespace hazelcast {
                 unsigned int Data::DATA_OFFSET = 5;
 
                 Data::Data()
-                : data(new std::vector<byte>()){
+                : data(NULL){
                 }
 
-                Data::Data(std::auto_ptr<std::vector<byte> > buffer) {
-                    if (buffer.get() != 0 && buffer->size() > 0 && buffer->size() < DATA_OFFSET) {
+                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer) {
+                    if (data.get() != 0 && data->size() > 0 && data->size() < DATA_OFFSET) {
                         char msg[100];
                         sprintf(msg, "Provided buffer should be either empty or "
-                                "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, buffer->size());
+                                "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, data->size());
                         throw exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
-                    this->data = buffer;
                 }
 
                 Data::Data(const Data& rhs)
@@ -54,7 +53,7 @@ namespace hazelcast {
 
 
                 size_t Data::dataSize() const {
-                    return std::max<size_t>(totalSize() - DATA_OFFSET, (size_t)0);
+                    return (size_t)std::max<int>((int)totalSize() - (int)DATA_OFFSET, 0);
                 }
 
                 size_t Data::totalSize() const {

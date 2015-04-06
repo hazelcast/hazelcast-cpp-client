@@ -37,7 +37,6 @@ namespace hazelcast {
         class SerializationConfig;
 
         namespace serialization {
-
             namespace pimpl {
                 class HAZELCAST_API SerializationService {
                 public:
@@ -64,7 +63,8 @@ namespace hazelcast {
                         // write false (i.e. 0) for hasPartitionHash, since this has no use
                         // in terms of c++ client impl.
                         output.writeBoolean(false);
-
+                        output.writeInt(portable->getFactoryId());
+                        output.writeInt(portable->getClassId());
                         getSerializerHolder().getPortableSerializer().write(output, *portable);
 
                         Data data(output.toByteArray());
@@ -149,7 +149,9 @@ namespace hazelcast {
                         checkClassType(SerializationConstants::CONSTANT_TYPE_PORTABLE, typeId);
 
                         boost::shared_ptr<T> object(new T);
-                        getSerializerHolder().getPortableSerializer().read(dataInput, *object);
+                        int factoryId = dataInput.readInt();
+                        int classId = dataInput.readInt();
+                        getSerializerHolder().getPortableSerializer().read(dataInput, *object, factoryId, classId);
 
                         return object;
                     };
@@ -213,7 +215,7 @@ namespace hazelcast {
                     void checkClassType(int expectedType, int currentType);
 
                     inline static bool isNullData(const Data &data) {
-                        return data.dataSize() == 0 || data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
+                        return data.dataSize() == 0 && data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
                     }
                 };
 

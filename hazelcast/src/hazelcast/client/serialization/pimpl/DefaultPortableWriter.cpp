@@ -25,14 +25,14 @@ namespace hazelcast {
                 , begin(dataOutput.position())
                 , cd(cd) {
                     // room for final offset
-                    objectDataOutput.writeZeroBytes(4);
+                    dataOutput.writeZeroBytes(4);
 
                     objectDataOutput.writeInt(cd->getFieldCount());
 
                     offset = dataOutput.position();
                     // one additional for raw data
                     int fieldIndexesLength = (cd->getFieldCount() + 1) * util::Bits::INT_SIZE_IN_BYTES;
-                    objectDataOutput.writeZeroBytes(fieldIndexesLength);
+                    dataOutput.writeZeroBytes(fieldIndexesLength);
                 }
 
                 void DefaultPortableWriter::writeInt(const char *fieldName, int value) {
@@ -70,7 +70,7 @@ namespace hazelcast {
                     dataOutput.writeFloat(value);
                 }
 
-                void DefaultPortableWriter::writeShort(const char *fieldName, short value) {
+                void DefaultPortableWriter::writeShort(const char *fieldName, int value) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT);
                     dataOutput.writeShort(value);
                 }
@@ -132,7 +132,7 @@ namespace hazelcast {
                         int index = fd.getIndex();
                         dataOutput.writeInt((int)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int)pos);
                         size_t nameLen = strlen(fieldName);
-                        dataOutput.writeShort((short)nameLen);
+                        dataOutput.writeShort(nameLen);
                         dataOutput.writeBytes((byte *)fieldName, nameLen);
                         dataOutput.writeByte(fieldType.getId());
 
@@ -166,7 +166,7 @@ namespace hazelcast {
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {
-                    serializerHolder.getPortableSerializer().writeInternal(dataOutput, p);
+                    serializerHolder.getPortableSerializer().write(dataOutput, p);
                 }
 
 

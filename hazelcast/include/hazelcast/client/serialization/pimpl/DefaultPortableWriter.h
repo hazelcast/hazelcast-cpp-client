@@ -56,7 +56,7 @@ namespace hazelcast {
 
                     void writeFloat(const char *fieldName, float value);
 
-                    void writeShort(const char *fieldName, short value);
+                    void writeShort(const char *fieldName, int value);
 
                     void writeUTF(const char *fieldName, const std::string& str);
 
@@ -84,7 +84,7 @@ namespace hazelcast {
                         T obj;
                         Portable *p = (Portable *)(&obj);
                         dataOutput.writeInt(p->getFactoryId());
-                        dataOutput.writeInt(p->getFactoryId());
+                        dataOutput.writeInt(p->getClassId());
                     }
 
                     template<typename T>
@@ -96,8 +96,6 @@ namespace hazelcast {
 
                         dataOutput.writeInt(fd.getFactoryId());
                         dataOutput.writeInt(fd.getClassId());
-
-                        checkPortableAttributes(fd, portable);
 
                         write(portable);
                     }

@@ -6,10 +6,7 @@
 #include <hazelcast/client/serialization/pimpl/Packet.h>
 #include <hazelcast/client/exception/IllegalArgumentException.h>
 #include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {

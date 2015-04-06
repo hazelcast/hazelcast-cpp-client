@@ -17,7 +17,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 SerializationService::SerializationService(const SerializationConfig& serializationConfig)
-                : portableContext(serializationConfig.getPortableVersion(), *this)
+                : portableContext(serializationConfig.getPortableVersion())
                 , serializationConfig(serializationConfig) {
                     std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
                     std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;

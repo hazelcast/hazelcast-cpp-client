@@ -36,11 +36,8 @@ namespace hazelcast {
 
             void OutputSocketStream::writePacket(serialization::pimpl::Packet const& packet) {
                 writeByte(serialization::pimpl::Packet::VERSION);
-
                 writeShort(packet.getHeader());
-
                 writeInt(packet.getPartitionId());
-
                 writeValue(packet.getData());
             }
 

@@ -135,7 +135,6 @@ namespace hazelcast {
             assert(pos + t <= capacity);
             pos += t;
         }
-
     }
 }
 

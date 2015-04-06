@@ -4,7 +4,6 @@
 
 #include "hazelcast/client/HazelcastAll.h"
 #include <ctime>
-
 using namespace hazelcast::client;
 
 //utilites
@@ -65,7 +64,10 @@ bool startsWith(const std::string &str, const std::string &item) {
 
 bool endsWith(const std::string &str, const std::string &item) {
     unsigned long foundPosition = str.rfind(item);
-    return foundPosition == str.size() - item.size();
+    if (foundPosition == str.size() - item.size()) {
+        return true;
+    }
+    return false;
 }
 
 bool contains(const std::string &str, const std::string &item) {
@@ -96,9 +98,12 @@ std::vector<std::string> split(std::string input, char anchor) {
 
 class TestApp {
 private:
+    static const int LOAD_EXECUTORS_COUNT = 16;
     static const int ONE_KB = 1024;
     static const int ONE_THOUSAND = 1000;
     static const int ONE_HUNDRED = 100;
+    static const int ONE_MINUTE = 60;
+    static const int ONE_HOUR = 3600;
 
     HazelcastClient &hazelcast;
 
@@ -708,11 +713,11 @@ public:
         if (args.size() > 1) {
             count = toValue<int>(args[1]);
         }
-        size_t b = (size_t)ONE_HUNDRED;
+        int b = ONE_HUNDRED;
         std::string value(b, '1');
         if (args.size() > 2) {
             b = toValue<int>(args[2]);
-            value = std::string((size_t)b, '1');
+            value = std::string(b, '1');
         }
         int start = getMap().size();
         if (args.size() > 3) {

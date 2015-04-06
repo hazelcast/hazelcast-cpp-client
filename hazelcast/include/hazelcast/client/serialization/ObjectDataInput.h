@@ -16,7 +16,6 @@
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/util/IOUtil.h"
-
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -210,11 +209,9 @@ namespace hazelcast {
                     object.reset(new T);
 
                     readInt();
-
-                    boost::shared_ptr<ClassDefinition> classDefinition(new ClassDefinition());
-                    classDefinition->readData(dataInput);
-                    portableContext.registerClassDefinition(classDefinition);
-                    serializerHolder.getPortableSerializer().read(dataInput, *object);
+                    int factoryId = readInt();
+                    int classId = readInt();
+                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
                     return object;
                 };
 
@@ -240,7 +237,7 @@ namespace hazelcast {
                     }
                     object.reset(new T);
                     const int typeId = readInt();
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getSerializerId());
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getTypeId());
                     if (serializer.get() != NULL) {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                         s->read(*this, *object);

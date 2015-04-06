@@ -37,18 +37,8 @@ namespace hazelcast {
                     return fieldDefinitionsMap.find(name)->second;
                 }
                 char msg[200];
-                sprintf(msg, "Field (%s) does not exist", 0 != name ? name : "");
+                sprintf(msg, "Field (%s) does not exist", NULL != name ? name : "");
                 throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
-            }
-
-            const FieldDefinition* ClassDefinition::getFieldIfExist(const char *fieldName) const {
-                const FieldDefinition *result = NULL;
-                std::map<std::string, FieldDefinition>::const_iterator it;
-                it = fieldDefinitionsMap.find(fieldName);
-                if (it != fieldDefinitionsMap.end()) {
-                    result = &fieldDefinitionsMap.find(fieldName)->second;
-                }
-                return result;
             }
 
             bool ClassDefinition::hasField(const char *fieldName) const {
@@ -58,15 +48,6 @@ namespace hazelcast {
             FieldType ClassDefinition::getFieldType(const char *fieldName) const {
                 FieldDefinition const& fd = getField(fieldName);
                 return fd.getType();
-            }
-
-            const FieldType *ClassDefinition::getFieldTypeIfExists(const char *fieldName) const {
-                const FieldType *result = NULL;
-                const FieldDefinition *fd = getFieldIfExist(fieldName);
-                if (NULL != fd) {
-                    result = &(fd->getType());
-                }
-                return result;
             }
 
             int ClassDefinition::getFieldCount() const {
@@ -96,7 +77,7 @@ namespace hazelcast {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
-                dataOutput.writeShort((short)fieldDefinitions.size());
+                dataOutput.writeShort(fieldDefinitions.size());
                 std::vector<FieldDefinition>::iterator it;
                 for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
                     it->writeData(dataOutput);

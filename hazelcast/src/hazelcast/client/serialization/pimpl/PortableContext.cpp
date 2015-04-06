@@ -23,10 +23,8 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(int version, SerializationService &serializationSvc)
-                : contextVersion(version),
-                  serializerHolder(*this),
-                  serializationSrv(serializationSvc) {
+                PortableContext::PortableContext(int version)
+                : contextVersion(version), serializerHolder(*this){
                 }
 
 
@@ -42,7 +40,7 @@ namespace hazelcast {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput &in, int factoryId, int classId, int version) {
+                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput& in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -53,56 +51,57 @@ namespace hazelcast {
                     int fieldCount = in.readInt();
                     int offset = in.position();
                     for (int i = 0; i < fieldCount; i++) {
-                        int pos = in.readInt(offset + i * Bits::INT_SIZE_IN_BYTES);
+                        in.position(offset + i * Bits::INT_SIZE_IN_BYTES);
+                        int pos = in.readInt();
                         in.position(pos);
 
                         short len = in.readShort();
-                        vector<char> chars(len + 1);
-                        in.readCharArray(&(chars[0]), len);
-                        chars[len] = '\0';
+                        vector<char> chars(len);
+                        in.readFully(chars);
+                        chars.push_back('\0');
 
-                            FieldType type(in.readByte());
-                            std::string name(&(chars[0]));
-                            int fieldFactoryId = 0;
-                            int fieldClassId = 0;
-                            if (type == FieldTypes::TYPE_PORTABLE) {
-                                // is null
-                                if (in.readBoolean()) {
-                                    shouldRegister = false;
-                                }
+                        FieldType type(in.readByte());
+                        std::string name(&(chars[0]));
+                        int fieldFactoryId = 0;
+                        int fieldClassId = 0;
+                        if (type == FieldTypes::TYPE_PORTABLE) {
+                            // is null
+                            if (in.readBoolean()) {
+                                shouldRegister = false;
+                            }
+                            fieldFactoryId = in.readInt();
+                            fieldClassId = in.readInt();
+
+                            // TODO: what there's a null inner Portable field
+                            if (shouldRegister) {
+                                int fieldVersion = in.readInt();
+                                readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
+                            }
+                        } else if (type == FieldTypes::TYPE_PORTABLE_ARRAY) {
+                            int k = in.readInt();
+                            if (k > 0) {
                                 fieldFactoryId = in.readInt();
                                 fieldClassId = in.readInt();
 
+                                int p = in.readInt();
+                                in.position(p);
+
                                 // TODO: what there's a null inner Portable field
-                                if (shouldRegister) {
-                                    int fieldVersion = in.readInt();
-                                    readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
-                                }
-                            } else if (type == FieldTypes::TYPE_PORTABLE_ARRAY) {
-                                int k = in.readInt();
-                                if (k > 0) {
-                                    fieldFactoryId = in.readInt();
-                                    fieldClassId = in.readInt();
-
-                                    int p = in.readInt();
-                                    in.position(p);
-
-                                    // TODO: what there's a null inner Portable field
-                                    int fieldVersion = in.readInt();
-                                    readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
-                                } else {
-                                    shouldRegister = false;
-                                }
-
+                                int fieldVersion = in.readInt();
+                                readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
+                            } else {
+                                shouldRegister = false;
                             }
-                            FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId);
-                            builder.addField(fieldDef);
+
                         }
-                        boost::shared_ptr<ClassDefinition>  classDefinition = builder.build();
-                        if (shouldRegister) {
-                            classDefinition = registerClassDefinition(classDefinition);
-                        }
-                        return classDefinition;
+                        FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId);
+                        builder.addField(fieldDef);
+                    }
+                    boost::shared_ptr<ClassDefinition> classDefinition = builder.build();
+                    if (shouldRegister) {
+                        classDefinition = registerClassDefinition(classDefinition);
+                    }
+                    return classDefinition;
                 }
 
                 boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
@@ -142,10 +141,6 @@ namespace hazelcast {
                     return *value;
                 }
 
-
-                SerializationService &PortableContext::getSerializationService() const {
-                    return serializationSrv;
-                }
             }
         }
     }

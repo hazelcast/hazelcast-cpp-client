@@ -12,6 +12,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 
+
 namespace hazelcast {
     namespace client {
         namespace serialization {

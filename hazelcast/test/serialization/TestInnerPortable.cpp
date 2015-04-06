@@ -1,6 +1,7 @@
 #include "TestInnerPortable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -38,11 +39,11 @@ namespace hazelcast {
             }
 
             int TestInnerPortable::getClassId() const {
-                return 2;
+                return TestSerializationConstants::TEST_INNER_PORTABLE;
             }
 
             int TestInnerPortable::getFactoryId() const {
-                return 1;
+                return TestSerializationConstants::TEST_DATA_FACTORY;
             }
 
             bool TestInnerPortable::operator ==(const TestInnerPortable& m) const {

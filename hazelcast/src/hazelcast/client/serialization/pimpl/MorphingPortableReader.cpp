@@ -17,125 +17,123 @@ namespace hazelcast {
                 : PortableReaderBase(portableContext, input, cd) {
                 }
 
-                int MorphingPortableReader::readInt(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                int MorphingPortableReader::readInt(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0;
                     }
+                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
 
-                    if (*currentFieldType == FieldTypes::TYPE_INT) {
+                    if (currentFieldType == FieldTypes::TYPE_INT) {
                         return PortableReaderBase::readInt(fieldName);
-                    } else if (*currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_CHAR) {
-                        return PortableReaderBase::readChar(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_SHORT) {
-                        return PortableReaderBase::readShort(fieldName, true);
+                    } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
+                        return PortableReaderBase::readByte(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
+                        return PortableReaderBase::readChar(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
+                        return PortableReaderBase::readShort(fieldName);
                     } else {
                         throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                     }
                 }
 
-                long MorphingPortableReader::readLong(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                long MorphingPortableReader::readLong(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0;
                     }
+                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
 
-                    if (*currentFieldType == FieldTypes::TYPE_LONG) {
+                    if (currentFieldType == FieldTypes::TYPE_LONG) {
                         return PortableReaderBase::readLong(fieldName);
-                    } else if (*currentFieldType == FieldTypes::TYPE_INT) {
-                        return PortableReaderBase::readInt(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_CHAR) {
-                        return PortableReaderBase::readChar(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_SHORT) {
-                        return PortableReaderBase::readShort(fieldName, true);
+                    } else if (currentFieldType == FieldTypes::TYPE_INT) {
+                        return PortableReaderBase::readInt(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
+                        return PortableReaderBase::readByte(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
+                        return PortableReaderBase::readChar(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
+                        return PortableReaderBase::readShort(fieldName);
                     } else {
                         throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                     }
                 }
 
-                bool MorphingPortableReader::readBoolean(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                bool MorphingPortableReader::readBoolean(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return false;
                     }
                     return PortableReaderBase::readBoolean(fieldName);
                 }
 
-                byte MorphingPortableReader::readByte(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                byte MorphingPortableReader::readByte(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0;
                     }
                     return PortableReaderBase::readByte(fieldName);
                 }
 
-                char MorphingPortableReader::readChar(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                char MorphingPortableReader::readChar(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0;
                     }
+
                     return PortableReaderBase::readChar(fieldName);
                 }
 
-                double MorphingPortableReader::readDouble(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                double MorphingPortableReader::readDouble(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0.0;
                     }
+                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
 
-                    if (*currentFieldType == FieldTypes::TYPE_FLOAT) {
-                        return PortableReaderBase::readFloat(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_DOUBLE) {
-                        return PortableReaderBase::readDouble(fieldName);
-                    } else if (*currentFieldType == FieldTypes::TYPE_LONG) {
-                        return PortableReaderBase::readLong(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_INT) {
-                        return PortableReaderBase::readInt(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_CHAR) {
-                        return PortableReaderBase::readChar(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_SHORT) {
-                        return PortableReaderBase::readShort(fieldName, true);
-                    } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
-                    }
-                }
-
-                float MorphingPortableReader::readFloat(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
-                        return 0.0;
-                    }
-
-                    if (*currentFieldType == FieldTypes::TYPE_FLOAT) {
+                    if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                         return PortableReaderBase::readFloat(fieldName);
-                    } else if (*currentFieldType == FieldTypes::TYPE_INT) {
-                        return PortableReaderBase::readInt(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_CHAR) {
-                        return PortableReaderBase::readChar(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_SHORT) {
-                        return PortableReaderBase::readShort(fieldName, true);
+                    } else if (currentFieldType == FieldTypes::TYPE_DOUBLE) {
+                        return PortableReaderBase::readDouble(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_LONG) {
+                        return PortableReaderBase::readLong(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_INT) {
+                        return PortableReaderBase::readInt(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
+                        return PortableReaderBase::readByte(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
+                        return PortableReaderBase::readChar(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
+                        return PortableReaderBase::readShort(fieldName);
                     } else {
                         throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                     }
                 }
 
-                short MorphingPortableReader::readShort(char const *fieldName, bool skipTypeCheck) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                float MorphingPortableReader::readFloat(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
+                        return 0.0;
+                    }
+                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+
+                    if (currentFieldType == FieldTypes::TYPE_FLOAT) {
+                        return PortableReaderBase::readFloat(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_INT) {
+                        return PortableReaderBase::readInt(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
+                        return PortableReaderBase::readByte(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
+                        return PortableReaderBase::readChar(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
+                        return PortableReaderBase::readShort(fieldName);
+                    } else {
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                    }
+                }
+
+                short MorphingPortableReader::readShort(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
                         return 0;
                     }
+                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
 
-                    if (*currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName, true);
-                    } else if (*currentFieldType == FieldTypes::TYPE_SHORT) {
+                    if (currentFieldType == FieldTypes::TYPE_BYTE) {
+                        return PortableReaderBase::readByte(fieldName);
+                    } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
                         throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
@@ -143,64 +141,56 @@ namespace hazelcast {
                 }
 
                 std::string MorphingPortableReader::readUTF(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return "";
                     }
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
                 std::vector<byte> MorphingPortableReader::readByteArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<byte>(1, 0);
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
                 std::vector<char> MorphingPortableReader::readCharArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<char>(1, 0);
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }
 
                 std::vector<int> MorphingPortableReader::readIntArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<int>(1, 0);
                     }
                     return PortableReaderBase::readIntArray(fieldName);
                 }
 
                 std::vector<long> MorphingPortableReader::readLongArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<long>(1, 0);
                     }
                     return PortableReaderBase::readLongArray(fieldName);
                 }
 
                 std::vector<double> MorphingPortableReader::readDoubleArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<double>(1, 0);
                     }
                     return PortableReaderBase::readDoubleArray(fieldName);
                 }
 
                 std::vector<float> MorphingPortableReader::readFloatArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<float>(1, 0);
                     }
                     return PortableReaderBase::readFloatArray(fieldName);
                 }
 
                 std::vector<short> MorphingPortableReader::readShortArray(char const *fieldName) {
-                    const FieldType *currentFieldType = cd->getFieldTypeIfExists(fieldName);
-                    if (NULL == currentFieldType){
+                    if (!cd->hasField(fieldName)){
                         return std::vector<short>(1, 0);
                     }
                     return PortableReaderBase::readShortArray(fieldName);

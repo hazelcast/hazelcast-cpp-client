@@ -10,7 +10,6 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
-
 #include <memory>
 #include <vector>
 #include <string>
@@ -31,17 +30,17 @@ namespace hazelcast {
 
                     virtual ~DataOutput();
 
-                    std::auto_ptr<std::vector<byte> > toByteArray();
+                    std::auto_ptr< std::vector<byte> > toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 
                     void writeBoolean(bool b);
 
-                    void writeByte(byte i);
+                    void writeByte(int i);
 
-                    void writeShort(short i);
+                    void writeShort(int i);
 
-                    void writeChar(short i);
+                    void writeChar(int i);
 
                     void writeInt(int i);
 
@@ -72,6 +71,8 @@ namespace hazelcast {
                     void writeByte(int index, int i);
 
                     void writeInt(int index, int v);
+
+                    void writeZeroBytes(int numberOfBytes);
 
                     size_t position();
 

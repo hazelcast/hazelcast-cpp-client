@@ -37,21 +37,21 @@ namespace hazelcast {
 
                     MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
-                    int readInt(const char *fieldName, bool skipTypeCheck = false);
+                    int readInt(const char *fieldName);
 
-                    long readLong(const char *fieldName, bool skipTypeCheck = false);
+                    long readLong(const char *fieldName);
 
-                    bool readBoolean(const char *fieldName, bool skipTypeCheck = false);
+                    bool readBoolean(const char *fieldName);
 
-                    byte readByte(const char *fieldName, bool skipTypeCheck = false);
+                    byte readByte(const char *fieldName);
 
-                    char readChar(const char *fieldName, bool skipTypeCheck = false);
+                    char readChar(const char *fieldName);
 
-                    double readDouble(const char *fieldName, bool skipTypeCheck = false);
+                    double readDouble(const char *fieldName);
 
-                    float readFloat(const char *fieldName, bool skipTypeCheck = false);
+                    float readFloat(const char *fieldName);
 
-                    short readShort(const char *fieldName, bool skipTypeCheck = false);
+                    short readShort(const char *fieldName);
 
                     std::string readUTF(const char *fieldName);
 
@@ -71,6 +71,7 @@ namespace hazelcast {
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
                         boost::shared_ptr<T> portableInstance(new T);
 
                         Portable * p = portableInstance.get();

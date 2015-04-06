@@ -5,6 +5,7 @@
 
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
@@ -44,17 +45,17 @@ namespace hazelcast {
 
             void ObjectDataOutput::writeByte(int i) {
                 if (isEmpty) return;
-                dataOutput->writeByte((byte) i);
+                dataOutput->writeByte(i);
             }
 
             void ObjectDataOutput::writeShort(int v) {
                 if (isEmpty) return;
-                dataOutput->writeShort((short) v);
+                dataOutput->writeShort(v);
             }
 
             void ObjectDataOutput::writeChar(int i) {
                 if (isEmpty) return;
-                dataOutput->writeChar((short) i);
+                dataOutput->writeChar(i);
             }
 
             void ObjectDataOutput::writeInt(int v) {
@@ -119,6 +120,7 @@ namespace hazelcast {
 
 
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
+                if (isEmpty) return;
                 bool isNull = (NULL == data || 0 == data->totalSize());
                 writeBoolean(isNull);
                 if (isNull) {
@@ -129,10 +131,26 @@ namespace hazelcast {
 
 
             void ObjectDataOutput::writePortable(const Portable *portable) {
-                writeBoolean(false);
+                bool isNull = NULL == portable;
+                writeBoolean(isNull);
+                if (isNull) {
+                    return;
+                }
                 writeInt(portable->getSerializerId());
+                writeInt(portable->getFactoryId());
+                writeInt(portable->getClassId());
                 serializerHolder->getPortableSerializer().write(*dataOutput, *portable);
 
+            }
+
+            void ObjectDataOutput::writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable) {
+                bool isNull = NULL == dataSerializable;
+                writeBoolean(isNull);
+                if (isNull) {
+                    return;
+                }
+                writeInt(dataSerializable->getSerializerId());
+                serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             }
 
             size_t ObjectDataOutput::position() {
@@ -141,12 +159,6 @@ namespace hazelcast {
 
             void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
-            }
-
-            void ObjectDataOutput::writeZeroBytes(int numberOfBytes) {
-                for (int k = 0; k < numberOfBytes; k++) {
-                    writeByte(0);
-                }
             }
 
         }

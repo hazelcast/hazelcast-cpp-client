@@ -11,7 +11,6 @@
 
 
 #include "hazelcast/client/serialization/FieldDefinition.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -76,22 +75,10 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @return field definition pointer by given name or null if the field does not exist
-                */
-                const FieldDefinition* getFieldIfExist(const char *fieldName) const;
-
-                /**
-                * @param fieldName name of the field
                 * @return type of given field
                 * @throws IllegalArgumentException
                 */
                 FieldType getFieldType(const char *fieldName) const;
-
-                /**
-                * @param fieldName name of the field
-                * @return type of given field type pointer or null if field does not exist.
-                */
-                const FieldType *getFieldTypeIfExists(const char *fieldName) const;
 
                 /**
                 * @return total field count
@@ -143,7 +130,7 @@ namespace hazelcast {
                 std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
 
-                std::auto_ptr<std::vector<byte> >  binary;
+                std::auto_ptr<std::vector<byte> > binary;
 
             };
         }

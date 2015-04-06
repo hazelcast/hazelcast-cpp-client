@@ -23,7 +23,6 @@ namespace hazelcast {
     namespace client {
         namespace txn {
             class BaseTxnRequest;
-            class TransactionProxy;
         }
         namespace proxy {
 

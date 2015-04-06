@@ -31,21 +31,21 @@ namespace hazelcast {
 
                     virtual ~PortableReaderBase();
 
-                    virtual int readInt(const char *fieldName, bool skipTypeCheck = false);
+                    virtual int readInt(const char *fieldName);
 
-                    virtual long readLong(const char *fieldName, bool skipTypeCheck = false);
+                    virtual long readLong(const char *fieldName);
 
-                    virtual bool readBoolean(const char *fieldName, bool skipTypeCheck = false);
+                    virtual bool readBoolean(const char *fieldName);
 
-                    virtual byte readByte(const char *fieldName, bool skipTypeCheck = false);
+                    virtual byte readByte(const char *fieldName);
 
-                    virtual char readChar(const char *fieldName, bool skipTypeCheck = false);
+                    virtual char readChar(const char *fieldName);
 
-                    virtual double readDouble(const char *fieldName, bool skipTypeCheck = false);
+                    virtual double readDouble(const char *fieldName);
 
-                    virtual float readFloat(const char *fieldName, bool skipTypeCheck = false);
+                    virtual float readFloat(const char *fieldName);
 
-                    virtual short readShort(const char *fieldName, bool skipTypeCheck = false);
+                    virtual short readShort(const char *fieldName);
 
                     virtual std::string readUTF(const char *fieldName);
 
@@ -74,7 +74,7 @@ namespace hazelcast {
                     void getPortableInstancesArray(char const *fieldName,
                             std::vector<Portable *> &portableInstances);
 
-                    void setPosition(char const * , FieldType const& fieldType, bool skipTypeCheck = false);
+                    void setPosition(char const * , FieldType const& fieldType);
 
                     boost::shared_ptr<ClassDefinition> cd;
                     DataInput &dataInput;
@@ -89,7 +89,7 @@ namespace hazelcast {
 
                     void read(DataInput &dataInput, Portable &object, int factoryId, int classId) const;
 
-                    int readPosition(const char *, FieldType const& fieldType, bool skipTypeCheck = false);
+                    int readPosition(const char *, FieldType const& fieldType);
                 };
 
             }

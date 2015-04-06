@@ -9,7 +9,6 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
-
 #include <vector>
 #include <string>
 
@@ -25,9 +24,6 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-            /**
-             * TODO: Make reads safe by checking on the array boundary, throw HazelcastSerializationException
-             */
                 class HAZELCAST_API DataInput {
                 public:
                     DataInput(const std::vector<byte> &buffer);
@@ -35,6 +31,8 @@ namespace hazelcast {
                     DataInput(const std::vector<byte> &buffer, int offset);
 
                     void readFully(std::vector<byte> &);
+
+                    void readFully(std::vector<char> &);
 
                     int skipBytes(int i);
 
@@ -74,11 +72,7 @@ namespace hazelcast {
 
                     int position();
 
-                    void position(int newPos);
-
-                    int readInt(int newPositionToReadFrom);
-
-                    void readCharArray(char buffer[], short length);
+                    void position(int position);
 
                 private:
                     const std::vector<byte> &buffer;
@@ -93,7 +87,7 @@ namespace hazelcast {
 
                     DataInput &operator = (const DataInput &);
 
-                    void checkBoundary(size_t requestedLength);
+                    void checkAvailable(size_t requestedLength);
                 };
             }
         }
