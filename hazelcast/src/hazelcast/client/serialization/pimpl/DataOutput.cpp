@@ -7,6 +7,8 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
+#include <algorithm>
+
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -112,9 +114,8 @@ namespace hazelcast {
                     writeInt((int)length);
                     size_t chunkSize = length / STRING_CHUNK_SIZE + 1;
                     for (size_t i = 0; i < chunkSize; i++) {
-                        using namespace std;
                         size_t beginIndex = (size_t)std::max<int>((int)0, (int)STRING_CHUNK_SIZE * (int)i - 1);
-                        size_t endIndex = std::min<int>(STRING_CHUNK_SIZE * (i + 1) - 1, length);
+                        size_t endIndex = (size_t)std::min<int>(STRING_CHUNK_SIZE * (i + 1) - 1, length);
                         writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
                     }
                 }
