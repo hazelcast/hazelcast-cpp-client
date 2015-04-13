@@ -71,7 +71,7 @@ namespace hazelcast {
                         setStatus(ST_VERSION);
                         if (VERSION != version) {
                             std::stringstream stringstream;
-                            stringstream << "Packet versions are not matching! This -> " << VERSION << ", Incoming -> " << version;
+                            stringstream << "Packet versions are not matching! This -> " << (int)VERSION << ", Incoming -> " << (int)version;
                             throw exception::IllegalArgumentException("Packet::readFrom", stringstream.str());
                         }
                     }
