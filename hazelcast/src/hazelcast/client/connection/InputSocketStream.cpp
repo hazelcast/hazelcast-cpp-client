@@ -55,7 +55,7 @@ namespace hazelcast {
                 if(version != serialization::pimpl::Packet::VERSION){
                     std::stringstream stringstream;
                     stringstream << "Packet versions are not matching! This -> "
-                    << serialization::pimpl::Packet::VERSION << ", Incoming -> " << version;
+                    << (int)serialization::pimpl::Packet::VERSION << ", Incoming -> " << version;
                     throw exception::IllegalArgumentException("Packet::readFrom", stringstream.str());
                 }
                 packet.setHeader(readShort());
