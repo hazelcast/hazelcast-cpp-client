@@ -15,27 +15,27 @@ namespace hazelcast {
 
 
             /**
-            * Sets n-th bit of the byte value
+            * Sets n-th bit of the short value
             *
-            * @param value byte value
+            * @param value short value
             * @param bit n-th bit
             * @return value
             */
-            byte setBit(byte value, int bit);
+            short setBit(short value, int bit);
 
             /**
-            * Clears n-th bit of the byte value
+            * Clears n-th bit of the short value
             *
-            * @param value byte value
+            * @param value short value
             * @param bit n-th bit
             * @return value
             */
-            byte clearBit(byte value, int bit);
+            short clearBit(short value, int bit);
 
             /**
             * Returns true if n-th bit of the value is set, false otherwise
             */
-            bool isBitSet(byte value, int bit);
+            bool isBitSet(short value, int bit);
 
             /**
             *

@@ -48,7 +48,7 @@ namespace hazelcast {
                     static const int ST_HASH;
                     static const int ST_ALL;
                 private:
-                    int status;
+                    short status;
                     size_t bytesRead;
                     size_t bytesWritten;
                     Data data;

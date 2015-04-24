@@ -9,19 +9,19 @@ namespace hazelcast {
         namespace util {
 
 
-            byte setBit(byte value, int bit) {
+            short setBit(short value, int bit) {
                 value |= 1 << bit;
                 return value;
             }
 
 
-            byte clearBit(byte value, int bit) {
+            short clearBit(short value, int bit) {
                 value &= ~(1 << bit);
                 return value;
             }
 
 
-            bool isBitSet(byte value, int bit) {
+            bool isBitSet(short value, int bit) {
                 return (value & 1 << bit) != 0;
             }
 

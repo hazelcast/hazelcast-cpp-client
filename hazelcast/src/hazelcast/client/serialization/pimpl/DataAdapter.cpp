@@ -19,7 +19,7 @@ namespace hazelcast {
                 const int DataAdapter::ST_ALL = 5;
 
                 DataAdapter::DataAdapter(PortableContext& context, const Data& data)
-                : status(ST_TYPE)
+                : status(0)
                 , bytesRead(0)
                 , bytesWritten(0)
                 , data(data)
@@ -29,7 +29,7 @@ namespace hazelcast {
                 }
 
                 DataAdapter::DataAdapter(PortableContext& context)
-                : status(ST_TYPE)
+                : status(0)
                 , bytesRead(0)
                 , bytesWritten(0)
                 , context(context)
