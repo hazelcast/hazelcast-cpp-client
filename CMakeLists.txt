@@ -10,7 +10,7 @@ project (HazelcastClient)
 
 INCLUDE(TestBigEndian)
 
-SET(HZ_VERSION 3.5-SNAPSHOT)
+SET(HZ_VERSION 3.5-EA2-SNAPSHOT)
 
 message(STATUS "Preparing hazelcast client ..... ")
 
