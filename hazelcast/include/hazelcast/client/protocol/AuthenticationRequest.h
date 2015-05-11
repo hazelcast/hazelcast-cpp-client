@@ -21,8 +21,6 @@ namespace hazelcast {
 
                 void setPrincipal(Principal *principal);
 
-                void setReAuth(bool);
-
                 void setFirstConnection(bool);
 
                 int getFactoryId() const;
@@ -34,7 +32,6 @@ namespace hazelcast {
             private:
                 const Credentials &credentials;
                 Principal *principal;
-                bool reAuth;
                 bool firstConnection;
             };
 

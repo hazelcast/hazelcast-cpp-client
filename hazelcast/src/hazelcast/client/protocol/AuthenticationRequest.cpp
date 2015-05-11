@@ -13,17 +13,12 @@ namespace hazelcast {
 
             AuthenticationRequest::AuthenticationRequest(const Credentials &credentials)
             :credentials(credentials)
-            , reAuth(true)
             , firstConnection(true) {
 
             }
 
             void AuthenticationRequest::setPrincipal(Principal *principal) {
                 this->principal = principal;
-            }
-
-            void AuthenticationRequest::setReAuth(bool reAuth) {
-                this->reAuth = reAuth;
             }
 
             void AuthenticationRequest::setFirstConnection(bool firstConnection) {
@@ -46,7 +41,6 @@ namespace hazelcast {
                 } else {
                     writer.writePortable("principal", *principal);
                 }
-                writer.writeBoolean("reAuth", reAuth);
                 writer.writeBoolean("firstConnection", firstConnection);
             }
         }

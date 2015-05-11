@@ -21,7 +21,12 @@ namespace hazelcast {
             public:
                 HazelcastServer(HazelcastServerFactory &);
 
-                void shutdown();
+                /**
+                 * @returns true if the server were not started before and it is now started successfully
+                 */
+                bool start();
+
+                bool shutdown();
 
                 ~HazelcastServer();
 

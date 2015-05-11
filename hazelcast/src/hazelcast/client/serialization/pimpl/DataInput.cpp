@@ -3,6 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include <assert.h>
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
@@ -29,11 +30,14 @@ namespace hazelcast {
                 }
 
                 void DataInput::readFully(std::vector<byte> &bytes) {
-                    bytes = std::vector<byte >(buffer.begin() + pos, buffer.begin() + pos + bytes.size());
-                    pos += bytes.size();
+                    size_t len = bytes.size();
+                    assert(pos + len <= buffer.size());
+                    bytes = std::vector<byte>(buffer.begin() + pos, buffer.begin() + pos + len);
+                    pos += len;
                 }
 
                 int DataInput::skipBytes(int i) {
+                    assert(pos + i <= buffer.size());
                     pos += i;
                     return i;
                 }
@@ -43,6 +47,7 @@ namespace hazelcast {
                 }
 
                 byte DataInput::readByte() {
+                    assert(pos + 1 <= buffer.size());
                     return buffer[pos++];
                 }
 
@@ -130,6 +135,7 @@ namespace hazelcast {
                 }
 
                 void DataInput::position(int newPos) {
+                    assert(newPos <= buffer.size());
                     pos = newPos;
                 }
                 //private functions
@@ -195,6 +201,7 @@ namespace hazelcast {
 
                 std::vector <byte> DataInput::readByteArray() {
                     int len = readInt();
+                    assert(pos + len <= buffer.size());
                     std::vector <byte> values(buffer.begin() + pos, buffer.begin() + pos + len);
                     pos += len;
                     return values;

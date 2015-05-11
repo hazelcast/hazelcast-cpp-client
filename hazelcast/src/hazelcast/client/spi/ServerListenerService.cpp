@@ -78,13 +78,11 @@ namespace hazelcast {
             }
 
             void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise) {
-                try {
-                    InvocationService& invocationService = clientContext.getInvocationService();
-                    invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
-                } catch (exception::IException&) {
-                    util::LockGuard lockGuard(failedListenerLock);
-                    failedListeners.push_back(listenerPromise);
-                }
+                util::LockGuard lockGuard(failedListenerLock);
+                // Just put into the list, it shall be retried when the cluster listener thread reconnects to another node
+                // Not: If a resend is performed here retrying the listener promise, the cluster listener thread shall
+                // be blocked on connection close.
+                failedListeners.push_back(listenerPromise);
             }
 
             void ServerListenerService::triggerFailedListeners() {
@@ -95,7 +93,11 @@ namespace hazelcast {
                 util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
                     try {
-                        invocationService.resend(*it, "internalRetryOfUnkownAddress");
+                        boost::shared_ptr<connection::Connection> result = invocationService.resend(*it, "internalRetryOfUnkownAddress");
+
+                        if (NULL == result.get()) { // resend failed
+                            newFailedListeners.push_back(*it);
+                        }
                     } catch (exception::IOException&) {
                         newFailedListeners.push_back(*it);
                         continue;

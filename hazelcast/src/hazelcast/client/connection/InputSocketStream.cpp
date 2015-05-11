@@ -98,9 +98,9 @@ namespace hazelcast {
                             readFully(*buffer);
                             boost::shared_ptr<serialization::ClassDefinition> cdProxy(new serialization::ClassDefinition(factoryId, classId, version));
                             context->registerClassDefinition(cdProxy);
+                        } else {
+                            skipBytes(classDefSize);
                         }
-                        skipBytes(classDefSize);
-                        // read data 
                     }
                     data.setHeader(header);
                 }

@@ -28,9 +28,10 @@ namespace hazelcast {
 
             void await();
 
+            int get();
+
         private:
             util::AtomicInt count;
-
         };
     }
 }
