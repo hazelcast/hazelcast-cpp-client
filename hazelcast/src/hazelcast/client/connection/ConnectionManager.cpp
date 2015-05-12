@@ -171,8 +171,9 @@ namespace hazelcast {
                 std::stringstream message;
                 (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
                 util::ILogger::getLogger().info(message.str());
-                if (ownerConnection)
+                if (ownerConnection) {
                     this->principal = serializationService.toObject<protocol::Principal>(getCollection[1]);
+                }
             }
 
 

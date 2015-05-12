@@ -96,7 +96,7 @@ namespace hazelcast {
                         if(cd.get() == NULL){
                             std::auto_ptr<std::vector<byte> > buffer(new std::vector<byte>(classDefSize));
                             readFully(*buffer);
-                            boost::shared_ptr<serialization::ClassDefinition> cdProxy(new serialization::ClassDefinition(factoryId, classId, version));
+                            boost::shared_ptr<serialization::ClassDefinition> cdProxy = context->createClassDefinition(factoryId, buffer);
                             context->registerClassDefinition(cdProxy);
                         } else {
                             skipBytes(classDefSize);
@@ -110,7 +110,7 @@ namespace hazelcast {
                     data.data->resize(size);
                     readFully(*(data.data.get()));
                 }
-                
+
             }
         }
     }

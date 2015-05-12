@@ -28,7 +28,7 @@ namespace hazelcast {
             if (isEnabled(client::WARNING)) {
                 char buffer [TIME_STRING_LENGTH];
 
-                (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " WARNING: " << prefix  << message << std::endl);
+                (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " WARNING: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
 
