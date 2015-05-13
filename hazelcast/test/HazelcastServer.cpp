@@ -34,16 +34,16 @@ namespace hazelcast {
 
             bool HazelcastServer::shutdown() {
                 bool result = false;
-				try{
-					if (!isShutDown) {
-						factory.shutdownInstance(id);
-						isShutDown = true;
+                try{
+                    if (!isShutDown) {
+                        factory.shutdownInstance(id);
+                        isShutDown = true;
                         result = true;
-					}
-				}catch(std::exception& e){
-					isShutDown = true;
-					std::cerr << e.what() << std::endl;
-				}
+                    }
+                }catch(std::exception& e){
+                    isShutDown = true;
+                    std::cerr << e.what() << std::endl;
+                }
                 return result;
             }
 

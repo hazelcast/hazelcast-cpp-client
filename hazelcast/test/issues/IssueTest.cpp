@@ -49,6 +49,21 @@ namespace hazelcast {
                 node->shutdown();
             }
 
+            void putMapMessage(util::ThreadArgs &args) {
+                std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Started." << std::endl;
+
+                IMap<int, int> *map = (IMap<int, int> *)args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
+
+                do {
+                    // 7. Put a 2nd entry to the map
+                    map->put(2, 20);
+                    sleep(1);
+                } while (latch->get() > 0);
+
+                std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Finished." << std::endl;
+            }
+
             void IssueTest::testOperationRedo_smartRoutingDisabled() {
                 HazelcastServer hz1(serverFactory);
                 HazelcastServer hz2(serverFactory);
@@ -82,7 +97,7 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 Address address = Address(serverFactory.getServerAddress(), 5701);
                 clientConfig.addAddress(address);
-                clientConfig.setConnectionAttemptLimit(100);
+                clientConfig.setConnectionAttemptLimit(10);
 
                 HazelcastClient client(clientConfig);
 
@@ -104,29 +119,21 @@ namespace hazelcast {
                 iTest::assertTrue(server.shutdown());
                 iTest::assertTrue(server.start());
 
-                // TODO: This sleep is necessary for allowing the listener registration completed,
-                // in the future a better method can be found so that this sleep won't be necessary
-                sleep(10);
-
-                // 7. Put a 2nd entry to the map
-                iTest::assertEqual((int *)NULL, map.put(2, 20).get());
-
-                std::cout << __FILE__ << ":" << __LINE__ << " Put the second entry into the map." << std::endl;
-
-                sleep(2);
-
-                std::cout << __FILE__ << ":" << __LINE__ << " Latch count after second map put:" << latch.get() << std::endl;
+                std::string putThreadName("Map Put Thread");
+                util::Thread t(putThreadName, putMapMessage, &map, &latch);
 
                 // 8. Verify that the 2nd entry is received by the listener
-                iTest::assertEqual(0, latch.get());
+                iTest::assertTrue(latch.await(20, 0)); // timeout of 20 seconds
+
+                t.interrupt();
+                t.join();
 
                 // 9. Shut down the server
                 iTest::assertTrue(server.shutdown());
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
-                std::cout << __FILE__ << ":" << __LINE__ << "[Issue864MapListener::entryAdded] ENTRY. Key:" <<
-                event.getKey() << std::endl;
+                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryAdded] ENTRY. Key:" << event.getKey() << std::endl;
 
                 int count = latch.get();
                 if (2 == count) {
@@ -149,7 +156,12 @@ namespace hazelcast {
             }
 
             void IssueTest::Issue864MapListener::entryUpdated(const EntryEvent<int, int> &event) {
+                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] ENTRY. latch count:" << latch.get() << std::endl;
+                iTest::assertEqual(2, event.getKey());
+                iTest::assertEqual(20, event.getValue());
+                latch.countDown();
 
+                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] EXIT. latch count:" << latch.get() << std::endl;
             }
 
             void IssueTest::Issue864MapListener::entryEvicted(const EntryEvent<int, int> &event) {

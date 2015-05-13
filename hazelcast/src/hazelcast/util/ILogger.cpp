@@ -6,6 +6,7 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
 #include <iostream>
+#include <hazelcast/util/LockGuard.h>
 
 namespace hazelcast {
     namespace util {
@@ -19,7 +20,7 @@ namespace hazelcast {
         void ILogger::severe(const std::string& message) {
             if (isEnabled(client::SEVERE)) {
                 char buffer [TIME_STRING_LENGTH];
-
+                util::LockGuard l(lockMutex);
                 (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " SEVERE: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
@@ -27,7 +28,7 @@ namespace hazelcast {
         void ILogger::warning(const std::string& message) {
             if (isEnabled(client::WARNING)) {
                 char buffer [TIME_STRING_LENGTH];
-
+                util::LockGuard l(lockMutex);
                 (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " WARNING: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
@@ -35,7 +36,7 @@ namespace hazelcast {
         void ILogger::info(const std::string& message) {
             if (isEnabled(client::INFO)) {
                 char buffer [TIME_STRING_LENGTH];
-
+                util::LockGuard l(lockMutex);
                 (std::cout << getTime(buffer, TIME_STRING_LENGTH) <<" INFO: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }
@@ -44,7 +45,7 @@ namespace hazelcast {
         void ILogger::finest(const std::string& message) {
             if (isEnabled(client::FINEST)) {
                 char buffer [TIME_STRING_LENGTH];
-
+                util::LockGuard l(lockMutex);
                 (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " FINEST: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
             }
         }

@@ -43,6 +43,14 @@ namespace hazelcast {
         int CountDownLatch::get() {
             return count;
         }
+
+        bool CountDownLatch::await(int seconds, int expectedCount) {
+            while (seconds > 0 && count > expectedCount) {
+                util::sleep(1);
+                --seconds;
+            }
+            return count <= expectedCount;
+        }
     }
 }
 

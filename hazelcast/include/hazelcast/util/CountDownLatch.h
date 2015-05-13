@@ -28,6 +28,11 @@ namespace hazelcast {
 
             void await();
 
+            /**
+             * Wait for latch count to drop to the provided value
+             */
+            bool await(int seconds, int count);
+
             int get();
 
         private:
