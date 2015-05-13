@@ -57,8 +57,13 @@ namespace hazelcast {
 
                 do {
                     // 7. Put a 2nd entry to the map
-                    map->put(2, 20);
-                    sleep(1);
+                    try {
+                        map->put(2, 20);
+                        sleep(1);
+                    } catch (std::exception &e) {
+                        // suppress the error
+                        std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Suppressing exception:" << e.what() << std::endl;
+                    }
                 } while (latch->get() > 0);
 
                 std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Finished." << std::endl;
@@ -110,7 +115,7 @@ namespace hazelcast {
                 // Put a key, value to the map
                 iTest::assertEqual((int *)NULL, map.put(1, 10).get());
 
-                sleep(1);
+                iTest::assertTrue(latch.await(20, 1)); // timeout of 20 seconds
 
                 // 5. Verify that the listener got the entry added event
                 iTest::assertEqual(1, latch.get());
