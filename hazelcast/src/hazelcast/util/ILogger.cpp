@@ -5,8 +5,10 @@
 
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/LockGuard.h"
+
 #include <iostream>
-#include <hazelcast/util/LockGuard.h>
+#include <time.h>
 
 namespace hazelcast {
     namespace util {
