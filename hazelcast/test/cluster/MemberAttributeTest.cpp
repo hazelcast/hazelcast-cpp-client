@@ -13,6 +13,8 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 
+#include <memory>
+
 namespace hazelcast {
     namespace client {
 
@@ -53,10 +55,8 @@ namespace hazelcast {
 
             void MemberAttributeTest::testInitialValues() {
                 HazelcastServer instance(hazelcastInstanceFactory);
-                ClientConfig clientConfig;
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
-                Cluster cluster = hazelcastClient.getCluster();
+                std::auto_ptr<HazelcastClient> hazelcastClient(getNewClient());
+                Cluster cluster = hazelcastClient->getCluster();
                 std::vector<Member> members = cluster.getMembers();
                 assertEqual(1U,members.size());
                 Member &member = members[0];
@@ -148,12 +148,11 @@ namespace hazelcast {
                 util::CountDownLatch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = getConfig();
                 clientConfig.addListener(&sampleListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
+                HazelcastClient hazelcastClient(clientConfig);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 

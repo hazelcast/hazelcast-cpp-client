@@ -80,13 +80,12 @@ namespace hazelcast {
             void ClientTxnTest::beforeTest() {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
                 second.reset(new HazelcastServer(hazelcastInstanceFactory));
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = getConfig();
                 clientConfig.setRedoOperation(true);
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
                 clientConfig.setLoadBalancer(loadBalancer.get());
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                client.reset(new HazelcastClient(clientConfig.addAddress(address)));
+                client.reset(new HazelcastClient(clientConfig));
             }
 
             void ClientTxnTest::afterTest() {

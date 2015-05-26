@@ -113,10 +113,8 @@ namespace hazelcast {
 
             void ClusterTest::testClusterListeners() {
                 HazelcastServer instance(hazelcastInstanceFactory);
-                ClientConfig clientConfig;
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
-                Cluster cluster = hazelcastClient.getCluster();
+                std::auto_ptr<HazelcastClient> hazelcastClient(getNewClient());
+                Cluster cluster = hazelcastClient->getCluster();
                 util::CountDownLatch memberAdded(1);
                 util::CountDownLatch memberAddedInit(2);
                 util::CountDownLatch memberRemoved(1);
@@ -158,13 +156,12 @@ namespace hazelcast {
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInClusterTest sampleListener(memberAdded, attributeLatch, memberRemoved);
 
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = getConfig();
                 clientConfig.addListener(&sampleListener);
                 clientConfig.addListener(&sampleInitialListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
+                HazelcastClient hazelcastClient(clientConfig);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
@@ -215,10 +212,9 @@ namespace hazelcast {
             void ClusterTest::testListenersWhenClusterDown() {
                 HazelcastServer instance(hazelcastInstanceFactory);
 
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = getConfig();
                 clientConfig.setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
-                Address address = Address(hazelcastInstanceFactory.getServerAddress(), 5701);
-                HazelcastClient hazelcastClient(clientConfig.addAddress(address));
+                HazelcastClient hazelcastClient(clientConfig);
 
                 util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);

@@ -51,9 +51,7 @@ namespace hazelcast {
                 HazelcastServer hz1(serverFactory);
                 HazelcastServer hz2(serverFactory);
 
-                ClientConfig clientConfig;
-                Address address = Address(serverFactory.getServerAddress(), 5701);
-                clientConfig.addAddress(address);
+                ClientConfig &clientConfig = getConfig();
                 clientConfig.setRedoOperation(true);
                 clientConfig.setSmart(false);
 
