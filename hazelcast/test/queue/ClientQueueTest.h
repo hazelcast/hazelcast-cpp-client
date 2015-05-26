@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientQueueTest
 #define HAZELCAST_ClientQueueTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IQueue.h"
 #include "HazelcastServer.h"
@@ -20,7 +20,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientQueueTest : public iTest::iTestFixture<ClientQueueTest> {
+            class ClientQueueTest : public ClientTestSupport<ClientQueueTest> {
             public:
                 ClientQueueTest(HazelcastServerFactory&);
 

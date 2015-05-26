@@ -58,7 +58,7 @@ namespace hazelcast {
             };
 
             ClientTxnTest::ClientTxnTest(HazelcastServerFactory& hazelcastInstanceFactory)
-            : iTestFixture<ClientTxnTest>("ClientTxnTest")
+            : ClientTestSupport<ClientTxnTest>("ClientTxnTest")
             , hazelcastInstanceFactory(hazelcastInstanceFactory) {
             }
 

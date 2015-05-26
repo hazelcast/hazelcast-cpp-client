@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientMapTest
 #define HAZELCAST_ClientMapTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IMap.h"
 #include "HazelcastServer.h"
@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientMapTest : public iTestFixture<ClientMapTest> {
+            class ClientMapTest : public ClientTestSupport<ClientMapTest> {
             public:
                 ClientMapTest(HazelcastServerFactory &);
 

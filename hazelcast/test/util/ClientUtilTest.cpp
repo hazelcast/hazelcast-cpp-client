@@ -15,7 +15,7 @@ namespace hazelcast {
 
 
             ClientUtilTest::ClientUtilTest(int dummy)
-            : iTestFixture<ClientUtilTest>("ClientUtilTest") {
+            : ClientTestSupport<ClientUtilTest>("ClientUtilTest") {
 
             }
 

@@ -16,9 +16,9 @@ namespace hazelcast {
             using namespace iTest;
 
             IdGeneratorTest::IdGeneratorTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<IdGeneratorTest>("IdGeneratorTest")
+            : ClientTestSupport<IdGeneratorTest>("IdGeneratorTest")
             , instance(serverFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
+            , client(getNewClient())
             , generator(new IdGenerator(client->getIdGenerator("clientIdGenerator"))) {
             }
 

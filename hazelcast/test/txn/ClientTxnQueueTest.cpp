@@ -18,9 +18,9 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTxnQueueTest::ClientTxnQueueTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<ClientTxnQueueTest>("ClientTxnQueueTest")
+            : ClientTestSupport<ClientTxnQueueTest>("ClientTxnQueueTest")
             , instance(serverFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701)))) {
+            , client(getNewClient()) {
             }
 
 

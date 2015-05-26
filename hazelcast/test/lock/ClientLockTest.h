@@ -9,7 +9,7 @@
 #ifndef hazelcast_ClientLockTest_h
 #define hazelcast_ClientLockTest_h
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/ILock.h"
@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientLockTest : public iTest::iTestFixture<ClientLockTest> {
+            class ClientLockTest : public ClientTestSupport<ClientLockTest> {
 
             public:
 

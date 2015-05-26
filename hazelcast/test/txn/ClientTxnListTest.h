@@ -8,7 +8,7 @@
 #define HAZELCAST_ClientTxnListTest
 
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 
@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientTxnListTest : public iTest::iTestFixture<ClientTxnListTest> {
+            class ClientTxnListTest : public ClientTestSupport<ClientTxnListTest> {
             public:
 
                 ClientTxnListTest(HazelcastServerFactory &);

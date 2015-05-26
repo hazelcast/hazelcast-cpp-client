@@ -5,13 +5,13 @@
 #ifndef HAZELCAST_ClientSerializationTest
 #define HAZELCAST_ClientSerializationTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
 
-            class ClientSerializationTest : public iTest::iTestFixture<ClientSerializationTest> {
+            class ClientSerializationTest : public ClientTestSupport<ClientSerializationTest> {
             public:
                 ClientSerializationTest(int dummy);
 

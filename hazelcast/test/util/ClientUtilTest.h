@@ -7,7 +7,8 @@
 #define HAZELCAST_CLientUtilTest
 
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -18,7 +19,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientUtilTest : public iTest::iTestFixture<ClientUtilTest> {
+            class ClientUtilTest : public ClientTestSupport<ClientUtilTest> {
             public:
 
                 ClientUtilTest(int dummy);

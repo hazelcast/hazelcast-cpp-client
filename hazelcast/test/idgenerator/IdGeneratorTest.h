@@ -10,7 +10,7 @@
 #define hazelcast_IdGeneratorTest_h
 
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/IdGenerator.h"
@@ -24,7 +24,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class IdGeneratorTest : public iTest::iTestFixture<IdGeneratorTest> {
+            class IdGeneratorTest : public ClientTestSupport<IdGeneratorTest> {
 
             public:
                 IdGeneratorTest(HazelcastServerFactory &);

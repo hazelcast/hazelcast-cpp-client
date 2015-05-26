@@ -21,7 +21,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClusterTest::ClusterTest(HazelcastServerFactory& hazelcastInstanceFactory)
-            : iTestFixture<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
+            : ClientTestSupport<ClusterTest>("ClusterTest"), hazelcastInstanceFactory(hazelcastInstanceFactory) {
             }
 
 
