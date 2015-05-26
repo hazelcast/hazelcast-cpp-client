@@ -623,6 +623,7 @@ namespace hazelcast {
 
             void operator=(const HazelcastClient& rhs);
 
+            void beforeStart();
         };
 
     }

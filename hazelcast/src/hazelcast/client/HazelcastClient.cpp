@@ -1,9 +1,14 @@
 #include "hazelcast/client/HazelcastClient.h"
+
+#include <hazelcast/client/license/domain/License.h>
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/Version.h"
+#include "hazelcast/client/license/util/LicenseHelper.h"
+
+#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,6 +34,9 @@ namespace hazelcast {
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
+
+            beforeStart();
+
             if (!lifecycleService.start()) {
                 lifecycleService.shutdown();
                 throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not started!");
@@ -90,6 +98,13 @@ namespace hazelcast {
             return TransactionContext(clientContext, options);
         }
 
+        void HazelcastClient::beforeStart() {
+            const std::string &licenseKey = clientConfig.getLicenseKey();
+            std::vector<license::domain::LicenseType> expectedLicenseTypes(2);
+            expectedLicenseTypes[0] = license::domain::ENTERPRISE;
+            expectedLicenseTypes[1] = license::domain::ENTERPRISE_SECURITY_ONLY;
+            license::util::LicenseHelper::checkLicenseKey(licenseKey, expectedLicenseTypes);
+        }
     }
 }
 

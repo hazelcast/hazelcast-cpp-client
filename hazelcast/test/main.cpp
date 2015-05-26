@@ -22,6 +22,7 @@
 #include "cluster/MemberAttributeTest.h"
 #include "issues/IssueTest.h"
 #include "util/ClientUtilTest.h"
+#include "license/extractor/LicenseExtractorTest.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -67,6 +68,7 @@ void testSpeed(const char* address) {
 int unitTests(const char* address) {
     try {
         RUN_TEST(ClientUtilTest, 1);
+        RUN_TEST_NO_ARGS(license::extractor::LicenseExtractorTest);
         RUN_TEST(ClientSerializationTest, 1);
         HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);

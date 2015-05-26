@@ -21,6 +21,8 @@ namespace hazelcast {
                 */
                 IllegalArgumentException(const std::string& source, const std::string& message);
 
+                IllegalArgumentException(const char *source, const char *message);
+
                 /**
                 * Destructor
                 */

@@ -25,6 +25,26 @@ namespace iTest {
     
     HAZELCAST_API void assertNotNull(const void *expected, const char *message);
 
+#define ASSERT_EQUAL(expected, actual) \
+    if (expected != actual) { \
+    iTestException e; \
+    std::stringstream s; \
+    s << "ASSERT_EQUAL(" #expected ", " #actual")" << " failed at line " << __LINE__ << " in file " << __FILE__<< std::endl; \
+    s << "Expected value:" << expected << ", Actual value:" << actual << std::endl; \
+    e.message = s.str(); \
+    throw e; \
+    }
+
+#define ASSERT_NOTEQUAL(expected, actual) \
+    if (expected == actual) { \
+    iTestException e; \
+    std::stringstream s; \
+    s << "ASSERT_EQUAL(" #expected ", " #actual")" << " failed at line " << __LINE__ << " in file " << __FILE__<< std::endl; \
+    s << "Value should NOT be equal to :" << actual << std::endl; \
+    e.message = s.str(); \
+    throw e; \
+    }
+
     template<typename Expected, typename Actual>
     HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
         assertNumber++;

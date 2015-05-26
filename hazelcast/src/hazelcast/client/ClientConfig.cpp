@@ -16,7 +16,8 @@ namespace hazelcast {
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
         , credentials(NULL)
-        , defaultCredentials(NULL) {
+        , defaultCredentials(NULL)
+        , licenseKey("") {
         }
 
         ClientConfig& ClientConfig::addAddress(const Address& address) {
@@ -175,6 +176,10 @@ namespace hazelcast {
         ClientConfig& ClientConfig::setProperty(const std::string& name, const std::string& value) {
             properties[name] = value;
             return *this;
+        }
+
+        const std::string &ClientConfig::getLicenseKey() {
+            return groupConfig.getLicenseKey();
         }
     }
 }

@@ -311,6 +311,8 @@ namespace hazelcast {
             */
             ClientConfig& setProperty(const std::string& name, const std::string& value);
 
+            const std::string &getLicenseKey();
+
         private:
 
             GroupConfig groupConfig;
@@ -347,6 +349,7 @@ namespace hazelcast {
 
             std::auto_ptr<Credentials> defaultCredentials;
 
+            std::string licenseKey;
         };
 
     }

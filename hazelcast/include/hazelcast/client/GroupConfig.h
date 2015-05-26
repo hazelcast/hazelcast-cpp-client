@@ -66,9 +66,23 @@ namespace hazelcast {
              */
             GroupConfig &setName(const std::string &name);
 
+
+            /**
+             * Gets the configured license key.
+             * @return The configured license key.
+             */
+            const std::string &getLicenseKey() const;
+
+            /**
+             * Sets the license key for this group
+             * @param The provided license key by the client
+             */
+            void setLicenseKey(const std::string &key);
+
         private:
             std::string name;
             std::string password;
+            std::string licenseKey;
         };
 
     }
