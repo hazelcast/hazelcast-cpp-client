@@ -28,11 +28,11 @@ namespace hazelcast {
         }
 
 		void sleep(int seconds){
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			Sleep(seconds * 1000);
-#else
+        #else
 			::sleep((unsigned int)seconds);
-#endif
+        #endif
 		}
 
         char *strtok(char *str, const char *sep, char **context) {
@@ -41,7 +41,19 @@ namespace hazelcast {
             #else
                 return strtok_r(str, sep, context);
             #endif
-            return NULL;
+        }
+
+        int localtime(const time_t *clock, struct tm *result) {
+            int returnCode = -1;
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                returnCode = localtime_s(clock, result);
+            #else
+                 if (NULL != localtime_r(clock, result)) {
+                     returnCode = 0;
+                 }
+            #endif
+
+            return returnCode;
         }
     }
 }
