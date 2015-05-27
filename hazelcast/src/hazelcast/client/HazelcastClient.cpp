@@ -1,12 +1,12 @@
 #include "hazelcast/client/HazelcastClient.h"
 
-#include <hazelcast/client/license/domain/License.h>
+#include <hazelcast/client/license/License.h>
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/Version.h"
-#include "hazelcast/client/license/util/LicenseHelper.h"
+#include "hazelcast/client/license/LicenseHelper.h"
 
 #include <vector>
 
@@ -100,10 +100,10 @@ namespace hazelcast {
 
         void HazelcastClient::beforeStart() {
             const std::string &licenseKey = clientConfig.getLicenseKey();
-            std::vector<license::domain::LicenseType> expectedLicenseTypes(2);
-            expectedLicenseTypes[0] = license::domain::ENTERPRISE;
-            expectedLicenseTypes[1] = license::domain::ENTERPRISE_SECURITY_ONLY;
-            license::util::LicenseHelper::checkLicenseKey(licenseKey, expectedLicenseTypes);
+            std::vector<license::LicenseType> expectedLicenseTypes(2);
+            expectedLicenseTypes[0] = license::ENTERPRISE;
+            expectedLicenseTypes[1] = license::ENTERPRISE_SECURITY_ONLY;
+            license::LicenseHelper::checkLicenseKey(licenseKey, expectedLicenseTypes);
         }
     }
 }

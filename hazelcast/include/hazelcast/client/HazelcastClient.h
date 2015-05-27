@@ -126,7 +126,7 @@ namespace hazelcast {
  *
  * \subsection map Map example
  *
- *          #include <hazelcast/client/HazelcastAll.h>
+ *          #include "(.*)"
  *          #include <iostream>
  *
  *          using namespace hazelcast::client;
@@ -151,7 +151,7 @@ namespace hazelcast {
  *
  * \subsection queue Queue Example
  *
- *          #include <hazelcast/client/HazelcastAll.h>
+ *          #include "(.*)"
  *          #include <iostream>
  *          #include <string>
  *
@@ -176,7 +176,7 @@ namespace hazelcast {
  *
  * \subsection entry_listener Entry Listener Example
  *
- *      #include <hazelcast/client/HazelcastAll.h>
+ *      #include "(.*)"
  *      #include <iostream>
  *      #include <string>
  *

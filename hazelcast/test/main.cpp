@@ -68,7 +68,7 @@ void testSpeed(const char* address) {
 int unitTests(const char* address) {
     try {
         RUN_TEST(ClientUtilTest, 1);
-        RUN_TEST_NO_ARGS(license::extractor::LicenseExtractorTest);
+        RUN_TEST_NO_ARGS(license::LicenseExtractorTest);
         RUN_TEST(ClientSerializationTest, 1);
         HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);
