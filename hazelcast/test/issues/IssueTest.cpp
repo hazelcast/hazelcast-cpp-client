@@ -51,11 +51,11 @@ namespace hazelcast {
                 HazelcastServer hz1(serverFactory);
                 HazelcastServer hz2(serverFactory);
 
-                ClientConfig &clientConfig = getConfig();
-                clientConfig.setRedoOperation(true);
-                clientConfig.setSmart(false);
+                std::auto_ptr<ClientConfig> clientConfig(getConfig());
+                clientConfig->setRedoOperation(true);
+                clientConfig->setSmart(false);
 
-                HazelcastClient client(clientConfig);
+                HazelcastClient client(*clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
                 util::Thread* thread = NULL;

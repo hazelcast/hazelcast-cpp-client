@@ -156,12 +156,12 @@ namespace hazelcast {
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInClusterTest sampleListener(memberAdded, attributeLatch, memberRemoved);
 
-                ClientConfig &clientConfig = getConfig();
-                clientConfig.addListener(&sampleListener);
-                clientConfig.addListener(&sampleInitialListener);
+                std::auto_ptr<ClientConfig> clientConfig(getConfig());
+                clientConfig->addListener(&sampleListener);
+                clientConfig->addListener(&sampleInitialListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                HazelcastClient hazelcastClient(clientConfig);
+                HazelcastClient hazelcastClient(*clientConfig);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 
@@ -212,9 +212,9 @@ namespace hazelcast {
             void ClusterTest::testListenersWhenClusterDown() {
                 HazelcastServer instance(hazelcastInstanceFactory);
 
-                ClientConfig &clientConfig = getConfig();
-                clientConfig.setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
-                HazelcastClient hazelcastClient(clientConfig);
+                std::auto_ptr<ClientConfig> clientConfig(getConfig());
+                clientConfig->setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
+                HazelcastClient hazelcastClient(*clientConfig);
 
                 util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);

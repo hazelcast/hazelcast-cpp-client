@@ -148,11 +148,11 @@ namespace hazelcast {
                 util::CountDownLatch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
-                ClientConfig &clientConfig = getConfig();
-                clientConfig.addListener(&sampleListener);
+                std::auto_ptr<ClientConfig> clientConfig(getConfig());
+                clientConfig->addListener(&sampleListener);
 
                 HazelcastServer instance(hazelcastInstanceFactory);
-                HazelcastClient hazelcastClient(clientConfig);
+                HazelcastClient hazelcastClient(*clientConfig);
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
 

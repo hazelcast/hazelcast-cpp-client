@@ -141,7 +141,7 @@ namespace hazelcast {
                 void DataOutput::writeCharArray(const std::vector<char>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeChar(data[i]);
                     }
                 }
@@ -149,7 +149,7 @@ namespace hazelcast {
                 void DataOutput::writeShortArray(const std::vector<short>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeShort(data[i]);
                     }
                 }
@@ -157,7 +157,7 @@ namespace hazelcast {
                 void DataOutput::writeIntArray(const std::vector<int>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeInt(data[i]);
                     }
                 }
@@ -165,7 +165,7 @@ namespace hazelcast {
                 void DataOutput::writeLongArray(const std::vector<long>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeLong(data[i]);
                     }
                 }
@@ -173,7 +173,7 @@ namespace hazelcast {
                 void DataOutput::writeFloatArray(const std::vector<float>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeFloat(data[i]);
                     }
                 }
@@ -181,7 +181,7 @@ namespace hazelcast {
                 void DataOutput::writeDoubleArray(const std::vector<double>& data) {
                     size_t size = data.size();
                     writeInt((int)size);
-                    for (int i = 0; i < size; ++i) {
+                    for (int i = 0; i < (int)size; ++i) {
                         writeDouble(data[i]);
                     }
                 }

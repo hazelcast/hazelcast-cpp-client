@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -18,7 +19,7 @@ namespace hazelcast {
             if(n == -1) throw exception::IOException("Socket::Socket ", "WSAStartup error");
 			#endif
             struct addrinfo hints;
-            std::memset(&hints, 0, sizeof (hints));
+            memset(&hints, 0, sizeof (hints));
             hints.ai_family = AF_UNSPEC;
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_flags = AI_PASSIVE;

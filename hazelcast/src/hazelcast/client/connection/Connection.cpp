@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 5/21/13.
 // Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
+#include <string.h>
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
