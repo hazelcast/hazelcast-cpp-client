@@ -7,16 +7,17 @@
 
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+
 #include "hazelcast/util/Thread.h"
+
+#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 namespace hazelcast {
@@ -33,6 +34,15 @@ namespace hazelcast {
 			::sleep((unsigned int)seconds);
 #endif
 		}
+
+        char *strtok(char *str, const char *sep, char **context) {
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                return strtok_s(str, sep, context);
+            #else
+                return strtok_r(str, sep, context);
+            #endif
+            return NULL;
+        }
     }
 }
 

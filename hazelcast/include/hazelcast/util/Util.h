@@ -11,29 +11,15 @@
 #define HAZELCAST_UTIL_FUNCTIONS
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <string>
-#include <map>
-#include <vector>
-#include <cstring>
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            class ObjectDataOutput;
-
-            class ObjectDataInput;
-
-            namespace pimpl {
-                class Data;
-            }
-        }
-    }
     namespace util {
 
         HAZELCAST_API long getThreadId();
 
-		HAZELCAST_API void sleep(int seconds);
+        HAZELCAST_API void sleep(int seconds);
 
+        char *strtok(char *str, const char *sep, char ** context);
     }
 }
 

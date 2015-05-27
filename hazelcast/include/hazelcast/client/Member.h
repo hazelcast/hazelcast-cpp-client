@@ -6,6 +6,7 @@
 #ifndef HAZELCAST_MEMBER
 #define HAZELCAST_MEMBER
 
+#include <map>
 #include "hazelcast/client/protocol/ProtocolConstants.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
