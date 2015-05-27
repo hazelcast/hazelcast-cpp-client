@@ -311,6 +311,13 @@ namespace hazelcast {
             */
             ClientConfig& setProperty(const std::string& name, const std::string& value);
 
+            /**
+             * Returns the configured license key
+             *
+             * @see GroupConfig.h for details on setting the key.
+             *
+             * @return The license key string.
+             */
             const std::string &getLicenseKey();
 
         private:

@@ -121,7 +121,8 @@ namespace hazelcast {
  *
  * \section code_samples Code Samples
  *
- * Note that these codes to work, there should be a Hazelcast node is running.
+ * Note that these codes to work, there should be a Hazelcast node is running. The lcense key should be provided in the
+ * provided configuration as config->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *
  * \subsection map Map example
  *
@@ -132,6 +133,7 @@ namespace hazelcast {
  *
  *          int main(){
  *              ClientConfig clientConfig;
+ *              clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *              Address address("localhost", 5701);
  *              clientConfig.addAddress(address);
  *
@@ -157,6 +159,7 @@ namespace hazelcast {
  *
  *          int main(){
  *              ClientConfig clientConfig;
+ *              clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *              Address address("localhost", 5701);
  *              clientConfig.addAddress(address);
  *
@@ -203,6 +206,7 @@ namespace hazelcast {
  *      int main(int argc, char **argv) {
  *
  *          ClientConfig clientConfig;
+ *          clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *          Address address("localhost", 5701);
  *          clientConfig.addAddress(address);
  *

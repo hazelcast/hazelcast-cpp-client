@@ -75,7 +75,7 @@ namespace hazelcast {
 
             /**
              * Sets the license key for this group
-             * @param The provided license key by the client
+             * @param key The provided license key
              */
             void setLicenseKey(const std::string &key);
 
