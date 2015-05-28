@@ -102,11 +102,11 @@ namespace hazelcast {
              */
             void close();
 
+            client::Address getAddress() const;
+
         private:
 
             void setBlocking(bool blocking);
-
-            client::Address getAddress() const;
 
             Socket(const Socket &rhs);
 

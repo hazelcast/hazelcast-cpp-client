@@ -49,8 +49,8 @@ namespace hazelcast {
                                 return;
                             }
                         }
-                        clientContext.getServerListenerService().triggerFailedListeners();
                         loadInitialMemberList();
+                        clientContext.getServerListenerService().triggerFailedListeners();
                         isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();

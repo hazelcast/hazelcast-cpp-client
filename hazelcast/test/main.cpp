@@ -41,7 +41,6 @@ void handler(int sig) {
 #include <execinfo.h>
 #include <unistd.h>
 
-
 void handler(int sig) {
     void *array[20];
     size_t size;
