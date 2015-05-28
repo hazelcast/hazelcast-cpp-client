@@ -9,7 +9,7 @@
 #ifndef hazelcast_ClientAtomicLong_h
 #define hazelcast_ClientAtomicLong_h
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IMap.h"
 #include "HazelcastServer.h"
@@ -25,7 +25,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class IAtomicLongTest : public iTest::iTestFixture<IAtomicLongTest> {
+            class IAtomicLongTest : public ClientTestSupport<IAtomicLongTest> {
 
             public:
 

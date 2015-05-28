@@ -7,16 +7,17 @@
 
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+
 #include "hazelcast/util/Thread.h"
+
+#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 namespace hazelcast {
@@ -27,12 +28,33 @@ namespace hazelcast {
         }
 
 		void sleep(int seconds){
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			Sleep(seconds * 1000);
-#else
+        #else
 			::sleep((unsigned int)seconds);
-#endif
+        #endif
 		}
+
+        char *strtok(char *str, const char *sep, char **context) {
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                return strtok_s(str, sep, context);
+            #else
+                return strtok_r(str, sep, context);
+            #endif
+        }
+
+        int localtime(const time_t *clock, struct tm *result) {
+            int returnCode = -1;
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                returnCode = localtime_s(result, clock);
+            #else
+                 if (NULL != localtime_r(clock, result)) {
+                     returnCode = 0;
+                 }
+            #endif
+
+            return returnCode;
+        }
     }
 }
 

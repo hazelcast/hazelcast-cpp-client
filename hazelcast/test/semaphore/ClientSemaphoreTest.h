@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientSemaphoreTest
 #define HAZELCAST_ClientSemaphoreTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "HazelcastServer.h"
@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientSemaphoreTest : public iTest::iTestFixture<ClientSemaphoreTest> {
+            class ClientSemaphoreTest : public ClientTestSupport<ClientSemaphoreTest> {
             public:
 
                 ClientSemaphoreTest(HazelcastServerFactory &);

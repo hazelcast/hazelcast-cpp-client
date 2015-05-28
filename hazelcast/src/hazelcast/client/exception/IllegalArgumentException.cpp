@@ -11,8 +11,11 @@ namespace hazelcast {
         namespace exception {
 
             IllegalArgumentException::IllegalArgumentException(const std::string& source, const std::string& message)
-            : IException(source, message) {
+                    : IException(source, message) {
+            }
 
+            IllegalArgumentException::IllegalArgumentException(const char *source, const char *message)
+                    : IException(source, message) {
             }
 
             IllegalArgumentException::~IllegalArgumentException() throw() {

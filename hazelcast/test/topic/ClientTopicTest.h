@@ -9,7 +9,7 @@
 #ifndef hazelcast_ClientTopicTest_h
 #define hazelcast_ClientTopicTest_h
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/ITopic.h"
@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientTopicTest : public iTest::iTestFixture<ClientTopicTest> {
+            class ClientTopicTest : public ClientTestSupport<ClientTopicTest> {
 
             public:
 

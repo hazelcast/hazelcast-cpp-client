@@ -7,7 +7,7 @@
 #define HAZELCAST_ClusterTest
 
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 
 
 namespace hazelcast {
@@ -19,7 +19,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClusterTest : public iTest::iTestFixture<ClusterTest> {
+            class ClusterTest : public ClientTestSupport<ClusterTest> {
 
             public:
 

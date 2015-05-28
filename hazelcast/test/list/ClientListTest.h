@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ClientListTest
 #define HAZELCAST_ClientListTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/IList.h"
@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientListTest : public iTest::iTestFixture<ClientListTest> {
+            class ClientListTest : public ClientTestSupport<ClientListTest> {
             public:
                 ClientListTest(HazelcastServerFactory &);
 

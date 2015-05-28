@@ -6,6 +6,7 @@
 #include "hazelcast/client/Socket.h"
 #include <cassert>
 #include <algorithm>
+#include <string.h>
 
 namespace hazelcast {
     namespace util {
@@ -23,7 +24,7 @@ namespace hazelcast {
 
 
         ByteBuffer& ByteBuffer::compact() {
-            std::memcpy(buffer, ix(), (size_t)remaining());
+            memcpy(buffer, ix(), (size_t)remaining());
             pos = remaining();
             lim = capacity;
             return *this;
@@ -103,7 +104,7 @@ namespace hazelcast {
                 destination.resize(offset + m);
             }
 
-            std::memcpy((void *)(&destination[offset]), ix(), m);
+            memcpy((void *)(&destination[offset]), ix(), m);
             safeIncrementPosition(m);
             return m;
         }

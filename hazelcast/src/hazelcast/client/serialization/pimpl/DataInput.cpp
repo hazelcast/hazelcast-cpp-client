@@ -5,6 +5,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <memory>
 
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"

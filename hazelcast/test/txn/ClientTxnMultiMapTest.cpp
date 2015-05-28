@@ -17,9 +17,9 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTxnMultiMapTest::ClientTxnMultiMapTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<ClientTxnMultiMapTest>("ClientTxnMultiMapTest")
+            : ClientTestSupport<ClientTxnMultiMapTest>("ClientTxnMultiMapTest")
             , instance(serverFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701)))) {
+            , client(getNewClient()) {
             }
 
 

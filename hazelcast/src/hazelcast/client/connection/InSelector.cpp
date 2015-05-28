@@ -2,7 +2,7 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-#include <signal.h>
+#include <string.h>
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"

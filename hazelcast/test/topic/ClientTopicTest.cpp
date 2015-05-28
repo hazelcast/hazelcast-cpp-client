@@ -11,9 +11,9 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTopicTest::ClientTopicTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<ClientTopicTest>("ClientTopicTest")
+            : ClientTestSupport<ClientTopicTest>("ClientTopicTest")
             , instance(serverFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
+            , client(getNewClient())
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {
             }
 

@@ -46,7 +46,7 @@ namespace hazelcast {
             }
 
             ClientSerializationTest::ClientSerializationTest(int dummy)
-            : iTest::iTestFixture<ClientSerializationTest>("ClientSerializationTest") {
+            : ClientTestSupport<ClientSerializationTest>("ClientSerializationTest") {
 
             }
 

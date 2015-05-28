@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 30/12/13.
 //
 
+#include <string.h>
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -24,7 +25,7 @@ namespace hazelcast {
             struct addrinfo hints;
             struct addrinfo *serverInfo;
 
-            std::memset(&hints, 0, sizeof hints);
+            memset(&hints, 0, sizeof hints);
             hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_flags = AI_PASSIVE;     // fill in my IP for me

@@ -9,7 +9,7 @@
 #ifndef hazelcast_ClientMultiMapTest_h
 #define hazelcast_ClientMultiMapTest_h
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/MultiMap.h"
 #include "HazelcastServer.h"
@@ -23,7 +23,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ClientMultiMapTest : public iTest::iTestFixture<ClientMultiMapTest> {
+            class ClientMultiMapTest : public ClientTestSupport<ClientMultiMapTest> {
             public:
                 ClientMultiMapTest(HazelcastServerFactory &);
 

@@ -24,6 +24,13 @@
   }                         \
 }while(0)
 
+#define RUN_TEST_NO_ARGS(TEST) do{ \
+  TEST t;       \
+  if(!t.executeTests()){        \
+    return 1;               \
+  }                         \
+}while(0)
+
 namespace iTest {
     static int assertNumber;
 

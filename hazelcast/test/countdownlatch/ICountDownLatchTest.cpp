@@ -16,9 +16,9 @@ namespace hazelcast {
             using namespace iTest;
 
             ICountDownLatchTest::ICountDownLatchTest(HazelcastServerFactory &serverFactory)
-            : iTestFixture<ICountDownLatchTest>("ICountDownLatchTest")
+            : ClientTestSupport<ICountDownLatchTest>("ICountDownLatchTest")
             , instance(serverFactory)
-            , client(new HazelcastClient(clientConfig.addAddress(Address(serverFactory.getServerAddress(), 5701))))
+            , client(getNewClient())
             , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {
             }
 

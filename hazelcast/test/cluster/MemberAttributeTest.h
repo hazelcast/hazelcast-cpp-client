@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_MemberAttributeTest
 #define HAZELCAST_MemberAttributeTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class MemberAttributeTest : public iTest::iTestFixture<MemberAttributeTest> {
+            class MemberAttributeTest : public ClientTestSupport<MemberAttributeTest> {
 
             public:
 

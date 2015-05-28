@@ -4,14 +4,14 @@
 namespace hazelcast {
     namespace client {
 
-        GroupConfig::GroupConfig() : name("dev"), password("dev-pass") {
+        GroupConfig::GroupConfig() : name("dev"), password("dev-pass"), licenseKey("") {
 
         }
 
         GroupConfig::GroupConfig(const std::string &name, const std::string &password)
         : name(name)
-        , password(password) {
-
+        , password(password)
+        , licenseKey("") {
         }
 
         std::string GroupConfig::getName() const {
@@ -32,6 +32,13 @@ namespace hazelcast {
             return password;
         }
 
+        const std::string &GroupConfig::getLicenseKey() const {
+            return licenseKey;
+        }
+
+        void GroupConfig::setLicenseKey(const std::string &key) {
+            licenseKey = key;
+        }
     }
 }
 

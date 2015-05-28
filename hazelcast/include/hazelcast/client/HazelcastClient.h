@@ -121,17 +121,19 @@ namespace hazelcast {
  *
  * \section code_samples Code Samples
  *
- * Note that these codes to work, there should be a Hazelcast node is running.
+ * Note that these codes to work, there should be a Hazelcast node is running. The lcense key should be provided in the
+ * provided configuration as config->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *
  * \subsection map Map example
  *
- *          #include <hazelcast/client/HazelcastAll.h>
+ *          #include "(.*)"
  *          #include <iostream>
  *
  *          using namespace hazelcast::client;
  *
  *          int main(){
  *              ClientConfig clientConfig;
+ *              clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *              Address address("localhost", 5701);
  *              clientConfig.addAddress(address);
  *
@@ -149,7 +151,7 @@ namespace hazelcast {
  *
  * \subsection queue Queue Example
  *
- *          #include <hazelcast/client/HazelcastAll.h>
+ *          #include "(.*)"
  *          #include <iostream>
  *          #include <string>
  *
@@ -157,6 +159,7 @@ namespace hazelcast {
  *
  *          int main(){
  *              ClientConfig clientConfig;
+ *              clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *              Address address("localhost", 5701);
  *              clientConfig.addAddress(address);
  *
@@ -173,7 +176,7 @@ namespace hazelcast {
  *
  * \subsection entry_listener Entry Listener Example
  *
- *      #include <hazelcast/client/HazelcastAll.h>
+ *      #include "(.*)"
  *      #include <iostream>
  *      #include <string>
  *
@@ -203,6 +206,7 @@ namespace hazelcast {
  *      int main(int argc, char **argv) {
  *
  *          ClientConfig clientConfig;
+ *          clientConfig->getGroupConfig().setLicenseKey(PROVIDED_ENTERPRISE_KEY);
  *          Address address("localhost", 5701);
  *          clientConfig.addAddress(address);
  *
@@ -623,6 +627,7 @@ namespace hazelcast {
 
             void operator=(const HazelcastClient& rhs);
 
+            void beforeStart();
         };
 
     }

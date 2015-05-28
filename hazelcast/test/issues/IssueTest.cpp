@@ -13,7 +13,7 @@ namespace hazelcast {
         namespace test {
 
             IssueTest::IssueTest(HazelcastServerFactory &serverFactory)
-            : iTest::iTestFixture<IssueTest>("IssueTest")
+            : ClientTestSupport<IssueTest>("IssueTest")
             , serverFactory(serverFactory) {
 
             }
@@ -51,13 +51,11 @@ namespace hazelcast {
                 HazelcastServer hz1(serverFactory);
                 HazelcastServer hz2(serverFactory);
 
-                ClientConfig clientConfig;
-                Address address = Address(serverFactory.getServerAddress(), 5701);
-                clientConfig.addAddress(address);
-                clientConfig.setRedoOperation(true);
-                clientConfig.setSmart(false);
+                std::auto_ptr<ClientConfig> clientConfig(getConfig());
+                clientConfig->setRedoOperation(true);
+                clientConfig->setSmart(false);
 
-                HazelcastClient client(clientConfig);
+                HazelcastClient client(*clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
                 util::Thread* thread = NULL;

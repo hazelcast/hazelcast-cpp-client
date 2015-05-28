@@ -7,7 +7,7 @@
 #ifndef HAZELCAST_ICountDownLatch
 #define HAZELCAST_ICountDownLatch
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/ICountDownLatch.h"
@@ -21,7 +21,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class ICountDownLatchTest : public iTest::iTestFixture<ICountDownLatchTest> {
+            class ICountDownLatchTest : public ClientTestSupport<ICountDownLatchTest> {
             public:
 
                 ICountDownLatchTest(HazelcastServerFactory &);

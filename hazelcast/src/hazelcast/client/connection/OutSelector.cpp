@@ -2,6 +2,7 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
+#include <string.h>
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"

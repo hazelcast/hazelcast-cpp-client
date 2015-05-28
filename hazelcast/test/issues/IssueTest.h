@@ -6,7 +6,7 @@
 #ifndef HAZELCAST_IssueTest
 #define HAZELCAST_IssueTest
 
-#include "iTest/iTest.h"
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -17,7 +17,7 @@ namespace hazelcast {
 
             class HazelcastServerFactory;
 
-            class IssueTest : public iTest::iTestFixture<IssueTest> {
+            class IssueTest : public ClientTestSupport<IssueTest> {
 
             public:
                 IssueTest(HazelcastServerFactory &);
