@@ -51,7 +51,7 @@ namespace hazelcast {
 
             class Connection : public util::Closeable {
             public:
-                Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener);
+                Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& listener, bool isOwner);
 
                 ~Connection();
 
@@ -86,6 +86,8 @@ namespace hazelcast {
                 void heartBeatingFailed();
 
                 void heartBeatingSucceed();
+
+                bool isOwnerConnection() const;
 
                 util::AtomicInt lastRead;
                 util::AtomicBoolean live;

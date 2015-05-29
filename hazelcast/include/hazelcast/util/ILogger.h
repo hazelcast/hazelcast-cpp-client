@@ -7,12 +7,13 @@
 #define HAZELCAST_ILogger
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "Mutex.h"
 #include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -45,7 +46,7 @@ namespace hazelcast {
 
         private:
             int HazelcastLogLevel;
-             std::string prefix;
+            std::string prefix;
 
             ILogger() : HazelcastLogLevel(client::INFO) {
             }
@@ -53,17 +54,20 @@ namespace hazelcast {
             ~ILogger() {
             }
 
+            const char *getTime(char * buffer, size_t length) const;
+
             ILogger(const ILogger&);
 
             ILogger& operator=(const ILogger&);
+
+            util::Mutex lockMutex;
         };
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 
 #endif //HAZELCAST_ILogger
-

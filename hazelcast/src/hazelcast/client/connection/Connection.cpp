@@ -25,14 +25,14 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& oListener)
+            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& oListener, bool isOwner)
             : live(true)
             , clientContext(clientContext)
             , invocationService(clientContext.getInvocationService())
             , socket(address)
             , readHandler(*this, iListener, 16 << 10, clientContext)
             , writeHandler(*this, oListener, 16 << 10)
-            , _isOwnerConnection(false)
+            , _isOwnerConnection(isOwner)
             , receiveBuffer(new char[16 << 10])
             , receiveByteBuffer(receiveBuffer, 16 << 10) {
 
@@ -46,6 +46,11 @@ namespace hazelcast {
                 int error = socket.connect(timeoutInMillis);
                 if (error) {
                     throw exception::IOException("Socket::connect", strerror(error));
+                } else {
+                    std::stringstream message;
+                    message << "Connected to " << socket.getAddress() << " with socket id " << socket.getSocketId() <<
+                            (_isOwnerConnection ? " as the owner connection." : ".");
+                    util::ILogger::getLogger().info(message.str());
                 }
             }
 
@@ -60,8 +65,9 @@ namespace hazelcast {
                 }
 
                 std::stringstream message;
-                message << "Closing connection to " << getRemoteEndpoint();
-                util::ILogger::getLogger().finest(message.str());
+                message << "Closing connection to " << getRemoteEndpoint() << " with socket id " << socket.getSocketId() <<
+                        (_isOwnerConnection ? " as the owner connection." : ".");
+                util::ILogger::getLogger().warning(message.str());
                 if (!_isOwnerConnection) {
                     readHandler.deRegisterSocket();
                 }
@@ -153,6 +159,10 @@ namespace hazelcast {
 
             bool Connection::isHeartBeating() {
                 return heartBeating;
+            }
+
+            bool Connection::isOwnerConnection() const {
+                return _isOwnerConnection;
             }
         }
     }

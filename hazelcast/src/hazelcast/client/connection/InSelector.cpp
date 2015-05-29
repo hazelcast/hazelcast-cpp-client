@@ -36,10 +36,10 @@ namespace hazelcast {
                     return;
                 }
                 if (err == -1) {
-                    if (errno != EINTR) {
-                        util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
-                    } else{
+                    if (EINTR == errno || EBADF == errno /* This case may happen if socket closed by cluster listener thread */) {
                         util::ILogger::getLogger().finest(std::string("Exception InSelector::listen => ") + strerror(errno));
+                    } else{
+                        util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
                     }
                     return;
                 }

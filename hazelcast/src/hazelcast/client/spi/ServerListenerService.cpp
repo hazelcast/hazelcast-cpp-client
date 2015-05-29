@@ -80,7 +80,11 @@ namespace hazelcast {
             void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise) {
                 try {
                     InvocationService& invocationService = clientContext.getInvocationService();
-                    invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
+                    boost::shared_ptr<connection::Connection> result = invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
+                    if (NULL == result.get()) {
+                        util::LockGuard lockGuard(failedListenerLock);
+                        failedListeners.push_back(listenerPromise);
+                    }
                 } catch (exception::IException&) {
                     util::LockGuard lockGuard(failedListenerLock);
                     failedListeners.push_back(listenerPromise);
@@ -95,7 +99,11 @@ namespace hazelcast {
                 util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
                     try {
-                        invocationService.resend(*it, "internalRetryOfUnkownAddress");
+                        boost::shared_ptr<connection::Connection> result = invocationService.resend(*it, "internalRetryOfUnkownAddress");
+
+                        if (NULL == result.get()) { // resend failed
+                            newFailedListeners.push_back(*it);
+                        }
                     } catch (exception::IOException&) {
                         newFailedListeners.push_back(*it);
                         continue;

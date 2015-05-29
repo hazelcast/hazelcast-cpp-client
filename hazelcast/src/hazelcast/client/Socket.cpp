@@ -166,6 +166,8 @@ namespace hazelcast {
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
                 ::close(socketId);
                 #endif
+
+                socketId = -1; // set it to invalid descriptor to avoid misuse of the socket for this connection
             }
         }
 
