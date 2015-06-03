@@ -68,7 +68,7 @@ namespace hazelcast {
             time (&rawtime);
             assert(0 == hazelcast::util::localtime (&rawtime, &timeinfo));
 
-            strftime (buffer, length, "%b %d, %Y %r", &timeinfo);
+            strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo);
 
             // TODO: Change to thread specific stored buffer
             return buffer;
