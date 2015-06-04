@@ -65,10 +65,15 @@ namespace hazelcast {
             time_t rawtime;
             struct tm timeinfo;
 
-            time (&rawtime);
-            assert(0 == hazelcast::util::localtime (&rawtime, &timeinfo));
+            buffer[0] = '\0'; // In case, the strftime fails just return an empty string for time
 
-            strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo);
+            time (&rawtime);
+            int timeResult = hazelcast::util::localtime (&rawtime, &timeinfo);
+            assert(0 == timeResult);
+
+            if (0 == timeResult) { // this if is needed for release build
+                strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo);
+            }
 
             // TODO: Change to thread specific stored buffer
             return buffer;
