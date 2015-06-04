@@ -60,11 +60,11 @@ namespace hazelcast {
                 util::SocketSet socketSet;
                 int wakeUpListenerSocketId;
                 ConnectionManager &connectionManager;
+                std::auto_ptr<Socket> sleepingSocket;
             private:
                 void processListenerQueue();
 
                 std::auto_ptr<Socket> wakeUpSocket;
-                std::auto_ptr<Socket> sleepingSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
                 util::AtomicBoolean isAlive;
             };
