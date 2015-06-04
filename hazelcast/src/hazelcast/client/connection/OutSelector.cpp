@@ -26,22 +26,20 @@ namespace hazelcast {
             }
 
             void OutSelector::listenInternal() {
-                using std::max;
-                std::set<Socket const *, socketPtrComp> currentWakeUpSockets = wakeUpSocketSet.getSockets();
-                std::set<Socket const *, socketPtrComp> currentSockets = socketSet.getSockets();
-                int id1 = util::SocketSet::getHighestSocketId(currentSockets);
-                int id2 = util::SocketSet::getHighestSocketId(currentWakeUpSockets);
-                int n = max(id1, id2);
+                fd_set write_fds;
+               util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
 
-                fd_set write_fds = util::SocketSet::get_fd_set(currentSockets);
-                fd_set wakeUp_fd =  util::SocketSet::get_fd_set(currentWakeUpSockets);
+                fd_set wakeUp_fds;
+                util::SocketSet::FdRange wakeupSocketRange = wakeUpSocketSet.fillFdSet(wakeUp_fds);
+
+                int maxFd = (socketRange.max > wakeupSocketRange.max ? socketRange.max : wakeupSocketRange.max);
 
                 errno = 0;
-                int err = select(n + 1, &wakeUp_fd, &write_fds, NULL, &t);
-                if (err == 0) {
+                int numSelected = select(maxFd + 1, &wakeUp_fds, &write_fds, NULL, &t);
+                if (numSelected == 0) {
                     return;
                 }
-                if (err == -1) {
+                if (numSelected == -1) {
                     if (errno != EINTR) {
                         util::ILogger::getLogger().severe(std::string("Exception OutSelector::listen => ") + strerror(errno));
                     } else{
@@ -49,28 +47,24 @@ namespace hazelcast {
                     }
                     return;
                 }
-                std::set<Socket const *, client::socketPtrComp>::iterator it;
-                for (it = currentWakeUpSockets.begin(); it != currentWakeUpSockets.end(); ++it) {
-                    if (FD_ISSET((*it)->getSocketId(), &wakeUp_fd)) {
-                        int wakeUpSignal;
-                        (*it)->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
-                        return;
-                    }
+
+                if (FD_ISSET(wakeUpListenerSocketId, &wakeUp_fds)) {
+                    int wakeUpSignal;
+                    sleepingSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
+                    --numSelected;
                 }
 
-                it = currentSockets.begin();
-                while (it != currentSockets.end()) {
-                    Socket const *currentSocket = *it;
-                    ++it;
-                    int id = currentSocket->getSocketId();
-                    if (FD_ISSET(id, &write_fds)) {
-                        socketSet.removeSocket(currentSocket);
-                        boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
-                        if (conn.get() != NULL)
+                for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
+                    if (FD_ISSET(fd, &write_fds)) {
+                        --numSelected;
+                        boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+
+                        if (conn.get() != NULL) {
+                            socketSet.removeSocket(&conn->getSocket());
                             conn->getWriteHandler().handle();
+                        }
                     }
                 }
-
             }
         }
     }

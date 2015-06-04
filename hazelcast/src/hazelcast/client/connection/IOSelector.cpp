@@ -88,10 +88,14 @@ namespace hazelcast {
 
             void IOSelector::addSocket(const Socket &socket) {
                 socketSet.insertSocket(&socket);
+                // Trigger update on the waiting socket list on select call
+                wakeUp();
             }
 
             void IOSelector::removeSocket(const Socket &socket) {
                 socketSet.removeSocket(&socket);
+                // Trigger update on the waiting socket list on select call
+                wakeUp();
             }
 
             void IOSelector::processListenerQueue() {

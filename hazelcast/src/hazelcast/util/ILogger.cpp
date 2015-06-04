@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <time.h>
+#include <assert.h>
 
 namespace hazelcast {
     namespace util {
@@ -62,12 +63,17 @@ namespace hazelcast {
 
         const char *ILogger::getTime(char *buffer, size_t length) const {
             time_t rawtime;
-            struct tm * timeinfo;
+            struct tm timeinfo;
+
+            buffer[0] = '\0'; // In case, the strftime fails just return an empty string for time
 
             time (&rawtime);
-            timeinfo = localtime (&rawtime);
+            int timeResult = hazelcast::util::localtime (&rawtime, &timeinfo);
+            assert(0 == timeResult);
 
-            strftime (buffer, length, "%b %d, %Y %r", timeinfo);
+            if (0 == timeResult) { // this if is needed for release build
+                strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo);
+            }
 
             // TODO: Change to thread specific stored buffer
             return buffer;
