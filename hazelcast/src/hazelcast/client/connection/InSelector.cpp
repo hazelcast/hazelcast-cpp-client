@@ -26,16 +26,15 @@ namespace hazelcast {
             }
 
             void InSelector::listenInternal() {
-                std::set<Socket const *, socketPtrComp> currentSockets = socketSet.getSockets();
-                int n = util::SocketSet::getHighestSocketId(currentSockets);
-                fd_set read_fds = util::SocketSet::get_fd_set(currentSockets);
+                fd_set read_fds;
+                util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
 
                 errno = 0;
-                int err = select(n + 1, &read_fds, NULL, NULL, &t);
-                if (err == 0) {
+                int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
+                if (numSelected == 0) {
                     return;
                 }
-                if (err == -1) {
+                if (numSelected == -1) {
                     if (EINTR == errno || EBADF == errno /* This case may happen if socket closed by cluster listener thread */) {
                         util::ILogger::getLogger().finest(std::string("Exception InSelector::listen => ") + strerror(errno));
                     } else{
@@ -44,21 +43,18 @@ namespace hazelcast {
                     return;
                 }
 
-                std::set<Socket const *, client::socketPtrComp>::iterator it;
-                it = currentSockets.begin();
-                while (it != currentSockets.end()) {
-                    Socket const *currentSocket = *it;
-                    ++it;
-                    int id = currentSocket->getSocketId();
-                    if (FD_ISSET(id, &read_fds)) {
-                        if (wakeUpListenerSocketId == id) {
+                for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
+                    if (FD_ISSET(fd, &read_fds)) {
+                        --numSelected;
+                        if (wakeUpListenerSocketId == fd) {
                             int wakeUpSignal;
-                            currentSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
-                            return;
+                            sleepingSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
+                        } else {
+                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+                            if (conn.get() != NULL) {
+                                conn->getReadHandler().handle();
+                            }
                         }
-                        boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(currentSocket->getRemoteEndpoint());
-                        if (conn.get() != NULL)
-                            conn->getReadHandler().handle();
                     }
                 }
             }

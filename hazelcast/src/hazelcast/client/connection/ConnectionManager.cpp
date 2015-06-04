@@ -73,6 +73,7 @@ namespace hazelcast {
                     outSelectorThread.reset();
                 }
                 connections.clear();
+                socketConnections.clear();
             }
 
             void ConnectionManager::onCloseOwnerConnection() {
@@ -118,6 +119,12 @@ namespace hazelcast {
                 return connections.get(address);
             }
 
+            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(int socketDescriptor) {
+                if (!live)
+                    return boost::shared_ptr<Connection>();
+                return socketConnections.get(socketDescriptor);
+            }
+
             boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address& address) {
                 checkLive();
                 if (smartRouting) {
@@ -138,6 +145,10 @@ namespace hazelcast {
                         boost::shared_ptr<Connection> newConnection(connectTo(address, false));
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
+                        socketConnections.put(newConnection->getSocket().getSocketId(), newConnection);
+                        // Trigger update on the waiting socket list on select call
+                        outSelector.wakeUp();
+                        inSelector.wakeUp();
                         return newConnection;
                     }
                 }
@@ -179,8 +190,15 @@ namespace hazelcast {
 
 
             void ConnectionManager::onConnectionClose(const Address& address) {
-                connections.remove(address);
-                ownerConnectionFuture.closeIfAddressMatches(address);
+                boost::shared_ptr<Connection> conn = getConnectionIfAvailable(address);
+                if (NULL != conn) {
+                    socketConnections.remove(conn->getSocket().getSocketId());
+                    connections.remove(address);
+                    // Trigger update on the waiting socket list on select call
+                    outSelector.wakeUp();
+                    inSelector.wakeUp();
+                    ownerConnectionFuture.closeIfAddressMatches(address);
+                }
             }
 
             void ConnectionManager::checkLive() {
