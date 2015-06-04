@@ -80,6 +80,13 @@ namespace hazelcast {
                 boost::shared_ptr<Connection> getConnectionIfAvailable(const Address& address);
 
                 /**
+                * Gets a shared ptr to connection if available to the provided socket descriptor
+                *
+                * @param The socket descriptor for the connection.
+                */
+                boost::shared_ptr<Connection> getConnectionIfAvailable(int socketDescriptor);
+
+                /**
                 * Tries to connect to an address in member list.
                 * Gets an address a hint first tries that if not successful, tries connections from LoadBalancer
                 *
@@ -153,6 +160,9 @@ namespace hazelcast {
 
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
+                // TODO: Would prefer to use map<int, IOHandler *> but due to the implementation of
+                // util::SynchronizedMap I had to use something of type shared pointer
+                util::SynchronizedMap<int, Connection> socketConnections;
                 spi::ClientContext& clientContext;
                 SocketInterceptor* socketInterceptor;
                 InSelector inSelector;

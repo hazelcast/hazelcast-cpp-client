@@ -15,20 +15,23 @@ namespace hazelcast {
     namespace util {
         class SocketSet {
         public:
-            static fd_set get_fd_set(std::set<client::Socket const *, client::socketPtrComp> sockets);
+            struct FdRange {
+                int min;
+                int max;
+            };
 
-            static int getHighestSocketId(std::set<client::Socket const *, client::socketPtrComp> sockets);
-
-            std::set<client::Socket const *, client::socketPtrComp> getSockets();
+            /**
+             * @return Returns the maximum file descriptor id in the existing set, returns 0 if no fd in the set.
+             */
+            FdRange fillFdSet(fd_set &resultSet);
 
             void insertSocket(client::Socket const *);
 
             void removeSocket(client::Socket const *);
-
         private:
-            std::set<client::Socket const *, client::socketPtrComp> sockets;
+            typedef std::set<client::Socket const *, client::socketPtrComp> SocketContainer;
+            SocketContainer sockets;
             util::Mutex accessLock;
-
         };
 
     }
