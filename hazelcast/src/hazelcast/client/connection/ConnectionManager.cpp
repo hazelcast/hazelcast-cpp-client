@@ -150,7 +150,8 @@ namespace hazelcast {
                 return getOrConnect(address);
             }
 
-            void ConnectionManager::authenticate(Connection& connection, bool ownerConnection) {
+            void ConnectionManager::authenticate(Connection& connection) {
+                bool ownerConnection = connection.isOwnerConnection();
                 protocol::AuthenticationRequest auth(clientContext.getClientConfig().getCredentials());
                 auth.setPrincipal(principal.get());
                 auth.setFirstConnection(ownerConnection);
@@ -171,8 +172,9 @@ namespace hazelcast {
                 std::stringstream message;
                 (message << "client authenticated by " << address->getHost() << ":" << address->getPort());
                 util::ILogger::getLogger().info(message.str());
-                if (ownerConnection)
+                if (ownerConnection) {
                     this->principal = serializationService.toObject<protocol::Principal>(getCollection[1]);
+                }
             }
 
 
@@ -188,14 +190,14 @@ namespace hazelcast {
             }
 
             connection::Connection *ConnectionManager::connectTo(const Address& address, bool ownerConnection) {
-                std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, inSelector, outSelector));
+                std::auto_ptr<connection::Connection> conn(new Connection(address, clientContext, inSelector, outSelector, ownerConnection));
 
                 checkLive();
                 conn->connect(clientContext.getClientConfig().getConnectionTimeout());
                 if (socketInterceptor != NULL) {
                     socketInterceptor->onConnect(conn->getSocket());
                 }
-                authenticate(*conn, ownerConnection);
+                authenticate(*conn);
                 return conn.release();
             }
 

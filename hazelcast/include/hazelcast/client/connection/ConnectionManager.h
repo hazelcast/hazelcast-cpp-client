@@ -147,7 +147,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
-                void authenticate(Connection& connection, bool firstConnection);
+                void authenticate(Connection& connection);
 
                 void checkLive();
 

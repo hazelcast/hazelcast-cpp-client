@@ -20,23 +20,37 @@ namespace hazelcast {
             , isShutDown(false) {
             }
 
+            bool HazelcastServer::start() {
+                bool result = false;
 
-            void HazelcastServer::shutdown() {
-				try{
-					if (!isShutDown) {
-						factory.shutdownInstance(id);
-						isShutDown = true;
-					}
-				}catch(std::exception& e){
-					isShutDown = true;
-					std::cerr << e.what() << std::endl;
-				}
-                
+                if (isShutDown) {
+                    id = factory.getInstanceId();
+                    isShutDown = false;
+                    result = true;
+                }
+
+                return result;
+            }
+
+            bool HazelcastServer::shutdown() {
+                bool result = false;
+                try{
+                    if (!isShutDown) {
+                        factory.shutdownInstance(id);
+                        isShutDown = true;
+                        result = true;
+                    }
+                }catch(std::exception& e){
+                    isShutDown = true;
+                    std::cerr << e.what() << std::endl;
+                }
+                return result;
             }
 
             HazelcastServer::~HazelcastServer() {
                 shutdown();
             }
+
         }
     }
 }
