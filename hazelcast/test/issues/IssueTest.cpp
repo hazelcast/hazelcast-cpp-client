@@ -59,11 +59,11 @@ namespace hazelcast {
                     // 7. Put a 2nd entry to the map
                     try {
                         map->put(2, 20);
-                        util::sleep(1);
                     } catch (std::exception &e) {
                         // suppress the error
                         std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Suppressing exception:" << e.what() << std::endl;
                     }
+                    util::sleep(1);
                 } while (latch->get() > 0);
 
                 std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Finished." << std::endl;
