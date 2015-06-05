@@ -27,7 +27,7 @@ namespace iTest {
 
 #define ASSERT_EQUAL(expected, actual) \
     if (expected != actual) { \
-    iTestException e; \
+    iTest::iTestException e; \
     std::stringstream s; \
     s << "ASSERT_EQUAL(" #expected ", " #actual")" << " failed at line " << __LINE__ << " in file " << __FILE__<< std::endl; \
     s << "Expected value:" << expected << ", Actual value:" << actual << std::endl; \
@@ -37,7 +37,7 @@ namespace iTest {
 
 #define ASSERT_NOTEQUAL(expected, actual) \
     if (expected == actual) { \
-    iTestException e; \
+    iTest::iTestException e; \
     std::stringstream s; \
     s << "ASSERT_EQUAL(" #expected ", " #actual")" << " failed at line " << __LINE__ << " in file " << __FILE__<< std::endl; \
     s << "Value should NOT be equal to :" << actual << std::endl; \
