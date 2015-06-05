@@ -90,7 +90,7 @@ namespace hazelcast {
                 }
                 thread->join();
                 delete thread;
-                iTest::assertEqual(expected, map.size());
+                ASSERT_EQUAL(expected, map.size());
             }
 
             void IssueTest::testListenerSubscriptionOnSingleServerRestart() {
@@ -109,28 +109,28 @@ namespace hazelcast {
                 map.addEntryListener(listener, true);
 
                 // Put a key, value to the map
-                iTest::assertEqual((int *)NULL, map.put(1, 10).get());
+                ASSERT_EQUAL((int *)NULL, map.put(1, 10).get());
 
-                iTest::assertTrue(latch.await(20, 1)); // timeout of 20 seconds
+                ASSERT_EQUAL(true, latch.await(20, 1)); // timeout of 20 seconds
 
                 // 5. Verify that the listener got the entry added event
-                iTest::assertEqual(1, latch.get());
+                ASSERT_EQUAL(1, latch.get());
 
                 // 6. Restart the server
-                iTest::assertTrue(server.shutdown());
-                iTest::assertTrue(server.start());
+                ASSERT_EQUAL(true, server.shutdown());
+                ASSERT_EQUAL(true, server.start());
 
                 std::string putThreadName("Map Put Thread");
                 util::Thread t(putThreadName, putMapMessage, &map, &latch);
 
                 // 8. Verify that the 2nd entry is received by the listener
-                iTest::assertTrue(latch.await(20, 0)); // timeout of 20 seconds
+                ASSERT_EQUAL(true, latch.await(20, 0)); // timeout of 20 seconds
 
                 t.interrupt();
                 t.join();
 
                 // 9. Shut down the server
-                iTest::assertTrue(server.shutdown());
+                ASSERT_EQUAL(true, server.shutdown());
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
@@ -139,12 +139,12 @@ namespace hazelcast {
                 int count = latch.get();
                 if (2 == count) {
                     // The received event should be the addition of key value: 1, 10
-                    iTest::assertEqual(1, event.getKey());
-                    iTest::assertEqual(10, event.getValue());
+                    ASSERT_EQUAL(1, event.getKey());
+                    ASSERT_EQUAL(10, event.getValue());
                 } else if (1 == count) {
                     // The received event should be the addition of key value: 2, 20
-                    iTest::assertEqual(2, event.getKey());
-                    iTest::assertEqual(20, event.getValue());
+                    ASSERT_EQUAL(2, event.getKey());
+                    ASSERT_EQUAL(20, event.getValue());
                 }
 
                 latch.countDown();
@@ -158,8 +158,8 @@ namespace hazelcast {
 
             void IssueTest::Issue864MapListener::entryUpdated(const EntryEvent<int, int> &event) {
                 std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] ENTRY. latch count:" << latch.get() << std::endl;
-                iTest::assertEqual(2, event.getKey());
-                iTest::assertEqual(20, event.getValue());
+                ASSERT_EQUAL(2, event.getKey());
+                ASSERT_EQUAL(20, event.getValue());
                 latch.countDown();
 
                 std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] EXIT. latch count:" << latch.get() << std::endl;
