@@ -139,7 +139,7 @@ namespace hazelcast {
         }
 
         long Thread::getThreadID() {
-            return long(pthread_self());
+            return (long)pthread_self();
         }
 
         Thread::~Thread() {

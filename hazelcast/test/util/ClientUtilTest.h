@@ -8,7 +8,6 @@
 
 
 #include "ClientTestSupport.h"
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
