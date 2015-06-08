@@ -24,7 +24,11 @@ namespace hazelcast {
             if (isEnabled(client::SEVERE)) {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
-                (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " SEVERE: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
+                // Due to the problem faced in Linux environment which is described
+                // in https://gcc.gnu.org/ml/gcc/2003-12/msg00743.html, we could not use
+                // std::cout here. outstream flush() function in stdlib 3.4.4 does not handle pthread_cancel call
+                // appropriately.
+                printf("%s SEVERE: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
             }
         }
 
@@ -32,7 +36,7 @@ namespace hazelcast {
             if (isEnabled(client::WARNING)) {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
-                (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " WARNING: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
+                printf("%s WARNING: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
             }
         }
 
@@ -40,7 +44,7 @@ namespace hazelcast {
             if (isEnabled(client::INFO)) {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
-                (std::cout << getTime(buffer, TIME_STRING_LENGTH) <<" INFO: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
+                printf("%s INFO: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
             }
         }
 
@@ -49,7 +53,7 @@ namespace hazelcast {
             if (isEnabled(client::FINEST)) {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
-                (std::cout << getTime(buffer, TIME_STRING_LENGTH) << " FINEST: " << prefix << " [" << util::getThreadId() << "] " << message << std::endl);
+                printf("%s FINEST: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
             }
         }
 
@@ -65,14 +69,14 @@ namespace hazelcast {
             time_t rawtime;
             struct tm timeinfo;
 
-            buffer[0] = '\0'; // In case, the strftime fails just return an empty string for time
-
             time (&rawtime);
             int timeResult = hazelcast::util::localtime (&rawtime, &timeinfo);
             assert(0 == timeResult);
 
             if (0 == timeResult) { // this if is needed for release build
-                strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo);
+                if (0 == strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo)) {
+                    buffer[0] = '\0'; // In case the strftime fails, just return an empty string
+                }
             }
 
             // TODO: Change to thread specific stored buffer
