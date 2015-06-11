@@ -102,7 +102,6 @@ namespace hazelcast {
             const std::string &licenseKey = clientConfig.getLicenseKey();
             std::vector<license::LicenseType> expectedLicenseTypes(2);
             expectedLicenseTypes[0] = license::ENTERPRISE;
-            expectedLicenseTypes[1] = license::ENTERPRISE_SECURITY_ONLY;
             license::LicenseHelper::checkLicenseKey(licenseKey, expectedLicenseTypes);
         }
     }
