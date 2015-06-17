@@ -8,14 +8,14 @@ echo "Compiling Static Library"
 mkdir ReleaseStatic
 cd ReleaseStatic
 cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
-make
+make -j
 cd ..
 
 echo "Compiling Shared Library"
 mkdir ReleaseShared
 cd ReleaseShared
 cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
-make
+make -j
 cd ..
 
 #STANDART PART
