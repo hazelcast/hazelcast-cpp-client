@@ -30,8 +30,8 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include )
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
-  message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=32 (other option -DHZ_BIT=64)" )
-  set(HZ_BIT 32)
+  message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
+  set(HZ_BIT 64)
 ENDIF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
 
 SET(HZ_BIT_FLAG " ")
