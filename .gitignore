@@ -23,10 +23,12 @@ cpp/*
 *.la
 # *.a
 
-#dependency files
+# Dependency files
 *.d
 
-#test resources
+# Test resources
 # *.txt
 
+# Compiled binaries and classes
 Release*/*
+java/target/*
