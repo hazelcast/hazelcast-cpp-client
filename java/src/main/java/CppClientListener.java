@@ -40,13 +40,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * User: sancar
- * Date: 8/26/13
- * Time: 1:51 PM
- */
-
 class Person {
+
     private String name;
 
     public String getName() {
@@ -59,11 +54,11 @@ class Person {
 }
 
 class Employee implements Portable {
+
     private String name;
     private int age;
 
     public Employee() {
-
     }
 
     public Employee(int age, String name) {
@@ -88,7 +83,6 @@ class Employee implements Portable {
         name = reader.readUTF("n");
         age = reader.readInt("a");
     }
-
 }
 
 class SampleFailingTask implements Callable, IdentifiedDataSerializable {
@@ -116,10 +110,10 @@ class SampleFailingTask implements Callable, IdentifiedDataSerializable {
 }
 
 class SampleRunnableTask implements Portable, Runnable {
+
     private String name;
 
     public SampleRunnableTask() {
-
     }
 
     public void run() {
@@ -144,10 +138,10 @@ class SampleRunnableTask implements Portable, Runnable {
 }
 
 class SampleCallableTask implements IdentifiedDataSerializable, Callable {
+
     private String param;
 
     public SampleCallableTask() {
-
     }
 
     public Object call() throws Exception {
@@ -172,6 +166,7 @@ class SampleCallableTask implements IdentifiedDataSerializable, Callable {
 }
 
 public class CppClientListener {
+
     static final int OK = 5678;
     static final int END = 1;
     static final int START = 2;
@@ -187,6 +182,7 @@ public class CppClientListener {
         final Socket socket = welcomeSocket.accept();
         final DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
         while (true) {
             final int command = dataInputStream.readInt();
             switch (command) {

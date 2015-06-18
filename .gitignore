@@ -31,4 +31,8 @@ cpp/*
 
 # Compiled binaries and classes
 Release*/*
+
+# Java
+*.iml
+java/.idea
 java/target/*
