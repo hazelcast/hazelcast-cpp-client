@@ -7,6 +7,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/LockGuard.h"
 
+#include <stdio.h>
 #include <iostream>
 #include <time.h>
 #include <assert.h>
