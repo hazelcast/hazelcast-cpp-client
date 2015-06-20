@@ -16,14 +16,7 @@ namespace hazelcast {
             assert(NULL != socket);
 
             LockGuard lockGuard(accessLock);
-            std::pair<SocketContainer::iterator, bool> result = sockets.insert(socket);
-            if (!result.second) {
-                ILogger &logger = util::ILogger::getLogger();
-                std::ostringstream out;
-                out << "[SocketSet::insertSocket] Trying to add an already added socket with id " <<
-                socket->getSocketId() << ".";
-                logger.warning(out.str());
-            }
+            sockets.insert(socket);
         }
 
         void SocketSet::removeSocket(client::Socket const *socket) {
