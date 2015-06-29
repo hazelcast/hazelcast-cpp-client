@@ -36,8 +36,10 @@ namespace hazelcast {
                 int maxFd = (socketRange.max > wakeupSocketRange.max ? socketRange.max : wakeupSocketRange.max);
 
                 errno = 0;
+		t.tv_sec = 5;
+		t.tv_usec = 0;
                 int numSelected = select(maxFd + 1, &wakeUp_fds, &write_fds, NULL, &t);
-                if (numSelected == 0) {
+		 if (numSelected == 0) {
                     return;
                 }
                 if (numSelected == -1) {
@@ -48,7 +50,7 @@ namespace hazelcast {
                     }
                     return;
                 }
-
+		
                 if (FD_ISSET(wakeUpListenerSocketId, &wakeUp_fds)) {
                     int wakeUpSignal;
                     sleepingSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);

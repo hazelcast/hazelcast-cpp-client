@@ -28,10 +28,11 @@ namespace hazelcast {
             void InSelector::listenInternal() {
                 fd_set read_fds;
                 util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
-
                 errno = 0;
+		t.tv_sec = 5;
+		t.tv_usec = 0;
                 int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
-                if (numSelected == 0) {
+		if (numSelected == 0) {
                     return;
                 }
                 if (numSelected == -1) {
@@ -42,7 +43,6 @@ namespace hazelcast {
                     }
                     return;
                 }
-
                 for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &read_fds)) {
                         --numSelected;
