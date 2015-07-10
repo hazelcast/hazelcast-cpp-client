@@ -12,6 +12,7 @@
 build*/*
 cpp/*
 .DS_Store
+.idea/*
 
 # Compiled Dynamic libraries
 *.so
@@ -27,7 +28,8 @@ cpp/*
 *.d
 
 # Test resources
-# *.txt
+*.d
+tags
 
 # Compiled binaries and classes
 Release*/*
