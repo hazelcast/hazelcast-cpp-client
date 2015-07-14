@@ -76,10 +76,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
-
-	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/darwin/${HZ_BIT}/libz.a)
-
-	target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -90,11 +87,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror ")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
-	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/linux/${HZ_BIT}/libz.a)
-	
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}" LINK_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_LINK_FLAGS} ${HZ_VALGRIND_LINK_FLAGS}")
 	
-	target_link_libraries(${HZ_LIB_NAME} pthread rt ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_LIB_NAME} pthread rt )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -102,9 +97,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
 	add_definitions(-D__WIN${HZ_BIT}__ -DWIN${HZ_BIT} -D_WIN${HZ_BIT} -DHAZELCAST_EXPORTS)
 
-	set(Hz_ZLIB_LIBRARIES ${CMAKE_SOURCE_DIR}/external/lib/windows/${HZ_BIT}/zlibstaticd.lib)
 	set_target_properties(${HZ_LIB_NAME} PROPERTIES COMPILE_FLAGS " /EHsc " )
-	target_link_libraries(${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
+	target_link_libraries(${HZ_LIB_NAME}  )
 	
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 

@@ -54,6 +54,7 @@ namespace hazelcast {
     namespace util {
         ConditionVariable::ConditionVariable() {
             int error = pthread_cond_init(&condition, NULL);
+            (void)error;
             assert(EAGAIN != error);
             assert(ENOMEM != error);
             assert(EBUSY != error);
@@ -62,6 +63,7 @@ namespace hazelcast {
 
         ConditionVariable::~ConditionVariable() {
             int error = pthread_cond_destroy(&condition);
+            (void)error;
             assert(EBUSY != error);
             assert(EINVAL != error);
         }
@@ -77,6 +79,7 @@ namespace hazelcast {
 
 
             int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
+            (void)error;
             assert(EPERM != error);
             assert(EINVAL != error);
 
@@ -88,20 +91,23 @@ namespace hazelcast {
         }
 
         void ConditionVariable::wait(Mutex& mutex) {
-            int err = pthread_cond_wait(&condition, &(mutex.mutex));
-            assert (EPERM != err);
-            assert (EINVAL != err);
+            int error = pthread_cond_wait(&condition, &(mutex.mutex));
+            (void)error;
+            assert (EPERM != error);
+            assert (EINVAL != error);
         }
 
 
         void ConditionVariable::notify() {
-            int err = pthread_cond_signal(&condition);
-            assert(EINVAL != err);
+            int error = pthread_cond_signal(&condition);
+            (void)error;
+            assert(EINVAL != error);
         }
 
         void ConditionVariable::notify_all() {
-            int err = pthread_cond_broadcast(&condition);
-            assert(EINVAL != err);
+            int error = pthread_cond_broadcast(&condition);
+            (void)error;
+            assert(EINVAL != error);
         }
     }
 }

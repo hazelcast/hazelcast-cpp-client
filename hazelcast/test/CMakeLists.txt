@@ -14,7 +14,7 @@ add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS} )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -22,13 +22,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}" LINK_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_LINK_FLAGS} ${HZ_VALGRIND_LINK_FLAGS}")
 
-	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES})
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} )
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
-	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} ${Hz_ZLIB_LIBRARIES} )
+	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME}  )
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
