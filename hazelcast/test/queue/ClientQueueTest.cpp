@@ -14,7 +14,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientQueueTest::ClientQueueTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<ClientQueueTest>("ClientQueueTest")
+            : ClientTestSupport<ClientQueueTest>("ClientQueueTest", &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , q(new IQueue< std::string>(client->getQueue< std::string >("clientQueueTest"))) {

@@ -17,7 +17,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientSemaphoreTest::ClientSemaphoreTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<ClientSemaphoreTest>("ClientSemaphoreTest")
+            : ClientTestSupport<ClientSemaphoreTest>("ClientSemaphoreTest", &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , s(new ISemaphore(client->getISemaphore("ClientSemaphoreTest"))) {

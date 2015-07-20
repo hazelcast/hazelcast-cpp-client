@@ -16,7 +16,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ICountDownLatchTest::ICountDownLatchTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<ICountDownLatchTest>("ICountDownLatchTest")
+            : ClientTestSupport<ICountDownLatchTest>("ICountDownLatchTest" , &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {

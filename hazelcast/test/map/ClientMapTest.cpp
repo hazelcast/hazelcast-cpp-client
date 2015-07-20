@@ -16,7 +16,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientMapTest::ClientMapTest(HazelcastServerFactory& serverFactory)
-            : ClientTestSupport<ClientMapTest>("ClientMapTest")
+            : ClientTestSupport<ClientMapTest>("ClientMapTest", &serverFactory)
             , instance(serverFactory)
             , instance2(serverFactory)
             , client(getNewClient())
