@@ -111,18 +111,26 @@ namespace hazelcast {
         int Socket::send(const void *buffer, int len) const {
             errno = 0;
             int bytesSend = 0;
-            if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, 0)) == -1)
+            if ((bytesSend = ::send(socketId, (char *)buffer, (size_t)len, 0)) == -1) {
+                if (errno == EAGAIN) {
+                    return 0;
+                }
                 throw client::exception::IOException("Socket::send ", "Error socket send " + std::string(strerror(errno)));
+
+            }
             return bytesSend;
         }
 
         int Socket::receive(void *buffer, int len, int flag) const {
             errno = 0;
-            int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
+            int size = ::recv(socketId, (char *)buffer, (size_t)len, flag);
 
-            if (size == -1)
+            if (size == -1) {
+                if (errno == EAGAIN) {
+                    return 0;
+                }
                 throw client::exception::IOException("Socket::receive", "Error socket read " + std::string(strerror(errno)));
-            else if (size == 0) {
+            } else if (size == 0) {
                 throw client::exception::IOException("Socket::receive", "Connection closed by remote");
             }
             return size;

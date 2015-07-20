@@ -70,6 +70,7 @@ namespace hazelcast {
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
+                    sleepingSocket->setBlocking(false);
                     wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
                     return true;

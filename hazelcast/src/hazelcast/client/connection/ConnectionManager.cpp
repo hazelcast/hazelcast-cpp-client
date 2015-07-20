@@ -146,9 +146,6 @@ namespace hazelcast {
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         socketConnections.put(newConnection->getSocket().getSocketId(), newConnection);
-                        // Trigger update on the waiting socket list on select call
-                        outSelector.wakeUp();
-                        inSelector.wakeUp();
                         return newConnection;
                     }
                 }
@@ -185,6 +182,8 @@ namespace hazelcast {
                 util::ILogger::getLogger().info(message.str());
                 if (ownerConnection) {
                     this->principal = serializationService.toObject<protocol::Principal>(getCollection[1]);
+                }else{
+                    connection.getSocket().setBlocking(false);
                 }
             }
 
@@ -194,9 +193,6 @@ namespace hazelcast {
                 if (NULL != conn) {
                     socketConnections.remove(conn->getSocket().getSocketId());
                     connections.remove(address);
-                    // Trigger update on the waiting socket list on select call
-                    outSelector.wakeUp();
-                    inSelector.wakeUp();
                     ownerConnectionFuture.closeIfAddressMatches(address);
                 }
             }

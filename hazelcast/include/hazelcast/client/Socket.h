@@ -104,9 +104,9 @@ namespace hazelcast {
 
             client::Address getAddress() const;
 
-        private:
-
             void setBlocking(bool blocking);
+
+        private:
 
             Socket(const Socket &rhs);
 
