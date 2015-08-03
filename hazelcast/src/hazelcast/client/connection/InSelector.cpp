@@ -29,10 +29,10 @@ namespace hazelcast {
                 fd_set read_fds;
                 util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
                 errno = 0;
-		t.tv_sec = 5;
-		t.tv_usec = 0;
+                t.tv_sec = 5;
+                t.tv_usec = 0;
                 int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
-		if (numSelected == 0) {
+                if (numSelected == 0) {
                     return;
                 }
                 if (numSelected == -1) {
@@ -48,7 +48,7 @@ namespace hazelcast {
                         --numSelected;
                         if (wakeUpListenerSocketId == fd) {
                             int wakeUpSignal;
-                            sleepingSocket->receive(&wakeUpSignal, sizeof(int), MSG_WAITALL);
+                            sleepingSocket->receive(&wakeUpSignal, sizeof(int));
                         } else {
                             boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
                             if (conn.get() != NULL) {
