@@ -22,7 +22,6 @@ cd ..
 mkdir -p ./cpp/Mac_64/hazelcast/include/hazelcast/
 mkdir -p ./cpp/Mac_64/hazelcast/lib
 mkdir -p ./cpp/Mac_64/external/include
-mkdir -p ./cpp/Mac_64/external/lib
 mkdir -p ./cpp/Mac_64/examples/
 
 echo "Moving headers to target"
@@ -33,7 +32,6 @@ cp ReleaseShared/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/
 
 echo "Moving dependencies to target"
 cp -R external/include/ cpp/Mac_64/external/include/
-cp -R external/lib/darwin/64/ cpp/Mac_64/external/lib/
 
 echo "Moving examples to target"
 cp examples/*cpp cpp/Mac_64/examples/

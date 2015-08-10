@@ -55,24 +55,26 @@ namespace hazelcast {
         }
 
         void Mutex::lock() {
-            int err = pthread_mutex_lock(&mutex);
-            assert (!(err == EINVAL || err == EAGAIN));
-            assert (err != EDEADLK);
+            int error = pthread_mutex_lock(&mutex);
+            (void)error;
+            assert (!(error == EINVAL || error == EAGAIN));
+            assert (error != EDEADLK);
         }
 
         Mutex::status Mutex::tryLock() {
-            int err = pthread_mutex_trylock(&mutex);
-            assert (!(err == EINVAL || err == EAGAIN));
-            if (err == EBUSY) {
+            int error = pthread_mutex_trylock(&mutex);
+            assert (!(error == EINVAL || error == EAGAIN));
+            if (error == EBUSY) {
                 return Mutex::alreadyLocked;
             }
             return Mutex::ok;
         }
 
         void Mutex::unlock() {
-            int err = pthread_mutex_unlock(&mutex);
-            assert (!(err == EINVAL || err == EAGAIN));
-            assert (err != EPERM);
+            int error = pthread_mutex_unlock(&mutex);
+            (void)error;
+            assert (!(error == EINVAL || error == EAGAIN));
+            assert (error != EPERM);
         }
     }
 }

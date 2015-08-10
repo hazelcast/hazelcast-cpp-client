@@ -56,7 +56,7 @@ namespace hazelcast {
  * Hazelcast C++ client is shipped with 32 & 64 bit, shared and static libraries. Compiled static libraries of dependencies
  * are also available in the release.
  *
- * Dependencies are zlib and shared_ptr from the boost library.
+ * Only dependency is shared_ptr from the boost library.
  *
  *  Downloaded release folder consist of
  *  * Windows_32/
@@ -74,7 +74,6 @@ namespace hazelcast {
  *      +  lib/        => Contains both shared and static library of hazelcast.
  *      +  include/    => Contains headers of client
  *  * external/
- *      + lib/         => Contains compiled static libraries of zlib.
  *      + include/     => Contains headers of dependencies.(zlib and boost::shared_ptr)
  *
  *
@@ -94,11 +93,11 @@ namespace hazelcast {
  *
  * Sample script to build with static library:
  *
- *  * ﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/libz.a
+ *  * ﻿g++ main.cpp -pthread -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a
  *
  * Sample script to build with shared library:
  *
- *  * g++ main.cpp -lpthread -Wl,--no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/libz.a
+ *  * g++ main.cpp -lpthread -Wl,--no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64
  *
  * \subsection Mac
  *
@@ -106,11 +105,11 @@ namespace hazelcast {
  *
  * Sample script to build with static library:
  *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a ./external/lib/darwin/libz.a
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a
  *
  * Sample script to build with shared library:
  *
- *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64 ./external/lib/darwin/libz.a
+ *  * g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64
  *
  * \subsection Windows
  *
