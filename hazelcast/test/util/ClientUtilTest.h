@@ -21,7 +21,7 @@ namespace hazelcast {
             class ClientUtilTest : public ClientTestSupport<ClientUtilTest> {
             public:
 
-                ClientUtilTest(int dummy);
+                ClientUtilTest();
 
                 void addTests();
 

@@ -13,7 +13,7 @@ namespace hazelcast {
 
             class ClientSerializationTest : public ClientTestSupport<ClientSerializationTest> {
             public:
-                ClientSerializationTest(int dummy);
+                ClientSerializationTest();
 
                 void beforeClass();
 
