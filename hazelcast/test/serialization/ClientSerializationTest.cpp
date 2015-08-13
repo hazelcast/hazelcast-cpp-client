@@ -45,7 +45,7 @@ namespace hazelcast {
                 return p2.getData();
             }
 
-            ClientSerializationTest::ClientSerializationTest(int dummy)
+            ClientSerializationTest::ClientSerializationTest()
             : ClientTestSupport<ClientSerializationTest>("ClientSerializationTest") {
 
             }
