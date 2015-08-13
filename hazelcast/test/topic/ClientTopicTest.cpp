@@ -11,7 +11,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientTopicTest::ClientTopicTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<ClientTopicTest>("ClientTopicTest")
+            : ClientTestSupport<ClientTopicTest>("ClientTopicTest" , &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {

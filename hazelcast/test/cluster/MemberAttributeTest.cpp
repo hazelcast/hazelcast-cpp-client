@@ -24,7 +24,7 @@ namespace hazelcast {
             using namespace iTest;
 
             MemberAttributeTest::MemberAttributeTest(HazelcastServerFactory &hazelcastInstanceFactory)
-            :ClientTestSupport<MemberAttributeTest>("MemberAttributeTest")
+            :ClientTestSupport<MemberAttributeTest>("MemberAttributeTest" , &hazelcastInstanceFactory)
             ,hazelcastInstanceFactory(hazelcastInstanceFactory){
             }
 

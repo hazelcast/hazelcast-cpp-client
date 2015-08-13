@@ -11,7 +11,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientLockTest::ClientLockTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<ClientLockTest>("ClientLockTest")
+            : ClientTestSupport<ClientLockTest>("ClientLockTest", &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , l(new ILock(client->getILock("ClientLockTest"))) {

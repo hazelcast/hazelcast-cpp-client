@@ -13,7 +13,7 @@ namespace hazelcast {
             using namespace iTest;
 
             ClientListTest::ClientListTest(HazelcastServerFactory& serverFactory)
-            : ClientTestSupport<ClientListTest>("ClientListTest")
+            : ClientTestSupport<ClientListTest>("ClientListTest", &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , list(new IList<std::string>(client->getList<std::string>("ClientListTest"))) {

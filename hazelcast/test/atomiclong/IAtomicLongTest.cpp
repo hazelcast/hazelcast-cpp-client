@@ -19,7 +19,7 @@ namespace hazelcast {
             using namespace iTest;
 
             IAtomicLongTest::IAtomicLongTest(HazelcastServerFactory &serverFactory)
-            : ClientTestSupport<IAtomicLongTest>("IAtomicLongTest")
+            : ClientTestSupport<IAtomicLongTest>("IAtomicLongTest" , &serverFactory)
             , instance(serverFactory)
             , client(getNewClient())
             , atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {
