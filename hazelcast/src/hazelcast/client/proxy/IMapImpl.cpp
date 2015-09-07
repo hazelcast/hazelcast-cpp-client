@@ -47,6 +47,7 @@
 #include "hazelcast/client/impl/QueryResultSet.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/PartitionService.h"
 #include <climits>
 
 namespace hazelcast {
@@ -312,9 +313,62 @@ namespace hazelcast {
                 return *result;
             }
 
-            void IMapImpl::putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& entrySet) {
-                map::PutAllRequest *request = new map::PutAllRequest(getName(), entrySet);
-                invoke(request);
+            void IMapImpl::putAll(const EntryVector& m) {
+                spi::PartitionService &partitionService = context->getPartitionService();
+
+                int partitionCount = partitionService.getPartitionCount();
+
+                std::vector<connection::CallFuture> futures;
+
+                // release memory properly, can not use auto_ptr and do not want unneeded allocation
+                std::vector<EntryVector *> allEntriesByPartitionId(partitionCount);
+                for (int i=0;i < partitionCount; ++i) {
+                    allEntriesByPartitionId[i] = NULL;
+                }
+
+                for (EntryVector::const_iterator entryIter = m.begin(); entryIter != m.end(); ++entryIter) {
+                    int partitionId = getPartitionId(entryIter->first);
+
+                    if (NULL == allEntriesByPartitionId[partitionId]) {
+                        // create the list for the list for the partition
+                        allEntriesByPartitionId[partitionId] = new EntryVector();
+                    }
+
+                    allEntriesByPartitionId[partitionId]->push_back(*entryIter);
+                }
+
+                try {
+                    for (int i=0;i < partitionCount; ++i) {
+                        if (NULL != allEntriesByPartitionId[i]) {
+                            map::PutAllRequest *request = new map::PutAllRequest(getName(), *allEntriesByPartitionId[i], i);
+                            connection::CallFuture future = invokeAsync(request, i);
+                            futures.push_back(future);
+                        }
+                    }
+
+                    for (std::vector<connection::CallFuture>::iterator it = futures.begin(); futures.end() != it; ++it) {
+                        it->get();
+                    }
+
+                    // release the memory for the allEntriesByPartitionId
+                    for (int i=0;i < partitionCount; ++i) {
+                        if (NULL != allEntriesByPartitionId[i]) {
+                            delete allEntriesByPartitionId[i];
+                        }
+                    }
+                } catch (...) {
+                    // release the memory for the allEntriesByPartitionId
+                    for (int i=0;i < partitionCount; ++i) {
+                        if (NULL != allEntriesByPartitionId[i]) {
+                            delete allEntriesByPartitionId[i];
+                        }
+                    }
+
+                    // rethrow the exception
+                    throw;
+                }
+
+
             }
 
             void IMapImpl::clear() {

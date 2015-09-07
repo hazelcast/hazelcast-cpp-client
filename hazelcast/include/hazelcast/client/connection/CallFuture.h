@@ -31,6 +31,11 @@ namespace hazelcast {
 
                 CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService* invocationService);
 
+                // copy constructor
+                CallFuture(const CallFuture &rhs);
+
+                CallFuture &operator =(const CallFuture &rhs);
+
                 serialization::pimpl::Data get();
 
                 serialization::pimpl::Data get(time_t timeoutInSeconds);

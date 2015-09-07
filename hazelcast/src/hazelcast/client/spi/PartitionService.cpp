@@ -151,6 +151,9 @@ namespace hazelcast {
             }
 
 
+            int PartitionService::getPartitionCount() {
+                return partitionCount;
+            }
         }
     }
 }

@@ -89,7 +89,7 @@ namespace hazelcast {
 
                 bool isEmpty();
 
-                void putAll(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m);
+                void putAll(const EntryVector& m);
 
                 void clear();
             };

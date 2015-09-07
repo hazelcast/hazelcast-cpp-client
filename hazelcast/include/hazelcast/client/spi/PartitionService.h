@@ -50,6 +50,11 @@ namespace hazelcast {
 
                 int getPartitionId(const serialization::pimpl::Data &key);
 
+                /**
+                 * @return The total number of partitions in the cluster.
+                 */
+                int getPartitionCount();
+
             private:
 
                 spi::ClientContext &clientContext;
