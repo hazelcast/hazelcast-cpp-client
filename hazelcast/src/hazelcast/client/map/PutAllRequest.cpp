@@ -10,10 +10,12 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            PutAllRequest::PutAllRequest(const std::string& name, const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m)
+            PutAllRequest::PutAllRequest(const std::string& name,
+                                         const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& m,
+                                         int pId)
             : name(name)
-            , entrySet(m) {
-
+            , entrySet(m)
+            , partitionId(pId) {
             }
 
             int PutAllRequest::getFactoryId() const {
@@ -26,6 +28,7 @@ namespace hazelcast {
 
             void PutAllRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeUTF("n", name);
+                writer.writeInt("p", partitionId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 entrySet.writeData(out);
             }

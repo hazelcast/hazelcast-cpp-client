@@ -11,6 +11,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include <string>
+#include <hazelcast/client/connection/CallFuture.h>
 
 #define DESERIALIZE(data, RETURN_TYPE) boost::shared_ptr<RETURN_TYPE> result = toObject<RETURN_TYPE>(data);
 
@@ -37,6 +38,8 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API ProxyImpl : public DistributedObject{
             protected:
+                typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
+
                 /**
                 * Constructor
                 */
@@ -56,6 +59,17 @@ namespace hazelcast {
                 * @param request ClientRequest ptr.
                 */
                 serialization::pimpl::Data invoke(const impl::ClientRequest *request, int partitionId);
+
+                /**
+                * Internal API.
+                * method to be called by distributed objects.
+                * memory ownership is moved to DistributedObject.
+                *
+                * @param partitionId that given request will be send to.
+                * @param request ClientRequest ptr.
+                * @return The future object on which to wait for the response of the request
+                */
+                connection::CallFuture invokeAsync(const impl::ClientRequest *request, int partitionId);
 
                 /**
                 * Internal API.
@@ -142,7 +156,7 @@ namespace hazelcast {
                 }
 
                 template <typename K, typename V>
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > toDataEntriesSet(std::map<K, V> const& m) {
+                EntryVector toDataEntriesSet(std::map<K, V> const& m) {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entryDataSet(m.size());
                     typename std::map<K,V>::const_iterator it;
                     int i = 0;

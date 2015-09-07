@@ -48,6 +48,11 @@ namespace hazelcast {
                 return future.get();
             }
 
+            connection::CallFuture ProxyImpl::invokeAsync(const impl::ClientRequest *request, int partitionId) {
+                spi::InvocationService& invocationService = context->getInvocationService();
+                return invocationService.invokeOnPartitionOwner(request, partitionId);
+            }
+
             serialization::pimpl::Data ProxyImpl::invoke(const impl::ClientRequest *request) {
                 connection::CallFuture future = context->getInvocationService().invokeOnRandomTarget(request);
                 return future.get();

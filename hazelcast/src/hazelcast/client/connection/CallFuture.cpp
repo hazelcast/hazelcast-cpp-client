@@ -32,6 +32,19 @@ namespace hazelcast {
 
             }
 
+            CallFuture::CallFuture(const CallFuture &rhs) : promise(rhs.promise), connection(rhs.connection),
+                                                            invocationService(rhs.invocationService),
+                                                            heartBeatTimeout(rhs.heartBeatTimeout) {
+            }
+
+            CallFuture &CallFuture::operator=(const CallFuture &rhs) {
+                promise = rhs.promise;
+                connection = rhs.connection;
+                invocationService = rhs.invocationService;
+                heartBeatTimeout = rhs.heartBeatTimeout;
+                return *this;
+            }
+
             serialization::pimpl::Data CallFuture::get() {
                 return get(INT_MAX);
             }
