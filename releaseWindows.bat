@@ -19,15 +19,16 @@ MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStud
 cd ..
 
 echo "Moving 32bit libraries to target"
-mkdir .\cpp\Windows_32\hazelcast\lib
+mkdir .\cpp\Windows_32\hazelcast\lib\static
+mkdir .\cpp\Windows_32\hazelcast\lib\shared
 mkdir .\cpp\Windows_32\hazelcast\include\hazelcast\
 mkdir .\cpp\Windows_32\external\include
 mkdir .\cpp\Windows_32\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
 
-copy ReleaseShared32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\
-copy ReleaseStatic32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\
+copy ReleaseShared32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\shared\
+copy ReleaseStatic32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\static\
 
 echo "Moving 32bit external libraries to target"
 xcopy /S /Q external\include\* cpp\Windows_32\external\include\
@@ -36,7 +37,7 @@ echo "Moving 32bit examples to target"
 copy examples\*cpp  cpp\Windows_32\examples
 copy ReleaseStatic32\examples\Release\*exe  cpp\Windows_32\examples
 
-echo "Clearing tempraroy 32bit librares"
+echo "Clearing temporary 32bit librares"
 rm -rf .\ReleaseShared32
 rm -rf .\ReleaseStatic32
 
@@ -57,15 +58,16 @@ MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStud
 cd ..
 
 echo "Moving 64bit libraries to target"
-mkdir .\cpp\Windows_64\hazelcast\lib
+mkdir .\cpp\Windows_64\hazelcast\lib\static
+mkdir .\cpp\Windows_64\hazelcast\lib\shared
 mkdir .\cpp\Windows_64\hazelcast\include\hazelcast\
 mkdir .\cpp\Windows_64\external\include
 mkdir .\cpp\Windows_64\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
 
-copy ReleaseShared64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\
-copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\
+copy ReleaseShared64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\shared\
+copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\static\
 
 echo "Moving 64bit external libraries to target"
 xcopy /S /Q external\include\* cpp\Windows_64\external\include\
