@@ -16,7 +16,7 @@ namespace hazelcast {
         * Transactional implementation of ISet.
         */
         template<typename E>
-        class HAZELCAST_API TransactionalSet : public proxy::TransactionalSetImpl {
+        class TransactionalSet : public proxy::TransactionalSetImpl {
             friend class TransactionContext;
 
         public:

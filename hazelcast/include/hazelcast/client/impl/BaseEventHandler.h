@@ -24,9 +24,7 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API BaseEventHandler {
             public:
-                virtual ~BaseEventHandler(){
-
-                };
+                virtual ~BaseEventHandler();
                 
                 virtual void handle(const client::serialization::pimpl::Data &data) = 0;
 

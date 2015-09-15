@@ -13,7 +13,9 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 DataSerializer::DataSerializer() {
+                }
 
+                DataSerializer::~DataSerializer() {
                 }
 
                 void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const {

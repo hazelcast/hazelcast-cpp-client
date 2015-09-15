@@ -18,7 +18,7 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             template <typename E>
-            class HAZELCAST_API Message {
+            class Message {
             public:
                 Message(std::string topicName, const E &messageObject, long publishTime, const Member &publishingMember)
                 : messageObject(messageObject)

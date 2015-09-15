@@ -20,15 +20,14 @@ namespace hazelcast {
          *
          * @see ClientConfig#setSocketInterceptor(SocketInterceptor *socketInterceptor);
          */
-        class HAZELCAST_API SocketInterceptor {
+        class SocketInterceptor {
         public:
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.
              */
             virtual void onConnect(const Socket &connectedSocket) = 0;
 
-            virtual ~SocketInterceptor() {
-            };
+            virtual ~SocketInterceptor();
         };
     }
 }

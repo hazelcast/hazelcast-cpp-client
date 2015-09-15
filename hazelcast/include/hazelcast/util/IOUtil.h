@@ -31,18 +31,7 @@ namespace hazelcast {
                 return value;
             }
 
-            static void closeResource(Closeable *closable) {
-                if (closable != NULL) {
-                    try {
-                        closable->close();
-                    } catch (client::exception::IException& e) {
-                        std::stringstream message;
-                        message << "closeResource failed" << e.what();
-                        ILogger::getLogger().finest(message.str());
-                    }
-
-                }
-            }
+            static void closeResource(Closeable *closable);
 
             enum PRIMITIVE_ID {
                 PRIMITIVE_TYPE_BOOLEAN = 1,

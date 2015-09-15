@@ -1,6 +1,6 @@
 //
-// Created by sancar koyunlu on 6/21/13.
-// Copyright (c) 2013 hazelcast. All rights reserved.
+// Created by ihsan demir on 9/9/15.
+// Copyright (c) 2015 hazelcast. All rights reserved.
 
 #ifndef HAZELCAST_ENTRY_EVENT
 #define HAZELCAST_ENTRY_EVENT
@@ -34,51 +34,22 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            EntryEventType() {
-
-            }
+            EntryEventType();
 
             /**
              * Constructor
              */
-            EntryEventType(Type value)
-            :value(value) {
-
-            }
+            EntryEventType(Type value);
 
             /**
              * cast to int.
              */
-            operator int() const {
-                return value;
-            }
+            operator int() const;
 
             /**
              * copy method.
              */
-            void operator = (int i) {
-                switch (i) {
-                    case 1:
-                        value = ADDED;
-                        break;
-                    case 2:
-                        value = REMOVED;
-                        break;
-                    case 3:
-                        value = UPDATED;
-                        break;
-                    case 4:
-                        value = EVICTED;
-                        break;
-                    case 5:
-                        value = EVICT_ALL;
-                        break;
-                    case 6:
-                        value = CLEAR_ALL;
-                        break;
-
-                }
-            }
+            void operator = (int i);
 
         };
 
@@ -91,7 +62,7 @@ namespace hazelcast {
          * @see IMap#addEntryListener(EntryListener, boolean)
          */
         template <typename K, typename V>
-        class HAZELCAST_API EntryEvent {
+        class EntryEvent {
         public:
             /**
              * Constructor

@@ -18,7 +18,7 @@ namespace hazelcast {
         * @param <E> item type
         */
         template<typename E>
-        class HAZELCAST_API IList : public proxy::IListImpl {
+        class IList : public proxy::IListImpl {
             friend class HazelcastClient;
 
         public:

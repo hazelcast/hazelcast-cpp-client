@@ -20,7 +20,7 @@ namespace hazelcast {
         namespace impl {
 
             template<typename E>
-            class HAZELCAST_API ItemEventHandler : public impl::BaseEventHandler {
+            class ItemEventHandler : public impl::BaseEventHandler {
             public:
                 ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, ItemListener<E> &listener, bool includeValue)
                 :instanceName(instanceName)

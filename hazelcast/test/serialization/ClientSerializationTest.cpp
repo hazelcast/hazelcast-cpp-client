@@ -26,7 +26,9 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            static const unsigned int LARGE_ARRAY_SIZE = 10 * 1024 * 1024; // 10 MB
+            static const unsigned int LARGE_ARRAY_SIZE = 5 * 1024 * 1024;   // 5 MB. Previously it was 10 MB but then the
+                                                                            // test fails when using Windows 32-bit DLL
+                                                                            // library with std::bad_alloc with 10 MB
             static const unsigned int LARGE_DATA_SIZE_IN_BYTES = 10 * LARGE_ARRAY_SIZE * sizeof(double); // 10 * 10MB * (sizeof(double))
 
             static serialization::pimpl::Data writeAndReadData(serialization::pimpl::Data& data, serialization::pimpl::SerializationService& ss1, serialization::pimpl::SerializationService& ss2) {

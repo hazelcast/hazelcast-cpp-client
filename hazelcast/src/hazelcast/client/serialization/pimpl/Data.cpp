@@ -36,7 +36,7 @@ namespace hazelcast {
                     if (data.get() != 0 && data->size() > 0 && data->size() < DATA_OFFSET) {
                         char msg[100];
                         sprintf(msg, "Provided buffer should be either empty or "
-                                "should contain more than %d bytes! Provided buffer size:%ld", DATA_OFFSET, data->size());
+                                "should contain more than %u bytes! Provided buffer size:%lu", DATA_OFFSET, (unsigned long)data->size());
                         throw exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
                 }

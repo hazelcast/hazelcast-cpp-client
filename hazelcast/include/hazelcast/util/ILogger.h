@@ -25,10 +25,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API ILogger {
         public:
-            static ILogger& getLogger() {
-                static ILogger singleton;
-                return singleton;
-            }
+            static ILogger& getLogger();
 
             void setLogLevel(int logLevel);
 
@@ -48,11 +45,9 @@ namespace hazelcast {
             int HazelcastLogLevel;
             std::string prefix;
 
-            ILogger() : HazelcastLogLevel(client::INFO) {
-            }
+            ILogger();
 
-            ~ILogger() {
-            }
+            ~ILogger();
 
             const char *getTime(char * buffer, size_t length) const;
 

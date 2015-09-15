@@ -24,7 +24,7 @@ namespace hazelcast {
          * @param <V> value
          */
         template<typename K, typename V>
-        class HAZELCAST_API EntryView{
+        class EntryView{
         public:
 
             /**

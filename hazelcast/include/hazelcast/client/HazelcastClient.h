@@ -56,6 +56,8 @@ namespace hazelcast {
  * Hazelcast C++ client is shipped with 32 & 64 bit, shared and static libraries. Compiled static libraries of dependencies
  * are also available in the release.
  *
+ *  The user should make sure that the libraries are in appropriate linkage path for the application.
+ *
  * Only dependency is shared_ptr from the boost library.
  *
  *  Downloaded release folder consist of
@@ -116,6 +118,9 @@ namespace hazelcast {
  * For Windows, there are two distributions one is 32bit the other is 64bit.
  * Currently release have only Visual Studio 2012 compatible libraries in the distributed zip. For others please contact with support@hazelcast.com
  *
+ * When compiling for Windows environment the user should specify one of the following flags:
+ *  * HAZELCAST_USE_STATIC: You want the application to use the static Hazelcast library.
+ *  * HAZELCAST_USE_SHARED: You want the application to use the shared Hazelcast library.
  *
  *
  * \section code_samples Code Samples

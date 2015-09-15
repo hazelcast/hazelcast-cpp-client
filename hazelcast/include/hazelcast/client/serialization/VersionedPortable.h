@@ -29,8 +29,7 @@ namespace hazelcast {
                 /**
                 * Destructor
                 */
-                virtual ~VersionedPortable(){
-                }
+                virtual ~VersionedPortable();
 
             };
         }

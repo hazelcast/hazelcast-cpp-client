@@ -1,14 +1,95 @@
-set -e
-rm -rf build
-mkdir build
-cd build
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
-make
-cd ..
-cd java
-mvn -q clean install
-mvn exec:java -Dexec.mainClass="CppClientListener" &
-sleep 20
-cd ..
-./build/hazelcast/test/clientTest_STATIC_64.exe
-kill -9 $( jps | grep  Launcher | awk '{print $1;}' ) || true
+#!/usr/bin/env bash
+
+HZ_BIT_VERSION=32
+HZ_LIB_TYPE=SHARED
+HZ_BUILD_TYPE=Debug
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=32
+HZ_LIB_TYPE=SHARED
+HZ_BUILD_TYPE=Release
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=32
+HZ_LIB_TYPE=STATIC
+HZ_BUILD_TYPE=Debug
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=32
+HZ_LIB_TYPE=STATIC
+HZ_BUILD_TYPE=Release
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=64
+HZ_LIB_TYPE=SHARED
+HZ_BUILD_TYPE=Debug
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=64
+HZ_LIB_TYPE=SHARED
+HZ_BUILD_TYPE=Release
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=64
+HZ_LIB_TYPE=STATIC
+HZ_BUILD_TYPE=Debug
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+HZ_BIT_VERSION=64
+HZ_LIB_TYPE=STATIC
+HZ_BUILD_TYPE=Release
+
+./testLinuxSingleCase.sh ${HZ_BIT_VERSION} ${HZ_LIB_TYPE} ${HZ_BUILD_TYPE}
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. Bit Version:${HZ_BIT_VERSION}, Library type:${HZ_LIB_TYPE}, Build Version:${HZ_BUILD_TYPE}"
+    exit 1
+fi
+
+echo "All tests PASSED"
+
+exit 0
+
+

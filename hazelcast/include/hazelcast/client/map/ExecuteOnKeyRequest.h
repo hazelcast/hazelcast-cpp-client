@@ -23,7 +23,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename EntryProcessor>
-            class HAZELCAST_API ExecuteOnKeyRequest : public impl::ClientRequest {
+            class ExecuteOnKeyRequest : public impl::ClientRequest {
             public:
                 ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::pimpl::Data &key)
                 :name(name)

@@ -35,9 +35,7 @@ namespace hazelcast {
 
         class HAZELCAST_API MembershipListener {
         public:
-            virtual ~MembershipListener() {
-
-            };
+            virtual ~MembershipListener();
 
             /**
              * Invoked when a new member is added to the cluster.

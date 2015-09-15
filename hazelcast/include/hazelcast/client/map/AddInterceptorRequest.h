@@ -22,7 +22,7 @@ namespace hazelcast {
     namespace client {
         namespace map {
             template<typename Interceptor>
-            class HAZELCAST_API AddInterceptorRequest : impl::ClientRequest {
+            class AddInterceptorRequest : impl::ClientRequest {
             public:
                 AddInterceptorRequest(const std::string name, Interceptor &interceptor)
                 :name(name)

@@ -22,7 +22,7 @@ namespace hazelcast {
          * Note Client is smart by default.
          *
          */
-        class HAZELCAST_API LoadBalancer {
+        class LoadBalancer {
         public:
 
             /**
@@ -39,11 +39,8 @@ namespace hazelcast {
              */
             virtual const Member next() = 0;
 
-            virtual ~LoadBalancer() {
-
-            };
+            virtual ~LoadBalancer();
         };
-
     }
 }
 

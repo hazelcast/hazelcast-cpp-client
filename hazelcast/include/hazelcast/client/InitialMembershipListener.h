@@ -14,6 +14,8 @@ namespace hazelcast {
 
         class MembershipEvent;
 
+        class MemberAttributeEvent;
+
         /**
          * The InitializingMembershipListener is a MembershipListener that will first receives a
          * InitialMembershipEvent when it is registered so it immediately knows which members are available. After
@@ -32,9 +34,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipListener {
         public:
-            virtual ~InitialMembershipListener() {
-
-            };
+            virtual ~InitialMembershipListener();
 
             /**
              * Is called when this listener is registered.
