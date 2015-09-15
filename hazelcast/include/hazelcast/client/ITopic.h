@@ -27,7 +27,7 @@ namespace hazelcast {
         *
         */
         template<typename E>
-        class HAZELCAST_API ITopic : public proxy::ITopicImpl {
+        class ITopic : public proxy::ITopicImpl {
             friend class HazelcastClient;
 
         public:

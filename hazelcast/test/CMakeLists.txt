@@ -8,7 +8,7 @@ include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/ha
 
 #set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/java/)
 
-SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT}.exe)
+SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT})
 
 add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS} )
 
@@ -27,6 +27,13 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	IF(${HAZELCAST_LIBRARY_TYPE} MATCHES "STATIC")
+		message( STATUS "Shall use the STATIC Hazelcast library for the tests.")
+		add_definitions(-DHAZELCAST_USE_STATIC)
+	ELSE(${HAZELCAST_LIBRARY_TYPE} MATCHES "SHARED")
+		message( STATUS "Shall use the SHARED Hazelcast library for the tests.")
+		add_definitions(-DHAZELCAST_USE_SHARED)
+	ENDIF(${HAZELCAST_LIBRARY_TYPE} MATCHES "STATIC")
 
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
 	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME}  )

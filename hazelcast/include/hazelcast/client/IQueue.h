@@ -15,7 +15,7 @@ namespace hazelcast {
         * @tparam E item type
         */
         template<typename E>
-        class HAZELCAST_API IQueue : public proxy::IQueueImpl {
+        class IQueue : public proxy::IQueueImpl {
             friend class HazelcastClient;
 
         public:

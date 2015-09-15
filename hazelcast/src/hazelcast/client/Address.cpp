@@ -72,8 +72,18 @@ namespace hazelcast {
             }
         }
 
+        bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
+            int i = lhs.getHost().compare(rhs.getHost());
+            if (i == 0) {
+                return lhs.getPort() > rhs.getPort();
+            }
+            return i > 0;
+
+        }
+
         std::ostream &operator <<(std::ostream &stream, const Address &address) {
             return stream << "Address[" << address.getHost() << ":" << address.getPort() << "]";
         }
+
     }
 }

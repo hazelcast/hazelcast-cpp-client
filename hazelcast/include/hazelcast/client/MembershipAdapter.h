@@ -21,9 +21,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API MembershipAdapter : public MembershipListener {
         public:
-            virtual ~MembershipAdapter() {
-
-            };
+            virtual ~MembershipAdapter();
 
             virtual void memberAdded(const MembershipEvent &membershipEvent);
 

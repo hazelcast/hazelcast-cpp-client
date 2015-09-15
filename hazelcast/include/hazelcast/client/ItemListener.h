@@ -22,7 +22,7 @@ namespace hazelcast {
         * @param <E> item
         */
         template<typename E>
-        class HAZELCAST_API ItemListener {
+        class ItemListener {
         public:
             virtual ~ItemListener() {
 

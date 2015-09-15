@@ -39,7 +39,7 @@ namespace iTest {
     };
 
     template<typename T>
-    class HAZELCAST_API iTestFixture {
+    class iTestFixture {
         typedef void (T::*TestFunction)();
 
     public:

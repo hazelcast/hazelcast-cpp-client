@@ -17,7 +17,7 @@ namespace hazelcast {
          * Transactional implementation of IList.
          */
         template <typename E>
-        class HAZELCAST_API TransactionalList : public proxy::TransactionalListImpl {
+        class TransactionalList : public proxy::TransactionalListImpl {
             friend class TransactionContext;
 
         public:

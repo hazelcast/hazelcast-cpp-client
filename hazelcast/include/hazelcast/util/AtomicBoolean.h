@@ -6,55 +6,29 @@
 #ifndef HAZELCAST_AtomicBoolean
 #define HAZELCAST_AtomicBoolean
 
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
-        class AtomicBoolean {
+        class HAZELCAST_API AtomicBoolean {
         public:
 
-            AtomicBoolean():v(true){
+            AtomicBoolean();
 
-            }
+            AtomicBoolean(bool v);
 
-            AtomicBoolean(bool v):v(v) {
+            bool operator!();
 
-            }
+            bool operator ==(bool i);
 
-            bool operator!(){
-                LockGuard lockGuard(mutex);
-                return !v;
-            }
+            bool operator !=(bool i);
 
-            bool operator ==(bool i){
-                LockGuard lockGuard(mutex);
-                return v == i;
-            }
+            void operator =(bool i);
 
-            bool operator !=(bool i){
-                LockGuard lockGuard(mutex);
-                return v != i;
-            }
+            operator bool();
 
-            void operator =(bool i){
-                LockGuard lockGuard(mutex);
-                v = i;
-            }
-
-            operator bool(){
-                LockGuard lockGuard(mutex);
-                return v;
-            }
-
-            bool compareAndSet(bool compareValue, bool setValue){
-                LockGuard lockGuard(mutex);
-                if(compareValue == v){
-                    v = setValue;
-                    return true;
-                }
-                return false;
-            }
+            bool compareAndSet(bool compareValue, bool setValue);
 
         private:
             Mutex mutex;

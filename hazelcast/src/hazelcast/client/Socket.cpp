@@ -180,6 +180,10 @@ namespace hazelcast {
         }
 
 
+        bool socketPtrComp::operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
+            return lhs->getSocketId() > rhs->getSocketId();
+        }
+
     }
 }
 

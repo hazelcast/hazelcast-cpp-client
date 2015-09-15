@@ -17,6 +17,17 @@ namespace hazelcast {
 
 #define TIME_STRING_LENGTH 25
 
+        ILogger& ILogger::getLogger() {
+            static ILogger singleton;
+            return singleton;
+        }
+
+        ILogger::ILogger() : HazelcastLogLevel(client::INFO) {
+        }
+
+        ILogger::~ILogger() {
+        }
+
         void ILogger::setLogLevel(int logLevel) {
             HazelcastLogLevel = logLevel;
         }

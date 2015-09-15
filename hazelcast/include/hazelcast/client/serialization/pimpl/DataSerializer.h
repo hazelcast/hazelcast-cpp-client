@@ -21,6 +21,8 @@ namespace hazelcast {
                 public:
                     DataSerializer();
 
+                    ~DataSerializer();
+
                     void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const;
 
                     void read(ObjectDataInput &in, IdentifiedDataSerializable &object) const;

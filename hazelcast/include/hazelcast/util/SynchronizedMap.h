@@ -22,7 +22,7 @@
 namespace hazelcast {
     namespace util {
         template <typename K, typename V, typename Comparator  = std::less<K> >
-        class HAZELCAST_API SynchronizedMap {
+        class SynchronizedMap {
         public:
             SynchronizedMap() {
 

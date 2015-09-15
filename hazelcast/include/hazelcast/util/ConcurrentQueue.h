@@ -20,7 +20,7 @@ namespace hazelcast {
     namespace util {
         template <typename T>
         /* Non blocking - synchronized queue - does not delete memory ever */
-        class HAZELCAST_API ConcurrentQueue {
+        class ConcurrentQueue {
         public:
             ConcurrentQueue() {
 

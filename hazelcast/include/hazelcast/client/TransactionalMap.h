@@ -21,7 +21,7 @@ namespace hazelcast {
         * @param <V> value
         */
         template<typename K, typename V>
-        class HAZELCAST_API TransactionalMap : public proxy::TransactionalMapImpl {
+        class TransactionalMap : public proxy::TransactionalMapImpl {
             friend class TransactionContext;
 
         public:

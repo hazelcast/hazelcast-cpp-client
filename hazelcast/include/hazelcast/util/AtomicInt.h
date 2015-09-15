@@ -7,7 +7,7 @@
 #define HAZELCAST_AtomicInt
 
 #include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/LockGuard.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -16,60 +16,29 @@
 
 namespace hazelcast {
     namespace util {
-        class AtomicInt {
+        class HAZELCAST_API AtomicInt {
         public:
-            AtomicInt():v(0) {
+            AtomicInt();
 
-            }
+            AtomicInt(int v);
 
-            AtomicInt(int v):v(v) {
+            int operator--(int );
 
-            }
+            int operator++(int );
 
-            int operator--(int ){
-                LockGuard lockGuard(mutex);
-                return v--;
-            }
+            int operator++();
 
-            int operator++(int ){
-                LockGuard lockGuard(mutex);
-                return v++;
-            }
+            void operator =(int i);
 
-            int operator++(){
-                LockGuard lockGuard(mutex);
-                return ++v;
-            }
+            operator int();
 
-            void operator =(int i){
-                LockGuard lockGuard(mutex);
-                v = i;
-            }
+            int operator--();
 
-            operator int(){
-                LockGuard lockGuard(mutex);
-                return v;
-            }
+            bool operator <=(int i);
 
-            int operator--(){
-                LockGuard lockGuard(mutex);
-                return --v;
-            }
+            bool operator ==(int i);
 
-            bool operator <=(int i){
-                LockGuard lockGuard(mutex);
-                return v <= i;
-            }
-
-            bool operator ==(int i) {
-                LockGuard lockGuard(mutex);
-                return i == v;
-            }
-
-            bool operator !=(int i) {
-                LockGuard lockGuard(mutex);
-                return i != v;
-            }
+            bool operator !=(int i);
 
         private:
             Mutex mutex;

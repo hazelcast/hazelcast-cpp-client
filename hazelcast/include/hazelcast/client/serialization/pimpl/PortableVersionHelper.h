@@ -6,25 +6,17 @@
 #ifndef HAZELCAST_PortableVersionHelper
 #define HAZELCAST_PortableVersionHelper
 
-#include "hazelcast/client/serialization/VersionedPortable.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class Portable;
+
             namespace pimpl {
-                class PortableVersionHelper {
+                class HAZELCAST_API PortableVersionHelper {
                 public:
-                    static int getVersion(const Portable *portable, int defaultVersion) {
-                        int version = defaultVersion;
-                        if (const VersionedPortable *versionedPortable = dynamic_cast<const VersionedPortable *>(portable)) {
-                            version = versionedPortable->getClassVersion();
-                            if (version < 0) {
-                                throw exception::IllegalArgumentException("PortableVersionHelper:getVersion", "Version cannot be negative!");
-                            }
-                        }
-                        return version;
-                    }
+                    static int getVersion(const Portable *portable, int defaultVersion);
                 };
             }
         }

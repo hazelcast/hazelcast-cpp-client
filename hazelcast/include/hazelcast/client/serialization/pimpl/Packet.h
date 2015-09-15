@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class Packet : public SocketWritable , public SocketReadable {
+                class HAZELCAST_API Packet : public SocketWritable , public SocketReadable {
                 public:
                     static byte const VERSION;
 

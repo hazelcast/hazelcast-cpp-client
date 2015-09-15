@@ -282,7 +282,7 @@ namespace hazelcast {
 
                     if (requestedLength > available) {
                         char msg[100];
-                        sprintf(msg, "Not enough bytes in internal buffer. Available:%ld bytes but needed %ld bytes", available, requestedLength);
+                        sprintf(msg, "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes", (unsigned long)available, (unsigned long)requestedLength);
                         throw exception::IOException("DataInput::checkBoundary", msg);
                     }
                 }

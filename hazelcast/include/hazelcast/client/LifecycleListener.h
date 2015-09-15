@@ -35,9 +35,7 @@ namespace hazelcast {
              */
             virtual void stateChanged(const LifecycleEvent &lifecycleEvent) = 0;
 
-            virtual ~LifecycleListener(){
-
-            };
+            virtual ~LifecycleListener();
         };
     }
 }

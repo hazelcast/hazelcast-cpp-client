@@ -13,14 +13,9 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API LockGuard {
         public:
-            LockGuard(Mutex &mutex)
-            :mutex(mutex) {
-                mutex.lock();
-            };
+            LockGuard(Mutex &mutex);
 
-            ~LockGuard() {
-                mutex.unlock();
-            };
+            ~LockGuard();
 
         private:
             Mutex &mutex;

@@ -34,38 +34,22 @@ namespace hazelcast {
             /**
              * Constructor.
              */
-            ItemEventType() {
-
-            }
+            ItemEventType();
 
             /**
              * Constructor.
              */
-            ItemEventType(Type value)
-            :value(value) {
-
-            }
+            ItemEventType(Type value);
 
             /**
              * cast to int.
              */
-            operator int() const {
-                return value;
-            }
+            operator int() const;
 
             /**
              * copy function.
              */
-            void operator = (int i) {
-                switch (i) {
-                    case 1:
-                        value = ADDED;
-                        break;
-                    case 2:
-                        value = REMOVED;
-                        break;
-                }
-            }
+            void operator = (int i);
 
         };
 
@@ -78,7 +62,7 @@ namespace hazelcast {
          * @see Set#addItemListener
          */
         template <typename E>
-        class HAZELCAST_API ItemEvent {
+        class ItemEvent {
         public:
             /**
              * constructor

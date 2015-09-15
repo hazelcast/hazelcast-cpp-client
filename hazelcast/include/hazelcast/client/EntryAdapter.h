@@ -22,7 +22,7 @@ namespace hazelcast {
         * @see EntryListener
         */
         template<typename K, typename V>
-        class HAZELCAST_API EntryAdapter : public EntryListener<K, V> {
+        class EntryAdapter : public EntryListener<K, V> {
         public:
             virtual ~EntryAdapter() {
 

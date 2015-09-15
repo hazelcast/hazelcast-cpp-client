@@ -19,7 +19,7 @@ namespace hazelcast {
         * @param <E> element type
         */
         template<typename E>
-        class HAZELCAST_API TransactionalQueue : public proxy::TransactionalQueueImpl {
+        class TransactionalQueue : public proxy::TransactionalQueueImpl {
             friend class TransactionContext;
 
         public:

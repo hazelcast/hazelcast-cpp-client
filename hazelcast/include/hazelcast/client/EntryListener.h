@@ -27,7 +27,7 @@ namespace hazelcast {
         * @see IMap#addEntryListener(EntryListener, boolean)
         */
         template<typename K, typename V>
-        class HAZELCAST_API EntryListener {
+        class EntryListener {
         public:
             virtual ~EntryListener() {
 

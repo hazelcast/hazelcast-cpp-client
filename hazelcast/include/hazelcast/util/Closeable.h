@@ -17,10 +17,7 @@ namespace hazelcast {
         public:
             virtual void close() = 0;
 
-            virtual ~Closeable() {
-
-            };
-
+            virtual ~Closeable();
 
         };
 

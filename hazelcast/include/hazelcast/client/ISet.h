@@ -16,7 +16,7 @@ namespace hazelcast {
         * @tparam E item type
         */
         template<typename E>
-        class HAZELCAST_API ISet : public proxy::ISetImpl {
+        class ISet : public proxy::ISetImpl {
             friend class HazelcastClient;
 
         public:

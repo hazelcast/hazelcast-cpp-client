@@ -8,35 +8,19 @@ namespace hazelcast {
         namespace serialization {
             class HAZELCAST_API FieldType {
             public:
-                FieldType() : id(0) {
+                FieldType();
 
-                };
+                FieldType(int type);
 
-                FieldType(int type) : id((byte)type) {
-                };
+                FieldType(FieldType const& rhs);
 
-                FieldType(FieldType const& rhs) : id(rhs.id) {
+                const byte getId() const;
 
-                };
+                FieldType& operator=(FieldType const& rhs);
 
-                const byte getId() const {
-                    return id;
-                };
+                bool operator==(FieldType const& rhs) const;
 
-                FieldType& operator=(FieldType const& rhs) {
-                    this->id = rhs.id;
-                    return (*this);
-                };
-
-                bool operator==(FieldType const& rhs) const {
-                    if (id != rhs.id) return false;
-                    return true;
-                };
-
-                bool operator!=(FieldType const& rhs) const {
-                    if (id == rhs.id) return false;
-                    return true;
-                };
+                bool operator!=(FieldType const& rhs) const;
 
                 byte id;
             };

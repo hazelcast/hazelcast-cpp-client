@@ -20,13 +20,13 @@ namespace hazelcast {
 
         HAZELCAST_API void sleep(int seconds);
 
-        char *strtok(char *str, const char *sep, char ** context);
+        HAZELCAST_API char *strtok(char *str, const char *sep, char ** context);
 
         /**
          * Fills the result with localtime if succesful
          * @return 0 on success, non-zero on error
          */
-        int localtime(const time_t *clock, struct tm *result);
+        HAZELCAST_API int localtime(const time_t *clock, struct tm *result);
     }
 }
 

@@ -88,14 +88,7 @@ namespace hazelcast {
              * @param lhs
              * @param rhs
              */
-            bool operator ()(const Address &lhs, const Address &rhs) const {
-                int i = lhs.getHost().compare(rhs.getHost());
-                if (i == 0) {
-                    return lhs.getPort() > rhs.getPort();
-                }
-                return i > 0;
-
-            }
+            bool operator ()(const Address &lhs, const Address &rhs) const;
         };
 
         std::ostream& operator<<(std::ostream &stream, const Address &address);

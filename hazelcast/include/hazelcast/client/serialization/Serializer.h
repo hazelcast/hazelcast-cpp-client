@@ -24,8 +24,7 @@ namespace hazelcast {
                 /**
                  * Destructor
                 */
-                virtual ~SerializerBase() {
-                };
+                virtual ~SerializerBase();
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
@@ -61,7 +60,7 @@ namespace hazelcast {
              *
 
                     template<typename T>
-                    class HAZELCAST_API MyCustomSerializer : public serialization::Serializer<T> {
+                    class MyCustomSerializer : public serialization::Serializer<T> {
                     public:
 
                        void write(serialization::ObjectDataOutput & out, const T& object) {
@@ -85,14 +84,12 @@ namespace hazelcast {
 
              */
             template <typename Serializable>
-            class HAZELCAST_API Serializer : public SerializerBase {
+            class Serializer : public SerializerBase {
             public:
                 /**
                  * Destructor
                  */
-                virtual ~Serializer() {
-
-                };
+                virtual ~Serializer() {}
 
                 /**
                  *  This method writes object to ObjectDataOutput

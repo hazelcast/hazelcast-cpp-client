@@ -46,7 +46,7 @@ namespace iTest {
     }
 
     template<typename Expected, typename Actual>
-    HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
+    void assertEqual(const Expected& expected, const Actual& actual, const char *message) {
         assertNumber++;
         if (expected != actual) {
             iTestException e;
@@ -58,7 +58,7 @@ namespace iTest {
     }
 
     template<typename Expected, typename Actual>
-    HAZELCAST_API void assertEqual(const Expected& expected, const Actual& actual) {
+    void assertEqual(const Expected& expected, const Actual& actual) {
         assertNumber++;
         if (actual != expected) {
             iTestException e;
@@ -70,7 +70,7 @@ namespace iTest {
     }
 
     template<typename Type>
-    HAZELCAST_API void assertEqualWithEpsilon(const Type& value1, const Type& value2, const Type& epsilon) {
+    void assertEqualWithEpsilon(const Type& value1, const Type& value2, const Type& epsilon) {
         assertNumber++;
         if (std::abs(value1 - value2) > epsilon) {
             iTestException e;

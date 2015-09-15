@@ -9,16 +9,16 @@
 namespace hazelcast {
     namespace client {
 
-        void MembershipAdapter::memberAdded(const MembershipEvent& membershipEvent) {
+        MembershipAdapter::~MembershipAdapter() {
+        }
 
+        void MembershipAdapter::memberAdded(const MembershipEvent& membershipEvent) {
         }
 
         void MembershipAdapter::memberRemoved(const MembershipEvent& membershipEvent) {
-
         }
 
         void MembershipAdapter::memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) {
-
         }
     }
 }

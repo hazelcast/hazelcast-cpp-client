@@ -19,7 +19,7 @@ namespace hazelcast {
         * @see IMap
         */
         template<typename K, typename V>
-        class HAZELCAST_API MultiMap : public proxy::MultiMapImpl {
+        class MultiMap : public proxy::MultiMapImpl {
             friend class HazelcastClient;
 
         public:

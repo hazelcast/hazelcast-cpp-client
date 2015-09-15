@@ -131,9 +131,7 @@ namespace hazelcast {
             /**
              * Functor.
              */
-            bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
-                return lhs->getSocketId() > rhs->getSocketId();
-            }
+            bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const;
         };
 
     }
