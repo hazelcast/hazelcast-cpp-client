@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project (TestAppProject)
 
 SET(HZ_TESTAPP_NAME testApp${HZ_LIB_TYPE}_${HZ_BIT}.exe)
