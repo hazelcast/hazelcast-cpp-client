@@ -26,8 +26,9 @@ namespace hazelcast {
                     ENTRY_SET = 10,
                     ENTRY_VIEW = 11,
                     MAP_STATS = 12,
-                    QUERY_RESULT_ENTRY = 13,
-                    QUERY_RESULT_SET = 14
+                    QUERY_RESULT_ROW = 13,
+                    QUERY_RESULT_SET = 14,
+                    QUERY_RESULT = 15
                 };
             }
 

@@ -7,17 +7,18 @@
 #define HAZELCAST_QueryResultSet
 
 #include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
-#include "hazelcast/client/impl/QueryResultEntry.h"
 #include <string>
 #include <vector>
 
 namespace hazelcast {
     namespace client {
-        namespace map {
-            class QueryResultEntry;
+        namespace serialization {
+            namespace pimpl{
+                 class Data;
+            }
         }
         namespace impl {
-            class QueryResultSet : public impl::IdentifiedDataSerializableResponse {
+            class QueryResult : public impl::IdentifiedDataSerializableResponse {
             public:
                 int getFactoryId() const;
 

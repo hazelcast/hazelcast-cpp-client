@@ -67,13 +67,15 @@ namespace hazelcast {
                     EntryEventType type = event.getEventType();
                     boost::shared_ptr<V> value;
                     boost::shared_ptr<V> oldValue;
+                    boost::shared_ptr<V> mergingValue;
                     if (includeValue) {
                         value = serializationService.toObject<V>(event.getValue());
                         oldValue = serializationService.toObject<V>(event.getOldValue());
+                        mergingValue = serializationService.toObject<V>(event.getMergingValue());
                     }
                     boost::shared_ptr<K> key = serializationService.toObject<K>(event.getKey());
                     Member member = clusterService.getMember(event.getUuid());
-                    EntryEvent<K, V> entryEvent(instanceName, member, type, key, value, oldValue);
+                    EntryEvent<K, V> entryEvent(instanceName, member, type, key, value, oldValue, mergingValue);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);
                     } else if (type == EntryEventType::REMOVED) {
@@ -82,6 +84,10 @@ namespace hazelcast {
                         listener.entryUpdated(entryEvent);
                     } else if (type == EntryEventType::EVICTED) {
                         listener.entryEvicted(entryEvent);
+                    } else if (type == EntryEventType::EXPIRED) {
+                        listener.entryExpired(entryEvent);
+                    } else if (type == EntryEventType::MERGED) {
+                        listener.entryMerged(entryEvent);
                     }
 
                 }

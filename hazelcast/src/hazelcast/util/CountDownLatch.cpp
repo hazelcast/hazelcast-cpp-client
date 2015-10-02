@@ -20,12 +20,12 @@ namespace hazelcast {
         bool CountDownLatch::await(int seconds) {
             time_t endTime = time(NULL) + seconds;
             while (endTime > time(NULL)) {
-                if (count == 0) {
+                if (count <= 0) {
                     return true;
                 }
                 util::sleep(1);
             }
-            if (count == 0) {
+            if (count <= 0) {
                 return true;
             }
             return false;

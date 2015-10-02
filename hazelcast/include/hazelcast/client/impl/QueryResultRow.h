@@ -14,7 +14,7 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API QueryResultEntry : public impl::IdentifiedDataSerializableResponse {
+            class HAZELCAST_API QueryResultRow : public impl::IdentifiedDataSerializableResponse {
             public:
                 int getFactoryId() const;
 
@@ -22,7 +22,6 @@ namespace hazelcast {
 
                 void readData(serialization::ObjectDataInput& reader);
 
-                serialization::pimpl::Data keyIndex;
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
             };

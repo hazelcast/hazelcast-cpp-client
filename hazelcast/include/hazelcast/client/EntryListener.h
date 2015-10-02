@@ -62,6 +62,20 @@ namespace hazelcast {
             virtual void entryEvicted(const EntryEvent<K, V>& event) = 0;
 
             /**
+            * Invoked upon expiration of an entry.
+            *
+            * @param event the event invoked when an entry is expired.
+            */
+            virtual void entryExpired(const EntryEvent<K, V>& event) = 0;
+
+            /**
+            *  Invoked after WAN replicated entry is merged.
+            *
+            * @param event the event invoked when an entry is expired.
+            */
+            virtual void entryMerged(const EntryEvent<K, V>& event) = 0;
+
+            /**
             * Invoked when all entries evicted by {@link IMap#evictAll()}.
             *
             * @param event map event

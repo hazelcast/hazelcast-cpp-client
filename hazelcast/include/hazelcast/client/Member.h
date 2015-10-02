@@ -16,7 +16,7 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -48,6 +48,13 @@ namespace hazelcast {
              * @see IdentifiedDataSerializable
              */
             int getClassId() const;
+
+            /**
+             *
+             * Lite member is does not hold data.
+             * @return true if member is lite.
+             */
+            bool isLiteMember() const;
 
             /**
              * @see IdentifiedDataSerializable
@@ -172,6 +179,7 @@ namespace hazelcast {
 
             Address address;
             std::string uuid;
+            bool liteMember;
             std::map< std::string, std::string > stringAttributes;
             std::map< std::string, bool > boolAttributes;
             std::map< std::string, byte > byteAttributes;
@@ -188,7 +196,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 
 #endif //HAZELCAST_MEMBER

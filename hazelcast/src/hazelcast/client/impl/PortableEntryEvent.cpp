@@ -23,6 +23,10 @@ namespace hazelcast {
                 return value;
             }
 
+            const serialization::pimpl::Data& PortableEntryEvent::getMergingValue() const {
+                return mergingValue;
+            }
+
             std::string PortableEntryEvent::getUuid() const {
                 return uuid;
             }
@@ -52,6 +56,7 @@ namespace hazelcast {
                 key = in.readData();
                 value = in.readData();
                 oldValue = in.readData();
+                mergingValue = in.readData();
             }
         }
     }
