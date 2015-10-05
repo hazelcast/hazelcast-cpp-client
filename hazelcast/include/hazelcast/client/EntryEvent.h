@@ -24,8 +24,15 @@ namespace hazelcast {
              * Type enum.
              */
             enum Type {
-                UNDEFINED = 0 , ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4 ,
-                EVICT_ALL = 5 , CLEAR_ALL = 6 , MERGED = 7 , EXPIRED = 8
+                UNDEFINED = 0 ,
+                ADDED =  1,
+                REMOVED = 1 << 1,
+                UPDATED = 1 << 2,
+                EVICTED = 1 << 3 ,
+                EVICT_ALL = 1 << 4 ,
+                CLEAR_ALL = 1 << 5 ,
+                MERGED = 1 << 6 ,
+                EXPIRED = 1 << 7
             };
             /**
              * Type value
