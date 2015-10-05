@@ -24,7 +24,8 @@ namespace hazelcast {
              * Type enum.
              */
             enum Type {
-                ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4 , EVICT_ALL = 5 , CLEAR_ALL = 6
+                UNDEFINED = 0 , ADDED = 1, REMOVED = 2, UPDATED = 3, EVICTED = 4 ,
+                EVICT_ALL = 5 , CLEAR_ALL = 6 , MERGED = 7 , EXPIRED = 8
             };
             /**
              * Type value
@@ -67,7 +68,8 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value)
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                        boost::shared_ptr<K> key, boost::shared_ptr<V> value)
             : name(name)
             , member(member)
             , eventType(eventType)
@@ -79,13 +81,16 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType, boost::shared_ptr<K> key, boost::shared_ptr<V> value, boost::shared_ptr<V> oldValue)
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                           boost::shared_ptr<K> key, boost::shared_ptr<V> value,
+                            boost::shared_ptr<V> oldValue, boost::shared_ptr<V> mergingValue)
             : name(name)
             , member(member)
             , eventType(eventType)
             , key(key)
             , value(value)
-            , oldValue(oldValue) {
+            , oldValue(oldValue)
+            , mergingValue(mergingValue) {
 
             };
 
@@ -114,6 +119,15 @@ namespace hazelcast {
              */
             const V &getValue() const {
                 return *value;
+            };
+
+            /**
+            * Returns the incoming merging value of the entry event.
+            *
+            * @return
+            */
+            const V &getMErgingValue() const {
+                return *mergingValue;
             };
 
             /**
@@ -150,6 +164,7 @@ namespace hazelcast {
             boost::shared_ptr<K> key;
             boost::shared_ptr<V> value;
             boost::shared_ptr<V> oldValue;
+            boost::shared_ptr<V> mergingValue;
 
         };
     }

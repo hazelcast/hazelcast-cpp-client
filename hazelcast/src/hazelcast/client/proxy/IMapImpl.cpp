@@ -44,7 +44,7 @@
 #include "hazelcast/client/map/PutIfAbsentRequest.h"
 #include "hazelcast/client/map/RemoveEntryListenerRequest.h"
 #include "hazelcast/client/map/MapIsEmptyRequest.h"
-#include "hazelcast/client/impl/QueryResultSet.h"
+#include "hazelcast/client/impl/QueryResult.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/PartitionService.h"
@@ -53,6 +53,11 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
+
+            const std::string IMapImpl::VALUE_ITERATION_TYPE = "VALUE";
+            const std::string IMapImpl::KEY_ITERATION_TYPE = "KEY";
+            const std::string IMapImpl::ENTRY_ITERATION_TYPE = "ENTRY";
+            const std::string IMapImpl::NO_PREDICATE = "";
 
             IMapImpl::IMapImpl(const std::string& instanceName, spi::ClientContext *context)
             : ProxyImpl("hz:impl:mapService", instanceName, context) {
@@ -242,13 +247,6 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::keySet() {
-                map::KeySetRequest *request = new map::KeySetRequest(getName());
-                serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, map::MapKeySet);
-                return result->getKeySet();
-            }
-
             std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > IMapImpl::getAll(const std::vector<serialization::pimpl::Data>& keys) {
                 map::GetAllRequest *request = new map::GetAllRequest(getName(), keys);
                 serialization::pimpl::Data data = invoke(request);
@@ -256,41 +254,24 @@ namespace hazelcast {
                 return result->getEntrySet();
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::values() {
-                map::ValuesRequest *request = new map::ValuesRequest(getName());
-                serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, map::MapValueCollection);
-                return result->getValues();
-            }
-
-            std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > IMapImpl::entrySet() {
-                map::EntrySetRequest *request = new map::EntrySetRequest(getName());
-                serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, map::MapEntrySet);
-                return result->getEntrySet();
-            }
-
             std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > IMapImpl::keySet(const std::string& sql) {
-                std::string iterationType = "KEY";
-                map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
+                map::QueryRequest *request = new map::QueryRequest(getName(), KEY_ITERATION_TYPE, sql);
                 serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, impl::QueryResultSet);
+                DESERIALIZE(data, impl::QueryResult);
                 return result->getResultData();
             }
 
             std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > IMapImpl::entrySet(const std::string& sql) {
-                std::string iterationType = "ENTRY";
-                map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
+                map::QueryRequest *request = new map::QueryRequest(getName(), ENTRY_ITERATION_TYPE, sql);
                 serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, impl::QueryResultSet);
+                DESERIALIZE(data, impl::QueryResult);
                 return result->getResultData();
             }
 
             std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > IMapImpl::values(const std::string& sql) {
-                std::string iterationType = "VALUE";
-                map::QueryRequest *request = new map::QueryRequest(getName(), iterationType, sql);
+                map::QueryRequest *request = new map::QueryRequest(getName(), VALUE_ITERATION_TYPE, sql);
                 serialization::pimpl::Data data = invoke(request);
-                DESERIALIZE(data, impl::QueryResultSet);
+                DESERIALIZE(data, impl::QueryResult);
                 return result->getResultData();
             }
 

@@ -3,6 +3,7 @@
 #include "queue/ClientQueueTest.h"
 #include "multimap/ClientMultiMapTest.h"
 #include "map/ClientMapTest.h"
+#include "map/ClientExpirationListenerTest.h"
 #include "serialization/ClientSerializationTest.h"
 #include "list/ClientListTest.h"
 #include "set/ClientSetTest.h"
@@ -41,6 +42,7 @@ int unitTests(const char* address) {
         RUN_TEST_NO_ARGS(ClientSerializationTest);
         HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);
+        RUN_TEST(ClientExpirationListenerTest, factory);
         RUN_TEST(IssueTest, factory);
         RUN_TEST(MemberAttributeTest, factory);
         RUN_TEST(ClusterTest, factory);

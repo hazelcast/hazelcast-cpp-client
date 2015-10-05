@@ -44,6 +44,15 @@ namespace hazelcast {
 
             }
 
+
+            virtual void entryExpired(const EntryEvent<K, V>& event){
+
+            }
+
+            virtual void entryMerged(const EntryEvent<K, V>& event){
+
+            }
+
             virtual void mapEvicted(const MapEvent& event) {
 
             }

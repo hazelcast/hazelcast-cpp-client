@@ -495,14 +495,7 @@ namespace hazelcast {
             * @return a vector clone of the keys contained in this map
             */
             std::vector<K> keySet() {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySet();
-                int size = dataResult.size();
-                std::vector<K> keySet(size);
-                for (int i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> k = toObject<K>(dataResult[i]);
-                    keySet[i] = *k;
-                }
-                return keySet;
+                return keySet(NO_PREDICATE);
             };
 
             /**
@@ -535,14 +528,7 @@ namespace hazelcast {
             * @return a vector clone of the values contained in this map
             */
             std::vector<V> values() {
-                std::vector<serialization::pimpl::Data> getValues = proxy::IMapImpl::values();
-                int size = getValues.size();
-                std::vector<V> values(size);
-                for (int i = 0; i < size; i++) {
-                    boost::shared_ptr<V> value = toObject<V>(getValues[i]);
-                    values[i] = *value;
-                }
-                return values;
+                return values(NO_PREDICATE);
             };
 
             /**
@@ -553,15 +539,7 @@ namespace hazelcast {
             * @return a vector clone of the keys mappings in this map
             */
             std::vector<std::pair<K, V> > entrySet() {
-                const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& returnedEntries = proxy::IMapImpl::entrySet();
-                int size = returnedEntries.size();
-                std::vector<std::pair<K, V> > entrySet(size);
-                for (int i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(returnedEntries[i].first);
-                    boost::shared_ptr<V> value = toObject<V>(returnedEntries[i].second);
-                    entrySet[i] = std::make_pair(*key, *value);
-                }
-                return entrySet;
+                return entrySet(NO_PREDICATE);
             };
 
 
@@ -597,7 +575,6 @@ namespace hazelcast {
             * @return result entry vector of the query
             */
             std::vector<std::pair<K, V> > entrySet(const std::string& sql) {
-                std::string iterationType = "ENTRY";
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySet(sql);
                 int size = dataResult.size();
                 std::vector<std::pair<K, V> > keySet(size);
@@ -620,7 +597,6 @@ namespace hazelcast {
             * @return result value vector of the query
             */
             std::vector<V> values(const std::string& sql) {
-                std::string iterationType = "VALUE";
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::values(sql);
                 int size = dataResult.size();
                 std::vector<V> keySet(size);

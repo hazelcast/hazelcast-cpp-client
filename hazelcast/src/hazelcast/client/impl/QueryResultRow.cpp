@@ -3,7 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
-#include "hazelcast/client/impl/QueryResultEntry.h"
+#include "hazelcast/client/impl/QueryResultRow.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/map/DataSerializableHook.h"
@@ -13,16 +13,15 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            int QueryResultEntry::getFactoryId() const {
+            int QueryResultRow::getFactoryId() const {
                 return map::DataSerializableHook::F_ID;
             }
 
-            int QueryResultEntry::getClassId() const {
-                return map::DataSerializableHook::QUERY_RESULT_ENTRY;
+            int QueryResultRow::getClassId() const {
+                return map::DataSerializableHook::QUERY_RESULT_ROW;
             }
 
-            void QueryResultEntry::readData(serialization::ObjectDataInput& reader) {
-                keyIndex = reader.readData();
+            void QueryResultRow::readData(serialization::ObjectDataInput& reader) {
                 key = reader.readData();
                 value = reader.readData();
             }

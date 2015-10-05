@@ -50,8 +50,6 @@ namespace hazelcast {
             }
 
             void putMapMessage(util::ThreadArgs &args) {
-                std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Started." << std::endl;
-
                 IMap<int, int> *map = (IMap<int, int> *)args.arg0;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
 
@@ -61,12 +59,10 @@ namespace hazelcast {
                         map->put(2, 20);
                     } catch (std::exception &e) {
                         // suppress the error
-                        std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Suppressing exception:" << e.what() << std::endl;
                     }
                     util::sleep(1);
                 } while (latch->get() > 0);
 
-                std::cout << __FILE__ << ":" << __LINE__ << " [putMapMessage] Finished." << std::endl;
             }
 
             void IssueTest::testOperationRedo_smartRoutingDisabled() {
@@ -134,8 +130,6 @@ namespace hazelcast {
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
-                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryAdded] ENTRY. Key:" << event.getKey() << std::endl;
-
                 int count = latch.get();
                 if (2 == count) {
                     // The received event should be the addition of key value: 1, 10
@@ -148,33 +142,12 @@ namespace hazelcast {
                 }
 
                 latch.countDown();
-
-                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryAdded] EXIT. latch count:" << latch.get() << std::endl;
-            }
-
-            void IssueTest::Issue864MapListener::entryRemoved(const EntryEvent<int, int> &event) {
-
             }
 
             void IssueTest::Issue864MapListener::entryUpdated(const EntryEvent<int, int> &event) {
-                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] ENTRY. latch count:" << latch.get() << std::endl;
                 ASSERT_EQUAL(2, event.getKey());
                 ASSERT_EQUAL(20, event.getValue());
                 latch.countDown();
-
-                std::cout << __FILE__ << ":" << __LINE__ << " [Issue864MapListener::entryUpdated] EXIT. latch count:" << latch.get() << std::endl;
-            }
-
-            void IssueTest::Issue864MapListener::entryEvicted(const EntryEvent<int, int> &event) {
-
-            }
-
-            void IssueTest::Issue864MapListener::mapEvicted(const MapEvent &event) {
-
-            }
-
-            void IssueTest::Issue864MapListener::mapCleared(const MapEvent &event) {
-
             }
 
             IssueTest::Issue864MapListener::Issue864MapListener(util::CountDownLatch &l) : latch(l) {

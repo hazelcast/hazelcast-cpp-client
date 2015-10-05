@@ -69,13 +69,7 @@ namespace hazelcast {
 
                 void evictAll();
 
-                std::vector<serialization::pimpl::Data> keySet();
-
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > getAll(const std::vector<serialization::pimpl::Data>& keys);
-
-                std::vector<serialization::pimpl::Data> values();
-
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet();
 
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > keySet(const std::string& sql);
 
@@ -92,6 +86,12 @@ namespace hazelcast {
                 void putAll(const EntryVector& m);
 
                 void clear();
+
+                static const std::string NO_PREDICATE;
+            private:
+                static const std::string VALUE_ITERATION_TYPE;
+                static const std::string KEY_ITERATION_TYPE;
+                static const std::string ENTRY_ITERATION_TYPE;
             };
         }
 

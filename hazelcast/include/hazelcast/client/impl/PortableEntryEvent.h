@@ -26,6 +26,8 @@ namespace hazelcast {
 
                 const serialization::pimpl::Data &getValue() const;
 
+                const serialization::pimpl::Data &getMergingValue() const;
+
                 std::string getUuid() const;
 
                 EntryEventType getEventType() const;
@@ -42,6 +44,7 @@ namespace hazelcast {
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
                 serialization::pimpl::Data oldValue;
+                serialization::pimpl::Data mergingValue;
                 EntryEventType eventType;
                 int numberOfAffectedEntries;
                 std::string uuid;

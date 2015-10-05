@@ -31,9 +31,15 @@ namespace hazelcast {
             return protocol::ProtocolConstants::MEMBER_ID;
         }
 
+
+        bool Member::isLiteMember() const {
+            return liteMember;
+        }
+
         void Member::readData(serialization::ObjectDataInput &reader) {
             address.readData(reader);
             uuid = reader.readUTF();
+            liteMember = reader.readBoolean();
             int size = reader.readInt();
             for (int i = 0; i < size; i++) {
                 std::string key = reader.readUTF();

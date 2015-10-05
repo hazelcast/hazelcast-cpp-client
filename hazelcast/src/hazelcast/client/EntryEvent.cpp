@@ -2,7 +2,7 @@
 
 namespace hazelcast {
     namespace client {
-        EntryEventType::EntryEventType() {
+        EntryEventType::EntryEventType() : value(UNDEFINED){
 
         }
         EntryEventType::EntryEventType(Type value)
@@ -34,7 +34,14 @@ namespace hazelcast {
                 case 6:
                     value = CLEAR_ALL;
                     break;
-
+                case 7:
+                    value = MERGED;
+                    break;
+                case 8:
+                    value = EXPIRED;
+                    break;
+                default:
+                    break;
             }
         }
     }

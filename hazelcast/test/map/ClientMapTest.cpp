@@ -4,7 +4,6 @@
 
 
 #include "map/ClientMapTest.h"
-#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
@@ -20,7 +19,7 @@ namespace hazelcast {
             , instance(serverFactory)
             , instance2(serverFactory)
             , client(getNewClient())
-            , imap(new IMap<string, string>(client->getMap<string, string>("clientMapTest"))) {
+            , imap(new IMap<std::string, std::string>(client->getMap<std::string, std::string>("clientMapTest"))) {
             }
 
 
@@ -51,7 +50,6 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testIssue537, "testIssue537");
                 addTest(&ClientMapTest::testEvictAllEvent, "testEvictAllEvent");
                 addTest(&ClientMapTest::testClearEvent, "testClearEvent");
-//                addTest(&ClientMapTest::testMultipleThreadPut, "testMultipleThreadPut"); //MTODO
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
                 addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
@@ -76,9 +74,9 @@ namespace hazelcast {
 
             void ClientMapTest::fillMap() {
                 for (int i = 0; i < 10; i++) {
-                    string key = "key";
+                    std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    string value = "value";
+                    std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     imap->put(key, value);
                 }
@@ -119,7 +117,7 @@ namespace hazelcast {
                     latch.countDown();
                 }
                 void entryEvicted(const EntryEvent<std::string, std::string>& event) {
-                    const string& oldValue = event.getOldValue();
+                    const std::string& oldValue = event.getOldValue();
                     if (oldValue.compare("")) {
                         nullLatch.countDown();
                     }
@@ -167,38 +165,6 @@ namespace hazelcast {
                 assertEqual(1, imap->size());
             }
 
-//            void putThread(util::ThreadArgs& args) { //MTODO
-//                    int start = args.arg0;
-//                IMap<int, int>* map = args.arg1;
-//                util::CountDownLatch *latch = args.arg2;
-//                for (int i = 0; i < 100; i++) {
-//                    map->put(start * 100 + i, start * 100 + i);
-//                }
-//                latch->countDown();
-//            }
-//
-//            void ClientMapTest::testMultipleThreadPut() {
-//                int THREAD_COUNT = 20;
-//                util::CountDownLatch latch(THREAD_COUNT);
-//                IMap<int, int> iMap = client->getMap<int, int>("testMultiPut");
-//                for (int i = 0; i < THREAD_COUNT; i++) {
-//                    util::Thread t(putThread, &i, &iMap, &latch);
-//                    t.detach();
-//                }
-//
-//                assertTrue(latch.await(10), "put not finished");
-//
-//                for (int i = 0; i < 100 * THREAD_COUNT; i++) {
-//                    boost::shared_ptr<int> actual = iMap.get(i);
-//                    assertNotNull(actual.get());
-//                    assertEqual(i, *(actual.get()));
-//                }
-//
-//                iMap.clear();
-//                iMap.destroy();
-//
-//            }
-
             void ClientMapTest::testContains() {
                 fillMap();
 
@@ -213,11 +179,11 @@ namespace hazelcast {
             void ClientMapTest::testGet() {
                 fillMap();
                 for (int i = 0; i < 10; i++) {
-                    string key = "key";
+                   std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<string> temp = imap->get(key);
+                    boost::shared_ptr<std::string> temp = imap->get(key);
 
-                    string value = "value";
+                   std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     assertEqual(*temp, value);
                 }
@@ -225,15 +191,15 @@ namespace hazelcast {
 
             void ClientMapTest::testRemoveAndDelete() {
                 fillMap();
-                boost::shared_ptr<string> temp = imap->remove("key10");
+                boost::shared_ptr<std::string> temp = imap->remove("key10");
                 assertNull(temp.get());
                 imap->deleteEntry("key9");
                 assertEqual(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
-                    string key = "key";
+                   std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<string> temp2 = imap->remove(key);
-                    string value = "value";
+                    boost::shared_ptr<std::string> temp2 = imap->remove(key);
+                   std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     assertEqual(*temp2, value);
                 }
@@ -262,8 +228,8 @@ namespace hazelcast {
                 assertEqual(imap->size(), 100);
 
                 for (int i = 0; i < 100; i++) {
-                    string expected = util::IOUtil::to_string(i);
-                    boost::shared_ptr<string> actual = imap->get(util::IOUtil::to_string(i));
+                   std::string expected = util::IOUtil::to_string(i);
+                    boost::shared_ptr<std::string> actual = imap->get(util::IOUtil::to_string(i));
                     assertEqual(expected, *actual);
                 }
 

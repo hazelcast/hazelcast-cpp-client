@@ -7,6 +7,7 @@
 #define HAZELCAST_IssueTest
 
 #include "ClientTestSupport.h"
+#include "hazelcast/client/EntryAdapter.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,7 +43,7 @@ namespace hazelcast {
                 void testListenerSubscriptionOnSingleServerRestart();
 
             private:
-                class Issue864MapListener : public hazelcast::client::EntryListener<int, int> {
+                class Issue864MapListener : public hazelcast::client::EntryAdapter<int, int> {
 
                 public:
 
@@ -50,15 +51,8 @@ namespace hazelcast {
 
                     virtual void entryAdded(const EntryEvent<int, int> &event);
 
-                    virtual void entryRemoved(const EntryEvent<int, int> &event);
-
                     virtual void entryUpdated(const EntryEvent<int, int> &event);
 
-                    virtual void entryEvicted(const EntryEvent<int, int> &event);
-
-                    virtual void mapEvicted(const MapEvent &event);
-
-                    virtual void mapCleared(const MapEvent &event);
                 private:
                     util::CountDownLatch &latch;
                 };
