@@ -34,6 +34,7 @@ namespace hazelcast {
                 void write(serialization::PortableWriter &writer) const;
 
             private:
+                static int ALL_LISTENER_FLAGS;
                 std::string name;
                 bool includeValue;
                 serialization::pimpl::Data key;

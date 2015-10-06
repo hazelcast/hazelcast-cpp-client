@@ -7,12 +7,21 @@
 #include "hazelcast/client/map/PortableHook.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/EntryEvent.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace map {
 
+            int AddEntryListenerRequest::ALL_LISTENER_FLAGS =  EntryEventType::ADDED |
+                                                                EntryEventType::REMOVED  |
+                                                                EntryEventType::UPDATED  |
+                                                                EntryEventType::EVICTED  |
+                                                                EntryEventType::EVICT_ALL |
+                                                                EntryEventType::CLEAR_ALL |
+                                                                EntryEventType::MERGED |
+                                                                EntryEventType::EXPIRED;
 
             AddEntryListenerRequest::AddEntryListenerRequest(const std::string &name, bool includeValue)
             :name(name), includeValue(includeValue), hasKey(false), hasPredicate(false) {
@@ -49,6 +58,7 @@ namespace hazelcast {
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeUTF("name", name);
                 writer.writeBoolean("i", includeValue);
+                writer.writeInt("lf", ALL_LISTENER_FLAGS);
                 writer.writeBoolean("key", hasKey);
                 writer.writeBoolean("pre", hasPredicate);
                 if (hasPredicate) {
