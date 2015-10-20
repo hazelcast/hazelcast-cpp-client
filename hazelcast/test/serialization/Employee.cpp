@@ -43,12 +43,12 @@ namespace hazelcast {
             }
 
             void Employee::writePortable(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeInt("a", age);
             }
 
             void Employee::readPortable(serialization::PortableReader &reader) {
-                name = reader.readUTF("n");
+                name = *reader.readUTF("n");
                 age = reader.readInt("a");
             }
 

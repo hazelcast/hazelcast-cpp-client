@@ -13,8 +13,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 ClassDefinitionWriter::ClassDefinitionWriter(PortableContext& portableContext, ClassDefinitionBuilder& builder)
-                : raw(false)
-                , builder(builder)
+                : builder(builder)
                 , context(portableContext) {
                 }
 
@@ -23,89 +22,70 @@ namespace hazelcast {
                     return context.registerClassDefinition(cd);
                 }
 
-                void ClassDefinitionWriter::checkIfRaw() {
-                    if (raw) {
-                        throw exception::HazelcastSerializationException("ClassDefinitionWriter::addField(", "Cannot write Portable fields after getRawDataOutput() is called!");
-                    }
-                }
-
                 void ClassDefinitionWriter::writeInt(const char *fieldName, int value) {
-                    checkIfRaw();
                     builder.addIntField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeLong(const char *fieldName, long value) {
-                    checkIfRaw();
                     builder.addLongField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeBoolean(const char *fieldName, bool value) {
-                    checkIfRaw();
+
                     builder.addBooleanField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeByte(const char *fieldName, byte value) {
-                    checkIfRaw();
                     builder.addByteField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeChar(const char *fieldName, int value) {
-                    checkIfRaw();
                     builder.addCharField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeDouble(const char *fieldName, double value) {
-                    checkIfRaw();
+
                     builder.addDoubleField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeFloat(const char *fieldName, float value) {
-                    checkIfRaw();
                     builder.addFloatField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeShort(const char *fieldName, short value) {
-                    checkIfRaw();
                     builder.addShortField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeUTF(const char *fieldName, const std::string& value) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeUTF(const char *fieldName, const std::string *value) {
+
                     builder.addUTFField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeByteArray(const char *fieldName, const std::vector<byte>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeByteArray(const char *fieldName, const std::vector<byte> *values) {
                     builder.addByteArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeCharArray(const char *fieldName, const std::vector<char>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeCharArray(const char *fieldName, const std::vector<char> *values) {
                     builder.addCharArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int> *values) {
                     builder.addIntArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<long>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<long> *values) {
                     builder.addLongArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeDoubleArray(const char *fieldName, const std::vector<double>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeDoubleArray(const char *fieldName, const std::vector<double> *values) {
                     builder.addDoubleArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeFloatArray(const char *fieldName, const std::vector<float>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeFloatArray(const char *fieldName, const std::vector<float> *values) {
                     builder.addFloatArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<short>& values) {
-                    checkIfRaw();
+                void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<short> *values) {
                     builder.addShortArrayField(fieldName);
                 }
 

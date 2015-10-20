@@ -27,7 +27,7 @@ namespace hazelcast {
 
             void TxnOfferRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", timeoutInMillis);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeData(&data);

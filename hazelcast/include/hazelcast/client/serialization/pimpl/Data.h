@@ -29,9 +29,10 @@ namespace hazelcast {
                 public:
                     // type and partition_hash are always written with BIG_ENDIAN byte-order
                     static unsigned int TYPE_OFFSET;
-                    // will use a byte to store partition_hash bit
-                    static unsigned int PARTITION_HASH_BIT_OFFSET;
+
                     static unsigned int DATA_OFFSET;
+
+                    static unsigned int DATA_OVERHEAD;
 
                     Data();
 

@@ -8,7 +8,7 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
 
 using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;

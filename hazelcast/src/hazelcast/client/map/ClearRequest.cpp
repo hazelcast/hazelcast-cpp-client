@@ -26,7 +26,7 @@ namespace hazelcast {
 
 
             void ClearRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
             }
 
             bool ClearRequest::isRetryable() const{

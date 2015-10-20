@@ -38,8 +38,8 @@ namespace hazelcast {
             }
 
             void MemberAttributeChange::readData(serialization::ObjectDataInput &reader) {
-                uuid = reader.readUTF();
-                key = reader.readUTF();
+                uuid = *reader.readUTF();
+                key = *reader.readUTF();
                 int operation = reader.readByte();
                 if (operation == MemberAttributeEvent:: PUT) {
                     operationType = MemberAttributeEvent::PUT;
@@ -67,7 +67,7 @@ namespace hazelcast {
                         value = util::IOUtil::to_string(reader.readShort());
                     } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_UTF) {
                         primitive_id = util::IOUtil::PRIMITIVE_TYPE_UTF;
-                        value = reader.readUTF();
+                        value = *reader.readUTF();
                     }
                 } else if (operation == MemberAttributeEvent::REMOVE) {
                     primitive_id = util::IOUtil::PRIMITIVE_TYPE_NULL;

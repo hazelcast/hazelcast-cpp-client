@@ -28,7 +28,7 @@ namespace hazelcast {
             }
 
             void RemoveRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeBoolean("a", async);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();

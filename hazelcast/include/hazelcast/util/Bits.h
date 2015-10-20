@@ -12,16 +12,24 @@
 
 namespace hazelcast {
     namespace util {
-        class Bits {
+        HAZELCAST_API class Bits {
         public:
             /**
-            * Short size in bytes
+            * Byte size in bytes
             */
-            static const unsigned int SHORT_SIZE_IN_BYTES = 2;
+            static const unsigned  int BYTE_SIZE_IN_BYTES = 1;
+            /**
+            * Boolean size in bytes
+            */
+            static const unsigned  int BOOLEAN_SIZE_IN_BYTES = 1;
             /**
             * Char size in bytes
             */
             static const unsigned  int CHAR_SIZE_IN_BYTES = 2;
+            /**
+            * Short size in bytes
+            */
+            static const unsigned int SHORT_SIZE_IN_BYTES = 2;
             /**
             * Integer size in bytes
             */
@@ -38,6 +46,11 @@ namespace hazelcast {
             * Double size in bytes
             */
             static const unsigned int DOUBLE_SIZE_IN_BYTES = 8;
+
+            /**
+             * for null arrays, this value writen to stream to represent null array size.
+             */
+            static const int NULL_ARRAY = -1;
 
             static int readIntB(std::vector<byte> &buffer, unsigned long pos);
 

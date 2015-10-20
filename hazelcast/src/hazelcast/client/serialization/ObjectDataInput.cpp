@@ -64,21 +64,13 @@ namespace hazelcast {
                 return dataInput.readDouble();
             }
 
-            std::string ObjectDataInput::readUTF() {
+            std::auto_ptr<std::string> ObjectDataInput::readUTF() {
                 return dataInput.readUTF();
             }
 
             pimpl::Data ObjectDataInput::readData() {
-                bool isNull = readBoolean();
-                if (isNull) {
-                    pimpl::Data data;
-                    return data;
-                } else {
-                    pimpl::Data result(dataInput.readByteArrayAsPtr());
-                    return result;
-                };
+                return pimpl::Data(dataInput.readByteArray());
             }
-
 
             int ObjectDataInput::position() {
                 return dataInput.position();
@@ -88,34 +80,54 @@ namespace hazelcast {
                 dataInput.position(newPos);
             }
 
-            std::vector<byte> ObjectDataInput::readByteArray() {
+            std::auto_ptr<std::vector<byte> > ObjectDataInput::readByteArray() {
                 return dataInput.readByteArray();
             }
 
-            std::vector<char> ObjectDataInput::readCharArray() {
+            std::auto_ptr<std::vector<bool> > ObjectDataInput::readBooleanArray() {
+                return dataInput.readBooleanArray();
+            }
+
+            std::auto_ptr<std::vector<char> > ObjectDataInput::readCharArray() {
                 return dataInput.readCharArray();
             }
 
-            std::vector<int> ObjectDataInput::readIntArray() {
+            std::auto_ptr<std::vector<int> > ObjectDataInput::readIntArray() {
                 return dataInput.readIntArray();
             }
 
-            std::vector<long> ObjectDataInput::readLongArray() {
+            std::auto_ptr<std::vector<long> > ObjectDataInput::readLongArray() {
                 return dataInput.readLongArray();
             }
 
-            std::vector<double> ObjectDataInput::readDoubleArray() {
+            std::auto_ptr<std::vector<double> > ObjectDataInput::readDoubleArray() {
                 return dataInput.readDoubleArray();
             }
 
-            std::vector<float> ObjectDataInput::readFloatArray() {
+            std::auto_ptr<std::vector<float> > ObjectDataInput::readFloatArray() {
                 return dataInput.readFloatArray();
             }
 
-            std::vector<short> ObjectDataInput::readShortArray() {
+            std::auto_ptr<std::vector<short> > ObjectDataInput::readShortArray() {
                 return dataInput.readShortArray();
             }
 
+            std::auto_ptr<common::containers::ManagedPointerVector<std::string> > ObjectDataInput::readUTFArray() {
+                return dataInput.readUTFArray();
+            }
+
+            void ObjectDataInput::readPortable(Portable * object) {
+                ObjectDataInput in(dataInput, portableContext);
+                
+                int factoryId = readInt();
+                int classId = readInt();
+                serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
+            }
+
+            void ObjectDataInput::readDataSerializable(IdentifiedDataSerializable * object) {
+                ObjectDataInput input(dataInput, portableContext);
+                serializerHolder.getDataSerializer().read(input, *object);
+            }
         }
     }
 }

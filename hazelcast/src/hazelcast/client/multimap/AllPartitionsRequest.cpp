@@ -20,7 +20,7 @@ namespace hazelcast {
             }
 
             void AllPartitionsRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
             }
 
         }

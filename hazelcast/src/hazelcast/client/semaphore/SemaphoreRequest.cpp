@@ -22,7 +22,7 @@ namespace hazelcast {
 
 
                 void SemaphoreRequest::write(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("n", instanceName);
+                    writer.writeUTF("n", &instanceName);
                     writer.writeInt("p", permitCount);
                 }
 

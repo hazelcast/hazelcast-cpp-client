@@ -22,14 +22,14 @@ namespace hazelcast {
             }
 
             void TestNamedPortable::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", name);
+                writer.writeUTF("name", &name);
                 writer.writeInt("myint", k);
             }
 
 
             void TestNamedPortable::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("name");
-                k = reader.readInt("myint");
+                name = *reader.readUTF("name");
+                k =  reader.readInt("myint");
             }
 
             bool TestNamedPortable::operator ==(const TestNamedPortable& m) const {

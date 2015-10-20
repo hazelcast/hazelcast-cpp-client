@@ -21,7 +21,7 @@ namespace hazelcast {
             }
 
             void AtomicLongRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", instanceName);
+                writer.writeUTF("n", &instanceName);
                 writer.writeLong("d", delta);
             }
 

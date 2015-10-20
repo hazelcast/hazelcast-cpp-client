@@ -25,7 +25,7 @@ namespace hazelcast {
             }
 
             void IsLockedRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("tid", 0);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 out.writeData(&key);

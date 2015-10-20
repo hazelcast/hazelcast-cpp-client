@@ -38,32 +38,31 @@ namespace hazelcast {
 
         void Member::readData(serialization::ObjectDataInput &reader) {
             address.readData(reader);
-            uuid = reader.readUTF();
+            uuid = *reader.readUTF();
             liteMember = reader.readBoolean();
             int size = reader.readInt();
             for (int i = 0; i < size; i++) {
-                std::string key = reader.readUTF();
+                std::auto_ptr<std::string> key = reader.readUTF();
                 byte readByte = reader.readByte();
                 if (readByte == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
-                    boolAttributes[key] = reader.readBoolean();
+                    boolAttributes[*key] = reader.readBoolean();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
-                    byteAttributes[key] = reader.readByte();
+                    byteAttributes[*key] = reader.readByte();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
-                    doubleAttributes[key] = reader.readDouble();
+                    doubleAttributes[*key] = reader.readDouble();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
-                    floatAttributes[key] = reader.readFloat();
+                    floatAttributes[*key] = reader.readFloat();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
-                    intAttributes[key] = reader.readInt();
+                    intAttributes[*key] = reader.readInt();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_LONG) {
-                    longAttributes[key] = reader.readLong();
+                    longAttributes[*key] = reader.readLong();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
-                    shortAttributes[key] = reader.readShort();
+                    shortAttributes[*key] = reader.readShort();
                 } else if (readByte == util::IOUtil::PRIMITIVE_TYPE_UTF) {
-                    stringAttributes[key] = reader.readUTF();
+                    stringAttributes[*key] = *reader.readUTF();
                 }
             }
         }
-
 
         std::string Member::getAttributeResolved(const std::string &key, std::string *tag) {
             return stringAttributes[key];

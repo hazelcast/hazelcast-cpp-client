@@ -14,7 +14,9 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/common/containers/ManagedPointerVector.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -34,8 +36,6 @@ namespace hazelcast {
         namespace serialization {
 
             namespace pimpl {
-                class SerializationService;
-
                 class PortableContext;
 
                 class DataInput;
@@ -121,52 +121,64 @@ namespace hazelcast {
                 double readDouble();
 
                 /**
-                * @return the utf string read
+                * @return the utf string read as an ascii string
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::string readUTF();
+                std::auto_ptr<std::string> readUTF();
 
                 /**
                 * @return the byte array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<byte> readByteArray();
+                std::auto_ptr<std::vector<byte> > readByteArray();
+
+                /**
+                * @return the boolean array read
+                * @throws IOException if it reaches end of file before finish reading
+                */
+                std::auto_ptr<std::vector<bool> > readBooleanArray();
 
                 /**
                 * @return the char array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<char> readCharArray();
+                std::auto_ptr<std::vector<char> > readCharArray();
 
                 /**
                 * @return the int array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<int> readIntArray();
+                std::auto_ptr<std::vector<int> > readIntArray();
 
                 /**
                 * @return the long array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<long> readLongArray();
+                std::auto_ptr<std::vector<long> > readLongArray();
 
                 /**
                 * @return the double array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<double> readDoubleArray();
+                std::auto_ptr<std::vector<double> > readDoubleArray();
 
                 /**
                 * @return the float array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<float> readFloatArray();
+                std::auto_ptr<std::vector<float> > readFloatArray();
 
                 /**
                 * @return the short array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::vector<short> readShortArray();
+                std::auto_ptr<std::vector<short> > readShortArray();
+
+                /**
+                * @return the array of strings
+                * @throws IOException if it reaches end of file before finish reading
+                */
+                std::auto_ptr<common::containers::ManagedPointerVector<std::string> > readUTFArray();
 
                 /**
                 * Object can be Portable, IdentifiedDataSerializable or custom serializable
@@ -176,9 +188,21 @@ namespace hazelcast {
                 */
                 template<typename T>
                 boost::shared_ptr<T> readObject() {
-                    T *tag = NULL;
-                    return readObjectResolved<T>(tag);
-                };
+                    int typeId = readInt();
+                    if (pimpl::SerializationConstants::CONSTANT_TYPE_NULL == typeId) {
+                        return boost::shared_ptr<T>(static_cast<T *>(NULL));
+                    } else {
+                        std::auto_ptr<T> result(new T);
+                        if (pimpl::SerializationConstants::CONSTANT_TYPE_DATA == typeId) {
+                            readDataSerializable(reinterpret_cast<IdentifiedDataSerializable *>(result.get()));
+                        } else if (pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE == typeId) {
+                            readPortable(reinterpret_cast<Portable *>(result.get()));
+                        } else {
+                            readInternal<T>(typeId, result.get());
+                        }
+                        return boost::shared_ptr<T>(result.release());
+                    }
+                }
 
                 /**
                 * @return the data read
@@ -199,56 +223,24 @@ namespace hazelcast {
 
             private:
 
-                template<typename T>
-                boost::shared_ptr<T> readObjectResolved(Portable *tag) {
-                    bool isNull = readBoolean();
-                    boost::shared_ptr<T> object;
-                    if (isNull) {
-                        return object;
-                    }
-                    object.reset(new T);
-
-                    readInt();
-                    int factoryId = readInt();
-                    int classId = readInt();
-                    serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
-                    return object;
-                };
-
-                template<typename T>
-                boost::shared_ptr<T> readObjectResolved(IdentifiedDataSerializable *tag) {
-                    bool isNull = readBoolean();
-                    boost::shared_ptr<T> object;
-                    if (isNull) {
-                        return object;
-                    }
-                    object.reset(new T);
-                    readInt();
-                    serializerHolder.getDataSerializer().read(*this, *object);
-                    return object;
-                };
-
-                template<typename T>
-                boost::shared_ptr<T> readObjectResolved(void *tag) {
-                    bool isNull = readBoolean();
-                    boost::shared_ptr<T> object;
-                    if (isNull) {
-                        return object;
-                    }
-                    object.reset(new T);
-                    const int typeId = readInt();
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(object->getTypeId());
-                    if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                        s->read(*this, *object);
-                        return object;
-                    } else {
-                        const std::string& message = "No serializer found for serializerId :"
-                        + util::IOUtil::to_string(typeId) + ", typename :" + typeid(T).name();
-                        throw exception::HazelcastSerializationException("ObjectDataInput::readObjectResolved(ObjectDataInput&,void *)", message);
+                template <typename T>
+                void readInternal(int typeId, T * object) {
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
+                    if (NULL == serializer.get()) {
+                        const std::string message = "No serializer found for serializerId :"+
+                                                     util::IOUtil::to_string(typeId) + ", typename :" +
+                                                     typeid(T).name();
+                        throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
                     }
 
-                };
+                    Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+                    ObjectDataInput objectDataInput(dataInput, portableContext);
+                    s->read(objectDataInput, *object);
+                }
+
+                void readPortable(Portable *object);
+
+                void readDataSerializable(IdentifiedDataSerializable * object);
 
                 pimpl::DataInput& dataInput;
                 pimpl::PortableContext& portableContext;

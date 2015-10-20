@@ -26,7 +26,7 @@ namespace hazelcast {
             }
 
             void AwaitRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", instanceName);
+                writer.writeUTF("name", &instanceName);
                 writer.writeLong("timeout", timeout);
             }
 

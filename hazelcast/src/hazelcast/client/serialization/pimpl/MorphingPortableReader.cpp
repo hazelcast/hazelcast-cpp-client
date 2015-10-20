@@ -140,58 +140,58 @@ namespace hazelcast {
                     }
                 }
 
-                std::string MorphingPortableReader::readUTF(char const *fieldName) {
+                std::auto_ptr<std::string> MorphingPortableReader::readUTF(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return "";
+                        return std::auto_ptr<std::string>(new std::string(""));
                     }
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
-                std::vector<byte> MorphingPortableReader::readByteArray(char const *fieldName) {
+                std::auto_ptr<std::vector<byte> > MorphingPortableReader::readByteArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<byte>(1, 0);
+                        return std::auto_ptr<std::vector<byte> >(new std::vector<byte>(1, 0));
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
-                std::vector<char> MorphingPortableReader::readCharArray(char const *fieldName) {
+                std::auto_ptr<std::vector<char> > MorphingPortableReader::readCharArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<char>(1, 0);
+                        return std::auto_ptr<std::vector<char> >(new std::vector<char>(1, 0));
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }
 
-                std::vector<int> MorphingPortableReader::readIntArray(char const *fieldName) {
+                std::auto_ptr<std::vector<int> > MorphingPortableReader::readIntArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<int>(1, 0);
+                        return std::auto_ptr<std::vector<int> >(new std::vector<int>(1, 0));
                     }
                     return PortableReaderBase::readIntArray(fieldName);
                 }
 
-                std::vector<long> MorphingPortableReader::readLongArray(char const *fieldName) {
+                std::auto_ptr<std::vector<long> > MorphingPortableReader::readLongArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<long>(1, 0);
+                        return std::auto_ptr<std::vector<long> >(new std::vector<long>(1, 0));
                     }
                     return PortableReaderBase::readLongArray(fieldName);
                 }
 
-                std::vector<double> MorphingPortableReader::readDoubleArray(char const *fieldName) {
+                std::auto_ptr<std::vector<double> > MorphingPortableReader::readDoubleArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<double>(1, 0);
+                        return std::auto_ptr<std::vector<double> >(new std::vector<double>(1, 0));
                     }
                     return PortableReaderBase::readDoubleArray(fieldName);
                 }
 
-                std::vector<float> MorphingPortableReader::readFloatArray(char const *fieldName) {
+                std::auto_ptr<std::vector<float> > MorphingPortableReader::readFloatArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<float>(1, 0);
+                        return std::auto_ptr<std::vector<float> >(new std::vector<float>(1, 0));
                     }
                     return PortableReaderBase::readFloatArray(fieldName);
                 }
 
-                std::vector<short> MorphingPortableReader::readShortArray(char const *fieldName) {
+                std::auto_ptr<std::vector<short> > MorphingPortableReader::readShortArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::vector<short>(1, 0);
+                        return std::auto_ptr<std::vector<short> >(new std::vector<short>(1, 0));
                     }
                     return PortableReaderBase::readShortArray(fieldName);
                 }

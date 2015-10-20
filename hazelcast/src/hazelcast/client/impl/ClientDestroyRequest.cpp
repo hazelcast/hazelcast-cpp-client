@@ -25,8 +25,8 @@ namespace hazelcast {
             }
 
             void ClientDestroyRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
-                writer.writeUTF("s", serviceName);
+                writer.writeUTF("n", &name);
+                writer.writeUTF("s", &serviceName);
             }
         }
     }

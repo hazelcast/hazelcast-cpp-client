@@ -47,21 +47,21 @@ namespace hazelcast {
 
                     virtual short readShort(const char *fieldName);
 
-                    virtual std::string readUTF(const char *fieldName);
+                    virtual std::auto_ptr<std::string> readUTF(const char *fieldName);
 
-                    virtual std::vector<byte> readByteArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
-                    virtual std::vector<char> readCharArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    virtual std::vector<int> readIntArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
 
-                    virtual std::vector<long> readLongArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
 
-                    virtual std::vector<double> readDoubleArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
-                    virtual std::vector<float> readFloatArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    virtual std::vector<short> readShortArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
 
                     ObjectDataInput &getRawDataInput();
 
@@ -79,7 +79,7 @@ namespace hazelcast {
                     boost::shared_ptr<ClassDefinition> cd;
                     DataInput &dataInput;
                 private:
-                    const SerializerHolder &serializerHolder;
+                    SerializerHolder &serializerHolder;
                     int finalPosition;
                     ObjectDataInput objectDataInput;
                     int offset;

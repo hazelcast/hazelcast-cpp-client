@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void TxnPollRequest::write(serialization::PortableWriter &writer) const {
                 BaseTxnRequest::write(writer);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", timeout);
             }
 

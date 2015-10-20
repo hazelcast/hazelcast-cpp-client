@@ -24,19 +24,21 @@ namespace hazelcast {
 
                 // type and partition_hash are always written with BIG_ENDIAN byte-order
                 unsigned int Data::TYPE_OFFSET = 0;
-                // will use a byte to store partition_hash bit
-                unsigned int Data::PARTITION_HASH_BIT_OFFSET = 4;
-                unsigned int Data::DATA_OFFSET = 5;
+
+                unsigned int Data::DATA_OFFSET = Bits::INT_SIZE_IN_BYTES;
+
+                //first 4 byte is type id + last 4 byte is partition hash code
+                unsigned int Data::DATA_OVERHEAD = DATA_OFFSET + Bits::INT_SIZE_IN_BYTES;
 
                 Data::Data()
                 : data(NULL){
                 }
 
                 Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer) {
-                    if (data.get() != 0 && data->size() > 0 && data->size() < DATA_OFFSET) {
+                    if (data.get() != 0 && data->size() > 0 && data->size() < DATA_OVERHEAD) {
                         char msg[100];
                         sprintf(msg, "Provided buffer should be either empty or "
-                                "should contain more than %u bytes! Provided buffer size:%lu", DATA_OFFSET, (unsigned long)data->size());
+                                "should contain more than %u bytes! Provided buffer size:%lu", DATA_OVERHEAD, (unsigned long)data->size());
                         throw exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
                 }
@@ -53,7 +55,7 @@ namespace hazelcast {
 
 
                 size_t Data::dataSize() const {
-                    return (size_t)std::max<int>((int)totalSize() - (int)DATA_OFFSET, 0);
+                    return (size_t)std::max<int>((int)totalSize() - (int)DATA_OVERHEAD, 0);
                 }
 
                 size_t Data::totalSize() const {
@@ -68,7 +70,9 @@ namespace hazelcast {
                 }
 
                 bool Data::hasPartitionHash() const {
-                    return totalSize() != 0 && (*data)[PARTITION_HASH_BIT_OFFSET] != 0;
+                    size_t length = data->size();
+                    return data.get() != NULL && length >= DATA_OVERHEAD &&
+                            *reinterpret_cast<int *>(&((*data)[length - Bits::INT_SIZE_IN_BYTES])) != 0;
                 }
 
                 std::vector<byte>  &Data::toByteArray() const {

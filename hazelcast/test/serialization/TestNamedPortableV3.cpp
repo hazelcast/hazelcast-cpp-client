@@ -26,13 +26,13 @@ namespace hazelcast {
             }
 
             void TestNamedPortableV3::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", name);
+                writer.writeUTF("name", &name);
                 writer.writeShort("myint", k);
             }
 
 
             void TestNamedPortableV3::readPortable(serialization::PortableReader& reader) {
-                name = reader.readUTF("name");
+                name = *reader.readUTF("name");
                 k = reader.readShort("myint");
             }
 

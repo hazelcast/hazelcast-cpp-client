@@ -38,7 +38,7 @@ namespace hazelcast {
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeBoolean("l", false);
                 writer.writeBoolean("i", includeValue);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 
                 if (hasKey) {

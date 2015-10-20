@@ -30,7 +30,7 @@ namespace hazelcast {
 
             void TxnCollectionRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 if (hasData) {
                     out.writeData(&data);

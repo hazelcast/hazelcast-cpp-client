@@ -26,9 +26,9 @@ namespace hazelcast {
             }
 
             void QueryRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
-                writer.writeUTF("t", iterationType);
-                writer.writeUTF("sql", sql);
+                writer.writeUTF("n", &name);
+                writer.writeUTF("t", &iterationType);
+                writer.writeUTF("sql", &sql);
             }
 
 

@@ -3,6 +3,7 @@
 // Copyright (c) 2013 hazelcast. All rights reserved.
 
 
+#include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
@@ -78,79 +79,72 @@ namespace hazelcast {
                 dataOutput->writeLong((long)v);
             }
 
-            void ObjectDataOutput::writeUTF(const std::string& str) {
+            void ObjectDataOutput::writeUTF(const std::string *str) {
                 if (isEmpty) return;
-                dataOutput->writeUTF(str);
+
+                if (NULL == str) {
+                    writeInt(util::Bits::NULL_ARRAY);
+                } else {
+                    dataOutput->writeUTF(str);
+                }
             }
 
-            void ObjectDataOutput::writeByteArray(const std::vector<byte>& data) {
+            void ObjectDataOutput::writeByteArray(const std::vector<byte> *value) {
                 if (isEmpty) return;
-                dataOutput->writeByteArray(data);
+                dataOutput->writeByteArray(value);
             }
 
-            void ObjectDataOutput::writeCharArray(const std::vector<char>& data) {
+            void ObjectDataOutput::writeCharArray(const std::vector<char> *data) {
                 if (isEmpty) return;
                 dataOutput->writeCharArray(data);
             }
 
-            void ObjectDataOutput::writeShortArray(const std::vector<short>& data) {
+            void ObjectDataOutput::writeShortArray(const std::vector<short> *data) {
                 if (isEmpty) return;
                 dataOutput->writeShortArray(data);
             }
 
-            void ObjectDataOutput::writeIntArray(const std::vector<int>& data) {
+            void ObjectDataOutput::writeIntArray(const std::vector<int> *data) {
                 if (isEmpty) return;
                 dataOutput->writeIntArray(data);
             }
 
-            void ObjectDataOutput::writeLongArray(const std::vector<long>& data) {
+            void ObjectDataOutput::writeLongArray(const std::vector<long> *data) {
                 if (isEmpty) return;
                 dataOutput->writeLongArray(data);
             }
 
-            void ObjectDataOutput::writeFloatArray(const std::vector<float>& data) {
+            void ObjectDataOutput::writeFloatArray(const std::vector<float> *data) {
                 if (isEmpty) return;
                 dataOutput->writeFloatArray(data);
             }
 
-            void ObjectDataOutput::writeDoubleArray(const std::vector<double>& data) {
+            void ObjectDataOutput::writeDoubleArray(const std::vector<double> *data) {
                 if (isEmpty) return;
                 dataOutput->writeDoubleArray(data);
             }
 
+            void ObjectDataOutput::writeUTFArray(const std::vector<std::string *> *strings) {
+                if (isEmpty) return;
+
+                int len = NULL != strings ? (int)strings->size() : util::Bits::NULL_ARRAY;
+
+                writeInt(len);
+
+                if (len > 0) {
+                    for (std::vector<std::string *>::const_iterator it = strings->begin(); it != strings->end(); ++it) {
+                        writeUTF(*it);
+                    }
+                }
+            }
 
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
-                if (isEmpty) return;
-                bool isNull = (NULL == data || 0 == data->totalSize());
-                writeBoolean(isNull);
-                if (isNull) {
-                    return;
+                if (NULL == data) {
+                    writeInt(util::Bits::NULL_ARRAY);
+                } else {
+                    writeByteArray(&data->toByteArray());
                 }
-                writeByteArray(data->toByteArray());
-            }
 
-
-            void ObjectDataOutput::writePortable(const Portable *portable) {
-                bool isNull = NULL == portable;
-                writeBoolean(isNull);
-                if (isNull) {
-                    return;
-                }
-                writeInt(portable->getSerializerId());
-                writeInt(portable->getFactoryId());
-                writeInt(portable->getClassId());
-                serializerHolder->getPortableSerializer().write(*dataOutput, *portable);
-
-            }
-
-            void ObjectDataOutput::writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable) {
-                bool isNull = NULL == dataSerializable;
-                writeBoolean(isNull);
-                if (isNull) {
-                    return;
-                }
-                writeInt(dataSerializable->getSerializerId());
-                serializerHolder->getDataSerializer().write(*this, *dataSerializable);
             }
 
             size_t ObjectDataOutput::position() {
@@ -160,7 +154,6 @@ namespace hazelcast {
             void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
             }
-
         }
     }
 }

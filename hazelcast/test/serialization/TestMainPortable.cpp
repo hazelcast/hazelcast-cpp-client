@@ -62,8 +62,8 @@ namespace hazelcast {
                 writer.writeLong("l", l);
                 writer.writeFloat("f", f);
                 writer.writeDouble("d", d);
-                writer.writeUTF("str", str);
-                writer.writePortable("p", p);
+                writer.writeUTF("str", &str);
+                writer.writePortable("p", &p);
             }
 
 
@@ -77,7 +77,7 @@ namespace hazelcast {
                 l = reader.readLong("l");
                 f = reader.readFloat("f");
                 d = reader.readDouble("d");
-                str = reader.readUTF("str");
+                str = *reader.readUTF("str");
                 boost::shared_ptr<TestInnerPortable> ptr = reader.readPortable<TestInnerPortable>("p");
                 if (ptr != NULL)
                     p = *ptr;

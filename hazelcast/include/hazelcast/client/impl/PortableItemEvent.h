@@ -26,7 +26,7 @@ namespace hazelcast {
 
                 const serialization::pimpl::Data&  getItem() const;
 
-                std::string getUuid() const;
+                std::string &getUuid() const;
 
                 ItemEventType getEventType() const;
 
@@ -39,7 +39,7 @@ namespace hazelcast {
             private:
                 serialization::pimpl::Data item;
                 ItemEventType eventType;
-                std::string uuid;
+                std::auto_ptr<std::string> uuid;
 
             };
         }

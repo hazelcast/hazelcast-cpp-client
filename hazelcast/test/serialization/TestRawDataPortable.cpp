@@ -21,24 +21,24 @@ namespace hazelcast {
 
             void TestRawDataPortable::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeLong("l", l);
-                writer.writeCharArray("c", c);
-                writer.writePortable("p", p);
+                writer.writeCharArray("c", &c);
+                writer.writePortable("p", &p);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 out.writeInt(k);
-                out.writeUTF(s);
+                out.writeUTF(&s);
                 ds.writeData(out);
             }
 
 
             void TestRawDataPortable::readPortable(serialization::PortableReader &reader) {
                 l = reader.readLong("l");
-                c = reader.readCharArray("c");
+                c = *reader.readCharArray("c");
                 boost::shared_ptr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
                 if (ptr != NULL)
                     p = *ptr;
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 k = in.readInt();
-                s = in.readUTF();
+                s = *in.readUTF();
                 ds.readData(in);
             }
 

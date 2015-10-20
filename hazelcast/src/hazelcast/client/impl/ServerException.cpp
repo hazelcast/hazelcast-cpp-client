@@ -18,7 +18,7 @@ namespace hazelcast {
             }
 
             char const *ServerException::what() const throw() {
-                return details.c_str();
+                return (*details).c_str();
             }
 
             int ServerException::getFactoryId() const {

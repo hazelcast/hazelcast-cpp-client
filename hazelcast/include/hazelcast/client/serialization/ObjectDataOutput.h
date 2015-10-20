@@ -8,8 +8,12 @@
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
+#include <list>
+#include "hazelcast/client/common/containers/ManagedPointerVector.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
 
@@ -96,44 +100,49 @@ namespace hazelcast {
                 void writeDouble(double value);
 
                 /**
-                * @param value the utf string value to be written
+                * @param value the ASCII string value to be written
                 */
-                void writeUTF(const std::string& value);
+                void writeUTF(const std::string *value);
 
                 /**
-                * @param value the utf string value to be written
+                * @param value the bytes to be written
                 */
-                void writeByteArray(const std::vector<byte>& value);
+                void writeByteArray(const std::vector<byte> *value);
 
                 /**
-                * @param value the utf string value to be written
+                * @param value the characters to be written
                 */
-                void writeCharArray(const std::vector<char>& value);
+                void writeCharArray(const std::vector<char> *value);
 
                 /**
                 * @param value the short array value to be written
                 */
-                void writeShortArray(const std::vector<short>& value);
+                void writeShortArray(const std::vector<short> *value);
 
                 /**
                 * @param value the int array value to be written
                 */
-                void writeIntArray(const std::vector<int>& value);
+                void writeIntArray(const std::vector<int> *value);
 
                 /**
                 * @param value the short array value to be written
                 */
-                void writeLongArray(const std::vector<long>& value);
+                void writeLongArray(const std::vector<long> *value);
 
                 /**
                 * @param value the float array value to be written
                 */
-                void writeFloatArray(const std::vector<float>& value);
+                void writeFloatArray(const std::vector<float> *value);
 
                 /**
                 * @param value the double array value to be written
                 */
-                void writeDoubleArray(const std::vector<double>& value);
+                void writeDoubleArray(const std::vector<double> *value);
+
+                /**
+                 * @param strings the array of strings to be serialized
+                 */
+                void writeUTFArray(const std::vector<std::string *> *strings);
 
                 /**
                 * @param value the data value to be written
@@ -145,10 +154,20 @@ namespace hazelcast {
                 * @see Portable
                 * @throws IOException
                 */
-                template<typename T>
+                template <typename T>
                 void writeObject(const Portable *object) {
                     if (isEmpty) return;
-                    writePortable(object);
+
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE);
+
+                        writeInt(object->getFactoryId());
+                        writeInt(object->getClassId());
+
+                        context->getSerializerHolder().getPortableSerializer().write(*this->dataOutput, *object);
+                    }
                 }
 
                 /**
@@ -159,7 +178,13 @@ namespace hazelcast {
                 template<typename T>
                 void writeObject(const IdentifiedDataSerializable *object) {
                     if (isEmpty) return;
-                    writeIdentifiedDataSerializable(object);
+
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
+                        context->getSerializerHolder().getDataSerializer().write(*this, *object);
+                    }
                 }
 
                 /**
@@ -167,34 +192,31 @@ namespace hazelcast {
                 * @see Serializer
                 * @throws IOException
                 */
-                template<typename T>
-                void writeObject(const void *object) {
+                template <typename T>
+                inline void writeObject(const void *serializable) {
                     if (isEmpty) return;
-                    const bool isNull = (NULL == object);
 
-                    writeBoolean(isNull);
-                    if (isNull) {
-                        return;
-                    }
-
-                    const T *serializable = static_cast<const T *>(object);
-
-                    // write type
-                    int type = serializable->getTypeId();
-                    writeInt(type);
-
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
-                    if (serializer.get() != NULL) {
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                        s->write(*this, *serializable);
+                    if (NULL == serializable) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
-                        const std::string& message = "No serializer found for serializerId :"
-                        + util::IOUtil::to_string(type)
-                        + ", typename :" + typeid(T).name();
-                        throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject", message);
+                        const T *object = static_cast<const T *>(serializable);
+                        int type = object->getTypeId();
+                        writeInt(type);
+
+                        boost::shared_ptr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
+
+                        if (NULL == serializer.get()) {
+                            const std::string message = "No serializer found for serializerId :"+
+                                                         util::IOUtil::to_string(type) + ", typename :" +
+                                                         typeid(T).name();
+                            throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
+                        }
+
+                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+
+                        s->write(*this, *object);
                     }
                 }
-
             private:
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;
@@ -205,15 +227,10 @@ namespace hazelcast {
 
                 void position(size_t newPos);
 
-                void writePortable(const Portable *portable);
-
-                void writeIdentifiedDataSerializable(const IdentifiedDataSerializable *dataSerializable);
-
                 ObjectDataOutput(const ObjectDataOutput&);
 
                 void operator=(const ObjectDataOutput&);
             };
-
         }
     }
 }

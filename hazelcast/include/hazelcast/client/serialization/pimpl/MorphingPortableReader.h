@@ -53,21 +53,21 @@ namespace hazelcast {
 
                     short readShort(const char *fieldName);
 
-                    std::string readUTF(const char *fieldName);
+                    std::auto_ptr<std::string> readUTF(const char *fieldName);
 
-                    std::vector<byte> readByteArray(const char *fieldName);
+                    std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
-                    std::vector<char> readCharArray(const char *fieldName);
+                    std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    std::vector<int> readIntArray(const char *fieldName);
+                    std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
 
-                    std::vector<long> readLongArray(const char *fieldName);
+                    std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
 
-                    std::vector<double> readDoubleArray(const char *fieldName);
+                    std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
-                    std::vector<float> readFloatArray(const char *fieldName);
+                    std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    std::vector<short> readShortArray(const char *fieldName);
+                    std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {

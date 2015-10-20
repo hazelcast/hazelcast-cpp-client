@@ -24,14 +24,14 @@ namespace hazelcast {
 
             void TestNamedPortableV2::writePortable(serialization::PortableWriter& writer) const {
                 writer.writeInt("v", v);
-                writer.writeUTF("name", name);
+                writer.writeUTF("name", &name);
                 writer.writeInt("myint", k);
             }
 
 
             void TestNamedPortableV2::readPortable(serialization::PortableReader& reader) {
                 v = reader.readInt("v");
-                name = reader.readUTF("name");
+                name = *reader.readUTF("name");
                 k = reader.readInt("myint");
             }
 

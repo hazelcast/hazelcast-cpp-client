@@ -83,49 +83,49 @@ namespace hazelcast {
                 return morphingPortableReader->readShort(fieldName);
             }
 
-            std::string PortableReader::readUTF(const char *fieldName) {
+            std::auto_ptr<std::string> PortableReader::readUTF(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readUTF(fieldName);
                 return morphingPortableReader->readUTF(fieldName);
             }
 
-            std::vector<byte> PortableReader::readByteArray(const char *fieldName) {
+            std::auto_ptr<std::vector<byte> > PortableReader::readByteArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readByteArray(fieldName);
                 return morphingPortableReader->readByteArray(fieldName);
             }
 
-            std::vector<char> PortableReader::readCharArray(const char *fieldName) {
+            std::auto_ptr<std::vector<char> > PortableReader::readCharArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readCharArray(fieldName);
                 return morphingPortableReader->readCharArray(fieldName);
             }
 
-            std::vector<int> PortableReader::readIntArray(const char *fieldName) {
+            std::auto_ptr<std::vector<int> > PortableReader::readIntArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readIntArray(fieldName);
                 return morphingPortableReader->readIntArray(fieldName);
             }
 
-            std::vector<long> PortableReader::readLongArray(const char *fieldName) {
+            std::auto_ptr<std::vector<long> > PortableReader::readLongArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readLongArray(fieldName);
                 return morphingPortableReader->readLongArray(fieldName);
             }
 
-            std::vector<double> PortableReader::readDoubleArray(const char *fieldName) {
+            std::auto_ptr<std::vector<double> > PortableReader::readDoubleArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readDoubleArray(fieldName);
                 return morphingPortableReader->readDoubleArray(fieldName);
             }
 
-            std::vector<float> PortableReader::readFloatArray(const char *fieldName) {
+            std::auto_ptr<std::vector<float> > PortableReader::readFloatArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readFloatArray(fieldName);
                 return morphingPortableReader->readFloatArray(fieldName);
             }
 
-            std::vector<short> PortableReader::readShortArray(const char *fieldName) {
+            std::auto_ptr<std::vector<short> > PortableReader::readShortArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readShortArray(fieldName);
                 return morphingPortableReader->readShortArray(fieldName);

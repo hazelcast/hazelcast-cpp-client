@@ -25,7 +25,7 @@ namespace hazelcast {
             }
 
             void FlushRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
             }
         }
     }

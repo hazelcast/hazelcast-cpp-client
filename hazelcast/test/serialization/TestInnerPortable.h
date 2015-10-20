@@ -39,8 +39,8 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader& reader);
 
-                std::vector<int> ii;
             private:
+                std::vector<int> ii;
                 std::vector<byte> bb;
                 std::vector<char> cc;
                 std::vector<short> ss;

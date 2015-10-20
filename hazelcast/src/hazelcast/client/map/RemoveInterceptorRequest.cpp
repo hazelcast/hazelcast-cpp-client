@@ -27,8 +27,8 @@ namespace hazelcast {
             }
 
             void RemoveInterceptorRequest::write(serialization::PortableWriter & writer) const {
-                writer.writeUTF("n", name);
-                writer.writeUTF("id", id);
+                writer.writeUTF("n", &name);
+                writer.writeUTF("id", &id);
             }
         }
     }
