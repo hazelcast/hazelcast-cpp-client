@@ -56,6 +56,7 @@ namespace hazelcast {
             }
 
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
+                writer.writeBoolean("l", false);
                 writer.writeUTF("name", name);
                 writer.writeBoolean("i", includeValue);
                 writer.writeInt("lf", ALL_LISTENER_FLAGS);

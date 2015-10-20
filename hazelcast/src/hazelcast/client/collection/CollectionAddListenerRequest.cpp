@@ -21,6 +21,7 @@ namespace hazelcast {
             }
 
             void CollectionAddListenerRequest::write(serialization::PortableWriter &writer) const {
+                writer.writeBoolean("l", false);
                 CollectionRequest::write(writer);
                 writer.writeBoolean("i", includeValue);
             }
