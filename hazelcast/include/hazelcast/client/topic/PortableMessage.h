@@ -23,7 +23,7 @@ namespace hazelcast {
             public:
                 const serialization::pimpl::Data& getMessage() const;
 
-                std::string getUuid() const;
+                const std::string &getUuid() const;
 
                 long getPublishTime() const;
 
@@ -35,7 +35,7 @@ namespace hazelcast {
 
             private:
                 serialization::pimpl::Data message;
-                std::string uuid;
+                std::auto_ptr<std::string> uuid;
                 long publishTime;
             };
         }

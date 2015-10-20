@@ -28,7 +28,7 @@ namespace hazelcast {
             }
 
             void ReplaceRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
                 writer.writeBoolean("a", false);

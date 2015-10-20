@@ -31,7 +31,7 @@ namespace hazelcast {
             }
 
             void ContainsRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", 0);
                 int size = dataList.size();
                 writer.writeInt("s", size);

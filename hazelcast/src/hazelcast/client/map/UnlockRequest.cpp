@@ -27,7 +27,7 @@ namespace hazelcast {
             }
 
             void UnlockRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("tid", threadId);
                 writer.writeBoolean("force", force);
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();

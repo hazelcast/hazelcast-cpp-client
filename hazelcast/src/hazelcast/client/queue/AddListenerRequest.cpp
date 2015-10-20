@@ -26,7 +26,7 @@ namespace hazelcast {
 
             void AddListenerRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeBoolean("l", false);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeBoolean("i", includeValue);
             }
         }

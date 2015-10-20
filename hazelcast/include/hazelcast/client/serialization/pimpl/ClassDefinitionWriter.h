@@ -55,46 +55,55 @@ namespace hazelcast {
 
                     void writeShort(const char *fieldName, short value);
 
-                    void writeUTF(const char *fieldName, const std::string& str);
+                    void writeUTF(const char *fieldName, const std::string *str);
 
-                    void writeByteArray(const char *fieldName, const std::vector<byte>& values);
+                    void writeByteArray(const char *fieldName, const std::vector<byte> *values);
 
-                    void writeCharArray(const char *fieldName, const std::vector<char>& data);
+                    void writeCharArray(const char *fieldName, const std::vector<char> *data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short>& data);
+                    void writeShortArray(const char *fieldName, const std::vector<short> *data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int>& data);
+                    void writeIntArray(const char *fieldName, const std::vector<int> *data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long>& data);
+                    void writeLongArray(const char *fieldName, const std::vector<long> *data);
 
-                    void writeFloatArray(const char *fieldName, const std::vector<float>& data);
+                    void writeFloatArray(const char *fieldName, const std::vector<float> *data);
 
-                    void writeDoubleArray(const char *fieldName, const std::vector<double>& data);
+                    void writeDoubleArray(const char *fieldName, const std::vector<double> *data);
 
                     template<typename T>
                     void writeNullPortable(const char *fieldName) {
-                        checkIfRaw();
+
                         T portable;
                         int factoryId = portable.getFactoryId();
                         int classId = portable.getClassId();
                         boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId, classId, context.getVersion());
                         if (nestedClassDef == NULL) {
-                            throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable", "Cannot write null portable without explicitly registering class definition!");
+                            throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable",
+                                     "Cannot write null portable without explicitly registering class definition!");
                         }
                         builder.addPortableField(fieldName, nestedClassDef);
                     }
 
                     template<typename T>
-                    void writePortable(const char *fieldName, const T& portable) {
-                        checkIfRaw();
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(portable);
+                    void writePortable(const char *fieldName, const T *portable) {
+                        if (NULL == portable) {
+                            throw exception::HazelcastSerializationException("ClassDefinitionWriter::writePortable",
+                                     "Cannot write null portable without explicitly registering class definition!");
+                        }
+
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(*portable);
                         builder.addPortableField(fieldName, nestedClassDef);
                     };
 
                     template<typename T>
-                    void writePortableArray(const char *fieldName, const std::vector<T>& portables) {
-                        checkIfRaw();
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(portables[0]);
+                    void writePortableArray(const char *fieldName, const std::vector<T> *portables) {
+                        if (NULL == portables || portables->size() == 0) {
+                            throw exception::HazelcastSerializationException(
+                                    "ClassDefinitionWriter::writePortableArray",
+                                    "Cannot write null portable array without explicitly registering class definition!");
+                        }
+                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef((*portables)[0]);
                         builder.addPortableArrayField(fieldName, nestedClassDef);
                     };
 
@@ -105,11 +114,8 @@ namespace hazelcast {
                     void end();
 
                 private:
-                    void checkIfRaw();
-
                     boost::shared_ptr<ClassDefinition> createNestedClassDef(const Portable& portable);
 
-                    bool raw;
                     ObjectDataOutput emptyDataOutput;
                     ClassDefinitionBuilder& builder;
                     PortableContext& context;

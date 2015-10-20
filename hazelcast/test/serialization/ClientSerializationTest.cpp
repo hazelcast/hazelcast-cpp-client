@@ -464,6 +464,7 @@ namespace hazelcast {
                 float f = 3.14;
                 double d = 3.14334;
                 std::string str = "Hello world";
+                std::string utfStr = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
 
                 iTest::assertEqual(by,toDataAndBackToObject(serializationService, by));
                 iTest::assertEqual(boolean,toDataAndBackToObject(serializationService, boolean));
@@ -474,6 +475,7 @@ namespace hazelcast {
                 iTest::assertEqual(f,toDataAndBackToObject(serializationService, f));
                 iTest::assertEqual(d,toDataAndBackToObject(serializationService, d));
                 iTest::assertEqual(str,toDataAndBackToObject(serializationService, str));
+                iTest::assertEqual(utfStr,toDataAndBackToObject(serializationService, utfStr));
             }
 
             void ClientSerializationTest::testPrimitiveArrays() {
@@ -482,6 +484,8 @@ namespace hazelcast {
 
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
+                char boolArray[] = {true, false, false, true};
+                std::vector<bool> ba(boolArray, boolArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
@@ -492,15 +496,33 @@ namespace hazelcast {
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
                 std::vector<double> dd(doubleArray, doubleArray + 3);
+                const std::string stringArray[] = {"ali", "veli", "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム"};
+                std::vector<const std::string *> strVector;
+                for (int i = 0;i < 3; ++i) {
+                    strVector.push_back(&stringArray[i]);
+                }
 
                 iTest::assertEqual(cc, toDataAndBackToObject(serializationService, cc));
+                iTest::assertEqual(ba, toDataAndBackToObject(serializationService, ba));
                 iTest::assertEqual(ss, toDataAndBackToObject(serializationService, ss));
                 iTest::assertEqual(ii, toDataAndBackToObject(serializationService, ii));
                 iTest::assertEqual(ll, toDataAndBackToObject(serializationService, ll));
                 iTest::assertEqual(ff, toDataAndBackToObject(serializationService, ff));
                 iTest::assertEqual(dd, toDataAndBackToObject(serializationService, dd));
-            }
+                serialization::pimpl::Data data = serializationService.toData<std::vector<const std::string *> >(&strVector);
+                boost::shared_ptr<common::containers::ManagedPointerVector<std::string> > resultStrVector = serializationService.toObject<common::containers::ManagedPointerVector<std::string> >(data);
+                iTest::assertNotNull(resultStrVector.get());
+                iTest::assertEqual(strVector.size(), resultStrVector->size());
+                for (int i=0;i < (int)strVector.size();++i) {
+                    iTest::assertEqual(*(strVector[i]), *((*resultStrVector)[i]));
+                }
 
+                // test ManagedPointerVector toVector function
+                const std::vector<const std::string * > newVector = resultStrVector->toVector();
+                for (int i=0;i < (int)strVector.size();++i) {
+                    iTest::assertEqual(*(strVector[i]), *(newVector[i]));
+                }
+            }
 
             void ClientSerializationTest::testWriteObjectWithPortable() {
                 SerializationConfig serializationConfig;
@@ -536,8 +558,6 @@ namespace hazelcast {
                 serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomXSerializable> >(&objectCarryingPortable);
                 boost::shared_ptr<ObjectCarryingPortable<TestCustomXSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomXSerializable> >(data);
                 iTest::assertEqual(objectCarryingPortable, *ptr);
-
-
             }
 
             void ClientSerializationTest::testWriteObjectWithCustomPersonSerializable() {

@@ -260,7 +260,7 @@ namespace hazelcast {
             }
 
             public void writePortable(PortableWriter writer) throws IOException {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeInt("a", age);
             }
 
@@ -307,7 +307,7 @@ namespace hazelcast {
             };
 
             void writePortable(serialization::PortableWriter &writer) const{
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeInt("a", age);
             };
 

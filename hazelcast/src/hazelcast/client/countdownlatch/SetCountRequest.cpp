@@ -25,7 +25,7 @@ namespace hazelcast {
             }
 
             void SetCountRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("name", instanceName);
+                writer.writeUTF("name", &instanceName);
                 writer.writeInt("count", count);
             }
         }

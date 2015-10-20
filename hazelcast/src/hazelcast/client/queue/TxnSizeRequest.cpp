@@ -25,7 +25,7 @@ namespace hazelcast {
 
             void TxnSizeRequest::write(serialization::PortableWriter &writer) const {
                 BaseTxnRequest::write(writer);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
             }
 
 

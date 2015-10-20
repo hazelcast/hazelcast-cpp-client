@@ -244,11 +244,11 @@ namespace hazelcast {
                     serialization::pimpl::Data const& data = response->getData();
                     boost::shared_ptr<impl::ServerException> ex = serializationService.toObject<impl::ServerException>(data);
 
-                    std::string exceptionClassName = ex->name;
+                    std::string exceptionClassName = *ex->name;
                     if (exceptionClassName == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
                         tryResend(promise, address);
                     } else {
-                        promise->setException(ex->name, ex->message + ":" + ex->details + "\n");
+                        promise->setException(*ex->name, *ex->message + ":" + *ex->details + "\n");
                     }
                     return false;
                 }

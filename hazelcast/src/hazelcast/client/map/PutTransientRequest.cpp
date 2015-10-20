@@ -29,7 +29,7 @@ namespace hazelcast {
 
 
             void PutTransientRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeBoolean("a", false);

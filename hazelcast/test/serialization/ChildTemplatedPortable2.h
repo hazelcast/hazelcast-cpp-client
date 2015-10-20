@@ -36,11 +36,11 @@ namespace hazelcast {
                 }
 
                 void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("s", s1);
+                    writer.writeUTF("s", &s1);
                 }
 
                 void readPortable(serialization::PortableReader& reader) {
-                    s1 = reader.readUTF("s");
+                    s1 = *reader.readUTF("s");
                 }
 
                 std::string s1;

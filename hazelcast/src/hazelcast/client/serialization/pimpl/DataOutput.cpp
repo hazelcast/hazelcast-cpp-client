@@ -4,8 +4,8 @@
 
 
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
-#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Bits.h"
 
 #include <algorithm>
 
@@ -14,7 +14,6 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
 
-                size_t const DataOutput::STRING_CHUNK_SIZE = 16 * 1024;
                 size_t const DataOutput::DEFAULT_SIZE = 4 * 1024;
 
                 DataOutput::DataOutput()
@@ -103,20 +102,11 @@ namespace hazelcast {
                     writeLong(u.l);
                 }
 
-                void DataOutput::writeUTF(const std::string& str) {
-                    bool isNull = str.empty();
-                    writeBoolean(isNull);
-                    if (isNull)
-                        return;
-
-                    size_t length = str.length();
-                    writeInt((int)length);
-                    writeInt((int)length);
-                    size_t chunkSize = length / STRING_CHUNK_SIZE + 1;
-                    for (size_t i = 0; i < chunkSize; i++) {
-                        size_t beginIndex = (size_t)std::max<int>((int)0, (int)STRING_CHUNK_SIZE * (int)i - 1);
-                        size_t endIndex = (size_t)std::min<int>(STRING_CHUNK_SIZE * (i + 1) - 1, length);
-                        writeShortUTF(str.substr(beginIndex, endIndex - beginIndex));
+                void DataOutput::writeUTF(const std::string *str) {
+                    int len = (NULL != str) ? getUTF8CharCount(*str) : util::Bits::NULL_ARRAY;
+                    writeInt(len);
+                    if (len > 0) {
+                        outputStream->insert(outputStream->end(), str->begin(), str->end());
                     }
                 }
 
@@ -128,61 +118,94 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeBytes(const byte *bytes, unsigned int len) {
-                    for (unsigned int i = 0; i < len; i++) {
-                        writeByte(bytes[i]);
+                    outputStream->insert(outputStream->end(), bytes, bytes + len);
+                }
+
+                void DataOutput::writeByteArray(const std::vector<byte> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        outputStream->insert(outputStream->end(),  data->begin(),  data->end());
                     }
                 }
 
-                void DataOutput::writeByteArray(const std::vector<byte>& data) {
-                    writeInt((int)data.size());
-                    outputStream->insert(outputStream->end(), data.begin(), data.end());
-                }
-
-                void DataOutput::writeCharArray(const std::vector<char>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeChar(data[i]);
+                void DataOutput::writeCharArray(const std::vector<char> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeChar((*data)[i]);
+                        }
                     }
                 }
 
-                void DataOutput::writeShortArray(const std::vector<short>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeShort(data[i]);
+                void DataOutput::writeBooleanArray(const std::vector<bool> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeBoolean((*data)[i]);
+                        }
                     }
                 }
 
-                void DataOutput::writeIntArray(const std::vector<int>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeInt(data[i]);
+                void DataOutput::writeShortArray(const std::vector<short> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeShort((*data)[i]);
+                        }
                     }
                 }
 
-                void DataOutput::writeLongArray(const std::vector<long>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeLong(data[i]);
+                void DataOutput::writeIntArray(const std::vector<int> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeInt((*data)[i]);
+                        }
                     }
                 }
 
-                void DataOutput::writeFloatArray(const std::vector<float>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeFloat(data[i]);
+                void DataOutput::writeLongArray(const std::vector<long> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeLong((*data)[i]);
+                        }
                     }
                 }
 
-                void DataOutput::writeDoubleArray(const std::vector<double>& data) {
-                    size_t size = data.size();
-                    writeInt((int)size);
-                    for (int i = 0; i < (int)size; ++i) {
-                        writeDouble(data[i]);
+                void DataOutput::writeFloatArray(const std::vector<float> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeFloat((*data)[i]);
+                        }
+                    }
+                }
+
+                void DataOutput::writeDoubleArray(const std::vector<double> *data) {
+                    int len = (NULL == data ? util::Bits::NULL_ARRAY : (int) data->size());
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeDouble((*data)[i]);
+                        }
+                    }
+                }
+
+                void DataOutput::writeUTFArray(const std::vector<const std::string *> *data) {
+                    int len = (NULL != data) ? (int)data->size() : util::Bits::NULL_ARRAY;
+                    writeInt(len);
+                    if (len > 0) {
+                        for (int i = 0; i < len; ++i) {
+                            writeUTF((*data)[i]);
+                        }
                     }
                 }
 
@@ -201,51 +224,31 @@ namespace hazelcast {
                         outputStream->resize(newPos, 0);
                 }
 
-                //private functions
-
-                void DataOutput::writeShortUTF(const std::string& str) {
-                    int stringLen = (int)str.length();
-//                    int utfLength = 0;
-                    int utfLength = stringLen;
-                    int count = 0;
-                    /* use charAt instead of copying String to char std::vector */
-//                    for (int i = 0; i < stringLen; i++) {
-//                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
-//                            utfLength++;
-//                        } else if (str[i] > 0x07FF) { //MTODO think using wchar
-//                            utfLength += 3;
-//                        } else {
-//                            utfLength += 2;
-//                        }
-                    //                   }
-                    if (utfLength > 65535) {
-                        const std::string& message = "encoded string too long:" +
-                        util::IOUtil::to_string(utfLength) + " bytes";
-                        throw exception::IOException("BufferedDataOutput::writeShortUTF", message);
+                int DataOutput::getUTF8CharCount(const std::string &str) {
+                    int size = 0;
+                    for (std::string::const_iterator it = str.begin();it != str.end();) {
+                        byte buffer[3];
+                        buffer[0] = (unsigned char)(*it);
+                        if (buffer[0] <= 0x7F) {
+                            ++it;
+                            ++size;
+                        } else {
+                            ++it;
+                            if (it != str.end()) {
+                                buffer[1] = (unsigned char)(*it);
+                                unsigned short twoByteChar = ((buffer[0] << 8) | (buffer[1]));
+                                if (twoByteChar > 0x07FF) {
+                                    it += 2;
+                                    ++size;
+                                } else {
+                                    ++it;
+                                    ++size;
+                                }
+                            }
+                        }
                     }
-                    std::vector<byte> byteArray((size_t)utfLength);
-                    int i;
-                    for (i = 0; i < stringLen; i++) {
-//                        if (!((str[i] >= 0x0001) && (str[i] <= 0x007F)))
-//                            break;
-                        byteArray[count++] = (byte)str[i];
-                    }
-//                    for (; i < stringLen; i++) {
-//                        if ((str[i] >= 0x0001) && (str[i] <= 0x007F)) {
-//                            byteArray[count++] = (byte) str[i];
-//                        } else if (str[i] > 0x07FF) {  //MTODO think using wchar
-//                            byteArray[count++] = (byte) (0xE0 | ((str[i] >> 12) & 0x0F));
-//                            byteArray[count++] = (byte) (0x80 | ((str[i] >> 6) & 0x3F));
-//                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
-//                        } else {
-//                            byteArray[count++] = (byte) (0xC0 | ((str[i] >> 6) & 0x1F));
-//                            byteArray[count++] = (byte) (0x80 | ((str[i]) & 0x3F));
-//                        }
-//                    }
-                    writeShort(utfLength);
-                    write(byteArray);
+                    return size;
                 }
-
             }
 
         }

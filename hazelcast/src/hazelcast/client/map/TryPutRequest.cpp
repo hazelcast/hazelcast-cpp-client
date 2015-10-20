@@ -32,7 +32,7 @@ namespace hazelcast {
 
             void TryPutRequest::write(serialization::PortableWriter& writer) const {
                 writer.writeLong("timeout", timeout);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeBoolean("a", async);

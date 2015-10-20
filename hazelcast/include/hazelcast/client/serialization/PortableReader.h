@@ -108,56 +108,56 @@ namespace hazelcast {
                 * @return the utf string value read
                 * @throws IOException
                 */
-                std::string readUTF(const char *fieldName);
+                std::auto_ptr<std::string> readUTF(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the byte array value read
                 * @throws IOException
                 */
-                std::vector<byte> readByteArray(const char *fieldName);
+                std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the char array value read
                 * @throws IOException
                 */
-                std::vector<char> readCharArray(const char *fieldName);
+                std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the int array value read
                 * @throws IOException
                 */
-                std::vector<int> readIntArray(const char *fieldName);
+                std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the long array value read
                 * @throws IOException
                 */
-                std::vector<long> readLongArray(const char *fieldName);
+                std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the double array value read
                 * @throws IOException
                 */
-                std::vector<double> readDoubleArray(const char *fieldName);
+                std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the float array value read
                 * @throws IOException
                 */
-                std::vector<float> readFloatArray(const char *fieldName);
+                std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the short array value read
                 * @throws IOException
                 */
-                std::vector<short> readShortArray(const char *fieldName);
+                std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
 
                 /**
                 * @tparam type of the portable class

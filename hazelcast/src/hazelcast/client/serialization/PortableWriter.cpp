@@ -70,49 +70,49 @@ namespace hazelcast {
                 return classDefinitionWriter->writeShort(fieldName, value);
             }
 
-            void PortableWriter::writeUTF(const char *fieldName, const std::string& str) {
+            void PortableWriter::writeUTF(const char *fieldName, const std::string *str) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeUTF(fieldName, str);
                 return classDefinitionWriter->writeUTF(fieldName, str);
             }
 
-            void PortableWriter::writeByteArray(const char *fieldName, const std::vector<byte>& data) {
+            void PortableWriter::writeByteArray(const char *fieldName, const std::vector<byte> *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeByteArray(fieldName, data);
                 return classDefinitionWriter->writeByteArray(fieldName, data);
             }
 
-            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char >& data) {
+            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeCharArray(fieldName, data);
                 return classDefinitionWriter->writeCharArray(fieldName, data);
             }
 
-            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short >& data) {
+            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<short > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeShortArray(fieldName, data);
                 return classDefinitionWriter->writeShortArray(fieldName, data);
             }
 
-            void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int>& data) {
+            void PortableWriter::writeIntArray(const char *fieldName, const std::vector<int> *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeIntArray(fieldName, data);
                 return classDefinitionWriter->writeIntArray(fieldName, data);
             }
 
-            void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long >& data) {
+            void PortableWriter::writeLongArray(const char *fieldName, const std::vector<long > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeLongArray(fieldName, data);
                 return classDefinitionWriter->writeLongArray(fieldName, data);
             }
 
-            void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float >& data) {
+            void PortableWriter::writeFloatArray(const char *fieldName, const std::vector<float > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeFloatArray(fieldName, data);
                 return classDefinitionWriter->writeFloatArray(fieldName, data);
             }
 
-            void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double >& data) {
+            void PortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeDoubleArray(fieldName, data);
                 return classDefinitionWriter->writeDoubleArray(fieldName, data);

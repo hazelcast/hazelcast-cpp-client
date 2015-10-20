@@ -21,24 +21,28 @@ namespace hazelcast {
                 int const SerializationConstants::CONSTANT_TYPE_DOUBLE = -10;
                 int const SerializationConstants::CONSTANT_TYPE_STRING = -11;
                 int const SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY = -12;
-                int const SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY = -13;
-                int const SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY = -14;
-                int const SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY = -15;
-                int const SerializationConstants::CONSTANT_TYPE_LONG_ARRAY = -16;
-                int const SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY = -17;
-                int const SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY = -18;
-                int const SerializationConstants::CONSTANT_SERIALIZERS_LENGTH = -(-19) - 1;
+                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY = -13;
+                int const SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY = -14;
+                int const SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY = -15;
+                int const SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY = -16;
+                int const SerializationConstants::CONSTANT_TYPE_LONG_ARRAY = -17;
+                int const SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY = -18;
+                int const SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY = -19;
+                int const SerializationConstants::CONSTANT_TYPE_STRING_ARRAY = -20;
+                int const SerializationConstants::CONSTANT_SERIALIZERS_LENGTH = 21;
                 // ------------------------------------------------------------
-                int const SerializationConstants::DEFAULT_TYPE_CLASS = -19;
-                int const SerializationConstants::DEFAULT_TYPE_DATE = -20;
-                int const SerializationConstants::DEFAULT_TYPE_BIG_INTEGER = -21;
-                int const SerializationConstants::DEFAULT_TYPE_BIG_DECIMAL = -22;
-                int const SerializationConstants::DEFAULT_TYPE_OBJECT = -23;
-                int const SerializationConstants::DEFAULT_TYPE_EXTERNALIZABLE = -24;
-                int const SerializationConstants::DEFAULT_TYPE_ENUM = -25;
+                int const SerializationConstants::DEFAULT_TYPE_CLASS = -100;
+                int const SerializationConstants::DEFAULT_TYPE_DATE = -101;
+                int const SerializationConstants::DEFAULT_TYPE_BIG_INTEGER = -102;
+                int const SerializationConstants::DEFAULT_TYPE_BIG_DECIMAL = -103;
+                int const SerializationConstants::DEFAULT_TYPE_SERIALIZABLE = -104;
+                int const SerializationConstants::DEFAULT_TYPE_EXTERNALIZABLE = -105;
+                int const SerializationConstants::DEFAULT_TYPE_ENUM = -106;
+                int const SerializationConstants::DEFAULT_TYPE_ARRAY_LIST = -107;
+                int const SerializationConstants::DEFAULT_TYPE_LINKED_LIST = -108;
 
                 SerializationConstants::SerializationConstants()
-                :size(26)
+                :size(30)
                 , typeIdNameVector(size) {
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_NULL)] = "null";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
@@ -53,19 +57,23 @@ namespace hazelcast {
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DOUBLE)] = "double";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING)] = "string";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_BYTE_ARRAY)] = "byteArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_BOOLEAN_ARRAY)] = "booleanArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_CHAR_ARRAY)] = "charArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_SHORT_ARRAY)] = "shortArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_INTEGER_ARRAY)] = "integerArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_LONG_ARRAY)] = "longArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_FLOAT_ARRAY)] = "floatArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DOUBLE_ARRAY)] = "doubleArray";
+                    typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING_ARRAY)] = "stringArray";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_CLASS)] = "class";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_DATE)] = "date";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_INTEGER)] = "bigInteger";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_DECIMAL)] = "bigDecimal";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_OBJECT)] = "object";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_SERIALIZABLE)] = "serializable";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_EXTERNALIZABLE)] = "externalizable";
                     typeIdNameVector[idToIndex(DEFAULT_TYPE_ENUM)] = "enum";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_ARRAY_LIST)] = "arrayList";
+                    typeIdNameVector[idToIndex(DEFAULT_TYPE_LINKED_LIST)] = "linkedList";
                 }
 
                 std::string SerializationConstants::typeIdToName(int typeId) {

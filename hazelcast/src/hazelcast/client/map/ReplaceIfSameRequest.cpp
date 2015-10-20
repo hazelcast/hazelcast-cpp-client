@@ -29,7 +29,7 @@ namespace hazelcast {
             }
 
             void ReplaceIfSameRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", -1);
                 writer.writeBoolean("a", false);

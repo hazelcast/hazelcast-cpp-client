@@ -24,8 +24,8 @@ namespace hazelcast {
             }
 
             void BaseRemoveListenerRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
-                writer.writeUTF("r", registrationId);
+                writer.writeUTF("n", &name);
+                writer.writeUTF("r", &registrationId);
             }
 
         }

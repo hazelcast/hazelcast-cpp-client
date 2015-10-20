@@ -109,7 +109,7 @@ namespace hazelcast {
 
             void TxnMapRequest::write(serialization::PortableWriter& writer) const {
                 BaseTxnRequest::write(writer);
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeInt("t", (int)requestType);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 if (hasKey) {
@@ -129,7 +129,7 @@ namespace hazelcast {
                 }
                 out.writeBoolean(hasPredicate);
                 if (hasPredicate) {
-                    out.writeUTF(predicate);
+                    out.writeUTF(&predicate);
                 }
                 out.writeLong(ttl);
             }

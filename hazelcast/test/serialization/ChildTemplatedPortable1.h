@@ -38,13 +38,13 @@ namespace hazelcast {
                 }
 
                 void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writeUTF("s1", s1);
-                    writer.writeUTF("s2", s2);
+                    writer.writeUTF("s1", &s1);
+                    writer.writeUTF("s2", &s2);
                 }
 
                 void readPortable(serialization::PortableReader& reader) {
-                    s1 = reader.readUTF("s1");
-                    s2 = reader.readUTF("s2");
+                    s1 = *reader.readUTF("s1");
+                    s2 = *reader.readUTF("s2");
                 }
 
             private:

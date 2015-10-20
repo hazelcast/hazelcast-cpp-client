@@ -97,56 +97,56 @@ namespace hazelcast {
                 * @param value     utf string value to be written
                 * @throws IOException
                 */
-                void writeUTF(const char *fieldName, const std::string &value);
+                void writeUTF(const char *fieldName, const std::string *value);
 
                 /**
                 * @param fieldName name of the field
                 * @param values     byte array to be written
                 * @throws IOException
                 */
-                void writeByteArray(const char *fieldName, const std::vector<byte> &values);
+                void writeByteArray(const char *fieldName, const std::vector<byte> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values     char array to be written
                 * @throws IOException
                 */
-                void writeCharArray(const char *fieldName, const std::vector<char> &values);
+                void writeCharArray(const char *fieldName, const std::vector<char> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values     short array to be written
                 * @throws IOException
                 */
-                void writeShortArray(const char *fieldName, const std::vector<short> &values);
+                void writeShortArray(const char *fieldName, const std::vector<short> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values     int array to be written
                 * @throws IOException
                 */
-                void writeIntArray(const char *fieldName, const std::vector<int> &values);
+                void writeIntArray(const char *fieldName, const std::vector<int> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values     long array to be written
                 * @throws IOException
                 */
-                void writeLongArray(const char *fieldName, const std::vector<long> &values);
+                void writeLongArray(const char *fieldName, const std::vector<long> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values    float array to be written
                 * @throws IOException
                 */
-                void writeFloatArray(const char *fieldName, const std::vector<float> &values);
+                void writeFloatArray(const char *fieldName, const std::vector<float> *values);
 
                 /**
                 * @param fieldName name of the field
                 * @param values    double array to be written
                 * @throws IOException
                 */
-                void writeDoubleArray(const char *fieldName, const std::vector<double> &values);
+                void writeDoubleArray(const char *fieldName, const std::vector<double> *values);
 
                 /**
                 * Internal api , should not be called by end user.
@@ -175,7 +175,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writePortable(const char *fieldName, const T &portable) {
+                void writePortable(const char *fieldName, const T *portable) {
                     if (isDefaultWriter)
                         return defaultPortableWriter->writePortable(fieldName, portable);
                     return classDefinitionWriter->writePortable(fieldName, portable);
@@ -189,7 +189,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                void writePortableArray(const char *fieldName, const std::vector<T> &values) {
+                void writePortableArray(const char *fieldName, const std::vector<T> *values) {
                     if (isDefaultWriter)
                         return defaultPortableWriter->writePortableArray(fieldName, values);
                     return classDefinitionWriter->writePortableArray(fieldName, values);

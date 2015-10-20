@@ -27,7 +27,7 @@ namespace hazelcast {
             }
 
             void PutAllRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeInt("p", partitionId);
                 serialization::ObjectDataOutput& out = writer.getRawDataOutput();
                 entrySet.writeData(out);

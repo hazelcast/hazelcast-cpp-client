@@ -27,9 +27,9 @@ namespace hazelcast {
             }
 
             void UsernamePasswordCredentials::writePortable(serialization::PortableWriter &writer) const {
-                writer.writeUTF("principal", principal);//dev
-                writer.writeUTF("endpoint", endpoint);//"
-                writer.writeByteArray("pwd", password);//dev-pass
+                writer.writeUTF("principal", &principal);//dev
+                writer.writeUTF("endpoint", &endpoint);//"
+                writer.writeByteArray("pwd", &password);//dev-pass
             }
 
             void UsernamePasswordCredentials::readPortable(serialization::PortableReader &reader) {

@@ -180,14 +180,14 @@ namespace hazelcast {
             Address address;
             std::string uuid;
             bool liteMember;
-            std::map< std::string, std::string > stringAttributes;
-            std::map< std::string, bool > boolAttributes;
-            std::map< std::string, byte > byteAttributes;
-            std::map< std::string, int > intAttributes;
-            std::map< std::string, float > floatAttributes;
-            std::map< std::string, short > shortAttributes;
-            std::map< std::string, long > longAttributes;
-            std::map< std::string, double > doubleAttributes;
+            std::map<std::string, std::string> stringAttributes;
+            std::map<std::string, bool> boolAttributes;
+            std::map<std::string, byte> byteAttributes;
+            std::map<std::string, int> intAttributes;
+            std::map<std::string, float> floatAttributes;
+            std::map<std::string, short> shortAttributes;
+            std::map<std::string, long> longAttributes;
+            std::map<std::string, double> doubleAttributes;
         };
 
         std::ostream HAZELCAST_API &operator <<(std::ostream &stream, const Member &member);

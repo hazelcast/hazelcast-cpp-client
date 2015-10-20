@@ -75,42 +75,42 @@ namespace hazelcast {
                     dataOutput.writeShort(value);
                 }
 
-                void DefaultPortableWriter::writeUTF(const char *fieldName, const std::string& value) {
+                void DefaultPortableWriter::writeUTF(const char *fieldName, const std::string *value) {
                     setPosition(fieldName, FieldTypes::TYPE_UTF);
                     dataOutput.writeUTF(value);
                 }
 
-                void DefaultPortableWriter::writeByteArray(const char *fieldName, const std::vector<byte>& bytes) {
+                void DefaultPortableWriter::writeByteArray(const char *fieldName, const std::vector<byte> *bytes) {
                     setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                     dataOutput.writeByteArray(bytes);
                 }
 
-                void DefaultPortableWriter::writeCharArray(const char *fieldName, const std::vector<char>& data) {
+                void DefaultPortableWriter::writeCharArray(const char *fieldName, const std::vector<char> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                     dataOutput.writeCharArray(data);
                 }
 
-                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<short>& data) {
+                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<short> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                     dataOutput.writeShortArray(data);
                 }
 
-                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int>& data) {
+                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_INT_ARRAY);
                     dataOutput.writeIntArray(data);
                 }
 
-                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<long>& data) {
+                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<long> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                     dataOutput.writeLongArray(data);
                 }
 
-                void DefaultPortableWriter::writeFloatArray(const char *fieldName, const std::vector<float>& data) {
+                void DefaultPortableWriter::writeFloatArray(const char *fieldName, const std::vector<float> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                     dataOutput.writeFloatArray(data);
                 }
 
-                void DefaultPortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double>& data) {
+                void DefaultPortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                     dataOutput.writeDoubleArray(data);
                 }

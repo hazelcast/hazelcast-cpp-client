@@ -7,16 +7,15 @@
 #include <stdio.h>
 #include <memory>
 
+#include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
-#include <hazelcast/client/exception/IOException.h>
+#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-
-                int const DataInput::STRING_CHUNK_SIZE = 16 * 1024;
 
                 DataInput::DataInput(const std::vector<byte> &buf)
                 :buffer(buf)
@@ -117,22 +116,24 @@ namespace hazelcast {
                     return u.d;
                 }
 
-                std::string DataInput::readUTF() {
-                    bool isNull = readBoolean();
-                    if (isNull)
-                        return "";
-                    int length = readInt();
-                    int lengthCheck = readInt();
-                    if (length != lengthCheck) {
-                        throw exception::IOException("DataInput::readShortUTF", "Length check failed, maybe broken bytestream or wrong stream position");
+                std::auto_ptr<std::string> DataInput::readUTF() {
+                    int len = readInt();
+                    if (util::Bits::NULL_ARRAY == len) {
+                        return std::auto_ptr<std::string>(NULL);
+                    } else {
+                        int numBytesToRead = 0;
+                        for (int i = 0; i < len ; ++i) {
+                            checkAvailable(1);
+                            int numBytesForChar = getNumBytesForUtf8Char(&buffer[pos] + numBytesToRead);
+                            numBytesToRead += numBytesForChar;
+                            checkAvailable(numBytesToRead);
+                        }
+
+                        const std::vector<unsigned char>::const_iterator start = buffer.begin() + pos;
+                        std::auto_ptr<std::string> result(new std::string(start, start + numBytesToRead));
+                        pos += numBytesToRead;
+                        return result;
                     }
-                    std::string result = "";
-                    int chunkSize = (length / STRING_CHUNK_SIZE) + 1;
-                    while (chunkSize > 0) {
-                        result += readShortUTF();
-                        chunkSize--;
-                    }
-                    return result;
                 }
 
                 int DataInput::position() {
@@ -147,134 +148,55 @@ namespace hazelcast {
                 }
                 //private functions
 
-                std::string DataInput::readShortUTF() {
-                    short utflen = readShort();
-                    std::vector<byte> bytearr((size_t)utflen);
-                    std::vector<char> chararr((size_t)utflen + 1);
-                    int c, char2, char3;
-                    int count = 0;
-                    int chararr_count = 0;
-                    readFully(bytearr);
+                std::auto_ptr<std::vector<byte> > DataInput::readByteArray() {
+                    return readArray<byte>();
+                }
 
-                    while (count < utflen) {
-                        c = bytearr[count] & 0xff;
-                        switch (0x0f & (c >> 4)) {
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                                /* 0xxxxxxx */
-                                count++;
-                                chararr[chararr_count++] = (char) c;
-                                break;
-                            case 12:
-                            case 13:
-                                /* 110x xxxx 10xx xxxx */
-                                count += 2;
-                                if (count > utflen)
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
-                                char2 = bytearr[count - 1];
-                                if ((char2 & 0xC0) != 0x80) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
-                                }
-                                chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
-                                break;
-                            case 14:
-                                /* 1110 xxxx 10xx xxxx 10xx xxxx */
-                                count += 3;
-                                if (count > utflen)
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input: partial character at end");
-                                char2 = bytearr[count - 2];
-                                char3 = bytearr[count - 1];
-                                if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
-                                    throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count - 1));
-                                }
-                                chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
-                                break;
-                            default:
-                                /* 10xx xxxx, 1111 xxxx */
+                std::auto_ptr<std::vector<bool> > DataInput::readBooleanArray() {
+                    return readArray<bool>();
+                }
 
-                                throw exception::IOException("DataInput::readShortUTF", "malformed input around byte" + util::IOUtil::to_string(count));
+                std::auto_ptr<std::vector<char> > DataInput::readCharArray() {
+                    return readArray<char>();
+                }
 
+                std::auto_ptr<std::vector<int> > DataInput::readIntArray() {
+                    return readArray<int>();
+                }
+
+                std::auto_ptr<std::vector<long> > DataInput::readLongArray() {
+                    return readArray<long>();
+                }
+
+                std::auto_ptr<std::vector<double> > DataInput::readDoubleArray() {
+                    return readArray<double>();
+                }
+
+                std::auto_ptr<std::vector<float> > DataInput::readFloatArray() {
+                    return readArray<float>();
+                }
+
+                std::auto_ptr<std::vector<short> > DataInput::readShortArray() {
+                    return readArray<short>();
+                }
+
+                std::auto_ptr<common::containers::ManagedPointerVector<std::string> > DataInput::readUTFArray() {
+                    int len = readInt();
+                    if (util::Bits::NULL_ARRAY == len) {
+                        return std::auto_ptr<common::containers::ManagedPointerVector<std::string> > (NULL);
+                    }
+
+                    if (len > 0) {
+                        std::auto_ptr<common::containers::ManagedPointerVector<std::string> > values(
+                                new common::containers::ManagedPointerVector<std::string>((size_t)len));
+                        for (int i = 0; i < len; ++i) {
+                            values->push_back(readUTF().release());
                         }
+                        return values;
                     }
-                    chararr[chararr_count] = '\0';
-                    return std::string(&chararr[0]);
-                }
 
-                std::auto_ptr<std::vector<byte> > DataInput::readByteArrayAsPtr() {
-                    int len = readInt();
-                    checkAvailable((size_t)len);
-                    std::auto_ptr<std::vector<byte> >   values(
-                            new std::vector<byte>(buffer.begin() + pos, buffer.begin() + pos + len));
-                    pos += len;
-                    return values;
-                }
-
-                std::vector<byte> DataInput::readByteArray() {
-                    int len = readInt();
-                    checkAvailable((size_t)len);
-                    std::vector<byte> result(buffer.begin() + pos, buffer.begin() + pos + len);
-                    pos += len;
-                    return result;
-                }
-
-                std::vector<char> DataInput::readCharArray() {
-                    int len = readInt();
-                    std::vector<char> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = readChar();
-                    }
-                    return values;
-                }
-
-                std::vector<int> DataInput::readIntArray() {
-                    int len = readInt();
-                    std::vector<int> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = readInt();
-                    }
-                    return values;
-                }
-
-                std::vector<long> DataInput::readLongArray() {
-                    int len = readInt();
-                    std::vector<long> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = (long)readLong();
-                    }
-                    return values;
-                }
-
-                std::vector<double> DataInput::readDoubleArray() {
-                    int len = readInt();
-                    std::vector<double> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = readDouble();
-                    }
-                    return values;
-                }
-
-                std::vector<float> DataInput::readFloatArray() {
-                    int len = readInt();
-                    std::vector<float> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = readFloat();
-                    }
-                    return values;
-                }
-
-                std::vector<short> DataInput::readShortArray() {
-                    int len = readInt();
-                    std::vector<short> values((size_t)len);
-                    for (int i = 0; i < len; i++) {
-                        values[i] = readShort();
-                    }
-                    return values;
+                    return std::auto_ptr<common::containers::ManagedPointerVector<std::string> >(
+                            new common::containers::ManagedPointerVector<std::string>(0));
                 }
 
                 void DataInput::checkAvailable(size_t requestedLength) {
@@ -284,6 +206,104 @@ namespace hazelcast {
                         char msg[100];
                         sprintf(msg, "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes", (unsigned long)available, (unsigned long)requestedLength);
                         throw exception::IOException("DataInput::checkBoundary", msg);
+                    }
+                }
+
+                int DataInput::getSize(byte *dummy) {
+                    return util::Bits::BYTE_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(char *dummy) {
+                    return util::Bits::CHAR_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(bool *dummy) {
+                    return util::Bits::BOOLEAN_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(short *dummy) {
+                    return util::Bits::SHORT_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(int *dummy) {
+                    return util::Bits::INT_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(long *dummy) {
+                    return util::Bits::LONG_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(float *dummy) {
+                    return util::Bits::FLOAT_SIZE_IN_BYTES;
+                }
+
+                int DataInput::getSize(double *dummy) {
+                    return util::Bits::DOUBLE_SIZE_IN_BYTES;
+                }
+
+                template <>
+                byte DataInput::read() {
+                    return readByte();
+                }
+
+                template <>
+                char DataInput::read() {
+                    return readChar();
+                }
+
+                template <>
+                bool DataInput::read() {
+                    return readBoolean();
+                }
+
+                template <>
+                short DataInput::read() {
+                    return readShort();
+                }
+
+                template <>
+                int DataInput::read() {
+                    return readInt();
+                }
+
+                template <>
+                long DataInput::read() {
+                    return readLong();
+                }
+
+                template <>
+                float DataInput::read() {
+                    return readFloat();
+                }
+
+                template <>
+                double DataInput::read() {
+                    return readDouble();
+                }
+
+                int DataInput::getNumBytesForUtf8Char(const byte *start) const {
+                    char first = *start;
+                    int b = first & 0xFF;
+                    switch (b >> 4) {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                            return 1;
+                        case 12:
+                        case 13: {
+                            return 2;
+                        }
+                        case 14: {
+                            return 3;
+                        }
+                        default:
+                            throw exception::UTFDataFormatException("DataInput::getNumBytesForUtf8Char",
+                                                                    "Malformed byte sequence");
                     }
                 }
             }

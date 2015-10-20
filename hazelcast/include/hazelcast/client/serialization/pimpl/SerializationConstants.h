@@ -37,21 +37,25 @@ namespace hazelcast {
                     static int const CONSTANT_TYPE_DOUBLE;
                     static int const CONSTANT_TYPE_STRING;
                     static int const CONSTANT_TYPE_BYTE_ARRAY;
+                    static int const CONSTANT_TYPE_BOOLEAN_ARRAY;
                     static int const CONSTANT_TYPE_CHAR_ARRAY;
                     static int const CONSTANT_TYPE_SHORT_ARRAY;
                     static int const CONSTANT_TYPE_INTEGER_ARRAY;
                     static int const CONSTANT_TYPE_LONG_ARRAY;
                     static int const CONSTANT_TYPE_FLOAT_ARRAY;
                     static int const CONSTANT_TYPE_DOUBLE_ARRAY;
+                    static int const CONSTANT_TYPE_STRING_ARRAY;
                     static int const CONSTANT_SERIALIZERS_LENGTH;
                     // ------------------------------------------------------------
                     static int const DEFAULT_TYPE_CLASS;
                     static int const DEFAULT_TYPE_DATE;
                     static int const DEFAULT_TYPE_BIG_INTEGER;
                     static int const DEFAULT_TYPE_BIG_DECIMAL;
-                    static int const DEFAULT_TYPE_OBJECT;
+                    static int const DEFAULT_TYPE_SERIALIZABLE;
                     static int const DEFAULT_TYPE_EXTERNALIZABLE;
                     static int const DEFAULT_TYPE_ENUM;
+                    static int const DEFAULT_TYPE_ARRAY_LIST;
+                    static int const DEFAULT_TYPE_LINKED_LIST;
 
                     SerializationConstants();
 

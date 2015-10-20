@@ -68,24 +68,24 @@ namespace hazelcast {
 
 
             void TestInnerPortable::writePortable(serialization::PortableWriter& writer) const {
-                writer.writeByteArray("b", bb);
-                writer.writeCharArray("c", cc);
-                writer.writeShortArray("s", ss);
-                writer.writeIntArray("i", ii);
-                writer.writeLongArray("l", ll);
-                writer.writeFloatArray("f", ff);
-                writer.writeDoubleArray("d", dd);
-                writer.writePortableArray("nn", nn);
+                writer.writeByteArray("b", &bb);
+                writer.writeCharArray("c", &cc);
+                writer.writeShortArray("s", &ss);
+                writer.writeIntArray("i", &ii);
+                writer.writeLongArray("l", &ll);
+                writer.writeFloatArray("f", &ff);
+                writer.writeDoubleArray("d", &dd);
+                writer.writePortableArray("nn", &nn);
             }
 
             void TestInnerPortable::readPortable(serialization::PortableReader& reader) {
-                bb = reader.readByteArray("b");
-                cc = reader.readCharArray("c");
-                ss = reader.readShortArray("s");
-                ii = reader.readIntArray("i");
-                ll = reader.readLongArray("l");
-                ff = reader.readFloatArray("f");
-                dd = reader.readDoubleArray("d");
+                bb = *reader.readByteArray("b");
+                cc = *reader.readCharArray("c");
+                ss = *reader.readShortArray("s");
+                ii = *reader.readIntArray("i");
+                ll = *reader.readLongArray("l");
+                ff = *reader.readFloatArray("f");
+                dd = *reader.readDoubleArray("d");
                 nn = reader.readPortableArray<TestNamedPortable>("nn");
             }
 

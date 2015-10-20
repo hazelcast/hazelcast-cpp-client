@@ -13,8 +13,8 @@ namespace hazelcast {
                 return item;
             }
 
-            std::string PortableItemEvent::getUuid() const {
-                return uuid;
+            std::string &PortableItemEvent::getUuid() const {
+                return *uuid;
             }
 
             ItemEventType PortableItemEvent::getEventType() const {

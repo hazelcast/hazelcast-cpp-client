@@ -9,8 +9,14 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/common/containers/ManagedPointerVector.h"
+#include "hazelcast/client/exception/UTFDataFormatException.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include <vector>
 #include <string>
+#include <memory>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -42,6 +48,7 @@ namespace hazelcast {
 
                     short readShort();
 
+                    // TODO: change to return 2 bytes char
                     char readChar();
 
                     int readInt();
@@ -52,23 +59,25 @@ namespace hazelcast {
 
                     double readDouble();
 
-                    std::string readUTF();
+                    std::auto_ptr<std::string> readUTF();
 
-                    std::auto_ptr<std::vector<byte> > readByteArrayAsPtr();
+                    std::auto_ptr<std::vector<byte> > readByteArray();
 
-                    std::vector<byte> readByteArray();
+                    std::auto_ptr<std::vector<bool> > readBooleanArray();
 
-                    std::vector<char> readCharArray();
+                    std::auto_ptr<std::vector<char> > readCharArray();
 
-                    std::vector<int> readIntArray();
+                    std::auto_ptr<std::vector<int> > readIntArray();
 
-                    std::vector<long> readLongArray();
+                    std::auto_ptr<std::vector<long> > readLongArray();
 
-                    std::vector<double> readDoubleArray();
+                    std::auto_ptr<std::vector<double> > readDoubleArray();
 
-                    std::vector<float> readFloatArray();
+                    std::auto_ptr<std::vector<float> > readFloatArray();
 
-                    std::vector<short> readShortArray();
+                    std::auto_ptr<std::vector<short> > readShortArray();
+
+                    std::auto_ptr<common::containers::ManagedPointerVector<std::string> > readUTFArray();
 
                     int position();
 
@@ -79,16 +88,83 @@ namespace hazelcast {
 
                     int pos;
 
-                    static int const STRING_CHUNK_SIZE;
+                    template <typename T>
+                    inline T read() {
+                        throw exception::HazelcastSerializationException("DataInput::read", "Unsupported type");
+                    }
 
-                    std::string readShortUTF();
+                    template <typename T>
+                    inline int getSize(T *dummy) {
+                        throw exception::HazelcastSerializationException("DataInput::getSize", "Unsupported type");
+                    }
+
+                    template <typename T>
+                    inline std::auto_ptr<std::vector<T> > readArray() {
+                        int len = readInt();
+                        if (util::Bits::NULL_ARRAY == len) {
+                            return std::auto_ptr<std::vector<T> > (NULL);
+                        }
+
+                        if (len > 0) {
+                            checkAvailable((size_t)len * getSize((T *)NULL));
+                            std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
+                            for (int i = 0; i < len; i++) {
+                                (*values)[i] = read<T>();
+                            }
+                            return values;
+                        }
+
+                        return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
+                    }
+
+                    int getNumBytesForUtf8Char(const byte *start) const;
 
                     DataInput(const DataInput &);
 
                     DataInput &operator = (const DataInput &);
 
                     void checkAvailable(size_t requestedLength);
+
+                    int getSize(byte *dummy);
+
+                    int getSize(char *dummy);
+
+                    int getSize(bool *dummy);
+
+                    int getSize(short *dummy);
+
+                    int getSize(int *dummy);
+
+                    int getSize(long *dummy);
+
+                    int getSize(float *dummy);
+
+                    int getSize(double *dummy);
                 };
+
+                template <>
+                HAZELCAST_API byte DataInput::read();
+
+                template <>
+                HAZELCAST_API char DataInput::read();
+
+                template <>
+                HAZELCAST_API bool DataInput::read();
+
+                template <>
+                HAZELCAST_API short DataInput::read();
+
+                template <>
+                HAZELCAST_API int DataInput::read();
+
+                template <>
+                HAZELCAST_API long DataInput::read();
+
+                template <>
+                HAZELCAST_API float DataInput::read();
+
+                template <>
+                HAZELCAST_API double DataInput::read();
             }
         }
     }

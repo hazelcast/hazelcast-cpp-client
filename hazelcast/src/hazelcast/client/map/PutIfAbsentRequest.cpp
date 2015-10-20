@@ -27,7 +27,7 @@ namespace hazelcast {
             }
 
             void PutIfAbsentRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", threadId);
                 writer.writeLong("ttl", ttl);
                 writer.writeBoolean("a", false);//async

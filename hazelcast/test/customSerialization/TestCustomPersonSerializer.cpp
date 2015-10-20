@@ -9,14 +9,15 @@ namespace hazelcast {
 
             void TestCustomPersonSerializer::write(serialization::ObjectDataOutput & out, const TestCustomPerson& object) {
                 out.writeInt(999);
-                out.writeUTF(object.getName());
+                const std::string &name = object.getName();
+                out.writeUTF(&name);
                 out.writeInt(999);
             }
 
             void TestCustomPersonSerializer::read(serialization::ObjectDataInput & in, TestCustomPerson& object) {
                 int i = in.readInt();
                 assert(i == 999);
-                object.setName(in.readUTF());
+                object.setName(*in.readUTF());
                 i = in.readInt();
                 assert(i == 999);
             }

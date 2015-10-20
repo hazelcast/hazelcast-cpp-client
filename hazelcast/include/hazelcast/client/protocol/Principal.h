@@ -29,8 +29,8 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader& reader);
 
             private:
-                std::string uuid;
-                std::string ownerUuid;
+                std::auto_ptr<std::string> uuid;
+                std::auto_ptr<std::string> ownerUuid;
             };
         }
     }

@@ -57,13 +57,13 @@ namespace hazelcast {
 
             void AddEntryListenerRequest::write(serialization::PortableWriter &writer) const {
                 writer.writeBoolean("l", false);
-                writer.writeUTF("name", name);
+                writer.writeUTF("name", &name);
                 writer.writeBoolean("i", includeValue);
                 writer.writeInt("lf", ALL_LISTENER_FLAGS);
                 writer.writeBoolean("key", hasKey);
                 writer.writeBoolean("pre", hasPredicate);
                 if (hasPredicate) {
-                    writer.writeUTF("p", sql);
+                    writer.writeUTF("p", &sql);
                 }
                 if (hasKey) {
                     serialization::ObjectDataOutput &out = writer.getRawDataOutput();

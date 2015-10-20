@@ -27,8 +27,8 @@ namespace hazelcast {
                 return mergingValue;
             }
 
-            std::string PortableEntryEvent::getUuid() const {
-                return uuid;
+            std::string &PortableEntryEvent::getUuid() const {
+                return *uuid;
             }
 
             EntryEventType PortableEntryEvent::getEventType() const {

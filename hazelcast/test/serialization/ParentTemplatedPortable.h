@@ -39,7 +39,7 @@ namespace hazelcast {
                 }
 
                 void writePortable(serialization::PortableWriter& writer) const {
-                    writer.writePortable<T>("c", *child);
+                    writer.writePortable<T>("c", child.get());
                 }
 
                 void readPortable(serialization::PortableReader& reader) {

@@ -58,21 +58,21 @@ namespace hazelcast {
 
                     void writeShort(const char *fieldName, int value);
 
-                    void writeUTF(const char *fieldName, const std::string& str);
+                    void writeUTF(const char *fieldName, const std::string *str);
 
-                    void writeByteArray(const char *fieldName, const std::vector<byte>& x);
+                    void writeByteArray(const char *fieldName, const std::vector<byte> *x);
 
-                    void writeCharArray(const char *fieldName, const std::vector<char>& data);
+                    void writeCharArray(const char *fieldName, const std::vector<char> *data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short>& data);
+                    void writeShortArray(const char *fieldName, const std::vector<short> *data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int>& data);
+                    void writeIntArray(const char *fieldName, const std::vector<int> *data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long>& data);
+                    void writeLongArray(const char *fieldName, const std::vector<long> *data);
 
-                    void writeFloatArray(const char *fieldName, const std::vector<float>& data);
+                    void writeFloatArray(const char *fieldName, const std::vector<float> *data);
 
-                    void writeDoubleArray(const char *fieldName, const std::vector<double>& data);
+                    void writeDoubleArray(const char *fieldName, const std::vector<double> *data);
 
                     void end();
 
@@ -88,23 +88,26 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    void writePortable(const char *fieldName, const T& portable) {
+                    void writePortable(const char *fieldName, const T *portable) {
                         FieldDefinition const& fd = setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
-                        checkPortableAttributes(fd, portable);
 
-                        dataOutput.writeBoolean(false);
+                        bool isNull = (NULL == portable);
+                        dataOutput.writeBoolean(isNull);
 
                         dataOutput.writeInt(fd.getFactoryId());
                         dataOutput.writeInt(fd.getClassId());
 
-                        write(portable);
+                        if (!isNull) {
+                            checkPortableAttributes(fd, *portable);
+                            write(*portable);
+                        }
                     }
 
                     template<typename T>
-                    void writePortableArray(const char *fieldName, const std::vector<T>& values) {
+                    void writePortableArray(const char *fieldName, const std::vector<T> *values) {
                         FieldDefinition const& fd = setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
-                        size_t len = values.size();
-                        dataOutput.writeInt((int)len);
+                        int len =  (NULL == values ? util::Bits::NULL_ARRAY : (int)values->size());
+                        dataOutput.writeInt(len);
 
                         dataOutput.writeInt(fd.getFactoryId());
                         dataOutput.writeInt(fd.getClassId());
@@ -112,12 +115,11 @@ namespace hazelcast {
                         if (len > 0) {
                             size_t offset = dataOutput.position();
                             dataOutput.position(offset + len * util::Bits::INT_SIZE_IN_BYTES);
-                            for (size_t i = 0; i < len; i++) {
-                                Portable const& portable = values[i];
-                                checkPortableAttributes(fd, portable);
+                            for (int i = 0; i < len; i++) {
+                                checkPortableAttributes(fd, (*values)[i]);
                                 size_t position = dataOutput.position();
                                 dataOutput.writeInt((int)(offset + i * util::Bits::INT_SIZE_IN_BYTES), (int)position);
-                                write(portable);
+                                write((*values)[i]);
                             }
                         }
                     }

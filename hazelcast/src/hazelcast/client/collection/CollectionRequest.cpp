@@ -22,8 +22,8 @@ namespace hazelcast {
             }
 
             void CollectionRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("s", serviceName);
-                writer.writeUTF("n", name);
+                writer.writeUTF("s", &serviceName);
+                writer.writeUTF("n", &name);
             }
 
         }

@@ -25,7 +25,7 @@ namespace hazelcast {
             }
 
             void SizeRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
             }
 
             bool SizeRequest::isRetryable() const{

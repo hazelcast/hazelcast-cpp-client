@@ -10,7 +10,7 @@ namespace hazelcast {
         namespace txn {
 
             void BaseTxnRequest::write(serialization::PortableWriter &writer) const {
-                writer.writeUTF("tId", txnId);
+                writer.writeUTF("tId", &txnId);
                 writer.writeLong("cti", threadId);
             }
 

@@ -15,8 +15,8 @@ namespace hazelcast {
                 return message;
             }
 
-            std::string PortableMessage::getUuid() const {
-                return uuid;
+            const std::string & PortableMessage::getUuid() const {
+                return *uuid;
             }
 
             long PortableMessage::getPublishTime() const {

@@ -50,23 +50,27 @@ namespace hazelcast {
 
                     void writeDouble(double v);
 
-                    void writeUTF(const std::string &s);
+                    void writeUTF(const std::string *s);
 
                     void writeBytes(const byte *bytes, unsigned int len);
 
-                    void writeByteArray(const std::vector<byte> &data);
+                    void writeByteArray(const std::vector<byte> *data);
 
-                    void writeCharArray(const std::vector<char> &bytes);
+                    void writeCharArray(const std::vector<char> *bytes);
 
-                    void writeShortArray(const std::vector<short > &data);
+                    void writeBooleanArray(const std::vector<bool> *bytes);
 
-                    void writeIntArray(const std::vector<int> &data);
+                    void writeShortArray(const std::vector<short> *data);
 
-                    void writeLongArray(const std::vector<long > &data);
+                    void writeIntArray(const std::vector<int> *data);
 
-                    void writeFloatArray(const std::vector<float > &data);
+                    void writeLongArray(const std::vector<long> *data);
 
-                    void writeDoubleArray(const std::vector<double > &data);
+                    void writeFloatArray(const std::vector<float> *data);
+
+                    void writeDoubleArray(const std::vector<double> *data);
+
+                    void writeUTFArray(const std::vector<const std::string *> *data);
 
                     void writeByte(int index, int i);
 
@@ -78,18 +82,16 @@ namespace hazelcast {
 
                     void position(size_t newPos);
 
-                    static size_t const STRING_CHUNK_SIZE;
                     static size_t const DEFAULT_SIZE;
 
                 private:
                     std::auto_ptr< std::vector<byte> > outputStream;
 
-                    void writeShortUTF(const std::string &);
-
                     DataOutput(const DataOutput &rhs);
 
                     DataOutput &operator = (const DataOutput &rhs);
 
+                    int getUTF8CharCount(const std::string &str);
                 };
             }
         }

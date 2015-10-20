@@ -27,7 +27,7 @@ namespace hazelcast {
             }
 
             void CompareAndRemoveRequest::write(serialization::PortableWriter& writer) const {
-                writer.writeUTF("n", name);
+                writer.writeUTF("n", &name);
                 writer.writeLong("t", 0);
                 writer.writeBoolean("r", retain);
                 int size = dataList.size();

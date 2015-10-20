@@ -60,7 +60,7 @@ namespace hazelcast {
 
             void FieldDefinition::writeData(pimpl::DataOutput& dataOutput) {
                 dataOutput.writeInt(index);
-                dataOutput.writeUTF(fieldName);
+                dataOutput.writeUTF(&fieldName);
                 dataOutput.writeByte(type.getId());
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
@@ -68,7 +68,7 @@ namespace hazelcast {
 
             void FieldDefinition::readData(pimpl::DataInput& dataInput) {
                 index = dataInput.readInt();
-                fieldName = dataInput.readUTF();
+                fieldName = *dataInput.readUTF();
                 type.id = dataInput.readByte();
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
