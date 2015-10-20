@@ -5,6 +5,7 @@
 
 #include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/protocol/ProtocolConstants.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,7 +22,7 @@ namespace hazelcast {
             }
 
             void AddMembershipListenerRequest::write(serialization::PortableWriter &writer) const {
-
+                writer.writeBoolean("l", false);
             }
         }
     }
