@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 //
 // Created by sancar koyunlu on 24/07/14.
 // Modified: ihsan demir on 18/03/2015

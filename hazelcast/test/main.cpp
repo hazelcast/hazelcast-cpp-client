@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "SimpleMapTest.h"
 #include "HazelcastServerFactory.h"
 #include "queue/ClientQueueTest.h"
@@ -23,7 +38,6 @@
 #include "cluster/MemberAttributeTest.h"
 #include "issues/IssueTest.h"
 #include "util/ClientUtilTest.h"
-#include "license/extractor/LicenseExtractorTest.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,7 +52,6 @@ void testSpeed(const char* address) {
 int unitTests(const char* address) {
     try {
         RUN_TEST_NO_ARGS(ClientUtilTest);
-        RUN_TEST_NO_ARGS(license::LicenseExtractorTest);
         RUN_TEST_NO_ARGS(ClientSerializationTest);
         HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);

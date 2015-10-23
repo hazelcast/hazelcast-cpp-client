@@ -1,29 +1,43 @@
+/*
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "hazelcast/client/GroupConfig.h"
 
 
 namespace hazelcast {
     namespace client {
 
-        GroupConfig::GroupConfig() : name("dev"), password("dev-pass"), licenseKey("") {
+        GroupConfig::GroupConfig() : name("dev"), password("dev-pass") {
 
         }
 
-        GroupConfig::GroupConfig(const std::string &name, const std::string &password)
+        GroupConfig::GroupConfig(const std::string& name, const std::string& password)
         : name(name)
-        , password(password)
-        , licenseKey("") {
+        , password(password) {
         }
 
         std::string GroupConfig::getName() const {
             return name;
         }
 
-        GroupConfig &GroupConfig::setName(const std::string &name) {
+        GroupConfig& GroupConfig::setName(const std::string& name) {
             this->name = name;
             return (*this);
         }
 
-        GroupConfig &GroupConfig::setPassword(const std::string &password) {
+        GroupConfig& GroupConfig::setPassword(const std::string& password) {
             this->password = password;
             return (*this);
         }
@@ -32,13 +46,6 @@ namespace hazelcast {
             return password;
         }
 
-        const std::string &GroupConfig::getLicenseKey() const {
-            return licenseKey;
-        }
-
-        void GroupConfig::setLicenseKey(const std::string &key) {
-            licenseKey = key;
-        }
     }
 }
 

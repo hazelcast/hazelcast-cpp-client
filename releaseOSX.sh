@@ -52,8 +52,6 @@ doxygen docsConfig
 echo "Moving docs to target"
 mv  docs/ cpp
 
-cp enterprise-license.txt cpp/enterprise-license.txt
-
 echo "Removing temporary files"
 rm -rf ./ReleaseShared
 rm -rf ./ReleaseStatic

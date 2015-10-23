@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /*
  * SocketReadable.h
  *
@@ -36,7 +35,8 @@ namespace hazelcast {
                      * Asks the SocketWritable to write its content to the destination ByteBuffer.
                      *
                      * @param destination the ByteBuffer to write to.
-                     * @return todo: unclear what return value means.
+                     * @return false if there is not enough space in destination buffer and write is partially done
+                     *         true if all packet written successfully
                      */
                     virtual bool writeTo(util::ByteBuffer &destination) = 0;
                 };

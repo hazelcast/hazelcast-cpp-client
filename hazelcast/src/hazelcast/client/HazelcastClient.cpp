@@ -1,14 +1,25 @@
+/*
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "hazelcast/client/HazelcastClient.h"
 
-#include <hazelcast/client/license/License.h>
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/Version.h"
-#include "hazelcast/client/license/LicenseHelper.h"
-
-#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,8 +45,6 @@ namespace hazelcast {
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
-
-            beforeStart();
 
             if (!lifecycleService.start()) {
                 lifecycleService.shutdown();
@@ -98,12 +107,6 @@ namespace hazelcast {
             return TransactionContext(clientContext, options);
         }
 
-        void HazelcastClient::beforeStart() {
-            const std::string &licenseKey = clientConfig.getLicenseKey();
-            std::vector<license::LicenseType> expectedLicenseTypes(2);
-            expectedLicenseTypes[0] = license::ENTERPRISE;
-            license::LicenseHelper::checkLicenseKey(licenseKey, expectedLicenseTypes);
-        }
     }
 }
 
