@@ -12,6 +12,8 @@ doxygen docsConfig
 
 ## How to build
 
+First create a build directory from the root of the project and in the directory run the following commands depending on your environment.
+
 ### For mac release
 
 	cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
