@@ -39,7 +39,7 @@ namespace hazelcast {
             template<typename EntryProcessor>
             class ExecuteOnAllKeysRequest : public impl::ClientRequest {
             public:
-                ExecuteOnAllKeysRequest(const std::string name, EntryProcessor &entryProcessor)
+                ExecuteOnAllKeysRequest(const std::string name, const EntryProcessor &entryProcessor)
                 :name(name)
                 , entryProcessor(entryProcessor) {
 
@@ -61,7 +61,7 @@ namespace hazelcast {
 
             private:
                 std::string name;
-                EntryProcessor entryProcessor;
+                const EntryProcessor &entryProcessor;
             };
         }
     }

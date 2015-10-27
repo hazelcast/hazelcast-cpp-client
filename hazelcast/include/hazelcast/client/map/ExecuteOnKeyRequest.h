@@ -40,12 +40,9 @@ namespace hazelcast {
             template<typename EntryProcessor>
             class ExecuteOnKeyRequest : public impl::ClientRequest {
             public:
-                ExecuteOnKeyRequest(const std::string name, EntryProcessor &entryProcessor, serialization::pimpl::Data &key)
-                :name(name)
-                , entryProcessor(entryProcessor)
-                , key(key)
-                , submitToKey(false){
-
+                ExecuteOnKeyRequest(const std::string &name, const EntryProcessor &entryProcessor,
+                                    const serialization::pimpl::Data &key, long thread)
+                        : name(name), entryProcessor(entryProcessor), submitToKey(false), key(key), threadId(thread) {
                 };
 
                 int getFactoryId() const {
@@ -61,14 +58,16 @@ namespace hazelcast {
                     writer.writeBoolean("s", submitToKey);
                     serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                     out.writeData(&key);
-                    out.writeObject(&entryProcessor);
+                    out.writeObject<EntryProcessor>(&entryProcessor);
+                    out.writeLong(threadId);
                 }
 
             private:
-                std::string name;
-                EntryProcessor entryProcessor;
+                const std::string &name;
+                const EntryProcessor &entryProcessor;
                 bool submitToKey; //MTODO implement submitToKey request on IMAP
-                serialization::pimpl::Data key;
+                const serialization::pimpl::Data &key;
+                long threadId;
             };
         }
     }

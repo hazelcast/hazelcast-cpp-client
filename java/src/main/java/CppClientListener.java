@@ -226,6 +226,14 @@ public class CppClientListener {
                 return null;
             }
         });
+        config.getSerializationConfig().addPortableFactory(888, new PortableFactory() {
+            public Portable create(int classId) {
+                if (classId == 333) {
+                    return new MultiplierEntryProcessor();
+                }
+                return null;
+            }
+        });
         config.getSerializationConfig().addDataSerializableFactory(666, new DataSerializableFactory() {
             public IdentifiedDataSerializable create(int typeId) {
                 if (typeId == 1) {

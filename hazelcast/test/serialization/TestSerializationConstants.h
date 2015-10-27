@@ -43,6 +43,8 @@ namespace hazelcast {
                 int const TEST_NAMED_PORTABLE_2 = 12;
                 int const TEST_NAMED_PORTABLE_3 = 13;
                 int const TEST_RAW_DATA_PORTABLE = 14;
+                int const TEST_DATA_ENTRY_PROCESSOR = 15;
+                int const TEST_PORTABLE_ENTRY_PROCESSOR = 16;
 
                 int const EMPLOYEE_FACTORY = 666;
                 int const EMPLOYEE = 2;
