@@ -1,6 +1,17 @@
 # Hazelcast C++ Client
 
+
 C++ client implementation for [Hazelcast](https://github.com/hazelcast/hazelcast), the open source in-memory data grid. A comparison of features supported by the C++ Client vs the Java client can be found [here](http://docs.hazelcast.org/docs/3.5/manual/html/javaclient.html).
+
+
+---
+*This is a new client being developed for the Hazelcast Open Client Protocol v1.0. This work is incomplete but is expected to be finalised around March 2016.*  
+
+*We do not recommend you fork this client until it is complete and passes all tests.* 
+
+*If you would like to assist with the development of this C++ client, please feel free to fork and send us pull requests. Please complete the [Hazelcast Contributor Agreement](https://hazelcast.atlassian.net/wiki/display/COM/Hazelcast+Contributor+Agreement) if you plan to do this. In the meantime we have published our C++ client which uses the older Hazelcast client protocol on our downloads page where it can be freely used.* 
+
+---
 
 ## Documentation
 
