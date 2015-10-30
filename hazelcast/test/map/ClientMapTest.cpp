@@ -18,11 +18,14 @@
 
 
 
+#include "serialization/TestDataSerializable.h"
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "TestHelperFunctions.h"
+#include "MultiplierPortableEntryProcessor.h"
+#include "MultiplierDataSerializableEntryProcessor.h"
 
 namespace hazelcast {
     namespace client {
@@ -68,6 +71,8 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
                 addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
+                addTest(&ClientMapTest::testExecuteOnKey, "testExecuteOnKey");
+                addTest(&ClientMapTest::testExecuteOnEntries, "testExecuteOnEntries");
             }
 
             void ClientMapTest::beforeClass() {
@@ -639,6 +644,38 @@ namespace hazelcast {
                 assertFalse(imap->evict("deli"));
                 assertTrue(imap->evict("ali"));
                 assertNull(imap->get("ali").get());
+            }
+            
+            void ClientMapTest::testExecuteOnKey() {
+                IMap<std::string, int> map = client->getMap<std::string, int>("MapForExecuteOnKey");
+                std::string key("KeyFortestExecuteOnKeyTest");
+                map.put(key, 5);
+
+                MultiplierPortableEntryProcessor processor(3);
+                ASSERT_EQUAL(3 * 5, (*map.executeOnKey<int, MultiplierPortableEntryProcessor>(key, processor)));
+            }
+
+            void ClientMapTest::testExecuteOnEntries() {
+                const int multiplier = 7;
+                IMap<Employee, TestDataSerializable> map = client->getMap<Employee, TestDataSerializable>("testExecuteOnEntries");
+                std::string key("KeyFortestExecuteOnEntries");
+                Employee e1("ali", 25);
+                TestDataSerializable value1(25, 'a');
+                map.put(e1, value1);
+
+                Employee e2("ayse", 30);
+                TestDataSerializable value2(30, 'b');
+                map.put(e2, value2);
+
+                // using IdentifiedDataSerializable to make it different from the previous processor which is Portable
+                MultiplierDataSerializableEntryProcessor processor(multiplier);
+                std::map<boost::shared_ptr<Employee>, boost::shared_ptr<int> > results =
+                        map.executeOnEntries<int, MultiplierDataSerializableEntryProcessor>(processor);
+                for (std::map<boost::shared_ptr<Employee>, boost::shared_ptr<int> >::const_iterator it = results.begin();
+                     it != results.end(); ++it) {
+                    ASSERT_EQUAL(true, ((*it->first == e1 && *it->second == 25 * multiplier) ||
+                                        (*it->first == e2 && *it->second == 30 * multiplier)));
+                }
             }
         }
     }

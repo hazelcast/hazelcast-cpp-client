@@ -673,12 +673,12 @@ namespace hazelcast {
             * @return result of entry process.
             */
             template<typename ResultType, typename EntryProcessor>
-            ResultType executeOnKey(const K& key, EntryProcessor& entryProcessor) {
+            boost::shared_ptr<ResultType> executeOnKey(const K& key, const EntryProcessor& entryProcessor) {
                 serialization::pimpl::Data keyData = toData(key);
                 int partitionId = getPartitionId(keyData);
-                map::ExecuteOnKeyRequest<EntryProcessor> *request = new map::ExecuteOnKeyRequest<EntryProcessor>(getName(), entryProcessor, keyData);
+                map::ExecuteOnKeyRequest<EntryProcessor> *request =  new map::ExecuteOnKeyRequest<EntryProcessor>(getName(), entryProcessor, keyData, util::getThreadId());
                 serialization::pimpl::Data data = invoke(request, partitionId);
-                return *(toObject<ResultType>(data));
+                return toObject<ResultType>(data);
             }
 
             /**
@@ -686,7 +686,7 @@ namespace hazelcast {
             * Returns the results mapped by each key in the map.
             *
             *
-            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * EntryProcessor should extend either Portable, IdentifiedSerializable or should be custom serializable.
             * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
             * with same classId and factoryId.
             *
@@ -695,16 +695,16 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, ResultType> executeOnEntries(EntryProcessor& entryProcessor) {
+            std::map<boost::shared_ptr<K>, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor& entryProcessor) {
                 map::ExecuteOnAllKeysRequest<EntryProcessor> *request = new map::ExecuteOnAllKeysRequest<EntryProcessor>(getName(), entryProcessor);
                 serialization::pimpl::Data data = invoke(request);
                 boost::shared_ptr<map::MapEntrySet> mapEntrySet = toObject<map::MapEntrySet>(data);
-                std::map<K, ResultType> result;
+                std::map<boost::shared_ptr<K>, boost::shared_ptr<ResultType> > result;
                 const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >& entrySet = mapEntrySet->getEntrySet();
                 for (std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin(); it != entrySet.end(); ++it) {
-                    K key = toObject<K>(it->first);
-                    ResultType resultType = toObject<ResultType>(it->second);
-                    result[key] = resultType;
+                    boost::shared_ptr<K> key = toObject<K>(it->first);
+                    boost::shared_ptr<ResultType> value = toObject<ResultType>(it->second);
+                    result[key] = value;
                 }
                 return result;
             }
