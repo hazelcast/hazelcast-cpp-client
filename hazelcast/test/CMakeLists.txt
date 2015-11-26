@@ -27,13 +27,13 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	IF(${HAZELCAST_LIBRARY_TYPE} MATCHES "STATIC")
+	IF(${HZ_LIB_TYPE} MATCHES "STATIC")
 		message( STATUS "Shall use the STATIC Hazelcast library for the tests.")
 		add_definitions(-DHAZELCAST_USE_STATIC)
-	ELSE(${HAZELCAST_LIBRARY_TYPE} MATCHES "SHARED")
+	ELSE(${HZ_LIB_TYPE} MATCHES "SHARED")
 		message( STATUS "Shall use the SHARED Hazelcast library for the tests.")
 		add_definitions(-DHAZELCAST_USE_SHARED)
-	ENDIF(${HAZELCAST_LIBRARY_TYPE} MATCHES "STATIC")
+	ENDIF(${HZ_LIB_TYPE} MATCHES "STATIC")
 
 	set_target_properties(${HZ_EXE_NAME} PROPERTIES COMPILE_FLAGS " /EHsc ")
 	target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME}  )
